@@ -1,7 +1,11 @@
 {
     "name": "phpvms/phpvms",
     "description": "phpVMS - Virtual Airline Administration",
-    "keywords": ["phpvms", "virtual", "airlines"],
+    "keywords": [
+        "phpvms",
+        "virtual",
+        "airlines"
+    ],
     "license": "BSD-3-Clause",
     "type": "project",
     "minimum-stability": "dev",
@@ -72,7 +76,8 @@
         "akaunting/laravel-money": "^4.0.1",
         "staudenmeir/belongs-to-through": "^v2.13.0",
         "staudenmeir/eloquent-has-many-deep": "1.18.0",
-        "spatie/laravel-ignition": "^2.0"
+        "spatie/laravel-ignition": "^2.0",
+        "filament/filament": "3.0-stable"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
@@ -81,7 +86,8 @@
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v6.1.0",
         "phpunit/phpunit": "~9.5.14",
-        "sempro/phpunit-pretty-print": "^1.4.0"
+        "sempro/phpunit-pretty-print": "^1.4.0",
+        "laravel/sail": "^1.23"
     },
     "autoload": {
         "classmap": [
@@ -100,13 +106,17 @@
             "Tests\\": "tests/"
         }
     },
-     "extra": {
-         "installer-types": ["phpvms-module"],
-         "installer-paths": {
-             "modules/{$name}/": ["type:phpvms-module"]
-         },
-         "module-dir": "modules",
-         "symfony": {
+    "extra": {
+        "installer-types": [
+            "phpvms-module"
+        ],
+        "installer-paths": {
+            "modules/{$name}/": [
+                "type:phpvms-module"
+            ]
+        },
+        "module-dir": "modules",
+        "symfony": {
             "require": "^6.0"
         }
     },
@@ -124,7 +134,8 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@php artisan phpvms:caches"
+            "@php artisan phpvms:caches",
+            "@php artisan filament:upgrade"
         ],
         "test": "phpunit --verbose"
     },
@@ -135,7 +146,8 @@
             "joshbrw/laravel-module-installer": true,
             "oomphinc/composer-installers-extender": true,
             "symfony/flex": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }
 }

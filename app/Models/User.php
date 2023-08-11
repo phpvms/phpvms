@@ -13,6 +13,9 @@ use Laratrust\Contracts\LaratrustUser;
 use Laratrust\Traits\HasRolesAndPermissions;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+
 /**
  * @property int              id
  * @property int              pilot_id
@@ -55,7 +58,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Illuminate\Notifications\Notifiable
  * @mixin \Laratrust\Traits\HasRolesAndPermissions
  */
-class User extends Authenticatable implements LaratrustUser
+class User extends Authenticatable implements LaratrustUser, FilamentUser
 {
     use HasFactory;
     use HasRelationships;
@@ -324,5 +327,10 @@ class User extends Authenticatable implements LaratrustUser
             Subfleet::class,
             ['typerating_user', Typerating::class, 'typerating_subfleet']
         );
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
     }
 }
