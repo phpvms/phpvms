@@ -41,7 +41,10 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('ident')->label('ID')->searchable(),
+                TextColumn::make('ident')->label('ID')->searchable(query: function (Builder $query, int $search): Builder {
+                    return $query
+                        ->where('pilot_id', "{$search}");
+                }),
                 TextColumn::make('callsign')->label('Callsign')->searchable(),
                 TextColumn::make('name')->label('Name')->searchable(),
                 TextColumn::make('email')->label('Email')->searchable(),
