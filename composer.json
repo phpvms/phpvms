@@ -77,7 +77,7 @@
         "staudenmeir/belongs-to-through": "^v2.13.0",
         "staudenmeir/eloquent-has-many-deep": "1.18.0",
         "spatie/laravel-ignition": "^2.0",
-        "filament/filament": "3.0-stable"
+        "filament/filament": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
