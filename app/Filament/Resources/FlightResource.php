@@ -42,7 +42,7 @@ class FlightResource extends Resource
                 TextColumn::make('dpt_time')->label('Dpt Time'),
                 TextColumn::make('arr_time')->label('Arr Time'),
                 TextColumn::make('notes')->label('Notes'),
-                TextColumn::make('active')->label('Active')->badge()->color(fn ($record) => $record->active ? 'success' : 'danger')->formatStateUsing(fn (bool $state): string => $state ? 'Active' : 'Inactive'),
+                IconColumn::make('active')->label('Active')->color(fn ($record) => $record->active ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
                 IconColumn::make('visible')->label('Visible')->color(fn ($record) => $record->visible ? 'success' : 'danger')->icon(fn ($record) => $record->visible ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
             ])
             ->filters([
