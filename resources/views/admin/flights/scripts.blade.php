@@ -2,6 +2,7 @@
   <script>
 
     const setEditable = () => {
+      @if($flight)
       const api_key = $('meta[name="api-key"]').attr('content');
       const csrf_token = $('meta[name="csrf-token"]').attr('content');
 
@@ -27,9 +28,11 @@
           }
         }
       });
+      @endif
     };
 
     const setFieldsEditable = () => {
+      @if($flight)
       const api_key = $('meta[name="api-key"]').attr('content');
       const csrf_token = $('meta[name="csrf-token"]').attr('content');
 
@@ -54,6 +57,7 @@
           }
         }
       });
+      @endif
     };
 
     $(document).ready(function () {
@@ -117,4 +121,6 @@
       });
     });
   </script>
+
+  @include('admin.scripts.airport_search')
 @endsection

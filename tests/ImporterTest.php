@@ -14,6 +14,7 @@ use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
+use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Services\ExportService;
 use App\Services\FareService;
@@ -693,6 +694,8 @@ class ImporterTest extends TestCase
     {
         $fare_economy = Fare::factory()->create(['code' => 'Y', 'capacity' => 150]);
         $fare_business = Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
+        $rank_cpt = Rank::factory()->create(['id' => 1, 'name' => 'cpt']);
+        $rank_fo = Rank::factory()->create(['id' => 2, 'name' => 'fo']);
         $airline = Airline::factory()->create(['icao' => 'VMS']);
 
         $file_path = base_path('tests/data/subfleets.csv');
@@ -731,6 +734,22 @@ class ImporterTest extends TestCase
         $this->assertEquals('500%', $busi->pivot->price);
         $this->assertEquals(100, $busi->pivot->capacity);
         $this->assertEquals(null, $busi->pivot->cost);
+
+        // get the ranks and check the pivot tables and the main tables
+        $ranks = $subfleet->ranks()->get();
+        $cpt = $ranks->where('name', 'cpt')->first();
+        $this->assertEquals(null, $cpt->pivot->acars_pay);
+        $this->assertEquals(null, $cpt->pivot->manual_pay);
+
+        $this->assertEquals($rank_cpt->acars_pay, $cpt->acars_pay);
+        $this->assertEquals($rank_cpt->manual_pay, $cpt->manual_pay);
+
+        $fo = $ranks->where('name', 'fo')->first();
+        $this->assertEquals(200, $fo->pivot->acars_pay);
+        $this->assertEquals(100, $fo->pivot->manual_pay);
+
+        $this->assertEquals($rank_fo->acars_pay, $fo->acars_pay);
+        $this->assertEquals($rank_fo->manual_pay, $fo->manual_pay);
     }
 
     public function testAirportSpecialCharsImporter(): void

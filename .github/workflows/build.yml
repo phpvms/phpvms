@@ -2,7 +2,7 @@ name: 'Build'
 on: ['push', 'pull_request', 'workflow_dispatch', 'release']
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.repository == 'nabeelio/phpvms'
     strategy:
       fail-fast: true
@@ -72,7 +72,7 @@ jobs:
         sleep 15
         # Downgrade composer version to 1.x
         composer install --dev --no-interaction --verbose
-        cp .github/scripts/env.php env.php
+        cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
         php artisan database:create --reset
         php artisan migrate:refresh --seed
@@ -88,7 +88,7 @@ jobs:
   artifacts:
     name: 'Create dev build'
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Checkout
@@ -150,7 +150,7 @@ jobs:
   release:
     name: 'Create Release'
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout

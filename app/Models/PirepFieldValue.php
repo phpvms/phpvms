@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Models\Enums\PirepFieldSource;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string pirep_id
@@ -64,9 +65,9 @@ class PirepFieldValue extends Model
     }
 
     /**
-     * Foreign Keys
+     * Relationships
      */
-    public function pirep()
+    public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -53,11 +54,10 @@ class Fare extends Model
     ];
 
     /**
-     * any foreign keys
+     * Relationships
      */
-    public function subfleets()
+    public function subfleets(): BelongsToMany
     {
-        return $this->belongsToMany(Subfleet::class, 'subfleet_fare')
-            ->withPivot('price', 'cost', 'capacity');
+        return $this->belongsToMany(Subfleet::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity');
     }
 }

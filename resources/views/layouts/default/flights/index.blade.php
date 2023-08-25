@@ -15,9 +15,12 @@
   </div>
   <div class="row">
     <div class="col-12 text-center">
-      {{ $flights->appends(\Illuminate\Support\Facades\Request::except('page'))->links('pagination.default') }}
+      {{ $flights->withQueryString()->links('pagination.default') }}
     </div>
   </div>
+  @if (setting('bids.block_aircraft', false))
+    @include('flights.bids_aircraft')
+  @endif
 @endsection
 
 @include('flights.scripts')

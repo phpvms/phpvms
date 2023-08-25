@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateRankRequest;
 use App\Models\Rank;
 use App\Repositories\RankRepository;
 use App\Repositories\SubfleetRepository;
+use App\Repositories\UserRepository;
 use App\Services\FleetService;
 use Cache;
 use Illuminate\Http\RedirectResponse;
@@ -24,11 +25,13 @@ class RankController extends Controller
      * @param FleetService       $fleetSvc
      * @param RankRepository     $rankRepo
      * @param SubfleetRepository $subfleetRepo
+     * @param UserRepository     $userRepo
      */
     public function __construct(
         private readonly FleetService $fleetSvc,
         private readonly RankRepository $rankRepo,
-        private readonly SubfleetRepository $subfleetRepo
+        private readonly SubfleetRepository $subfleetRepo,
+        private readonly UserRepository $userRepo
     ) {
     }
 
@@ -186,6 +189,19 @@ class RankController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
+        $rank_in_use = $this->userRepo->findWhere(['rank_id' => $id])->count();
+        if ($rank_in_use > 0) {
+            Flash::error('Rank cannot be deleted since it\'s already assigned to one or more pilots!');
+
+            return redirect(route('admin.ranks.index'));
+        }
+
+        if ($this->rankRepo->count() === 1) {
+            Flash::error('Rank cannot be deleted since it\'s the only remaining rank in your database!');
+
+            return redirect(route('admin.ranks.index'));
+        }
+
         $rank = $this->rankRepo->findWithoutFail($id);
 
         if (empty($rank)) {

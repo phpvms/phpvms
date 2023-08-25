@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string    name
@@ -34,14 +35,14 @@ class UserFieldValue extends Model
     }
 
     /**
-     * Foreign Keys
+     * Relationships
      */
-    public function field()
+    public function field(): BelongsTo
     {
         return $this->belongsTo(UserField::class, 'user_field_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

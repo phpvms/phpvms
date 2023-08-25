@@ -56,6 +56,7 @@ class DevInstall extends Command
      */
     protected function rewriteConfigs()
     {
+        /** @var ConfigService $cfgSvc */
         $cfgSvc = app(ConfigService::class);
 
         $this->info('Removing the old config files');
@@ -66,7 +67,7 @@ class DevInstall extends Command
             unlink($config_file);
         }
 
-        $env_file = base_path('env.php');
+        $env_file = base_path('.env');
         if (file_exists($env_file)) {
             unlink($env_file);
         }

@@ -12,3 +12,7 @@
     </div>
   </div>
 @endsection
+
+@section('scripts')
+@include('scripts.airport_search')
+@endsection

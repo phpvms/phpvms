@@ -37,7 +37,7 @@
 
           <label for="home_airport" class="control-label">@lang('airports.home')</label>
           <div class="input-group form-group-no-border {{ $errors->has('home_airport') ? 'has-danger' : '' }}">
-            {{ Form::select('home_airport_id', $airports, null , ['class' => 'form-control select2']) }}
+            {{ Form::select('home_airport_id', $airports, null , ['class' => 'form-control airport_search '.($hubs_only?'hubs_only':'')]) }}
           </div>
           @if ($errors->has('home_airport_id'))
             <p class="text-danger">{{ $errors->first('home_airport_id') }}</p>
@@ -162,12 +162,11 @@
   <script>
     $('#toc_accepted').click(function () {
       if ($(this).is(':checked')) {
-        console.log('toc accepted');
         $('#register_button').removeAttr('disabled');
       } else {
-        console.log('toc not accepted');
         $('#register_button').attr('disabled', 'true');
       }
     });
   </script>
+@include('scripts.airport_search')
 @endsection

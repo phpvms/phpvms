@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Kyslik\ColumnSortable\Sortable;
 
 /**
  * The Award model
@@ -21,6 +22,7 @@ class Award extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use Sortable;
 
     public $table = 'awards';
 
@@ -40,6 +42,12 @@ class Award extends Model
         'ref_model'        => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
+    ];
+
+    public $sortable = [
+        'id',
+        'name',
+        'description',
     ];
 
     /**

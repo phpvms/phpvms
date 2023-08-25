@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
+use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Fare;
 use App\Models\Flight;
@@ -247,11 +249,53 @@ class BidTest extends TestCase
 
         $body = $req->json()['data'];
         $this->assertCount(0, $body);
+        $this->settingsRepo->store('bids.allow_multiple_bids', true);
 
         $req = $this->get('/api/users/'.$user->id.'/bids', $headers);
         $req->assertStatus(200);
 
         $body = $req->json()['data'];
         $this->assertCount(0, $body);
+    }
+
+    /**
+     * Create a bid with an aircraft and check the aircraft booking
+     */
+    public function testBidWithAircraft()
+    {
+        $this->settingsRepo->store('bids.allow_multiple_bids', true);
+        $this->settingsRepo->store('bids.block_aircraft', true);
+
+        $user = User::factory()->create();
+        $headers = $this->headers($user);
+
+        $subfleet = $this->createSubfleetWithAircraft(1);
+        $aircraft = $subfleet['aircraft']->first();
+
+        $flight = $this->addFlight($user, $subfleet['subfleet']->id);
+
+        $bid = $this->bidSvc->addBid($flight, $user, $aircraft);
+        $this->assertEquals($user->id, $bid->user_id);
+        $this->assertEquals($flight->id, $bid->flight_id);
+        $this->assertEquals($aircraft->id, $bid->aircraft_id);
+        $this->assertTrue($flight->has_bid);
+
+        // Expect aircraft to have a bid
+        $this->assertEquals($aircraft->bid->count(), 1);
+
+        // Now add another bid on another flight with the same aircraft, should throw an exception
+        $flight2 = $this->addFlight($user, $subfleet['subfleet']->id);
+
+        $this->expectException(BidExistsForAircraft::class);
+        $bid2 = $this->bidSvc->addBid($flight2, $user, $aircraft);
+
+        // Remove the first one and try again
+        $this->bidSvc->removeBid($flight, $user);
+
+        $bid2 = $this->bidSvc->addBid($flight2, $user, $aircraft);
+        $this->assertEquals($user->id, $bid2->user_id);
+        $this->assertEquals($flight2->id, $bid2->flight_id);
+        $this->assertEquals($aircraft->id, $bid2->aircraft_id);
+        $this->assertTrue($flight2->has_bid);
     }
 }

@@ -193,9 +193,8 @@ class PirepController extends Controller
             'fares',
         ];
 
-        $this->pirepRepo->with($with)
-            ->pushCriteria(new WhereCriteria($request, $where));
-        $pireps = $this->pirepRepo->orderBy('created_at', 'desc')->paginate();
+        $this->pirepRepo->with($with)->pushCriteria(new WhereCriteria($request, $where));
+        $pireps = $this->pirepRepo->sortable(['submitted_at' => 'desc'])->paginate();
 
         return view('pireps.index', [
             'user'   => $user,
@@ -328,7 +327,7 @@ class PirepController extends Controller
             'read_only'     => false,
             'airline_list'  => $this->airlineRepo->selectBoxList(true),
             'aircraft_list' => $aircraft_list,
-            'airport_list'  => $this->airportRepo->selectBoxList(true),
+            'airport_list'  => [], // $this->airportRepo->selectBoxList(true),
             'pirep_fields'  => $this->pirepFieldRepo->all(),
             'field_values'  => [],
             'fare_values'   => $fare_values,
@@ -483,7 +482,10 @@ class PirepController extends Controller
     public function edit(string $id): RedirectResponse|View
     {
         /** @var Pirep $pirep */
-        $pirep = $this->pirepRepo->findWithoutFail($id);
+        $pirep = $this->pirepRepo
+            ->with(['dpt_airport', 'arr_airport', 'alt_airport'])
+            ->findWithoutFail($id);
+
         if (empty($pirep)) {
             Flash::error('Pirep not found');
 
@@ -526,12 +528,22 @@ class PirepController extends Controller
             $pirep->{$field_name} = $fare->count;
         }
 
+        $airports = [
+            ['' => ''],
+            [$pirep->arr_airport->id => $pirep->arr_airport->full_name],
+            [$pirep->dpt_airport->id => $pirep->dpt_airport->full_name],
+        ];
+
+        if ($pirep->alt_airport) {
+            $airports[] = [$pirep->alt_airport->id => $pirep->alt_airport->full_name];
+        }
+
         return view('pireps.edit', [
             'pirep'         => $pirep,
             'aircraft'      => $pirep->aircraft,
             'aircraft_list' => $this->aircraftList(true),
             'airline_list'  => $this->airlineRepo->selectBoxList(),
-            'airport_list'  => $this->airportRepo->selectBoxList(),
+            'airport_list'  => $airports,
             'pirep_fields'  => $this->pirepFieldRepo->all(),
             'simbrief_id'   => $simbrief_id,
         ]);

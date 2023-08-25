@@ -9,18 +9,20 @@ use Illuminate\Support\Facades\Schema;
 return new class() extends Migration {
     public function up()
     {
-        Schema::table('pirep_fares', function (Blueprint $table) {
-            $table->unsignedBigInteger('fare_id')->nullable()->change();
-            $table->string('code')->nullable();
-            $table->string('name')->nullable();
-            $table->unsignedDecimal('price')->nullable()->default(0.00);
-            $table->unsignedDecimal('cost')->nullable()->default(0.00);
-            $table->unsignedInteger('capacity')->nullable()->default(0);
-            $table->unsignedTinyInteger('type')
-                ->default(FareType::PASSENGER)
-                ->nullable()
-                ->after('capacity');
-        });
+        if (!Schema::hasColumns('pirep_fares', ['code', 'name'])) {
+            Schema::table('pirep_fares', function (Blueprint $table) {
+                $table->unsignedBigInteger('fare_id')->nullable()->change();
+                $table->string('code')->nullable();
+                $table->string('name')->nullable();
+                $table->unsignedDecimal('price')->nullable()->default(0.00);
+                $table->unsignedDecimal('cost')->nullable()->default(0.00);
+                $table->unsignedInteger('capacity')->nullable()->default(0);
+                $table->unsignedTinyInteger('type')
+                    ->default(FareType::PASSENGER)
+                    ->nullable()
+                    ->after('capacity');
+            });
+        }
 
         /**
          * Update all of the existing PIREP fares to include the existing fare info

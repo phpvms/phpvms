@@ -80,7 +80,6 @@ class UserController extends Controller
     public function create(): View
     {
         $airlines = $this->airlineRepo->selectBoxList();
-        $airports = $this->airportRepo->selectBoxList(false);
         $countries = collect((new ISO3166())->all())
             ->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => $item['name']]);
         $roles = $this->roleRepo->selectBoxList(false, true);
@@ -92,7 +91,7 @@ class UserController extends Controller
             'timezones' => Timezonelist::toArray(),
             'country'   => new ISO3166(),
             'countries' => $countries,
-            'airports'  => $airports,
+            'airports'  => [],
             'ranks'     => Rank::all()->pluck('name', 'id'),
             'roles'     => $roles,
         ]);
@@ -141,8 +140,9 @@ class UserController extends Controller
      */
     public function edit(int $id): View
     {
+        /** @var User $user */
         $user = $this->userRepo
-            ->with(['awards', 'fields', 'rank', 'typeratings'])
+            ->with(['awards', 'fields', 'rank', 'typeratings', 'home_airport', 'location'])
             ->findWithoutFail($id);
 
         if (empty($user)) {
@@ -158,9 +158,17 @@ class UserController extends Controller
             ->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => $item['name']]);
 
         $airlines = $this->airlineRepo->selectBoxList();
-        $airports = $this->airportRepo->selectBoxList(false);
         $roles = $this->roleRepo->selectBoxList(false, true);
         $avail_ratings = $this->getAvailTypeRatings($user);
+
+        $airports = ['' => ''];
+        if ($user->home_airport) {
+            $airports[$user->home_airport->id] = $user->home_airport->description;
+        }
+
+        if ($user->location) {
+            $airports[$user->location->id] = $user->location->description;
+        }
 
         return view('admin.users.edit', [
             'user'          => $user,

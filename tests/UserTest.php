@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Events\ProfileUpdated;
 use App\Exceptions\PilotIdNotFound;
 use App\Exceptions\UserPilotIdExists;
 use App\Models\Airline;
@@ -13,6 +14,7 @@ use App\Repositories\SettingRepository;
 use App\Services\FareService;
 use App\Services\UserService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
 class UserTest extends TestCase
@@ -446,5 +448,21 @@ class UserTest extends TestCase
 
         $users_on_leave = $this->userSvc->findUsersOnLeave();
         $this->assertCount(0, $users_on_leave);
+    }
+
+    public function testEventCalledWhenProfileUpdated()
+    {
+        Event::fake();
+        $user = User::factory()->create();
+
+        $body = [
+            'name'       => 'Test User',
+            'email'      => $user->email,
+            'airline_id' => 1,
+        ];
+
+        $resp = $this->actingAs($user)->put('/profile/'.$user->id, $body);
+
+        Event::assertDispatched(ProfileUpdated::class);
     }
 }

@@ -17,9 +17,13 @@ class application extends Illuminate\Foundation\Application
 
     public function __construct(string $basePath = null)
     {
-        parent::__construct(dirname(__DIR__).'/');
+        $rootPath = dirname(__DIR__).'/';
+        parent::__construct($rootPath);
 
-        $this->loadEnvironmentFrom('env.php');
+        if (is_file($rootPath.'/env.php')) {
+            exit('Please rename env.php to .env');
+        }
+
         $this->useDatabasePath($this->basePath.'/app/Database');
         $this->useStoragePath($this->basePath.'/storage');
     }

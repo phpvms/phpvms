@@ -74,8 +74,8 @@ class AircraftController extends Controller
     public function create(Request $request): View
     {
         return view('admin.aircraft.create', [
-            'airports'    => $this->airportRepo->selectBoxList(),
-            'hubs'        => $this->airportRepo->selectBoxList(true, true),
+            'airports'    => [],
+            'hubs'        => [],
             'subfleets'   => Subfleet::all()->pluck('name', 'id'),
             'statuses'    => AircraftStatus::select(false),
             'subfleet_id' => $request->query('subfleet'),
@@ -130,17 +130,29 @@ class AircraftController extends Controller
      */
     public function edit(int $id): View|RedirectResponse
     {
-        $aircraft = $this->aircraftRepo->findWithoutFail($id);
+        /** @var Aircraft $aircraft */
+        $aircraft = $this->aircraftRepo
+            ->with(['airport', 'hub'])
+            ->findWithoutFail($id);
 
         if (empty($aircraft)) {
             Flash::error('Aircraft not found');
             return redirect(route('admin.aircraft.index'));
         }
 
+        $airports = ['' => ''];
+        if ($aircraft->airport) {
+            $airports[$aircraft->airport->id] = $aircraft->airport->description;
+        }
+
+        if ($aircraft->hub) {
+            $airports[$aircraft->hub->id] = $aircraft->hub->description;
+        }
+
         return view('admin.aircraft.edit', [
             'aircraft'  => $aircraft,
-            'airports'  => $this->airportRepo->selectBoxList(),
-            'hubs'      => $this->airportRepo->selectBoxList(true, true),
+            'airports'  => $airports,
+            'hubs'      => $airports,
             'subfleets' => Subfleet::all()->pluck('name', 'id'),
             'statuses'  => AircraftStatus::select(false),
         ]);

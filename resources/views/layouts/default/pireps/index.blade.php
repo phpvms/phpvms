@@ -16,7 +16,7 @@
   </div>
   <div class="row">
     <div class="col-12 text-center">
-      {{ $pireps->links('pagination.default') }}
+      {{ $pireps->withQueryString()->links('pagination.default') }}
     </div>
   </div>
 @endsection

@@ -173,6 +173,7 @@ class PirepController extends Controller
     {
         $with = [
             'acars',
+            'aircraft',
             'arr_airport',
             'dpt_airport',
             'comments',

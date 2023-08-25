@@ -11,6 +11,9 @@ use App\Models\Casts\MoneyCast;
 use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Holds various journals, depending on the morphed_type and morphed_id columns
@@ -46,29 +49,20 @@ class Journal extends Model
     ];
 
     /**
-     * Get all of the morphed models.
+     * Relationships
      */
-    public function morphed()
+    public function morphed(): MorphTo
     {
+        // Get all of the morphed models
         return $this->morphTo();
     }
 
-    /**
-     * Relationship
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function ledger()
+    public function ledger(): BelongsTo
     {
         return $this->belongsTo(Ledger::class);
     }
 
-    /**
-     * Relationship
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function transactions()
+    public function transactions(): HasMany
     {
         return $this->hasMany(JournalTransaction::class);
     }

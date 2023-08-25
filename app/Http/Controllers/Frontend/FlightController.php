@@ -147,8 +147,7 @@ class FlightController extends Controller
             ->when($filter_by_user, function ($query) use ($allowed_flights) {
                 return $query->whereIn('id', $allowed_flights);
             })
-            ->orderBy('flight_number')
-            ->orderBy('route_leg')
+            ->sortable('flight_number', 'route_code', 'route_leg')
             ->paginate();
 
         $saved_flights = [];
@@ -165,7 +164,7 @@ class FlightController extends Controller
         return view('flights.index', [
             'user'          => $user,
             'airlines'      => $this->airlineRepo->selectBoxList(true),
-            'airports'      => $this->airportRepo->selectBoxList(true),
+            'airports'      => [],
             'flights'       => $flights,
             'saved'         => $saved_flights,
             'subfleets'     => $this->subfleetRepo->selectBoxList(true),
@@ -210,7 +209,7 @@ class FlightController extends Controller
         return view('flights.bids', [
             'user'          => $user,
             'airlines'      => $this->airlineRepo->selectBoxList(true),
-            'airports'      => $this->airportRepo->selectBoxList(true),
+            'airports'      => [],
             'flights'       => $flights,
             'saved'         => $saved_flights,
             'subfleets'     => $this->subfleetRepo->selectBoxList(true),

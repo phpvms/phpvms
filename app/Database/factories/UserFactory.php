@@ -36,19 +36,20 @@ class UserFactory extends Factory
         }
 
         return [
-            'id'             => null,
-            'pilot_id'       => null,
-            'name'           => $this->faker->name,
-            'email'          => $this->faker->safeEmail,
-            'password'       => self::$password,
-            'api_key'        => $this->faker->sha1,
-            'airline_id'     => fn () => Airline::factory()->create()->id,
-            'rank_id'        => 1,
-            'flights'        => $this->faker->numberBetween(0, 1000),
-            'flight_time'    => $this->faker->numberBetween(0, 10000),
-            'transfer_time'  => $this->faker->numberBetween(0, 10000),
-            'state'          => UserState::ACTIVE,
-            'remember_token' => $this->faker->unique()->text(5),
+            'id'                => null,
+            'pilot_id'          => null,
+            'name'              => $this->faker->name,
+            'email'             => $this->faker->safeEmail,
+            'password'          => self::$password,
+            'api_key'           => $this->faker->sha1,
+            'airline_id'        => fn () => Airline::factory()->create()->id,
+            'rank_id'           => 1,
+            'flights'           => $this->faker->numberBetween(0, 1000),
+            'flight_time'       => $this->faker->numberBetween(0, 10000),
+            'transfer_time'     => $this->faker->numberBetween(0, 10000),
+            'state'             => UserState::ACTIVE,
+            'remember_token'    => $this->faker->unique()->text(5),
+            'email_verified_at' => now(),
         ];
     }
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12bfd5748dd1dcbdf4da8bf027f7136d",
+    "content-hash": "c46a7516ba6e3985ba51309a141134b7",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -3358,16 +3358,16 @@
         },
         {
             "name": "igaster/laravel-theme",
-            "version": "v2.0.19",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/igaster/laravel-theme.git",
-                "reference": "94fed84d84ca1b27959d6189bb7872110c80d299"
+                "url": "https://github.com/arthurpar06/laravel-theme.git",
+                "reference": "145d7854051203bec3cf4719fb70c8c7b1c140b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/igaster/laravel-theme/zipball/94fed84d84ca1b27959d6189bb7872110c80d299",
-                "reference": "94fed84d84ca1b27959d6189bb7872110c80d299",
+                "url": "https://api.github.com/repos/arthurpar06/laravel-theme/zipball/145d7854051203bec3cf4719fb70c8c7b1c140b6",
+                "reference": "145d7854051203bec3cf4719fb70c8c7b1c140b6",
                 "shasum": ""
             },
             "require": {
@@ -3376,6 +3376,7 @@
             "suggest": {
                 "orchestra/asset": "Use '@css' and '@js' in Blade files"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -3393,7 +3394,6 @@
                     "Igaster\\LaravelTheme\\Tests\\": "tests/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -3414,10 +3414,9 @@
                 "views"
             ],
             "support": {
-                "issues": "https://github.com/igaster/laravel-theme/issues",
-                "source": "https://github.com/igaster/laravel-theme/tree/v2.0.19"
+                "source": "https://github.com/arthurpar06/laravel-theme/tree/1.0.0"
             },
-            "time": "2023-05-03T17:50:00+00:00"
+            "time": "2023-08-18T15:57:19+00:00"
         },
         {
             "name": "intervention/image",
@@ -3595,6 +3594,54 @@
                 }
             ],
             "time": "2023-02-25T16:31:15+00:00"
+        },
+        {
+            "name": "jlorente/laravel-data-migrations",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jlorente/laravel-data-migrations.git",
+                "reference": "58368913f305419540a7dc720a8795f822bc8012"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jlorente/laravel-data-migrations/zipball/58368913f305419540a7dc720a8795f822bc8012",
+                "reference": "58368913f305419540a7dc720a8795f822bc8012",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": ">=8.0",
+                "php": ">=7.4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Jlorente\\DataMigrations\\DataMigrationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Jlorente\\DataMigrations\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jose Lorente",
+                    "email": "jose.lorente.martin@gmail.com"
+                }
+            ],
+            "description": "An extension to allow you to separate data migrations from structure migrations",
+            "support": {
+                "issues": "https://github.com/jlorente/laravel-data-migrations/issues",
+                "source": "https://github.com/jlorente/laravel-data-migrations/tree/2.0.1"
+            },
+            "time": "2022-09-07T12:47:06+00:00"
         },
         {
             "name": "jmikola/geojson",
@@ -3938,6 +3985,67 @@
                 "source": "https://github.com/kkszymanowski/traitor"
             },
             "time": "2022-03-02T17:32:19+00:00"
+        },
+        {
+            "name": "kyslik/column-sortable",
+            "version": "6.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Kyslik/column-sortable.git",
+                "reference": "80a7f053cf8e457be06d5fe59371f1b2b5cd8d03"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Kyslik/column-sortable/zipball/80a7f053cf8e457be06d5fe59371f1b2b5cd8d03",
+                "reference": "80a7f053cf8e457be06d5fe59371f1b2b5cd8d03",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "5.8.*|^6.0|^7.0|^8.0|^9.0|^10.0",
+                "illuminate/support": "5.8.*|^6.0|^7.0|^8.0|^9.0|^10.0",
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^5.0|^7.0|^8.0",
+                "phpunit/phpunit": "^8.5|^9.5.10"
+            },
+            "type": "package",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kyslik\\ColumnSortable\\ColumnSortableServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kyslik\\ColumnSortable\\": "src/ColumnSortable/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Martin Kiesel",
+                    "email": "martin.kiesel@gmail.com",
+                    "role": "Developer and maintainer"
+                }
+            ],
+            "description": "Package for handling column sorting in Laravel 6.x",
+            "keywords": [
+                "column",
+                "laravel",
+                "sort",
+                "sortable",
+                "sorting"
+            ],
+            "support": {
+                "issues": "https://github.com/Kyslik/column-sortable/issues",
+                "source": "https://github.com/Kyslik/column-sortable/tree/6.5.0"
+            },
+            "time": "2023-02-17T09:46:34+00:00"
         },
         {
             "name": "laracasts/flash",
@@ -12832,16 +12940,16 @@
         },
         {
             "name": "laravel/sail",
-            "version": "v1.23.2",
+            "version": "v1.23.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sail.git",
-                "reference": "f8694d6af5729be72ae96b91e344c5676c89114a"
+                "reference": "cfa1ad579349110a87f9412eb65ecba94d682ac2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sail/zipball/f8694d6af5729be72ae96b91e344c5676c89114a",
-                "reference": "f8694d6af5729be72ae96b91e344c5676c89114a",
+                "url": "https://api.github.com/repos/laravel/sail/zipball/cfa1ad579349110a87f9412eb65ecba94d682ac2",
+                "reference": "cfa1ad579349110a87f9412eb65ecba94d682ac2",
                 "shasum": ""
             },
             "require": {
@@ -14850,7 +14958,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "igaster/laravel-theme": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

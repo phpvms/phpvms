@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Enums\FareType;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int       id
@@ -52,12 +53,12 @@ class PirepFare extends Model
     /**
      * Relationships
      */
-    public function fare()
+    public function fare(): BelongsTo
     {
         return $this->belongsTo(Fare::class, 'fare_id');
     }
 
-    public function pirep()
+    public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }

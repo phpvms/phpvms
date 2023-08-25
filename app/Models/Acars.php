@@ -7,6 +7,7 @@ use App\Models\Casts\DistanceCast;
 use App\Models\Casts\FuelCast;
 use App\Models\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string id
@@ -77,9 +78,9 @@ class Acars extends Model
     ];
 
     /**
-     * FKs
+     * Relationships
      */
-    public function pirep()
+    public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }

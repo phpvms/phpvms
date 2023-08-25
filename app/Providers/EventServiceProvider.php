@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Events\Expenses;
 use App\Events\Fares;
 use App\Events\PirepFiled;
+use App\Events\ProfileUpdated;
 use App\Events\UserStatsChanged;
 use App\Listeners\AwardHandler;
 use App\Listeners\BidEventHandler;
@@ -47,6 +48,8 @@ class EventServiceProvider extends ServiceProvider
         MessageLogged::class => [
             MessageLoggedListener::class,
         ],
+
+        ProfileUpdated::class => [],
     ];
 
     protected $subscribe = [

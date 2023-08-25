@@ -59,16 +59,16 @@ class RegisterController extends Controller
      */
     public function showRegistrationForm(): View
     {
-        $airports = $this->airportRepo->selectBoxList(false, setting('pilots.home_hubs_only'));
         $airlines = $this->airlineRepo->selectBoxList();
         $userFields = UserField::where(['show_on_registration' => true, 'active' => true])->get();
 
         return view('auth.register', [
-            'airports'   => $airports,
+            'airports'   => [],
             'airlines'   => $airlines,
             'countries'  => Countries::getSelectList(),
             'timezones'  => Timezonelist::toArray(),
             'userFields' => $userFields,
+            'hubs_only'  => setting('pilots.home_hubs_only'),
             'captcha'    => [
                 'enabled'    => setting('captcha.enabled', env('CAPTCHA_ENABLED', false)),
                 'site_key'   => setting('captcha.site_key', env('CAPTCHA_SITE_KEY')),

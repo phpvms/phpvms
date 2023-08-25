@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Models\Airport;
+use App\Models\User;
 
 class AirportTest extends TestCase
 {
@@ -23,5 +24,59 @@ class AirportTest extends TestCase
         $airport = new Airport($airportResponse);
         $this->assertEquals($airportResponse['icao'], $airport->icao);
         $this->assertEquals($airportResponse['tz'], $airport->timezone);
+    }
+
+    public function testAirportSearch()
+    {
+        foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
+            Airport::factory()->create(['id' => $a, 'icao' => $a]);
+        }
+
+        $user = User::factory()->create();
+
+        $uri = '/api/airports/search?search=icao:e';
+        $res = $this->get($uri, [], $user);
+
+        $airports = $res->json('data');
+        $this->assertCount(1, $airports);
+        $this->assertEquals('EGLL', $airports[0]['icao']);
+
+        $uri = '/api/airports/search?search=KJ';
+        $res = $this->get($uri, [], $user);
+
+        $airports = $res->json('data');
+        $this->assertCount(1, $airports);
+        $this->assertEquals('KJFK', $airports[0]['icao']);
+    }
+
+    public function testAirportSearchMultiLetter()
+    {
+        foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
+            Airport::factory()->create(['id' => $a, 'icao' => $a]);
+        }
+
+        $user = User::factory()->create();
+
+        $uri = '/api/airports/search?search=Kj';
+        $res = $this->get($uri, [], $user);
+
+        $airports = $res->json('data');
+        $this->assertCount(1, $airports);
+        $this->assertEquals('KJFK', $airports[0]['icao']);
+    }
+
+    public function testAirportSearchMissing()
+    {
+        foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
+            Airport::factory()->create(['id' => $a, 'icao' => $a]);
+        }
+
+        $user = User::factory()->create();
+
+        $uri = '/api/airports/search?search=icao:X';
+        $res = $this->get($uri, [], $user);
+
+        $airports = $res->json('data');
+        $this->assertCount(0, $airports);
     }
 }

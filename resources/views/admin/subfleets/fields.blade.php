@@ -19,8 +19,8 @@
       </div>
 
       <div class="form-group col-sm-3">
-        {{ Form::label('hub_id', 'Main Hub:') }}
-        {{ Form::select('hub_id', $hubs, null , ['class' => 'form-control select2', 'placeholder' => '']) }}
+        {{ Form::label('hub_id', 'Home Base:') }}
+        {{ Form::select('hub_id', $airports, null , ['class' => 'form-control airport_search', 'placeholder' => '']) }}
         <p class="text-danger">{{ $errors->first('hub_id') }}</p>
       </div>
 
@@ -65,13 +65,12 @@
   </div>
 
   <div class="form-group col-sm-3">
-    {{ Form::label('ground_handling_multiplier', 'Ground Handling Multiplier:') }}
+    {{ Form::label('ground_handling_multiplier', 'Expense Multiplier:') }}
     {{ Form::text('ground_handling_multiplier', null, ['class' => 'form-control']) }}
     <p class="text-danger">{{ $errors->first('ground_handling_multiplier') }}</p>
 
     @component('admin.components.info')
-      This is the multiplier of the airport ground-handling cost to charge for
-      aircraft in this subfleet, as a percentage. Defaults to 100.
+      This is the multiplier for all expenses (inc GH costs) being applied to aircraft in this subfleet, as a percentage. Defaults to 100.
     @endcomponent
   </div>
 </div>
