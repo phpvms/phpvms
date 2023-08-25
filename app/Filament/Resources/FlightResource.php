@@ -7,6 +7,7 @@ use App\Models\Flight;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -42,7 +43,7 @@ class FlightResource extends Resource
                 TextColumn::make('arr_time')->label('Arr Time'),
                 TextColumn::make('notes')->label('Notes'),
                 TextColumn::make('active')->label('Active')->badge()->color(fn ($record) => $record->active ? 'success' : 'danger')->formatStateUsing(fn (bool $state): string => $state ? 'Active' : 'Inactive'),
-                TextColumn::make('visible')->label('Visible')->color(fn ($record) => $record->visible ? 'success' : 'danger')->icon(fn ($record) => $record->visible ? 'heroicon-o-check' : 'heroicon-o-x-mark'),
+                IconColumn::make('visible')->label('Visible')->color(fn ($record) => $record->visible ? 'success' : 'danger')->icon(fn ($record) => $record->visible ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
             ])
             ->filters([
                 //
@@ -71,9 +72,9 @@ class FlightResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' =>  Pages\ListFlights::route('/'),
+            'index'  => Pages\ListFlights::route('/'),
             'create' => Pages\CreateFlight::route('/create'),
-            'edit' =>   Pages\EditFlight::route('/{record}/edit'),
+            'edit'   => Pages\EditFlight::route('/{record}/edit'),
         ];
     }
 }
