@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\FlightResource\Pages;
 
 use App\Filament\Resources\FlightResource;
-use Filament\Actions;
 use Filament\Resources\Pages\Page;
 
 class ImportFlights extends Page

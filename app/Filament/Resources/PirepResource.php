@@ -3,13 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepResource\Pages;
-use App\Filament\Resources\PirepResource\RelationManagers;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
-use App\Models\Enums\FlightType;
 use App\Models\Pirep;
-use App\Repositories\AirportRepository;
 use App\Repositories\UserRepository;
 use App\Support\Units\Time;
 use App\Services\PirepService;
@@ -25,8 +22,6 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Select;
 
 class PirepResource extends Resource
 {
@@ -135,10 +130,10 @@ class PirepResource extends Resource
                 TextColumn::make('aircraft')->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration .' - '. $record->aircraft->name),
                 TextColumn::make('source')->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
                 TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
-                    PirepState::PENDING => 'warning',
+                    PirepState::PENDING  => 'warning',
                     PirepState::ACCEPTED => 'success',
                     PirepState::REJECTED => 'danger',
-                    default => 'info',
+                    default              => 'info',
                 })->formatStateUsing(fn (int $state): string => PirepState::label($state)),
                 TextColumn::make('submitted_at')->dateTime('d-m-Y H:i')->label('File Date'),
             ])
@@ -159,7 +154,7 @@ class PirepResource extends Resource
                                 $data['filed_until'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
                             );
-                    })
+                    }),
             ])
             ->actions([
 
@@ -209,7 +204,7 @@ class PirepResource extends Resource
     {
         return [
             'index' => Pages\ListPireps::route('/'),
-            'edit' => Pages\EditPirep::route('/{record}/edit'),
+            'edit'  => Pages\EditPirep::route('/{record}/edit'),
         ];
     }
 

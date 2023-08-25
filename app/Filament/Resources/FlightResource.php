@@ -4,14 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\FlightResource\Pages;
 use App\Models\Flight;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class FlightResource extends Resource
 {
@@ -74,9 +71,9 @@ class FlightResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFlights::route('/'),
+            'index' =>  Pages\ListFlights::route('/'),
             'create' => Pages\CreateFlight::route('/create'),
-            'edit' => Pages\EditFlight::route('/{record}/edit'),
+            'edit' =>   Pages\EditFlight::route('/{record}/edit'),
         ];
     }
 }

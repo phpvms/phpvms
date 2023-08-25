@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TypeRatingResource\Pages;
-use App\Filament\Resources\TypeRatingResource\RelationManagers;
 use App\Models\Typerating;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TyperatingResource extends Resource
 {
@@ -80,9 +77,9 @@ class TyperatingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTypeRatings::route('/'),
+            'index'  => Pages\ListTypeRatings::route('/'),
             'create' => Pages\CreateTypeRating::route('/create'),
-            'edit' => Pages\EditTypeRating::route('/{record}/edit'),
+            'edit'   => Pages\EditTypeRating::route('/{record}/edit'),
         ];
     }
 }

@@ -49,99 +49,98 @@ class UserResource extends Resource
         $roleRepo = app(RoleRepository::class);
         return $form
             ->schema([
-                    Forms\Components\Group::make()
+                Forms\Components\Group::make()
+                ->schema([
+                    Forms\Components\Section::make('Basic Information')
                     ->schema([
-                                Forms\Components\Section::make('Basic Information')
-                                ->schema([
-                                    Forms\Components\TextInput::make('id')
-                                        ->required()
-                                        ->numeric()
-                                        ->label('Pilot ID'),
+                        Forms\Components\TextInput::make('id')
+                            ->required()
+                            ->numeric()
+                            ->label('Pilot ID'),
 
-                                    Forms\Components\TextInput::make('callsign'),
+                        Forms\Components\TextInput::make('callsign'),
 
-                                    Forms\Components\TextInput::make('name')
-                                        ->required()
-                                        ->string(),
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->string(),
 
-                                    Forms\Components\TextInput::make('email')
-                                        ->required()
-                                        ->email(),
+                        Forms\Components\TextInput::make('email')
+                            ->required()
+                            ->email(),
 
-                                        Forms\Components\TextInput::make('password')
-                                        ->password()
-                                        ->autocomplete('new-password')
-                                        ->columnSpanFull(),
-                                ])
-                                ->columns(2),
-                                Forms\Components\Section::make('Location Information')
-                                ->schema([
-                                    Forms\Components\Select::make('country')
-                                        ->required()
-                                        ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
-                                        ->searchable()
-                                        ->native(false),
+                            Forms\Components\TextInput::make('password')
+                            ->password()
+                            ->autocomplete('new-password')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+                    Forms\Components\Section::make('Location Information')
+                    ->schema([
+                        Forms\Components\Select::make('country')
+                            ->required()
+                            ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                            ->searchable()
+                            ->native(false),
 
-                                    Forms\Components\Select::make('timezone')
-                                        ->options(Timezonelist::toArray())
-                                        ->searchable()
-                                        ->native(false),
+                        Forms\Components\Select::make('timezone')
+                            ->options(Timezonelist::toArray())
+                            ->searchable()
+                            ->native(false),
 
-                                    Forms\Components\Select::make('home_airport_id')
-                                        ->label('Home Airport')
-                                        ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
-                                        ->searchable()
-                                        ->native(false),
+                        Forms\Components\Select::make('home_airport_id')
+                            ->label('Home Airport')
+                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
+                            ->searchable()
+                            ->native(false),
 
-                                    Forms\Components\Select::make('current_airport_id')
-                                        ->label('Current Airport')
-                                        ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
-                                        ->searchable()
-                                        ->native(false),
-                                ])
-                                ->columns(2),
-                            ])->columnSpan(['lg' => 2]),
-
-                        Forms\Components\Group::make()
+                        Forms\Components\Select::make('current_airport_id')
+                            ->label('Current Airport')
+                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
+                            ->searchable()
+                            ->native(false),
+                    ])
+                    ->columns(2),
+                        ])->columnSpan(['lg' => 2]),
+                    Forms\Components\Group::make()
+                        ->schema([
+                            Forms\Components\Section::make('User Information')
                             ->schema([
-                                Forms\Components\Section::make('User Information')
-                                ->schema([
-                                    Forms\Components\Select::make('state')
-                                        ->options(UserState::labels())
-                                        ->searchable()
-                                        ->native(false),
-
-                                    Forms\Components\Select::make('airline_id')
-                                        ->label('Airline')
-                                        ->options($airlineRepo->all()->pluck('name', 'id'))
-                                        ->searchable()
-                                        ->native(false),
-
-                                    Forms\Components\Select::make('rank_id')
-                                        ->label('Rank')
-                                        ->options($rankRepo->all()->pluck('name', 'id'))
-                                        ->searchable()
-                                        ->native(false),
-
-                                    Forms\Components\TextInput::make('transfer_time')
-                                        ->label('Transferred Hours')
-                                        ->numeric(),
-
-                                    Forms\Components\Select::make('roles')
-                                    ->label('Roles')
-                                    //->options($roleRepo->all()->pluck('name', 'id'))
-                                    ->relationship('roles', 'name')
+                                Forms\Components\Select::make('state')
+                                    ->options(UserState::labels())
                                     ->searchable()
-                                    ->native(false)
-                                    ->multiple(),
+                                    ->native(false),
 
-                                    Forms\Components\Textarea::make('notes')
-                                        ->label('Management Notes')
-                                        ->columnSpan('full'),
-                                ])
-                                ->columnSpan(['lg' => 1]),
-                            ]),
-                ])->columns(3);
+                                Forms\Components\Select::make('airline_id')
+                                    ->label('Airline')
+                                    ->options($airlineRepo->all()->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->native(false),
+
+                                Forms\Components\Select::make('rank_id')
+                                    ->label('Rank')
+                                    ->options($rankRepo->all()->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->native(false),
+
+                                Forms\Components\TextInput::make('transfer_time')
+                                    ->label('Transferred Hours')
+                                    ->numeric(),
+
+                                Forms\Components\Select::make('roles')
+                                ->label('Roles')
+                                //->options($roleRepo->all()->pluck('name', 'id'))
+                                ->relationship('roles', 'name')
+                                ->searchable()
+                                ->native(false)
+                                ->multiple(),
+
+                                Forms\Components\Textarea::make('notes')
+                                    ->label('Management Notes')
+                                    ->columnSpan('full'),
+                            ])
+                            ->columnSpan(['lg' => 1]),
+                        ]),
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -158,8 +157,8 @@ class UserResource extends Resource
                 TextColumn::make('created_at')->label('Registered On')->dateTime('d-m-Y'),
                 TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
                     UserState::PENDING => 'warning',
-                    UserState::ACTIVE => 'success',
-                    default => 'info',
+                    UserState::ACTIVE  => 'success',
+                    default            => 'info',
                 })->formatStateUsing(fn (int $state): string => UserState::label($state)),
             ])
             ->defaultSort('created_at', 'desc')
@@ -193,7 +192,7 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'edit'  => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 

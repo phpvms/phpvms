@@ -7,8 +7,6 @@ use App\Models\Enums\PirepState;
 use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Flowframe\Trend\Trend;
-use Flowframe\Trend\TrendValue;
 
 class PirepStats extends BaseWidget
 {

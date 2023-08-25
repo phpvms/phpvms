@@ -17,7 +17,6 @@ class EditPirep extends EditRecord
         ];
     }
 
-
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['distance'] = $data['distance']->toUnit('nmi');
