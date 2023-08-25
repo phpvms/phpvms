@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PirepResource\Pages;
 use App\Filament\Resources\PirepResource;
 use App\Models\Enums\PirepState;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Pages\ListRecords\Tab;
 
@@ -16,7 +17,9 @@ class ListPireps extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            Action::make('Pirep Fields')->url(fn (): string => 'pirepfields')
+        ];
     }
 
     public function getTabs(): array

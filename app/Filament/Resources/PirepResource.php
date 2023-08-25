@@ -4,9 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepResource\Pages;
 use App\Filament\Resources\PirepResource\RelationManagers;
+use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
+use App\Models\Enums\FlightType;
 use App\Models\Pirep;
+use App\Repositories\AirportRepository;
+use App\Repositories\UserRepository;
 use App\Support\Units\Time;
 use App\Services\PirepService;
 use Filament\Tables\Actions\Action;
@@ -22,12 +26,19 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Select;
 
 class PirepResource extends Resource
 {
     protected static ?string $model = Pirep::class;
+    protected static ?string $navigationGroup = 'operations';
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationLabel = 'pireps';
+
+    protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-up';
+
+    protected static ?string $recordTitleAttribute = 'ident';
 
     public static function getNavigationBadge(): ?string
     {
@@ -38,8 +49,78 @@ class PirepResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $userRepo = app(UserRepository::class);
         return $form
-            ->schema([]);
+            ->schema([
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make('Pirep sender')->schema([
+                            Forms\Components\Placeholder::make('user'),
+                        ]),
+                        Forms\Components\Section::make('Basic Information')
+                            ->schema([
+                                Forms\Components\TextInput::make('ident')
+                                    ->required()
+                                    ->label('Flight Ident'),
+                                Forms\Components\TextInput::make('flight_number')
+                                    ->required()
+                                    ->label('Flight Number'),
+                                Forms\Components\TextInput::make('aircraft_id')
+                                    ->required()
+                                    ->label('Aircraft ID'),
+                                Forms\Components\TextInput::make('dpt_airport_id')
+                                    ->required()
+                                    ->label('Departure Airport ID'),
+                                Forms\Components\TextInput::make('arr_airport_id')
+                                    ->required()
+                                    ->label('Arrival Airport ID'),
+                                Forms\Components\TextInput::make('route')
+                                    ->label('Route'),
+                                Forms\Components\TextInput::make('notes')
+                                    ->label('Notes'),
+                                Forms\Components\TextInput::make('flight_time')
+                                    ->required()
+                                    ->label('Flight Time'),
+                                Forms\Components\TextInput::make('block_time')
+                                    ->required()
+                                    ->label('Block Time'),
+                                Forms\Components\TextInput::make('fuel_used')
+                                    ->required()
+                                    ->label('Fuel Used'),
+                                Forms\Components\TextInput::make('fuel_unit')
+                                    ->required()
+                                    ->label('Fuel Unit'),
+                                Forms\Components\TextInput::make('source')
+                                    ->required()
+                                    ->label('Source'),
+                                Forms\Components\TextInput::make('state')
+                                    ->required()
+                                    ->label('State'),
+                                Forms\Components\TextInput::make('status')
+                                    ->required()
+                                    ->label('Status'),
+                                Forms\Components\TextInput::make('raw_data')
+                                    ->required()
+                                    ->label('Raw Data'),
+                                Forms\Components\TextInput::make('route_code')
+                                    ->required()
+                                    ->label('Route Code'),
+                                Forms\Components\TextInput::make('route_leg')
+                                    ->required()
+                                    ->label('Route Leg'),
+                                Forms\Components\TextInput::make('distance')
+                                    ->required()
+                                    ->label('Distance'),
+                                Forms\Components\TextInput::make('flight_type')
+                                    ->required()
+                                    ->label('Flight Type'),
+                                Forms\Components\TextInput::make('planned_distance')
+                                    ->required()
+                                    ->label('Planned Distance'),
+                                Forms\Components\TextInput::make('planned_flight_time')
+                                    ->required()
+                                ]),
+            ])]);
     }
 
     public static function table(Table $table): Table
@@ -96,11 +177,11 @@ class PirepResource extends Resource
                     ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
                     ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::REJECTED)),
 
-                EditAction::make()->form([
+                EditAction::make(),
 
-                ]),
-
-                DeleteAction::make(),
+                DeleteAction::make('delete')
+                    ->action(fn (Pirep $record) => $record->delete())
+                    ->requiresConfirmation(),
 
                 Action::make('view')
                     ->color('info')
@@ -128,6 +209,14 @@ class PirepResource extends Resource
     {
         return [
             'index' => Pages\ListPireps::route('/'),
+            'edit' => Pages\EditPirep::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PirepStats::class,
         ];
     }
 }
