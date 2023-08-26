@@ -117,7 +117,7 @@
               class="required">*</span>
             {{ Form::select('dpt_airport_id', $airports, null , [
                     'id'    => 'dpt_airport_id',
-                    'class' => 'form-control select2'
+                    'class' => 'form-control airport_search'
                 ]) }}
             <p class="text-danger">{{ $errors->first('dpt_airport_id') }}</p>
           </div>
@@ -128,7 +128,7 @@
               class="required">*</span>
             {{ Form::select('arr_airport_id', $airports, null , [
                     'id'    => 'arr_airport_id',
-                    'class' => 'form-control select2 select2'
+                    'class' => 'form-control airport_search'
                 ]) }}
             <p class="text-danger">{{ $errors->first('arr_airport_id') }}</p>
           </div>
@@ -149,7 +149,7 @@
           <!-- Alt Airport Id Field -->
           <div class="form-group col-sm-4">
             {{ Form::label('alt_airport_id', 'Alt Airport:') }}
-            {{ Form::select('alt_airport_id', $alt_airports, null , ['class' => 'form-control select2']) }}
+            {{ Form::select('alt_airport_id', $alt_airports, null , ['class' => 'form-control airport_search']) }}
             <p class="text-danger">{{ $errors->first('alt_airport_id') }}</p>
           </div>
 

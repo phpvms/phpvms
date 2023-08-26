@@ -162,7 +162,7 @@ flight reports that have been filed. You've been warned!
             @else
               <div class="form-group">
                 {{ Form::select('dpt_airport_id', $airport_list, null, [
-                        'class' => 'custom-select select2',
+                        'class' => 'custom-select airport_search',
                         'style' => 'width: 100%',
                         'readonly' => (!empty($pirep) && $pirep->read_only),
                 ]) }}
@@ -182,7 +182,7 @@ flight reports that have been filed. You've been warned!
             @else
               <div class="input-group input-group-sm form-group">
                 {{ Form::select('arr_airport_id', $airport_list, null, [
-                        'class' => 'custom-select select2',
+                        'class' => 'custom-select airport_search',
                         'style' => 'width: 100%',
                         'readonly' => (!empty($pirep) && $pirep->read_only),
                 ]) }}

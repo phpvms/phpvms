@@ -49,7 +49,7 @@ class UserController extends Controller
         $users = $this->userRepo
             ->withCount($with_count)
             ->with($with)
-            ->orderBy('pilot_id', 'asc')
+            ->sortable('id')
             ->paginate();
 
         return view('users.index', [

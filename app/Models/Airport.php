@@ -7,7 +7,9 @@ use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Kyslik\ColumnSortable\Sortable;
 
 /**
  * Class Airport
@@ -17,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string icao
  * @property string name
  * @property string full_name
+ * @property string description
  * @property string location
  * @property string country
  * @property string timezone
@@ -34,6 +37,7 @@ class Airport extends Model
     use FilesTrait;
     use HasFactory;
     use SoftDeletes;
+    use Sortable;
 
     public $table = 'airports';
 
@@ -88,6 +92,15 @@ class Airport extends Model
         'fuel_mogas_cost'      => 'nullable|numeric',
     ];
 
+    public $sortable = [
+        'id',
+        'iata',
+        'icao',
+        'name',
+        'location',
+        'country',
+    ];
+
     /**
      * Capitalize the ICAO
      */
@@ -113,7 +126,7 @@ class Airport extends Model
 
     /**
      * Return full name like:
-     * KJFK - John F Kennedy
+     * KJFK/JFK - John F Kennedy
      *
      * @return string
      */
@@ -121,6 +134,22 @@ class Airport extends Model
     {
         return Attribute::make(
             get: fn ($_, $attrs) => $this->icao.' - '.$this->name
+        );
+    }
+
+    /**
+     * Return full name like:
+     * KJFK/JFK - John F Kennedy
+     *
+     * @return Attribute
+     */
+    public function description(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($_, $attrs) => $attrs['icao']
+                .(!empty($attrs['iata']) ? '/'.$attrs['iata'] : '')
+                .' - '.$attrs['name']
+                .($attrs['hub'] ? ' (hub)' : '')
         );
     }
 
@@ -137,5 +166,35 @@ class Airport extends Model
                 'timezone' => $value,
             ]
         );
+    }
+
+    /**
+     * Relationships
+     */
+    public function departures(): HasMany
+    {
+        return $this->hasMany(Flight::class, 'dpt_airport_id');
+    }
+
+    public function arrivals(): HasMany
+    {
+        return $this->hasMany(Flight::class, 'arr_airport_id');
+    }
+
+    public function aircraft(): HasMany
+    {
+        return $this->hasMany(Aircraft::class, 'airport_id');
+    }
+
+    public function pilots(): HasMany
+    {
+        // Users currently at this airport
+        return $this->hasMany(User::class, 'curr_airport_id');
+    }
+
+    public function users(): HasMany
+    {
+        // Users based at this airport
+        return $this->hasMany(User::class, 'home_airport_id');
     }
 }

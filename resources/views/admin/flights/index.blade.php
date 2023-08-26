@@ -35,3 +35,7 @@
     </div>
   </div>
 @endsection
+
+@section('scripts')
+  @include('admin.scripts.airport_search')
+@endsection

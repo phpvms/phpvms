@@ -6,6 +6,8 @@ use App\Contracts\Model;
 use App\Models\Casts\CommaDelimitedCast;
 use App\Models\Traits\ReferenceTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int     airline_id
@@ -53,14 +55,14 @@ class Expense extends Model
     ];
 
     /**
-     * Foreign Keys
+     * Relationships
      */
-    public function airline()
+    public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class, 'airline_id');
     }
 
-    public function ref_model()
+    public function ref_model(): MorphTo
     {
         return $this->morphTo();
     }

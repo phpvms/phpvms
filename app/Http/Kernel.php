@@ -13,6 +13,7 @@ use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UpdatePending;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode;
@@ -20,6 +21,7 @@ use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -61,5 +63,7 @@ class Kernel extends HttpKernel
         'theme'          => SetActiveTheme::class,
         'throttle'       => ThrottleRequests::class,
         'update_pending' => UpdatePending::class,
+        'verified'       => EnsureEmailIsVerified::class,
+        'signed'         => ValidateSignature::class,
     ];
 }

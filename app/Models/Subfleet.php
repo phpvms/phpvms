@@ -8,7 +8,12 @@ use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Kyslik\ColumnSortable\Sortable;
 
 /**
  * @property int     id
@@ -22,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float   cost_block_hour
  * @property float   cost_delay_minute
  * @property Airline airline
- * @property Airport hub
+ * @property Airport home
  * @property int     fuel_type
  */
 class Subfleet extends Model
@@ -31,6 +36,7 @@ class Subfleet extends Model
     use FilesTrait;
     use HasFactory;
     use SoftDeletes;
+    use Sortable;
 
     public $fillable = [
         'airline_id',
@@ -68,6 +74,14 @@ class Subfleet extends Model
         'ground_handling_multiplier' => 'nullable|numeric',
     ];
 
+    public $sortable = [
+        'id',
+        'airline_id',
+        'hub_id',
+        'type',
+        'name',
+    ];
+
     /**
      * @return Attribute
      */
@@ -81,40 +95,48 @@ class Subfleet extends Model
     /**
      * Relationships
      */
-    public function aircraft()
+    public function aircraft(): HasMany
     {
-        return $this->hasMany(Aircraft::class, 'subfleet_id')
-            ->where('status', AircraftStatus::ACTIVE);
+        return $this->hasMany(Aircraft::class, 'subfleet_id')->where('status', AircraftStatus::ACTIVE);
     }
 
-    public function airline()
+    public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class, 'airline_id');
     }
 
-    public function hub()
+    public function home(): HasOne
     {
         return $this->hasOne(Airport::class, 'id', 'hub_id');
     }
 
-    public function fares()
+    /**
+     * @deprecated use home()
+     *
+     * @return HasOne
+     */
+    public function hub(): HasOne
     {
-        return $this->belongsToMany(Fare::class, 'subfleet_fare')
-            ->withPivot('price', 'cost', 'capacity');
+        return $this->hasOne(Airport::class, 'id', 'hub_id');
     }
 
-    public function flights()
+    public function fares(): BelongsToMany
+    {
+        return $this->belongsToMany(Fare::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity');
+    }
+
+    public function flights(): BelongsToMany
     {
         return $this->belongsToMany(Flight::class, 'flight_subfleet');
     }
 
-    public function ranks()
+    public function ranks(): BelongsToMany
     {
         return $this->belongsToMany(Rank::class, 'subfleet_rank')
-            ->withPivot('acars_pay', 'manual_pay');
+        ->withPivot('acars_pay', 'manual_pay');
     }
 
-    public function typeratings()
+    public function typeratings(): BelongsToMany
     {
         return $this->belongsToMany(Typerating::class, 'typerating_subfleet', 'subfleet_id', 'typerating_id');
     }

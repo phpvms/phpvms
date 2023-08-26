@@ -214,7 +214,7 @@ class PirepController extends Controller
     {
         return view('admin.pireps.create', [
             'aircraft' => $this->aircraftList(),
-            'airports' => $this->airportRepo->selectBoxList(),
+            'airports' => [],
             'airlines' => $this->airlineRepo->selectBoxList(),
         ]);
     }
@@ -276,7 +276,10 @@ class PirepController extends Controller
      */
     public function edit(string $id): RedirectResponse|View
     {
-        $pirep = $this->pirepRepo->findWithoutFail($id);
+        $pirep = $this->pirepRepo
+            ->with(['dpt_airport', 'arr_airport', 'alt_airport'])
+            ->findWithoutFail($id);
+
         if (empty($pirep)) {
             Flash::error('Pirep not found');
             return redirect(route('admin.pireps.index'));
@@ -300,11 +303,21 @@ class PirepController extends Controller
 
         $journal = $this->journalRepo->getAllForObject($pirep, $pirep->airline->journal);
 
+        $airports = [
+            ['' => ''],
+            [$pirep->arr_airport->id => $pirep->arr_airport->full_name],
+            [$pirep->dpt_airport->id => $pirep->dpt_airport->full_name],
+        ];
+
+        if ($pirep->alt_airport) {
+            $airports[] = [$pirep->alt_airport->id => $pirep->alt_airport->full_name];
+        }
+
         return view('admin.pireps.edit', [
             'pirep'         => $pirep,
             'aircraft'      => $pirep->aircraft,
             'aircraft_list' => $this->aircraftList(),
-            'airports_list' => $this->airportRepo->selectBoxList(),
+            'airports_list' => $airports,
             'airlines_list' => $this->airlineRepo->selectBoxList(),
             'journal'       => $journal,
         ]);

@@ -101,7 +101,7 @@ with the EU Cookie Law https://privacypolicies.com/blog/eu-cookie-law
 
 <script>
   $(document).ready(function () {
-    $(".select2").select2({width: 'resolve'});
+    $("select.select2").select2({width: 'resolve'});
   });
 </script>
 

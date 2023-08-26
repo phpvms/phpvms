@@ -11,16 +11,18 @@ import request from '../request';
  * Add a bid to a flight
  *
  * @param {String} flight_id
+ * @param {?int} aircraft_id
  *
  * @returns {Promise<*>}
  */
-export async function addBid(flight_id) {
+export async function addBid(flight_id, aircraft_id = null) {
   const params = {
     method: 'POST',
     url: '/api/user/bids',
     data: {
       _method: 'POST',
       flight_id,
+      aircraft_id
     },
   };
 

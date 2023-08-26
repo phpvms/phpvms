@@ -2,6 +2,7 @@
   <table class="table table-hover table-responsive" id="airports-table">
     <thead>
     <th>ICAO</th>
+    <th>IATA</th>
     <th>Name</th>
     <th>Location</th>
     <th style="text-align: center;">Hub</th>
@@ -16,6 +17,7 @@
     @foreach($airports as $airport)
       <tr>
         <td><a href="{{ route('admin.airports.edit', [$airport->id]) }}">{{ $airport->icao }}</a></td>
+        <td><a href="{{ route('admin.airports.edit', [$airport->id]) }}">{{ $airport->iata }}</a></td>
         <td>{{ $airport->name }}</td>
         <td>{{ $airport->location }}</td>
         <td style="text-align: center;">

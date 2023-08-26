@@ -15,3 +15,4 @@
     </div>
   </div>
 @endsection
+@include('admin.aircraft.script')

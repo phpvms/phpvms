@@ -11,11 +11,11 @@
       </div>
       <div class="form-group col-sm-3">
         {{ Form::label('dpt_airport_id', 'Departure:') }}
-        {{ Form::select('dpt_airport_id', $airports, null , ['class' => 'form-control select2']) }}
+        {{ Form::select('dpt_airport_id', $airports, null , ['class' => 'form-control airport_search']) }}
       </div>
       <div class="form-group col-sm-3">
         {{ Form::label('arr_airport_id', 'Arrival:') }}
-        {{ Form::select('arr_airport_id', $airports, null , ['class' => 'form-control select2']) }}
+        {{ Form::select('arr_airport_id', $airports, null , ['class' => 'form-control airport_search']) }}
       </div>
       <div class="form-group col-sm-2 text-center">
         <br>

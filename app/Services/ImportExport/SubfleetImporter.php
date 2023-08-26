@@ -4,8 +4,10 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Fare;
+use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Services\FareService;
+use App\Services\FleetService;
 
 /**
  * Import subfleets
@@ -29,9 +31,11 @@ class SubfleetImporter extends ImportExport
         'cost_delay_minute'          => 'nullable',
         'ground_handling_multiplier' => 'nullable',
         'fares'                      => 'nullable',
+        'ranks'                      => 'nullable',
     ];
 
-    private $fareSvc;
+    private FareService $fareSvc;
+    private FleetService $fleetSvc;
 
     /**
      * FlightImportExporter constructor.
@@ -39,6 +43,7 @@ class SubfleetImporter extends ImportExport
     public function __construct()
     {
         $this->fareSvc = app(FareService::class);
+        $this->fleetSvc = app(FleetService::class);
     }
 
     /**
@@ -64,6 +69,7 @@ class SubfleetImporter extends ImportExport
         }
 
         $this->processFares($subfleet, $row['fares']);
+        $this->processRanks($subfleet, $row['ranks']);
 
         $this->log('Imported '.$row['type']);
         return true;
@@ -87,6 +93,27 @@ class SubfleetImporter extends ImportExport
             $fare = Fare::firstOrCreate(['code' => $fare_code], ['name' => $fare_code]);
             $this->fareSvc->setForSubfleet($subfleet, $fare, $fare_attributes);
             $fare->save();
+        }
+    }
+
+    /**
+     * Parse all of the rakns in the multi-format
+     *
+     * @param Subfleet $subfleet
+     * @param          $col
+     */
+    protected function processRanks(Subfleet &$subfleet, $col): void
+    {
+        $ranks = $this->parseMultiColumnValues($col);
+        foreach ($ranks as $rank_id => $rank_attributes) {
+            if (!\is_array($rank_attributes)) {
+                $rank_id = $rank_attributes;
+                $rank_attributes = [];
+            }
+
+            $rank = Rank::firstOrCreate(['id' => $rank_id], ['name' => 'Imported rank '.$rank_id]);
+            $this->fleetSvc->addSubfleetToRank($subfleet, $rank, $rank_attributes);
+            $rank->save();
         }
     }
 }

@@ -113,7 +113,7 @@
               {{ Form::hidden('dpt_airport_id') }}
             @else
               {{ Form::select('dpt_airport_id', $airports_list, null, [
-                      'class' => 'form-control select2',
+                      'class' => 'form-control airport_search',
                       'readonly' => $pirep->read_only]) }}
               <p class="text-danger">{{ $errors->first('dpt_airport_id') }}</p>
             @endif
@@ -126,7 +126,7 @@
               </p>
               {{ Form::hidden('arr_airport_id') }}
             @else
-              {{ Form::select('arr_airport_id', $airports_list, null, ['class' => 'form-control select2']) }}
+              {{ Form::select('arr_airport_id', $airports_list, null, ['class' => 'form-control airport_search']) }}
               <p class="text-danger">{{ $errors->first('arr_airport_id') }}</p>
             @endif
           </div>

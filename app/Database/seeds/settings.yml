@@ -207,6 +207,13 @@
   options: ''
   type: boolean
   description: 'Whether or not someone can bid on multiple flights'
+- key: bids.block_aircraft
+  name: 'Restrict Aircraft'
+  group: bids
+  value: true
+  options: ''
+  type: boolean
+  description: 'When enabled, an aircraft can only be used for one active Bid and Flight/Pirep' 
 - key: bids.expire_time
   name: 'Expire Time'
   group: bids

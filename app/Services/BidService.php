@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\UserBidLimit;
+use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\Pirep;
@@ -32,6 +34,7 @@ class BidService extends Service
     public function getBid(User $user, $bid_id): ?Bid
     {
         $with = [
+            'aircraft',
             'flight',
             'flight.fares',
             'flight.simbrief' => function ($query) use ($user) {
@@ -41,6 +44,7 @@ class BidService extends Service
             'flight.simbrief.aircraft.subfleet',
             'flight.subfleets',
             'flight.subfleets.aircraft',
+            'flight.subfleets.aircraft.bid',
             'flight.subfleets.fares',
         ];
 
@@ -68,6 +72,7 @@ class BidService extends Service
     public function findBidsForUser(User $user): Collection|array|null
     {
         $with = [
+            'aircraft',
             'flight',
             'flight.fares',
             'flight.simbrief' => function ($query) use ($user) {
@@ -77,6 +82,7 @@ class BidService extends Service
             'flight.simbrief.aircraft.subfleet',
             'flight.subfleets',
             'flight.subfleets.aircraft',
+            'flight.subfleets.aircraft.bid',
             'flight.subfleets.fares',
         ];
 
@@ -95,20 +101,28 @@ class BidService extends Service
     /**
      * Allow a user to bid on a flight. Check settings and all that good stuff
      *
-     * @param Flight $flight
-     * @param User   $user
+     * @param Flight    $flight
+     * @param User      $user
+     * @param ?Aircraft $aircraft
      *
      * @throws \App\Exceptions\BidExistsForFlight
      *
      * @return mixed
      */
-    public function addBid(Flight $flight, User $user)
+    public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null)
     {
         // Get all of the bids for this user. See if they're allowed to have multiple
         // bids
         $bid_count = Bid::where(['user_id' => $user->id])->count();
         if ($bid_count > 0 && setting('bids.allow_multiple_bids') === false) {
             throw new UserBidLimit($user);
+        }
+
+        if (setting('bids.block_aircraft') && $aircraft) {
+            $ac_bid_count = Bid::where(['aircraft_id' => $aircraft->id])->count();
+            if ($ac_bid_count > 0) {
+                throw new BidExistsForAircraft($aircraft);
+            }
         }
 
         // Get all of the bids for this flight
@@ -146,10 +160,18 @@ class BidService extends Service
             }
         }
 
-        $bid = Bid::firstOrCreate([
-            'user_id'   => $user->id,
-            'flight_id' => $flight->id,
-        ]);
+        if (setting('bids.block_aircraft') && $aircraft) {
+            $bid = Bid::firstOrCreate([
+                'user_id'     => $user->id,
+                'flight_id'   => $flight->id,
+                'aircraft_id' => $aircraft->id,
+            ]);
+        } else {
+            $bid = Bid::firstOrCreate([
+                'user_id'   => $user->id,
+                'flight_id' => $flight->id,
+            ]);
+        }
 
         $flight->has_bid = true;
         $flight->save();

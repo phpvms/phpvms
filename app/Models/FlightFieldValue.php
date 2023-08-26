@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class FlightFieldValue
@@ -43,7 +44,7 @@ class FlightFieldValue extends Model
     /**
      * Relationships
      */
-    public function flight()
+    public function flight(): BelongsTo
     {
         return $this->belongsTo(Flight::class, 'flight_id');
     }

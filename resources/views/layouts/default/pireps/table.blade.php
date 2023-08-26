@@ -2,13 +2,13 @@
   <table class="table table-hover table-striped">
     <thead>
     <tr>
-      <th>{{ trans_choice('common.flight', 1) }}</th>
-      <th>@lang('common.departure')</th>
-      <th>@lang('common.arrival')</th>
-      <th>@lang('common.aircraft')</th>
-      <th class="text-center">@lang('flights.flighttime')</th>
-      <th class="text-center">@lang('common.status')</th>
-      <th>@lang('pireps.submitted')</th>
+      <th>@sortablelink('flight_number', trans_choice('common.flight', 1))</th>
+      <th>@sortablelink('dpt_airport_id', __('common.departure'))</th>
+      <th>@sortablelink('arr_airport_id', __('common.arrival'))</th>
+      <th>@sortablelink('aircraft_id', __('common.aircraft'))</th>
+      <th class="text-center">@sortablelink('flight_time', __('flights.flighttime'))</th>
+      <th class="text-center">@sortablelink('status', __('common.status'))</th>
+      <th>@sortablelink('submitted_at', __('pireps.submitted'))</th>
       <th></th>
     </tr>
     </thead>
@@ -29,7 +29,7 @@
         </td>
         <td>
           @if($pirep->aircraft)
-            {{ optional($pirep->aircraft)->name }}
+            {{ optional($pirep->aircraft)->ident }}
           @else
             -
           @endif

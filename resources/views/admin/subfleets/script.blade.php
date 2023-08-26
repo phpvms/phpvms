@@ -5,6 +5,7 @@
       const token = $('meta[name="csrf-token"]').attr('content');
       const api_key = $('meta[name="api-key"]').attr('content');
 
+      @if(isset($subfleet))
       $('#aircraft_fares a').editable({
         type: 'text',
         mode: 'inline',
@@ -95,6 +96,7 @@
           }
         }
       });
+      @endif
     }
 
     $(document).ready(function () {
@@ -132,4 +134,6 @@
       });
     });
   </script>
+
+  @include('admin.scripts.airport_search')
 @endsection

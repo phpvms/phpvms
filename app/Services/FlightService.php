@@ -155,13 +155,22 @@ class FlightService extends Service
         /*
          * Only allow aircraft that are at the current departure airport
          */
-        if (setting('pireps.only_aircraft_at_dpt_airport', false)) {
+        $aircraft_at_dpt_airport = setting('pireps.only_aircraft_at_dpt_airport', false);
+        $aircraft_not_booked = setting('bids.block_aircraft', false);
+
+        if ($aircraft_at_dpt_airport || $aircraft_not_booked) {
             foreach ($subfleets as $subfleet) {
                 $subfleet->aircraft = $subfleet->aircraft->filter(
-                    function ($aircraft, $i) use ($flight) {
-                        if ($aircraft->airport_id === $flight->dpt_airport_id) {
-                            return true;
+                    function ($aircraft, $i) use ($flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
+                        if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
+                            return false;
                         }
+
+                        if ($aircraft_not_booked && $aircraft->bid && $aircraft->bid->count() !== 0) {
+                            return false;
+                        }
+
+                        return true;
                     }
                 );
             }

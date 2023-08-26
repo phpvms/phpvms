@@ -31,12 +31,12 @@
 
       <div class="mt-1">
         <p>@lang('airports.departure')</p>
-        {{ Form::select('dep_icao', $airports, null , ['class' => 'form-control select2']) }}
+        {{ Form::select('dep_icao', [], null , ['class' => 'form-control airport_search']) }}
       </div>
 
       <div class="mt-1">
         <p>@lang('airports.arrival')</p>
-        {{ Form::select('arr_icao', $airports, null , ['class' => 'form-control select2']) }}
+        {{ Form::select('arr_icao', [], null , ['class' => 'form-control airport_search']) }}
       </div>
 
       <div class="mt-1">

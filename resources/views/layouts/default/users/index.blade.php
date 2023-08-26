@@ -10,7 +10,7 @@
   </div>
   <div class="row">
     <div class="col-12 text-center">
-      {{ $users->links('pagination.default') }}
+      {{ $users->withQueryString()->links('pagination.default') }}
     </div>
   </div>
 @endsection

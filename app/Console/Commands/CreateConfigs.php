@@ -72,7 +72,7 @@ class CreateConfigs extends Command
             unlink($config_file);
         }
 
-        $env_file = base_path('env.php');
+        $env_file = base_path('.env');
         if (file_exists($env_file)) {
             unlink($env_file);
         }

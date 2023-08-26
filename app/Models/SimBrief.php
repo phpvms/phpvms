@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 
 /**
@@ -91,23 +92,22 @@ class SimBrief extends Model
     /*
      * Relationships
      */
-
-    public function aircraft()
+    public function aircraft(): BelongsTo
     {
         return $this->belongsTo(Aircraft::class, 'aircraft_id');
     }
 
-    public function flight()
+    public function flight(): BelongsTo
     {
         return $this->belongsTo(Flight::class, 'flight_id');
     }
 
-    public function pirep()
+    public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

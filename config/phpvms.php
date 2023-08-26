@@ -119,4 +119,11 @@ return [
         'load_factor'      => '/operations/flights#load-factor',
         'subfleets'        => '/concepts/basics#subfleets-and-aircraft',
     ],
+
+    /*
+     * Enable/disable email verification on registration
+     */
+    'registration' => [
+        'email_verification' => true,
+    ],
 ];

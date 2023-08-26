@@ -38,6 +38,7 @@ class SubfleetExporter extends ImportExport
         // Modify special fields
         $ret['airline'] = $subfleet->airline->icao;
         $ret['fares'] = $this->getFares($subfleet);
+        $ret['ranks'] = $this->getRanks($subfleet);
 
         return $ret;
     }
@@ -70,6 +71,32 @@ class SubfleetExporter extends ImportExport
         }
 
         return $this->objectToMultiString($fares);
+    }
+
+    /**
+     * Return any ranks that have been linked to this subfleet
+     *
+     * @param Subfleet $subfleet
+     *
+     * @return string
+     */
+    protected function getRanks(Subfleet &$subfleet): string
+    {
+        $ranks = [];
+        foreach ($subfleet->ranks as $rank) {
+            $rank_export = [];
+            if ($rank->pivot->acars_pay) {
+                $rank_export['acars_pay'] = $rank->pivot->acars_pay;
+            }
+
+            if ($rank->pivot->manual_pay) {
+                $rank_export['manual_pay'] = $rank->pivot->manual_pay;
+            }
+
+            $ranks[$rank->id] = $rank_export;
+        }
+
+        return $this->objectToMultiString($ranks);
     }
 
     /**

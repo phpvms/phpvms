@@ -8,8 +8,11 @@ use App\Models\Traits\FilesTrait;
 use App\Models\Traits\JournalTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Kyslik\ColumnSortable\Sortable;
 
 /**
  * @property mixed   id
@@ -28,6 +31,7 @@ class Airline extends Model
     use HasFactory;
     use JournalTrait;
     use SoftDeletes;
+    use Sortable;
 
     public $table = 'airlines';
 
@@ -65,12 +69,21 @@ class Airline extends Model
      * @var array
      */
     public static $rules = [
+        'callsign' => 'nullable',
         'country'  => 'nullable',
         'iata'     => 'nullable|max:5',
         'icao'     => 'required|max:5',
         'logo'     => 'nullable',
         'name'     => 'required',
-        'callsign' => 'nullable',
+    ];
+
+    public $sortable = [
+        'id',
+        'name',
+        'icao',
+        'iata',
+        'country',
+        'callsign',
     ];
 
     /**
@@ -110,26 +123,30 @@ class Airline extends Model
     }
 
     /*
-     * FKs
+     * Relationships
      */
-
-    public function subfleets()
+    public function subfleets(): HasMany
     {
-        return $this->hasMany(Subfleet::class, 'airline_id');
+        return $this->hasMany(Subfleet::class, 'airline_id', 'id');
     }
 
-    public function aircraft()
+    public function aircraft(): HasManyThrough
     {
-        return $this->hasManyThrough(Aircraft::class, Subfleet::class);
+        return $this->hasManyThrough(Aircraft::class, Subfleet::class, 'airline_id', 'subfleet_id', 'id', 'id');
     }
 
-    public function flights()
+    public function flights(): HasMany
     {
-        return $this->belongsTo(Flight::class, 'airline_id');
+        return $this->hasMany(Flight::class, 'airline_id', 'id');
     }
 
-    public function pireps()
+    public function pireps(): HasMany
     {
-        return $this->belongsTo(Pirep::class, 'airline_id');
+        return $this->HasMany(Pirep::class, 'airline_id', 'id');
+    }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'airline_id', 'id');
     }
 }

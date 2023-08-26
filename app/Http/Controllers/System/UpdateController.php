@@ -66,13 +66,15 @@ class UpdateController extends Controller
         Log::info('Update: run_migrations', $request->post());
 
         $migrations = $this->migrationSvc->migrationsAvailable();
-        if (count($migrations) === 0) {
+        $data_migrations = $this->migrationSvc->dataMigrationsAvailable();
+        if (count($migrations) === 0 && count($data_migrations) === 0) {
             $this->seederSvc->syncAllSeeds();
             return view('system.updater.steps.step3-update-complete');
         }
 
         $output = $this->migrationSvc->runAllMigrations();
         $this->seederSvc->syncAllSeeds();
+        $output .= $this->migrationSvc->runAllDataMigrations();
 
         return view('system.updater.steps.step2-migrations-done', [
             'console_output' => $output,

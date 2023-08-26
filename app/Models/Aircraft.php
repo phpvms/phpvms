@@ -10,7 +10,12 @@ use App\Models\Traits\FilesTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Kyslik\ColumnSortable\Sortable;
+use Znck\Eloquent\Relations\BelongsToThrough as ZnckBelongsToThrough;
 use Znck\Eloquent\Traits\BelongsToThrough;
 
 /**
@@ -29,6 +34,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property string   hex_code
  * @property Airport  airport
  * @property Airport  hub
+ * @property Airport  home
  * @property Subfleet subfleet
  * @property int      status
  * @property int      state
@@ -37,11 +43,12 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  */
 class Aircraft extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use BelongsToThrough;
     use ExpensableTrait;
     use FilesTrait;
-    use BelongsToThrough;
+    use HasFactory;
+    use SoftDeletes;
+    use Sortable;
 
     public $table = 'aircraft';
 
@@ -86,6 +93,24 @@ class Aircraft extends Model
         'status'       => 'required',
         'subfleet_id'  => 'required',
         'zfw'          => 'nullable|numeric',
+    ];
+
+    public $sortable = [
+        'subfleet_id',
+        'airport_id',
+        'hub_id',
+        'iata',
+        'icao',
+        'name',
+        'registration',
+        'fin',
+        'hex_code',
+        'flight_time',
+        'mtow',
+        'zfw',
+        'fuel_onboard',
+        'status',
+        'state',
     ];
 
     /**
@@ -137,34 +162,51 @@ class Aircraft extends Model
     }
 
     /**
-     * foreign keys
+     * Relationships
      */
-    public function airline()
+    public function airline(): ZnckBelongsToThrough
     {
         return $this->belongsToThrough(Airline::class, Subfleet::class);
     }
 
-    public function airport()
+    public function airport(): BelongsTo
     {
         return $this->belongsTo(Airport::class, 'airport_id');
     }
 
-    public function hub()
+    public function bid(): BelongsTo
+    {
+        return $this->belongsTo(Bid::class, 'id', 'aircraft_id');
+    }
+
+    public function home(): HasOne
     {
         return $this->hasOne(Airport::class, 'id', 'hub_id');
     }
 
-    public function pireps()
+    /**
+     * Use home()
+     *
+     * @deprecated
+     *
+     * @return HasOne
+     */
+    public function hub(): HasOne
+    {
+        return $this->hasOne(Airport::class, 'id', 'hub_id');
+    }
+
+    public function pireps(): HasMany
     {
         return $this->hasMany(Pirep::class, 'aircraft_id');
     }
 
-    public function simbriefs()
+    public function simbriefs(): HasMany
     {
         return $this->hasMany(SimBrief::class, 'aircraft_id');
     }
 
-    public function subfleet()
+    public function subfleet(): BelongsTo
     {
         return $this->belongsTo(Subfleet::class, 'subfleet_id');
     }

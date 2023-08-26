@@ -12,6 +12,7 @@ use App\Http\Resources\Subfleet as SubfleetResource;
 use App\Http\Resources\User as UserResource;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
+use App\Repositories\AircraftRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
@@ -107,8 +108,12 @@ class UserController extends Controller
         // Add a bid
         if ($request->isMethod('PUT') || $request->isMethod('POST')) {
             $flight_id = $request->input('flight_id');
+            if (setting('bids.block_aircraft')) {
+                $aircraft_id = $request->input('aircraft_id');
+                $aircraft = app(AircraftRepository::class)->findWithoutFail($aircraft_id);
+            }
             $flight = $this->flightRepo->find($flight_id);
-            $bid = $this->bidSvc->addBid($flight, $user);
+            $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
 
             return new BidResource($bid);
         }

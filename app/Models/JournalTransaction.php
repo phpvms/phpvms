@@ -9,6 +9,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Models\Traits\ReferenceTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string  id  UUID type
@@ -54,7 +55,7 @@ class JournalTransaction extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function journal()
+    public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class);
     }

@@ -19,13 +19,9 @@ public/hot
 storage/*.key
 storage/settings.json
 storage/*.sqlite
-.env.*.php
 .env.php
 .env
-.env.*
-.env.bak
-env.php
-.env.generated
+.github/scripts/env.test
 .vagrant
 #Homestead.yaml
 Homestead.json

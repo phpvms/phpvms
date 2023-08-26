@@ -304,12 +304,13 @@ class InstallerController extends Controller
          * KAUS, for giggles, though.
          */
         $attrs = [
-            'name'       => $request->get('name'),
-            'email'      => $request->get('email'),
-            'api_key'    => Utils::generateApiKey(),
-            'airline_id' => $airline->id,
-            'password'   => Hash::make($request->get('password')),
-            'opt_in'     => true,
+            'name'              => $request->get('name'),
+            'email'             => $request->get('email'),
+            'api_key'           => Utils::generateApiKey(),
+            'airline_id'        => $airline->id,
+            'password'          => Hash::make($request->get('password')),
+            'opt_in'            => true,
+            'email_verified_at' => now(),
         ];
 
         $user = $this->userService->createUser($attrs, ['admin']);

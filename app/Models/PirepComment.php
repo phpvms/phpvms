@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $pirep_id
@@ -27,12 +28,12 @@ class PirepComment extends Model
         'comment' => 'required',
     ];
 
-    public function pirep()
+    public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

@@ -1,12 +1,12 @@
 <table class="table table-hover" id="users-table">
   <thead>
   <th></th>
-  <th>@lang('common.name')</th>
+  <th>@sortablelink('name', __('common.name'))</th>
   <th style="text-align: center"></th>
-  <th style="text-align: center">@lang('common.airline')</th>
-  <th style="text-align: center">@lang('user.location')</th>
-  <th style="text-align: center">{{ trans_choice('common.flight', 2) }}</th>
-  <th style="text-align: center">{{ trans_choice('common.hour', 2) }}</th>
+  <th style="text-align: center">@sortablelink('airline_id', __('common.airline'))</th>
+  <th style="text-align: center">@sortablelink('curr_airport_id', __('user.location'))</th>
+  <th style="text-align: center">@sortablelink('flights', trans_choice('common.flight', 2))</th>
+  <th style="text-align: center">@sortablelink('flight_time', trans_choice('common.hour', 2))</th>
   </thead>
   <tbody>
   @foreach($users as $user)
