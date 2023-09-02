@@ -14,6 +14,7 @@ use App\Models\Subfleet;
 use App\Repositories\AircraftRepository;
 use App\Repositories\AirportRepository;
 use App\Services\ExportService;
+use App\Services\FileService;
 use App\Services\ImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,12 +31,14 @@ class AircraftController extends Controller
      *
      * @param AirportRepository  $airportRepo
      * @param AircraftRepository $aircraftRepo
+     * @param FileService        $fileSvc
      * @param ImportService      $importSvc
      */
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly AircraftRepository $aircraftRepo,
-        private readonly ImportService $importSvc
+        private readonly FileService $fileSvc,
+        private readonly ImportService $importSvc,
     ) {
     }
 
@@ -200,6 +203,10 @@ class AircraftController extends Controller
         if (empty($aircraft)) {
             Flash::error('Aircraft not found');
             return redirect(route('admin.aircraft.index'));
+        }
+
+        foreach ($aircraft->files as $file) {
+            $this->fileSvc->removeFile($file);
         }
 
         $this->aircraftRepo->delete($id);

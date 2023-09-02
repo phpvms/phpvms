@@ -107,7 +107,7 @@
               <!-- Show button if the bids-only is disable, or if bids-only is enabled, they've saved it -->
               @if ($simbrief_bids === false || ($simbrief_bids === true && isset($saved[$flight->id])))
                 @php
-                  $aircraft_id = App\Models\Bid::find($saved[$flight->id])->aircraft_id;
+                  $aircraft_id = isset($saved[$flight->id]) ? App\Models\Bid::find($saved[$flight->id])->aircraft_id : null;
                 @endphp
                 <a href="{{ route('frontend.simbrief.generate') }}?flight_id={{ $flight->id }}@if($aircraft_id)&aircraft_id={{ $aircraft_id }} @endif"
                    class="btn btn-sm btn-outline-primary">

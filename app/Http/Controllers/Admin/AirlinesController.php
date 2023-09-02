@@ -7,6 +7,7 @@ use App\Http\Requests\CreateAirlineRequest;
 use App\Http\Requests\UpdateAirlineRequest;
 use App\Repositories\AirlineRepository;
 use App\Services\AirlineService;
+use App\Services\FileService;
 use App\Support\Countries;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,10 +20,12 @@ class AirlinesController extends Controller
     /**
      * @param AirlineRepository $airlineRepo
      * @param AirlineService    $airlineSvc
+     * @param FileService       $fileSvc
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirlineService $airlineSvc
+        private readonly AirlineService $airlineSvc,
+        private readonly FileService $fileSvc
     ) {
     }
 
@@ -152,6 +155,10 @@ class AirlinesController extends Controller
         if (!$this->airlineSvc->canDeleteAirline($airline)) {
             Flash::error('Airlines cannot be deleted; flights/PIREPs/subfleets exist');
             return redirect(route('admin.airlines.index'));
+        }
+
+        foreach ($airline->files as $file) {
+            $this->fileSvc->removeFile($file);
         }
 
         $this->airlineRepo->delete($id);

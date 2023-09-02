@@ -20,7 +20,7 @@ return new class() extends Migration {
             }
 
             // look up the subfleet
-            $subfleet = $fare->pirep->aircraft->subfleet;
+            $subfleet = $fare->pirep->aircraft?->subfleet;
             if (empty($subfleet)) {
                 continue;
             }

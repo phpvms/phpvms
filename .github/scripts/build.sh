@@ -33,15 +33,13 @@ declare -a remove_files=(
   env.php
   intellij_style.xml
   config.php
-  docker-compose.yml
-  docker-compose.local.yml
   Makefile
   phpcs.xml
   phpunit.xml
   phpvms.iml
-  Procfile
   phpstan.neon
-  symfony.lock
+  Procfile
+  swagger.yml
   composer.phar
 )
 

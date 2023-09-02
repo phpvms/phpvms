@@ -12,6 +12,7 @@ use App\Models\Expense;
 use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Services\ExportService;
+use App\Services\FileService;
 use App\Services\ImportService;
 use App\Support\Timezonelist;
 use Illuminate\Http\RedirectResponse;
@@ -26,11 +27,13 @@ class AirportController extends Controller
 
     /**
      * @param AirportRepository $airportRepo
+     * @param FileService       $fileSvc
      * @param ImportService     $importSvc
      */
     public function __construct(
         private readonly AirportRepository $airportRepo,
-        private readonly ImportService $importSvc
+        private readonly FileService $fileSvc,
+        private readonly ImportService $importSvc,
     ) {
     }
 
@@ -177,6 +180,10 @@ class AirportController extends Controller
         if (empty($airport)) {
             Flash::error('Airport not found');
             return redirect(route('admin.airports.index'));
+        }
+
+        foreach ($airport->files as $file) {
+            $this->fileSvc->removeFile($file);
         }
 
         $this->airportRepo->delete($id);

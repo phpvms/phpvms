@@ -20,6 +20,7 @@ use App\Repositories\SubfleetRepository;
 use App\Repositories\TypeRatingRepository;
 use App\Services\ExportService;
 use App\Services\FareService;
+use App\Services\FileService;
 use App\Services\FleetService;
 use App\Services\ImportService;
 use Illuminate\Http\RedirectResponse;
@@ -39,6 +40,7 @@ class SubfleetController extends Controller
      * @param AircraftRepository   $aircraftRepo
      * @param FareRepository       $fareRepo
      * @param FareService          $fareSvc
+     * @param FileService          $fileSvc
      * @param FleetService         $fleetSvc
      * @param ImportService        $importSvc
      * @param RankRepository       $rankRepo
@@ -49,6 +51,7 @@ class SubfleetController extends Controller
         private readonly AircraftRepository $aircraftRepo,
         private readonly FareRepository $fareRepo,
         private readonly FareService $fareSvc,
+        private readonly FileService $fileSvc,
         private readonly FleetService $fleetSvc,
         private readonly ImportService $importSvc,
         private readonly RankRepository $rankRepo,
@@ -226,6 +229,10 @@ class SubfleetController extends Controller
             Flash::error('There are aircraft still assigned to this subfleet, you can\'t delete it!')->important();
 
             return redirect(route('admin.subfleets.index'));
+        }
+
+        foreach ($subfleet->files as $file) {
+            $this->fileSvc->removeFile($file);
         }
 
         $this->subfleetRepo->delete($id);

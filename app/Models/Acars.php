@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float  lon
  * @property float  altitude
  * @property int    gs
+ * @property int    ias
  * @property int    heading
  * @property int    order
  * @property int    nav_type
@@ -49,6 +50,7 @@ class Acars extends Model
         'altitude',
         'vs',
         'gs',
+        'ias',
         'transponder',
         'autopilot',
         'fuel_flow',
@@ -67,7 +69,8 @@ class Acars extends Model
         'heading'     => 'integer',
         'altitude'    => 'float',
         'vs'          => 'float',
-        'gs'          => 'float',
+        'gs'          => 'integer',
+        'ias'         => 'integer',
         'transponder' => 'integer',
         'fuel'        => FuelCast::class,
         'fuel_flow'   => 'float',
