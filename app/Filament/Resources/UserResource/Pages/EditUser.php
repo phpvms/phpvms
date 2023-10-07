@@ -5,7 +5,6 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use App\Repositories\AirportRepository;
 use Illuminate\Support\Facades\Hash;
 
 class EditUser extends EditRecord
@@ -25,7 +24,6 @@ class EditUser extends EditRecord
         $data['email'] = $this->record->email;
 
         return $data;
-        
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -35,7 +33,7 @@ class EditUser extends EditRecord
         } else {
             unset($data['password']);
         }
-    
+
         return $data;
     }
 }

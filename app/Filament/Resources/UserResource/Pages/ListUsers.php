@@ -17,7 +17,7 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('User Fields')->url(fn (): string => 'userfield')
+            Action::make('User Fields')->url(fn (): string => 'userfield'),
         ];
     }
 
@@ -31,13 +31,13 @@ class ListUsers extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make(),
-            'pending' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::PENDING)),
-            'active' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::ACTIVE)),
-            'rejected' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::REJECTED)),
-            'on_leave' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::ON_LEAVE)),
+            'all'       => Tab::make(),
+            'pending'   => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::PENDING)),
+            'active'    => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::ACTIVE)),
+            'rejected'  => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::REJECTED)),
+            'on_leave'  => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::ON_LEAVE)),
             'suspended' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::SUSPENDED)),
-            'deleted' => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::DELETED)),
+            'deleted'   => Tab::make()->modifyQueryUsing(fn (Builder $query) => $query->where('state', UserState::DELETED)),
         ];
     }
 }
