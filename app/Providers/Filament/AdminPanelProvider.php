@@ -61,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 ->label('operations'),
                 NavigationGroup::make()
                     ->label('config'),
-            ]);
+            ])
+            ->spa();
     }
 }
