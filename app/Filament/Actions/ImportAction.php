@@ -31,11 +31,9 @@ class ImportAction extends Action
             Toggle::make('deletePrevious')->label('Delete Existing Data')->default(false),
         ]);
 
-        $this->action(function (array $data, Action $action): void {
+        $this->action(function (array $data, array $arguments): void {
 
-            $args = $this->getArguments();
-
-            if (!isset($args['resourceTitle']) || !$args['importType']) {
+            if (!isset($arguments['resourceTitle']) || !$arguments['importType']) {
                 $this->failure();
                 return;
             }
@@ -43,9 +41,9 @@ class ImportAction extends Action
             $importSvc = app(ImportService::class);
 
             $path = storage_path('app/' . $data['importFile']);
-            Log::info('Uploaded ' . $args['resourceTitle'] . ' import file to ' . $path);
+            Log::info('Uploaded ' . $arguments['resourceTitle'] . ' import file to ' . $path);
 
-            switch ($args['importType']) {
+            switch ($arguments['importType']) {
                 case ImportExportType::AIRCRAFT:
                     $logs = $importSvc->importAircraft($path, $data['deletePrevious']);
                     break;
@@ -68,7 +66,7 @@ class ImportAction extends Action
 
             if (count($logs['errors']) > 0) {
                 Notification::make()
-                    ->title('There were ' . count($logs['errors']) . ' errors importing ' . $args['resourceTitle'])
+                    ->title('There were ' . count($logs['errors']) . ' errors importing ' . $arguments['resourceTitle'])
                     ->body(implode('<br>', $logs['errors']))
                     ->persistent()
                     ->actions([
@@ -80,7 +78,7 @@ class ImportAction extends Action
 
             if (count($logs['success']) > 0) {
                 Notification::make()
-                    ->title(count($logs['success']).' '.$args['resourceTitle'].' imported successfully')
+                    ->title(count($logs['success']).' '.$arguments['resourceTitle'].' imported successfully')
                     ->success()
                     ->send();
             }
