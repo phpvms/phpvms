@@ -70,27 +70,39 @@ class AirlineResource extends Resource
                 IconColumn::make('active')->label('Active')->color(fn ($record) => $record->active ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->before(function (Airline $record) {
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ForceDeleteAction::make()->before(function (Airline $record) {
                     $record->files()->each(function (File $file) {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
+                Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
                         $records->each(fn(Airline $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),
+                    Tables\Actions\RestoreBulkAction::make()
                 ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Add Airline'),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 
