@@ -6,6 +6,8 @@ use App\Filament\Resources\AirlineResource\Pages;
 use App\Filament\Resources\AirlineResource\RelationManagers;
 use App\Filament\Resources\AirlineResource\RelationManagers\FilesRelationManager;
 use App\Models\Airline;
+use App\Models\File;
+use App\Services\FileService;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -18,6 +20,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use League\ISO3166\ISO3166;
 
@@ -48,7 +51,7 @@ class AirlineResource extends Resource
                     ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                     ->searchable()
                     ->native(false),
-                    Toggle::make('active')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle')    
+                    Toggle::make('active')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle')
                 ])->columns(3)
              ]);
     }
@@ -71,11 +74,19 @@ class AirlineResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->before(function (Airline $record) {
+                    $record->files()->each(function (File $file) {
+                        app(FileService::class)->removeFile($file);
+                    });
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
+                        $records->each(fn(Airline $record) => $record->files()->each(function (File $file) {
+                            app(FileService::class)->removeFile($file);
+                        }));
+                    }),
                 ]),
             ])
             ->emptyStateActions([
