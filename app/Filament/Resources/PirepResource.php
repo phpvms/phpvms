@@ -8,19 +8,19 @@ use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Repositories\UserRepository;
-use App\Support\Units\Time;
 use App\Services\PirepService;
-use Filament\Tables\Actions\Action;
+use App\Support\Units\Time;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
 
 class PirepResource extends Resource
@@ -113,9 +113,9 @@ class PirepResource extends Resource
                                     ->required()
                                     ->label('Planned Distance'),
                                 Forms\Components\TextInput::make('planned_flight_time')
-                                    ->required()
-                                ]),
-            ])]);
+                                    ->required(),
+                            ]),
+                    ])]);
     }
 
     public static function table(Table $table): Table
@@ -127,7 +127,7 @@ class PirepResource extends Resource
                 TextColumn::make('dpt_airport_id')->label('DEP')->searchable(),
                 TextColumn::make('arr_airport_id')->label('ARR')->searchable(),
                 TextColumn::make('flight_time')->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
-                TextColumn::make('aircraft')->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration .' - '. $record->aircraft->name),
+                TextColumn::make('aircraft')->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration.' - '.$record->aircraft->name),
                 TextColumn::make('source')->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
                 TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
                     PirepState::PENDING  => 'warning',
