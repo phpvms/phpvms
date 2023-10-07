@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Importers;
+namespace App\Services\LegacyImporter;
 
 use App\Models\Enums\UserState;
 use App\Models\User;
@@ -16,10 +16,7 @@ class UserImport extends BaseImporter
     protected $table = 'pilots';
     protected $idField = 'pilotid';
 
-    /**
-     * @var UserService
-     */
-    private $userSvc;
+    private UserService $userSvc;
 
     public function run($start = 0)
     {
@@ -61,6 +58,7 @@ class UserImport extends BaseImporter
 
             $attrs = [
                 'pilot_id'        => $pilot_id,
+                'callsign'        => $pilot_id,
                 'name'            => $name,
                 'password'        => Hash::make($new_password),
                 'api_key'         => Utils::generateApiKey(),
@@ -96,10 +94,6 @@ class UserImport extends BaseImporter
      */
     protected function updateUserRoles(User $user, $old_pilot_id)
     {
-        // Be default add them to the user role, and then determine if they
-        // belong to any other groups, and add them to that
-        $newRoles = [];
-
         // Figure out what other groups they belong to... read from the old table, and map
         // them to the new group(s)
         $old_user_groups = $this->db->findBy('groupmembers', ['pilotid' => $old_pilot_id]);
@@ -111,11 +105,10 @@ class UserImport extends BaseImporter
                 continue;
             }
 
-            $newRoles[] = $newRoleId;
+            if ($newRoleId !== false) {
+                $user->addRole($newRoleId);
+            }
         }
-
-        // Assign the groups to the new user
-        $user->addRole($newRoles);
     }
 
     /**

@@ -121,7 +121,7 @@ class FlightImporter extends ImportExport
         try {
             $flight->save();
         } catch (\Exception $e) {
-            $this->errorLog('Error in row '.$index.': '.$e->getMessage());
+            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
             return false;
         }
 
@@ -144,7 +144,7 @@ class FlightImporter extends ImportExport
         $this->processFares($flight, $row['fares']);
         $this->processFields($flight, $row['fields']);
 
-        $this->log('Imported row '.$index);
+        $this->log('Imported row '.($index + 1));
         return true;
     }
 
@@ -162,31 +162,31 @@ class FlightImporter extends ImportExport
         }
 
         $days = [];
-        if (strpos($day_str, '1') !== false) {
+        if (str_contains($day_str, '1')) {
             $days[] = Days::MONDAY;
         }
 
-        if (strpos($day_str, '2') !== false) {
+        if (str_contains($day_str, '2')) {
             $days[] = Days::TUESDAY;
         }
 
-        if (strpos($day_str, '3') !== false) {
+        if (str_contains($day_str, '3')) {
             $days[] = Days::WEDNESDAY;
         }
 
-        if (strpos($day_str, '4') !== false) {
+        if (str_contains($day_str, '4')) {
             $days[] = Days::THURSDAY;
         }
 
-        if (strpos($day_str, '5') !== false) {
+        if (str_contains($day_str, '5')) {
             $days[] = Days::FRIDAY;
         }
 
-        if (strpos($day_str, '6') !== false) {
+        if (str_contains($day_str, '6')) {
             $days[] = Days::SATURDAY;
         }
 
-        if (strpos($day_str, '7') !== false) {
+        if (str_contains($day_str, '7')) {
             $days[] = Days::SUNDAY;
         }
 

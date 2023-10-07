@@ -21,6 +21,7 @@ use Kyslik\ColumnSortable\Sortable;
 /**
  * @property string     id
  * @property mixed      ident
+ * @property mixed      atc
  * @property Airline    airline
  * @property int        airline_id
  * @property mixed      flight_number
@@ -194,6 +195,26 @@ class Flight extends Model
                 }
 
                 return $flight_id;
+            }
+        );
+    }
+
+    /**
+     * Get the flight atc callsign, JBU1900 or JBU8FK
+     */
+    public function atc(): Attribute
+    {
+        return Attribute::make(
+            get: function ($_, $attrs) {
+                $flight_atc = optional($this->airline)->icao;
+
+                if (!empty($this->callsign)) {
+                    $flight_atc .= $this->callsign;
+                } else {
+                    $flight_atc .= $this->flight_number;
+                }
+
+                return $flight_atc;
             }
         );
     }

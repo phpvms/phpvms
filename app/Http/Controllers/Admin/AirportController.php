@@ -54,9 +54,7 @@ class AirportController extends Controller
         }
 
         $this->airportRepo->pushCriteria(new WhereCriteria($request, $where));
-        $airports = $this->airportRepo
-            ->orderBy('icao', 'asc')
-            ->paginate();
+        $airports = $this->airportRepo->sortable('icao')->paginate();
 
         return view('admin.airports.index', [
             'airports' => $airports,

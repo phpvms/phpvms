@@ -213,7 +213,7 @@
   value: true
   options: ''
   type: boolean
-  description: 'When enabled, an aircraft can only be used for one active Bid and Flight/Pirep' 
+  description: 'When enabled, an aircraft can only be used for one active Bid and Flight/Pirep'
 - key: bids.expire_time
   name: 'Expire Time'
   group: bids
@@ -235,6 +235,27 @@
   options: ''
   type: number
   description: 'How much the load factor can vary per-flight'
+- key: flights.use_cargo_load_factor
+  name: 'Different Cargo Load Factor'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled these values will be used for cargo fares'
+- key: flights.default_cargo_load_factor
+  name: 'Cargo Load Factor'
+  group: flights
+  value: 32
+  options: ''
+  type: number
+  description: 'The default cargo load factor for a flight, as a percent'
+- key: flights.cargo_load_factor_variance
+  name: 'Cargo Load Factor Variance'
+  group: flights
+  value: 5
+  options: ''
+  type: number
+  description: 'How much the cargo load factor can vary per-flight'
 - key: simbrief.api_key
   name: 'Simbrief API Key'
   group: simbrief

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Importers;
+namespace App\Services\LegacyImporter;
 
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
@@ -9,7 +9,7 @@ class ExpenseImporter extends BaseImporter
 {
     protected $table = 'expenses';
 
-    private $expense_types = [
+    private array $expense_types = [
         'M' => ExpenseType::MONTHLY,
         'F' => ExpenseType::FLIGHT,
         'P' => ExpenseType::MONTHLY, // percent, monthly
@@ -29,7 +29,7 @@ class ExpenseImporter extends BaseImporter
             $attrs = [
                 'airline_id' => null,
                 'name'       => $row->name,
-                'amount'     => $row->amount,
+                'amount'     => $row->cost,
                 'type'       => $this->expense_types[$row->type],
                 'active'     => 1,
                 'ref_model'  => Expense::class,

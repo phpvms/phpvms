@@ -66,9 +66,11 @@ class ImportService extends Service
     public function openCsv($csv_file)
     {
         try {
-            $reader = Reader::createFromPath($csv_file);
+            $reader = Reader::createFromPath($csv_file, 'r');
             $reader->setDelimiter(',');
+            $reader->setHeaderOffset(0);
             $reader->setEnclosure('"');
+            $reader->setEscape('\\');
             return $reader;
         } catch (Exception $e) {
             $this->throwError('Error opening CSV: '.$e->getMessage(), $e);
@@ -94,33 +96,13 @@ class ImportService extends Service
         $first_header = $cols[0];
 
         $first = true;
-        $records = $reader->getRecords($cols);
+        $header_rows = $reader->getHeader();
+        $records = $reader->getRecords($header_rows);
         foreach ($records as $offset => $row) {
-            // check if the first row being read is the header
-            if ($first) {
-                $first = false;
-
-                if ($row[$first_header] !== $first_header) {
-                    $this->throwError('CSV file doesn\'t seem to match import type');
-                }
-
-                continue;
-            }
-
-            // Do a sanity check on the number of columns first
-            if (!$importer->checkColumns($row)) {
-                $importer->errorLog('Number of columns in row doesn\'t match');
-                continue;
-            }
-
             // turn it into a collection and run some filtering
             $row = collect($row)->map(function ($val, $index) {
                 $val = trim($val);
-                if ($val === '') {
-                    return;
-                }
-
-                return $val;
+                return str_ireplace(['\\n', '\\r'], '', $val);
             })->toArray();
 
             // Try to validate

@@ -1,4 +1,4 @@
-icao,iata,name,location,country,timezone,hub,lat,lon,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
-KAUS,AUS,Austin-Bergstrom,"Austin, Texas, USA", United States,America/Chicago,1,30.1945,-97.6699,0,,,,"Test Note"
-KSFO,SFO,San Francisco,"San Francisco, California, USA", United States,America/California,1,30.1945,-97.6699,,,0.9,,
-KJFK,JFK,Kennedy,"Queens, New York, USA", United States,America/New_York,0,30.1945,abcd,150,,0.8,,"Busy Airport"
+icao,iata,name,location,region,country,timezone,hub,lat,lon,elevation,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
+KAUS,AUS,Austin-Bergstrom,"Austin","Texas",US,America/Chicago,1,30.1945,-97.6699,148,0,,,,"Test Note"
+KSFO,SFO,San Francisco,"San Francisco","California",US,America/California,1,30.1945,-97.6699,,,,0.9,,
+KJFK,JFK,Kennedy,"Queens","New York",US,America/New_York,0,30.1945,abcd,58,150,,0.8,,"Busy Airport"

@@ -1,0 +1,7 @@
+icao,iata,name,location,region,country,timezone,hub,lat,lon,elevation,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
+\N,\N,Sun Island Resort and SPA,South Aari Atoll,,Maldives,America/Sao_Paulo,,3.488334,72.862989,,,,,,
+CYAV,\N,Winnipeg / St. Andrews Airport,Winnipeg,,Canada,America/Winnipeg,,50.0564003,-97.03250122,,,,,,
+CYAW,\N,Halifax / CFB Shearwater Heliport,Halifax,,Canada,America/Halifax,,44.639702,-63.499401,,,,,,
+CYDC,\N,Princeton Airport,Princeton,,Canada,America/Vancouver,,49.4681015,-120.5110016,,,,,,
+CYDF,YDF,Deer Lake Airport,Deer Lake,,Canada,America/St_Johns,,49.21080017,-57.39139938,,,,,,
+CYDL,YDL,Dease Lake Airport,Dease Lake,,Canada,America/Vancouver,,58.42219925,-130.0319977,,,,,,

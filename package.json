@@ -61,7 +61,7 @@
     "node-gyp": "~9.1.0",
     "sass": "^1.54.5",
     "sass-loader": "^12.1.0",
-    "tailwindcss": "^0.5.3",
+    "tailwindcss": "^3.3.3",
     "vue-template-compiler": "^2.6.12",
     "webpack-bundle-analyzer": "^3.9.0",
     "webpack-dev-server": "^4.10.0"

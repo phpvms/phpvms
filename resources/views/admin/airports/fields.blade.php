@@ -10,13 +10,11 @@
             ]) }}
         <p class="text-danger">{{ $errors->first('icao') }}</p>
       </div>
-
       <div class="form-group col-sm-6">
         {{ Form::label('iata', 'IATA:') }}
         {{ Form::text('iata', null, ['class' => 'form-control']) }}
         <p class="text-danger">{{ $errors->first('iata') }}</p>
       </div>
-
     </div>
 
     <div class="row">
@@ -25,35 +23,41 @@
         {{ Form::text('name', null, ['class' => 'form-control']) }}
         <p class="text-danger">{{ $errors->first('name') }}</p>
       </div>
-      <div class="form-group col-sm-4">
+      <div class="form-group col-sm-3">
         {{ Form::label('lat', 'Latitude:') }}&nbsp;<span class="required">*</span>
         {{ Form::text('lat', null, ['class' => 'form-control', 'rv-value' => 'airport.lat']) }}
         <p class="text-danger">{{ $errors->first('lat') }}</p>
       </div>
-
-      <div class="form-group col-sm-4">
+      <div class="form-group col-sm-3">
         {{ Form::label('lon', 'Longitude:') }}&nbsp;<span class="required">*</span>
         {{ Form::text('lon', null, ['class' => 'form-control', 'rv-value' => 'airport.lon']) }}
         <p class="text-danger">{{ $errors->first('lon') }}</p>
       </div>
+      <div class="form-group col-sm-2">
+        {{ Form::label('elevation', 'Elevation:') }}
+        {{ Form::text('elevation', null, ['class' => 'form-control', 'rv-value' => 'airport.elevation']) }}
+        <p class="text-danger">{{ $errors->first('elevation') }}</p>
+      </div>
     </div>
 
     <div class="row">
-
-      <div class="form-group col-sm-4">
+      <div class="form-group col-sm-3">
         {{ Form::label('country', 'Country:') }}
         {{ Form::text('country', null, ['class' => 'form-control']) }}
         <p class="text-danger">{{ $errors->first('country') }}</p>
       </div>
-
-      <div class="form-group col-sm-4">
+      <div class="form-group col-sm-3">
         {{ Form::label('location', 'Location:') }}
         {{ Form::text('location', null, ['class' => 'form-control']) }}
         <p class="text-danger">{{ $errors->first('location') }}</p>
       </div>
-
-      <div class="form-group col-sm-4">
-        {{ Form::label('timezone', 'Timezone:') }}
+      <div class="form-group col-sm-3">
+        {{ Form::label('region', 'Region:') }}
+        {{ Form::text('region', null, ['class' => 'form-control']) }}
+        <p class="text-danger">{{ $errors->first('region') }}</p>
+      </div>
+      <div class="form-group col-sm-3">
+        {{ Form::label('timezone', 'Timezone:') }}<br>
         {{ Form::select('timezone', $timezones, null, ['id' => 'timezone', 'class' => 'select2']) }}
         <p class="text-danger">{{ $errors->first('timezone') }}</p>
       </div>
@@ -64,7 +68,6 @@
         {{ Form::label('ground_handling_cost', 'Ground Handling Cost:') }}
         {{ Form::number('ground_handling_cost', null, ['class' => 'form-control', 'step' => '0.01']) }}
         <p class="text-danger">{{ $errors->first('ground_handling_cost') }}</p>
-
         @component('admin.components.info')
           This is the base rate per-flight. A multiplier for this rate can be
           set in the subfleet, so you can modulate those costs from there.
@@ -75,7 +78,6 @@
         {{ Form::label('fuel_jeta_cost', 'Jet A Fuel Cost:') }}
         {{ Form::number('fuel_jeta_cost', null, ['class' => 'form-control', 'step' => '0.01']) }}
         <p class="text-danger">{{ $errors->first('fuel_jeta_cost') }}</p>
-
         @component('admin.components.info')
           This is the cost per {{ config('phpvms.internal_units.fuel') }}
         @endcomponent
@@ -85,7 +87,6 @@
         {{ Form::label('fuel_100ll_cost', '100LL Fuel Cost:') }}
         {{ Form::number('fuel_100ll_cost', null, ['class' => 'form-control', 'step' => '0.01']) }}
         <p class="text-danger">{{ $errors->first('fuel_100ll_cost') }}</p>
-
         @component('admin.components.info')
           This is the cost per {{ config('phpvms.internal_units.fuel') }}
         @endcomponent
@@ -95,7 +96,6 @@
         {{ Form::label('fuel_mogas_cost', 'MOGAS Fuel Cost:') }}
         {{ Form::number('fuel_mogas_cost', null, ['class' => 'form-control', 'step' => '0.01']) }}
         <p class="text-danger">{{ $errors->first('fuel_mogas_cost') }}</p>
-
         @component('admin.components.info')
           This is the cost per {{ config('phpvms.internal_units.fuel') }}
         @endcomponent

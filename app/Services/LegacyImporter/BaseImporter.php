@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Importers;
+namespace App\Services\LegacyImporter;
 
-use App\Services\ImporterService;
 use App\Services\Installer\LoggerTrait;
+use App\Services\LegacyImporterService;
 use App\Utils\IdMapper;
 use App\Utils\ImporterDB;
 use Carbon\Carbon;
@@ -48,7 +48,7 @@ abstract class BaseImporter
 
     public function __construct()
     {
-        $importerService = app(ImporterService::class);
+        $importerService = app(LegacyImporterService::class);
         $this->db = new ImporterDB($importerService->getCredentials());
         $this->idMapper = app(IdMapper::class);
     }

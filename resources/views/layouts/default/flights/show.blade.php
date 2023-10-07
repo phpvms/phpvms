@@ -8,6 +8,9 @@
         <div class="col-12">
           <h2>
             {{ $flight->ident }}
+            @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
+              {{ '| '. $flight->atc }}
+            @endif
             @if ($acars_plugin && $bid)
               <a href="vmsacars:bid/{{$bid->id}}" class="btn btn-info btn-sm float-right">Load in vmsACARS</a>
             @elseif ($acars_plugin)
@@ -56,10 +59,10 @@
                 <td>{{ $flight->route }}</td>
               </tr>
             @endif
-            @if(filled($flight->callsign))
+            @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
               <tr>
                 <td>@lang('flights.callsign')</td>
-                <td>{{ $flight->airline->icao }} {{ $flight->callsign }}</td>
+                <td>{{ $flight->atc }}</td>
               </tr>
             @endif
             @if(filled($flight->notes))

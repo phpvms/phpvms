@@ -4,14 +4,17 @@
 @section('content')
   <div class="row" style="margin-bottom: 30px;">
     <div class="col-12">
-      <h2>{{ $airport->full_name }}</h2>
+      <h2>
+        {{ $airport->full_name }}
+        @if(filled($airport->elevation))
+          <span class="float-right">{{'| '.$airport->elevation.'ft'}}</span>
+        @endif
+      </h2>
     </div>
 
     {{-- Show the weather widget in one column --}}
     <div class="col-5">
-      {{ Widget::Weather([
-          'icao' => $airport->icao,
-        ]) }}
+      {{ Widget::Weather(['icao' => $airport->icao]) }}
     </div>
 
     {{-- Show the airspace map in the other column --}}

@@ -89,7 +89,7 @@ class AircraftImporter extends ImportExport
                 'registration' => $row['registration'],
             ], $row);
         } catch (\Exception $e) {
-            $this->errorLog('Error in row '.$index.': '.$e->getMessage());
+            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
             return false;
         }
 

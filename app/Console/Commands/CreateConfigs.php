@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
+use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use DatabaseSeeder;
 use Illuminate\Support\Facades\App;
@@ -16,15 +17,12 @@ class CreateConfigs extends Command
     protected $signature = 'phpvms:config {db_host} {db_name} {db_user} {db_pass}';
     protected $description = 'Create the config files';
 
-    private DatabaseSeeder $databaseSeeder;
-    private SeederService $seederSvc;
-
-    public function __construct(DatabaseSeeder $databaseSeeder, SeederService $seederSvc)
-    {
+    public function __construct(
+        private readonly DatabaseSeeder $databaseSeeder,
+        private readonly SeederService $seederSvc,
+        private readonly MigrationService $migrationSvc,
+    ) {
         parent::__construct();
-
-        $this->databaseSeeder = $databaseSeeder;
-        $this->seederSvc = $seederSvc;
     }
 
     /**
@@ -39,17 +37,7 @@ class CreateConfigs extends Command
         // Reload the configuration
         App::boot();
 
-        $this->info('Recreating database');
-        $this->call('database:create', [
-            '--reset' => true,
-        ]);
-
-        $this->info('Running migrations');
-        $this->call('migrate:fresh', [
-            '--seed' => true,
-        ]);
-
-        $this->seederSvc->syncAllSeeds();
+        $this->migrationSvc->runAllMigrations();
 
         $this->info('Done!');
     }
@@ -81,7 +69,6 @@ class CreateConfigs extends Command
 
         $this->info('Regenerating the config files');
         $cfgSvc->createConfigFiles([
-            'APP_ENV'       => 'dev',
             'SITE_NAME'     => $this->argument('name'),
             'DB_CONNECTION' => 'mysql',
             'DB_HOST'       => $this->argument('db_host'),

@@ -4,24 +4,25 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Repositories\KvpRepository;
-use App\Services\Importers\AircraftImporter;
-use App\Services\Importers\AirlineImporter;
-use App\Services\Importers\AirportImporter;
-use App\Services\Importers\ClearDatabase;
-use App\Services\Importers\ExpenseImporter;
-use App\Services\Importers\FinalizeImporter;
-use App\Services\Importers\FlightImporter;
-use App\Services\Importers\GroupImporter;
-use App\Services\Importers\LedgerImporter;
-use App\Services\Importers\PirepImporter;
-use App\Services\Importers\RankImport;
-use App\Services\Importers\SettingsImporter;
-use App\Services\Importers\UserImport;
+use App\Services\LegacyImporter\AircraftImporter;
+use App\Services\LegacyImporter\AirlineImporter;
+use App\Services\LegacyImporter\AirportImporter;
+use App\Services\LegacyImporter\BaseImporter;
+use App\Services\LegacyImporter\ClearDatabase;
+use App\Services\LegacyImporter\ExpenseImporter;
+use App\Services\LegacyImporter\FinalizeImporter;
+use App\Services\LegacyImporter\FlightImporter;
+use App\Services\LegacyImporter\GroupImporter;
+use App\Services\LegacyImporter\LedgerImporter;
+use App\Services\LegacyImporter\PirepImporter;
+use App\Services\LegacyImporter\RankImport;
+use App\Services\LegacyImporter\SettingsImporter;
+use App\Services\LegacyImporter\UserImport;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class ImporterService extends Service
+class LegacyImporterService extends Service
 {
     private string $CREDENTIALS_KEY = 'legacy.importer.db';
 

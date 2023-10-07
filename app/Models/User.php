@@ -32,6 +32,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string           api_key
  * @property mixed            timezone
  * @property string           ident
+ * @property string           atc
  * @property string           curr_airport_id
  * @property string           home_airport_id
  * @property string           avatar
@@ -184,6 +185,23 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail, Fi
                 ) : optional($this->airline)->icao;
 
                 return $ident_code.str_pad($attrs['pilot_id'], $length, '0', STR_PAD_LEFT);
+            }
+        );
+    }
+
+    /**
+     * Format the pilot atc callsign, either return alphanumeric callsign or ident
+     *
+     * @return Attribute
+     */
+    public function atc(): Attribute
+    {
+        return Attribute::make(
+            get: function ($_, $attrs) {
+                $ident_code = filled(setting('pilots.id_code')) ? setting('pilots.id_code') : optional($this->airline)->icao;
+                $atc = filled($attrs['callsign']) ? $ident_code.$attrs['callsign'] : $ident_code.$attrs['pilot_id'];
+
+                return $atc;
             }
         );
     }

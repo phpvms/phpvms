@@ -23,7 +23,6 @@ use App\Services\ImportExport\AirportExporter;
 use App\Services\ImportExport\FlightExporter;
 use App\Services\ImportService;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class ImporterTest extends TestCase
 {
@@ -375,9 +374,10 @@ class ImporterTest extends TestCase
      */
     public function testInvalidFileImport(): void
     {
-        $this->expectException(ValidationException::class);
+        // $this->expectException(ValidationException::class);
         $file_path = base_path('tests/data/aircraft.csv');
-        $this->importSvc->importAirports($file_path);
+        $status = $this->importSvc->importAirports($file_path);
+        $this->assertCount(2, $status['errors']);
     }
 
     /**
@@ -664,8 +664,9 @@ class ImporterTest extends TestCase
         $this->assertEquals('AUS', $airport->iata);
         $this->assertEquals('KAUS', $airport->icao);
         $this->assertEquals('Austin-Bergstrom', $airport->name);
-        $this->assertEquals('Austin, Texas, USA', $airport->location);
-        $this->assertEquals('United States', $airport->country);
+        $this->assertEquals('Austin', $airport->location);
+        $this->assertEquals('Texas', $airport->region);
+        $this->assertEquals('US', $airport->country);
         $this->assertEquals('America/Chicago', $airport->timezone);
         $this->assertEquals(true, $airport->hub);
         $this->assertEquals('30.1945', $airport->lat);
@@ -683,6 +684,29 @@ class ImporterTest extends TestCase
         $this->assertEquals(true, $airport->hub);
         $this->assertEquals(0.9, $airport->fuel_jeta_cost);
         $this->assertEquals(setting('airports.default_ground_handling_cost'), $airport->ground_handling_cost);
+    }
+
+    public function testAirportImporterInvalidInputs(): void
+    {
+        $file_path = base_path('tests/data/airports_errors.csv');
+        $status = $this->importSvc->importAirports($file_path);
+
+        $this->assertCount(5, $status['success']);
+        $this->assertCount(1, $status['errors']);
+
+        // See if it imported
+        /** @var Airport $airport */
+        $airport = Airport::where([
+            'id' => 'CYAV',
+        ])->first();
+
+        $this->assertNotNull($airport);
+        $this->assertEquals('CYAV', $airport->id);
+        $this->assertEquals('', $airport->iata);
+        $this->assertEquals('America/Winnipeg', $airport->timezone);
+        $this->assertFalse($airport->hub);
+        $this->assertEquals('50.0564003', $airport->lat);
+        $this->assertEquals('-97.03250122', $airport->lon);
     }
 
     /**

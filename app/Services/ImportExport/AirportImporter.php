@@ -21,11 +21,13 @@ class AirportImporter extends ImportExport
         'iata'                 => 'nullable',
         'name'                 => 'required',
         'location'             => 'nullable',
+        'region'               => 'nullable',
         'country'              => 'nullable',
         'timezone'             => 'nullable',
         'hub'                  => 'nullable|boolean',
         'lat'                  => 'required|numeric',
         'lon'                  => 'required|numeric',
+        'elevation'            => 'nullable|numeric',
         'ground_handling_cost' => 'nullable|numeric',
         'fuel_100ll_cost'      => 'nullable|numeric',
         'fuel_jeta_cost'       => 'nullable|numeric',
@@ -46,13 +48,13 @@ class AirportImporter extends ImportExport
         $row['id'] = $row['icao'];
         $row['hub'] = get_truth_state($row['hub']);
 
-        if ($row['ground_handling_cost'] === null && $row['ground_handling_cost'] !== 0.0) {
+        if (!is_numeric($row['ground_handling_cost'])) {
             $row['ground_handling_cost'] = (float) setting('airports.default_ground_handling_cost');
         } else {
             $row['ground_handling_cost'] = (float) $row['ground_handling_cost'];
         }
 
-        if ($row['fuel_jeta_cost'] === null && $row['fuel_jeta_cost'] !== 0.0) {
+        if (!is_numeric($row['fuel_jeta_cost'])) {
             $row['fuel_jeta_cost'] = (float) setting('airports.default_jet_a_fuel_cost');
         } else {
             $row['fuel_jeta_cost'] = (float) $row['fuel_jeta_cost'];
@@ -63,7 +65,7 @@ class AirportImporter extends ImportExport
                 'id' => $row['icao'],
             ], $row);
         } catch (\Exception $e) {
-            $this->errorLog('Error in row '.$index.': '.$e->getMessage());
+            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
             return false;
         }
 

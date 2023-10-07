@@ -20,6 +20,8 @@ storage/*.key
 storage/settings.json
 storage/*.sqlite
 .env.php
+.env.old
+.envrc
 .env
 .github/scripts/env.test
 .vagrant

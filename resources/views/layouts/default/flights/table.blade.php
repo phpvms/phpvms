@@ -26,6 +26,9 @@
                     style="max-width: 80px; width: 100%; height: auto;"/>
               @endif
               {{ $flight->ident }}
+              @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
+                {{ '| '. $flight->atc }}
+              @endif
             </a>
           </h5>
         </div>
@@ -63,9 +66,9 @@
           (<a href="{{route('frontend.airports.show', ['id' => $flight->arr_airport_id])}}">{{$flight->arr_airport_id}}</a>)
           @if($flight->arr_time), {{ $flight->arr_time }}@endif
           <br/>
-          @if(filled($flight->callsign))
+          @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
             <span class="title">{{ strtoupper(__('flights.callsign')) }}&nbsp;</span>
-            {{ $flight->airline->icao }} {{ $flight->callsign }}
+            {{ $flight->atc }}
             <br/>
           @endif
           @if($flight->distance)

@@ -1,10 +1,10 @@
-icao,iata,name,location,country,timezone,hub,lat,lon,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
-EGLL,LHR,"London Heathrow","London, England",,Europe/London,,51.4775,-0.4614,500,0,0,0,
-KAUS,AUS,Austin-Bergstrom,"Austin, Texas, USA","United States",America/Chicago,1,30.1945,-97.6699,0,0,0,0,"Test Note"
-KJFK,JFK,"John F Kennedy","New York, New York, USA","United States",America/New_York,1,40.6399,-73.7787,250,0,0,0,"Busy Airport"
-KPAE,PAE,"Snohomish County (Paine Field) Airport",Everett,"United States",America/Los_Angeles,,47.9063,-122.282,0,0,0,0,
-KSEA,SEA,"Seattle Tacoma International Airport",Seattle,"United States",America/Los_Angeles,,47.449,-122.309,0,0,0,0,
-LEMD,MAD,"Adolfo Suárez Madrid–Barajas Airport",Madrid,Spain,Europe/Madrid,,40.4719,-3.5626,,0,0,0,
-MKJP,KIN,"Norman Manley International Airport","Kingston, Jamaica",,America/Jamaica,,17.9357,-76.7875,50,0,0,0,
-MWCR,GCM,"Owen Roberts International Airport",Georgetown,Cayman,America/Cayman,,19.2928,-81.3577,50,0,0,0,
-OMDB,DXB,"Dubai International Airport","Dubai, UAE",,Asia/Dubai,,25.2528,55.3644,50,0,0,0,
+icao,iata,name,location,region,country,timezone,hub,lat,lon,elevation,ground_handling_cost,fuel_100ll_cost,fuel_jeta_cost,fuel_mogas_cost,notes
+EGLL,LHR,"London Heathrow","London, England",,,Europe/London,,51.4775,-0.4614,-156,500,0,0,0,
+KAUS,AUS,Austin-Bergstrom,"Austin, Texas, USA","Texas","United States",America/Chicago,1,30.1945,-97.6699,,0,0,0,0,"Test Note"
+KJFK,JFK,"John F Kennedy","New York, New York, USA","New York","United States",America/New_York,1,40.6399,-73.7787,,250,0,0,0,"Busy Airport"
+KPAE,PAE,"Snohomish County (Paine Field) Airport",Everett,,"United States",America/Los_Angeles,,47.9063,-122.282,,0,0,0,0,
+KSEA,SEA,"Seattle Tacoma International Airport",Seattle,,"United States",America/Los_Angeles,,47.449,-122.309,,0,0,0,0,
+LEMD,MAD,"Adolfo Suárez Madrid–Barajas Airport",Madrid,,Spain,Europe/Madrid,,40.4719,-3.5626,,,0,0,0,
+MKJP,KIN,"Norman Manley International Airport","Kingston, Jamaica",,,America/Jamaica,,17.9357,-76.7875,98,50,0,0,0,
+MWCR,GCM,"Owen Roberts International Airport",Georgetown,,Cayman,America/Cayman,,19.2928,-81.3577,459,50,0,0,0,
+OMDB,DXB,"Dubai International Airport","Dubai, UAE",,,Asia/Dubai,,25.2528,55.3644,,50,0,0,0,

@@ -1,12 +1,15 @@
 <div id="airports_table_wrapper">
   <table class="table table-hover table-responsive" id="airports-table">
     <thead>
-    <th>ICAO</th>
-    <th>IATA</th>
-    <th>Name</th>
-    <th>Location</th>
-    <th style="text-align: center;">Hub</th>
-    <th style="text-align: center;">Notes</th>
+    <th>@sortablelink('icao', 'ICAO')</th>
+    <th>@sortablelink('iata', 'IATA')</th>
+    <th>@sortablelink('name', 'Name')</th>
+    <th>@sortablelink('location', 'Location')</th>
+    <th>@sortablelink('region', 'Region')</th>
+    <th>@sortablelink('country', 'Country')</th>
+    <th>@sortablelink('elevation', 'Elevation')</th>    
+    <th style="text-align: center;">@sortablelink('hub', 'Hub')</th>
+    <th style="text-align: center;">@sortablelink('notes', 'Notes')</th>
     <th style="text-align: center;">GH Cost</th>
     <th style="text-align: center;">JetA</th>
     <th style="text-align: center;">100LL</th>
@@ -20,6 +23,9 @@
         <td><a href="{{ route('admin.airports.edit', [$airport->id]) }}">{{ $airport->iata }}</a></td>
         <td>{{ $airport->name }}</td>
         <td>{{ $airport->location }}</td>
+        <td>{{ $airport->region }}</td>
+        <td>{{ $airport->country }}</td>
+        <td>{{ $airport->elevation }}</td>
         <td style="text-align: center;">
           @if($airport->hub === true)
             <span class="label label-success">Hub</span>

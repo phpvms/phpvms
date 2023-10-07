@@ -40,7 +40,7 @@ class ImporterDB
             'dbname='.$this->creds['name'],
         ]);
 
-        Log::info('Using DSN: '.$this->dsn);
+        // Log::info('Using DSN: '.$this->dsn);
 
         $this->batchSize = config('installer.importer.batch_size', 20);
     }

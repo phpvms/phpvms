@@ -7,44 +7,44 @@
               'method' => 'GET',
       ]) }}
 
-      <div class="mt-1">
+      <div>
         <div class="form-group">
-          <p>@lang('common.airline')</p>
+          <div>@lang('common.airline')</div>
           {{ Form::select('airline_id', $airlines, null , ['class' => 'form-control select2']) }}
         </div>
       </div>
 
-      <div class="mt-1">
-        <p>@lang('flights.flighttype')</p>
+      <div class="mt-3">
+        <div>@lang('flights.flighttype')</div>
         {{ Form::select('flight_type', $flight_types, null , ['class' => 'form-control select2']) }}
       </div>
 
-      <div class="mt-1">
-        <p>@lang('flights.flightnumber')</p>
+      <div class="mt-3">
+        <div>@lang('flights.flightnumber')</div>
         {{ Form::text('flight_number', null, ['class' => 'form-control']) }}
       </div>
 
-      <div class="mt-1">
-        <p>@lang('flights.code')</p>
+      <div class="mt-3">
+        <div>@lang('flights.code')</div>
         {{ Form::text('route_code', null, ['class' => 'form-control']) }}
       </div>
 
-      <div class="mt-1">
-        <p>@lang('airports.departure')</p>
+      <div class="mt-3">
+        <div>@lang('airports.departure')</div>
         {{ Form::select('dep_icao', [], null , ['class' => 'form-control airport_search']) }}
       </div>
 
-      <div class="mt-1">
-        <p>@lang('airports.arrival')</p>
+      <div class="mt-3">
+        <div>@lang('airports.arrival')</div>
         {{ Form::select('arr_icao', [], null , ['class' => 'form-control airport_search']) }}
       </div>
 
-      <div class="mt-1">
-        <p>@lang('common.subfleet')</p>
+      <div class="mt-3">
+        <div>@lang('common.subfleet')</div>
         {{ Form::select('subfleet_id', $subfleets, null , ['class' => 'form-control select2']) }}
       </div>
 
-      <div class="clear mt-1" style="margin-top: 10px;">
+      <div class="clear mt-3" style="margin-top: 10px;">
         {{ Form::submit(__('common.find'), ['class' => 'btn btn-outline-primary']) }}&nbsp;
         <a href="{{ route('frontend.flights.index') }}">@lang('common.reset')</a>
       </div>

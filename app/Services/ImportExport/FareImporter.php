@@ -42,7 +42,7 @@ class FareImporter extends ImportExport
                 'code' => $row['code'],
             ], $row);
         } catch (\Exception $e) {
-            $this->errorLog('Error in row '.$index.': '.$e->getMessage());
+            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
             return false;
         }
 

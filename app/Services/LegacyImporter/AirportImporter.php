@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Importers;
+namespace App\Services\LegacyImporter;
 
 use App\Models\Airport;
 use Illuminate\Database\QueryException;
@@ -25,31 +25,33 @@ class AirportImporter extends BaseImporter
             'fuel_jeta_cost',
         ];
 
+        // Legacy name to current name
+        $set_if_exists = [
+            'ground_handling_cost' => 'ground_handling_cost',
+            'fuel_jeta_cost'       => 'fuel_jeta_cost',
+            'tz'                   => 'timezone',
+            'elevation'            => 'elevation',
+            'region'               => 'region',
+        ];
+
         $count = 0;
-        $rows = $this->db->readRows($this->table, $this->idField, $start, $fields);
+        $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
-            $ground_handling_cost = (float) $row->ground_handling_cost;
-            $fuel_jetA_cost = (float) $row->fuel_jeta_cost;
-
-            if (empty($ground_handling_cost)) {
-                $ground_handling_cost = 0;
-            }
-
-            if (empty($fuel_jetA_cost)) {
-                $fuel_jetA_cost = 0;
-            }
-
             $attrs = [
-                'id'                   => trim($row->icao),
-                'icao'                 => trim($row->icao),
-                'name'                 => $row->name,
-                'country'              => $row->country,
-                'lat'                  => $row->lat,
-                'lon'                  => $row->lng,
-                'hub'                  => $row->hub,
-                'ground_handling_cost' => $ground_handling_cost,
-                'fuel_jeta_cost'       => $fuel_jetA_cost,
+                'id'      => trim($row->icao),
+                'icao'    => trim($row->icao),
+                'name'    => $row->name,
+                'country' => $row->country,
+                'lat'     => $row->lat,
+                'lon'     => $row->lng,
+                'hub'     => $row->hub,
             ];
+
+            foreach ($set_if_exists as $legacy_name => $current_name) {
+                if (property_exists($row, $legacy_name) && !empty($row->{$legacy_name})) {
+                    $attrs[$current_name] = $row->{$legacy_name};
+                }
+            }
 
             $w = ['id' => $attrs['id']];
             //$airport = Airport::updateOrCreate($w, $attrs);

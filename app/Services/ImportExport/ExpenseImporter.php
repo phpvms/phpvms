@@ -59,7 +59,7 @@ class ExpenseImporter extends ImportExport
                 'name' => $row['name'],
             ], $row);
         } catch (\Exception $e) {
-            $this->errorLog('Error in row '.$index.': '.$e->getMessage());
+            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
             return false;
         }
 
