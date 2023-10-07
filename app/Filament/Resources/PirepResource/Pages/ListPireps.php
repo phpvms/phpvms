@@ -7,7 +7,6 @@ use App\Models\Enums\PirepState;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Pages\ListRecords\Tab;
-
 use Illuminate\Database\Eloquent\Builder;
 
 class ListPireps extends ListRecords

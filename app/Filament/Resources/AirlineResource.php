@@ -3,12 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AirlineResource\Pages;
-use App\Filament\Resources\AirlineResource\RelationManagers;
 use App\Filament\Resources\AirlineResource\RelationManagers\FilesRelationManager;
 use App\Models\Airline;
 use App\Models\File;
 use App\Services\FileService;
-use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -51,9 +49,9 @@ class AirlineResource extends Resource
                     ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                     ->searchable()
                     ->native(false),
-                    Toggle::make('active')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle')
-                ])->columns(3)
-             ]);
+                    Toggle::make('active')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle'),
+                ])->columns(3),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -62,9 +60,13 @@ class AirlineResource extends Resource
             ->columns([
                 TextColumn::make('Code')->formatStateUsing(function (Airline $record) {
                     $html = '';
-                    if (filled($record->country)) $html .= '<span class="flag-icon flag-icon-' .$record->country. '"></span> &nbsp;';
-                    if (filled($record->iata)) $html .= $record->iata . '/';
-                    return $html . $record->icao;
+                    if (filled($record->country)) {
+                        $html .= '<span class="flag-icon flag-icon-'.$record->country.'"></span> &nbsp;';
+                    }
+                    if (filled($record->iata)) {
+                        $html .= $record->iata.'/';
+                    }
+                    return $html.$record->icao;
                 })->html(),
                 TextColumn::make('name')->label('Name')->searchable(),
                 IconColumn::make('active')->label('Active')->color(fn ($record) => $record->active ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
@@ -86,11 +88,11 @@ class AirlineResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(fn(Airline $record) => $record->files()->each(function (File $file) {
+                        $records->each(fn (Airline $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),
-                    Tables\Actions\RestoreBulkAction::make()
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
@@ -109,16 +111,16 @@ class AirlineResource extends Resource
     public static function getRelations(): array
     {
         return [
-            FilesRelationManager::class
+            FilesRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAirlines::route('/'),
+            'index'  => Pages\ListAirlines::route('/'),
             'create' => Pages\CreateAirline::route('/create'),
-            'edit' => Pages\EditAirline::route('/{record}/edit'),
+            'edit'   => Pages\EditAirline::route('/{record}/edit'),
         ];
     }
 }

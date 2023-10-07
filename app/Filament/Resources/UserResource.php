@@ -16,8 +16,8 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use League\ISO3166\ISO3166;
 
@@ -68,10 +68,10 @@ class UserResource extends Resource
                             ->required()
                             ->email(),
 
-                            Forms\Components\TextInput::make('password')
-                            ->password()
-                            ->autocomplete('new-password')
-                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('password')
+                        ->password()
+                        ->autocomplete('new-password')
+                        ->columnSpanFull(),
                     ])
                     ->columns(2),
                     Forms\Components\Section::make('Location Information')
@@ -89,57 +89,57 @@ class UserResource extends Resource
 
                         Forms\Components\Select::make('home_airport_id')
                             ->label('Home Airport')
-                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
+                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]))
                             ->searchable()
                             ->native(false),
 
                         Forms\Components\Select::make('current_airport_id')
                             ->label('Current Airport')
-                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao . ' - ' . $item->name]))
+                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]))
                             ->searchable()
                             ->native(false),
                     ])
                     ->columns(2),
-                        ])->columnSpan(['lg' => 2]),
-                    Forms\Components\Group::make()
+                ])->columnSpan(['lg' => 2]),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make('User Information')
                         ->schema([
-                            Forms\Components\Section::make('User Information')
-                            ->schema([
-                                Forms\Components\Select::make('state')
-                                    ->options(UserState::labels())
-                                    ->searchable()
-                                    ->native(false),
-
-                                Forms\Components\Select::make('airline_id')
-                                    ->label('Airline')
-                                    ->options($airlineRepo->all()->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->native(false),
-
-                                Forms\Components\Select::make('rank_id')
-                                    ->label('Rank')
-                                    ->options($rankRepo->all()->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->native(false),
-
-                                Forms\Components\TextInput::make('transfer_time')
-                                    ->label('Transferred Hours')
-                                    ->numeric(),
-
-                                Forms\Components\Select::make('roles')
-                                ->label('Roles')
-                                //->options($roleRepo->all()->pluck('name', 'id'))
-                                ->relationship('roles', 'name')
+                            Forms\Components\Select::make('state')
+                                ->options(UserState::labels())
                                 ->searchable()
-                                ->native(false)
-                                ->multiple(),
+                                ->native(false),
 
-                                Forms\Components\Textarea::make('notes')
-                                    ->label('Management Notes')
-                                    ->columnSpan('full'),
-                            ])
-                            ->columnSpan(['lg' => 1]),
-                        ]),
+                            Forms\Components\Select::make('airline_id')
+                                ->label('Airline')
+                                ->options($airlineRepo->all()->pluck('name', 'id'))
+                                ->searchable()
+                                ->native(false),
+
+                            Forms\Components\Select::make('rank_id')
+                                ->label('Rank')
+                                ->options($rankRepo->all()->pluck('name', 'id'))
+                                ->searchable()
+                                ->native(false),
+
+                            Forms\Components\TextInput::make('transfer_time')
+                                ->label('Transferred Hours')
+                                ->numeric(),
+
+                            Forms\Components\Select::make('roles')
+                            ->label('Roles')
+                            //->options($roleRepo->all()->pluck('name', 'id'))
+                            ->relationship('roles', 'name')
+                            ->searchable()
+                            ->native(false)
+                            ->multiple(),
+
+                            Forms\Components\Textarea::make('notes')
+                                ->label('Management Notes')
+                                ->columnSpan('full'),
+                        ])
+                        ->columnSpan(['lg' => 1]),
+                    ]),
             ])->columns(3);
     }
 
@@ -167,7 +167,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -184,7 +184,7 @@ class UserResource extends Resource
             RelationManagers\FieldsRelationManager::class,
             RelationManagers\AwardsRelationManager::class,
             RelationManagers\TypeRatingsRelationManager::class,
-            RelationManagers\PirepsRelationManager::class
+            RelationManagers\PirepsRelationManager::class,
         ];
     }
 
