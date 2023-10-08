@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TypeRatingResource\Pages;
+use App\Filament\Resources\TypeRatingResource\RelationManagers;
 use App\Models\Typerating;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,10 +14,11 @@ use Filament\Tables\Table;
 class TyperatingResource extends Resource
 {
     protected static ?string $navigationGroup = 'config';
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationIcon = 'heroicon-o-rocket-launch';
 
-    protected static ?string $navigationLabel = 'type ratings';
+    protected static ?string $navigationLabel = 'Type Ratings';
 
     protected static ?string $modelLabel = 'Type Ratings';
 
@@ -26,18 +28,13 @@ class TyperatingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->label('Name'),
-                Forms\Components\TextInput::make('type')
-                    ->required()
-                    ->label('Type'),
-                Forms\Components\TextInput::make('description')
-                    ->label('Description'),
-                Forms\Components\TextInput::make('image_url')
-                    ->label('Image URL'),
-                Forms\Components\Checkbox::make('active')
-                    ->label('Active'),
+                Forms\Components\Section::make('Type Rating Informations')->schema([
+                    Forms\Components\TextInput::make('name')->required()->label('Name'),
+                    Forms\Components\TextInput::make('type')->required()->label('Type'),
+                    Forms\Components\TextInput::make('description')->label('Description'),
+                    Forms\Components\TextInput::make('image_url')->label('Image URL'),
+                    Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
+                ])->columns(2)
             ]);
     }
 
@@ -49,13 +46,14 @@ class TyperatingResource extends Resource
                 Tables\Columns\TextColumn::make('type'),
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('image_url'),
-                Tables\Columns\TextColumn::make('active'),
+                Tables\Columns\IconColumn::make('active')->label('Active')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -63,14 +61,14 @@ class TyperatingResource extends Resource
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()->label('Add Type Rating')->icon('heroicon-o-plus-circle'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\SubfleetsRelationManager::class,
         ];
     }
 
