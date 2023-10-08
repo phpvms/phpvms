@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 class PirepResource extends Resource
 {
     protected static ?string $model = Pirep::class;
-    protected static ?string $navigationGroup = 'operations';
+    protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'pireps';

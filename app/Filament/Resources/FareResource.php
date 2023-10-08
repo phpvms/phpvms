@@ -22,7 +22,7 @@ class FareResource extends Resource
 {
     protected static ?string $model = Fare::class;
 
-    protected static ?string $navigationGroup = 'operations';
+    protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Fares';

@@ -26,7 +26,7 @@ class AirlineResource extends Resource
 {
     protected static ?string $model = Airline::class;
 
-    protected static ?string $navigationGroup = 'config';
+    protected static ?string $navigationGroup = 'Config';
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Airlines';

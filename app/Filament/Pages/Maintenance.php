@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class Maintenance extends Page
 {
-    protected static ?string $navigationGroup = 'config';
+    protected static ?string $navigationGroup = 'Config';
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationLabel = 'Maintenance';

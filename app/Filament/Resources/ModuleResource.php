@@ -20,7 +20,7 @@ class ModuleResource extends Resource
 {
     protected static ?string $model = Module::class;
 
-    protected static ?string $navigationGroup = 'config';
+    protected static ?string $navigationGroup = 'Config';
     protected static ?int $navigationSort = 8;
 
     protected static ?string $navigationLabel = 'Modules';
