@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\FareResource\Pages;
-use App\Filament\Resources\FareResource\RelationManagers;
 use App\Models\Enums\FareType;
 use App\Models\Fare;
 use Filament\Forms;
@@ -62,7 +61,7 @@ class FareResource extends Resource
                 TextColumn::make('cost')->label('Cost')->money(setting('units.currency')),
                 TextColumn::make('notes')->label('Notes'),
                 IconColumn::make('active')->label('Active')->color(fn (Fare $record) => $record->active ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
-              ])
+            ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
@@ -91,6 +90,7 @@ class FareResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
     public static function getRelations(): array
     {
         return [
@@ -101,9 +101,9 @@ class FareResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFares::route('/'),
+            'index'  => Pages\ListFares::route('/'),
             'create' => Pages\CreateFare::route('/create'),
-            'edit' => Pages\EditFare::route('/{record}/edit'),
+            'edit'   => Pages\EditFare::route('/{record}/edit'),
         ];
     }
 }
