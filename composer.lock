@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f612673434788af9e7cda877ceb3814",
+    "content-hash": "228d8573b3558674365e048aedbec321",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -1382,6 +1382,97 @@
                 }
             ],
             "time": "2022-02-25T21:32:43+00:00"
+        },
+        {
+            "name": "coolsam/modules",
+            "version": "3.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/arthurpar06/filament-modules.git",
+                "reference": "93e24c231013d68a0a5bc24b7bdb8956d4ff26a8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/arthurpar06/filament-modules/zipball/93e24c231013d68a0a5bc24b7bdb8956d4ff26a8",
+                "reference": "93e24c231013d68a0a5bc24b7bdb8956d4ff26a8",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0.0-beta",
+                "illuminate/contracts": "^9.1|^10.0",
+                "nwidart/laravel-modules": "^10.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.14.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^7.9",
+                "orchestra/testbench": "^8.0",
+                "pestphp/pest": "^2.0",
+                "pestphp/pest-plugin-arch": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Coolsam\\FilamentModules\\ModulesServiceProvider"
+                    ],
+                    "aliases": {
+                        "Modules": "Coolsam\\FilamentModules\\Facades\\Modules"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Coolsam\\FilamentModules\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Coolsam\\FilamentModules\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "post-autoload-dump": [
+                    "@php ./vendor/bin/testbench package:discover --ansi"
+                ],
+                "analyse": [
+                    "vendor/bin/phpstan analyse"
+                ],
+                "test": [
+                    "vendor/bin/pest"
+                ],
+                "test-coverage": [
+                    "vendor/bin/pest --coverage"
+                ],
+                "format": [
+                    "vendor/bin/pint"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sam Maosa",
+                    "email": "smaosa@savannabits.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Support for nwidart/laravel-modules in filamentphp",
+            "homepage": "https://github.com/coolsam/modules",
+            "keywords": [
+                "coolsam",
+                "laravel",
+                "modules"
+            ],
+            "support": {
+                "source": "https://github.com/arthurpar06/filament-modules/tree/3.x"
+            },
+            "time": "2023-10-08T20:48:13+00:00"
         },
         {
             "name": "danharrin/date-format-converter",

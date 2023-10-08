@@ -15,6 +15,10 @@
         {
           "type": "vcs",
           "url": "https://github.com/arthurpar06/laravel-theme"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/arthurpar06/filament-modules"
         }
       ],
     "require": {
@@ -85,7 +89,8 @@
         "spatie/laravel-ignition": "^2.0",
         "kyslik/column-sortable": "^6.5",
         "jlorente/laravel-data-migrations": "^2.0",
-        "filament/filament": "^3.0.69"
+        "filament/filament": "^3.0.69",
+        "coolsam/modules": "3.x-dev"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
