@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ExpenseResource\Pages;
-use App\Filament\Resources\ExpenseResource\RelationManagers;
 use App\Models\Enums\ExpenseType;
 use App\Models\Enums\FlightType;
 use App\Models\Expense;
@@ -13,8 +12,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ExpenseResource extends Resource
 {
@@ -35,7 +32,7 @@ class ExpenseResource extends Resource
                     Forms\Components\Select::make('airline_id')->options(app(AirlineRepository::class)->selectBoxList())->label('Airline'),
                     Forms\Components\Select::make('type')->options(ExpenseType::select())->required()->label('Expense Type'),
                     Forms\Components\Select::make('flight_type')->options(FlightType::select())->multiple()->label('Flight Types'),
-                  ])->columns(3),
+                ])->columns(3),
                 Forms\Components\Grid::make('')->schema([
                     Forms\Components\TextInput::make('name')->required()->string()->maxLength(191)->label('Expense Name'),
                     Forms\Components\TextInput::make('amount')->required()->numeric()->label('Amount'),

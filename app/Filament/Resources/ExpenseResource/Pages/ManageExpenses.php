@@ -28,7 +28,7 @@ class ManageExpenses extends ManageRecords
                     $expenses = $expenseRepo->all();
 
                     $path = $exporter->exportExpenses($expenses);
-                    return response()->download($path, 'expenses.csv', ['content-type' => 'text/csv',])->deleteFileAfterSend(true);
+                    return response()->download($path, 'expenses.csv', ['content-type' => 'text/csv'])->deleteFileAfterSend(true);
                 })->after(function (): void {
                     Notification::make()
                         ->title('Expenses Exported')
@@ -49,8 +49,7 @@ class ManageExpenses extends ManageRecords
 
                     session(['logs' => $logs]);
 
-                    if (count($logs['errors']) === 0)
-                    {
+                    if (count($logs['errors']) === 0) {
                         Notification::make()
                             ->title('Expenses Imported Successfully')
                             ->success()
