@@ -30,7 +30,6 @@ class ExportAction extends Action
         $this->label('Export to CSV');
 
         $this->action(function (array $arguments): ?BinaryFileResponse {
-
             if (!isset($arguments['resourceTitle']) || !$arguments['exportType']) {
                 $this->failure();
                 return null;
@@ -39,7 +38,6 @@ class ExportAction extends Action
             $exportSvc = app(ExportService::class);
 
             $file_name = $arguments['resourceTitle'].'.csv';
-
 
             switch ($arguments['exportType']) {
                 case ImportExportType::AIRCRAFT:

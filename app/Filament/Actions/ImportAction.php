@@ -32,7 +32,6 @@ class ImportAction extends Action
         ]);
 
         $this->action(function (array $data, array $arguments): void {
-
             if (!isset($arguments['resourceTitle']) || !$arguments['importType']) {
                 $this->failure();
                 return;
@@ -40,8 +39,8 @@ class ImportAction extends Action
 
             $importSvc = app(ImportService::class);
 
-            $path = storage_path('app/' . $data['importFile']);
-            Log::info('Uploaded ' . $arguments['resourceTitle'] . ' import file to ' . $path);
+            $path = storage_path('app/'.$data['importFile']);
+            Log::info('Uploaded '.$arguments['resourceTitle'].' import file to '.$path);
 
             switch ($arguments['importType']) {
                 case ImportExportType::AIRCRAFT:
@@ -66,11 +65,11 @@ class ImportAction extends Action
 
             if (count($logs['errors']) > 0) {
                 Notification::make()
-                    ->title('There were ' . count($logs['errors']) . ' errors importing ' . $arguments['resourceTitle'])
+                    ->title('There were '.count($logs['errors']).' errors importing '.$arguments['resourceTitle'])
                     ->body(implode('<br>', $logs['errors']))
                     ->persistent()
                     ->actions([
-                        \Filament\Notifications\Actions\Action::make('close')->label('Close')->close()
+                        \Filament\Notifications\Actions\Action::make('close')->label('Close')->close(),
                     ])
                     ->danger()
                     ->send();
