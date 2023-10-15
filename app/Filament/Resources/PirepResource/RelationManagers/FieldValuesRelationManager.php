@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\PirepResource\RelationManagers;
 
-use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
 use App\Models\PirepField;
 use App\Models\PirepFieldValue;
@@ -11,8 +10,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class FieldValuesRelationManager extends RelationManager
 {
@@ -49,7 +46,7 @@ class FieldValuesRelationManager extends RelationManager
                     $data['slug'] = str_slug($data['name']);
 
                     return $data;
-                })
+                }),
             ])
             ->actions([
                 //

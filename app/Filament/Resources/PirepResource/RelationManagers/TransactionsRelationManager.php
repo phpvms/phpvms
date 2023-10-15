@@ -3,15 +3,11 @@
 namespace App\Filament\Resources\PirepResource\RelationManagers;
 
 use App\Services\Finance\PirepFinanceService;
-use App\Services\FinanceService;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TransactionsRelationManager extends RelationManager
 {
@@ -32,10 +28,10 @@ class TransactionsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('memo'),
                 Tables\Columns\TextColumn::make('credit')->color('success')->money(setting('units.currency'))->summarize([
-                    Tables\Columns\Summarizers\Sum::make()
+                    Tables\Columns\Summarizers\Sum::make(),
                 ]),
                 Tables\Columns\TextColumn::make('debit')->color('danger')->money(setting('units.currency'))->summarize([
-                    Tables\Columns\Summarizers\Sum::make()
+                    Tables\Columns\Summarizers\Sum::make(),
                 ]),
             ])
             ->filters([

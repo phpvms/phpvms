@@ -24,7 +24,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -61,7 +60,7 @@ class PirepResource extends Resource
                     Forms\Components\TextInput::make('route_code'),
                     Forms\Components\TextInput::make('route_leg'),
                     Forms\Components\Select::make('flight_type')->disabled(false)->options(FlightType::select()),
-                    Forms\Components\Placeholder::make('source')->content(fn (Pirep $record): string => PirepSource::label($record->source) . (filled($record->source_name) ? '('.$record->source_name.')' : ''))->label('Filed Via: '),
+                    Forms\Components\Placeholder::make('source')->content(fn (Pirep $record): string => PirepSource::label($record->source).(filled($record->source_name) ? '('.$record->source_name.')' : ''))->label('Filed Via: '),
                 ])->columns(5)->disabled(fn (Pirep $record): bool => $record->read_only),
 
                 Forms\Components\Section::make('Flight Information')->schema([
@@ -169,7 +168,7 @@ class PirepResource extends Resource
             FaresRelationManager::class,
             FieldValuesRelationManager::class,
             CommentsRelationManager::class,
-            TransactionsRelationManager::class
+            TransactionsRelationManager::class,
         ];
     }
 
