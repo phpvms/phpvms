@@ -4,13 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RankResource\Pages;
 use App\Filament\Resources\RankResource\RelationManagers;
-use App\Models\Fare;
 use App\Models\Rank;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -86,9 +84,9 @@ class RankResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRanks::route('/'),
+            'index'  => Pages\ListRanks::route('/'),
             'create' => Pages\CreateRank::route('/create'),
-            'edit' => Pages\EditRank::route('/{record}/edit'),
+            'edit'   => Pages\EditRank::route('/{record}/edit'),
         ];
     }
 

@@ -24,28 +24,27 @@ class ManageModules extends ManageRecords
                         ->description('If you choose to upload a module zip file it will be installed and enabled automatically. Please not that module folder must be on top level of the zip and the zip name must be EXACTLY equal to the name of the module folder inside. If you choose to enable an already uploaded module, you have to upload it in the modules folder')
                         ->schema([
                             Forms\Components\Radio::make('method')->options([
-                                'upload' => 'Upload module zip file',
+                                'upload'       => 'Upload module zip file',
                                 'autodiscover' => 'Enable new module (already uploaded in modules folder)',
                             ])->default('upload')->required()->live()->inline(),
-                            Forms\Components\FileUpload::make('moduleZip')->required(fn(Forms\Get $get): bool => $get('method') == 'upload')->visible(fn(Forms\Get $get): bool => $get('method') == 'upload')->disk('local')->directory('modules')->preserveFilenames(),
-                            Forms\Components\Select::make('moduleId')->required(fn(Forms\Get $get): bool => $get('method') == 'autodiscover')->visible(fn(Forms\Get $get): bool => $get('method') == 'autodiscover')->label('Name')->options(app(ModuleService::class)->scan()),
+                            Forms\Components\FileUpload::make('moduleZip')->required(fn (Forms\Get $get): bool => $get('method') == 'upload')->visible(fn (Forms\Get $get): bool => $get('method') == 'upload')->disk('local')->directory('modules')->preserveFilenames(),
+                            Forms\Components\Select::make('moduleId')->required(fn (Forms\Get $get): bool => $get('method') == 'autodiscover')->visible(fn (Forms\Get $get): bool => $get('method') == 'autodiscover')->label('Name')->options(app(ModuleService::class)->scan()),
 
-                        ])
+                        ]),
                 ])
                 ->action(function (array $data) {
                     $moduleSvc = app(ModuleService::class);
                     if ($data['method'] == 'autodiscover') {
-                        $moduleName = $moduleSvc->scan()[(int)$data['moduleId']];
+                        $moduleName = $moduleSvc->scan()[(int) $data['moduleId']];
                         $moduleSvc->addModule($moduleName);
                     } else {
                         $moduleSvc->installModule(new UploadedFile(
-                            storage_path('app/' . $data['moduleZip']),
+                            storage_path('app/'.$data['moduleZip']),
                             explode('/', $data['moduleZip'])[array_key_last(explode('/', $data['moduleZip']))]
                         ));
 
-                        Storage::delete(storage_path('app/' . $data['moduleZip']));
+                        Storage::delete(storage_path('app/'.$data['moduleZip']));
                     }
-
                 }),
         ];
     }

@@ -13,7 +13,7 @@ class ListPages extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Page')->icon('heroicon-o-plus-circle')
+            Actions\CreateAction::make()->label('Add Page')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

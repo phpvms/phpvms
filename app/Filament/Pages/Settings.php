@@ -18,7 +18,6 @@ use Filament\Support\Exceptions\Halt;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class Settings extends Page
@@ -112,7 +111,7 @@ class Settings extends Page
     public function getFormActions()
     {
         return [
-            Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s'])
+            Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s']),
         ];
     }
 
@@ -134,7 +133,6 @@ class Settings extends Page
         ];
     }
 
-
     protected function getFormSchema(): array
     {
         $schema = [];
@@ -145,23 +143,21 @@ class Settings extends Page
                 $settings->map(function ($setting) {
                     if ($setting->type === 'date') {
                         return DatePicker::make($setting->key)->label($setting->name)->helperText($setting->description)->format('Y-m-d');
-                    } else if ($setting->type === 'boolean' || $setting->type === 'bool') {
+                    } elseif ($setting->type === 'boolean' || $setting->type === 'bool') {
                         return Toggle::make($setting->key)->label($setting->name)->helperText($setting->description)->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success');
-                    } else if ($setting->type === 'int') {
+                    } elseif ($setting->type === 'int') {
                         return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->integer();
-                    } else if ($setting->type === 'number') {
+                    } elseif ($setting->type === 'number') {
                         return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->numeric()->step(0.01);
-                    } else if ($setting->type === 'select') {
+                    } elseif ($setting->type === 'select') {
                         if ($setting->id === 'general_theme') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getThemes()));
-                        } else if ($setting->id === 'units_currency') {
+                        } elseif ($setting->id === 'units_currency') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getCurrencyList()));
-                        } else {
-                            return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
                         }
-                    } else {
-                        return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->string();
+                        return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
                     }
+                    return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->string();
                 })->toArray()
             );
         }
@@ -199,5 +195,4 @@ class Settings extends Page
 
         return $curr;
     }
-
 }

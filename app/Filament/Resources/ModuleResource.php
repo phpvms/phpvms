@@ -10,9 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -32,7 +30,7 @@ class ModuleResource extends Resource
             ->schema([
                 // Edit Only (we are not using default create action)
                 Forms\Components\Toggle::make('enabled')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->hiddenOn('create'),
-                Forms\Components\Hidden::make('name')->hiddenOn('create')
+                Forms\Components\Hidden::make('name')->hiddenOn('create'),
             ]);
     }
 
@@ -54,7 +52,7 @@ class ModuleResource extends Resource
                 }),
                 Tables\Actions\DeleteAction::make()->before(function (Module $record) {
                     try {
-                        File::deleteDirectory(base_path() . '/modules/' . $record->name);
+                        File::deleteDirectory(base_path().'/modules/'.$record->name);
                     } catch (\Exception $e) {
                         Log::error('Folder Deleted Manually for Module : '.$record->name);
                     }
@@ -65,7 +63,7 @@ class ModuleResource extends Resource
                     Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
                         $records->each(function (Module $record) {
                             try {
-                                File::deleteDirectory(base_path() . '/modules/' . $record->name);
+                                File::deleteDirectory(base_path().'/modules/'.$record->name);
                             } catch (\Exception $e) {
                                 Log::error('Folder Deleted Manually for Module : '.$record->name);
                             }

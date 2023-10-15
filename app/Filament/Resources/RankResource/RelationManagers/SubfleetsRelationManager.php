@@ -2,13 +2,10 @@
 
 namespace App\Filament\Resources\RankResource\RelationManagers;
 
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SubfleetsRelationManager extends RelationManager
 {
@@ -30,7 +27,7 @@ class SubfleetsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('airline.name')->label('Airline'),
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextInputColumn::make('acars_pay')->placeholder('inherited')->rules(['nullable', 'numeric', 'min:0']),
-                Tables\Columns\TextInputColumn::make('manual_pay')->placeholder('inherited')->rules(['nullable', 'numeric', 'min:0'])
+                Tables\Columns\TextInputColumn::make('manual_pay')->placeholder('inherited')->rules(['nullable', 'numeric', 'min:0']),
             ])
             ->filters([
                 //

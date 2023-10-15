@@ -34,7 +34,7 @@ class TyperatingResource extends Resource
                     Forms\Components\TextInput::make('description')->label('Description'),
                     Forms\Components\TextInput::make('image_url')->label('Image URL'),
                     Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
-                ])->columns(2)
+                ])->columns(2),
             ]);
     }
 

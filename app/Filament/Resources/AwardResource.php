@@ -32,7 +32,6 @@ class AwardResource extends Resource
             $awards[$class_ref] = $award->name;
         }
 
-
         return $form
             ->schema([
                 Forms\Components\Section::make('Award Information')
@@ -47,7 +46,7 @@ class AwardResource extends Resource
                             Forms\Components\TextInput::make('ref_model_params')->label('Award Class parammeters')->string(),
                         ])->columnSpan(1),
                         Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
-                    ])->columns(2)
+                    ])->columns(2),
             ]);
     }
 
@@ -89,9 +88,9 @@ class AwardResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAwards::route('/'),
+            'index'  => Pages\ListAwards::route('/'),
             'create' => Pages\CreateAward::route('/create'),
-            'edit' => Pages\EditAward::route('/{record}/edit'),
+            'edit'   => Pages\EditAward::route('/{record}/edit'),
         ];
     }
 

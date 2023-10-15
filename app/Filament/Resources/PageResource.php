@@ -10,8 +10,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PageResource extends Resource
 {
@@ -32,7 +30,7 @@ class PageResource extends Resource
                     Forms\Components\Grid::make('')->schema([
                         Forms\Components\TextInput::make('name')->label('Page Name')->required()->string()->maxLength(191),
                         Forms\Components\TextInput::make('icon')->string()->maxLength(191),
-                        Forms\Components\Select::make('type')->label('Page Type')->options(PageType::select())->default(PageType::PAGE)->required()->live()
+                        Forms\Components\Select::make('type')->label('Page Type')->options(PageType::select())->default(PageType::PAGE)->required()->live(),
                     ])->columns(3),
                     Forms\Components\Grid::make('')->schema([
                         Forms\Components\Toggle::make('public')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
@@ -53,8 +51,8 @@ class PageResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('type')->formatStateUsing(fn ($state): string => PageType::label($state)),
-                Tables\Columns\IconColumn::make('public')->color(fn($state) => $state ? 'success' : 'danger')->icon(fn($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
-                Tables\Columns\IconColumn::make('enabled')->color(fn($state) => $state ? 'success' : 'danger')->icon(fn($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\IconColumn::make('public')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\IconColumn::make('enabled')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //
@@ -83,9 +81,9 @@ class PageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPages::route('/'),
+            'index'  => Pages\ListPages::route('/'),
             'create' => Pages\CreatePage::route('/create'),
-            'edit' => Pages\EditPage::route('/{record}/edit'),
+            'edit'   => Pages\EditPage::route('/{record}/edit'),
         ];
     }
 }
