@@ -3,10 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepResource\Pages;
+use App\Filament\Resources\PirepResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\FaresRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\FieldValuesRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
+use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
+use App\Repositories\AircraftRepository;
+use App\Repositories\AirlineRepository;
+use App\Repositories\AirportRepository;
 use App\Repositories\UserRepository;
 use App\Services\PirepService;
 use App\Support\Units\Time;
@@ -48,75 +56,33 @@ class PirepResource extends Resource
         $userRepo = app(UserRepository::class);
         return $form
             ->schema([
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make('Pirep sender')->schema([
-                            Forms\Components\Placeholder::make('user'),
-                        ]),
-                        Forms\Components\Section::make('Basic Information')
-                            ->schema([
-                                Forms\Components\TextInput::make('ident')
-                                    ->required()
-                                    ->label('Flight Ident'),
-                                Forms\Components\TextInput::make('flight_number')
-                                    ->required()
-                                    ->label('Flight Number'),
-                                Forms\Components\TextInput::make('aircraft_id')
-                                    ->required()
-                                    ->label('Aircraft ID'),
-                                Forms\Components\TextInput::make('dpt_airport_id')
-                                    ->required()
-                                    ->label('Departure Airport ID'),
-                                Forms\Components\TextInput::make('arr_airport_id')
-                                    ->required()
-                                    ->label('Arrival Airport ID'),
-                                Forms\Components\TextInput::make('route')
-                                    ->label('Route'),
-                                Forms\Components\TextInput::make('notes')
-                                    ->label('Notes'),
-                                Forms\Components\TextInput::make('flight_time')
-                                    ->required()
-                                    ->label('Flight Time'),
-                                Forms\Components\TextInput::make('block_time')
-                                    ->required()
-                                    ->label('Block Time'),
-                                Forms\Components\TextInput::make('fuel_used')
-                                    ->required()
-                                    ->label('Fuel Used'),
-                                Forms\Components\TextInput::make('fuel_unit')
-                                    ->required()
-                                    ->label('Fuel Unit'),
-                                Forms\Components\TextInput::make('source')
-                                    ->required()
-                                    ->label('Source'),
-                                Forms\Components\TextInput::make('state')
-                                    ->required()
-                                    ->label('State'),
-                                Forms\Components\TextInput::make('status')
-                                    ->required()
-                                    ->label('Status'),
-                                Forms\Components\TextInput::make('raw_data')
-                                    ->required()
-                                    ->label('Raw Data'),
-                                Forms\Components\TextInput::make('route_code')
-                                    ->required()
-                                    ->label('Route Code'),
-                                Forms\Components\TextInput::make('route_leg')
-                                    ->required()
-                                    ->label('Route Leg'),
-                                Forms\Components\TextInput::make('distance')
-                                    ->required()
-                                    ->label('Distance'),
-                                Forms\Components\TextInput::make('flight_type')
-                                    ->required()
-                                    ->label('Flight Type'),
-                                Forms\Components\TextInput::make('planned_distance')
-                                    ->required()
-                                    ->label('Planned Distance'),
-                                Forms\Components\TextInput::make('planned_flight_time')
-                                    ->required(),
-                            ]),
-                    ])]);
+                Forms\Components\Section::make('Basic Information')->schema([
+                    Forms\Components\TextInput::make('flight_number'),
+                    Forms\Components\TextInput::make('route_code'),
+                    Forms\Components\TextInput::make('route_leg'),
+                    Forms\Components\Select::make('flight_type')->disabled(false)->options(FlightType::select()),
+                    Forms\Components\Placeholder::make('source')->content(fn (Pirep $record): string => PirepSource::label($record->source) . (filled($record->source_name) ? '('.$record->source_name.')' : ''))->label('Filed Via: '),
+                ])->columns(5)->disabled(fn (Pirep $record): bool => $record->read_only),
+
+                Forms\Components\Section::make('Flight Information')->schema([
+                    Forms\Components\Select::make('airline_id')->label('Airline')->options(app(AirlineRepository::class)->selectBoxList()),
+                    Forms\Components\Select::make('aircraft_id')->label('Aircraft')->options(app(AircraftRepository::class)->selectBoxList()),
+                    Forms\Components\Select::make('dpt_airport_id')->label('Departure Airport')->options(app(AirportRepository::class)->selectBoxList()),
+                    Forms\Components\Select::make('arr_airport_id')->label('Arrival Airport')->options(app(AirportRepository::class)->selectBoxList()),
+
+                    Forms\Components\TextInput::make('hours')->label('Flight Time Hours')->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
+                    Forms\Components\TextInput::make('minutes')->label('Flight Time Minutes')->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
+                    Forms\Components\TextInput::make('block_fuel')->disabled(false),
+                    Forms\Components\TextInput::make('fuel_used')->disabled(false),
+
+                    Forms\Components\TextInput::make('level')->disabled(false),
+                    Forms\Components\TextInput::make('distance')->disabled(false),
+                    Forms\Components\TextInput::make('planned_distance')->disabled(false),
+
+                    Forms\Components\Textarea::make('route')->disabled(false)->columnSpan(2),
+                    Forms\Components\Textarea::make('notes')->disabled(false)->columnSpan(2),
+                ])->columns(4)->disabled(fn (Pirep $record): bool => $record->read_only),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -200,7 +166,10 @@ class PirepResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            FaresRelationManager::class,
+            FieldValuesRelationManager::class,
+            CommentsRelationManager::class,
+            TransactionsRelationManager::class
         ];
     }
 
