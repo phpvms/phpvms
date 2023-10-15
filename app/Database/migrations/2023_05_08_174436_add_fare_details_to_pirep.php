@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Schema;
 return new class() extends Migration {
     public function up()
     {
+        Schema::table('fares', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+
         if (!Schema::hasColumns('pirep_fares', ['code', 'name'])) {
             Schema::table('pirep_fares', function (Blueprint $table) {
                 $table->unsignedBigInteger('fare_id')->nullable()->change();
@@ -21,6 +25,7 @@ return new class() extends Migration {
                     ->default(FareType::PASSENGER)
                     ->nullable()
                     ->after('capacity');
+                $table->softDeletes();
             });
         }
 

@@ -29,9 +29,11 @@ return new class() extends Migration {
         });
 
         // Fare
-        Schema::table('fares', function (Blueprint $table) {
-            $table->softDeletes();
-        });
+        if (!Schema::hasColumn('fares', 'deleted_at')) {
+            Schema::table('fares', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+        }
 
         // Flight
         Schema::table('flights', function (Blueprint $table) {
