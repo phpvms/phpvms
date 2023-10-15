@@ -20,6 +20,13 @@ class ListPireps extends ListRecords
         ];
     }
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PirepResource\Widgets\PirepStats::class,
+        ];
+    }
+
     public function getTabs(): array
     {
         return [

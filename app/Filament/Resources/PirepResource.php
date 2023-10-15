@@ -114,11 +114,11 @@ class PirepResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['filed_from'],
+                                isset($data['filed_from']) && $data['filed_from'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '>=', $date),
                             )
                             ->when(
-                                $data['filed_until'],
+                                isset($data['filed_until']) && $data['filed_until'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
                             );
                     }),
