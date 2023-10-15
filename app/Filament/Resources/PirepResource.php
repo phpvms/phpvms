@@ -22,6 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PirepResource extends Resource
 {
@@ -29,7 +30,7 @@ class PirepResource extends Resource
     protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'pireps';
+    protected static ?string $navigationLabel = 'Pireps';
 
     protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-up';
 
@@ -155,6 +156,7 @@ class PirepResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
                             );
                     }),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
 
@@ -174,9 +176,9 @@ class PirepResource extends Resource
 
                 EditAction::make(),
 
-                DeleteAction::make('delete')
-                    ->action(fn (Pirep $record) => $record->delete())
-                    ->requiresConfirmation(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
 
                 Action::make('view')
                     ->color('info')
@@ -188,6 +190,8 @@ class PirepResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([]);
@@ -213,5 +217,13 @@ class PirepResource extends Resource
         return [
             PirepStats::class,
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }
