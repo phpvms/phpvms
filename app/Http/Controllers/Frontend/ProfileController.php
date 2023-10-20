@@ -213,7 +213,18 @@ class ProfileController extends Controller
             $req_data['avatar'] = $path;
         }
 
+        // User needs to verify their new email address
+        if ($user->email != $request->input('email')) {
+            $req_data['email_verified_at'] = null;
+        }
+
         $this->userRepo->update($req_data, $id);
+
+        // We need to get a new instance of the user in order to send the verification email to the new email address
+        if ($user->email != $request->input('email')) {
+            $newUser = $this->userRepo->findWithoutFail($user->id);
+            $newUser->sendEmailVerificationNotification();
+        }
 
         // Save all of the user fields
         $userFields = UserField::all();

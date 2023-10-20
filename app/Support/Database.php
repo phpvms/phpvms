@@ -62,6 +62,11 @@ class Database
                 $ignore_on_update = $data['ignore_on_update'];
             }
 
+            $ignore_if_exists = true;
+            if (array_key_exists('ignore_if_exists', $data)) {
+                $ignore_if_exists = $data['ignore_if_exists'];
+            }
+
             if (array_key_exists('data', $data)) {
                 $rows = $data['data'];
             } else {
@@ -70,7 +75,7 @@ class Database
 
             foreach ($rows as $row) {
                 try {
-                    static::insert_row($table, $row, $id_column, $ignore_on_update);
+                    static::insert_row($table, $row, $id_column, $ignore_on_update, $ignore_if_exists);
                 } catch (QueryException $e) {
                     if ($ignore_errors) {
                         continue;
@@ -100,7 +105,8 @@ class Database
         array $row = [],
         string $id_col = 'id',
         array $ignore_on_updates = [],
-        bool $ignore_errors = true
+        bool $ignore_errors = true,
+        bool $ignore_if_exists = true,
     ) {
         // encrypt any password fields
         if (array_key_exists('password', $row)) {
@@ -125,6 +131,10 @@ class Database
 
         try {
             if ($count > 0) {
+                if ($ignore_if_exists) {
+                    return $row;
+                }
+
                 foreach ($ignore_on_updates as $ignore_column) {
                     if (array_key_exists($ignore_column, $row)) {
                         unset($row[$ignore_column]);

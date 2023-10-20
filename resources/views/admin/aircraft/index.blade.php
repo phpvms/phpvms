@@ -34,6 +34,11 @@
   <div class="card border-blue-bottom">
     <div class="content">
       @include('admin.aircraft.table')
+      @if(filled($trashed))
+        <hr>
+        <div class="row mb-2 text-center"><b>Trashed Aircraft Records</b></div>
+        @include('admin.aircraft.trash_table')
+      @endif
     </div>
   </div>
 @endsection

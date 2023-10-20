@@ -27,8 +27,10 @@ class AirportImporter extends BaseImporter
 
         // Legacy name to current name
         $set_if_exists = [
+            'iata'                 => 'iata',
+            'city'                 => 'location',
             'ground_handling_cost' => 'ground_handling_cost',
-            'fuel_jeta_cost'       => 'fuel_jeta_cost',
+            'fuelprice'            => 'fuel_jeta_cost',
             'tz'                   => 'timezone',
             'elevation'            => 'elevation',
             'region'               => 'region',

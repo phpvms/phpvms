@@ -718,8 +718,8 @@ class ImporterTest extends TestCase
     {
         $fare_economy = Fare::factory()->create(['code' => 'Y', 'capacity' => 150]);
         $fare_business = Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
-        $rank_cpt = Rank::factory()->create(['id' => 1, 'name' => 'cpt']);
-        $rank_fo = Rank::factory()->create(['id' => 2, 'name' => 'fo']);
+        $rank_cpt = Rank::factory()->create(['id' => 99, 'name' => 'cpt']);
+        $rank_fo = Rank::factory()->create(['id' => 100, 'name' => 'fo']);
         $airline = Airline::factory()->create(['icao' => 'VMS']);
 
         $file_path = base_path('tests/data/subfleets.csv');

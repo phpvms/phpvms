@@ -44,7 +44,7 @@
         "symfony/http-client": "^6.2",
         "symfony/yaml": "~6.2",
         "psr/container": "1.1.1",
-        "composer/composer": "~2.6.4",
+        "composer/composer": "~2.6.5",
         "composer/installers": "~1.12.0",
         "laravel/framework": "~v10.0",
         "arrilot/laravel-widgets": "~3.13.0",

@@ -8,6 +8,7 @@ use App\Http\Requests\CreateFareRequest;
 use App\Http\Requests\UpdateFareRequest;
 use App\Models\Enums\FareType;
 use App\Models\Enums\ImportExportType;
+use App\Models\Fare;
 use App\Repositories\FareRepository;
 use App\Services\ExportService;
 use App\Services\ImportService;
@@ -48,9 +49,32 @@ class FareController extends Controller
     {
         $this->fareRepo->pushCriteria(new RequestCriteria($request));
         $fares = $this->fareRepo->all();
+        $trashed = $this->fareRepo->onlyTrashed()->orderBy('deleted_at', 'desc')->get();
 
-        return view('admin.fares.index')
-            ->with('fares', $fares);
+        return view('admin.fares.index', [
+            'fares'   => $fares,
+            'trashed' => $trashed,
+        ]);
+    }
+
+    /**
+     * Recycle Bin operations, either restore or permanently delete the object
+     */
+    public function trashbin(Request $request)
+    {
+        $object_id = (isset($request->object_id)) ? $request->object_id : null;
+
+        if ($object_id && $request->action === 'restore') {
+            Fare::where('id', $object_id)->restore();
+            Flash::success('Fare RESTORED successfully.');
+        } elseif ($object_id && $request->action === 'delete') {
+            Fare::where('id', $object_id)->forceDelete();
+            Flash::error('Fare DELETED PERMANENTLY.');
+        } else {
+            Flash::info('Nothing done!');
+        }
+
+        return back();
     }
 
     /**

@@ -7,12 +7,13 @@
     <th>Cost</th>
     <th>Notes</th>
     <th class="text-center">Active</th>
+    <th class="text-right">Deleted</th>
     <th class="text-right">Action</th>
   </thead>
   <tbody>
-    @foreach($fares as $fare)
+    @foreach($trashed as $fare)
       <tr>
-        <td><a href="{{ route('admin.fares.edit', [$fare->id]) }}">{{ $fare->code }}</a></td>
+        <td>{{ $fare->code }}</td>
         <td>{{ $fare->name }}</td>
         <td>{{ \App\Models\Enums\FareType::label($fare->type) }}</td>
         <td>{{ $fare->price }}</td>
@@ -25,11 +26,12 @@
             <span class="label label-default">Inactive</span>
           @endif
         </td>
+        <td class="text-right">{{ $fare->deleted_at->diffForHumans() }}</td>
         <td class="text-right">
-          {{ Form::open(['route' => ['admin.fares.destroy', $fare->id], 'method' => 'delete']) }}
-          <a href="{{ route('admin.fares.edit', [$fare->id]) }}" class='btn btn-sm btn-success btn-icon'>
-            <i class="fas fa-pencil-alt"></i></a>
-          {{ Form::button('<i class="fa fa-times"></i>', ['type' => 'submit', 'class' => 'btn btn-sm btn-danger btn-icon', 'onclick' => "return confirm('Are you sure?')"]) }}
+          {{ Form::open(['route' => ['admin.fares.trashbin'], 'method' => 'post']) }}
+          {{ Form::hidden('object_id', $fare->id) }}
+          {{ Form::button('<i class="fa fa-plus"></i> RESTORE', ['type' => 'submit', 'name' => 'action', 'value' => 'restore', 'class' => 'btn btn-sm btn-success btn-icon']) }}
+          {{ Form::button('<i class="fa fa-times"></i> DELETE', ['type' => 'submit', 'name' => 'action', 'value' => 'delete', 'class' => 'btn btn-sm btn-danger btn-icon', 'onclick' => "return confirm('Are you REALLY sure?')"]) }}
           {{ Form::close() }}
         </td>
       </tr>

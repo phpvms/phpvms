@@ -51,8 +51,9 @@
                         'class' => 'pjax_form form-inline'
                         ])
         }}
-        {{ Form::select('subfleet_id', $avail_subfleets, null, [
-                'placeholder' => 'Select Subfleet',
+        <label for="subfleet_ids">Add subfleets:</label>
+        {{ Form::select('subfleet_ids[]', $avail_subfleets, null, [
+                'multiple' => 'multiple',
                 'class' => 'select2 form-control input-lg'])
         }}
         {{ Form::button('<i class="fa fa-plus"></i> Add',

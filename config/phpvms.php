@@ -124,6 +124,6 @@ return [
      * Enable/disable email verification on registration
      */
     'registration' => [
-        'email_verification' => true,
+        'email_verification' => env('EMAIL_VERIFICATION_REQUIRED', true),
     ],
 ];

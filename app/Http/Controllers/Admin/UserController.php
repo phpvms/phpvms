@@ -18,6 +18,7 @@ use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Support\Timezonelist;
 use App\Support\Utils;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -321,6 +322,52 @@ class UserController extends Controller
         flash('New API key generated!')->success();
 
         return redirect(route('admin.users.edit', [$id]));
+    }
+
+    public function verify_email(int $id, Request $request): RedirectResponse
+    {
+        $user = $this->userRepo->findWithoutFail($id);
+
+        if (empty($user)) {
+            Flash::error('User not found');
+            return back();
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            Flash::error('User email already verified');
+            return back();
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        Flash::success('User email verified successfully');
+        return back();
+    }
+
+    public function request_email_verification(int $id, Request $request): RedirectResponse
+    {
+        $user = $this->userRepo->findWithoutFail($id);
+
+        if (empty($user)) {
+            Flash::error('User not found');
+            return back();
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            Flash::error('User email already not verified');
+            return back();
+        }
+
+        $user->update([
+            'email_verified_at' => null,
+        ]);
+
+        $user->sendEmailVerificationNotification();
+
+        Flash::success('User email verification requested successfully');
+        return back();
     }
 
     /**

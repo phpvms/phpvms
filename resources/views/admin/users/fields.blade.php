@@ -90,6 +90,12 @@
   <div class="form-group col-sm-12 text-right">
     {{-- <a href="{{ route('admin.users.regen_apikey', [$user->id]) }}" class="btn btn-warning" onclick="return confirm('Are you sure? This will reset this user\'s API key.')">New API Key</a> --}}
     &nbsp;
+    @if (!$user->email_verified_at)
+      <a href="{{ route('admin.users.verify_email', [$user->id]) }}" class="btn btn-warning">Verify email</a>
+    @else
+      <a href="{{ route('admin.users.request_email_verification', [$user->id]) }}" class="btn btn-warning">Request new email verification</a>
+    @endif
+
     {{ Form::button('Save', ['type' => 'submit', 'class' => 'btn btn-success']) }}
     <a href="{{ route('admin.users.index') }}" class="btn btn-default">Cancel</a>
   </div>

@@ -14,11 +14,9 @@ use function count;
  */
 class AviationWeather extends Metar
 {
-    private const METAR_URL =
-        'https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&stationString=';
+    private const METAR_URL = 'https://aviationweather.gov/cgi-bin/data/dataserver.php?requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&dataSource=metars&stationString=';
 
-    private const TAF_URL =
-        'https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=tafs&requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&stationString=';
+    private const TAF_URL = 'https://aviationweather.gov/cgi-bin/data/dataserver.php?requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&dataSource=tafs&stationString=';
 
     /**
      * @param HttpClient $httpClient

@@ -171,7 +171,7 @@ class ModuleService extends Service
             ]);
 
             try {
-                Artisan::call('module:migrate '.$module_name, ['--force' => true]);
+                Artisan::call('module:migrate', ['module' => $module_name, '--force' => true]);
             } catch (Exception $e) {
                 Log::error('Error running migration for '.$module_name.'; error='.$e);
             }
@@ -270,7 +270,7 @@ class ModuleService extends Service
         }
 
         Artisan::call('config:cache');
-        Artisan::call('module:migrate '.$module, ['--force' => true]);
+        Artisan::call('module:migrate', ['module' => $module, '--force' => true]);
 
         return flash()->success('Module Installed');
     }
@@ -295,7 +295,7 @@ class ModuleService extends Service
         ]);
 
         if ($status === true) {
-            Artisan::call('module:migrate '.$module->name, ['--force' => true]);
+            Artisan::call('module:migrate', ['module' => $module->name, '--force' => true]);
         }
 
         return true;

@@ -25,6 +25,7 @@ class StatusController extends Controller
     public function status(): JsonResponse
     {
         return response()->json([
+            'name'    => config('app.name'),
             'version' => $this->versionSvc->getCurrentVersion(true),
             'php'     => PHP_VERSION,
         ]);

@@ -11,6 +11,11 @@
   <div class="card border-blue-bottom">
     <div class="content">
       @include('admin.fares.table')
+      @if(filled($trashed))
+        <hr>
+        <div class="row mb-2 text-center"><b>Trashed Fare Records</b></div>
+        @include('admin.fares.trash_table')
+      @endif
     </div>
   </div>
 @endsection

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Contracts\Service;
-use App\Events\UserRegistered;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Exceptions\PilotIdNotFound;
@@ -25,6 +24,7 @@ use App\Repositories\UserRepository;
 use App\Support\Units\Time;
 use App\Support\Utils;
 use Carbon\Carbon;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -115,7 +115,7 @@ class UserService extends Service
         $this->calculatePilotRank($user);
         $user->refresh();
 
-        event(new UserRegistered($user));
+        event(new Registered($user));
 
         return $user;
     }
@@ -175,7 +175,7 @@ class UserService extends Service
      */
     public function getNextAvailablePilotId(): int
     {
-        return (int) User::max('pilot_id') + 1;
+        return (int) User::withTrashed()->max('pilot_id') + 1;
     }
 
     /**

@@ -243,8 +243,8 @@ class RouteServiceProvider extends ServiceProvider
             ], 'aircraft/{id}/expenses', 'AircraftController@expenses')
                 ->middleware('ability:admin,aircraft');
 
-            Route::resource('aircraft', 'AircraftController')
-                ->middleware('ability:admin,aircraft');
+            Route::resource('aircraft', 'AircraftController')->middleware('ability:admin,aircraft');
+            Route::post('aircraft/trashbin', 'AircraftController@trashbin')->name('aircraft.trashbin')->middleware('ability:admin,aircraft');
 
             // expenses
             Route::get('expenses/export', 'ExpenseController@export')
@@ -274,6 +274,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware('ability:admin,finances');
 
             Route::resource('fares', 'FareController')->middleware('ability:admin,finances');
+            Route::post('fares/trashbin', 'FareController@trashbin')->name('fares.trashbin')->middleware('ability:admin,finances');
 
             // files
             Route::post('files', 'FileController@store')
@@ -451,6 +452,7 @@ class RouteServiceProvider extends ServiceProvider
             ], 'subfleets/{id}/typeratings', 'SubfleetController@typeratings')->middleware('ability:admin,fleet');
 
             Route::resource('subfleets', 'SubfleetController')->middleware('ability:admin,fleet');
+            Route::post('subfleets/trashbin', 'SubfleetController@trashbin')->name('subfleets.trashbin')->middleware('ability:admin,fleet');
 
             /**
              * USERS
@@ -460,6 +462,12 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::get('users/{id}/regen_apikey', 'UserController@regen_apikey')
                 ->name('users.regen_apikey')->middleware('ability:admin,users');
+
+            Route::get('users/{id}/verify_email', 'UserController@verify_email')
+                ->name('users.verify_email')->middleware('ability:admin,users');
+
+            Route::get('users/{id}/request_email_verification', 'UserController@request_email_verification')
+                ->name('users.request_email_verification')->middleware('ability:admin,users');
 
             Route::resource('users', 'UserController')->middleware('ability:admin,users');
 
@@ -535,6 +543,8 @@ class RouteServiceProvider extends ServiceProvider
             'as'         => 'api.',
         ], function () {
             Route::group([], function () {
+                Route::get('/', 'StatusController@status');
+
                 Route::get('acars', 'AcarsController@live_flights');
                 Route::get('acars/geojson', 'AcarsController@pireps_geojson');
 

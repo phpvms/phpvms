@@ -1,3 +1,3 @@
 airline,hub_id,type,simbrief_type,name,fuel_type,cost_block_hour,cost_delay_minute,ground_handling_multiplier,fares,ranks
-VMS,KAUS,A32X,,"Airbus A320",,1000,0,200,Y;B?capacity=100&price=500%,1;2?acars_pay=200&manual_pay=100
-VMS,EGPH, ,,"Boeing 747-400",,1000,0,200,Y;B?capacity=100&price=500%,1;2?acars_pay=200&manual_pay=100
+VMS,KAUS,A32X,,"Airbus A320",,1000,0,200,Y;B?capacity=100&price=500%,99;100?acars_pay=200&manual_pay=100
+VMS,EGPH, ,,"Boeing 747-400",,1000,0,200,Y;B?capacity=100&price=500%,99;100?acars_pay=200&manual_pay=100

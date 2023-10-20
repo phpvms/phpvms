@@ -12,6 +12,11 @@
     <div class="content">
       @include('admin.flash.message')
       @include('admin.subfleets.table')
+      @if(filled($trashed))
+        <hr>
+        <div class="row mb-2 text-center"><b>Trashed Subfleet Records</b></div>
+        @include('admin.subfleets.trash_table')
+      @endif
     </div>
   </div>
 @endsection
