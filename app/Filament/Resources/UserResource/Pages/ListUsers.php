@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Filament\Resources\UserFieldResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
 use App\Models\Enums\UserState;
@@ -17,7 +18,7 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('User Fields')->url(fn (): string => 'userfield'),
+            Action::make('userfields')->label('User Fields')->url(UserFieldResource::getUrl('index')),
         ];
     }
 
