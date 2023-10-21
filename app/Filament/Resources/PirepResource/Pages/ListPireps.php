@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PirepResource\Pages;
 
+use App\Filament\Resources\PirepFieldResource;
 use App\Filament\Resources\PirepResource;
 use App\Models\Enums\PirepState;
 use Filament\Actions\Action;
@@ -16,7 +17,7 @@ class ListPireps extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Pirep Fields')->url(fn (): string => 'pirepfields'),
+            Action::make('pirepfields')->label('Pirep Fields')->url(PirepFieldResource::getUrl('index')),
         ];
     }
 
