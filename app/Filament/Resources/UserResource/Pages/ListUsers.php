@@ -7,7 +7,6 @@ use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Database\Eloquent\Builder;
 
 class ListUsers extends ListRecords
 {

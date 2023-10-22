@@ -170,7 +170,7 @@ class UserResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('state')->options(UserState::labels())
+                Tables\Filters\SelectFilter::make('state')->options(UserState::labels()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
