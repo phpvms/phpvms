@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
+use App\Repositories\TypeRatingRepository;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -14,7 +15,7 @@ class TypeRatingsRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        $typeRatingRepo = app(\App\Repositories\TypeRatingRepository::class);
+        $typeRatingRepo = app(TypeRatingRepository::class);
         return $form
             ->schema([
                 Forms\Components\Select::make('typerating_id')->searchable()->options($typeRatingRepo->all()->pluck('name', 'id')->toArray()),
@@ -35,14 +36,14 @@ class TypeRatingsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()->label('Add'),
+                Tables\Actions\AttachAction::make(),
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DetachAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DetachBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([

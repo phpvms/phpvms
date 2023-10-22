@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
+use App\Models\Airport;
 use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Repositories\AirlineRepository;
@@ -19,6 +20,8 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use League\ISO3166\ISO3166;
 
 class UserResource extends Resource
@@ -28,7 +31,7 @@ class UserResource extends Resource
     protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $navigationLabel = 'users';
+    protected static ?string $navigationLabel = 'Users';
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
@@ -85,17 +88,20 @@ class UserResource extends Resource
                         Forms\Components\Select::make('timezone')
                             ->options(Timezonelist::toArray())
                             ->searchable()
+                            ->allowHtml()
                             ->native(false),
 
                         Forms\Components\Select::make('home_airport_id')
                             ->label('Home Airport')
-                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]))
+                            ->relationship('home_airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->native(false),
 
                         Forms\Components\Select::make('current_airport_id')
                             ->label('Current Airport')
-                            ->options($airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]))
+                            ->relationship('current_airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->native(false),
                     ])
@@ -128,7 +134,7 @@ class UserResource extends Resource
 
                             Forms\Components\Select::make('roles')
                             ->label('Roles')
-                            //->options($roleRepo->all()->pluck('name', 'id'))
+                            ->visible(Auth::user()->hasRole('admin'))
                             ->relationship('roles', 'name')
                             ->searchable()
                             ->native(false)
@@ -163,15 +169,20 @@ class UserResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('state')->options(UserState::labels())
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
@@ -201,5 +212,13 @@ class UserResource extends Resource
         return [
             UserStats::class,
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }
