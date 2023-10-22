@@ -40,7 +40,7 @@ class FieldValuesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Add Pirep Field Value')->hidden(false && $this->getOwnerRecord()->read_only)
+                Tables\Actions\CreateAction::make()->label('Add Pirep Field Value')->hidden($this->getOwnerRecord()->read_only)
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['pirep_id'] = $this->getOwnerRecord()->id;
                     $data['slug'] = str_slug($data['name']);
