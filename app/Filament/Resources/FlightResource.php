@@ -63,10 +63,10 @@ class FlightResource extends Resource
                         Forms\Components\TextInput::make('hours')->label('Flight Time Hours')->integer()->required(),
                         Forms\Components\TextInput::make('minutes')->label('Flight Time Minutes')->integer()->required(),
 
-                        Forms\Components\TextInput::make('pilot_pay')->numeric()->helperText("Fill this in to pay a pilot a fixed amount for this flight."),
+                        Forms\Components\TextInput::make('pilot_pay')->numeric()->helperText('Fill this in to pay a pilot a fixed amount for this flight.'),
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\TextInput::make('load_factor')->numeric()->helperText("Percentage value for pax/cargo load, leave blank to use the default value."),
-                            Forms\Components\TextInput::make('load_factor_variance')->numeric()->helperText("Percentage of how much the load can vary (+/-), leave blank to use the default value."),
+                            Forms\Components\TextInput::make('load_factor')->numeric()->helperText('Percentage value for pax/cargo load, leave blank to use the default value.'),
+                            Forms\Components\TextInput::make('load_factor_variance')->numeric()->helperText('Percentage of how much the load can vary (+/-), leave blank to use the default value.'),
 
                         ])->columnSpan(3),
                     ])->columns(3)->columnSpan(['lg' => 2]),
@@ -81,7 +81,7 @@ class FlightResource extends Resource
 
                         Forms\Components\TimePicker::make('dpt_time')->seconds(false)->label('Departure Time'),
                         Forms\Components\TimePicker::make('arr_time')->seconds(false)->label('Arrival Time'),
-                    ])->columnSpan(1)
+                    ])->columnSpan(1),
                 ])->columns(3),
 
                 Forms\Components\Section::make('route')->heading('Route')->schema([
@@ -111,8 +111,8 @@ class FlightResource extends Resource
                             ->searchable()
                             ->native(false),
 
-                        Forms\Components\TextInput::make('flight_type')->integer()->hint("In feet"),
-                        Forms\Components\TextInput::make('distance')->integer()->hint("In nautical miles"),
+                        Forms\Components\TextInput::make('flight_type')->integer()->hint('In feet'),
+                        Forms\Components\TextInput::make('distance')->integer()->hint('In nautical miles'),
                     ])->columns(3),
                 ]),
 
@@ -120,7 +120,7 @@ class FlightResource extends Resource
                     Forms\Components\RichEditor::make('notes')->columnSpanFull(),
                     Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
                     Forms\Components\Toggle::make('visible')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
-                ])->columns(2)
+                ])->columns(2),
             ]);
     }
 
