@@ -18,7 +18,7 @@ class ListFlights extends ListRecords
         return [
             ExportAction::make('export')->arguments(['resourceTitle' => 'flights', 'exportType' => ImportExportType::FLIGHTS]),
             ImportAction::make('import')->arguments(['resourceTitle' => 'flights', 'importType' => ImportExportType::FLIGHTS]),
-            Actions\CreateAction::make()->label('Add Flight'),
+            Actions\CreateAction::make()->label('Add Flight')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

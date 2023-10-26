@@ -14,6 +14,23 @@ class EditFlight extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['distance'] = $data['distance']->toUnit('nmi');
+        $data['hours'] = (int) ($data['flight_time'] / 60);
+        $data['minutes'] = $data['flight_time'] % 60;
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['flight_time'] = $data['hours'] * 60 + $data['minutes'];
+        return $data;
     }
 }
