@@ -14,12 +14,11 @@ use Livewire\Attributes\On;
 class AirlineFinanceChart extends ChartWidget
 {
     protected static ?string $heading = 'Finance';
-    protected static ?string $pollingInterval = "20s";
+    protected static ?string $pollingInterval = '20s';
 
     public int $airline_id;
     public string $start_date;
     public string $end_date;
-
 
     #[On('updateFinanceChart')]
     public function refresh(int $airline_id, string $start_date, string $end_date): void
@@ -53,16 +52,16 @@ class AirlineFinanceChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Debit',
-                    'data' => $debit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
-                    'backgroundColor' => "rgba(".Color::Red[400].", 0.1)",
-                    'borderColor' => "rgb(".Color::Red[400].")",
+                    'label'           => 'Debit',
+                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
+                    'backgroundColor' => 'rgba('.Color::Red[400].', 0.1)',
+                    'borderColor'     => 'rgb('.Color::Red[400].')',
                 ],
                 [
-                    'label' => 'Credit',
-                    'data' => $credit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
-                    'backgroundColor' => "rgba(".Color::Green[400].", 0.1)",
-                    'borderColor' => "rgb(".Color::Green[400].")",
+                    'label'           => 'Credit',
+                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
+                    'backgroundColor' => 'rgba('.Color::Green[400].', 0.1)',
+                    'borderColor'     => 'rgb('.Color::Green[400].')',
                 ],
             ],
             'labels' => $debit->map(fn (TrendValue $value) => $value->date),

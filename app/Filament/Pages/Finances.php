@@ -2,14 +2,11 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\AirlineFinanceChart;
-use App\Filament\Widgets\AirlineFinanceTable;
 use App\Repositories\AirlineRepository;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Modelable;
 
 class Finances extends Page
 {
@@ -24,7 +21,6 @@ class Finances extends Page
 
     public ?array $filters = [];
 
-
     public function mount(): void
     {
         $this->fillForm();
@@ -37,7 +33,7 @@ class Finances extends Page
         $data = [
             'start_date' => now()->subYear(),
             'end_date'   => now(),
-            'airline_id' => Auth::user()->airline_id
+            'airline_id' => Auth::user()->airline_id,
         ];
 
         $this->form->fill($data);
@@ -57,6 +53,5 @@ class Finances extends Page
     public function test()
     {
         $this->dispatch('updateFinanceChart', start_date: $this->filters['start_date'], end_date: $this->filters['end_date'], airline_id: $this->filters['airline_id']);
-
     }
 }
