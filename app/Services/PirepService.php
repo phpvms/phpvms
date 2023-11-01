@@ -33,13 +33,18 @@ use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\User;
+use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Repositories\AircraftRepository;
 use App\Repositories\AirportRepository;
+use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use Nwidart\Modules\Facades\Module;
 
 class PirepService extends Service
 {
@@ -48,6 +53,7 @@ class PirepService extends Service
      * @param AirportService     $airportSvc
      * @param AircraftRepository $aircraftRepo
      * @param FareService        $fareSvc
+     * @param FlightRepository   $flightRepo
      * @param GeoService         $geoSvc
      * @param PirepRepository    $pirepRepo
      * @param SimBriefService    $simBriefSvc
@@ -58,6 +64,7 @@ class PirepService extends Service
         private readonly AirportService $airportSvc,
         private readonly AircraftRepository $aircraftRepo,
         private readonly FareService $fareSvc,
+        private readonly FlightRepository $flightRepo,
         private readonly GeoService $geoSvc,
         private readonly PirepRepository $pirepRepo,
         private readonly SimBriefService $simBriefSvc,
@@ -73,8 +80,8 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws AirportNotFound If one of the departure or arrival airports isn't found locally
      * @throws \Exception
+     * @throws AirportNotFound If one of the departure or arrival airports isn't found locally
      *
      * @return \App\Models\Pirep
      */
@@ -718,5 +725,104 @@ class PirepService extends Service
         $pirep->refresh();
 
         event(new UserStatsChanged($pilot, 'airport', $previous_airport));
+    }
+
+    public function handleDiversion(Pirep $pirep): void
+    {
+        // Return if diversion handling is disabled
+        if (!setting('pireps.handle_diversion', false)) {
+            return;
+        }
+
+        $diversion_airport_id = $pirep->fields->where('slug', 'diversion-airport')->first()?->value;
+
+        // Return if no diversion
+        if (!$diversion_airport_id) {
+            return;
+        }
+
+        $diversion_airport = $this->airportRepo->findWithoutFail($diversion_airport_id);
+
+        // Return if diversion airport not found and airport lookup is disabled
+        if (!$diversion_airport && !setting('general.auto_airport_lookup', false)) {
+            return;
+        }
+
+        if (!$diversion_airport) {
+            $diversion_airport = $this->airportSvc->lookupAirportIfNotFound($diversion_airport_id);
+        }
+
+        // Return if we still not have any diversion airport
+        if (!$diversion_airport) {
+            return;
+        }
+
+        $pirep->loadMissing('aircraft', 'flight', 'user');
+        $aircraft = $pirep->aircraft;
+        $flight = $pirep->flight;
+        $user = $pirep->user;
+
+        event(new PirepDiverted($pirep));
+
+        $has_vmsacars = Module::find('VMSAcars');
+
+        if ($has_vmsacars && $flight) {
+            $free_flights_enabled = DB::table('vmsacars_config')->find('free_flights_airline_aircraft_only')?->value;
+
+            if (get_truth_state($free_flights_enabled) === false) {
+                // Lookup for flights from diversion airport to original destination airport
+                $reposition_flights_count = $this->flightRepo->where([
+                    'dpt_airport_id' => $diversion_airport->id,
+                    'arr_airport_id' => $pirep->arr_airport_id,
+                    'airline_id'     => $pirep->airline_id,
+                ])->whereHas('subfleets', function ($query) use ($aircraft) {
+                    $query->where('subfleet_id', $aircraft->subfleet_id);
+                })->count();
+
+                // Create a reposition flight if there is no flight
+                if ($reposition_flights_count == 0) {
+                    $reposition_flight = $this->flightRepo->create([
+                        'airline_id'     => $flight->airline_id,
+                        'flight_number'  => $flight->flight_number,
+                        'callsign'       => $flight->callsign,
+                        'route_code'     => PirepStatus::DIVERTED,
+                        'dpt_airport_id' => $diversion_airport->id,
+                        'arr_airport_id' => $pirep->arr_airport_id,
+                        'distance'       => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
+                        'flight_time'    => 1,
+                        'flight_type'    => $flight->flight_type,
+                        'notes'          => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
+                        'visible'        => true,
+                        'active'         => true,
+                        'user_id'        => $user->id,
+                    ]);
+
+                    $reposition_flight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
+
+                    Log::info('Divertion repositioning flight '.$reposition_flight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
+                }
+            }
+        }
+
+        if (setting('notifications.discord_pirep_diverted', false)) {
+            Notification::send([$user->id], new PirepDiverted($pirep));
+        }
+
+        // Update aircraft position
+        $aircraft->update(['airport_id' => $diversion_airport->id]);
+
+        // Update user position
+        $user->update(['curr_airport_id' => $diversion_airport->id]);
+
+        // Update pirep details
+        $pirep->update([
+            'notes'          => 'DIVERTED FROM '.$pirep->arr_airport_id.' TO '.$diversion_airport->id.' '.$pirep->notes,
+            'alt_airport_id' => $pirep->arr_airport_id, // Save intended dest as alternate for fixing it back when needed
+            'arr_airport_id' => $diversion_airport->id, // Use diversion dest as the new arrival
+            'flight_id'      => null, // Remove the flight id to drop the relationship
+            'route_leg'      => null, // Remove the route_leg to exclude this pirep from tour checks
+        ]);
+
+        Log::info('Pirep '.$pirep->id.' Flight '.$pirep->ident.' DIVERTED to '.$diversion_airport->id.', assets MOVED to Diversion Airport');
     }
 }

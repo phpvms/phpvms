@@ -375,6 +375,13 @@
   options: ''
   type: int
   description: 'The time in hours to delete a rejected PIREP'
+- key: pireps.handle_diversion
+  name: 'Handle pirep diversion'
+  group: pireps
+  value: true
+  options: ''
+  type: boolean
+  description: 'Auto Handle Diversions (move assets and create re position flight)'
 - key: pilots.id_length
   name: 'Pilot ID Length'
   group: pilots
@@ -514,3 +521,10 @@
   options: ''
   type: boolean
   description: Send out a discord notification when a user's rank is changed
+- key: notifications.discord_pirep_diverted
+  name: Discord Pirep Diverted (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a pirep is diverted

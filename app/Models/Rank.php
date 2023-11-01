@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +59,18 @@ class Rank extends Model
         'acars_base_pay_rate',
         'manual_base_pay_rate',
     ];
+
+    /**
+     * Return image_url always as full uri
+     *
+     * @return Attribute
+     */
+    public function imageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => str_contains($value, 'http') ? $value : (filled($value) ? public_url($value) : null),
+        );
+    }
 
     /*
      * Relationships

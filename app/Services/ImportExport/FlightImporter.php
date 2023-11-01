@@ -85,29 +85,82 @@ class FlightImporter extends ImportExport
 
         // Try to find this flight
         /** @var Flight $flight */
-        $flight = Flight::firstOrNew([
-            'airline_id'    => $airline->id,
-            'flight_number' => $row['flight_number'],
-            'route_code'    => $row['route_code'],
-            'route_leg'     => $row['route_leg'],
+        $flight = Flight::withTrashed()->firstOrNew([
+            'airline_id'     => $airline->id,
+            'flight_number'  => $row['flight_number'],
+            'dpt_airport_id' => strtoupper($row['dpt_airport']),
+            'arr_airport_id' => strtoupper($row['arr_airport']),
+            'route_code'     => filled($row['route_code']) ? $row['route_code'] : null,
+            'route_leg'      => filled($row['route_leg']) ? $row['route_leg'] : null,
         ], $row);
 
         $row['dpt_airport'] = strtoupper($row['dpt_airport']);
         $row['arr_airport'] = strtoupper($row['arr_airport']);
 
-        // Airport atttributes
-        $flight->setAttribute('days', $this->setDays($row['days']));
+        // Airport attributes
         $flight->setAttribute('dpt_airport_id', $row['dpt_airport']);
         $flight->setAttribute('arr_airport_id', $row['arr_airport']);
-        if ($row['alt_airport']) {
-            $flight->setAttribute('alt_airport_id', $row['alt_airport']);
+        if (filled($row['alt_airport'])) {
+            $flight->setAttribute('alt_airport_id', strtoupper($row['alt_airport']));
         }
 
-        // Handle Route and Level Fields
+        // Handle schedule details (days)
+        $flight->setAttribute('days', $this->setDays($row['days']));
+
+        // Handle route and Level fields
         $flight->setAttribute('route', strtoupper($row['route']));
         $flight->setAttribute('level', $row['level']);
 
-        // Any specific transformations
+        // Check row for empty/blank values and set them null
+        if (blank($row['route_code'])) {
+            $flight->setAttribute('route_code', null);
+        }
+
+        if (blank($row['route_leg'])) {
+            $flight->setAttribute('route_leg', null);
+        }
+
+        if (blank($row['level'])) {
+            $flight->setAttribute('level', null);
+        }
+
+        if (blank($row['load_factor'])) {
+            $flight->setAttribute('load_factor', null);
+        }
+
+        if (blank($row['load_factor_variance'])) {
+            $flight->setAttribute('load_factor_variance', null);
+        }
+
+        if (blank($row['pilot_pay'])) {
+            $flight->setAttribute('pilot_pay', null);
+        }
+
+        if (blank($row['start_date'])) {
+            $flight->setAttribute('start_date', null);
+        }
+
+        if (blank($row['end_date'])) {
+            $flight->setAttribute('end_date', null);
+        }
+
+        if (blank($row['event_id'])) {
+            $flight->setAttribute('event_id', null);
+        }
+
+        if (blank($row['user_id'])) {
+            $flight->setAttribute('user_id', null);
+        }
+
+        // Check/calculate the distance
+        if (blank($row['distance'])) {
+            $flight->setAttribute('distance', $this->airportSvc->calculateDistance($row['dpt_airport'], $row['arr_airport']));
+        }
+
+        // Restore the flight if it is deleted
+        $flight->setAttribute('deleted_at', null);
+
+        // Any other specific transformations
 
         // Check for a valid value
         $flight_type = $row['flight_type'];
@@ -130,14 +183,6 @@ class FlightImporter extends ImportExport
         $this->processAirport($row['arr_airport']);
         if ($row['alt_airport']) {
             $this->processAirport($row['alt_airport']);
-        }
-
-        // Check/calculate the distance
-        if (empty($row['distance'])) {
-            $row['distance'] = $this->airportSvc->calculateDistance(
-                $row['dpt_airport'],
-                $row['arr_airport']
-            );
         }
 
         $this->processSubfleets($flight, $row['subfleets']);

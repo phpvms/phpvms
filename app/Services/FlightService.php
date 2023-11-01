@@ -6,11 +6,14 @@ use App\Contracts\Service;
 use App\Exceptions\DuplicateFlight;
 use App\Models\Bid;
 use App\Models\Enums\Days;
+use App\Models\Enums\PirepState;
+use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\User;
 use App\Repositories\FlightRepository;
 use App\Repositories\NavdataRepository;
+use App\Repositories\PirepRepository;
 use App\Support\Units\Time;
 
 class FlightService extends Service
@@ -22,13 +25,17 @@ class FlightService extends Service
      * @param FareService       $fareSvc
      * @param FlightRepository  $flightRepo
      * @param NavdataRepository $navDataRepo
-     * @param UserService       $userSvc
+     *
+     * @parma PirepRepository   $pirepRepo
+     *
+     * @param UserService $userSvc
      */
     public function __construct(
         private readonly AirportService $airportSvc,
         private readonly FareService $fareSvc,
         private readonly FlightRepository $flightRepo,
         private readonly NavdataRepository $navDataRepo,
+        private readonly PirepRepository $pirepRepo,
         private readonly UserService $userSvc
     ) {
     }
@@ -271,5 +278,28 @@ class FlightService extends Service
         }
 
         return collect($return_points);
+    }
+
+    public function removeExpiredRepositionFlights(): void
+    {
+        $flights = $this->flightRepo->where('route_code', PirepStatus::DIVERTED)->get();
+
+        foreach ($flights as $flight) {
+            $diverted_pirep = $this->pirepRepo
+                ->with('aircraft')
+                ->where([
+                    'user_id'        => $flight->user_id,
+                    'arr_airport_id' => $flight->dpt_airport_id,
+                    'status'         => PirepStatus::DIVERTED,
+                    'state'          => PirepState::ACCEPTED,
+                ])
+                ->orderBy('submitted_at', 'desc')
+                ->first();
+
+            $ac = $diverted_pirep->aircraft;
+            if ($ac->airport_id != $flight->dpt_airport_id) { // Aircraft has moved
+                $flight->delete();
+            }
+        }
     }
 }

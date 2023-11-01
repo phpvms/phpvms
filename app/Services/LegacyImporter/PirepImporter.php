@@ -5,6 +5,7 @@ namespace App\Services\LegacyImporter;
 use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
+use App\Models\Enums\PirepStatus;
 use App\Models\Pirep;
 
 class PirepImporter extends BaseImporter
@@ -30,6 +31,7 @@ class PirepImporter extends BaseImporter
             'accepted',
             'submitdate',
             'distance',
+            'landingrate',
             'flighttime_stamp',
             'flighttype',
         ];
@@ -56,9 +58,13 @@ class PirepImporter extends BaseImporter
                 'dpt_airport_id' => $row->depicao,
                 'arr_airport_id' => $row->arricao,
                 'block_fuel'     => $row->fuelused,
+                'fuel_used'      => $row->fuelused,
+                'landing_rate'   => $row->landingrate,
                 'route'          => $row->route ?: '',
                 'source_name'    => $row->source,
                 'state'          => $this->mapState($row->accepted),
+                'status'         => PirepStatus::ARRIVED,
+                'submitted_at'   => $this->parseDate($row->submitdate),
                 'created_at'     => $this->parseDate($row->submitdate),
                 'updated_at'     => $this->parseDate($row->submitdate),
             ];
@@ -126,7 +132,7 @@ class PirepImporter extends BaseImporter
     }
 
     /**
-     * Map the old status to the current
+     * Map the old state to the current
      * https://github.com/nabeelio/phpvms_v2/blob/master/core/app.config.php#L450
      *
      * @param int $old_state

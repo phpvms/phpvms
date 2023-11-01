@@ -83,6 +83,9 @@ class AircraftImporter extends ImportExport
         // Just set its state right now as parked
         $row['state'] = AircraftState::PARKED;
 
+        // Check FIN and set to null if it is blank
+        $row['fin'] = blank($row['fin']) ? null : $row['fin'];
+
         // Try to add or update
         try {
             Aircraft::updateOrCreate([

@@ -1,2 +1,2 @@
-airline,flight_number,route_code,callsign,route_leg,dpt_airport,arr_airport,alt_airport,days,dpt_time,arr_time,level,distance,flight_time,flight_type,load_factor, load_factor_variance,pilot_pay,route,notes,start_date,end-date,active,subfleets,fares,fields
-VMS,1972,,,,KAUS,KJFK,KLGA,15,0810 CST,1235 EST,350,1477,207,J,,,,ILEXY2 ZENZI LFK ELD J29 MEM Q29 JHW J70 STENT J70 MAGIO J70 LVZ LENDY6,"Just a flight",,,1,A32X,Y?price=300&cost=100&capacity=130;F?price=600&cost=400;B?,
+airline,flight_number,route_code,callsign,route_leg,dpt_airport,arr_airport,alt_airport,days,dpt_time,arr_time,level,distance,flight_time,flight_type,load_factor,load_factor_variance,pilot_pay,route,notes,start_date,end_date,active,subfleets,fares,fields,event_id,user_id
+VMS,1972,,,,KAUS,KJFK,KLGA,15,0810 CST,1235 EST,350,1477,207,J,,,,ILEXY2 ZENZI LFK ELD J29 MEM Q29 JHW J70 STENT J70 MAGIO J70 LVZ LENDY6,"Just a flight",,,1,A32X,Y?price=300&cost=100&capacity=130;F?price=600&cost=400;B?,,,

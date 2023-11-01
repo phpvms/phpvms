@@ -39,6 +39,7 @@ class FlightExporter extends ImportExport
         $ret['airline'] = $flight->airline->icao;
         $ret['dpt_airport'] = $flight->dpt_airport_id;
         $ret['arr_airport'] = $flight->arr_airport_id;
+        $ret['distance'] = $flight->distance->internal();
 
         if ($flight->alt_airport) {
             $ret['alt_airport'] = $flight->alt_airport_id;

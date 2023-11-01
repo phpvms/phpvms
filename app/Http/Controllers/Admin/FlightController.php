@@ -430,17 +430,20 @@ class FlightController extends Controller
 
         $fleetSvc = app(FleetService::class);
 
-        // add aircraft to flight
-        $subfleet = $this->subfleetRepo->findWithoutFail($request->subfleet_id);
-        if (!$subfleet) {
-            return $this->return_subfleet_view($flight);
-        }
-
-        if ($request->isMethod('post')) {
-            $fleetSvc->addSubfleetToFlight($subfleet, $flight);
-        } // remove aircraft from flight
-        elseif ($request->isMethod('delete')) {
-            $fleetSvc->removeSubfleetFromFlight($subfleet, $flight);
+        if ($request->isMethod('post') && filled($request->subfleet_ids)) {
+            // Add selected subfleets to flight
+            foreach ($request->subfleet_ids as $sf) {
+                $subfleet = $this->subfleetRepo->findWithoutFail($sf);
+                if ($subfleet) {
+                    $fleetSvc->addSubfleetToFlight($subfleet, $flight);
+                }
+            }
+        } elseif ($request->isMethod('delete')) {
+            // Delete the subfleet from flight
+            $subfleet = $this->subfleetRepo->findWithoutFail($request->subfleet_id);
+            if ($subfleet) {
+                $fleetSvc->removeSubfleetFromFlight($subfleet, $flight);
+            }
         }
 
         return $this->return_subfleet_view($flight);
