@@ -14,13 +14,13 @@ use Livewire\Attributes\On;
 class AirlineFinanceChart extends ChartWidget
 {
     protected static ?string $heading = 'Finance';
-    protected static ?string $pollingInterval = '20s';
+    protected static ?string $pollingInterval = null;
 
     public int $airline_id;
     public string $start_date;
     public string $end_date;
 
-    #[On('updateFinanceChart')]
+    #[On('updateFinanceFilters')]
     public function refresh(int $airline_id, string $start_date, string $end_date): void
     {
         $this->airline_id = $airline_id;
@@ -53,13 +53,13 @@ class AirlineFinanceChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => 'Debit',
-                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
+                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getValue()),
                     'backgroundColor' => 'rgba('.Color::Red[400].', 0.1)',
                     'borderColor'     => 'rgb('.Color::Red[400].')',
                 ],
                 [
                     'label'           => 'Credit',
-                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getAmount()),
+                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getValue()),
                     'backgroundColor' => 'rgba('.Color::Green[400].', 0.1)',
                     'borderColor'     => 'rgb('.Color::Green[400].')',
                 ],
@@ -71,5 +71,10 @@ class AirlineFinanceChart extends ChartWidget
     protected function getType(): string
     {
         return 'bar';
+    }
+
+    public static function canView(): bool
+    {
+        return false;
     }
 }
