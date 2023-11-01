@@ -48,9 +48,11 @@ class Finances extends Page
         return $form->statePath('filters')->schema([
             Forms\Components\DatePicker::make('start_date')->native(false)->maxDate(fn (Get $get) => $get('end_date'))->live()->afterStateUpdated(function () { $this->filtersUpdated(); }),
             Forms\Components\DatePicker::make('end_date')->native(false)->minDate(fn (Get $get) => $get('start_date'))->maxDate(now())->live()->afterStateUpdated(function () { $this->filtersUpdated(); }),
-            Forms\Components\Select::make('airline_id')->label('Airline')->options(app(AirlineRepository::class)->selectBoxList())->live()->afterStateUpdated(function (?string $state) { if (!$state || $state == '') {
-                $this->filters['airline_id'] = Auth::user()->airline_id;
-            } $this->filtersUpdated(); }),
+            Forms\Components\Select::make('airline_id')->label('Airline')->options(app(AirlineRepository::class)->selectBoxList())->live()->afterStateUpdated(function (?string $state) {
+                if (!$state || $state == '') {
+                    $this->filters['airline_id'] = Auth::user()->airline_id;
+                } $this->filtersUpdated();
+            }),
         ])->columns(3);
     }
 
