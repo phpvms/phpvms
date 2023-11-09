@@ -147,9 +147,9 @@ class SubfleetResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSubfleets::route('/'),
+            'index'  => Pages\ListSubfleets::route('/'),
             'create' => Pages\CreateSubfleet::route('/create'),
-            'edit' => Pages\EditSubfleet::route('/{record}/edit'),
+            'edit'   => Pages\EditSubfleet::route('/{record}/edit'),
         ];
     }
 
