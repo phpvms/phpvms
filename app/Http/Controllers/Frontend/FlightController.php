@@ -109,12 +109,16 @@ class FlightController extends Controller
             // Get allowed subfleets for the user
             $user_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->toArray();
             // Get flight_id's from relationships (group by flight id to reduce the array size)
-            $allowed_flights = DB::table('flight_subfleet')
-            ->select('flight_id')
-            ->whereIn('subfleet_id', $user_subfleets)
+            $user_flights = DB::table('flight_subfleet')
+                ->select('flight_id')
+                ->whereIn('subfleet_id', $user_subfleets)
                 ->groupBy('flight_id')
                 ->pluck('flight_id')
                 ->toArray();
+            // Get flight_id's of open (non restricted) flights
+            $open_flights = Flight::withCount('subfleets')->whereNull('user_id')->having('subfleets_count', 0)->pluck('id')->toArray();
+            // Merge results
+            $allowed_flights = array_merge($user_flights, $open_flights);
         } else {
             $allowed_flights = [];
         }
