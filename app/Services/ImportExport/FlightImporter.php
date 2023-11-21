@@ -161,6 +161,7 @@ class FlightImporter extends ImportExport
         $flight->setAttribute('deleted_at', null);
 
         // Any other specific transformations
+        $flight->setAttribute('notes', filled($row['notes']) ? $row['notes'] : null);
 
         // Check for a valid value
         $flight_type = $row['flight_type'];

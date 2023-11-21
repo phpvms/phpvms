@@ -168,12 +168,12 @@ class FlightService extends Service
         if ($aircraft_at_dpt_airport || $aircraft_not_booked) {
             foreach ($subfleets as $subfleet) {
                 $subfleet->aircraft = $subfleet->aircraft->filter(
-                    function ($aircraft, $i) use ($flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
+                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
                         if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
                             return false;
                         }
 
-                        if ($aircraft_not_booked && $aircraft->bid && $aircraft->bid->count() !== 0) {
+                        if ($aircraft_not_booked && $aircraft->bid && $aircraft->bid->user_id !== $user->id) {
                             return false;
                         }
 

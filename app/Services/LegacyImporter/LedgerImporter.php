@@ -43,7 +43,7 @@ class LedgerImporter extends BaseImporter
                 continue;
             }
 
-            $pilot_pay = Money::createFromAmount($row->amount * 100);
+            $pilot_pay = Money::createFromAmount($row->amount);
             $memo = 'Pilot payment';
 
             $financeSvc->debitFromJournal(

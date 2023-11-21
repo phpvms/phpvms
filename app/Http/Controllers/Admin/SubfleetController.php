@@ -88,7 +88,7 @@ class SubfleetController extends Controller
     {
         $object_id = (isset($request->object_id)) ? $request->object_id : null;
 
-        $subfleet = Subfleet::where('id', $object_id)->get();
+        $subfleet = Subfleet::onlyTrashed()->where('id', $object_id)->first();
         $duplicate_check = Subfleet::where('type', $subfleet->type)->count();
 
         if ($object_id && $request->action === 'restore') {

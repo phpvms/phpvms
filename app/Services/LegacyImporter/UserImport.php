@@ -69,6 +69,7 @@ class UserImport extends BaseImporter
                 'country'           => $row->location,
                 'flights'           => (int) $row->totalflights,
                 'flight_time'       => Time::hoursToMinutes($row->totalhours),
+                'transfer_time'     => filled($row->transferhours) ? Time::hoursToMinutes($row->transferhours) : null,
                 'state'             => $state,
                 'created_at'        => $this->parseDate($row->joindate),
                 'email_verified_at' => now(),

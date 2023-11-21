@@ -76,7 +76,7 @@ class AircraftController extends Controller
     {
         $object_id = (isset($request->object_id)) ? $request->object_id : null;
 
-        $aircraft = Aircraft::withCount('pireps')->where('id', $object_id)->get();
+        $aircraft = Aircraft::onlyTrashed()->withCount('pireps')->where('id', $object_id)->first();
 
         if ($object_id && $request->action === 'restore') {
             $aircraft->restore();

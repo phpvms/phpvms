@@ -16,7 +16,7 @@ class Money
     public static $subunit_multiplier;
 
     /**
-     * Create a new Money instance, passing in the amount in pennies
+     * Create a new Money instance, passing in the amount in the subunit, e.,g, $5, you pass in 500)
      *
      * @param mixed $amount The amount, in pennies
      *
@@ -31,7 +31,7 @@ class Money
     }
 
     /**
-     * Create from a dollar amount
+     * Create from a whole amount (e.g, dollars and cents - 50.05)
      *
      * @param mixed $amount The amount in dollar
      *
