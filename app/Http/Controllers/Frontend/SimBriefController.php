@@ -70,6 +70,14 @@ class SimBriefController
         // Generate SimBrief Static ID
         $static_id = $user->ident.'_'.$flight->id;
 
+        // No aircraft selected, try to find one from a bid
+        if (!$aircraft_id) {
+            $bid = Bid::where(['user_id' => $user->id, 'flight_id' => $flight_id])->first();
+            if ($bid) {
+                $aircraft_id = $bid->aircraft_id;
+            }
+        }
+
         // No aircraft selected, show selection form
         if (!$aircraft_id) {
             // Get user's allowed subfleets and intersect it with flight subfleets
