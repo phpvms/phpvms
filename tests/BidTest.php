@@ -4,7 +4,6 @@ namespace Tests;
 
 use App\Exceptions\BidExistsForAircraft;
 use App\Exceptions\BidExistsForFlight;
-use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Fare;
 use App\Models\Flight;
@@ -64,6 +63,7 @@ class BidTest extends TestCase
         $this->settingsRepo->store('bids.allow_multiple_bids', true);
         $this->settingsRepo->store('bids.disable_flight_on_bid', false);
 
+        /** @var Subfleet $subfleet */
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(2, [$subfleet['subfleet']->id]);
 
@@ -87,10 +87,12 @@ class BidTest extends TestCase
         /** @var Flight $flight */
         $flight = $this->addFlight($user, $subfleet['subfleet']->id);
 
-        $bid = $this->bidSvc->addBid($flight, $user);
+        $bid = $this->bidSvc->addBid($flight, $user, $subfleet['aircraft'][0]);
         $this->assertEquals($user->id, $bid->user_id);
         $this->assertEquals($flight->id, $bid->flight_id);
         $this->assertTrue($flight->has_bid);
+
+        $flight = $bid->flight;
 
         // Refresh
         $flight = Flight::find($flight->id);
@@ -263,25 +265,32 @@ class BidTest extends TestCase
      */
     public function testBidWithAircraft()
     {
+        $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
+        $this->settingsRepo->store('pireps.only_aircraft_at_dpt_airport', false);
         $this->settingsRepo->store('bids.allow_multiple_bids', true);
         $this->settingsRepo->store('bids.block_aircraft', true);
 
         $user = User::factory()->create();
         $headers = $this->headers($user);
 
-        $subfleet = $this->createSubfleetWithAircraft(1);
+        $subfleet_unused = $this->createSubfleetWithAircraft(10);
+        $subfleet = $this->createSubfleetWithAircraft(10);
         $aircraft = $subfleet['aircraft']->first();
 
         $flight = $this->addFlight($user, $subfleet['subfleet']->id);
+        $flight->subfleets()->syncWithoutDetaching([$subfleet_unused['subfleet']->id]);
 
         $bid = $this->bidSvc->addBid($flight, $user, $aircraft);
+        $bid_flight = $bid->flight;
+        $this->assertEquals(1, $bid_flight->subfleets[0]->aircraft->count());
+
         $this->assertEquals($user->id, $bid->user_id);
         $this->assertEquals($flight->id, $bid->flight_id);
         $this->assertEquals($aircraft->id, $bid->aircraft_id);
         $this->assertTrue($flight->has_bid);
 
         // Expect aircraft to have a bid
-        $this->assertEquals($aircraft->bid->count(), 1);
+        $this->assertEquals(1, $aircraft->bid->count());
 
         // Now add another bid on another flight with the same aircraft, should throw an exception
         $flight2 = $this->addFlight($user, $subfleet['subfleet']->id);

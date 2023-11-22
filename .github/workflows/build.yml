@@ -17,6 +17,7 @@ jobs:
     env:
       extensions: intl, pcov, mbstring
       key: cache-v1
+      MYSQL_ROOT_PASSWORD: root
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -60,15 +61,30 @@ jobs:
     - name: Shutdown Ubuntu MySQL
       run: sudo service mysql stop
 
-    - name: Install MariaDB
-      uses: getong/mariadb-action@v1.1
+#    - name: Install MariaDB
+#      uses: getong/mariadb-action@v1.1
+#      with:
+#        character set server: 'utf8'
+#        collation server: 'utf8_general_ci'
+#        mysql database: 'phpvms'
+#        mysql root password: ''
+#        mysql user: ''
+#        mysql password: ''
+
+    - name: Install MySQL
+      uses: mirromutth/mysql-action@v1.1
       with:
-        character set server: 'utf8'
-        collation server: 'utf8_general_ci'
+        mysql version: '8.0'
         mysql database: 'phpvms'
-        mysql root password: ''
+        mysql root password: $MYSQL_ROOT_PASSWORD
         mysql user: ''
         mysql password: ''
+
+    - name: Wait for MySQL
+      run: |
+        while ! mysqladmin ping -h127.0.0.1 --silent; do
+          sleep 1
+        done
 
     - name: Configure Environment
       run: |

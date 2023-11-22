@@ -4,6 +4,9 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 
+/**
+ * @mixin \App\Models\Subfleet
+ */
 class Subfleet extends Resource
 {
     public function toArray($request)

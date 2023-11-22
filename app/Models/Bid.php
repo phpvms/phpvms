@@ -7,14 +7,15 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int        user_id
- * @property string     flight_id
- * @property int        aircraft_id
- * @property Carbon     created_at
- * @property Carbon     updated_at
- * @property Aircraft   aircraft
- * @property Flight     flight
- * @property User       user
+ * @property int      user_id
+ * @property string   flight_id
+ * @property int      aircraft_id
+ * @property Carbon   created_at
+ * @property Carbon   updated_at
+ * @property Aircraft aircraft
+ * @property Flight   flight
+ * @property User     user
+ * @property mixed    flights
  */
 class Bid extends Model
 {

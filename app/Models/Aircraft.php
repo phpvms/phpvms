@@ -40,6 +40,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property int      state
  * @property Carbon   landing_time
  * @property float    fuel_onboard
+ * @property Bid      bid
  */
 class Aircraft extends Model
 {

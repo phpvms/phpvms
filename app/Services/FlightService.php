@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Exceptions\DuplicateFlight;
+use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Enums\Days;
 use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
+use App\Models\Subfleet;
 use App\Models\User;
 use App\Repositories\FlightRepository;
 use App\Repositories\NavdataRepository;
@@ -122,6 +124,26 @@ class FlightService extends Service
     }
 
     /**
+     * Return the proper subfleets for the given bid
+     *
+     * @param Bid $bid
+     *
+     * @return mixed
+     */
+    public function getSubfleetsForBid(Bid $bid)
+    {
+        $sf = Subfleet::with([
+            'fares',
+            'aircraft' => function ($query) use ($bid) {
+                $query->where('id', $bid->aircraft_id);
+            }])
+            ->where('id', $bid->aircraft->subfleet_id)
+            ->get();
+
+        return $sf;
+    }
+
+    /**
      * Filter out subfleets to only include aircraft that a user has access to
      *
      * @param User   $user
@@ -156,6 +178,8 @@ class FlightService extends Service
                 if ($allowed_subfleets->contains($subfleet->id)) {
                     return true;
                 }
+
+                return false;
             });
         }
 
@@ -179,7 +203,9 @@ class FlightService extends Service
 
                         return true;
                     }
-                );
+                )->sortBy(function (Aircraft $ac, int $_) {
+                    return !empty($ac->bid);
+                });
             }
         }
 
