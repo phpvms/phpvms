@@ -134,9 +134,10 @@ class UserResource extends Resource
 
                             Forms\Components\Select::make('roles')
                             ->label('Roles')
-                            ->visible(Auth::user()->hasRole('admin'))
+                            ->visible(Auth::user()->can('update_role'))
                             ->relationship('roles', 'name')
                             ->searchable()
+                            ->preload()
                             ->native(false)
                             ->multiple(),
 

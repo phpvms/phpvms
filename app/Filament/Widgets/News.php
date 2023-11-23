@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\News as NewsModel;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Forms;
 use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 
 class News extends BaseWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $pollingInterval = null;
 
     public function table(Table $table): Table

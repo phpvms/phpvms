@@ -70,7 +70,6 @@
         "php-units-of-measure/php-units-of-measure": "~2.1.0",
         "phpvms/sample-module": "~1.0",
         "prettus/l5-repository": "~2.9.0",
-        "santigarcor/laratrust": "^8.0",
         "semver/semver": "~1.1.0",
         "spatie/valuestore": "~1.3.2",
         "tivie/php-os-detector": "~1.1.0",
@@ -91,7 +90,8 @@
         "jlorente/laravel-data-migrations": "^2.0",
         "filament/filament": "^3.0.88",
         "coolsam/modules": "3.x-dev",
-        "flowframe/laravel-trend": "^0.1.5"
+        "flowframe/laravel-trend": "^0.1.5",
+        "bezhansalleh/filament-shield": "^3.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",

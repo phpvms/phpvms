@@ -26,9 +26,7 @@ class RoleFactory extends Factory
         return [
             'id'                      => null,
             'name'                    => $this->faker->name,
-            'display_name'            => $this->faker->name,
-            'read_only'               => false,
-            'disable_activity_checks' => $this->faker->boolean(),
+            'guard_name'              => 'web',
         ];
     }
 }

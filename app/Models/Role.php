@@ -3,32 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laratrust\Models\Role as LaratrustRole;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
  * @property int id
  * @property string name
- * @property string display_name
- * @property bool read_only
+ * @property string guard_name
  * @property bool disable_activity_checks
  *
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
-class Role extends LaratrustRole
+class Role extends SpatieRole
 {
     use HasFactory;
 
     protected $fillable = [
         'id',
         'name',
-        'display_name',
-        'read_only',
+        'guard_name',
         'disable_activity_checks',
-    ];
-
-    protected $casts = [
-        'read_only'               => 'boolean',
-        'disable_activity_checks' => 'boolean',
     ];
 
     /**
@@ -37,6 +30,7 @@ class Role extends LaratrustRole
      * @var array
      */
     public static $rules = [
-        'display_name' => 'required',
+        'name' => 'required',
+        'guard_name' => 'required',
     ];
 }

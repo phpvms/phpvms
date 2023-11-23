@@ -443,7 +443,7 @@ class UserTest extends TestCase
             'disable_activity_checks' => true,
         ]);
 
-        $user->addRole($role);
+        $user->assignRole($role);
         $user->save();
 
         $users_on_leave = $this->userSvc->findUsersOnLeave();

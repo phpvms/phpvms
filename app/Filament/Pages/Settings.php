@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Repositories\SettingRepository;
 use App\Services\FinanceService;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -23,6 +24,7 @@ use Illuminate\Support\Str;
 class Settings extends Page
 {
     use InteractsWithFormActions;
+    use HasPageShield;
 
     protected static ?string $navigationGroup = 'Config';
     protected static ?int $navigationSort = 10;

@@ -247,7 +247,7 @@ class UserController extends Controller
         if (!empty($request->input('roles'))) {
             DB::table('role_user')->where('user_id', $id)->delete();
             foreach ($request->input('roles') as $key => $value) {
-                $user->addRole($value);
+                $user->assignRole($value);
             }
         }
 

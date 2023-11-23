@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Airline;
 use App\Models\JournalTransaction;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
@@ -13,6 +14,8 @@ use Livewire\Attributes\On;
 
 class AirlineFinanceChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Finance';
     protected static ?string $pollingInterval = null;
 

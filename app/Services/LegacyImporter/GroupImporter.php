@@ -77,7 +77,7 @@ class GroupImporter extends BaseImporter
         foreach ($rows as $row) {
             // Legacy "administrator" role is now "admin", just map that 1:1
             if (strtolower($row->name) === 'administrators') {
-                $role = Role::where('name', 'admin')->first();
+                $role = Role::where('name', 'super_admin')->first();
                 $this->idMapper->addMapping('group', $row->groupid, $role->id);
                 continue;
             }

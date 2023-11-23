@@ -1,5 +1,6 @@
 <?php
 
+use App\Database\seeds\ShieldSeeder;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Illuminate\Database\Seeder;
@@ -32,5 +33,9 @@ class DatabaseSeeder extends Seeder
 
         // Then sync all of the seeds
         $this->seederSvc->syncAllSeeds();
+
+        $this->call([
+            ShieldSeeder::class
+        ]);
     }
 }

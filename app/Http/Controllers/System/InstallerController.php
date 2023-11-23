@@ -313,7 +313,7 @@ class InstallerController extends Controller
             'email_verified_at' => now(),
         ];
 
-        $user = $this->userService->createUser($attrs, ['admin']);
+        $user = $this->userService->createUser($attrs, ['super_admin']);
         Log::info('User registered: ', $user->toArray());
 
         // Set the initial admin e-mail address

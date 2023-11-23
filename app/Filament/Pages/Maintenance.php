@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Repositories\KvpRepository;
 use App\Services\VersionService;
 use App\Support\Utils;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class Maintenance extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationGroup = 'Config';
     protected static ?int $navigationSort = 9;
 

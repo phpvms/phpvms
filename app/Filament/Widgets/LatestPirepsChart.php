@@ -3,12 +3,15 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Pirep;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 
 class LatestPirepsChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Pireps Filed';
 
     protected static ?string $pollingInterval = null;

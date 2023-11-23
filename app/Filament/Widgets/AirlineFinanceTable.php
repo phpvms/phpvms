@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Airline;
 use App\Models\JournalTransaction;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -11,6 +12,8 @@ use Livewire\Attributes\On;
 
 class AirlineFinanceTable extends Widget
 {
+    use HasWidgetShield;
+
     protected static ?string $pollingInterval = null;
     protected static string $view = 'filament.widgets.airline_finance_table';
 

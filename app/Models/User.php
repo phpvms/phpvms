@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Enums\JournalType;
 use App\Models\Traits\JournalTrait;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,8 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Kyslik\ColumnSortable\Sortable;
-use Laratrust\Contracts\LaratrustUser;
-use Laratrust\Traits\HasRolesAndPermissions;
+use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -65,13 +66,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Illuminate\Database\Eloquent\Builder
  * @mixin \Illuminate\Notifications\Notifiable
- * @mixin \Laratrust\Traits\HasRolesAndPermissions
  */
-class User extends Authenticatable implements LaratrustUser, MustVerifyEmail, FilamentUser
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasFactory;
     use HasRelationships;
-    use HasRolesAndPermissions;
+    use HasRoles;
     use JournalTrait;
     use Notifiable;
     use SoftDeletes;
@@ -365,6 +365,17 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail, Fi
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        // For the admin panel
+        if ($panel->getId() === 'admin') {
+            return $this->hasRole(Utils::getSuperAdminName()) || $this->can('page_Dashboard');
+        }
+
+        // For modules panels
+        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('view_module');
+    }
+
+    public function hasAdminAccess(): bool
+    {
+        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('page_Dashboard');
     }
 }

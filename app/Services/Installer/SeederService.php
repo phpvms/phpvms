@@ -40,10 +40,6 @@ class SeederService extends Service
             return true;
         }
 
-        if ($this->permissionsSeedsPending()) {
-            return true;
-        }
-
         return false;
     }
 
@@ -54,7 +50,6 @@ class SeederService extends Service
     public function syncAllSeeds(): void
     {
         $this->syncAllSettings();
-        $this->syncAllPermissions();
         $this->syncAllModules();
         $this->syncAllYamlFileSeeds();
     }
@@ -114,22 +109,6 @@ class SeederService extends Service
             }
 
             $this->addSetting($setting['key'], $setting);
-        }
-    }
-
-    public function syncAllPermissions(): void
-    {
-        $data = file_get_contents(database_path('/seeds/permissions.yml'));
-        $yml = Yaml::parse($data);
-        foreach ($yml as $perm) {
-            $count = DB::table('permissions')->where('name', $perm['name'])->count('name');
-            if ($count === 0) {
-                DB::table('permissions')->insert($perm);
-            } else {
-                DB::table('permissions')
-                    ->where('name', $perm['name'])
-                    ->update($perm);
-            }
         }
     }
 
@@ -271,35 +250,6 @@ class SeederService extends Service
             if ($row->type === 'select') {
                 if (!empty($row->options) && $row->options !== $setting['options']) {
                     Log::info('Options for '.$id.' changed, update available');
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * See if there are seeds pending for the permissions
-     *
-     * @return bool
-     */
-    private function permissionsSeedsPending(): bool
-    {
-        $all_permissions = DB::table('permissions')->get();
-
-        $data = file_get_contents(database_path('/seeds/permissions.yml'));
-        $yml = Yaml::parse($data);
-
-        foreach ($yml as $perm) {
-            $row = $all_permissions->firstWhere('name', $perm['name']);
-            if (!$row) {
-                return true;
-            }
-
-            // See if any of these column values have changed
-            foreach (['display_name', 'description'] as $column) {
-                if ($row->{$column} !== $perm[$column]) {
                     return true;
                 }
             }

@@ -155,9 +155,6 @@
     "justinrainbow/json-schema": {
         "version": "5.2.11"
     },
-    "kkszymanowski/traitor": {
-        "version": "0.2.5"
-    },
     "laracasts/flash": {
         "version": "3.2.1"
     },
@@ -348,9 +345,6 @@
     },
     "react/promise": {
         "version": "v2.9.0"
-    },
-    "santigarcor/laratrust": {
-        "version": "7.0.0"
     },
     "sebastian/cli-parser": {
         "version": "1.0.1"

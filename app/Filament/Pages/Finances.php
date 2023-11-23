@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Repositories\AirlineRepository;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -12,6 +13,8 @@ use Livewire\Attributes\Url;
 
 class Finances extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 5;
 
