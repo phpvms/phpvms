@@ -6,18 +6,21 @@ use App\Filament\Resources\PirepFieldResource;
 use App\Filament\Resources\PirepResource;
 use App\Models\Enums\PirepState;
 use Filament\Actions\Action;
+use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Pages\ListRecords\Tab;
+use \Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListPireps extends ListRecords
 {
+    use ExposesTableToWidgets;
+
     protected static string $resource = PirepResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('pirepfields')->label('Pirep Fields')->url(PirepFieldResource::getUrl('index')),
+            Action::make('pirepfields')->label('Pirep Fields')->icon('heroicon-o-clipboard-document-list')->url(PirepFieldResource::getUrl('index')),
         ];
     }
 
