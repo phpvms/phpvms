@@ -49,7 +49,9 @@ class AirportResource extends Resource
                                     $airport = app(AirportService::class)->lookupAirport($get('icao'));
 
                                     foreach ($airport as $key => $value) {
-                                        if ($key === 'city') $key = 'location';
+                                        if ($key === 'city') {
+                                            $key = 'location';
+                                        }
 
                                         $set($key, $value);
                                     }
@@ -63,7 +65,7 @@ class AirportResource extends Resource
                                         Notification::make('')
                                             ->danger()
                                             ->title('Lookup Failed')
-                                            ->body('No airport was found with ICAO: ' .$get('icao'))
+                                            ->body('No airport was found with ICAO: '.$get('icao'))
                                             ->send();
                                     }
                                 })
@@ -139,7 +141,7 @@ class AirportResource extends Resource
                         ->offColor('danger')
                         ->onIcon('heroicon-m-check-circle')
                         ->onColor('success'),
-                ])->columns(4)
+                ])->columns(4),
             ]);
     }
 
@@ -195,9 +197,9 @@ class AirportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAirports::route('/'),
+            'index'  => Pages\ListAirports::route('/'),
             'create' => Pages\CreateAirport::route('/create'),
-            'edit' => Pages\EditAirport::route('/{record}/edit'),
+            'edit'   => Pages\EditAirport::route('/{record}/edit'),
         ];
     }
 
