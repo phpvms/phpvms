@@ -13,7 +13,7 @@ class ListAirlines extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Airline'),
+            Actions\CreateAction::make()->label('Add Airline')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

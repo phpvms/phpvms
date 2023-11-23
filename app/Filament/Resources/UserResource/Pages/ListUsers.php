@@ -15,7 +15,7 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('userfields')->label('User Fields')->url(UserFieldResource::getUrl('index')),
+            Action::make('userfields')->label('User Fields')->icon('heroicon-o-clipboard-document-list')->url(UserFieldResource::getUrl('index')),
         ];
     }
 
