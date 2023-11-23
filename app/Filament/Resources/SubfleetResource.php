@@ -9,6 +9,7 @@ use App\Models\File;
 use App\Models\Subfleet;
 use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
+use App\Services\FileService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -111,6 +112,7 @@ class SubfleetResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('aircrafts')->url(fn (Subfleet $record) => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='. $record->id)->label('Aircrafts')->icon('heroicon-o-paper-airplane')->color('success'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ForceDeleteAction::make()->before(function (Subfleet $record) {
