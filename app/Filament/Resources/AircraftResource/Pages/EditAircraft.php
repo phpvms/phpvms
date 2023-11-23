@@ -3,6 +3,9 @@
 namespace App\Filament\Resources\AircraftResource\Pages;
 
 use App\Filament\Resources\AircraftResource;
+use App\Models\Aircraft;
+use App\Models\File;
+use App\Services\FileService;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,7 +17,11 @@ class EditAircraft extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
+            Actions\ForceDeleteAction::make()->before(function (Aircraft $record) {
+                $record->files()->each(function (File $file) {
+                    app(FileService::class)->removeFile($file);
+                });
+            }),
             Actions\RestoreAction::make(),
         ];
     }
