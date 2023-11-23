@@ -10,7 +10,6 @@ use Filament\Tables\Table;
 
 class FaresRelationManager extends RelationManager
 {
-
     protected static string $relationship = 'fares';
 
     public function form(Form $form): Form

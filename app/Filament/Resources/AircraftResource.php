@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\AircraftResource\Pages;
-use App\Filament\Resources\AircraftResource\RelationManagers;
 use App\Models\Aircraft;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;

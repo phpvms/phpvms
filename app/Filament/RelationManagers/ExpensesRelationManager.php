@@ -11,7 +11,6 @@ use Filament\Tables\Table;
 
 class ExpensesRelationManager extends RelationManager
 {
-
     protected static string $relationship = 'expenses';
 
     public function form(Form $form): Form
