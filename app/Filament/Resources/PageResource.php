@@ -67,8 +67,10 @@ class PageResource extends Resource
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Add Page')->icon('heroicon-o-plus-circle'),
-            ]);
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Page'),
+            ]);;
     }
 
     public static function getRelations(): array

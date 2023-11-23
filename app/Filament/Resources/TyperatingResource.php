@@ -61,8 +61,10 @@ class TyperatingResource extends Resource
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Add Type Rating')->icon('heroicon-o-plus-circle'),
-            ]);
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Type Rating'),
+            ]);;
     }
 
     public static function getRelations(): array

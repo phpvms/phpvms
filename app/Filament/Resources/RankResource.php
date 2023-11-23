@@ -71,6 +71,11 @@ class RankResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Airport'),
             ]);
     }
 

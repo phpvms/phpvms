@@ -65,7 +65,12 @@ class ExpenseResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Expense'),
+            ]);;
     }
 
     public static function getPages(): array

@@ -79,8 +79,10 @@ class FareResource extends Resource
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Add Fare'),
-            ]);
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Fare'),
+            ]);;
     }
 
     public static function getEloquentQuery(): Builder

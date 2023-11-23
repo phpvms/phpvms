@@ -138,6 +138,11 @@ class AircraftResource extends Resource
                     }),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->label('Add Aircraft'),
             ]);
     }
 
