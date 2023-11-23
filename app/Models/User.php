@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Enums\JournalType;
 use App\Models\Traits\JournalTrait;
 use BezhanSalleh\FilamentShield\Support\Utils;
-use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;

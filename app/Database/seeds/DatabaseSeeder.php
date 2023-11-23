@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         $this->seederSvc->syncAllSeeds();
 
         $this->call([
-            ShieldSeeder::class
+            ShieldSeeder::class,
         ]);
     }
 }

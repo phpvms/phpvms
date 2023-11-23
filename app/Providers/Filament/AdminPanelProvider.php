@@ -63,7 +63,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Modules'),
             ])
             ->plugins([
-                FilamentShieldPlugin::make()
+                FilamentShieldPlugin::make(),
             ])
             ->spa();
     }

@@ -30,7 +30,7 @@ class Role extends SpatieRole
      * @var array
      */
     public static $rules = [
-        'name' => 'required',
+        'name'       => 'required',
         'guard_name' => 'required',
     ];
 }

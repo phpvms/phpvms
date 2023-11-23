@@ -24,9 +24,9 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'                      => null,
-            'name'                    => $this->faker->name,
-            'guard_name'              => 'web',
+            'id'         => null,
+            'name'       => $this->faker->name,
+            'guard_name' => 'web',
         ];
     }
 }

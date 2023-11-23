@@ -8,10 +8,10 @@ use Illuminate\Database\Seeder;
 class ShieldSeeder extends Seeder
 {
     /**
-    * Run the database seeds.
-    *
-    * @return void
-    */
+     * Run the database seeds.
+     *
+     * @return void
+     */
     public function run()
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -27,27 +27,24 @@ class ShieldSeeder extends Seeder
 
     protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
     {
-        if (! blank($rolePlusPermissions = json_decode($rolesWithPermissions,true))) {
-
+        if (!blank($rolePlusPermissions = json_decode($rolesWithPermissions, true))) {
             foreach ($rolePlusPermissions as $rolePlusPermission) {
                 $role = Utils::getRoleModel()::firstOrCreate([
-                    'name' => $rolePlusPermission['name'],
-                    'guard_name' => $rolePlusPermission['guard_name']
+                    'name'       => $rolePlusPermission['name'],
+                    'guard_name' => $rolePlusPermission['guard_name'],
                 ]);
 
-                if (! blank($rolePlusPermission['permissions'])) {
-
+                if (!blank($rolePlusPermission['permissions'])) {
                     $permissionModels = collect();
 
                     collect($rolePlusPermission['permissions'])
-                        ->each(function ($permission) use($permissionModels) {
+                        ->each(function ($permission) use ($permissionModels) {
                             $permissionModels->push(Utils::getPermissionModel()::firstOrCreate([
-                                'name' => $permission,
-                                'guard_name' => 'web'
+                                'name'       => $permission,
+                                'guard_name' => 'web',
                             ]));
                         });
                     $role->syncPermissions($permissionModels);
-
                 }
             }
         }
@@ -55,13 +52,11 @@ class ShieldSeeder extends Seeder
 
     public static function makeDirectPermissions(string $directPermissions): void
     {
-        if (! blank($permissions = json_decode($directPermissions,true))) {
-
-            foreach($permissions as $permission) {
-
+        if (!blank($permissions = json_decode($directPermissions, true))) {
+            foreach ($permissions as $permission) {
                 if (Utils::getPermissionModel()::whereName($permission)->doesntExist()) {
                     Utils::getPermissionModel()::create([
-                        'name' => $permission['name'],
+                        'name'       => $permission['name'],
                         'guard_name' => $permission['guard_name'],
                     ]);
                 }

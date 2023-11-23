@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use App\Database\seeds\ShieldSeeder;
 use App\Models\Role;
 use App\Models\Subfleet;
 use App\Models\User;
