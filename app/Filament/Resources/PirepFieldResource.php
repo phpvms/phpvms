@@ -53,7 +53,7 @@ class PirepFieldResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Pirep Field'),
-            ]);;
+            ]);
     }
 
     public static function getPages(): array

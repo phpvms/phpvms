@@ -70,7 +70,7 @@ class ExpenseResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Expense'),
-            ]);;
+            ]);
     }
 
     public static function getPages(): array

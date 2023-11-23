@@ -140,7 +140,7 @@ class SubfleetResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Subfleet'),
-            ]);;
+            ]);
     }
 
     public static function getRelations(): array

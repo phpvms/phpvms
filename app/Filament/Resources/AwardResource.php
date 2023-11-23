@@ -77,7 +77,7 @@ class AwardResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Award'),
-            ]);;
+            ]);
     }
 
     public static function getRelations(): array

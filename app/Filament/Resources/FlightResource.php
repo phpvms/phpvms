@@ -158,7 +158,7 @@ class FlightResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Flight'),
-            ]);;
+            ]);
     }
 
     public static function getRelations(): array
