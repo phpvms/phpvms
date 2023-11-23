@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\FlightResource\RelationManagers;
+namespace App\Filament\RelationManagers;
 
 use App\Models\Fare;
 use Filament\Forms\Form;
@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 
 class FaresRelationManager extends RelationManager
 {
+
     protected static string $relationship = 'fares';
 
     public function form(Form $form): Form

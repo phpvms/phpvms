@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\RelationManagers\ExpensesRelationManager;
+use App\Filament\RelationManagers\FaresRelationManager;
+use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\SubfleetResource\Pages;
 use App\Filament\Resources\SubfleetResource\RelationManagers;
 use App\Models\Enums\FuelType;
@@ -140,9 +143,9 @@ class SubfleetResource extends Resource
         return [
             RelationManagers\RanksRelationManager::class,
             RelationManagers\TyperatingsRelationManager::class,
-            RelationManagers\FaresRelationManager::class,
-            RelationManagers\ExpensesRelationManager::class,
-            RelationManagers\FilesRelationManager::class,
+            FaresRelationManager::class,
+            ExpensesRelationManager::class,
+            FilesRelationManager::class,
         ];
     }
 

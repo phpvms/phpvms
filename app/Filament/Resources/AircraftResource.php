@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\RelationManagers\ExpensesRelationManager;
+use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\AircraftResource\Pages;
 use App\Filament\Resources\AircraftResource\RelationManagers;
 use App\Models\Aircraft;
@@ -143,8 +145,8 @@ class AircraftResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ExpensesRelationManager::class,
-            RelationManagers\FilesRelationManager::class,
+            ExpensesRelationManager::class,
+            FilesRelationManager::class,
         ];
     }
 

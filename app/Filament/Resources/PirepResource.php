@@ -3,8 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepResource\Pages;
+use App\Filament\Resources\PirepResource\RelationManagers;
 use App\Filament\Resources\PirepResource\RelationManagers\CommentsRelationManager;
-use App\Filament\Resources\PirepResource\RelationManagers\FaresRelationManager;
 use App\Filament\Resources\PirepResource\RelationManagers\FieldValuesRelationManager;
 use App\Filament\Resources\PirepResource\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
@@ -165,7 +165,7 @@ class PirepResource extends Resource
     public static function getRelations(): array
     {
         return [
-            FaresRelationManager::class,
+            RelationManagers\FaresRelationManager::class,
             FieldValuesRelationManager::class,
             CommentsRelationManager::class,
             TransactionsRelationManager::class,

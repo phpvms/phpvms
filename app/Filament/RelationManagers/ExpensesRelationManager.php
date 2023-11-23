@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\SubfleetResource\RelationManagers;
+namespace App\Filament\RelationManagers;
 
 use App\Models\Enums\ExpenseType;
 use Filament\Forms;
@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 
 class ExpensesRelationManager extends RelationManager
 {
+
     protected static string $relationship = 'expenses';
 
     public function form(Form $form): Form

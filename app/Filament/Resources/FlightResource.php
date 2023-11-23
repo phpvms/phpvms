@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\RelationManagers\FaresRelationManager;
 use App\Filament\Resources\FlightResource\Pages;
 use App\Filament\Resources\FlightResource\RelationManagers;
 use App\Models\Enums\Days;
@@ -163,7 +164,7 @@ class FlightResource extends Resource
         return [
             RelationManagers\SubfleetsRelationManager::class,
             RelationManagers\FieldValuesRelationManager::class,
-            RelationManagers\FaresRelationManager::class,
+            FaresRelationManager::class,
         ];
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\AirportResource\RelationManagers;
+namespace App\Filament\RelationManagers;
 
 use App\Models\File;
 use Filament\Forms;
@@ -19,10 +19,21 @@ class FilesRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required()->string(),
-                Forms\Components\TextInput::make('description')->string(),
-                Forms\Components\TextInput::make('url')->url()->requiredWithout('file'),
-                Forms\Components\FileUpload::make('file')->disk(config('filesystems.public_files'))->directory('files')->requiredWithout('url'),
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->string(),
+
+                Forms\Components\TextInput::make('description')
+                    ->string(),
+
+                Forms\Components\TextInput::make('url')
+                    ->url()
+                    ->requiredWithout('file'),
+
+                Forms\Components\FileUpload::make('file')
+                    ->disk(config('filesystems.public_files'))
+                    ->directory('files')
+                    ->requiredWithout('url'),
             ]);
     }
 

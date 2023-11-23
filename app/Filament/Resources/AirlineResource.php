@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\AirlineResource\Pages;
-use App\Filament\Resources\AirlineResource\RelationManagers\FilesRelationManager;
 use App\Models\Airline;
 use App\Models\File;
 use App\Services\FileService;
