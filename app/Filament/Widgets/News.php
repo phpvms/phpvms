@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class News extends BaseWidget
 {
+    protected static ?string $pollingInterval = null;
     public function table(Table $table): Table
     {
         return $table
