@@ -6,7 +6,6 @@ use App\Models\Pirep;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
-use function Symfony\Component\String\b;
 
 class LatestPirepsChart extends ChartWidget
 {
@@ -21,8 +20,8 @@ class LatestPirepsChart extends ChartWidget
     {
         $start_date = match ($this->filter) {
             'today' => now()->startOfDay(),
-            'week' => now()->startOfWeek(),
-            'year' => now()->startOfYear(),
+            'week'  => now()->startOfWeek(),
+            'year'  => now()->startOfYear(),
             default => now()->startOfMonth(),
         };
 
@@ -34,7 +33,7 @@ class LatestPirepsChart extends ChartWidget
 
         $data = match ($this->filter) {
             'today' => $data->perHour()->count(),
-            'year' => $data->perMonth()->count(),
+            'year'  => $data->perMonth()->count(),
             default => $data->perDay()->count(),
         };
 
@@ -42,7 +41,7 @@ class LatestPirepsChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => 'Pireps Filed',
-                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'data'  => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],
             'labels' => $data->map(fn (TrendValue $value) => $value->date),
@@ -53,9 +52,9 @@ class LatestPirepsChart extends ChartWidget
     {
         return [
             'today' => 'Today',
-            'week' => 'This week',
+            'week'  => 'This week',
             'month' => 'This month',
-            'year' => 'This year',
+            'year'  => 'This year',
         ];
     }
 

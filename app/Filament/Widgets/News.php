@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 class News extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
+
     public function table(Table $table): Table
     {
         return $table
@@ -45,29 +46,29 @@ class News extends BaseWidget
                         ->html(),
 
                     Tables\Columns\TextColumn::make('user.name')
-                        ->formatStateUsing(fn (NewsModel $record): string => $record->user->name . ' - ' . $record->created_at->diffForHumans())
+                        ->formatStateUsing(fn (NewsModel $record): string => $record->user->name.' - '.$record->created_at->diffForHumans())
                         ->columnSpan(2)
                         ->alignEnd(),
-                ])->columns(2)
+                ])->columns(2),
             ])
             ->headerActions([
-              Tables\Actions\CreateAction::make('create')
-                  ->label('Add News')
-                  ->icon('heroicon-o-plus-circle')
-                  ->size(ActionSize::Small)
-                  ->model(NewsModel::class)
-                  ->form([
-                      Forms\Components\TextInput::make('subject')
-                          ->string()
-                          ->required(),
-                      Forms\Components\RichEditor::make('body')
-                          ->required(),
+                Tables\Actions\CreateAction::make('create')
+                    ->label('Add News')
+                    ->icon('heroicon-o-plus-circle')
+                    ->size(ActionSize::Small)
+                    ->model(NewsModel::class)
+                    ->form([
+                        Forms\Components\TextInput::make('subject')
+                            ->string()
+                            ->required(),
+                        Forms\Components\RichEditor::make('body')
+                            ->required(),
                     ])
-                  ->mutateFormDataUsing(function (array $data): array {
-                      $data['user_id'] = Auth::id();
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['user_id'] = Auth::id();
 
-                      return $data;
-                  }),
+                        return $data;
+                    }),
             ]);
     }
 }
