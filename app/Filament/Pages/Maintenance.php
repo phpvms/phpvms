@@ -78,7 +78,7 @@ class Maintenance extends Page
 
     public function clearCaches(): Action
     {
-        return Action::make('clearCaches')->label('Clear Cache')->action(function (array $arguments) {
+        return Action::make('clearCaches')->icon('heroicon-o-trash')->label('Clear Cache')->action(function (array $arguments) {
             $calls = [];
             $type = $arguments['type'];
 

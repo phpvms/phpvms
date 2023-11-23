@@ -40,7 +40,7 @@
         />
       </x-filament::input.wrapper>
 
-      <div class="mx-3">
+      <div class="mx-3 whitespace-nowrap">
         {{ $this->webCronEnable() }}
       </div>
       {{ $this->webCronDisable() }}
