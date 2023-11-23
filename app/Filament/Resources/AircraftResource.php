@@ -87,7 +87,7 @@ class AircraftResource extends Resource
                         ->label('Zero Fuel Weight (ZFW)')
                         ->numeric()
                         ->columnSpan(2),
-                ])->columns(4)
+                ])->columns(4),
             ]);
     }
 
@@ -102,20 +102,20 @@ class AircraftResource extends Resource
                 Tables\Columns\TextColumn::make('hub_id')->label('Home'),
                 Tables\Columns\TextColumn::make('airport_id')->label('Location'),
                 Tables\Columns\TextColumn::make('landingTime')->since(),
-                Tables\Columns\TextColumn::make('flight_time')->formatStateUsing(fn (string $state): string => floor($state/60) .'h'.$state % 60 .'min'),
+                Tables\Columns\TextColumn::make('flight_time')->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min'),
                 Tables\Columns\TextColumn::make('status')->badge()->color(fn (string $state): string => match ($state) {
-                    AircraftStatus::ACTIVE  => 'success',
-                    default              => 'info',
+                    AircraftStatus::ACTIVE => 'success',
+                    default                => 'info',
                 })->formatStateUsing(fn (string $state): string => AircraftStatus::label($state)),
                 Tables\Columns\TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
-                    AircraftState::PARKED  => 'success',
-                    default              => 'info',
+                    AircraftState::PARKED => 'success',
+                    default               => 'info',
                 })->formatStateUsing(fn (int $state): string => AircraftState::label($state)),
 
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('subfleet')->relationship('subfleet', 'name')->searchable()
+                Tables\Filters\SelectFilter::make('subfleet')->relationship('subfleet', 'name')->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -151,9 +151,9 @@ class AircraftResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAircraft::route('/'),
+            'index'  => Pages\ListAircraft::route('/'),
             'create' => Pages\CreateAircraft::route('/create'),
-            'edit' => Pages\EditAircraft::route('/{record}/edit'),
+            'edit'   => Pages\EditAircraft::route('/{record}/edit'),
         ];
     }
 
