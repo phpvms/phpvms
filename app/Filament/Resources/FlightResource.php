@@ -16,6 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Guava\FilamentClusters\Forms\Cluster;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -68,16 +69,15 @@ class FlightResource extends Resource
                         Forms\Components\TextInput::make('route_leg')
                             ->integer(),
 
-                        // TODO: Use cluster
-                        Forms\Components\TextInput::make('hours')
-                            ->label('Flight Time Hours')
-                            ->integer()
-                            ->required(),
+                        Cluster::make([
+                            Forms\Components\TextInput::make('hours')
+                                ->placeholder('hours')
+                                ->integer(),
 
-                        Forms\Components\TextInput::make('minutes')
-                            ->label('Flight Time Minutes')
-                            ->integer()
-                            ->required(),
+                            Forms\Components\TextInput::make('minutes')
+                                ->placeholder('minutes')
+                                ->integer(),
+                        ])->label('Flight Time')->columnSpan(2)->required(),
 
                         Forms\Components\TextInput::make('pilot_pay')
                             ->numeric()

@@ -91,7 +91,8 @@
         "filament/filament": "^3.0.88",
         "coolsam/modules": "3.x-dev",
         "flowframe/laravel-trend": "^0.1.5",
-        "bezhansalleh/filament-shield": "^3.1"
+        "bezhansalleh/filament-shield": "^3.1",
+        "guava/filament-clusters": "^1.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
