@@ -69,8 +69,8 @@ class Kernel extends HttpKernel
         'verified'       => EnsureEmailIsVerified::class,
         'signed'         => ValidateSignature::class,
 
-        'role' => RoleMiddleware::class,
-        'permission' => PermissionMiddleware::class,
+        'role'               => RoleMiddleware::class,
+        'permission'         => PermissionMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
     ];
 }

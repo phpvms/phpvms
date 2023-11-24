@@ -7,5 +7,5 @@ use Filament\Pages\Dashboard as FilamentDashboard;
 
 class Dashboard extends FilamentDashboard
 {
-    protected static string | array $routeMiddleware = [UpdatePending::class];
+    protected static string|array $routeMiddleware = [UpdatePending::class];
 }
