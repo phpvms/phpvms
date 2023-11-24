@@ -4,9 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepResource\Pages;
 use App\Filament\Resources\PirepResource\RelationManagers;
-use App\Filament\Resources\PirepResource\RelationManagers\CommentsRelationManager;
-use App\Filament\Resources\PirepResource\RelationManagers\FieldValuesRelationManager;
-use App\Filament\Resources\PirepResource\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
@@ -21,6 +18,7 @@ use App\Support\Units\Time;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
@@ -52,35 +50,79 @@ class PirepResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $userRepo = app(UserRepository::class);
         return $form
             ->schema([
                 Forms\Components\Section::make('Basic Information')->schema([
+                    // TODO: User Cluster
                     Forms\Components\TextInput::make('flight_number'),
+
                     Forms\Components\TextInput::make('route_code'),
+
                     Forms\Components\TextInput::make('route_leg'),
-                    Forms\Components\Select::make('flight_type')->disabled(false)->options(FlightType::select()),
-                    Forms\Components\Placeholder::make('source')->content(fn (Pirep $record): string => PirepSource::label($record->source).(filled($record->source_name) ? '('.$record->source_name.')' : ''))->label('Filed Via: '),
-                ])->columns(5)->disabled(fn (Pirep $record): bool => $record->read_only),
+
+                    Forms\Components\Select::make('flight_type')
+                        ->disabled(false)
+                        ->options(FlightType::select())
+                        ->native(false),
+
+                    Forms\Components\Placeholder::make('source')
+                        ->content(fn (Pirep $record): string => PirepSource::label($record->source).(filled($record->source_name) ? '('.$record->source_name.')' : ''))
+                        ->label('Filed Via: '),
+                ])
+                    ->columns(5)
+                    ->disabled(fn (Pirep $record): bool => $record->read_only),
 
                 Forms\Components\Section::make('Flight Information')->schema([
-                    Forms\Components\Select::make('airline_id')->label('Airline')->options(app(AirlineRepository::class)->selectBoxList()),
-                    Forms\Components\Select::make('aircraft_id')->label('Aircraft')->options(app(AircraftRepository::class)->selectBoxList()),
-                    Forms\Components\Select::make('dpt_airport_id')->label('Departure Airport')->options(app(AirportRepository::class)->selectBoxList()),
-                    Forms\Components\Select::make('arr_airport_id')->label('Arrival Airport')->options(app(AirportRepository::class)->selectBoxList()),
+                    Forms\Components\Select::make('airline_id')
+                        ->relationship('airline', 'name')
+                        ->native(false),
 
-                    Forms\Components\TextInput::make('hours')->label('Flight Time Hours')->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
-                    Forms\Components\TextInput::make('minutes')->label('Flight Time Minutes')->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
-                    Forms\Components\TextInput::make('block_fuel')->disabled(false),
-                    Forms\Components\TextInput::make('fuel_used')->disabled(false),
+                    Forms\Components\Select::make('aircraft_id')
+                        ->relationship('aircraft', 'name')
+                        ->native(false),
 
-                    Forms\Components\TextInput::make('level')->disabled(false),
-                    Forms\Components\TextInput::make('distance')->disabled(false),
-                    Forms\Components\TextInput::make('planned_distance')->disabled(false),
+                    Forms\Components\Select::make('dpt_airport_id')
+                        ->label('Departure Airport')
+                        ->options(app(AirportRepository::class)->selectBoxList())
+                        ->native(false),
 
-                    Forms\Components\Textarea::make('route')->disabled(false)->columnSpan(2),
-                    Forms\Components\Textarea::make('notes')->disabled(false)->columnSpan(2),
-                ])->columns(4)->disabled(fn (Pirep $record): bool => $record->read_only),
+                    Forms\Components\Select::make('arr_airport_id')
+                        ->label('Arrival Airport')
+                        ->options(app(AirportRepository::class)->selectBoxList())
+                        ->native(false),
+
+                    // TODO: Use Cluster
+                    Forms\Components\TextInput::make('hours')
+                        ->label('Flight Time Hours')
+                        ->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
+                    Forms\Components\TextInput::make('minutes')
+                        ->label('Flight Time Minutes')
+                        ->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
+
+                    Forms\Components\TextInput::make('block_fuel')
+                        ->disabled(false),
+                    Forms\Components\TextInput::make('fuel_used')
+                        ->disabled(false),
+
+                    Forms\Components\TextInput::make('level')
+                        ->disabled(false),
+
+                    Forms\Components\TextInput::make('distance')
+                        ->disabled(false),
+
+                    Forms\Components\TextInput::make('planned_distance')
+                        ->disabled(false),
+
+                    Forms\Components\Textarea::make('route')
+                        ->disabled(false)
+                        ->columnSpan(2),
+
+                    Forms\Components\Textarea::make('notes')
+                        ->disabled(false)
+                        ->columnSpan(2),
+                ])
+                    ->columns(4)
+                    ->disabled(fn (Pirep $record): bool => $record->read_only),
             ]);
     }
 
@@ -88,20 +130,44 @@ class PirepResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('ident')->label('Flight Ident')->searchable(),
-                TextColumn::make('user.name')->label('Pilot')->searchable(),
-                TextColumn::make('dpt_airport_id')->label('DEP')->searchable(),
-                TextColumn::make('arr_airport_id')->label('ARR')->searchable(),
-                TextColumn::make('flight_time')->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
-                TextColumn::make('aircraft')->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration.' - '.$record->aircraft->name),
-                TextColumn::make('source')->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
-                TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
-                    PirepState::PENDING  => 'warning',
-                    PirepState::ACCEPTED => 'success',
-                    PirepState::REJECTED => 'danger',
-                    default              => 'info',
-                })->formatStateUsing(fn (int $state): string => PirepState::label($state)),
-                TextColumn::make('submitted_at')->dateTime('d-m-Y H:i')->label('File Date'),
+                TextColumn::make('ident')
+                    ->label('Flight Ident')
+                    ->searchable(['flight_number']),
+
+                TextColumn::make('user.name')
+                    ->label('Pilot')
+                    ->searchable(),
+
+                TextColumn::make('dpt_airport_id')
+                    ->label('DEP')
+                    ->searchable(),
+
+                TextColumn::make('arr_airport_id')
+                    ->label('ARR')
+                    ->searchable(),
+
+                TextColumn::make('flight_time')
+                    ->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
+
+                TextColumn::make('aircraft')
+                    ->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration.' - '.$record->aircraft->name),
+
+                TextColumn::make('source')
+                    ->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
+
+                TextColumn::make('state')
+                    ->badge()
+                    ->color(fn (int $state): string => match ($state) {
+                        PirepState::PENDING  => 'warning',
+                        PirepState::ACCEPTED => 'success',
+                        PirepState::REJECTED => 'danger',
+                        default              => 'info',
+                    })
+                    ->formatStateUsing(fn (int $state): string => PirepState::label($state)),
+
+                TextColumn::make('submitted_at')
+                    ->dateTime('d-m-Y H:i')
+                    ->label('File Date'),
             ])
             ->defaultSort('submitted_at', 'desc')
             ->filters([
@@ -124,20 +190,45 @@ class PirepResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-
                 Action::make('accept')
                     ->color('success')
                     ->icon('heroicon-m-check-circle')
                     ->label('Accept')
                     ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
-                    ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::ACCEPTED)),
+                    ->action(function (Pirep $record): void {
+                        $pirep = app(PirepService::class)->changeState($record, PirepState::ACCEPTED);
+                        if ($pirep->state === PirepState::ACCEPTED) {
+                            Notification::make()
+                                ->title('Pirep Accepted')
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('There was an error accepting the Pirep')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
 
                 Action::make('reject')
                     ->color('danger')
                     ->icon('heroicon-m-x-circle')
                     ->label('Reject')
                     ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
-                    ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::REJECTED)),
+                    ->action(function (Pirep $record): void {
+                        $pirep = app(PirepService::class)->changeState($record, PirepState::REJECTED);
+                        if ($pirep->state === PirepState::REJECTED) {
+                            Notification::make()
+                                ->title('Pirep Rejected')
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('There was an error rejecting the Pirep')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
 
                 EditAction::make(),
 
@@ -165,9 +256,9 @@ class PirepResource extends Resource
     {
         return [
             RelationManagers\FaresRelationManager::class,
-            FieldValuesRelationManager::class,
-            CommentsRelationManager::class,
-            TransactionsRelationManager::class,
+            RelationManagers\FieldValuesRelationManager::class,
+            RelationManagers\CommentsRelationManager::class,
+            RelationManagers\TransactionsRelationManager::class,
         ];
     }
 

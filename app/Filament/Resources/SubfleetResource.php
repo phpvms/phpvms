@@ -49,13 +49,12 @@ class SubfleetResource extends Resource
                     about subfleets in the docs.')
                     ->schema([
                         Forms\Components\Select::make('airline_id')
-                            ->label('Airline')
-                            ->options(app(AirlineRepository::class)->all()->pluck('name', 'id'))
+                            ->relationship('airline', 'name')
                             ->searchable()
                             ->required()
                             ->native(false),
 
-                        // If we want to use an async search we need to change the dpt_airport relationship from hasOne to belongsTo (to use the relationship() method)
+                        // TODO: If we want to use an async search we need to change the dpt_airport relationship from hasOne to belongsTo (to use the relationship() method)
                         Forms\Components\Select::make('hub_id')
                             ->label('Home Base')
                             ->options($airports)
@@ -106,16 +105,27 @@ class SubfleetResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
+
                 Tables\Columns\TextColumn::make('airline.name'),
+
                 Tables\Columns\TextColumn::make('type'),
+
                 Tables\Columns\TextColumn::make('hub_id'),
-                Tables\Columns\TextColumn::make('aircraft_count')->label('Aircrafts')->counts('aircraft'),
+
+                Tables\Columns\TextColumn::make('aircraft_count')
+                    ->label('Aircrafts')
+                    ->counts('aircraft'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('aircrafts')->url(fn (Subfleet $record) => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='.$record->id)->label('Aircrafts')->icon('heroicon-o-paper-airplane')->color('success'),
+                Tables\Actions\Action::make('aircrafts')
+                    ->url(fn (Subfleet $record): string => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='.$record->id)
+                    ->label('Aircrafts')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success'),
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ForceDeleteAction::make()->before(function (Subfleet $record) {

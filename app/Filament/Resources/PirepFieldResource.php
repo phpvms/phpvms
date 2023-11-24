@@ -23,9 +23,18 @@ class PirepFieldResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->string()->required(),
-                Forms\Components\TextInput::make('description')->string(),
-                Forms\Components\Toggle::make('required')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
+                Forms\Components\TextInput::make('name')
+                    ->string()
+                    ->required(),
+
+                Forms\Components\TextInput::make('description')
+                    ->string(),
+
+                Forms\Components\Toggle::make('required')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->offColor('danger')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->onColor('success'),
             ]);
     }
 
@@ -35,7 +44,9 @@ class PirepFieldResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('description'),
-                Tables\Columns\IconColumn::make('required')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\IconColumn::make('required')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //

@@ -29,17 +29,50 @@ class ExpenseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Grid::make('')->schema([
-                    Forms\Components\Select::make('airline_id')->options(app(AirlineRepository::class)->selectBoxList())->label('Airline'),
-                    Forms\Components\Select::make('type')->options(ExpenseType::select())->required()->label('Expense Type'),
-                    Forms\Components\Select::make('flight_type')->options(FlightType::select())->multiple()->label('Flight Types'),
+                    Forms\Components\Select::make('airline_id')
+                        ->relationship('airline', 'name')
+                        ->searchable()
+                        ->native(false)
+                        ->label('Airline'),
+
+                    Forms\Components\Select::make('type')
+                        ->options(ExpenseType::select())
+                        ->searchable()
+                        ->native(false)
+                        ->required()
+                        ->label('Expense Type'),
+
+                    Forms\Components\Select::make('flight_type')
+                        ->options(FlightType::select())
+                        ->searchable()
+                        ->native(false)
+                        ->multiple()
+                        ->label('Flight Types'),
                 ])->columns(3),
+
                 Forms\Components\Grid::make('')->schema([
-                    Forms\Components\TextInput::make('name')->required()->string()->maxLength(191)->label('Expense Name'),
-                    Forms\Components\TextInput::make('amount')->required()->numeric()->label('Amount'),
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->string()
+                        ->label('Expense Name'),
 
-                    Forms\Components\Toggle::make('multiplier')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle'),
-                    Forms\Components\Toggle::make('active')->inline()->onColor('success')->onIcon('heroicon-m-check-circle')->offColor('danger')->offIcon('heroicon-m-x-circle'),
+                    Forms\Components\TextInput::make('amount')
+                        ->required()
+                        ->numeric(),
 
+                    Forms\Components\Toggle::make('multiplier')
+                        ->inline()
+                        ->onColor('success')
+                        ->onIcon('heroicon-m-check-circle')
+                        ->offColor('danger')
+                        ->offIcon('heroicon-m-x-circle'),
+
+                    Forms\Components\Toggle::make('active')
+                        ->inline()
+                        ->onColor('success')
+                        ->onIcon('heroicon-m-check-circle')
+                        ->offColor('danger')
+                        ->offIcon('heroicon-m-x-circle'),
                 ])->columns(2),
             ]);
     }
@@ -48,11 +81,21 @@ class ExpenseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('type')->formatStateUsing(fn ($state) => ExpenseType::label($state)),
-                Tables\Columns\TextColumn::make('amount')->money(setting('units.currency')),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->formatStateUsing(fn ($state) => ExpenseType::label($state)),
+
+                Tables\Columns\TextColumn::make('amount')
+                    ->money(setting('units.currency')),
+
                 Tables\Columns\TextColumn::make('airline.name'),
-                Tables\Columns\IconColumn::make('active')->label('Active')->color(fn ($record) => $record->active ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Active')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //

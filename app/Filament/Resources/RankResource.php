@@ -31,18 +31,56 @@ class RankResource extends Resource
                 Forms\Components\Section::make('Rank Informations')->schema([
                     Forms\Components\Grid::make('')
                         ->schema([
-                            Forms\Components\TextInput::make('name')->required()->string()->maxLength(50),
-                            Forms\Components\TextInput::make('image_url')->label('Image Link')->string()->maxLength(191),
+                            Forms\Components\TextInput::make('name')
+                                ->required()
+                                ->string(),
+
+                            Forms\Components\TextInput::make('image_url')
+                                ->label('Image Link')
+                                ->string(),
                         ])->columns(2),
                     Forms\Components\Grid::make('')
                         ->schema([
-                            Forms\Components\TextInput::make('hours')->required()->numeric()->minValue(0),
-                            Forms\Components\TextInput::make('acars_base_pay_rate')->label('ACARS Base Pay Rate')->numeric()->minValue(0)->helperText('Base rate, per-flight hour, for ACARS PIREPs. Can be adjusted via a multiplier on the subfleet.'),
-                            Forms\Components\TextInput::make('manual_base_pay_rate')->label('Manual Base Pay Rate')->numeric()->minValue(0)->helperText('Base rate, per-flight hour, for manually-filed PIREPs. Can be adjusted via a multiplier on the subfleet.'),
+                            Forms\Components\TextInput::make('hours')
+                                ->required()
+                                ->numeric()
+                                ->minValue(0),
 
-                            Forms\Components\Toggle::make('auto_approve_acars')->helperText('PIREPS submitted through ACARS are automatically accepted')->label('Auto Approve ACARS PIREPs')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
-                            Forms\Components\Toggle::make('auto_approve_manual')->helperText('PIREPS submitted manually are automatically accepted')->label('Auto Approve Manual PIREPs')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
-                            Forms\Components\Toggle::make('auto_promote')->helperText('When a pilot reaches these hours, they\'ll be upgraded to this rank')->label('Auto Promote')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
+                            Forms\Components\TextInput::make('acars_base_pay_rate')
+                                ->label('ACARS Base Pay Rate')
+                                ->numeric()
+                                ->minValue(0)
+                                ->helperText('Base rate, per-flight hour, for ACARS PIREPs. Can be adjusted via a multiplier on the subfleet.'),
+
+                            Forms\Components\TextInput::make('manual_base_pay_rate')
+                                ->label('Manual Base Pay Rate')
+                                ->numeric()
+                                ->minValue(0)
+                                ->helperText('Base rate, per-flight hour, for manually-filed PIREPs. Can be adjusted via a multiplier on the subfleet.'),
+
+                            Forms\Components\Toggle::make('auto_approve_acars')
+                                ->helperText('PIREPS submitted through ACARS are automatically accepted')
+                                ->label('Auto Approve ACARS PIREPs')
+                                ->offIcon('heroicon-m-x-circle')
+                                ->offColor('danger')
+                                ->onIcon('heroicon-m-check-circle')
+                                ->onColor('success'),
+
+                            Forms\Components\Toggle::make('auto_approve_manual')
+                                ->helperText('PIREPS submitted manually are automatically accepted')
+                                ->label('Auto Approve Manual PIREPs')
+                                ->offIcon('heroicon-m-x-circle')
+                                ->offColor('danger')
+                                ->onIcon('heroicon-m-check-circle')
+                                ->onColor('success'),
+
+                            Forms\Components\Toggle::make('auto_promote')
+                                ->helperText('When a pilot reaches these hours, they\'ll be upgraded to this rank')
+                                ->label('Auto Promote')
+                                ->offIcon('heroicon-m-x-circle')
+                                ->offColor('danger')
+                                ->onIcon('heroicon-m-check-circle')
+                                ->onColor('success'),
                         ])->columns(3),
                 ]),
             ]);

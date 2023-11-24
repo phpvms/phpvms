@@ -29,8 +29,15 @@ class ModuleResource extends Resource
         return $form
             ->schema([
                 // Edit Only (we are not using default create action)
-                Forms\Components\Toggle::make('enabled')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->hiddenOn('create'),
-                Forms\Components\Hidden::make('name')->hiddenOn('create'),
+                Forms\Components\Toggle::make('enabled')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->offColor('danger')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->onColor('success')
+                    ->hiddenOn('create'),
+
+                Forms\Components\Hidden::make('name')
+                    ->hiddenOn('create'),
             ]);
     }
 
@@ -38,8 +45,12 @@ class ModuleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\IconColumn::make('enabled')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+
+                Tables\Columns\IconColumn::make('enabled')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //

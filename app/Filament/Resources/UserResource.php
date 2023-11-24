@@ -46,10 +46,6 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $airportRepo = app(AirportRepository::class);
-        $airlineRepo = app(AirlineRepository::class);
-        $rankRepo = app(RankRepository::class);
-        $roleRepo = app(RoleRepository::class);
         return $form
             ->schema([
                 Forms\Components\Group::make()
@@ -117,14 +113,12 @@ class UserResource extends Resource
                                 ->native(false),
 
                             Forms\Components\Select::make('airline_id')
-                                ->label('Airline')
-                                ->options($airlineRepo->all()->pluck('name', 'id'))
+                                ->relationship('airline', 'name')
                                 ->searchable()
                                 ->native(false),
 
                             Forms\Components\Select::make('rank_id')
-                                ->label('Rank')
-                                ->options($rankRepo->all()->pluck('name', 'id'))
+                                ->relationship('rank', 'name')
                                 ->searchable()
                                 ->native(false),
 
@@ -134,7 +128,7 @@ class UserResource extends Resource
 
                             Forms\Components\Select::make('roles')
                             ->label('Roles')
-                            ->visible(Auth::user()->can('update_role'))
+                            ->visible(Auth::user()?->can('update_role') ?? false)
                             ->relationship('roles', 'name')
                             ->searchable()
                             ->preload()
@@ -154,24 +148,37 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('ident')->label('ID')->searchable(query: function (Builder $query, int $search): Builder {
-                    return $query
-                        ->where('pilot_id', "{$search}");
-                }),
-                TextColumn::make('callsign')->label('Callsign')->searchable(),
-                TextColumn::make('name')->label('Name')->searchable(),
-                TextColumn::make('email')->label('Email')->searchable(),
-                TextColumn::make('created_at')->label('Registered On')->dateTime('d-m-Y'),
-                TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
-                    UserState::PENDING => 'warning',
-                    UserState::ACTIVE  => 'success',
-                    default            => 'info',
-                })->formatStateUsing(fn (int $state): string => UserState::label($state)),
+                TextColumn::make('ident')
+                    ->label('ID')
+                    ->searchable(['pilot_id']),
+
+                TextColumn::make('callsign')
+                    ->searchable(),
+
+                TextColumn::make('name')
+                    ->searchable(),
+
+                TextColumn::make('email')
+                    ->searchable(),
+
+                TextColumn::make('created_at')
+                    ->label('Registered On')
+                    ->dateTime('d-m-Y'),
+
+                TextColumn::make('state')
+                    ->badge()
+                    ->color(fn (int $state): string => match ($state) {
+                        UserState::PENDING => 'warning',
+                        UserState::ACTIVE  => 'success',
+                        default            => 'info',
+                    })
+                    ->formatStateUsing(fn (int $state): string => UserState::label($state)),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('state')->options(UserState::labels()),
+                Tables\Filters\SelectFilter::make('state')
+                    ->options(UserState::labels()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

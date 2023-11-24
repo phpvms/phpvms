@@ -150,15 +150,40 @@ class AirportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('icao')->label('ICAO')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('iata')->label('IATA')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('location')->searchable()->sortable(),
-                Tables\Columns\IconColumn::make('hub')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')->sortable(),
-                Tables\Columns\TextInputColumn::make('ground_handling_cost')->label('GH Cost'),
-                Tables\Columns\TextInputColumn::make('fuel_jeta_cost')->label('JetA'),
-                Tables\Columns\TextInputColumn::make('fuel_100ll_cost')->label('100LL'),
-                Tables\Columns\TextInputColumn::make('fuel_mogas_cost')->label('MOGAS'),
+                Tables\Columns\TextColumn::make('icao')
+                    ->label('ICAO')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('iata')
+                    ->label('IATA')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('location')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('hub')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
+
+                Tables\Columns\TextInputColumn::make('ground_handling_cost')
+                    ->label('GH Cost'),
+
+                Tables\Columns\TextInputColumn::make('fuel_jeta_cost')
+                    ->label('JetA'),
+
+                Tables\Columns\TextInputColumn::make('fuel_100ll_cost')
+                    ->label('100LL'),
+
+                Tables\Columns\TextInputColumn::make('fuel_mogas_cost')
+                    ->label('MOGAS'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('only_hubs')->query(fn (Builder $query): Builder => $query->where('hub', 1)),

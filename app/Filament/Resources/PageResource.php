@@ -28,19 +28,56 @@ class PageResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Page Information')->schema([
                     Forms\Components\Grid::make('')->schema([
-                        Forms\Components\TextInput::make('name')->label('Page Name')->required()->string()->maxLength(191),
-                        Forms\Components\TextInput::make('icon')->string()->maxLength(191),
-                        Forms\Components\Select::make('type')->label('Page Type')->options(PageType::select())->default(PageType::PAGE)->required()->live(),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Page Name')
+                            ->required()
+                            ->string(),
+
+                        Forms\Components\TextInput::make('icon')
+                            ->string(),
+
+                        Forms\Components\Select::make('type')
+                            ->label('Page Type')
+                            ->options(PageType::select())
+                            ->default(PageType::PAGE)
+                            ->required()
+                            ->native(false)
+                            ->live(),
                     ])->columns(3),
                     Forms\Components\Grid::make('')->schema([
-                        Forms\Components\Toggle::make('public')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success'),
-                        Forms\Components\Toggle::make('enabled')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
+                        Forms\Components\Toggle::make('public')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->offColor('danger')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->onColor('success'),
+
+                        Forms\Components\Toggle::make('enabled')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->offColor('danger')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->onColor('success')
+                            ->default(true),
                     ])->columns(2),
                 ]),
                 Forms\Components\Section::make('Content')->schema([
-                    Forms\Components\RichEditor::make('body')->label('Page Content')->required(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE)->visible(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE),
-                    Forms\Components\TextInput::make('link')->label('Page Link')->url()->required(fn (Forms\Get $get): bool => $get('type') == PageType::LINK)->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
-                    Forms\Components\Toggle::make('new_window')->label('Open In New Window')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
+                    Forms\Components\RichEditor::make('body')
+                        ->label('Page Content')
+                        ->required(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE)
+                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE),
+
+                    Forms\Components\TextInput::make('link')
+                        ->label('Page Link')
+                        ->url()
+                        ->required(fn (Forms\Get $get): bool => $get('type') == PageType::LINK)
+                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
+
+                    Forms\Components\Toggle::make('new_window')
+                        ->label('Open In New Window')
+                        ->offIcon('heroicon-m-x-circle')
+                        ->offColor('danger')
+                        ->onIcon('heroicon-m-check-circle')
+                        ->onColor('success')
+                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
                 ]),
             ]);
     }
@@ -49,10 +86,18 @@ class PageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('type')->formatStateUsing(fn ($state): string => PageType::label($state)),
-                Tables\Columns\IconColumn::make('public')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
-                Tables\Columns\IconColumn::make('enabled')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->formatStateUsing(fn (int $state): string => PageType::label($state)),
+
+                Tables\Columns\IconColumn::make('public')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\IconColumn::make('enabled')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //

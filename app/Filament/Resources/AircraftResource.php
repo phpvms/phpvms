@@ -97,26 +97,47 @@ class AircraftResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('registration'),
+
                 Tables\Columns\TextColumn::make('name'),
+
                 Tables\Columns\TextColumn::make('fin'),
+
                 Tables\Columns\TextColumn::make('subfleet.name'),
-                Tables\Columns\TextColumn::make('hub_id')->label('Home'),
-                Tables\Columns\TextColumn::make('airport_id')->label('Location'),
-                Tables\Columns\TextColumn::make('landingTime')->since(),
-                Tables\Columns\TextColumn::make('flight_time')->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min'),
-                Tables\Columns\TextColumn::make('status')->badge()->color(fn (string $state): string => match ($state) {
-                    AircraftStatus::ACTIVE => 'success',
-                    default                => 'info',
-                })->formatStateUsing(fn (string $state): string => AircraftStatus::label($state)),
-                Tables\Columns\TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
-                    AircraftState::PARKED => 'success',
-                    default               => 'info',
-                })->formatStateUsing(fn (int $state): string => AircraftState::label($state)),
+
+                Tables\Columns\TextColumn::make('hub_id')
+                    ->label('Home'),
+
+                Tables\Columns\TextColumn::make('airport_id')
+                    ->label('Location'),
+
+                Tables\Columns\TextColumn::make('landingTime')
+                    ->since(),
+
+                Tables\Columns\TextColumn::make('flight_time')
+                    ->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min'),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        AircraftStatus::ACTIVE => 'success',
+                        default                => 'info',
+                    })
+                    ->formatStateUsing(fn (string $state): string => AircraftStatus::label($state)),
+
+                Tables\Columns\TextColumn::make('state')
+                    ->badge()
+                    ->color(fn (int $state): string => match ($state) {
+                        AircraftState::PARKED => 'success',
+                        default               => 'info',
+                    })
+                    ->formatStateUsing(fn (int $state): string => AircraftState::label($state)),
 
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('subfleet')->relationship('subfleet', 'name')->searchable(),
+                Tables\Filters\SelectFilter::make('subfleet')
+                    ->relationship('subfleet', 'name')
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

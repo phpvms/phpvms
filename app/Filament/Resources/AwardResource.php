@@ -37,15 +37,35 @@ class AwardResource extends Resource
                 Forms\Components\Section::make('Award Information')
                     ->description('These are the awards that pilots can earn. Each award is assigned an award class, which will be run whenever a pilot\'s stats are changed, including after a PIREP is accepted.')
                     ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->string(),
 
-                        Forms\Components\TextInput::make('name')->required()->string()->maxLength(191),
-                        Forms\Components\TextInput::make('image_url')->string(),
-                        Forms\Components\Textarea::make('description')->autosize(),
-                        Forms\Components\Grid::make('')->schema([
-                            Forms\Components\Select::make('ref_model')->label('Award Class')->options($awards),
-                            Forms\Components\TextInput::make('ref_model_params')->label('Award Class parammeters')->string(),
+                        Forms\Components\TextInput::make('image_url')
+                            ->string(),
+
+                        Forms\Components\Textarea::make('description')
+                            ->autosize(),
+
+                        Forms\Components\Grid::make('')
+                            ->schema([
+                                Forms\Components\Select::make('ref_model')
+                                    ->label('Award Class')
+                                    ->searchable()
+                                    ->native(false)
+                                    ->options($awards),
+
+                                Forms\Components\TextInput::make('ref_model_params')
+                                    ->label('Award Class parammeters')
+                                    ->string(),
                         ])->columnSpan(1),
-                        Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
+
+                        Forms\Components\Toggle::make('active')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->offColor('danger')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->onColor('success')
+                            ->default(true),
                     ])->columns(2),
             ]);
     }
@@ -54,10 +74,18 @@ class AwardResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('description'),
-                Tables\Columns\ImageColumn::make('image_url')->height(100),
-                Tables\Columns\IconColumn::make('active')->label('Active')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+
+                Tables\Columns\ImageColumn::make('image_url')
+                    ->height(100),
+
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Active')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

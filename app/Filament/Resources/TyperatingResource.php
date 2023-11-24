@@ -29,11 +29,22 @@ class TyperatingResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Type Rating Informations')->schema([
-                    Forms\Components\TextInput::make('name')->required()->label('Name'),
-                    Forms\Components\TextInput::make('type')->required()->label('Type'),
-                    Forms\Components\TextInput::make('description')->label('Description'),
-                    Forms\Components\TextInput::make('image_url')->label('Image URL'),
-                    Forms\Components\Toggle::make('active')->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success')->default(true),
+                    Forms\Components\TextInput::make('name')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('type')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('description'),
+
+                    Forms\Components\TextInput::make('image_url'),
+
+                    Forms\Components\Toggle::make('active')
+                        ->offIcon('heroicon-m-x-circle')
+                        ->offColor('danger')
+                        ->onIcon('heroicon-m-check-circle')
+                        ->onColor('success')
+                        ->default(true),
                 ])->columns(2),
             ]);
     }
@@ -43,10 +54,17 @@ class TyperatingResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
+
                 Tables\Columns\TextColumn::make('type'),
+
                 Tables\Columns\TextColumn::make('description'),
+
                 Tables\Columns\TextColumn::make('image_url'),
-                Tables\Columns\IconColumn::make('active')->label('Active')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Active')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
                 //
