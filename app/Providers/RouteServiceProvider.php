@@ -79,7 +79,7 @@ class RouteServiceProvider extends ServiceProvider
         Route::group([
             'as'         => 'update.',
             'prefix'     => 'update',
-            'middleware' => ['web', 'auth', 'ability:admin,admin-access'],
+            'middleware' => ['web', 'auth', 'role_or_permission:super_admin|page_Dashboard'],
             'namespace'  => 'App\Http\Controllers\System',
         ], function () {
             Route::get('/', 'UpdateController@index')->name('index');
