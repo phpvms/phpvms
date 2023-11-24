@@ -6,14 +6,9 @@ use App\Filament\Resources\FareResource\Pages;
 use App\Models\Enums\FareType;
 use App\Models\Fare;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -35,23 +30,23 @@ class FareResource extends Resource
                 Forms\Components\Section::make('Fare Information')
                     ->description('When a fare is assigned to a subfleet, the price, cost and capacity can be overridden, so you can create default values that will apply to most of your subfleets, and change them where they will differ.')
                     ->schema([
-                        TextInput::make('code')
+                        Forms\Components\TextInput::make('code')
                             ->hint('How this fare class will show up on a ticket')
                             ->required()
                             ->string(),
 
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->hint('The fare class name, E.g "Economy" or "First"')
                             ->required()
                             ->string(),
 
-                        Select::make('type')
+                        Forms\Components\Select::make('type')
                             ->hint('If this is a passenger or cargo fare')
                             ->options(FareType::labels())
                             ->native(false)
                             ->required(),
 
-                        Toggle::make('active')
+                        Forms\Components\Toggle::make('active')
                             ->offIcon('heroicon-m-x-circle')
                             ->offColor('danger')
                             ->onIcon('heroicon-m-check-circle')
@@ -60,21 +55,20 @@ class FareResource extends Resource
                     ])->columns(3),
                 Forms\Components\Section::make('Base Fare Finances')
                     ->schema([
-                        TextInput::make('price')
+                        Forms\Components\TextInput::make('price')
                             ->hint('This is the price of a ticket or price per kg')
                             ->numeric(),
 
-                        TextInput::make('cost')
+                        Forms\Components\TextInput::make('cost')
                             ->hint('The operating cost per unit (passenger or kg)')
                             ->numeric(),
 
-                        TextInput::make('capacity')
+                        Forms\Components\TextInput::make('capacity')
                             ->hint('Max seats or capacity available. This can be adjusted in the subfleet')
                             ->numeric(),
 
-                        TextInput::make('notes')
-                            ->hint('Any notes about this fare')
-                            ->string(),
+                        Forms\Components\RichEditor::make('notes')
+                            ->hint('Any notes about this fare'),
                     ])->columns(2),
             ]);
     }
@@ -83,29 +77,29 @@ class FareResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('code')
+                Tables\Columns\TextColumn::make('code')
                     ->label('Code'),
 
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->label('Name')
                     ->searchable(),
 
-                TextColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->formatStateUsing(fn (int $state): string => FareType::label($state)),
 
-                TextColumn::make('price')
+                Tables\Columns\TextColumn::make('price')
                     ->label('Price')
                     ->money(setting('units.currency')),
 
-                TextColumn::make('cost')
+                Tables\Columns\TextColumn::make('cost')
                     ->label('Cost')
                     ->money(setting('units.currency')),
 
-                TextColumn::make('notes')
+                Tables\Columns\TextColumn::make('notes')
                     ->label('Notes'),
 
-                IconColumn::make('active')
+                Tables\Columns\IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),

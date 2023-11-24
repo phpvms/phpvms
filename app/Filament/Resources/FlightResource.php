@@ -194,18 +194,15 @@ class FlightResource extends Resource
                     ->label('Dpt Time'),
 
                 TextColumn::make('arr_time')
-
                     ->label('Arr Time'),
-                TextColumn::make('notes')
-                    ->label('Notes'),
+
+                TextColumn::make('notes'),
 
                 IconColumn::make('active')
-                    ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
 
                 IconColumn::make('visible')
-                    ->label('Visible')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])

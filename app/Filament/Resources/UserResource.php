@@ -131,9 +131,9 @@ class UserResource extends Resource
                             ->native(false)
                             ->multiple(),
 
-                            Forms\Components\Textarea::make('notes')
+                            Forms\Components\RichEditor::make('notes')
                                 ->label('Management Notes')
-                                ->columnSpan('full'),
+                                ->columnSpanFull(),
                         ])
                         ->columnSpan(['lg' => 1]),
                     ]),

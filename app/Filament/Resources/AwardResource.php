@@ -44,8 +44,7 @@ class AwardResource extends Resource
                         Forms\Components\TextInput::make('image_url')
                             ->string(),
 
-                        Forms\Components\Textarea::make('description')
-                            ->autosize(),
+                        Forms\Components\RichEditor::make('description'),
 
                         Forms\Components\Grid::make('')
                             ->schema([

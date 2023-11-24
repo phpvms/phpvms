@@ -123,7 +123,7 @@ class PirepResource extends Resource
                     Forms\Components\Textarea::make('route')
                         ->disabled(false),
 
-                    Forms\Components\Textarea::make('notes')
+                    Forms\Components\RichEditor::make('notes')
                         ->disabled(false),
                 ])
                     ->columns(2)
