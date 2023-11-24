@@ -8,7 +8,6 @@ use App\Filament\Resources\FlightResource\RelationManagers;
 use App\Models\Enums\Days;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
-use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
 use Filament\Forms;
 use Filament\Forms\Form;

@@ -58,7 +58,7 @@ class AwardResource extends Resource
                                 Forms\Components\TextInput::make('ref_model_params')
                                     ->label('Award Class parammeters')
                                     ->string(),
-                        ])->columnSpan(1),
+                            ])->columnSpan(1),
 
                         Forms\Components\Toggle::make('active')
                             ->offIcon('heroicon-m-x-circle')
