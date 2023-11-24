@@ -1,5 +1,5 @@
 <li>
-  <a href="{{ url('/admin/dashboard') }}"><i class="pe-7s-display1"></i>dashboard</a>
+  <a href="{{ url('/admin') }}"><i class="pe-7s-display1"></i>dashboard</a>
 </li>
 
 <li>
@@ -9,32 +9,32 @@
 
   <div class="collapse" id="operations_menu" aria-expanded="true">
     <ul class="nav">
-      @ability('admin', 'pireps')
-      <li><a href="{{ url('/admin/pireps') }}"><i class="pe-7s-cloud-upload"></i>pireps
+      @can('view_any_pirep')
+      <li><a href="{{ \App\Filament\Resources\PirepResource::getUrl() }}"><i class="pe-7s-cloud-upload"></i>pireps
           <span data-toggle="tooltip" title="3 New" class="badge bg-light-blue pull-right">3</span>
         </a>
       </li>
-      @endability
+      @endcan
 
-      @ability('admin', 'flights')
-      <li><a href="{{ url('/admin/flights') }}"><i class="pe-7s-vector"></i>flights</a></li>
-      @endability
+      @can('view_any_flight')
+      <li><a href="{{ \App\Filament\Resources\FlightResource::getUrl() }}"><i class="pe-7s-vector"></i>flights</a></li>
+      @endcan
 
-      @ability('admin', 'fleet')
-      <li><a href="{{ url('/admin/subfleets') }}"><i class="pe-7s-plane"></i>fleet</a></li>
-      @endability
+      @can('view_any_subfleet')
+      <li><a href="{{ \App\Filament\Resources\SubfleetResource::getUrl() }}"><i class="pe-7s-plane"></i>fleet</a></li>
+      @endcan
 
-      @ability('admin', 'fares')
-      <li><a href="{{ url('/admin/fares') }}"><i class="pe-7s-graph2"></i>fares</a></li>
-      @endability
+      @can('view_any_fare')
+      <li><a href="{{ \App\Filament\Resources\FareResource::getUrl() }}"><i class="pe-7s-graph2"></i>fares</a></li>
+      @endcan
 
-      @ability('admin', 'finances')
-      <li><a href="{{ url('/admin/finances') }}"><i class="pe-7s-display1"></i>finances</a></li>
-      @endability
+      @can('page_Finances')
+      <li><a href="{{ \App\Filament\Pages\Finances::getUrl() }}"><i class="pe-7s-display1"></i>finances</a></li>
+      @endcan
 
-      @ability('admin', 'users')
-      <li><a href="{{ url('/admin/users') }}"><i class="pe-7s-users"></i>users</a></li>
-      @endability
+      @can('view_any_user')
+      <li><a href="{{ \App\Filament\Resources\UserResource::getUrl() }}"><i class="pe-7s-users"></i>users</a></li>
+      @endcan
     </ul>
   </div>
 </li>
@@ -46,49 +46,49 @@
 
   <div class="collapse" id="config_menu" aria-expanded="true">
     <ul class="nav">
-      @ability('admin', 'airlines')
-      <li><a href="{{ url('/admin/airlines') }}"><i class="pe-7s-paper-plane"></i>airlines</a></li>
-      @endability
+      @can('view_any_airline')
+      <li><a href="{{ \App\Filament\Resources\AirlineResource::getUrl() }}"><i class="pe-7s-paper-plane"></i>airlines</a></li>
+      @endcan
 
-      @ability('admin', 'airports')
-      <li><a href="{{ url('/admin/airports') }}"><i class="pe-7s-map-marker"></i>airports</a></li>
-      @endability
+      @can('view_any_airport')
+      <li><a href="{{ \App\Filament\Resources\AirportResource::getUrl() }}"><i class="pe-7s-map-marker"></i>airports</a></li>
+      @endcan
 
-      @ability('admin', 'finances')
-      <li><a href="{{ url('/admin/expenses') }}"><i class="pe-7s-cash"></i>expenses</a></li>
-      @endability
+      @can('view_any_expense')
+      <li><a href="{{ \App\Filament\Resources\ExpenseResource::getUrl() }}"><i class="pe-7s-cash"></i>expenses</a></li>
+      @endcan
 
-      @ability('admin', 'ranks')
-      <li><a href="{{ url('/admin/ranks') }}"><i class="pe-7s-graph1"></i>ranks</a></li>
-      @endability
+      @can('view_any_rank')
+      <li><a href="{{ \App\Filament\Resources\RankResource::getUrl() }}"><i class="pe-7s-graph1"></i>ranks</a></li>
+      @endcan
 
-      @ability('admin', 'typeratings')
-      <li><a href="{{ url('/admin/typeratings') }}"><i class="pe-7s-plane"></i>type ratings</a></li>
-      @endability
+      @can('view_any_typerating')
+      <li><a href="{{ \App\Filament\Resources\TyperatingResource::getUrl() }}"><i class="pe-7s-plane"></i>type ratings</a></li>
+      @endcan
 
-      @ability('admin', 'awards')
-      <li><a href="{!! url('/admin/awards') !!}"><i class="pe-7s-diamond"></i>awards</a></li>
-      @endability
+      @can('view_any_award')
+      <li><a href="{!! \App\Filament\Resources\AwardResource::getUrl() !!}"><i class="pe-7s-diamond"></i>awards</a></li>
+      @endcan
 
-      @ability('admin', 'users')
-      <li><a href="{!! url('/admin/roles') !!}"><i class="pe-7s-network"></i>roles</a></li>
-      @endability
+      @can('view_any_role')
+      <li><a href="{!! \BezhanSalleh\FilamentShield\Resources\RoleResource::getUrl() !!}"><i class="pe-7s-network"></i>roles</a></li>
+      @endcan
 
-      @ability('admin', 'pages')
-      <li><a href="{!! url('/admin/pages') !!}"><i class="pe-7s-note"></i>pages/links</a></li>
-      @endability
+      @can('view_any_page')
+      <li><a href="{!! \App\Filament\Resources\PageResource::getUrl() !!}"><i class="pe-7s-note"></i>pages/links</a></li>
+      @endcan
 
-      @ability('admin', 'modules')
-      <li><a href="{!! url('/admin/modules') !!}"><i class="pe-7s-box2"></i>addons/modules</a></li>
-      @endability
+      @can('view_any_module')
+      <li><a href="{!! \App\Filament\Resources\ModuleResource::getUrl() !!}"><i class="pe-7s-box2"></i>addons/modules</a></li>
+      @endcan
 
-      @ability('admin', 'maintenance')
-      <li><a href="{{ url('/admin/maintenance') }}"><i class="pe-7s-tools"></i>maintenance</a></li>
-      @endability
+      @can('page_Maintenance')
+      <li><a href="{{ \App\Filament\Pages\Maintenance::getUrl() }}"><i class="pe-7s-tools"></i>maintenance</a></li>
+      @endcan
 
-      @ability('admin', 'settings')
-      <li><a href="{{ url('/admin/settings') }}"><i class="pe-7s-config"></i>settings</a></li>
-      @endability
+      @can('page_Settings')
+      <li><a href="{{ \App\Filament\Pages\Settings::getUrl() }}"><i class="pe-7s-config"></i>settings</a></li>
+      @endcan
     </ul>
   </div>
 </li>
@@ -100,11 +100,11 @@
 
   <div class="collapse" id="addons_menu" aria-expanded="true">
     <ul class="nav">
-      @ability('admin', 'addons')
-      @foreach($moduleSvc->getAdminLinks() as &$link)
-        <li><a href="{{ url($link['url']) }}"><i class="{{ $link['icon'] }}"></i>{{ $link['title'] }}</a></li>
-      @endforeach
-      @endability
+      @can('view_any_module')
+        @foreach($moduleSvc->getAdminLinks() as &$link)
+          <li><a href="{{ url($link['url']) }}"><i class="{{ $link['icon'] }}"></i>{{ $link['title'] }}</a></li>
+        @endforeach
+      @endcan
     </ul>
   </div>
 </li>
