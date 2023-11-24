@@ -24,6 +24,8 @@ class ModuleResource extends Resource
     protected static ?string $navigationLabel = 'Modules';
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function form(Form $form): Form
     {
         return $form

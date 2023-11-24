@@ -14,10 +14,9 @@ class UserFieldResource extends Resource
 {
     protected static ?string $model = UserField::class;
 
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
+    protected static bool $shouldRegisterNavigation = false;
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {

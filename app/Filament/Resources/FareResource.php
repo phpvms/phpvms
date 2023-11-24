@@ -23,6 +23,7 @@ class FareResource extends Resource
     protected static ?string $navigationLabel = 'Fares';
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
+    protected static ?string $recordTitleAttribute = 'name';
     public static function form(Form $form): Form
     {
         return $form

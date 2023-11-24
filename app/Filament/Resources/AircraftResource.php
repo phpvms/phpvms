@@ -191,4 +191,8 @@ class AircraftResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'registration', 'icao'];
+    }
 }

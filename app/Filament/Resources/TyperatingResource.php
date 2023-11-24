@@ -24,6 +24,7 @@ class TyperatingResource extends Resource
 
     protected static ?string $model = Typerating::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
     public static function form(Form $form): Form
     {
         return $form

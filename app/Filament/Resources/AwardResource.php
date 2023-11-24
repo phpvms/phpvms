@@ -23,6 +23,8 @@ class AwardResource extends Resource
     protected static ?string $navigationLabel = 'Awards';
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function form(Form $form): Form
     {
         $awards = [];

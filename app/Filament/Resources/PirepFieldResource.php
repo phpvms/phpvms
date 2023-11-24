@@ -14,10 +14,9 @@ class PirepFieldResource extends Resource
 {
     protected static ?string $model = PirepField::class;
 
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
+    protected static bool $shouldRegisterNavigation = false;
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {

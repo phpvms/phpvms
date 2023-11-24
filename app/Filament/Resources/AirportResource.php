@@ -241,4 +241,9 @@ class AirportResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'icao', 'location'];
+    }
 }

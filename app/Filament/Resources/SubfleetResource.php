@@ -179,4 +179,9 @@ class SubfleetResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'type'];
+    }
 }

@@ -24,7 +24,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Guava\FilamentClusters\Forms\Cluster;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PirepResource extends Resource
@@ -37,7 +39,7 @@ class PirepResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-up';
 
-    protected static ?string $recordTitleAttribute = 'ident';
+    protected static ?string $recordTitleAttribute = 'flight_number';
 
     public static function getNavigationBadge(): ?string
     {
