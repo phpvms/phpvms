@@ -38,7 +38,7 @@ class ModuleResource extends Resource
                     ->onColor('success')
                     ->hiddenOn('create'),
 
-                Forms\Components\Hidden::make('name')
+                Forms\Components\Hidden::make('id')
                     ->hiddenOn('create'),
             ]);
     }
@@ -59,9 +59,7 @@ class ModuleResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->before(function (array $data) {
-                    if ($data['enabled']) {
-                        app(ModuleService::class)->enableModule($data['name']);
-                    }
+                    app(ModuleService::class)->updateModule($data['id'], $data['enabled']);
                 }),
                 Tables\Actions\DeleteAction::make()->before(function (Module $record) {
                     try {
