@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration {
@@ -10,6 +11,22 @@ return new class() extends Migration {
      */
     public function up(): void
     {
+        // Let's save the admin user ids.
+        $adminIds = DB::table('users')
+            ->join('role_user', 'users.id', '=', 'role_user.user_id')
+            ->join('roles', 'role_user.role_id', '=', 'roles.id')
+            ->where('roles.name', 'admin')
+            ->where('role_user.user_type', 'App\Models\User')
+            ->pluck('users.id');
+
+        // Since we can't migrate from laratrust to spatie we delete everything
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('permission_user');
+
+        // Now we create the spatie/laravel-permissions tables
         $teams = config('permission.teams');
         $tableNames = config('permission.table_names');
         $columnNames = config('permission.column_names');
@@ -122,6 +139,26 @@ return new class() extends Migration {
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
+
+        // We just add a disable_activity_check field for the roles
+        Schema::table($tableNames['roles'], function (Blueprint $table) {
+            $table->boolean('disable_activity_checks')
+                ->default(false)
+                ->after('guard_name');
+        });
+
+        // Now let's add the super_admin role to the previous admins
+        $superAdminRoleId = DB::table($tableNames['roles'])->where('name', config('filament-shield.super_admin.name'))->value('id');
+
+        if ($superAdminRoleId) {
+            foreach ($adminIds as $adminId) {
+                DB::table($tableNames['model_has_roles'])->insert([
+                    'role_id'    => $superAdminRoleId,
+                    'model_type' => 'App\Models\User',
+                    'model_id'   => $adminId,
+                ]);
+            }
+        }
     }
 
     /**
