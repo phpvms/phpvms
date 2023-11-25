@@ -69,7 +69,7 @@ return [
         ],
 
         'resources' => [
-            'RoleResource'
+            'RoleResource',
         ],
     ],
 
