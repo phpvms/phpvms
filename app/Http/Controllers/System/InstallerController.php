@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Contracts\Controller;
+use App\Database\seeds\ShieldSeeder;
 use App\Services\AirlineService;
 use App\Services\AnalyticsService;
 use App\Services\Installer\ConfigService;
@@ -38,6 +39,7 @@ class InstallerController extends Controller
      * @param MigrationService    $migrationSvc
      * @param RequirementsService $reqSvc
      * @param SeederService       $seederSvc
+     * @param ShieldSeeder        $shieldSeeder
      * @param UserService         $userService
      */
     public function __construct(
@@ -48,6 +50,7 @@ class InstallerController extends Controller
         private readonly MigrationService $migrationSvc,
         private readonly RequirementsService $reqSvc,
         private readonly SeederService $seederSvc,
+        private readonly ShieldSeeder $shieldSeeder,
         private readonly UserService $userService
     ) {
         Utils::disableDebugToolbar();
@@ -233,6 +236,7 @@ class InstallerController extends Controller
             $console_out .= $this->dbSvc->setupDB();
             $console_out .= $this->migrationSvc->runAllMigrations();
             $this->seederSvc->syncAllSeeds();
+            $this->shieldSeeder->run();
         } catch (QueryException $e) {
             Log::error('Error on db setup: '.$e->getMessage());
             //dd($e);
