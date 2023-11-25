@@ -20,11 +20,11 @@ return new class() extends Migration {
             ->pluck('users.id');
 
         // Since we can't migrate from laratrust to spatie we delete everything
-        Schema::dropIfExists('roles');
         Schema::dropIfExists('role_user');
-        Schema::dropIfExists('permissions');
         Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('roles');
         Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permissions');
 
         // Now we create the spatie/laravel-permissions tables
         $teams = config('permission.teams');
