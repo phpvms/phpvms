@@ -60,17 +60,17 @@ return [
     ],
 
     'exclude' => [
-        'enabled' => false,
+        'enabled' => true,
 
-        'pages' => [
-            'Dashboard',
-        ],
+        'pages' => [],
 
         'widgets' => [
             'AccountWidget', 'FilamentInfoWidget',
         ],
 
-        'resources' => [],
+        'resources' => [
+            'RoleResource'
+        ],
     ],
 
     'discovery' => [
