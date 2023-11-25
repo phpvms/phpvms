@@ -15,6 +15,6 @@ class OldModulesLinks extends Widget
 
     public function mount()
     {
-        $this->adminLinks = app(ModuleService::class)->getAdminLinks();
+        $this->adminLinks = array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains($link['title'], 'Sample'));
     }
 }
