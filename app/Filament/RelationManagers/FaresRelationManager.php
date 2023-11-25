@@ -22,14 +22,25 @@ class FaresRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        // Edit pivot is working well but pivot value aren't displayed in table, need to be reworked. It displays values from the relationship and not the pivot
         return $table
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
-                Tables\Columns\TextInputColumn::make('capacity'),
-                Tables\Columns\TextInputColumn::make('price'),
-                Tables\Columns\TextInputColumn::make('cost'),
+                Tables\Columns\TextInputColumn::make('pivot.capacity')
+                    ->label('Capacity')
+                    ->updateStateUsing(function (Fare $record, string $state) {
+                        $record->pivot->update(['capacity' => $state]);
+                    }),
+                Tables\Columns\TextInputColumn::make('pivot.price')
+                    ->label('Price')
+                    ->updateStateUsing(function (Fare $record, string $state) {
+                        $record->pivot->update(['price' => $state]);
+                    }),
+                Tables\Columns\TextInputColumn::make('pivot.cost')
+                    ->label('Cost')
+                    ->updateStateUsing(function (Fare $record, string $state) {
+                        $record->pivot->update(['cost' => $state]);
+                    }),
             ])
             ->filters([
                 //
