@@ -168,7 +168,6 @@ return new class() extends Migration {
                 'model_id'   => $adminId,
             ]);
         }
-
     }
 
     /**
