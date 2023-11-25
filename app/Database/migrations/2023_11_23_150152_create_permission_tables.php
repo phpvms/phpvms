@@ -150,15 +150,25 @@ return new class() extends Migration {
         // Now let's add the super_admin role to the previous admins
         $superAdminRoleId = DB::table($tableNames['roles'])->where('name', config('filament-shield.super_admin.name'))->value('id');
 
-        if ($superAdminRoleId) {
-            foreach ($adminIds as $adminId) {
-                DB::table($tableNames['model_has_roles'])->insert([
-                    'role_id'    => $superAdminRoleId,
-                    'model_type' => 'App\Models\User',
-                    'model_id'   => $adminId,
-                ]);
-            }
+        if (!$superAdminRoleId) {
+            DB::table($tableNames['roles'])->insert([
+                'name'                    => config('filament-shield.super_admin.name'),
+                'guard_name'              => 'web',
+                'disable_activity_checks' => 1,
+                'created_at'              => now(),
+                'updated_at'              => now(),
+            ]);
+            $superAdminRoleId = DB::table($tableNames['roles'])->where('name', config('filament-shield.super_admin.name'))->value('id');
         }
+
+        foreach ($adminIds as $adminId) {
+            DB::table($tableNames['model_has_roles'])->insert([
+                'role_id'    => $superAdminRoleId,
+                'model_type' => 'App\Models\User',
+                'model_id'   => $adminId,
+            ]);
+        }
+
     }
 
     /**
