@@ -1478,12 +1478,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arthurpar06/filament-modules.git",
-                "reference": "93e24c231013d68a0a5bc24b7bdb8956d4ff26a8"
+                "reference": "e821481d5939de5c70b69a5818819af571dbeb3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arthurpar06/filament-modules/zipball/93e24c231013d68a0a5bc24b7bdb8956d4ff26a8",
-                "reference": "93e24c231013d68a0a5bc24b7bdb8956d4ff26a8",
+                "url": "https://api.github.com/repos/arthurpar06/filament-modules/zipball/e821481d5939de5c70b69a5818819af571dbeb3f",
+                "reference": "e821481d5939de5c70b69a5818819af571dbeb3f",
                 "shasum": ""
             },
             "require": {
@@ -1561,7 +1561,7 @@
             "support": {
                 "source": "https://github.com/arthurpar06/filament-modules/tree/3.x"
             },
-            "time": "2023-10-08T20:48:13+00:00"
+            "time": "2023-11-25T13:28:28+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
