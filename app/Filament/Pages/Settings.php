@@ -7,8 +7,8 @@ use App\Services\FinanceService;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -137,11 +137,11 @@ class Settings extends Page
 
     protected function getFormSchema(): array
     {
-        $schema = [];
+        $tabs = [];
 
         $grouped_settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
-            $schema[] = Section::make(Str::ucfirst($group))->schema(
+            $tabs[] = Tabs\Tab::make(Str::ucfirst($group))->schema(
                 $settings->map(function ($setting) {
                     if ($setting->type === 'date') {
                         return DatePicker::make($setting->key)->label($setting->name)->helperText($setting->description)->format('Y-m-d');
@@ -164,7 +164,9 @@ class Settings extends Page
             );
         }
 
-        return $schema;
+        return [
+            Tabs::make('settings')->tabs($tabs)->columnSpanFull()
+        ];
     }
 
     public function getRedirectUrl(): ?string
