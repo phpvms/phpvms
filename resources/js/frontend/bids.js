@@ -5,7 +5,7 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
-import request from '../request';
+import request from "../request";
 
 /**
  * Add a bid to a flight
@@ -17,12 +17,12 @@ import request from '../request';
  */
 export async function addBid(flight_id, aircraft_id = null) {
   const params = {
-    method: 'POST',
-    url: '/api/user/bids',
+    method: "POST",
+    url: "/api/user/bids",
     data: {
-      _method: 'POST',
+      _method: "POST",
       flight_id,
-      aircraft_id
+      aircraft_id,
     },
   };
 
@@ -38,10 +38,10 @@ export async function addBid(flight_id, aircraft_id = null) {
  */
 export async function removeBid(flight_id) {
   const params = {
-    method: 'POST',
-    url: '/api/user/bids',
+    method: "POST",
+    url: "/api/user/bids",
     data: {
-      _method: 'DELETE',
+      _method: "DELETE",
       flight_id,
     },
   };

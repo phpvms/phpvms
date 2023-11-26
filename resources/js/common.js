@@ -5,7 +5,7 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
-const rivets = require('rivets');
+import rivets from "rivets";
 
 /**
  * Generic formatter to prepend

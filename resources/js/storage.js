@@ -16,28 +16,28 @@ export default class Storage {
     // it to the default value
     const st = window.localStorage.getItem(this.name);
     if (!st) {
-      console.log('Nothing found in storage, starting from default');
+      console.log("Nothing found in storage, starting from default");
       this.data = default_value;
     } else {
-      console.log('Found in storage: ', st);
+      console.log("Found in storage: ", st);
       this.data = JSON.parse(st);
     }
   }
 
   /**
-     * Save to local storage
-     */
+   * Save to local storage
+   */
   save() {
     window.localStorage.setItem(this.name, JSON.stringify(this.data));
   }
 
   /**
-     * Return a list from a given key
-     *
-     * @param {String} key
-     *
-     * @returns {Array|*}
-     */
+   * Return a list from a given key
+   *
+   * @param {String} key
+   *
+   * @returns {Array|*}
+   */
   getList(key) {
     if (!(key in this.data)) {
       return [];
@@ -47,11 +47,11 @@ export default class Storage {
   }
 
   /**
-     * Add `value` to a given `key`
-     *
-     * @param {string} key
-     * @param {*} value
-     */
+   * Add `value` to a given `key`
+   *
+   * @param {string} key
+   * @param {*} value
+   */
   addToList(key, value) {
     if (!(key in this.data)) {
       this.data[key] = [];
@@ -64,11 +64,11 @@ export default class Storage {
   }
 
   /**
-     * Remove `value` from the given `key`
-     *
-     * @param {String} key
-     * @param {*} value
-     */
+   * Remove `value` from the given `key`
+   *
+   * @param {String} key
+   * @param {*} value
+   */
   removeFromList(key, value) {
     if (!(key in this.data)) {
       return;

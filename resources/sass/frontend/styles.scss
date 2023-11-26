@@ -1,0 +1,138 @@
+/**
+ *
+ */
+ .select2-container {
+  margin-top: 2px;
+}
+
+.map-info-box {
+  position: absolute;
+  bottom: 0;
+  padding: 20px;
+  height: 100px;
+  z-index: 9999;
+  background-color: rgba(232, 232, 232, 0.9);
+}
+
+.map-info-label {
+  display: block;
+  padding: 5px;
+  background-color: rgba(232, 232, 232, 0.9);
+}
+
+.dashboard-box {
+  background: #067ec1;
+  color: #FFF;
+}
+
+.dashboard-box .header {
+  left: 0;
+  right: 0;
+  height: 100px;
+  line-height: 100px;
+  white-space: nowrap;
+}
+
+.dashboard-box .icon-background {
+  float: left;
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 125px;
+}
+
+.dashboard-box .icon {
+  opacity: .1;
+}
+
+.dashboard-box .description {
+  position: absolute;
+  color: white;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 1.3em;
+}
+
+.mini-splash {
+  padding: 30px 0;
+  text-align: center;
+  color: #9A9A9A;
+  font-weight: 300;
+}
+
+.font-large {
+  font-size: 20px;
+}
+
+.font-medium {
+  font-size: 18px;
+}
+
+.card-bg {
+  float: left;
+  position: absolute;
+  display: block;
+  bottom: 10px;
+  width: 100%;
+  height: 100%;
+  font-size: 275px;
+  text-align: center;
+}
+
+.blue-bg {
+  background: #067ec1;
+}
+
+.border-blue-bottom {
+  border-bottom: 3px solid #067ec1;
+}
+
+.full-height {
+  height: 50vh;
+}
+
+.flex-center {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.position-ref {
+  position: relative;
+}
+
+.m-b-md {
+  margin-bottom: 30px;
+}
+
+.my-bids {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  margin: 15px;
+  padding: 10px;
+  border-radius: .1875rem;
+  background-color: #fa7a50;
+}
+
+.my-bids a {
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+}
+
+.search-form .form-control {
+  border-radius: 5px;
+  width: 250px;
+}
+
+/*
+*   fix the dropdown menu on mobile view
+*/
+.dropdown-menu:not(.show) {
+  display: none;
+}

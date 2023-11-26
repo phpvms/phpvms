@@ -19,10 +19,7 @@
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet"/>
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet"/>
 
-  <link href="{{ public_asset('/assets/frontend/css/bootstrap.min.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/now-ui-kit.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/installer/css/vendor.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/styles.css') }}" rel="stylesheet"/>
+  @vite(['resources/sass/app.scss', 'resources/sass/now-ui/now-ui-kit.scss', 'resources/sass/frontend/styles.scss'])
 
   <link rel="stylesheet"
         href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
@@ -65,15 +62,13 @@
 
 {{--<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>--}}
 
-<script src="{{ public_mix('/assets/global/js/vendor.js') }}"></script>
-<script src="{{ public_mix('/assets/installer/js/vendor.js') }}"></script>
-<script src="{{ public_mix('/assets/installer/js/app.js') }}"></script>
+@vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 
 <script>
   hljs.configure({languages: ['sh']});
 
-  $(document).ready(function () {
+  window.addEventListener("load", function () {
 
     $(".select2").select2();
 

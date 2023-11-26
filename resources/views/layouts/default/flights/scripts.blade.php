@@ -1,7 +1,8 @@
 @section('scripts')
+
     @if (setting('bids.block_aircraft', false))
         <script>
-            $(document).ready(function() {
+             window.addEventListener("load", function() {
                 let aircrafts = [{
                     id: 0,
                     text: 'Loading Aircrafts...'
@@ -90,7 +91,7 @@
         </script>
     @else
         <script>
-            $(document).ready(function() {
+             window.addEventListener("load", function () {
                 $("button.save_flight").click(function(e) {
                     e.preventDefault();
 

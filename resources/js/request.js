@@ -5,9 +5,9 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
-import config from './config';
+import axios from "axios";
 
-const axios = require('axios');
+import config from "./config";
 
 /**
  * Run an API request, with some common options
@@ -16,22 +16,26 @@ const axios = require('axios');
  * @param {String} _opts.url
  */
 export default async (_opts) => {
-  if (typeof _opts === 'string' || _opts instanceof String) {
+  if (typeof _opts === "string" || _opts instanceof String) {
     // eslint-disable-next-line no-param-reassign
     _opts = {
       url: _opts,
     };
   }
 
-  const opts = Object.assign({}, {
-    baseURL: config.base_url,
-    headers: {
-      'X-API-KEY': config.api_key,
-      'X-CSRF-TOKEN': config.csrf_token,
+  const opts = Object.assign(
+    {},
+    {
+      baseURL: config.base_url,
+      headers: {
+        "X-API-KEY": config.api_key,
+        "X-CSRF-TOKEN": config.csrf_token,
+      },
     },
-  }, _opts);
+    _opts
+  );
 
-  console.log(opts);
+  // console.log(opts);
 
   return axios.request(opts);
 };
