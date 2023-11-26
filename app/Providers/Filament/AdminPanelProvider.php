@@ -62,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
             ])
+            ->brandName("phpVMS")
             ->spa();
     }
 }
