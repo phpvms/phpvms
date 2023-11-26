@@ -11,9 +11,7 @@
         name='viewport'/>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet"/>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"/>
-  <link href="{{ public_asset('/assets/frontend/css/bootstrap.min.css') }}" rel="stylesheet"/>
-  <link href="{{ public_mix('/assets/frontend/css/now-ui-kit.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/styles.css') }}" rel="stylesheet"/>
+  @vite(['resources/sass/app.scss', 'resources/sass/now-ui/now-ui-kit.scss', 'resources/sass/frontend/styles.scss'])
   @yield('css')
 </head>
 
@@ -42,7 +40,7 @@
 </div>
 </body>
 
-<script src="{{ public_asset('/assets/global/js/jquery.js') }}" type="text/javascript"></script>
+@vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
 
 @yield('scripts')
 

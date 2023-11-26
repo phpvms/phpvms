@@ -28,7 +28,7 @@
       </td>
       <td align="center">
         @if(filled($user->country))
-          <span class="flag-icon flag-icon-{{ $user->country }}"
+          <span class="fi fi-{{ $user->country }}"
                 title="{{ $country->alpha2($user->country)['name'] }}"></span>
         @endif
       </td>

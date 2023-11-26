@@ -5,16 +5,17 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
+import L from "leaflet";
 
-import render_airspace_map from './airspace_map';
-import render_live_map from './live_map';
-import render_route_map from './route_map';
-import render_base_map from './base_map';
+import render_airspace_map from "./airspace_map";
+import render_live_map from "./live_map";
+import render_route_map from "./route_map";
+import render_base_map from "./base_map";
 
-require('leaflet.geodesic');
-require('leaflet-rotatedmarker');
+import "leaflet.geodesic";
+import "leaflet-rotatedmarker";
 
-window.L = require('leaflet');
+window.L = L;
 
 export {
   render_airspace_map,
