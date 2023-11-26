@@ -136,3 +136,11 @@
 .dropdown-menu:not(.show) {
   display: none;
 }
+
+/*
+* fix the leaflet control layers on hover
+*/
+.leaflet-bar a:hover {
+  color: #000;
+  text-decoration: none;
+}
