@@ -61,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Modules'),
             ])
             ->navigationItems([
-                NavigationItem::make()->label('Go back to ' .config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
+                NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
