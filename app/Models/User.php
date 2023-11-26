@@ -6,6 +6,7 @@ use App\Models\Enums\JournalType;
 use App\Models\Traits\JournalTrait;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -66,7 +67,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Illuminate\Database\Eloquent\Builder
  * @mixin \Illuminate\Notifications\Notifiable
  */
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasAvatar
 {
     use HasFactory;
     use HasRelationships;
@@ -376,5 +377,10 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function hasAdminAccess(): bool
     {
         return $this->hasRole(Utils::getSuperAdminName()) || $this->can('page_Dashboard');
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar;
     }
 }
