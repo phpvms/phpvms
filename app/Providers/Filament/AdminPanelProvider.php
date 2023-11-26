@@ -7,6 +7,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -58,6 +59,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Operations'),
                 NavigationGroup::make()->label('Config'),
                 NavigationGroup::make()->label('Modules'),
+            ])
+            ->navigationItems([
+                NavigationItem::make()->label('Go back to ' .config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
