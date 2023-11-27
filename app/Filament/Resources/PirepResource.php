@@ -24,7 +24,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Guava\FilamentClusters\Forms\Cluster;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PirepResource extends Resource
@@ -36,8 +38,6 @@ class PirepResource extends Resource
     protected static ?string $navigationLabel = 'Pireps';
 
     protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-up';
-
-    protected static ?string $recordTitleAttribute = 'flight_number';
 
     public static function getNavigationBadge(): ?string
     {
@@ -288,5 +288,23 @@ class PirepResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['flight_number', 'route_code'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->airline->icao . $record->flight_number;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Departure Airport' => $record->dpt_airport_id,
+            'Arrival Airport'   => $record->arr_airport_id,
+        ];
     }
 }

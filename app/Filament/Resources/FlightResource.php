@@ -17,7 +17,9 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Guava\FilamentClusters\Forms\Cluster;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class FlightResource extends Resource
@@ -30,8 +32,6 @@ class FlightResource extends Resource
     protected static ?string $navigationLabel = 'Flights';
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-vertical';
-
-    protected static ?string $recordTitleAttribute = 'flight_number';
 
     public static function form(Form $form): Form
     {
@@ -254,5 +254,23 @@ class FlightResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['flight_number', 'route_code'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->airline->icao . $record->flight_number;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Departure Airport' => $record->dpt_airport_id,
+            'Arrival Airport'   => $record->arr_airport_id,
+        ];
     }
 }

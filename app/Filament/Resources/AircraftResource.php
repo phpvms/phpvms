@@ -16,8 +16,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AircraftResource extends Resource
@@ -195,5 +197,10 @@ class AircraftResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'registration', 'icao'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->name . ' - ' . $record->registration;
     }
 }
