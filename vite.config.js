@@ -30,7 +30,7 @@ export default defineConfig({
         "public/assets/global/js/jquery.js",
         "public/assets/global/js/simbrief.apiv1.js",
       ],
-      refresh: [...refreshPaths, "app/Livewire/**", "app/Filament/**"],
+      refresh: [...refreshPaths, "app/Livewire/**", "app/Filament/**", "modules/**/**"],
     }),
   ],
   // server: {
