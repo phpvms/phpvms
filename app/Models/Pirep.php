@@ -188,6 +188,7 @@ class Pirep extends Model
         'landing_rate',
         'score',
         'flight_type',
+        'source',
         'state',
         'status',
         'submitted_at',

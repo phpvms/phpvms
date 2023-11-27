@@ -29,6 +29,7 @@
         "ext-bcmath": "*",
         "ext-pdo": "*",
         "ext-intl": "*",
+        "ext-zip": "*",
         "fisharebest/ext-calendar": "^2.5",
         "symfony/flex": "^1.0",
         "symfony/polyfill-iconv": "~1.22.0",
@@ -92,7 +93,8 @@
         "coolsam/modules": "3.x-dev",
         "flowframe/laravel-trend": "^0.1.5",
         "bezhansalleh/filament-shield": "^3.1",
-        "guava/filament-clusters": "^1.1"
+        "guava/filament-clusters": "^1.1",
+        "spatie/laravel-backup": "^8.4"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",

@@ -24,13 +24,15 @@ class LatestPireps extends Widget
         $pirepRepo = app(PirepRepository::class);
 
         $pireps = $pirepRepo
-            ->with(['airline', 'aircraft'])
-            ->whereNotInOrder('state', [
-                PirepState::CANCELLED,
+            ->with(['airline', 'aircraft', 'user'])
+            ->whereNotIn('state', [
                 PirepState::DRAFT,
                 PirepState::IN_PROGRESS,
-            ], 'submitted_at', 'desc')
-            ->recent($this->config['count']);
+                PirepState::CANCELLED,
+            ])
+            ->orderBy('submitted_at', 'desc')
+            ->take($this->config['count'])
+            ->get();
 
         return view('widgets.latest_pireps', [
             'config' => $this->config,

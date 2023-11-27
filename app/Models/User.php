@@ -169,6 +169,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         'flight_time',
         'transfer_time',
         'created_at',
+        'state',
     ];
 
     /**

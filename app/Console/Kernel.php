@@ -51,10 +51,11 @@ class Kernel extends ConsoleKernel
         $schedule->command(Monthly::class)->monthlyOn(1);
 
         // When spatie-backups runs
-        /*if (config('backup.backup.enabled', false) === true) {
-            $schedule->command('backup:clean')->daily()->at('01:00');
-            $schedule->command('backup:run')->daily()->at('02:00');
-        }*/
+        if (config('backup.backup.enabled', false) === true) {
+            $schedule->command('backup:run')->daily()->at('01:00');
+            $schedule->command('backup:clean')->daily()->at('01:20');
+            $schedule->command('backup:monitor')->daily()->at('01:30');
+        }
 
         // Update the last time the cron was run
         /** @var CronService $cronSvc */

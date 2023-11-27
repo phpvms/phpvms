@@ -148,13 +148,20 @@ class Flight extends Model
         'route_leg',
         'dpt_airport_id',
         'arr_airport_id',
+        'alt_airport_id',
         'dpt_time',
         'arr_time',
         'distance',
+        'notes',
         'flight_time',
         'flight_type',
         'event_id',
         'user_id',
+    ];
+
+    public $sortableAs = [
+        'subfleets_count',
+        'fares_count',
     ];
 
     /**
