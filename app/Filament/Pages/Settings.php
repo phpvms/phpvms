@@ -165,7 +165,7 @@ class Settings extends Page
         }
 
         return [
-            Tabs::make('settings')->tabs($tabs)->columnSpanFull()
+            Tabs::make('settings')->tabs($tabs)->columnSpanFull(),
         ];
     }
 
