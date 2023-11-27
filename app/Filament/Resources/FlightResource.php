@@ -145,7 +145,8 @@ class FlightResource extends Resource
                             ->searchable()
                             ->native(false),
 
-                        Forms\Components\TextInput::make('flight_type')
+                        Forms\Components\TextInput::make('level')
+                            ->label('Flight Level')
                             ->integer()
                             ->hint('In feet'),
 
