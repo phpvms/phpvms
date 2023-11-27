@@ -17,5 +17,4 @@ class Backups extends BaseBackups
     {
         return 'Config';
     }
-
 }
