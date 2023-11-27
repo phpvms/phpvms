@@ -201,6 +201,6 @@ class AircraftResource extends Resource
 
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
-        return $record->name . ' - ' . $record->registration;
+        return $record->name.' - '.$record->registration;
     }
 }

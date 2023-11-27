@@ -263,7 +263,7 @@ class FlightResource extends Resource
 
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
-        return $record->airline->icao . $record->flight_number;
+        return $record->airline->icao.$record->flight_number;
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array

@@ -187,6 +187,6 @@ class SubfleetResource extends Resource
 
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
-        return $record->type . ' - ' .$record->name;
+        return $record->type.' - '.$record->name;
     }
 }
