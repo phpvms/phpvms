@@ -322,8 +322,8 @@ class FlightService extends Service
                 ->orderBy('submitted_at', 'desc')
                 ->first();
 
-            $ac = $diverted_pirep->aircraft;
-            if ($ac->airport_id != $flight->dpt_airport_id) { // Aircraft has moved
+            $ac = $diverted_pirep?->aircraft;
+            if (!$ac || $ac->airport_id != $flight->dpt_airport_id) { // Aircraft has moved or diverted pirep/aircraft no longer exists
                 $flight->delete();
             }
         }

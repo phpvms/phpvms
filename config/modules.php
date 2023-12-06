@@ -152,8 +152,9 @@ return [
     */
     'cache' => [
         'enabled'  => true,
+        'driver'   => env('CACHE_DRIVER', 'file'),
         'key'      => 'phpvms-modules',
-        'lifetime' => 0,
+        'lifetime' => 60 * 60 * 6, // 6 hours
     ],
     /*
     |--------------------------------------------------------------------------
@@ -172,10 +173,13 @@ return [
             'class'          => FileActivator::class,
             'statuses-file'  => config_path('modules_statuses.json'),
             'cache-key'      => 'activator.installed',
-            'cache-lifetime' => 0,
+            'cache-lifetime' => 60 * 60 * 24 * 7, // 1 week
         ],
         'database' => [
-            'class' => DatabaseActivator::class,
+            'class'          => DatabaseActivator::class,
+            'statuses-file'  => config_path('modules_statuses.json'),
+            'cache-key'      => 'activator.installed',
+            'cache-lifetime' => 60 * 60 * 24 * 7, // 1 week
         ],
     ],
 ];

@@ -20,7 +20,7 @@ return [
     'expire_on_close' => false,
     'encrypt'         => false,
     'files'           => storage_path('framework/sessions'),
-    'connection'      => 'mysql',
+    'connection'      => env('SESSION_CONNECTION', 'mysql'),
     'table'           => 'sessions',
     'store'           => null,
     'lottery'         => [1, 100],

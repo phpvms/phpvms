@@ -85,17 +85,24 @@ class DatabaseActivator implements ActivatorInterface
         try {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.MODULES');
-                $modules = Cache::remember($cache['key'], $cache['time'], function () {
-                    \App\Models\Module::all();
+                $retVal = Cache::remember($cache['key'], $cache['time'], function () {
+                    $modules = \App\Models\Module::select('name', 'enabled')->get();
+
+                    $retValCache = [];
+                    foreach ($modules as $i) {
+                        $retValCache[$i->name] = $i->enabled;
+                    }
+
+                    return $retValCache;
                 });
             } else {
-                $modules = \App\Models\Module::all();
-            }
-            $retVal = [];
-            foreach ($modules as $i) {
-                $retVal[$i->name] = $i->enabled;
-            }
+                $modules = \App\Models\Module::select('name', 'enabled')->get();
 
+                $retVal = [];
+                foreach ($modules as $i) {
+                    $retVal[$i->name] = $i->enabled;
+                }
+            }
             return $retVal;
         } catch (Exception $e) {
             return [];

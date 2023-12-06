@@ -108,7 +108,7 @@ return [
     // Overrides config/session.php
     'session' => [
         'driver' => 'file',
-        'connection' => 'mysql',
+        'connection' => env('SESSION_CONNECTION', 'mysql'),
         'lifetime' => 60 * 24,  # 24 hours
     ],
 ];

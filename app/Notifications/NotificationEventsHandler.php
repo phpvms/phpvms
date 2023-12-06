@@ -293,7 +293,7 @@ class NotificationEventsHandler extends Listener
         /*
          * Broadcast notifications
          */
-        if (setting('notifications.discord_user_rank_changed', true)) {
+        if (setting('notifications.discord_user_rank_changed', true) && $event->stat_name === 'rank') {
             Notification::send([$event->user], new Messages\Broadcast\UserRankChanged($event->user));
         }
     }

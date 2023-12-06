@@ -6,9 +6,13 @@ use App\Contracts\Listener;
 use App\Events\Fares;
 use App\Models\Enums\FareType;
 use App\Models\Fare;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class FareListener extends Listener
+class FareListener extends Listener implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Return a list of additional fares/income items
      *

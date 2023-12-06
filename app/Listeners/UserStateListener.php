@@ -6,9 +6,13 @@ use App\Contracts\Listener;
 use App\Events\PirepFiled;
 use App\Events\UserStateChanged;
 use App\Models\Enums\UserState;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class UserStateListener extends Listener
+class UserStateListener extends Listener implements ShouldQueue
 {
+    use Queueable;
+
     public function handle(PirepFiled $event): void
     {
         // Check the user state, set them to ACTIVE if on leave

@@ -5,6 +5,8 @@ namespace App\Listeners;
 use App\Contracts\Listener;
 use App\Events\ProcessAward;
 use App\Models\Award;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
  * Look for and run any of the award classes. Don't modify this.
@@ -12,8 +14,10 @@ use App\Models\Award;
  *
  * @url http://docs.phpvms.net/customizing/awards
  */
-class AwardHandler extends Listener
+class AwardHandler extends Listener implements ShouldQueue
 {
+    use Queueable;
+
     /** The events and the callback */
     public static $callbacks = [
         ProcessAward::class => 'processAward',

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Kyslik\ColumnSortable\Sortable;
@@ -104,6 +105,8 @@ class Flight extends Model
         'visible',
         'event_id',
         'user_id',
+        'owner_type',
+        'owner_id',
     ];
 
     protected $casts = [
@@ -125,7 +128,7 @@ class Flight extends Model
         'user_id'              => 'integer',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'airline_id'           => 'required|exists:airlines,id',
         'flight_number'        => 'required',
         'callsign'             => 'string|max:4|nullable',
@@ -140,7 +143,7 @@ class Flight extends Model
         'user_id'              => 'nullable|numeric',
     ];
 
-    public $sortable = [
+    public array $sortable = [
         'airline_id',
         'flight_number',
         'callsign',
@@ -159,7 +162,7 @@ class Flight extends Model
         'user_id',
     ];
 
-    public $sortableAs = [
+    public array $sortableAs = [
         'subfleets_count',
         'fares_count',
     ];
@@ -323,5 +326,10 @@ class Flight extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class, 'id', 'event_id');
+    }
+
+    public function owner(): MorphTo
+    {
+        return $this->morphTo('owner', 'owner_type', 'owner_id');
     }
 }

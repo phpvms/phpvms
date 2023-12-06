@@ -5,12 +5,16 @@ namespace App\Listeners;
 use App\Contracts\Listener;
 use App\Events\PirepFiled;
 use App\Services\BidService;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
  * Do stuff with bids - like if a PIREP is accepted, then remove the bid
  */
-class BidEventHandler extends Listener
+class BidEventHandler extends Listener implements ShouldQueue
 {
+    use Queueable;
+
     public static $callbacks = [
         PirepFiled::class => 'onPirepFiled',
     ];

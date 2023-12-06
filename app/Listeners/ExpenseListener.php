@@ -6,9 +6,13 @@ use App\Contracts\Listener;
 use App\Events\Expenses;
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ExpenseListener extends Listener
+class ExpenseListener extends Listener implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Return a list of additional expenses
      *
