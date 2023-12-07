@@ -204,58 +204,60 @@ class PirepResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Action::make('accept')
-                    ->color('success')
-                    ->icon('heroicon-m-check-circle')
-                    ->label('Accept')
-                    ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
-                    ->action(function (Pirep $record): void {
-                        $pirep = app(PirepService::class)->changeState($record, PirepState::ACCEPTED);
-                        if ($pirep->state === PirepState::ACCEPTED) {
-                            Notification::make()
-                                ->title('Pirep Accepted')
-                                ->success()
-                                ->send();
-                        } else {
-                            Notification::make()
-                                ->title('There was an error accepting the Pirep')
-                                ->danger()
-                                ->send();
-                        }
-                    }),
+                Tables\Actions\ActionGroup::make([
+                    Action::make('accept')
+                        ->color('success')
+                        ->icon('heroicon-m-check-circle')
+                        ->label('Accept')
+                        ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
+                        ->action(function (Pirep $record): void {
+                            $pirep = app(PirepService::class)->changeState($record, PirepState::ACCEPTED);
+                            if ($pirep->state === PirepState::ACCEPTED) {
+                                Notification::make()
+                                    ->title('Pirep Accepted')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('There was an error accepting the Pirep')
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
 
-                Action::make('reject')
-                    ->color('danger')
-                    ->icon('heroicon-m-x-circle')
-                    ->label('Reject')
-                    ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
-                    ->action(function (Pirep $record): void {
-                        $pirep = app(PirepService::class)->changeState($record, PirepState::REJECTED);
-                        if ($pirep->state === PirepState::REJECTED) {
-                            Notification::make()
-                                ->title('Pirep Rejected')
-                                ->success()
-                                ->send();
-                        } else {
-                            Notification::make()
-                                ->title('There was an error rejecting the Pirep')
-                                ->danger()
-                                ->send();
-                        }
-                    }),
+                    Action::make('reject')
+                        ->color('danger')
+                        ->icon('heroicon-m-x-circle')
+                        ->label('Reject')
+                        ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
+                        ->action(function (Pirep $record): void {
+                            $pirep = app(PirepService::class)->changeState($record, PirepState::REJECTED);
+                            if ($pirep->state === PirepState::REJECTED) {
+                                Notification::make()
+                                    ->title('Pirep Rejected')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('There was an error rejecting the Pirep')
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
 
-                EditAction::make(),
+                    EditAction::make(),
 
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
 
-                Action::make('view')
-                    ->color('info')
-                    ->icon('heroicon-m-eye')
-                    ->label('View Pirep')
-                    ->url(fn (Pirep $record): string => route('frontend.pireps.show', $record->id))
-                    ->openUrlInNewTab(),
+                    Action::make('view')
+                        ->color('info')
+                        ->icon('heroicon-m-eye')
+                        ->label('View Pirep')
+                        ->url(fn (Pirep $record): string => route('frontend.pireps.show', $record->id))
+                        ->openUrlInNewTab(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
