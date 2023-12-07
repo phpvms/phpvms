@@ -1,12 +1,10 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,12 +13,12 @@ return new class extends Migration
         // Create the new super_admin role if it doesn't exist
         if (DB::table('roles')->where('name', config('filament-shield.super_admin.name'))->doesntExist()) {
             DB::table('roles')->insert([
-                'id' => 1,
-                'name' => config('filament-shield.super_admin.name'),
-                'guard_name' => 'web',
+                'id'                      => 1,
+                'name'                    => config('filament-shield.super_admin.name'),
+                'guard_name'              => 'web',
                 'disable_activity_checks' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'              => now(),
+                'updated_at'              => now(),
             ]);
         }
 
@@ -32,11 +30,11 @@ return new class extends Migration
             }
 
             DB::table('roles')->insert([
-                'name' => $role->name,
-                'guard_name' => 'web',
+                'name'                    => $role->name,
+                'guard_name'              => 'web',
                 'disable_activity_checks' => $role->disable_activity_checks,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'              => now(),
+                'updated_at'              => now(),
             ]);
         }
 
@@ -52,9 +50,9 @@ return new class extends Migration
             $roleId = DB::table('roles')->where('name', $roleUser->role_name)->value('id');
 
             DB::table('model_has_roles')->insert([
-                'role_id' => $roleId,
+                'role_id'    => $roleId,
                 'model_type' => 'App\Models\User',
-                'model_id' => $roleUser->user_id,
+                'model_id'   => $roleUser->user_id,
             ]);
         }
 
@@ -258,7 +256,7 @@ return new class extends Migration
                 'force_delete_any_rank',
             ],
             'settings' => [
-                'page_Settings'
+                'page_Settings',
             ],
             'subfleets' => [
                 'view_subfleet',
@@ -321,7 +319,7 @@ return new class extends Migration
             foreach ($permissionList as $permission) {
                 if (DB::table('permissions')->where('name', $permission)->doesntExist()) {
                     DB::table('permissions')->insert([
-                        'name' => $permission,
+                        'name'       => $permission,
                         'guard_name' => 'web',
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -349,7 +347,7 @@ return new class extends Migration
 
                         DB::table('role_has_permissions')->insert([
                             'permission_id' => $permissionId,
-                            'role_id' => $roleId,
+                            'role_id'       => $roleId,
                         ]);
                     }
                 }

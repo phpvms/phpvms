@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,9 +21,9 @@ return new class extends Migration
         $exportedRoles = DB::table('roles')->select(['name', 'disable_activity_checks'])->get();
         foreach ($exportedRoles as $role) {
             DB::table('exported_roles')->insert([
-                'name' => $role->name,
-                'disable_activity_checks' => $role->disable_activity_checks
-                ]);
+                'name'                    => $role->name,
+                'disable_activity_checks' => $role->disable_activity_checks,
+            ]);
         }
 
         // Exported permission_role
@@ -42,9 +41,9 @@ return new class extends Migration
 
         foreach ($permissionRoles as $permissionRole) {
             DB::table('exported_permission_role')->insert([
-                'role_name' => $permissionRole->role_name,
-                'permission_name' => $permissionRole->permission_name
-                ]);
+                'role_name'       => $permissionRole->role_name,
+                'permission_name' => $permissionRole->permission_name,
+            ]);
         }
 
         // Exported role_user
@@ -62,8 +61,8 @@ return new class extends Migration
         foreach ($roleUsers as $roleUser) {
             DB::table('exported_role_user')->insert([
                 'role_name' => $roleUser->role_name,
-                'user_id' => $roleUser->user_id
-                ]);
+                'user_id'   => $roleUser->user_id,
+            ]);
         }
     }
 
