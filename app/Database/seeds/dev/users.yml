@@ -59,22 +59,22 @@ users:
 roles:
   - id: 2
     name: pilot
-    display_name: Pilot
-    description: A regular pilot
+    guard_name: web
+    disable_activity_checks: 0
 
-role_user:
-  - user_id: 1
+model_has_roles:
+  - model_id: 1
     role_id: 1
-    user_type: App\Models\User
-  - user_id: 1
+    model_type: App\Models\User
+  - model_id: 1
     role_id: 2
-    user_type: App\Models\User
-  - user_id: 2
+    model_type: App\Models\User
+  - model_id: 2
     role_id: 2
-    user_type: App\Models\User
-  - user_id: 3
+    model_type: App\Models\User
+  - model_id: 3
     role_id: 2
-    user_type: App\Models\User
+    model_type: App\Models\User
 
 user_fields:
   - id: 1

@@ -3,7 +3,8 @@ roles:
   id_column: name
   data:
     - name: fleet-only
-      display_name: Edit Fleet
+    - guard_name: web
+    - disable_activity_checks: 0
 
 news:
   - id: 1
