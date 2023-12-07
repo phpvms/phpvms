@@ -20,7 +20,11 @@ class ListPireps extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('pirepfields')->label('Pirep Fields')->icon('heroicon-o-clipboard-document-list')->url(PirepFieldResource::getUrl('index')),
+            Action::make('pirepfields')
+                ->label('Pirep Fields')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->url(PirepFieldResource::getUrl('index'))
+                ->visible(fn (): bool => auth()->user()?->can('view_any_pirep::field')),
         ];
     }
 
