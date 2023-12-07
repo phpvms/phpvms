@@ -41,11 +41,16 @@ class PirepFieldResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('description'),
+
                 Tables\Columns\IconColumn::make('required')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 //

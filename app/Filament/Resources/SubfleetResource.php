@@ -103,17 +103,26 @@ class SubfleetResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('airline.name'),
+                Tables\Columns\TextColumn::make('airline.name')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('type')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('hub_id'),
+                Tables\Columns\TextColumn::make('hub_id')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('aircraft_count')
                     ->label('Aircrafts')
-                    ->counts('aircraft'),
+                    ->counts('aircraft')
+                    ->sortable(),
             ])
             ->filters([
                 //

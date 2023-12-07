@@ -98,25 +98,38 @@ class AircraftResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('registration'),
+                Tables\Columns\TextColumn::make('registration')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('fin'),
+                Tables\Columns\TextColumn::make('fin')
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('subfleet.name'),
+                Tables\Columns\TextColumn::make('subfleet.name')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('hub_id')
-                    ->label('Home'),
+                    ->label('Home')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('airport_id')
-                    ->label('Location'),
+                    ->label('Location')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('landingTime')
-                    ->since(),
+                    ->since()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('flight_time')
-                    ->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min'),
+                    ->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -124,6 +137,7 @@ class AircraftResource extends Resource
                         AircraftStatus::ACTIVE => 'success',
                         default                => 'info',
                     })
+                    ->sortable()
                     ->formatStateUsing(fn (string $state): string => AircraftStatus::label($state)),
 
                 Tables\Columns\TextColumn::make('state')
@@ -132,6 +146,7 @@ class AircraftResource extends Resource
                         AircraftState::PARKED => 'success',
                         default               => 'info',
                     })
+                    ->sortable()
                     ->formatStateUsing(fn (int $state): string => AircraftState::label($state)),
 
             ])

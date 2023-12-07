@@ -48,11 +48,13 @@ class ModuleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('enabled')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 //

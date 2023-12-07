@@ -80,23 +80,29 @@ class FareResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
-                    ->label('Code'),
+                    ->label('Code')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
-                    ->formatStateUsing(fn (int $state): string => FareType::label($state)),
+                    ->formatStateUsing(fn (int $state): string => FareType::label($state))
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price')
-                    ->money(setting('units.currency')),
+                    ->money(setting('units.currency'))
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('cost')
                     ->label('Cost')
-                    ->money(setting('units.currency')),
+                    ->money(setting('units.currency'))
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Notes'),
@@ -104,7 +110,8 @@ class FareResource extends Resource
                 Tables\Columns\IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

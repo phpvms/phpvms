@@ -181,31 +181,38 @@ class FlightResource extends Resource
             ->columns([
                 TextColumn::make('ident')
                     ->label('Flight #')
-                    ->searchable(['flight_number']),
+                    ->searchable(['flight_number'])
+                    ->sortable(),
 
                 TextColumn::make('dpt_airport_id')
                     ->label('Dep')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('arr_airport_id')
                     ->label('Arr')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('dpt_time')
-                    ->label('Dpt Time'),
+                    ->label('Dpt Time')
+                    ->sortable(),
 
                 TextColumn::make('arr_time')
-                    ->label('Arr Time'),
+                    ->label('Arr Time')
+                    ->sortable(),
 
                 TextColumn::make('notes'),
 
                 IconColumn::make('active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
 
                 IconColumn::make('visible')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

@@ -146,20 +146,25 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('ident')
                     ->label('ID')
-                    ->searchable(['pilot_id']),
+                    ->searchable(['pilot_id'])
+                    ->sortable(),
 
                 TextColumn::make('callsign')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Registered On')
-                    ->dateTime('d-m-Y'),
+                    ->dateTime('d-m-Y')
+                    ->sortable(),
 
                 TextColumn::make('state')
                     ->badge()
@@ -168,7 +173,8 @@ class UserResource extends Resource
                         UserState::ACTIVE  => 'success',
                         default            => 'info',
                     })
-                    ->formatStateUsing(fn (int $state): string => UserState::label($state)),
+                    ->formatStateUsing(fn (int $state): string => UserState::label($state))
+                    ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

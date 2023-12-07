@@ -81,20 +81,26 @@ class ExpenseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('type')
+                    ->sortable()
                     ->formatStateUsing(fn ($state) => ExpenseType::label($state)),
 
                 Tables\Columns\TextColumn::make('amount')
+                    ->sortable()
                     ->money(setting('units.currency')),
 
-                Tables\Columns\TextColumn::make('airline.name'),
+                Tables\Columns\TextColumn::make('airline.name')
+                    ->sortable()
+                    ->searchable(),
 
                 Tables\Columns\IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 //

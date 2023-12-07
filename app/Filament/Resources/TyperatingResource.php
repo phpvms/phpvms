@@ -55,9 +55,13 @@ class TyperatingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('type')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('description'),
 
@@ -66,7 +70,8 @@ class TyperatingResource extends Resource
                 Tables\Columns\IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
             ->filters([
                 //

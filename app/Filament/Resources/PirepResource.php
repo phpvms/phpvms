@@ -137,28 +137,35 @@ class PirepResource extends Resource
             ->columns([
                 TextColumn::make('ident')
                     ->label('Flight Ident')
-                    ->searchable(['flight_number']),
+                    ->searchable(['flight_number'])
+                    ->sortable(),
 
                 TextColumn::make('user.name')
                     ->label('Pilot')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('dpt_airport_id')
                     ->label('DEP')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('arr_airport_id')
                     ->label('ARR')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('flight_time')
-                    ->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
+                    ->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state))
+                    ->sortable(),
 
                 TextColumn::make('aircraft')
-                    ->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration.' - '.$record->aircraft->name),
+                    ->formatStateUsing(fn (Pirep $record): string => $record->aircraft->registration.' - '.$record->aircraft->name)
+                    ->sortable(),
 
                 TextColumn::make('source')
-                    ->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
+                    ->label('Filed Using')->formatStateUsing(fn (int $state): string => PirepSource::label($state))
+                    ->sortable(),
 
                 TextColumn::make('state')
                     ->badge()
@@ -168,11 +175,13 @@ class PirepResource extends Resource
                         PirepState::REJECTED => 'danger',
                         default              => 'info',
                     })
-                    ->formatStateUsing(fn (int $state): string => PirepState::label($state)),
+                    ->formatStateUsing(fn (int $state): string => PirepState::label($state))
+                    ->sortable(),
 
                 TextColumn::make('submitted_at')
                     ->dateTime('d-m-Y H:i')
-                    ->label('File Date'),
+                    ->label('File Date')
+                    ->sortable(),
             ])
             ->defaultSort('submitted_at', 'desc')
             ->filters([

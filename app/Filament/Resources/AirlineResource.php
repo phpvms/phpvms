@@ -86,9 +86,13 @@ class AirlineResource extends Resource
                             $html .= $record->iata.'/';
                         }
                         return $html.$record->icao;
-                    })->html(),
+                    })
+                    ->sortable()
+                    ->searchable()
+                    ->html(),
 
                 Tables\Columns\TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
 
                 Tables\Columns\IconColumn::make('active')

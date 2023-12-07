@@ -92,12 +92,34 @@ class RankResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Name')->searchable(),
-                Tables\Columns\TextColumn::make('hours')->label('Hours'),
-                Tables\Columns\IconColumn::make('auto_approve_acars')->label('Auto Approve Acars')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
-                Tables\Columns\IconColumn::make('auto_approve_manual')->label('Auto Approve Manual')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
-                Tables\Columns\IconColumn::make('auto_promote')->label('Auto Promote')->color(fn ($state) => $state ? 'success' : 'danger')->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('hours')
+                    ->label('Hours')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('auto_approve_acars')
+                    ->label('Auto Approve Acars')
+                    ->color(fn ($state) => $state ? 'success' : 'danger')
+                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('auto_approve_manual')
+                    ->label('Auto Approve Manual')
+                    ->color(fn ($state) => $state ? 'success' : 'danger')
+                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('auto_promote')
+                    ->label('Auto Promote')
+                    ->color(fn ($state) => $state ? 'success' : 'danger')
+                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->sortable(),
             ])
+            ->defaultSort('hours')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
