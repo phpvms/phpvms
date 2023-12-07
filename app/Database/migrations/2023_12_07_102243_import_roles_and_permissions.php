@@ -38,8 +38,6 @@ return new class() extends Migration {
             ]);
         }
 
-        //Schema::dropIfExists('exported_roles');
-
         // Now let's reassign roles to the users
         $exportedRoleUser = DB::table('exported_role_user')->get();
         foreach ($exportedRoleUser as $roleUser) {
@@ -55,8 +53,6 @@ return new class() extends Migration {
                 'model_id'   => $roleUser->user_id,
             ]);
         }
-
-        //Schema::dropIfExists('exported_role_user');
 
         // This is the permissionList between old ones (keys) and new ones (values)
         $permissions = [
@@ -354,7 +350,9 @@ return new class() extends Migration {
             }
         }
 
-        //Schema::dropIfExists('exported_permission_role');
+        Schema::dropIfExists('exported_roles');
+        Schema::dropIfExists('exported_role_user');
+        Schema::dropIfExists('exported_permission_role');
     }
 
     /**
