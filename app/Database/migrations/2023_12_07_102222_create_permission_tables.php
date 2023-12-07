@@ -11,14 +11,6 @@ return new class() extends Migration {
      */
     public function up(): void
     {
-        // Let's save the admin user ids.
-        $adminIds = DB::table('users')
-            ->join('role_user', 'users.id', '=', 'role_user.user_id')
-            ->join('roles', 'role_user.role_id', '=', 'roles.id')
-            ->where('roles.name', 'admin')
-            ->where('role_user.user_type', 'App\Models\User')
-            ->pluck('users.id');
-
         // Since we can't migrate from laratrust to spatie we delete everything
         Schema::dropIfExists('role_user');
         Schema::dropIfExists('permission_role');
@@ -146,28 +138,6 @@ return new class() extends Migration {
                 ->default(false)
                 ->after('guard_name');
         });
-
-        // Now let's add the super_admin role to the previous admins
-        $superAdminRoleId = DB::table($tableNames['roles'])->where('name', config('filament-shield.super_admin.name'))->value('id');
-
-        if (!$superAdminRoleId) {
-            DB::table($tableNames['roles'])->insert([
-                'name'                    => config('filament-shield.super_admin.name'),
-                'guard_name'              => 'web',
-                'disable_activity_checks' => 1,
-                'created_at'              => now(),
-                'updated_at'              => now(),
-            ]);
-            $superAdminRoleId = DB::table($tableNames['roles'])->where('name', config('filament-shield.super_admin.name'))->value('id');
-        }
-
-        foreach ($adminIds as $adminId) {
-            DB::table($tableNames['model_has_roles'])->insert([
-                'role_id'    => $superAdminRoleId,
-                'model_type' => 'App\Models\User',
-                'model_id'   => $adminId,
-            ]);
-        }
     }
 
     /**
