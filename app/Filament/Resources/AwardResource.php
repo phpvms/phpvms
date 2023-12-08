@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AwardResource\Pages;
+use App\Filament\Resources\AwardResource\RelationManagers;
 use App\Models\Award;
 use App\Services\AwardService;
 use Filament\Forms;
@@ -114,7 +115,7 @@ class AwardResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\UsersRelationManager::make(),
         ];
     }
 
