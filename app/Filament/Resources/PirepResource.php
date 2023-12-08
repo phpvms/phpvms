@@ -134,7 +134,6 @@ class PirepResource extends Resource
                             Forms\Components\TextInput::make('score'),
                         ])->columns(3),
 
-
                         Forms\Components\Textarea::make('route'),
 
                         Forms\Components\RichEditor::make('notes'),
