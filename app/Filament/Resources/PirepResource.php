@@ -18,8 +18,6 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
@@ -61,7 +59,9 @@ class PirepResource extends Resource
 
                         Forms\Components\TextInput::make('route_leg')
                             ->placeholder('Route Leg'),
-                    ])->label('Flight Number/Route Code/Route Leg')->columnSpan(2),
+                    ])
+                        ->label('Flight Number/Route Code/Route Leg')
+                        ->columnSpan(2),
 
                     Forms\Components\Select::make('flight_type')
                         ->disabled(false)
@@ -76,58 +76,99 @@ class PirepResource extends Resource
                     ->columns(5)
                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                Forms\Components\Section::make('Flight Information')->schema([
-                    Forms\Components\Grid::make('')->schema([
-                        Forms\Components\Select::make('airline_id')
-                            ->relationship('airline', 'name')
-                            ->native(false),
+                Forms\Components\Grid::make()->schema([
+                    Forms\Components\Section::make('Pirep Details')->schema([
+                        Forms\Components\Grid::make('')->schema([
+                            Forms\Components\Select::make('airline_id')
+                                ->relationship('airline', 'name')
+                                ->native(false)
+                                ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                        Forms\Components\Select::make('aircraft_id')
-                            ->relationship('aircraft', 'name')
-                            ->native(false),
+                            Forms\Components\Select::make('aircraft_id')
+                                ->relationship('aircraft', 'name')
+                                ->native(false)
+                                ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                        Forms\Components\Select::make('dpt_airport_id')
-                            ->label('Departure Airport')
-                            ->options(app(AirportRepository::class)->selectBoxList())
-                            ->native(false),
+                            Cluster::make([
+                                Forms\Components\TextInput::make('hours')
+                                    ->placeholder('hours')
+                                    ->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
 
-                        Forms\Components\Select::make('arr_airport_id')
-                            ->label('Arrival Airport')
-                            ->options(app(AirportRepository::class)->selectBoxList())
-                            ->native(false),
+                                Forms\Components\TextInput::make('minutes')
+                                    ->placeholder('minutes')
+                                    ->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
+                            ])->label('Flight Time'),
 
+                            Forms\Components\Grid::make('')->schema([
+                                Forms\Components\Select::make('dpt_airport_id')
+                                    ->label('Departure Airport')
+                                    ->options(app(AirportRepository::class)->selectBoxList())
+                                    ->native(false)
+                                    ->columnSpan(1)
+                                    ->disabled(fn (Pirep $record): bool => $record->read_only),
+
+                                Forms\Components\Select::make('arr_airport_id')
+                                    ->label('Arrival Airport')
+                                    ->options(app(AirportRepository::class)->selectBoxList())
+                                    ->native(false)
+                                    ->columnSpan(1)
+                                    ->disabled(fn (Pirep $record): bool => $record->read_only),
+                            ])
+                                ->columns(2)
+                                ->columnSpan(3),
+
+                            Forms\Components\TextInput::make('block_fuel')
+                                ->hint('In lbs'),
+
+                            Forms\Components\TextInput::make('fuel_used')
+                                ->label('Used Fuel')
+                                ->hint('In lbs'),
+
+                            Forms\Components\TextInput::make('level')
+                                ->hint('In ft')
+                                ->label('Flight Level'),
+
+                            Forms\Components\TextInput::make('distance')
+                                ->hint('In nmi'),
+
+                            Forms\Components\TextInput::make('score'),
+                        ])->columns(3),
+
+
+                        Forms\Components\Textarea::make('route'),
+
+                        Forms\Components\RichEditor::make('notes'),
+                    ])->columnSpan(2),
+
+                    Forms\Components\Section::make('Planned Details')->schema([
                         Cluster::make([
-                            Forms\Components\TextInput::make('hours')
+                            Forms\Components\TextInput::make('pln_hours')
                                 ->placeholder('hours')
-                                ->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
-                            Forms\Components\TextInput::make('minutes')
-                                ->placeholder('minutes')
-                                ->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
-                        ])->label('Flight Time'),
+                                ->formatStateUsing(fn (Pirep $record): int => $record->planned_flight_time / 60),
 
-                        Forms\Components\TextInput::make('block_fuel')
-                            ->disabled(false),
-                        Forms\Components\TextInput::make('fuel_used')
-                            ->disabled(false),
+                            Forms\Components\TextInput::make('pln_minutes')
+                                ->placeholder('minutes')
+                                ->formatStateUsing(fn (Pirep $record): int => $record->planned_flight_time % 60),
+                        ])
+                            ->label('Planned Flight Time'),
 
                         Forms\Components\TextInput::make('level')
-                            ->disabled(false),
-
-                        Forms\Components\TextInput::make('distance')
-                            ->disabled(false),
+                            ->hint('In ft')
+                            ->label('Planned Flight Level'),
 
                         Forms\Components\TextInput::make('planned_distance')
-                            ->disabled(false),
-                    ])->columns(4)->columnSpan(2),
+                            ->hint('In nmi'),
 
-                    Forms\Components\Textarea::make('route')
-                        ->disabled(false),
+                        Forms\Components\TextInput::make('landing_rate')
+                            ->hint('In ft/min'),
 
-                    Forms\Components\RichEditor::make('notes')
-                        ->disabled(false),
-                ])
-                    ->columns(2)
-                    ->disabled(fn (Pirep $record): bool => $record->read_only),
+                        Forms\Components\Textarea::make('route')
+                            ->label('Provided Route')
+                            ->autosize(),
+                    ])
+                        ->disabled()
+                        ->columnSpan(1),
+                ])->columns(3),
             ]);
     }
 
@@ -205,7 +246,7 @@ class PirepResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Action::make('accept')
+                    Tables\Actions\Action::make('accept')
                         ->color('success')
                         ->icon('heroicon-m-check-circle')
                         ->label('Accept')
@@ -225,7 +266,7 @@ class PirepResource extends Resource
                             }
                         }),
 
-                    Action::make('reject')
+                    Tables\Actions\Action::make('reject')
                         ->color('danger')
                         ->icon('heroicon-m-x-circle')
                         ->label('Reject')
@@ -245,13 +286,13 @@ class PirepResource extends Resource
                             }
                         }),
 
-                    EditAction::make(),
+                    Tables\Actions\EditAction::make(),
 
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
 
-                    Action::make('view')
+                    Tables\Actions\Action::make('view')
                         ->color('info')
                         ->icon('heroicon-m-eye')
                         ->label('View Pirep')
