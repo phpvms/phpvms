@@ -31,7 +31,7 @@ class UsersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Issued')
                     ->since()
-                    ->sortable()
+                    ->sortable(),
             ])
             ->filters([
                 //
