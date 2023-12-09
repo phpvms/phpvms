@@ -73,6 +73,7 @@ class AdminPanelProvider extends PanelProvider
                     ->usingPage(Backups::class),
             ])
             ->brandName('phpVMS')
+            ->favicon(public_asset('assets/img/favicon.png'))
             ->spa();
     }
 

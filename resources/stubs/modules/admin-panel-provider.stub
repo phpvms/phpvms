@@ -55,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class
             ])
             ->brandName('phpVMS')
+            ->favicon(public_asset('assets/img/favicon.png'))
             ->spa();
     }
 
