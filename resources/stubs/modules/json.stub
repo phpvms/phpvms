@@ -8,7 +8,8 @@
     "providers": [
         "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\AppServiceProvider",
         "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\EventServiceProvider",
-        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\RouteServiceProvider"
+        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\RouteServiceProvider",
+        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\Filament\\AdminPanelProvider"
     ],
     "aliases": {},
     "files": [],

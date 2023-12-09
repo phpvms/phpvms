@@ -24,8 +24,6 @@ class AppServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
 
-        $this->registerLinks();
-
         // Uncomment this if you have migrations
         // $this->loadMigrationsFrom(__DIR__ . '/../$MIGRATIONS_PATH$');
     }
@@ -36,18 +34,6 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
-    }
-
-    /**
-     * Add module links here
-     */
-    public function registerLinks(): void
-    {
-        // Show this link if logged in
-        // $this->moduleSvc->addFrontendLink('$STUDLY_NAME$', '/$LOWER_NAME$', '', $logged_in=true);
-
-        // Admin links:
-        $this->moduleSvc->addAdminLink('$STUDLY_NAME$', '/admin/$LOWER_NAME$');
     }
 
     /**
