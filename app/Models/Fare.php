@@ -60,4 +60,9 @@ class Fare extends Model
     {
         return $this->belongsToMany(Subfleet::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity');
     }
+
+    public function flights(): BelongsToMany
+    {
+        return $this->belongsToMany(Flight::class, 'flight_fare')->withPivot('price', 'cost', 'capacity');
+    }
 }
