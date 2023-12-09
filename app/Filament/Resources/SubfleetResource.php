@@ -128,9 +128,9 @@ class SubfleetResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('aircrafts')
+                Tables\Actions\Action::make('aircraft')
                     ->url(fn (Subfleet $record): string => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='.$record->id)
-                    ->label('Aircrafts')
+                    ->label('Aircraft')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('success'),
 
