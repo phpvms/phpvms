@@ -1530,16 +1530,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arthurpar06/filament-modules.git",
-                "reference": "76e85bd69f8aef259a1d3177378db5a0ffe161c9"
+                "reference": "d7868e5484079c517b1904d255d864e6ef484922"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arthurpar06/filament-modules/zipball/76e85bd69f8aef259a1d3177378db5a0ffe161c9",
-                "reference": "76e85bd69f8aef259a1d3177378db5a0ffe161c9",
+                "url": "https://api.github.com/repos/arthurpar06/filament-modules/zipball/d7868e5484079c517b1904d255d864e6ef484922",
+                "reference": "d7868e5484079c517b1904d255d864e6ef484922",
                 "shasum": ""
             },
             "require": {
-                "filament/filament": "^3.0.0-beta",
+                "filament/filament": "^3.0|^3.1",
                 "illuminate/contracts": "^9.1|^10.0",
                 "nwidart/laravel-modules": "^10.0",
                 "php": "^8.1",
@@ -1613,7 +1613,7 @@
             "support": {
                 "source": "https://github.com/arthurpar06/filament-modules/tree/3.x"
             },
-            "time": "2023-11-25T18:14:39+00:00"
+            "time": "2023-12-09T15:23:59+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
