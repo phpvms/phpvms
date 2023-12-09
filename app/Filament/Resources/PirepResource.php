@@ -243,6 +243,7 @@ class PirepResource extends Resource
                     }),
                 Tables\Filters\TrashedFilter::make(),
             ])
+            ->recordUrl(fn (Pirep $record): string => self::getUrl('edit', ['record' => $record]))
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('accept')
