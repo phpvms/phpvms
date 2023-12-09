@@ -25,9 +25,14 @@ class RanksRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
+
                 Tables\Columns\TextColumn::make('base_pay_rate'),
-                Tables\Columns\TextInputColumn::make('acars_pay'),
-                Tables\Columns\TextInputColumn::make('manual_pay'),
+
+                Tables\Columns\TextInputColumn::make('acars_pay')
+                    ->placeholder('Inherited'),
+
+                Tables\Columns\TextInputColumn::make('manual_pay')
+                    ->placeholder('Inherited'),
             ])
             ->filters([
                 //

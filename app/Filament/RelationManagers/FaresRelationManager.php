@@ -27,17 +27,20 @@ class FaresRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('name')->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
                 Tables\Columns\TextInputColumn::make('pivot.capacity')
+                    ->placeholder('Inherited')
                     ->label('Capacity')
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['capacity' => $state]);
                     }),
                 Tables\Columns\TextInputColumn::make('pivot.price')
                     ->label('Price')
+                    ->placeholder('Inherited')
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['price' => $state]);
                     }),
                 Tables\Columns\TextInputColumn::make('pivot.cost')
                     ->label('Cost')
+                    ->placeholder('Inherited')
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['cost' => $state]);
                     }),
