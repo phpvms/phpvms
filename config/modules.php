@@ -35,10 +35,10 @@ return [
             'listener-test'          => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
             'views/index'            => ['LOWER_NAME', 'STUDLY_NAME'],
             'views/frontend'         => ['STUDLY_NAME'],
-            'controller-index'       => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE','CLASS_NAMESPACE'],
-            'controller-api'         => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE','CLASS_NAMESPACE'],
-            'config'   => ['STUDLY_NAME'],
-            'composer' => [
+            'controller-index'       => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CLASS_NAMESPACE'],
+            'controller-api'         => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CLASS_NAMESPACE'],
+            'config'                 => ['STUDLY_NAME'],
+            'composer'               => [
                 'LOWER_NAME',
                 'STUDLY_NAME',
                 'VENDOR',
