@@ -10,11 +10,8 @@
     "animate.css": "~3.6",
     "axios": "^0.21.1",
     "bootstrap": "~4.6",
-    "bootstrap-sass": "^3.4.1",
-    "bootstrap3": "npm:bootstrap@~3.4",
     "ckeditor4": "4.14.0",
     "cookieconsent": "^3.1.0",
-    "cross-env": "^5.1.6",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
     "flag-icons": "^6.9.5",
     "geolib": "^2.0.24",
@@ -22,7 +19,6 @@
     "jquery": "^3.5.1",
     "jquery-pjax": "~2.0",
     "js-yaml": "^3.14.0",
-    "laravel-mix": "^6.0.25",
     "leaflet": "^1.3.4",
     "leaflet-ajax": "2.1.0",
     "leaflet-providers": "1.0.*",
@@ -41,12 +37,9 @@
     "select2": "^4.0.13",
     "ssri": "^8.0.1",
     "tar": ">=4.4.2",
-    "webpack": "^5.0.0",
-    "webpack-cli": "^4.10.0",
     "x-editable": "1.5.1"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^9.0.1",
     "eslint": "^6.2.2",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -58,10 +51,7 @@
     "sass": "^1.54.5",
     "sass-loader": "^12.1.0",
     "tailwindcss": "^3.3.3",
-    "vite": "^4.4.9",
-    "vue-template-compiler": "^2.6.12",
-    "webpack-bundle-analyzer": "^3.9.0",
-    "webpack-dev-server": "^4.10.0"
+    "vite": "^4.4.9"
   },
   "type": "module"
 }
