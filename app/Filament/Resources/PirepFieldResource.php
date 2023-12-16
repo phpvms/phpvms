@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PirepFieldResource\Pages;
+use App\Models\Enums\PirepFieldSource;
 use App\Models\PirepField;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -29,7 +30,13 @@ class PirepFieldResource extends Resource
                 Forms\Components\TextInput::make('description')
                     ->string(),
 
+                Forms\Components\Select::make('pirep_source')
+                    ->options(PirepFieldSource::select())
+                    ->native(false)
+                    ->required(),
+
                 Forms\Components\Toggle::make('required')
+                    ->inline(false)
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
@@ -46,6 +53,10 @@ class PirepFieldResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('description'),
+
+                Tables\Columns\TextColumn::make('pirep_source')
+                    ->formatStateUsing(fn (int $state): string => PirepFieldSource::label($state))
+                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('required')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
