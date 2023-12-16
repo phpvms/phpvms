@@ -19,6 +19,7 @@ class PirepField extends Model
         'slug',
         'description',
         'required',
+        'pirep_source',
     ];
 
     protected $casts = [

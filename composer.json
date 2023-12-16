@@ -1,11 +1,7 @@
 {
     "name": "phpvms/phpvms",
     "description": "phpVMS - Virtual Airline Administration",
-    "keywords": [
-        "phpvms",
-        "virtual",
-        "airlines"
-    ],
+    "keywords": ["phpvms", "virtual", "airlines"],
     "license": "BSD-3-Clause",
     "type": "project",
     "minimum-stability": "dev",
@@ -95,7 +91,10 @@
         "bezhansalleh/filament-shield": "^3.1",
         "guava/filament-clusters": "^1.1",
         "spatie/laravel-backup": "^8.4",
-        "shuvroroy/filament-spatie-laravel-backup": "^2.1"
+        "shuvroroy/filament-spatie-laravel-backup": "^2.1",
+        "spatie/laravel-backup": "*",
+        "laravel/socialite": "^5.11",
+        "socialiteproviders/discord": "^4.2"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
@@ -124,17 +123,13 @@
             "Tests\\": "tests/"
         }
     },
-    "extra": {
-        "installer-types": [
-            "phpvms-module"
-        ],
-        "installer-paths": {
-            "modules/{$name}/": [
-                "type:phpvms-module"
-            ]
-        },
-        "module-dir": "modules",
-        "symfony": {
+     "extra": {
+         "installer-types": ["phpvms-module"],
+         "installer-paths": {
+             "modules/{$name}/": ["type:phpvms-module"]
+         },
+         "module-dir": "modules",
+         "symfony": {
             "require": "^6.0"
         }
     },

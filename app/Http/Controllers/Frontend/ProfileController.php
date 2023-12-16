@@ -177,16 +177,6 @@ class ProfileController extends Controller
             $req_data['password'] = Hash::make($req_data['password']);
         }
 
-        // Find out the user's private channel id
-        /*
-        // TODO: Uncomment when Discord API functionality is enabled
-        if ($request->filled('discord_id')) {
-            $discord_id = $request->post('discord_id');
-            if ($discord_id !== $user->discord_id) {
-                $req_data['discord_private_channel_id'] = Discord::getPrivateChannelId($discord_id);
-            }
-        }*/
-
         if ($request->hasFile('avatar')) {
             if ($user->avatar !== null) {
                 Storage::delete($user->avatar);

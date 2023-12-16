@@ -26,21 +26,6 @@
       </tr>
 
       <tr>
-        <td>Discord ID <span class="small">
-            <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-" target="_blank">
-              How to find your ID</a></span>
-        </td>
-        <td>
-          <div class="input-group form-group-no-border{{ $errors->has('discord_id') ? ' has-danger' : '' }}">
-            {{ Form::text('discord_id', null, ['class' => 'form-control']) }}
-          </div>
-          @if ($errors->has('discord_id'))
-            <p class="text-danger">{{ $errors->first('discord_id') }}</p>
-          @endif
-        </td>
-      </tr>
-
-      <tr>
         <td>{{ __('common.airline') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('airline') ? ' has-danger' : '' }}">

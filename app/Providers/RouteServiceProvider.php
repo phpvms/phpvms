@@ -170,6 +170,17 @@ class RouteServiceProvider extends ServiceProvider
                 Route::get('lang/{lang}', 'LanguageController@switchLang')->name('lang.switch');
             });
 
+            Route::group([
+                'namespace'  => 'Auth',
+                'prefix'     => 'auth',
+                'as'         => 'auth.',
+                'middleware' => 'auth',
+            ], function () {
+                Route::get('discord/redirect', 'OAuthController@redirectToDiscordProvider')->name('discord.redirect');
+                Route::get('discord/callback', 'OAuthController@handleDiscordProviderCallback')->name('discord.callback');
+                Route::get('discord/logout', 'OAuthController@logoutDiscordProvider')->name('discord.logout');
+            });
+
             Route::get('/logout', 'Auth\LoginController@logout')->name('auth.logout');
             Auth::routes(['verify' => true]);
         });
