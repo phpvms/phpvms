@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class Maintenance extends Page
@@ -82,17 +83,29 @@ class Maintenance extends Page
             $calls = [];
             $type = $arguments['type'];
 
+            $theme_cache_file = base_path().'/bootstrap/cache/themes.php';
+            $module_cache_files = base_path().'/bootstrap/cache/*_module.php';
+
             // When clearing the application, clear the config and the app itself
             if ($type === 'application' || $type === 'all') {
                 $calls[] = 'config:cache';
                 $calls[] = 'cache:clear';
                 $calls[] = 'route:cache';
                 $calls[] = 'clear-compiled';
+
+                $files = File::glob($module_cache_files);
+                foreach ($files as $file) {
+                    $module_cache = File::delete($file) ? 'Module cache file deleted' : 'Module cache file not found!';
+                    Log::debug($module_cache.' | '.$file);
+                }
             }
 
             // If we want to clear only the views but keep everything else
             if ($type === 'views' || $type === 'all') {
                 $calls[] = 'view:clear';
+
+                $theme_cache = unlink($theme_cache_file) ? 'Theme cache file deleted' : 'Theme cache file not found!';
+                Log::debug($theme_cache.' | '.$theme_cache_file);
             }
 
             foreach ($calls as $call) {
