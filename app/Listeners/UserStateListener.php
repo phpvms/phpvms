@@ -9,9 +9,9 @@ use App\Models\Enums\UserState;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class UserStateListener extends Listener implements ShouldQueue
+class UserStateListener extends Listener //implements ShouldQueue
 {
-    use Queueable;
+    //use Queueable;
 
     public function handle(PirepFiled $event): void
     {

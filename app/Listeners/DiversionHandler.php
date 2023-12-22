@@ -10,9 +10,9 @@ use App\Services\PirepService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class DiversionHandler extends Listener implements ShouldQueue
+class DiversionHandler extends Listener //implements ShouldQueue
 {
-    use Queueable;
+    //use Queueable;
 
     public static $callbacks = [
         PirepFiled::class  => 'onPirepFiled',

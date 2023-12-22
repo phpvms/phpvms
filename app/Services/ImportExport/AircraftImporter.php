@@ -22,18 +22,22 @@ class AircraftImporter extends ImportExport
      * Should match the database fields, for the most part
      */
     public static $columns = [
-        'subfleet'     => 'required',
-        'iata'         => 'nullable',
-        'icao'         => 'nullable',
-        'hub_id'       => 'nullable',
-        'airport_id'   => 'nullable',
-        'name'         => 'required',
-        'registration' => 'required',
-        'fin'          => 'nullable',
-        'hex_code'     => 'nullable',
-        'mtow'         => 'nullable|numeric',
-        'zfw'          => 'nullable|numeric',
-        'status'       => 'nullable',
+        'subfleet'      => 'required',
+        'iata'          => 'nullable',
+        'icao'          => 'nullable',
+        'hub_id'        => 'nullable',
+        'airport_id'    => 'nullable',
+        'name'          => 'required',
+        'registration'  => 'required',
+        'fin'           => 'nullable',
+        'hex_code'      => 'nullable',
+        'selcal'        => 'nullable',
+        'dow'           => 'nullable|numeric',
+        'zfw'           => 'nullable|numeric',
+        'mtow'          => 'nullable|numeric',
+        'mlw'           => 'nullable|numeric',
+        'status'        => 'nullable',
+        'simbrief_type' => 'nullable',
     ];
 
     /**
@@ -83,8 +87,15 @@ class AircraftImporter extends ImportExport
         // Just set its state right now as parked
         $row['state'] = AircraftState::PARKED;
 
-        // Check FIN and set to null if it is blank
+        // Check fields and set to null if they are blank
+        // Somehow they got empty strings instead of null without this!
         $row['fin'] = blank($row['fin']) ? null : $row['fin'];
+        $row['dow'] = blank($row['dow']) ? null : $row['dow'];
+        $row['zfw'] = blank($row['zfw']) ? null : $row['zfw'];
+        $row['mtow'] = blank($row['mtow']) ? null : $row['mtow'];
+        $row['mlw'] = blank($row['mlw']) ? null : $row['mlw'];
+        $row['selcal'] = blank($row['selcal']) ? null : $row['selcal'];
+        $row['simbrief_type'] = blank($row['simbrief_type']) ? null : $row['simbrief_type'];
 
         // Try to add or update
         try {

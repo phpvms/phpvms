@@ -13,9 +13,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  * Subscribe for events that we do some financial processing for
  * This includes when a PIREP is accepted, or rejected
  */
-class FinanceEventHandler extends Listener implements ShouldQueue
+class FinanceEventHandler extends Listener //implements ShouldQueue
 {
-    use Queueable;
+    //use Queueable;
 
     public static $callbacks = [
         PirepAccepted::class => 'onPirepAccept',

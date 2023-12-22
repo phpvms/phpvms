@@ -11,9 +11,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /**
  * Do stuff with bids - like if a PIREP is accepted, then remove the bid
  */
-class BidEventHandler extends Listener implements ShouldQueue
+class BidEventHandler extends Listener //implements ShouldQueue
 {
-    use Queueable;
+    // use Queueable;
 
     public static $callbacks = [
         PirepFiled::class => 'onPirepFiled',

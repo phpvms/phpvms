@@ -1,0 +1,12 @@
+settings:
+  ignore_on_update:
+    - value
+  data:
+    - id: test_setting
+      key: test.setting
+      name: 'A test setting'
+      group: general
+      value: 'default'
+      options: ''
+      type: select
+      description: 'a test setting'

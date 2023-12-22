@@ -18,7 +18,13 @@
                     <div class="col-sm-4">
                       <label for="type">Type</label>
                       <input type="text" class="form-control" value="{{ $aircraft->icao }}" maxlength="4" disabled>
-                      <input type="hidden" name="type" value="{{ $aircraft->subfleet->simbrief_type ?? $aircraft->icao }}">
+                      @if(filled($aircraft->simbrief_type))
+                        <input type="hidden" name="type" value="{{ $aircraft->simbrief_type }}">
+                      @elseif(filled($aircraft->subfleet->simbrief_type))
+                        <input type="hidden" name="type" value="{{ $aircraft->subfleet->simbrief_type }}">
+                      @else
+                        <input type="hidden" name="type" value="{{ $aircraft->icao }}">
+                      @endif
                     </div>
                     <div class="col-sm-4">
                       <label for="reg">Registration</label>
@@ -149,7 +155,7 @@
               <input type="hidden" id="date" name="date" maxlength="9">
               <input type="hidden" id="deph" name="deph" maxlength="2">
               <input type="hidden" id="depm" name="depm" maxlength="2">
-              <input type="hidden" name="selcal" value="BK-FS">
+              <input type="hidden" name="selcal" value="{{ $aircraft->selcal ?? 'FK-NS'}}">
               <input type="hidden" name="planformat" value="lido">
               <input type="hidden" name="omit_sids" value="0">
               <input type="hidden" name="omit_stars" value="0">

@@ -1,3 +1,3 @@
-subfleet,iata,icao,hub_id,airport_id,name,registration,fin,hex_code,mtow,zfw,status
-A32X,A320,320,,,A320-211,N309US,780DH,,,,S
-74X,747 400,, ,,,
+subfleet,iata,icao,hub_id,airport_id,name,registration,fin,hex_code,selcal,dow,zfw,mtow,mlw,status,simbrief_type
+A32X,A320,320,,,A320-211,N309US,780DH,,,,,,,S,
+74X,747 400,, ,,,,,,,,,,,,
