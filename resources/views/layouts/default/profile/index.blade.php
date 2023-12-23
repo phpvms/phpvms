@@ -140,10 +140,10 @@
           &nbsp;
           @endif
 
-          @if(env('DISCORD_OAUTH_ENABLED', false) && !$user->discord_id)
-            <a href="{{ route('auth.discord.redirect') }}" class="btn" style="background-color:#738ADB;">Link Discord Account</a>
-          @elseif(env('DISCORD_OAUTH_ENABLED', false))
-            <a href="{{ route('auth.discord.logout') }}" class="btn" style="background-color:#738ADB;">Unlink Discord Account</a>
+          @if(config('services.discord.enabled') && !$user->discord_id)
+            <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">Link Discord Account</a>
+          @elseif(config('services.discord.enabled'))
+            <a href="{{ route('oauth.logout', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">Unlink Discord Account</a>
           @endif
 
           <a href="{{ route('frontend.profile.regen_apikey') }}" class="btn btn-warning"

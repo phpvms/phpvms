@@ -21,4 +21,5 @@ return [
     'accountsuspended'         => 'Account Sospeso',
     'suspendedmessage'         => 'Il tuo account è stato sospeso. Contatta un amministratore per favore.',
     'transferhours'            => 'Ore di trasferimento',
+    'loginwith'                => 'Accesso con :provider',
 ];

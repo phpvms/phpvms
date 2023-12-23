@@ -56,6 +56,11 @@
 
       </div>
       <div class="footer text-center">
+        @if(config('services.discord.enabled'))
+          <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn btn-round btn-lg btn-block" style="background-color:#738ADB;">
+            @lang('auth.loginwith', ['provider' => 'Discord'])
+          </a>
+        @endif
         <button class="btn btn-primary btn-round btn-lg btn-block">@lang('common.login')</button>
       </div>
       <div class="pull-left">

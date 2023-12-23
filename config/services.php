@@ -30,9 +30,10 @@ return [
     ],
 
     'discord' => [
+        'enabled'       => env('DISCORD_OAUTH_ENABLED', false),
         'client_id'     => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),
-        'redirect'      => '/auth/discord/callback',
+        'redirect'      => '/oauth/discord/callback',
 
         // optional
         'token'                    => env('DISCORD_BOT_TOKEN', null),

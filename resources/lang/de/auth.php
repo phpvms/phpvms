@@ -21,4 +21,5 @@ return [
     'accountsuspended'         => 'Account gesperrt',
     'suspendedmessage'         => 'Dein Konto wurde gesperrt.  Bitte kontaktiere einen Administrator.',
     'transferhours'            => 'Transferstunden',
+    'loginwith'                => 'Einloggen mit :provider',
 ];

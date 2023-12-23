@@ -139,6 +139,12 @@
           </table>
 
           <div style="width: 100%; text-align: right; padding-top: 20px;">
+            @if(config('services.discord.enabled'))
+              <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">
+                @lang('auth.loginwith', ['provider' => 'Discord'])
+              </a>
+            @endif
+
             {{ Form::submit(__('auth.register'), [
                 'id' => 'register_button',
                 'class' => 'btn btn-primary',
