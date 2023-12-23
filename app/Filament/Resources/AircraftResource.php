@@ -68,28 +68,51 @@ class AircraftResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('name')
                         ->required()
-                        ->string()
-                        ->columnSpan(4),
-
-                    Forms\Components\TextInput::make('iata')->string(),
-
-                    Forms\Components\TextInput::make('icao')->string(),
+                        ->string(),
 
                     Forms\Components\TextInput::make('registration')
                         ->required()
                         ->string(),
 
-                    Forms\Components\TextInput::make('fin')->string(),
+                    Forms\Components\TextInput::make('fin')
+                        ->label('FIN')
+                        ->string(),
+
+                    Forms\Components\TextInput::make('selcal')
+                        ->label('SELCAL')
+                        ->string(),
+
+                    Forms\Components\TextInput::make('iata')
+                        ->label('IATA')
+                        ->string(),
+
+                    Forms\Components\TextInput::make('icao')
+                        ->label('ICAO')
+                        ->string(),
+
+                    Forms\Components\TextInput::make('simbrief_type')
+                        ->label('SimBrief Type')
+                        ->string(),
+                ])->columns(4),
+
+                Forms\Components\Section::make('weights')
+                ->heading('Certified Weights')
+                ->schema([
+                    Forms\Components\TextInput::make('dow')
+                        ->label('Dry Operating Weight (DOW/OEW)')
+                        ->numeric(),
+
+                    Forms\Components\TextInput::make('zfw')
+                        ->label('Max Zero Fuel Weight (MZFW)')
+                        ->numeric(),
 
                     Forms\Components\TextInput::make('mtow')
                         ->label('Max Takeoff Weight (MTOW)')
-                        ->numeric()
-                        ->columnSpan(2),
+                        ->numeric(),
 
-                    Forms\Components\TextInput::make('zfw')
-                        ->label('Zero Fuel Weight (ZFW)')
-                        ->numeric()
-                        ->columnSpan(2),
+                    Forms\Components\TextInput::make('mtow')
+                        ->label('Max Landing Weight (MLW)')
+                        ->numeric(),
                 ])->columns(4),
             ]);
     }
