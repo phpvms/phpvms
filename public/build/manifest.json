@@ -2282,22 +2282,22 @@
     "src": "resources/sass/app.scss"
   },
   "resources/sass/fonts/Pe-icon-7-stroke.eot": {
-    "file": "assets/Pe-icon-7-stroke-w40geAFS.js",
+    "file": "assets/Pe-icon-7-stroke-Y0YoxfU8.js",
     "isEntry": true,
     "src": "resources/sass/fonts/Pe-icon-7-stroke.eot"
   },
   "resources/sass/fonts/Pe-icon-7-stroke.svg": {
-    "file": "assets/Pe-icon-7-stroke-km_fhrhL.js",
+    "file": "assets/Pe-icon-7-stroke-DkoCfqcs.js",
     "isEntry": true,
     "src": "resources/sass/fonts/Pe-icon-7-stroke.svg"
   },
   "resources/sass/fonts/Pe-icon-7-stroke.ttf": {
-    "file": "assets/Pe-icon-7-stroke-DkoCfqcs.js",
+    "file": "assets/Pe-icon-7-stroke-km_fhrhL.js",
     "isEntry": true,
     "src": "resources/sass/fonts/Pe-icon-7-stroke.ttf"
   },
   "resources/sass/fonts/Pe-icon-7-stroke.woff": {
-    "file": "assets/Pe-icon-7-stroke-Y0YoxfU8.js",
+    "file": "assets/Pe-icon-7-stroke-w40geAFS.js",
     "isEntry": true,
     "src": "resources/sass/fonts/Pe-icon-7-stroke.woff"
   },
