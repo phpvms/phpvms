@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Repositories\KvpRepository;
+use App\Services\Installer\SeederService;
 use App\Services\VersionService;
 use App\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -114,6 +115,30 @@ class Maintenance extends Page
 
             Notification::make()
                 ->title('Cache cleared!')
+                ->success()
+                ->send();
+        });
+    }
+
+    public function flushQueue(): Action
+    {
+        return Action::make('flushQueue')->icon('heroicon-o-trash')->label('Flush Failed Jobs')->action(function () {
+            Artisan::call('queue:flush');
+
+            Notification::make()
+                ->title('Failed jobs flushed!')
+                ->success()
+                ->send();
+        });
+    }
+
+    public function reseed(): Action
+    {
+        return Action::make('reseed')->icon('heroicon-o-circle-stack')->label('Rerun seeding')->action(function () {
+            app(SeederService::class)->syncAllSeeds();
+
+            Notification::make()
+                ->title('Seeds synced successfully!')
                 ->success()
                 ->send();
         });

@@ -5,6 +5,8 @@
     </x-slot>
 
     {{ $this->forceUpdateCheckAction() }}
+    {{ $this->reseed() }}
+    {{ $this->flushQueue() }}
   </x-filament::section>
 
   <x-filament::section>
