@@ -317,7 +317,7 @@ class PirepController extends Controller
 
                 $aircraft->subfleet->fares = collect($fares);
             }
-            // TODO: Set more fields from the Simbrief to the PIREP form
+        // TODO: Set more fields from the Simbrief to the PIREP form
         } else {
             $aircraft_list = $this->aircraftList(true);
         }
