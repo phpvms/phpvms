@@ -4,8 +4,10 @@ namespace Tests;
 
 use App\Models\Acars;
 use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Bid;
 use App\Models\Enums\AcarsType;
+use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepState;
 use App\Models\Enums\UserState;
 use App\Models\Flight;
@@ -13,6 +15,7 @@ use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\User;
+use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Notifications\Messages\Broadcast\PirepPrefiled;
 use App\Notifications\Messages\Broadcast\PirepStatusChanged;
 use App\Notifications\Messages\PirepAccepted;
@@ -647,5 +650,55 @@ class PIREPTest extends TestCase
         $fields = $discordNotif->createFields($pirep);
         $this->assertEquals('1h 0m', $fields['Flight Time']);
         $this->assertEquals('185.2 km', $fields['Distance']);
+    }
+
+    public function testDiversionHandler()
+    {
+        $this->updateSetting('pireps.handle_diversion', true);
+        $this->updateSetting('notifications.discord_pirep_diverted', true);
+
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        /** @var Airport $originalArrivalAirport */
+        $originalArrivalAirport = Airport::factory()->create();
+
+        /** @var Airport $diversionAirport */
+        $diversionAirport = Airport::factory()->create();
+
+        /** @var Aircraft $aircraft */
+        $aircraft = Aircraft::factory()->create();
+
+        /** @var Pirep $pirep */
+        $pirep = Pirep::factory()->create([
+            'user_id'        => $user->id,
+            'aircraft_id'    => $aircraft->id,
+            'arr_airport_id' => $originalArrivalAirport->id,
+        ]);
+
+        $this->pirepSvc->create($pirep, [
+            [
+                'name'   => 'Diversion Airport',
+                'value'  => $diversionAirport->id,
+                'source' => PirepFieldSource::ACARS,
+            ],
+        ]);
+
+        $this->pirepSvc->submit($pirep);
+
+        $pirep = Pirep::find($pirep->id);
+        $this->assertEquals($diversionAirport->id, $pirep->arr_airport_id);
+        $this->assertEquals($originalArrivalAirport->id, $pirep->alt_airport_id);
+        $this->assertStringContainsString('DIVERTED FROM '.$originalArrivalAirport->id.' TO '.$diversionAirport->id, $pirep->notes);
+        $this->assertNull($pirep->flight_id);
+        $this->assertNull($pirep->route_leg);
+
+        $user->refresh();
+        $aircraft->refresh();
+
+        $this->assertEquals($diversionAirport->id, $user->curr_airport_id);
+        $this->assertEquals($diversionAirport->id, $aircraft->airport_id);
+
+        Notification::assertSentTo([$pirep], PirepDiverted::class);
     }
 }

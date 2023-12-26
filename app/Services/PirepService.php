@@ -805,7 +805,7 @@ class PirepService extends Service
         }
 
         if (setting('notifications.discord_pirep_diverted', false)) {
-            Notification::send([$user->id], new PirepDiverted($pirep));
+            Notification::send([$pirep], new PirepDiverted($pirep));
         }
 
         // Update aircraft position
