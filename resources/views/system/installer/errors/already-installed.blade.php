@@ -2,7 +2,7 @@
 
 @section('content')
   <h2>phpVMS already installed!</h2>
-  <p>phpVMS has already been installed! Please remove the modules/Installer folder.</p>
+  <p>phpVMS has already been installed! You can use it right now.</p>
   {{ Form::open(['url' => '/', 'method' => 'get']) }}
   <p style="text-align: right">
     {{ Form::submit('Go to your site >>', ['class' => 'btn btn-success']) }}
