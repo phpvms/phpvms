@@ -45,5 +45,9 @@
         <!-- ###+ symfony/mailer ### -->
         <!-- MAILER_DSN=smtp://localhost -->
         <!-- ###- symfony/mailer ### -->
+
+        <!-- ###+ symfony/postmark-mailer ### -->
+        <!-- MAILER_DSN=postmark://ID@default -->
+        <!-- ###- symfony/postmark-mailer ### -->
   </php>
 </phpunit>
