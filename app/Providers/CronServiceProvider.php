@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Cron\Hourly\ClearExpiredInvites;
 use App\Cron\Hourly\ClearExpiredSimbrief;
 use App\Cron\Hourly\DeletePireps;
 use App\Cron\Hourly\RemoveExpiredBids;
@@ -35,6 +36,7 @@ class CronServiceProvider extends ServiceProvider
             RemoveExpiredBids::class,
             RemoveExpiredLiveFlights::class,
             ClearExpiredSimbrief::class,
+            ClearExpiredInvites::class,
         ],
         CronNightly::class => [
             ApplyExpenses::class,

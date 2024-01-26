@@ -5,6 +5,9 @@
 
 namespace App\Console;
 
+use App\Console\Cron\Backups\BackupClean;
+use App\Console\Cron\Backups\BackupMonitor;
+use App\Console\Cron\Backups\BackupRun;
 use App\Console\Cron\FifteenMinute;
 use App\Console\Cron\FiveMinute;
 use App\Console\Cron\Hourly;
@@ -33,6 +36,9 @@ class Cron
         Nightly::class,
         Weekly::class,
         Monthly::class,
+        BackupRun::class,
+        BackupClean::class,
+        BackupMonitor::class,
     ];
 
     /**

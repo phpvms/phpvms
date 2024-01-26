@@ -95,7 +95,8 @@
         "spatie/laravel-backup": "*",
         "laravel/socialite": "^5.11",
         "socialiteproviders/discord": "^4.2",
-        "symfony/postmark-mailer": "^6.0"
+        "symfony/postmark-mailer": "^6.0",
+        "league/html-to-markdown": "^5.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",

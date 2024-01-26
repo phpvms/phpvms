@@ -36,7 +36,7 @@ return [
         'redirect'      => '/oauth/discord/callback',
 
         // optional
-        'token'                    => env('DISCORD_BOT_TOKEN', null),
+        'bot_token'                => env('DISCORD_BOT_TOKEN', null),
         'allow_gif_avatars'        => (bool) env('DISCORD_AVATAR_GIF', true),
         'avatar_default_extension' => env('DISCORD_EXTENSION_DEFAULT', 'png'), // only pick from jpg, png, webp
     ],

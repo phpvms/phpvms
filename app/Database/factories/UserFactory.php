@@ -50,6 +50,7 @@ class UserFactory extends Factory
             'state'             => UserState::ACTIVE,
             'remember_token'    => $this->faker->unique()->text(5),
             'email_verified_at' => now(),
+            'avatar'            => '',
         ];
     }
 }
