@@ -85,7 +85,7 @@
         "spatie/laravel-ignition": "^2.0",
         "kyslik/column-sortable": "^6.5",
         "jlorente/laravel-data-migrations": "^2.0",
-        "filament/filament": "^3.2",
+        "filament/filament": "^3.2.15",
         "coolsam/modules": "3.x-dev",
         "flowframe/laravel-trend": "^0.1.5",
         "bezhansalleh/filament-shield": "^3.1",
