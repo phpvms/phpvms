@@ -48,7 +48,7 @@ class UserResource extends Resource
                 ->schema([
                     Forms\Components\Section::make('Basic Information')
                     ->schema([
-                        Forms\Components\TextInput::make('id')
+                        Forms\Components\TextInput::make('pilot_id')
                             ->required()
                             ->numeric()
                             ->label('Pilot ID'),
@@ -64,9 +64,10 @@ class UserResource extends Resource
                             ->email(),
 
                         Forms\Components\TextInput::make('password')
-                        ->password()
-                        ->autocomplete('new-password')
-                        ->columnSpanFull(),
+                            ->required(fn(string $operation) => $operation === 'create')
+                            ->password()
+                            ->autocomplete('new-password')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
                     Forms\Components\Section::make('Location Information')
@@ -81,6 +82,7 @@ class UserResource extends Resource
                             ->options(Timezonelist::toArray())
                             ->searchable()
                             ->allowHtml()
+                            ->required(fn(string $operation) => $operation === 'create')
                             ->native(false),
 
                         Forms\Components\Select::make('home_airport_id')
@@ -88,6 +90,7 @@ class UserResource extends Resource
                             ->relationship('home_airport', 'icao')
                             ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
+                            ->required(fn(string $operation) => $operation === 'create')
                             ->native(false),
 
                         Forms\Components\Select::make('current_airport_id')
@@ -111,6 +114,7 @@ class UserResource extends Resource
                             Forms\Components\Select::make('airline_id')
                                 ->relationship('airline', 'name')
                                 ->searchable()
+                                ->required(fn(string $operation) => $operation === 'create')
                                 ->native(false),
 
                             Forms\Components\Select::make('rank_id')
@@ -123,13 +127,13 @@ class UserResource extends Resource
                                 ->numeric(),
 
                             Forms\Components\Select::make('roles')
-                            ->label('Roles')
-                            ->visible(Auth::user()?->hasRole('super_admin') ?? false)
-                            ->relationship('roles', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            ->multiple(),
+                                ->label('Roles')
+                                ->visible(Auth::user()?->hasRole('super_admin') ?? false)
+                                ->relationship('roles', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->native(false)
+                                ->multiple(),
 
                             Forms\Components\RichEditor::make('notes')
                                 ->label('Management Notes')
@@ -213,6 +217,7 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
             'edit'  => Pages\EditUser::route('/{record}/edit'),
         ];
     }

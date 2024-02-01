@@ -6,7 +6,9 @@ use App\Filament\Resources\InviteResource;
 use App\Filament\Resources\UserFieldResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
+use App\Services\UserService;
 use Filament\Actions\Action;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUsers extends ListRecords
@@ -16,6 +18,10 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\CreateAction::make()
+                ->label('Add User')
+                ->icon('heroicon-o-plus-circle'),
+
             Action::make('userfields')
                 ->label('User Fields')
                 ->icon('heroicon-o-clipboard-document-list')
