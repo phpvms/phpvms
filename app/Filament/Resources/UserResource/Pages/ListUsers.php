@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Filament\Resources\InviteResource;
 use App\Filament\Resources\UserFieldResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
@@ -18,8 +19,14 @@ class ListUsers extends ListRecords
             Action::make('userfields')
                 ->label('User Fields')
                 ->icon('heroicon-o-clipboard-document-list')
-                ->url(UserFieldResource::getUrl('index'))
+                ->url(UserFieldResource::getUrl())
                 ->visible(fn (): bool => auth()->user()?->can('view_any_user::field')),
+
+            Action::make('invites')
+                ->label('Invites')
+                ->icon('heroicon-o-envelope')
+                ->url(InviteResource::getUrl())
+                ->visible(fn (): bool => auth()->user()?->can('view_any_invite') && setting('general.invite_only_registrations', false)),
         ];
     }
 
