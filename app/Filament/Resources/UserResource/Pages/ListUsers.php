@@ -6,9 +6,8 @@ use App\Filament\Resources\InviteResource;
 use App\Filament\Resources\UserFieldResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
-use App\Services\UserService;
-use Filament\Actions\Action;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUsers extends ListRecords
