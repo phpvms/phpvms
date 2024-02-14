@@ -96,7 +96,9 @@
         "laravel/socialite": "^5.11",
         "socialiteproviders/discord": "^4.2",
         "symfony/postmark-mailer": "^6.0",
-        "league/html-to-markdown": "^5.1"
+        "league/html-to-markdown": "^5.1",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "league/flysystem-sftp-v3": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",

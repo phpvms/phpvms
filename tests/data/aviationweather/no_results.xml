@@ -1,9 +1,0 @@
-<response xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:noNamespaceSchemaLocation="http://www.aviationweather.gov/static/adds/schema/metar1_2.xsd">
-<request_index>414399629</request_index>
-<data_source name="metars"/>
-<request type="retrieve"/>
-<errors/>
-<warnings/>
-<time_taken_ms>5</time_taken_ms>
-<data num_results="0"/>
-</response>

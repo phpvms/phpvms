@@ -239,7 +239,10 @@ class FlightService extends Service
         // If this list is > 0, then this has a duplicate
         $found_flights = $found_flights->filter(function ($value, $key) use ($flight) {
             return $flight->route_code === $value->route_code
-                && $flight->route_leg === $value->route_leg;
+                && $flight->route_leg === $value->route_leg
+                && $flight->dpt_airport_id === $value->dpt_airport_id
+                && $flight->arr_airport_id === $value->arr_airport_id
+                && $flight->days === $value->days;
         });
 
         return !($found_flights->count() === 0);

@@ -45,10 +45,13 @@ class FlightTest extends TestCase
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight));
 
         $flight_dupe = new Flight([
-            'airline_id'    => $flight->airline_id,
-            'flight_number' => $flight->flight_number,
-            'route_code'    => $flight->route_code,
-            'route_leg'     => $flight->route_leg,
+            'airline_id'     => $flight->airline_id,
+            'flight_number'  => $flight->flight_number,
+            'route_code'     => $flight->route_code,
+            'route_leg'      => $flight->route_leg,
+            'dpt_airport_id' => $flight->dpt_airport_id,
+            'arr_airport_id' => $flight->arr_airport_id,
+            'days'           => $flight->days,
         ]);
 
         $this->assertTrue($this->flightSvc->isFlightDuplicate($flight_dupe));
@@ -56,29 +59,38 @@ class FlightTest extends TestCase
         // same flight but diff airline shouldn't be a dupe
         $new_airline = Airline::factory()->create();
         $flight_dupe = new Flight([
-            'airline_id'    => $new_airline->airline_id,
-            'flight_number' => $flight->flight_number,
-            'route_code'    => $flight->route_code,
-            'route_leg'     => $flight->route_leg,
+            'airline_id'     => $new_airline->airline_id,
+            'flight_number'  => $flight->flight_number,
+            'route_code'     => $flight->route_code,
+            'route_leg'      => $flight->route_leg,
+            'dpt_airport_id' => $flight->dpt_airport_id,
+            'arr_airport_id' => $flight->arr_airport_id,
+            'days'           => $flight->days,
         ]);
 
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight_dupe));
 
         // add another flight with a code
         $flight_leg = Flight::factory()->create([
-            'airline_id'    => $flight->airline_id,
-            'flight_number' => $flight->flight_number,
-            'route_code'    => 'A',
+            'airline_id'     => $flight->airline_id,
+            'flight_number'  => $flight->flight_number,
+            'route_code'     => 'A',
+            'dpt_airport_id' => $flight->dpt_airport_id,
+            'arr_airport_id' => $flight->arr_airport_id,
+            'days'           => $flight->days,
         ]);
 
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight_leg));
 
         // Add both a route and leg
         $flight_leg = Flight::factory()->create([
-            'airline_id'    => $flight->airline_id,
-            'flight_number' => $flight->flight_number,
-            'route_code'    => 'A',
-            'route_leg'     => 1,
+            'airline_id'     => $flight->airline_id,
+            'flight_number'  => $flight->flight_number,
+            'route_code'     => 'A',
+            'route_leg'      => 1,
+            'dpt_airport_id' => $flight->dpt_airport_id,
+            'arr_airport_id' => $flight->arr_airport_id,
+            'days'           => $flight->days,
         ]);
 
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight_leg));

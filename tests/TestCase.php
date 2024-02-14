@@ -241,6 +241,29 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
+     * @param array|string $files The filename or files to respond with
+     */
+    public function mockPlainTextResponse(array|string $files): void
+    {
+        if (!is_array($files)) {
+            $files = [$files];
+        }
+
+        $responses = [];
+        foreach ($files as $file) {
+            $responses[] = new Response(200, [
+                'Content-Type' => 'text/plain',
+            ], trim($this->readDataFile($file)));
+        }
+
+        $mock = new MockHandler($responses);
+
+        $handler = HandlerStack::create($mock);
+        $guzzleClient = new Client(['handler' => $handler]);
+        app()->instance(Client::class, $guzzleClient);
+    }
+
+    /**
      * Update a setting
      *
      * @param $key

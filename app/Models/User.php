@@ -158,6 +158,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     public $sortable = [
         'id',
         'name',
+        'email',
         'pilot_id',
         'callsign',
         'country',

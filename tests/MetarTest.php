@@ -197,7 +197,7 @@ class MetarTest extends TestCase
 
     public function testHttpCallSuccess()
     {
-        $this->mockXmlResponse('aviationweather/kjfk.xml');
+        $this->mockPlainTextResponse('aviationweather/kjfk.txt');
 
         /** @var AirportService $airportSvc */
         $airportSvc = app(AirportService::class);
@@ -211,7 +211,7 @@ class MetarTest extends TestCase
      */
     public function testLFRSCall()
     {
-        $this->mockXmlResponse('aviationweather/lfrs.xml');
+        $this->mockPlainTextResponse('aviationweather/lfrs.txt');
 
         /** @var AirportService $airportSvc */
         $airportSvc = app(AirportService::class);
@@ -223,7 +223,7 @@ class MetarTest extends TestCase
 
     public function testHttpCallSuccessFullResponse()
     {
-        $this->mockXmlResponse('aviationweather/kphx.xml');
+        $this->mockPlainTextResponse('aviationweather/kphx.txt');
         $airportSvc = app(AirportService::class);
 
         $this->assertInstanceOf(Metar::class, $airportSvc->getMetar('kphx'));
@@ -231,31 +231,9 @@ class MetarTest extends TestCase
 
     public function testHttpCallEmpty()
     {
-        $this->mockXmlResponse('aviationweather/empty.xml');
+        $this->mockPlainTextResponse('aviationweather/empty.txt');
         $airportSvc = app(AirportService::class);
 
         $this->assertNull($airportSvc->getMetar('idk'));
-    }
-
-    public function testHttpCallUnknown()
-    {
-        $this->mockXmlResponse('aviationweather/unknown.xml');
-
-        /** @var AirportService $airportSvc */
-        $airportSvc = app(AirportService::class);
-
-        $metar = $airportSvc->getMetar('7AK4');
-        $this->assertNull($metar);
-    }
-
-    public function testHttpCallNoResults()
-    {
-        $this->mockXmlResponse('aviationweather/no_results.xml');
-
-        /** @var AirportService $airportSvc */
-        $airportSvc = app(AirportService::class);
-
-        $metar = $airportSvc->getMetar('AYMR');
-        $this->assertNull($metar);
     }
 }
