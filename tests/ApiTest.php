@@ -20,9 +20,9 @@ use function random_int;
 /**
  * Test API calls and authentication, etc
  */
-class ApiTest extends TestCase
+final class ApiTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->addData('base');
@@ -31,7 +31,7 @@ class ApiTest extends TestCase
     /**
      * Ensure authentication against the API works
      */
-    public function testApiAuthentication()
+    public function testApiAuthentication(): void
     {
         $user = User::factory()->create();
 
@@ -63,7 +63,7 @@ class ApiTest extends TestCase
             ->assertJson(['data' => ['id' => $user->id]]);
     }
 
-    public function testApiDeniedOnInactiveUser()
+    public function testApiDeniedOnInactiveUser(): void
     {
         $this->user = User::factory()->create([
             'state' => UserState::PENDING,
@@ -88,7 +88,7 @@ class ApiTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testGetAirlines()
+    public function testGetAirlines(): void
     {
         $size = random_int(5, 10);
         $this->user = User::factory()->create([
@@ -105,7 +105,7 @@ class ApiTest extends TestCase
              ->assertJson(['data' => ['name' => $airline->name]]);
     }
 
-    public function testGetAirlinesChineseChars()
+    public function testGetAirlinesChineseChars(): void
     {
         $this->user = User::factory()->create([
             'airline_id' => 0,
@@ -138,7 +138,7 @@ class ApiTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPagination()
+    public function testPagination(): void
     {
         $size = random_int(5, 10);
         $this->user = User::factory()->create([
@@ -184,7 +184,7 @@ class ApiTest extends TestCase
     /**
      * Make sure the airport data is returned
      */
-    public function testAirportRequest()
+    public function testAirportRequest(): void
     {
         $this->user = User::factory()->create();
         $airport = Airport::factory()->create();
@@ -200,7 +200,7 @@ class ApiTest extends TestCase
     /**
      * Make sure the airport data is returned
      */
-    public function testAirportRequest5Char()
+    public function testAirportRequest5Char(): void
     {
         $this->user = User::factory()->create();
 
@@ -218,7 +218,7 @@ class ApiTest extends TestCase
     /**
      * Get all the airports, test the pagination
      */
-    public function testGetAllAirports()
+    public function testGetAllAirports(): void
     {
         $this->user = User::factory()->create();
         Airport::factory()->count(70)->create();
@@ -230,7 +230,7 @@ class ApiTest extends TestCase
         $this->assertHasKeys($body, ['data', 'links', 'meta']);
     }
 
-    public function testGetAllAirportsHubs()
+    public function testGetAllAirportsHubs(): void
     {
         $this->user = User::factory()->create();
         Airport::factory()->count(10)->create();
@@ -246,7 +246,7 @@ class ApiTest extends TestCase
      *
      * @throws Exception
      */
-    public function testGetSubfleets()
+    public function testGetSubfleets(): void
     {
         $this->user = User::factory()->create();
 
@@ -289,7 +289,7 @@ class ApiTest extends TestCase
     /**
      * Test getting an aircraft
      */
-    public function testGetAircraft()
+    public function testGetAircraft(): void
     {
         $this->user = User::factory()->create();
 
@@ -342,14 +342,14 @@ class ApiTest extends TestCase
         $this->assertEquals($body['zfw'], $aircraft->zfw);
     }
 
-    public function testGetAllSettings()
+    public function testGetAllSettings(): void
     {
         $this->user = User::factory()->create();
         $res = $this->get('/api/settings')->assertStatus(200);
         $settings = $res->json();
     }
 
-    public function testGetUser()
+    public function testGetUser(): void
     {
         $this->user = User::factory()->create([
             'avatar' => '/assets/avatar.jpg',
@@ -358,7 +358,7 @@ class ApiTest extends TestCase
         $res = $this->get('/api/user')->assertStatus(200);
         $user = $res->json('data');
         $this->assertNotNull($user);
-        $this->assertTrue(strpos($user['avatar'], 'http') !== -1);
+        $this->assertNotSame(-1, strpos($user['avatar'], 'http'));
 
         // Should go to gravatar
 
@@ -367,13 +367,13 @@ class ApiTest extends TestCase
         $res = $this->get('/api/user')->assertStatus(200);
         $user = $res->json('data');
         $this->assertNotNull($user);
-        $this->assertTrue(strpos($user['avatar'], 'gravatar') !== -1);
+        $this->assertNotSame(-1, strpos($user['avatar'], 'gravatar'));
     }
 
     /**
      * Test that the web cron runs
      */
-    public function testWebCron()
+    public function testWebCron(): void
     {
         $this->updateSetting('cron.random_id', '');
         $this->get('/api/cron/sdf')->assertStatus(400);
@@ -387,7 +387,7 @@ class ApiTest extends TestCase
         $res->assertStatus(200);
     }
 
-    public function testStatus()
+    public function testStatus(): void
     {
         $res = $this->get('/api/status');
         $status = $res->json();

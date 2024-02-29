@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class RegistrationTest extends TestCase
+final class RegistrationTest extends TestCase
 {
     /**
      * A basic test example.
@@ -23,7 +23,7 @@ class RegistrationTest extends TestCase
      *
      * @return void
      */
-    public function testRegistration()
+    public function testRegistration(): void
     {
         $admin = $this->createAdminUser(['name' => 'testRegistration Admin']);
 
@@ -178,7 +178,7 @@ class RegistrationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testWithInvalidEmail()
+    public function testWithInvalidEmail(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', true);

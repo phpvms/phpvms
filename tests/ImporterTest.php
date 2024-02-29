@@ -23,14 +23,15 @@ use App\Services\ImportExport\AirportExporter;
 use App\Services\ImportExport\FlightExporter;
 use App\Services\ImportService;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\CannotInsertRecord;
 
-class ImporterTest extends TestCase
+final class ImporterTest extends TestCase
 {
-    private $importBaseClass;
-    private $importSvc;
-    private $fareSvc;
+    private ImportExport $importBaseClass;
+    private ImportService $importSvc;
+    private FareService $fareSvc;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->importBaseClass = new ImportExport();
@@ -45,7 +46,7 @@ class ImporterTest extends TestCase
      *
      * @return mixed
      */
-    protected function insertFlightsScaffoldData()
+    protected function insertFlightsScaffoldData(): array
     {
         $fare_svc = app(FareService::class);
 
@@ -255,6 +256,7 @@ class ImporterTest extends TestCase
      * Test exporting all the flights to a file
      *
      * @throws \Illuminate\Validation\ValidationException
+     * @throws CannotInsertRecord
      */
     public function testAircraftExporter(): void
     {
@@ -282,6 +284,8 @@ class ImporterTest extends TestCase
 
     /**
      * Test exporting all the flights to a file
+     *
+     * @throws CannotInsertRecord
      */
     public function testAirportExporter(): void
     {
@@ -309,6 +313,8 @@ class ImporterTest extends TestCase
 
     /**
      * Test exporting all the flights to a file
+     *
+     * @throws CannotInsertRecord
      */
     public function testFlightExporter(): void
     {
@@ -428,21 +434,21 @@ class ImporterTest extends TestCase
 
         $expenses = Expense::all();
 
-        $on_airline = $expenses->where('name', 'Per-Flight (multiplier, on airline)')->first();
+        $on_airline = $expenses->firstWhere('name', 'Per-Flight (multiplier, on airline)');
         $this->assertEquals(200, $on_airline->amount);
         $this->assertEquals($airline->id, $on_airline->airline_id);
 
-        $pf = $expenses->where('name', 'Per-Flight (no muliplier)')->first();
+        $pf = $expenses->firstWhere('name', 'Per-Flight (no muliplier)');
         $this->assertEquals(100, $pf->amount);
         $this->assertEquals(ExpenseType::FLIGHT, $pf->type);
 
-        $catering = $expenses->where('name', 'Catering Staff')->first();
+        $catering = $expenses->firstWhere('name', 'Catering Staff');
         $this->assertEquals(1000, $catering->amount);
         $this->assertEquals(ExpenseType::DAILY, $catering->type);
         $this->assertEquals(Subfleet::class, $catering->ref_model);
         $this->assertEquals($subfleet->id, $catering->ref_model_id);
 
-        $mnt = $expenses->where('name', 'Maintenance')->first();
+        $mnt = $expenses->firstWhere('name', 'Maintenance');
         $this->assertEquals(Aircraft::class, $mnt->ref_model);
         $this->assertEquals($aircraft->id, $mnt->ref_model_id);
     }
@@ -460,29 +466,29 @@ class ImporterTest extends TestCase
 
         $fares = Fare::all();
 
-        $y_class = $fares->where('code', 'Y')->first();
+        $y_class = $fares->firstWhere('code', 'Y');
         $this->assertEquals('Economy', $y_class->name);
         $this->assertEquals(100, $y_class->price);
         $this->assertEquals(0, $y_class->cost);
         $this->assertEquals(200, $y_class->capacity);
-        $this->assertEquals(true, $y_class->active);
+        $this->assertTrue($y_class->active);
         $this->assertEquals('This is the economy class', $y_class->notes);
 
-        $b_class = $fares->where('code', 'B')->first();
+        $b_class = $fares->firstWhere('code', 'B');
         $this->assertEquals('Business', $b_class->name);
         $this->assertEquals(500, $b_class->price);
         $this->assertEquals(250, $b_class->cost);
         $this->assertEquals(10, $b_class->capacity);
         $this->assertEquals('This is business class', $b_class->notes);
-        $this->assertEquals(false, $b_class->active);
+        $this->assertFalse($b_class->active);
 
-        $f_class = $fares->where('code', 'F')->first();
+        $f_class = $fares->firstWhere('code', 'F');
         $this->assertEquals('First-Class', $f_class->name);
         $this->assertEquals(800, $f_class->price);
         $this->assertEquals(350, $f_class->cost);
         $this->assertEquals(5, $f_class->capacity);
         $this->assertEquals('', $f_class->notes);
-        $this->assertEquals(true, $f_class->active);
+        $this->assertTrue($f_class->active);
     }
 
     /**
@@ -520,7 +526,7 @@ class ImporterTest extends TestCase
         $this->assertEquals(FlightType::SCHED_PAX, $flight->flight_type);
         $this->assertEquals('ILEXY2 ZENZI LFK ELD J29 MEM Q29 JHW J70 STENT J70 MAGIO J70 LVZ LENDY6', $flight->route);
         $this->assertEquals('Just a flight', $flight->notes);
-        $this->assertEquals(true, $flight->active);
+        $this->assertTrue($flight->active);
 
         // Test that the days were set properly
         $this->assertTrue($flight->on_day(Days::MONDAY));
@@ -533,22 +539,22 @@ class ImporterTest extends TestCase
         ])->get();
 
         $this->assertCount(2, $fields);
-        $dep_gate = $fields->where('name', 'Departure Gate')->first();
+        $dep_gate = $fields->firstWhere('name', 'Departure Gate');
         $this->assertEquals('4', $dep_gate['value']);
 
-        $dep_gate = $fields->where('name', 'Arrival Gate')->first();
+        $dep_gate = $fields->firstWhere('name', 'Arrival Gate');
         $this->assertEquals('C41', $dep_gate['value']);
 
         // Check the fare class
         $fares = $this->fareSvc->getFareWithOverrides(null, $flight->fares);
         $this->assertCount(3, $fares);
 
-        $first = $fares->where('code', 'Y')->first();
+        $first = $fares->firstWhere('code', 'Y');
         $this->assertEquals(300, $first->price);
         $this->assertEquals(100, $first->cost);
         $this->assertEquals(130, $first->capacity);
 
-        $first = $fares->where('code', 'F')->first();
+        $first = $fares->firstWhere('code', 'F');
         $this->assertEquals(600, $first->price);
         $this->assertEquals(400, $first->cost);
         $this->assertEquals(10, $first->capacity);
@@ -668,7 +674,7 @@ class ImporterTest extends TestCase
         $this->assertEquals('Texas', $airport->region);
         $this->assertEquals('US', $airport->country);
         $this->assertEquals('America/Chicago', $airport->timezone);
-        $this->assertEquals(true, $airport->hub);
+        $this->assertTrue($airport->hub);
         $this->assertEquals('30.1945', $airport->lat);
         $this->assertEquals('-97.6699', $airport->lon);
         $this->assertEquals(0.0, $airport->ground_handling_cost);
@@ -681,7 +687,7 @@ class ImporterTest extends TestCase
         ])->first();
 
         $this->assertNotNull($airport);
-        $this->assertEquals(true, $airport->hub);
+        $this->assertTrue($airport->hub);
         $this->assertEquals(0.9, $airport->fuel_jeta_cost);
         $this->assertEquals(setting('airports.default_ground_handling_cost'), $airport->ground_handling_cost);
     }
@@ -741,7 +747,7 @@ class ImporterTest extends TestCase
         // get the fares and check the pivot tables and the main tables
         $fares = $subfleet->fares()->get();
 
-        $eco = $fares->where('code', 'Y')->first();
+        $eco = $fares->firstWhere('code', 'Y');
         $this->assertEquals(null, $eco->pivot->price);
         $this->assertEquals(null, $eco->pivot->capacity);
         $this->assertEquals(null, $eco->pivot->cost);
@@ -750,7 +756,7 @@ class ImporterTest extends TestCase
         $this->assertEquals($fare_economy->capacity, $eco->capacity);
         $this->assertEquals($fare_economy->cost, $eco->cost);
 
-        $busi = $fares->where('code', 'B')->first();
+        $busi = $fares->firstWhere('code', 'B');
         $this->assertEquals($fare_business->price, $busi->price);
         $this->assertEquals($fare_business->capacity, $busi->capacity);
         $this->assertEquals($fare_business->cost, $busi->cost);
@@ -761,14 +767,14 @@ class ImporterTest extends TestCase
 
         // get the ranks and check the pivot tables and the main tables
         $ranks = $subfleet->ranks()->get();
-        $cpt = $ranks->where('name', 'cpt')->first();
+        $cpt = $ranks->firstWhere('name', 'cpt');
         $this->assertEquals(null, $cpt->pivot->acars_pay);
         $this->assertEquals(null, $cpt->pivot->manual_pay);
 
         $this->assertEquals($rank_cpt->acars_pay, $cpt->acars_pay);
         $this->assertEquals($rank_cpt->manual_pay, $cpt->manual_pay);
 
-        $fo = $ranks->where('name', 'fo')->first();
+        $fo = $ranks->firstWhere('name', 'fo');
         $this->assertEquals(200, $fo->pivot->acars_pay);
         $this->assertEquals(100, $fo->pivot->manual_pay);
 

@@ -76,7 +76,7 @@ class Timezonelist
     public static function formatTimezone($timezone, $continent, $htmlencode = true)
     {
         try {
-            $time = new \DateTimeImmutable(null, new DateTimeZone($timezone));
+            $time = new \DateTimeImmutable('now', new DateTimeZone($timezone));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return '';

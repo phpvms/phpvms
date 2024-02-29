@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="bootstrap/autoload.php"
          colors="true"
+         testdox="true"
          processIsolation="false"
          stopOnFailure="true"
-         convertErrorsToExceptions="false"
-         convertNoticesToExceptions="false"
-         convertWarningsToExceptions="false"
          beStrictAboutOutputDuringTests="false"
          beStrictAboutTestsThatDoNotTestAnything="false">
     <testsuites>
@@ -13,14 +11,6 @@
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
-    <extensions>
-        <extension class="Tests\Bootstrap"/>
-    </extensions>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./app</directory>
-        </whitelist>
-    </filter>
     <!--<listeners>
         <listener class="NunoMaduro\Collision\Adapters\Phpunit\Listener"/>
     </listeners>-->
@@ -42,4 +32,9 @@
         <server name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.phpunit.php"/>
         <server name="APP_EVENTS_CACHE" value="bootstrap/cache/events.phpunit.php"/>
     </php>
+    <source>
+        <include>
+            <directory suffix=".php">./app</directory>
+        </include>
+    </source>
 </phpunit>

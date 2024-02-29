@@ -6,9 +6,9 @@ use App\Models\Role;
 use App\Models\Subfleet;
 use App\Models\User;
 
-class AdminControllerTests extends TestCase
+final class AdminControllerTests extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->addData('base');
@@ -29,7 +29,7 @@ class AdminControllerTests extends TestCase
      *
      * @return void
      */
-    public function testAddSubfleet()
+    public function testAddSubfleet(): void
     {
         $user = $this->addAdminUser();
         $add = Subfleet::factory()->make(['type' => 'B737'])->toArray();

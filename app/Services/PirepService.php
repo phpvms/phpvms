@@ -465,7 +465,7 @@ class PirepService extends Service
             }
         }
 
-        Log::info('New PIREP filed', [$pirep]);
+        Log::info('New PIREP filed, pirep_id: '.$pirep->id);
         event(new PirepFiled($pirep));
 
         $pirep->refresh();

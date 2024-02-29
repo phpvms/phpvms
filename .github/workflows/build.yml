@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['8.1', '8.2']
+        php-versions: ['8.1', '8.2', '8.3']
     name: PHP ${{ matrix.php-versions }}
     env:
       extensions: intl, pcov, mbstring
@@ -103,7 +103,7 @@ jobs:
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
         #vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php -v --dry-run --diff --using-cache=no
-        vendor/bin/phpunit --debug --verbose
+        vendor/bin/phpunit
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever

@@ -68,7 +68,17 @@ class Rank extends Model
     public function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => str_contains($value, 'http') ? $value : (filled($value) ? public_url($value) : null),
+            get: function ($value) {
+                if (!filled($value)) {
+                    return null;
+                }
+
+                if (str_contains($value, 'http')) {
+                    return $value;
+                }
+
+                return public_url($value);
+            },
         );
     }
 

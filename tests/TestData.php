@@ -6,11 +6,13 @@ use App\Models\Aircraft;
 use App\Models\Enums\UserState;
 use App\Models\Flight;
 use App\Models\Pirep;
+use App\Models\Rank;
 use App\Models\Role;
 use App\Models\Subfleet;
 use App\Models\User;
 use App\Services\UserService;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 trait TestData
 {
@@ -63,7 +65,7 @@ trait TestData
      *
      * @return \App\Models\Pirep
      */
-    protected function createPirep(array $user_attrs = [], array $pirep_attrs = [])
+    protected function createPirep(array $user_attrs = [], array $pirep_attrs = []): Pirep
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -88,15 +90,11 @@ trait TestData
      *
      * @return mixed
      */
-    public function createRank(int $hours, array $subfleet_ids)
+    public function createRank(int $hours, array $subfleet_ids): Rank
     {
         $attrs = [];
 
-        if ($hours === null) {
-            $attrs['hours'] = $hours;
-        }
-
-        $rank = \App\Models\Rank::factory()->create($attrs);
+        $rank = Rank::factory()->create($attrs);
         if (!empty($subfleet_ids)) {
             $rank->subfleets()->syncWithoutDetaching($subfleet_ids);
         }
@@ -107,12 +105,12 @@ trait TestData
     /**
      * Add a single flight
      *
-     * @param       $user
+     * @param User  $user
      * @param array $flight_properties
      *
      * @return mixed
      */
-    public function addFlight($user, $flight_properties = [])
+    public function addFlight(User $user, array $flight_properties = [], ?int $subfleet_id = null): Flight
     {
         $opts = array_merge([
             'airline_id' => $user->airline_id,
@@ -120,11 +118,14 @@ trait TestData
 
         $flight = Flight::factory()->create($opts);
 
-        $flight->subfleets()->syncWithoutDetaching([
-            Subfleet::factory()->create([
+        if ($subfleet_id === null) {
+            /** @var Subfleet $subfleet */
+            $subfleet_id = Subfleet::factory()->create([
                 'airline_id' => $user->airline_id,
-            ])->id,
-        ]);
+            ])->id;
+        }
+
+        $flight->subfleets()->syncWithoutDetaching([$subfleet_id]);
 
         return $flight;
     }
@@ -135,9 +136,9 @@ trait TestData
      * @param $subfleet
      * @param $num_flights
      *
-     * @return \App\Models\Flight[]
+     * @return Collection
      */
-    public function addFlightsForSubfleet($subfleet, $num_flights)
+    public function addFlightsForSubfleet($subfleet, $num_flights): Collection
     {
         return Flight::factory()->count($num_flights)->create([
             'airline_id' => $subfleet->airline->id,
@@ -150,14 +151,12 @@ trait TestData
     /**
      * Create a subfleet with a number of aircraft assigned
      *
-     * @param null $aircraft_count
-     * @param null $airport_id
+     * @param int|null    $aircraft_count
+     * @param string|null $airport_id
      *
-     * @throws Exception
-     *
-     * @return mixed
+     * @return array
      */
-    public function createSubfleetWithAircraft($aircraft_count = null, $airport_id = null)
+    public function createSubfleetWithAircraft(?int $aircraft_count = null, ?string $airport_id = null): array
     {
         /** @var Subfleet $subfleet */
         $subfleet = Subfleet::factory()->create([

@@ -7,12 +7,12 @@ use App\Notifications\Messages\NewsAdded;
 use App\Services\NewsService;
 use Illuminate\Support\Facades\Notification;
 
-class NewsTest extends TestCase
+final class NewsTest extends TestCase
 {
     /** @var NewsService */
-    private $newsSvc;
+    private NewsService $newsSvc;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -24,7 +24,7 @@ class NewsTest extends TestCase
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function testNewsNotifications()
+    public function testNewsNotifications(): void
     {
         /** @var User[] $users */
         $users_opt_in = User::factory()->count(5)->create(['opt_in' => true]);

@@ -3,30 +3,31 @@
 namespace Tests;
 
 use App\Models\Fare;
+use App\Models\Subfleet;
 use App\Services\FareService;
 
-class SubfleetTest extends TestCase
+final class SubfleetTest extends TestCase
 {
-    protected $ac_svc;
-    protected $ICAO = 'B777';
-
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->addData('base');
     }
 
-    public function testSubfleetFaresNoOverride()
+    /**
+     * @throws \Exception
+     */
+    public function testSubfleetFaresNoOverride(): void
     {
         /** @var FareService $fare_svc */
         $fare_svc = app(FareService::class);
 
         $subfleet_aircraft = $this->createSubfleetWithAircraft(1);
 
-        /** @var \App\Models\Subfleet $subfleet */
+        /** @var Subfleet $subfleet */
         $subfleet = $subfleet_aircraft['subfleet'];
 
-        /** @var \App\Models\Fare $fare */
+        /** @var Fare $fare */
         $fare = Fare::factory()->create();
 
         $fare_svc->setForSubfleet($subfleet, $fare);

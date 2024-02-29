@@ -141,7 +141,7 @@ return [
             /*
              * The filename prefix used for the backup zip file.
              */
-            'filename_prefix' => '',
+            'filename_prefix' => env('BACKUP_FILENAME_PREFIX', ''),
 
             /*
              * The disk names on which the backups will be stored.

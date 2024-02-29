@@ -11,6 +11,7 @@ use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UpdatePending;
+use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -49,7 +50,7 @@ class Kernel extends HttpKernel
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             ShareErrorsFromSession::class,
-            // VerifyCsrfToken::class,
+            VerifyCsrfToken::class,
             SubstituteBindings::class,
             SetActiveTheme::class,
             SetActiveLanguage::class,

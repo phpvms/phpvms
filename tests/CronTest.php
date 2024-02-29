@@ -10,7 +10,7 @@ use App\Models\Pirep;
 use App\Models\User;
 use Carbon\Carbon;
 
-class CronTest extends TestCase
+final class CronTest extends TestCase
 {
     /**
      * Create a new sample PIREP
@@ -35,7 +35,7 @@ class CronTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testExpiredFlightNotBeingRemoved()
+    public function testExpiredFlightNotBeingRemoved(): void
     {
         $this->updateSetting('acars.live_time', 0);
         $pirep = $this->getPirep(2);
@@ -53,7 +53,7 @@ class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testExpiredFlightShouldNotBeRemoved()
+    public function testExpiredFlightShouldNotBeRemoved(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(2);
@@ -71,7 +71,7 @@ class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testExpiredFlightShouldBeRemoved()
+    public function testExpiredFlightShouldBeRemoved(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(4);
@@ -89,7 +89,7 @@ class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testCompletedFlightsShouldNotBeDeleted()
+    public function testCompletedFlightsShouldNotBeDeleted(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(4);
@@ -111,7 +111,7 @@ class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDeleteRejectedPireps()
+    public function testDeleteRejectedPireps(): void
     {
         $this->updateSetting('pireps.delete_rejected_hours', 3);
         $pirep = $this->getPirep(4);
@@ -133,7 +133,7 @@ class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDeleteCancelledPireps()
+    public function testDeleteCancelledPireps(): void
     {
         $this->updateSetting('pireps.delete_cancelled_hours', 3);
         $pirep = $this->getPirep(4);

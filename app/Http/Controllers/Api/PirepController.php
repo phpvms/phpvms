@@ -207,8 +207,6 @@ class PirepController extends Controller
      */
     public function prefile(PrefileRequest $request): PirepResource
     {
-        Log::info('PIREP Prefile, user '.Auth::id(), $request->post());
-
         /**
          * @var $user \App\Models\User
          */
@@ -221,8 +219,7 @@ class PirepController extends Controller
         $fares = $this->getFares($request);
         $pirep = $this->pirepSvc->prefile($user, $attrs, $fields, $fares);
 
-        Log::info('PIREP PREFILED');
-        Log::info($pirep->id);
+        Log::info('PIREP Prefile, pirep_id: '.$pirep->id.', user_id: '.Auth::id());
 
         return $this->get($pirep->id);
     }
@@ -244,8 +241,7 @@ class PirepController extends Controller
      */
     public function update(string $pirep_id, UpdateRequest $request): PirepResource
     {
-        Log::info('PIREP Update, user '.Auth::id());
-        Log::info($request->getContent());
+        Log::debug('PIREP Update, pirep_id: '.$pirep_id.', user_id: '.Auth::id());
 
         /** @var User $user */
         $user = Auth::user();
@@ -292,7 +288,7 @@ class PirepController extends Controller
      */
     public function file(string $pirep_id, FileRequest $request): PirepResource
     {
-        Log::info('PIREP file, user '.Auth::id(), $request->post());
+        Log::info('PIREP File, pirep_id: '.$pirep_id.', user_id: '.Auth::id());
 
         /** @var User $user */
         $user = Auth::user();
@@ -350,7 +346,7 @@ class PirepController extends Controller
      */
     public function cancel(string $pirep_id, Request $request)
     {
-        Log::info('PIREP '.$pirep_id.' Cancel, user '.Auth::id(), $request->post());
+        Log::info('PIREP Cancel, pirep_id: '.$pirep_id.', user_id: '.Auth::id());
 
         $pirep = Pirep::find($pirep_id);
         if (!empty($pirep)) {
@@ -502,7 +498,7 @@ class PirepController extends Controller
         $pirep = Pirep::find($id);
         $this->checkCancelled($pirep);
 
-        Log::info('Posting ROUTE, PIREP: '.$id, $request->post());
+        Log::info('Posting ROUTE, pirep_id: '.$id);
 
         // Delete the route before posting a new one
         Acars::where([

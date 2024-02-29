@@ -43,14 +43,14 @@
         "psr/container": "1.1.1",
         "composer/composer": "~2.6.5",
         "composer/installers": "~1.12.0",
-        "laravel/framework": "~v10.0",
+        "laravel/framework": "~v10.22",
         "arrilot/laravel-widgets": "~3.13.0",
         "doctrine/dbal": "^3.0",
         "guzzlehttp/guzzle": "~7.4.1",
         "hashids/hashids": "~4.1.0",
         "igaster/laravel-theme": "dev-master",
         "intervention/image": "~2.4",
-        "jmikola/geojson": "1.0.*",
+        "jmikola/geojson": "^1.2.0",
         "joshbrw/laravel-module-installer": "~2.0.1",
         "laracasts/flash": "~3.2.2",
         "laravel/helpers": "~v1.6.0",
@@ -101,12 +101,11 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8.1",
-        "filp/whoops": "~2.14.5",
+        "filp/whoops": "^2.15.3",
         "friendsofphp/php-cs-fixer": "^3.17.0",
         "mockery/mockery": "^1.5.0",
-        "nunomaduro/collision": "^v6.1.0",
-        "phpunit/phpunit": "~9.5.14",
-        "sempro/phpunit-pretty-print": "^1.4.0",
+        "nunomaduro/collision": "^v7.5.0",
+        "phpunit/phpunit": "^10.5",
         "laravel/sail": "^1.23"
     },
     "autoload": {
@@ -153,7 +152,7 @@
             "@php artisan phpvms:caches",
             "@php artisan filament:upgrade"
         ],
-        "test": "phpunit --verbose"
+        "test": "phpunit"
     },
     "config": {
         "bin-dir": "vendor/bin/",

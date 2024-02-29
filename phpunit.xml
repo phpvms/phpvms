@@ -1,28 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="bootstrap/autoload.php" colors="true" processIsolation="false" stopOnFailure="true" convertErrorsToExceptions="false" convertNoticesToExceptions="false" convertWarningsToExceptions="false" beStrictAboutOutputDuringTests="false" beStrictAboutTestsThatDoNotTestAnything="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">./app</directory>
-    </include>
-  </coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="bootstrap/autoload.php" colors="true" testdox="true" processIsolation="false" stopOnFailure="true" beStrictAboutOutputDuringTests="false" beStrictAboutTestsThatDoNotTestAnything="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" cacheDirectory=".phpunit.cache">
   <testsuites>
     <testsuite name="Application Test Suite">
       <directory suffix="Test.php">./tests</directory>
     </testsuite>
   </testsuites>
-  <extensions>
-    <extension class="Tests\Bootstrap"/>
-  </extensions>
   <!--<listeners>
         <listener class="NunoMaduro\Collision\Adapters\Phpunit\Listener"/>
     </listeners>-->
   <php>
-    <env name="PHPUNIT_PRETTY_PRINT_PROGRESS" value="true"/>
     <ini name="error_reporting" value="E_ALL"/>
     <ini name="display_errors" value="On"/>
     <ini name="display_startup_errors" value="On"/>
-    <ini name="memory_limit" value="-1" />
+    <ini name="memory_limit" value="-1"/>
     <server name="APP_ENV" value="testing"/>
     <server name="APP_KEY" value="base64:ve66Z5Kt/zTN3p++0zOPu854PHfZkwJE5VuoFAlzHtI="/>
     <server name="APP_DEBUG" value="true"/>
@@ -41,13 +31,17 @@
     <server name="APP_PACKAGES_CACHE" value="bootstrap/cache/packages.phpunit.php"/>
     <server name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.phpunit.php"/>
     <server name="APP_EVENTS_CACHE" value="bootstrap/cache/events.phpunit.php"/>
+   <!-- ###+ symfony/mailer ### -->
+   <!-- MAILER_DSN=smtp://localhost -->
+   <!-- ###- symfony/mailer ### -->
 
-        <!-- ###+ symfony/mailer ### -->
-        <!-- MAILER_DSN=smtp://localhost -->
-        <!-- ###- symfony/mailer ### -->
-
-        <!-- ###+ symfony/postmark-mailer ### -->
-        <!-- MAILER_DSN=postmark://ID@default -->
-        <!-- ###- symfony/postmark-mailer ### -->
+   <!-- ###+ symfony/postmark-mailer ### -->
+   <!-- MAILER_DSN=postmark://ID@default -->
+   <!-- ###- symfony/postmark-mailer ### -->
   </php>
+  <source>
+    <include>
+      <directory suffix=".php">./app</directory>
+    </include>
+  </source>
 </phpunit>

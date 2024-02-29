@@ -3,15 +3,18 @@
 namespace Tests;
 
 use App\Models\Airline;
+use App\Models\Flight;
 use App\Models\Journal;
+use App\Models\Pirep;
 use App\Services\AirlineService;
+use Prettus\Validator\Exceptions\ValidatorException;
 
-class AirlineTest extends TestCase
+final class AirlineTest extends TestCase
 {
     /** @var AirlineService */
-    protected $airlineSvc;
+    protected AirlineService $airlineSvc;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->addData('base');
@@ -19,9 +22,12 @@ class AirlineTest extends TestCase
         $this->airlineSvc = app(AirlineService::class);
     }
 
-    public function testAddAirline()
+    /**
+     * @throws ValidatorException
+     */
+    public function testAddAirline(): void
     {
-        $attrs = \App\Models\Airline::factory()->make([
+        $attrs = Airline::factory()->make([
             'iata' => '',
         ])->toArray();
 
@@ -37,7 +43,7 @@ class AirlineTest extends TestCase
         $this->assertCount(1, $journals);
 
         // Add another airline, also blank IATA
-        $attrs = \App\Models\Airline::factory()->make([
+        $attrs = Airline::factory()->make([
             'iata' => '',
         ])->toArray();
         $airline = $this->airlineSvc->createAirline($attrs);
@@ -47,10 +53,10 @@ class AirlineTest extends TestCase
     /**
      * Try deleting an airline which has flights/other assets that exist
      */
-    public function testDeleteAirlineWithFlight()
+    public function testDeleteAirlineWithFlight(): void
     {
-        $airline = \App\Models\Airline::factory()->create();
-        \App\Models\Flight::factory()->create([
+        $airline = Airline::factory()->create();
+        Flight::factory()->create([
             'airline_id' => $airline->id,
         ]);
 
@@ -60,10 +66,10 @@ class AirlineTest extends TestCase
     /**
      * Try deleting an airline with existing PIREPs
      */
-    public function testDeleteAirlineWithPirep()
+    public function testDeleteAirlineWithPirep(): void
     {
-        $airline = \App\Models\Airline::factory()->create();
-        \App\Models\Pirep::factory()->create([
+        $airline = Airline::factory()->create();
+        Pirep::factory()->create([
             'airline_id' => $airline->id,
         ]);
 

@@ -6,11 +6,11 @@ use App\Models\Navdata;
 use Exception;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 
-class GeoTest extends TestCase
+final class GeoTest extends TestCase
 {
     use WithoutMiddleware;
 
-    public function testClosestPoint()
+    public function testClosestPoint(): void
     {
         $geoSvc = app('\App\Services\GeoService');
 
@@ -42,7 +42,7 @@ class GeoTest extends TestCase
      *
      * @throws Exception
      */
-    public function testGetCoords()
+    public function testGetCoords(): void
     {
         $geoSvc = app('\App\Services\GeoService');
 

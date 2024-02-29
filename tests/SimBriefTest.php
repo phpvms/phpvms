@@ -15,9 +15,9 @@ use App\Services\SimBriefService;
 use App\Support\Utils;
 use Carbon\Carbon;
 
-class SimBriefTest extends TestCase
+final class SimBriefTest extends TestCase
 {
-    private static $simbrief_flight_id = 'simbriefflightid';
+    private static string $simbrief_flight_id = 'simbriefflightid';
 
     /**
      * @param array $attrs Additional user attributes
@@ -48,20 +48,20 @@ class SimBriefTest extends TestCase
     /**
      * Load SimBrief
      *
-     * @param \App\Models\User          $user
-     * @param \App\Models\Aircraft|null $aircraft
-     * @param array                     $fares
-     * @param string|null               $flight_id
+     * @param User        $user
+     * @param Aircraft    $aircraft
+     * @param array       $fares
+     * @param string|null $flight_id
      *
-     * @return \App\Models\SimBrief
+     * @return SimBrief
      */
-    protected function loadSimBrief(User $user, Aircraft $aircraft, $fares = [], $flight_id = null): SimBrief
+    protected function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string $flight_id = null): SimBrief
     {
         if (empty($flight_id)) {
             $flight_id = self::$simbrief_flight_id;
         }
 
-        /** @var \App\Models\Flight $flight */
+        /** @var Flight $flight */
         $flight = Flight::factory()->create([
             'id'             => $flight_id,
             'dpt_airport_id' => 'OMAA',
@@ -79,9 +79,9 @@ class SimBriefTest extends TestCase
      * @param $aircraft
      * @param $fares
      *
-     * @return \App\Models\SimBrief|null
+     * @return SimBrief|null
      */
-    protected function downloadOfp($user, $flight, $aircraft, $fares)
+    protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {
         $this->mockXmlResponse([
             'simbrief/briefing.xml',
@@ -96,8 +96,10 @@ class SimBriefTest extends TestCase
 
     /**
      * Read from the SimBrief URL
+     *
+     * @throws \Exception
      */
-    public function testReadSimbrief()
+    public function testReadSimbrief(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -136,8 +138,10 @@ class SimBriefTest extends TestCase
 
     /**
      * Check that the API calls are working (simbrief in the response, can retrieve the briefing)
+     *
+     * @throws \Exception
      */
-    public function testApiCalls()
+    public function testApiCalls(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -181,8 +185,10 @@ class SimBriefTest extends TestCase
 
     /**
      * Make sure the user's bids have the Simbrief data show up
+     *
+     * @throws \Exception
      */
-    public function testUserBidSimbrief()
+    public function testUserBidSimbrief(): void
     {
         $fares = [
             [
@@ -229,7 +235,7 @@ class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testUserBidSimbriefDoesntLeak()
+    public function testUserBidSimbriefDoesntLeak(): void
     {
         $this->updateSetting('bids.disable_flight_on_bid', false);
         $fares = [
@@ -243,7 +249,7 @@ class SimBriefTest extends TestCase
             ],
         ];
 
-        /** @var \App\Models\Flight $flight */
+        /** @var Flight $flight */
         $flight = Flight::factory()->create();
 
         // Create two briefings and make sure it doesn't leak
@@ -279,7 +285,10 @@ class SimBriefTest extends TestCase
         $this->assertEquals($fares[0]['count'], $subfleet['fares'][0]['count']);
     }
 
-    public function testAttachToPirep()
+    /**
+     * @throws \Exception
+     */
+    public function testAttachToPirep(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -313,10 +322,10 @@ class SimBriefTest extends TestCase
         $this->assertEquals(12, $acars->count());
 
         $fix = $acars->firstWhere('name', 'BOMUP');
-        $this->assertEquals($fix['name'], 'BOMUP');
-        $this->assertEquals($fix['lat'], 24.484639);
-        $this->assertEquals($fix['lon'], 54.578444);
-        $this->assertEquals($fix['order'], 1);
+        $this->assertEquals('BOMUP', $fix['name']);
+        $this->assertEquals(24.484639, $fix['lat']);
+        $this->assertEquals(54.578444, $fix['lon']);
+        $this->assertEquals(1, $fix['order']);
 
         $briefing->refresh();
 
@@ -326,8 +335,10 @@ class SimBriefTest extends TestCase
 
     /**
      * Test clearing expired briefs
+     *
+     * @throws \Exception
      */
-    public function testClearExpiredBriefs()
+    public function testClearExpiredBriefs(): void
     {
         $userinfo = $this->createUserData();
         $user = $userinfo['user'];

@@ -4,12 +4,12 @@ namespace Tests;
 
 use App\Support\Money;
 
-class MoneyTest extends TestCase
+final class MoneyTest extends TestCase
 {
     /**
      * Test adding/subtracting a percentage
      */
-    public function testMoney()
+    public function testMoney(): void
     {
         $money = Money::create(100);
         $this->assertEquals('$1.00', $money->render());

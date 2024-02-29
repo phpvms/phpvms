@@ -18,7 +18,7 @@ class CommaDelimitedCast implements CastsAttributes
      */
     public function get($model, string $key, $value, array $attributes)
     {
-        if (empty(trim($value))) {
+        if (empty($value) || empty(trim($value))) {
             return [];
         }
 

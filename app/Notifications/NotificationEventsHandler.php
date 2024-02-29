@@ -221,7 +221,9 @@ class NotificationEventsHandler extends Listener
         /*
          * Broadcast notifications
          */
-        Notification::send([$event->pirep], new Messages\Broadcast\PirepFiled($event->pirep));
+        if (setting('notifications.discord_pirep_filed', true)) {
+            Notification::send([$event->pirep], new Messages\Broadcast\PirepFiled($event->pirep));
+        }
     }
 
     /**

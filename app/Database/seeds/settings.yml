@@ -542,3 +542,10 @@
   options: ''
   type: boolean
   description: Send out a discord notification when a pirep is diverted
+- key: notifications.discord_pirep_filed
+  name: Discord Pirep Filed Message (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a pirep is filed

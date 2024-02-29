@@ -5,11 +5,11 @@ namespace Tests;
 use App\Repositories\KvpRepository;
 use App\Services\VersionService;
 
-class VersionTest extends TestCase
+final class VersionTest extends TestCase
 {
-    private $kvpRepo;
+    private KvpRepository $kvpRepo;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

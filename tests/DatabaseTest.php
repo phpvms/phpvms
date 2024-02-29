@@ -6,12 +6,12 @@ use App\Services\DatabaseService;
 use App\Support\Database;
 use Symfony\Component\Yaml\Yaml;
 
-class DatabaseTest extends TestCase
+final class DatabaseTest extends TestCase
 {
     /**
      * Make sure the seeder works correctly
      */
-    public function testSeeder()
+    public function testSeeder(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
@@ -36,7 +36,7 @@ class DatabaseTest extends TestCase
         $this->assertEquals('changed', $value);
     }
 
-    public function testSeederValueIgnoreValue()
+    public function testSeederValueIgnoreValue(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
@@ -55,7 +55,7 @@ class DatabaseTest extends TestCase
         $this->assertEquals('default', $value);
     }
 
-    public function testSeederDontIgnoreValue()
+    public function testSeederDontIgnoreValue(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));

@@ -19,12 +19,12 @@ use App\Services\FlightService;
 use Carbon\Carbon;
 use Exception;
 
-class FlightTest extends TestCase
+final class FlightTest extends TestCase
 {
-    protected $flightSvc;
-    protected $settingsRepo;
+    protected FlightService $flightSvc;
+    protected SettingRepository $settingsRepo;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->addData('base');
@@ -36,7 +36,7 @@ class FlightTest extends TestCase
     /**
      * Test adding a flight and also if there are duplicates
      */
-    public function testDuplicateFlight()
+    public function testDuplicateFlight(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
@@ -96,7 +96,7 @@ class FlightTest extends TestCase
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight_leg));
     }
 
-    public function testGetFlight()
+    public function testGetFlight(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user, [
@@ -123,7 +123,7 @@ class FlightTest extends TestCase
     /**
      * Search based on all different criteria
      */
-    public function testSearchFlight()
+    public function testSearchFlight(): void
     {
         /** @var \App\Models\User user */
         $this->user = User::factory()->create();
@@ -141,10 +141,10 @@ class FlightTest extends TestCase
         $req->assertStatus(200);
 
         $data = $req->json('data');
-        $this->assertEquals(1, count($data));
+        $this->assertCount(1, $data);
     }
 
-    public function testSearchFlightInactiveAirline()
+    public function testSearchFlightInactiveAirline(): void
     {
         /** @var \App\Models\Airline $airline_inactive */
         $airline_inactive = Airline::factory()->create(['active' => 0]);
@@ -163,7 +163,7 @@ class FlightTest extends TestCase
         $req->assertStatus(200);
         $body = $req->json('data');
 
-        $this->assertEquals(1, count($body));
+        $this->assertCount(1, $body);
         $this->assertEquals($airline_active->id, $body[0]['airline_id']);
     }
 
@@ -172,7 +172,7 @@ class FlightTest extends TestCase
      *
      * @throws Exception
      */
-    public function testFlightRoute()
+    public function testFlightRoute(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
@@ -206,7 +206,7 @@ class FlightTest extends TestCase
     /**
      * Find all of the flights
      */
-    public function testFindAllFlights()
+    public function testFindAllFlights(): void
     {
         $this->user = User::factory()->create();
         Flight::factory()->count(20)->create([
@@ -225,7 +225,7 @@ class FlightTest extends TestCase
     /**
      * Search for flights based on a subfleet. If subfleet is blank
      */
-    public function testSearchFlightBySubfleet()
+    public function testSearchFlightBySubfleet(): void
     {
         $airline = Airline::factory()->create();
         $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);
@@ -259,7 +259,7 @@ class FlightTest extends TestCase
     /**
      * Search for flights based on a subfleet. If subfleet is blank
      */
-    public function testSearchFlightBySubfleetPagination()
+    public function testSearchFlightBySubfleetPagination(): void
     {
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
@@ -366,7 +366,7 @@ class FlightTest extends TestCase
         $res = $this->get('/api/flights');
         $body = $res->json('data');
 
-        $flights = collect($body)->where('id', $flight->id)->first();
+        $flights = collect($body)->firstWhere('id', $flight->id);
         $this->assertNull($flights);
     }
 
@@ -419,10 +419,10 @@ class FlightTest extends TestCase
         $res = $this->get('/api/flights');
         $body = $res->json('data');
 
-        $flights = collect($body)->where('id', $flight->id)->first();
+        $flights = collect($body)->firstWhere('id', $flight->id);
         $this->assertNotNull($flights);
 
-        $flights = collect($body)->where('id', $flight_not_active->id)->first();
+        $flights = collect($body)->firstWhere('id', $flight_not_active->id);
         $this->assertNull($flights);
     }
 
@@ -458,14 +458,14 @@ class FlightTest extends TestCase
         $res = $this->get('/api/flights');
         $body = $res->json('data');
 
-        $flights = collect($body)->where('id', $flight->id)->first();
+        $flights = collect($body)->firstWhere('id', $flight->id);
         $this->assertNotNull($flights);
 
-        $flights = collect($body)->where('id', $flight_not_active->id)->first();
+        $flights = collect($body)->firstWhere('id', $flight_not_active->id);
         $this->assertNull($flights);
     }
 
-    public function testFlightSearchApi()
+    public function testFlightSearchApi(): void
     {
         $this->user = User::factory()->create();
         $flights = Flight::factory()->count(10)->create([
@@ -481,7 +481,7 @@ class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testFlightSearchApiDepartureAirport()
+    public function testFlightSearchApiDepartureAirport(): void
     {
         $this->user = User::factory()->create();
         Flight::factory()->count(10)->create([
@@ -501,7 +501,7 @@ class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testFlightSearchApiDistance()
+    public function testFlightSearchApiDistance(): void
     {
         $total_flights = 10;
 
@@ -544,7 +544,7 @@ class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testAddSubfleet()
+    public function testAddSubfleet(): void
     {
         $subfleet = Subfleet::factory()->create();
         $flight = Flight::factory()->create();
@@ -565,8 +565,10 @@ class FlightTest extends TestCase
 
     /**
      * Delete a flight and make sure all the bids are gone
+     *
+     * @throws Exception
      */
-    public function testDeleteFlight()
+    public function testDeleteFlight(): void
     {
         $user = User::factory()->create();
 
@@ -577,7 +579,7 @@ class FlightTest extends TestCase
         $this->assertNull($empty_flight);
     }
 
-    public function testAirportDistance()
+    public function testAirportDistance(): void
     {
         // KJFK
         $fromIcao = Airport::factory()->create([
@@ -597,7 +599,7 @@ class FlightTest extends TestCase
         $this->assertEquals(2244.33, $distance['nmi']);
     }
 
-    public function testAirportDistanceApi()
+    public function testAirportDistanceApi(): void
     {
         $user = User::factory()->create();
         $headers = $this->headers($user);
