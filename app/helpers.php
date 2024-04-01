@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Nwidart\Modules\Facades\Module;
 
 /*
  * array_key_first only exists in PHP 7.3+
@@ -423,5 +424,43 @@ if (!function_exists('docs_link')) {
     function docs_link($key)
     {
         return config('phpvms.docs.root').config('phpvms.docs.'.$key);
+    }
+}
+
+if (!function_exists('check_module')) {
+    /**
+     * Check if a module is installed and active
+     *
+     * @param string $module_name
+     *
+     * @return bool
+     */
+    function check_module($module_name)
+    {
+        $phpvms_module = Module::find($module_name);
+
+        return filled($phpvms_module) ? $phpvms_module->isEnabled() : false;
+    }
+}
+
+if (!function_exists('decode_days')) {
+    /**
+     * Decode days of flights for schedule display
+     *
+     * @param int $flight_days
+     *
+     * @return string Monday, Tuesday, Friday, Sunday
+     */
+    function decode_days($flight_days)
+    {
+        $days = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            if ($flight_days & pow(2, $i)) {
+                $days[] = jddayofweek($i, 1);
+            }
+        }
+
+        return implode(', ', $days);
     }
 }

@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Znck\Eloquent\Relations\BelongsToThrough as ZnckBelongsToThrough;
 use Znck\Eloquent\Traits\BelongsToThrough;
 
@@ -54,6 +56,7 @@ class Aircraft extends Model
     use HasFactory;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'aircraft';
 
@@ -180,6 +183,14 @@ class Aircraft extends Model
                 return $attrs['landing_time'];
             }
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

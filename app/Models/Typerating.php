@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Typerating extends Model
 {
     use Sortable;
+    use LogsActivity;
 
     public $table = 'typeratings';
 
@@ -34,6 +37,14 @@ class Typerating extends Model
         'type',
         'description',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     // Relationships
     public function subfleets(): BelongsToMany

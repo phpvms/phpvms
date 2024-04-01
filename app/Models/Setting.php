@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string id
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 class Setting extends Model
 {
+    use LogsActivity;
     public $table = 'settings';
 
     protected $keyType = 'string';
@@ -71,5 +74,13 @@ class Setting extends Model
         return Attribute::make(
             set: fn ($key) => strtolower($key)
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

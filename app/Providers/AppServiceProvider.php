@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
         View::share('moduleSvc', app(ModuleService::class));
 
+        activity()->disableLogging();
+
         Notification::extend('discord_webhook', function ($app) {
             return app(DiscordWebhook::class);
         });

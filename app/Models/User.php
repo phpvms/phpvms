@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -77,6 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     use Notifiable;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'users';
 
@@ -262,7 +265,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if (!$attrs['avatar']) {
+                if (!array_key_exists('avatar', $attrs) || !$attrs['avatar']) {
                     return null;
                 }
 
@@ -300,6 +303,15 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         }
 
         return $avatar->url;
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logExcept(array_merge($this->hidden, ['created_at', 'updated_at']))
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

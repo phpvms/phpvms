@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Class Airport
@@ -41,6 +43,7 @@ class Airport extends Model
     use HasFactory;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'airports';
 
@@ -178,6 +181,14 @@ class Airport extends Model
                 'timezone' => $value,
             ]
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

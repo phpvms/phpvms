@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property int        id
@@ -38,6 +40,7 @@ class Subfleet extends Model
     use HasFactory;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $fillable = [
         'airline_id',
@@ -91,6 +94,14 @@ class Subfleet extends Model
         return Attribute::make(
             set: fn ($type) => str_replace([' ', ','], ['-', ''], $type)
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

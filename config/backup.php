@@ -235,12 +235,12 @@ return [
             /*
              * If this is an empty string, the name field on the webhook will be used.
              */
-            'username' => env('BACKUP_DISCORD_USERNAME', ''),
+            'username' => env('BACKUP_DISCORD_USERNAME', 'phpVMS Backup'),
 
             /*
              * If this is an empty string, the avatar on the webhook will be used.
              */
-            'avatar_url' => env('BACKUP_DISCORD_AVATAR_URL', ''),
+            'avatar_url' => env('BACKUP_DISCORD_AVATAR_URL', env('APP_URL').'/assets/img/logo.png'),
         ],
     ],
 

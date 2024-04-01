@@ -7,8 +7,8 @@ use App\Repositories\KvpRepository;
 use App\Support\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
-use SemVer\SemVer\Version;
 use Symfony\Component\Yaml\Yaml;
+use Version\Version;
 
 class VersionService extends Service
 {
@@ -232,8 +232,8 @@ class VersionService extends Service
      */
     public function isGreaterThan($version1, $version2): bool
     {
-        $version1 = Version::fromString($version1);
-        $version2 = Version::fromString($version2);
-        return $version1->isGreaterThan($version2);
+        $parsedVersion1 = Version::fromString($version1);
+        $parsedVersion2 = Version::fromString($version2);
+        return $parsedVersion1->isGreaterThan($parsedVersion2);
     }
 }

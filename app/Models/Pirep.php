@@ -25,6 +25,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Kleemans\AttributeEvents;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string      id
@@ -83,6 +85,7 @@ class Pirep extends Model
     use Notifiable;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'pireps';
 
@@ -397,6 +400,15 @@ class Pirep extends Model
         }
 
         return '';
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logExcept(['created_at', 'updated_at'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

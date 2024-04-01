@@ -1,4 +1,5 @@
-code,name,price,cost,capacity,notes,active
-Y,Economy,100,0,200,This is the economy class,1
-B,Business,500,250,10,"This is business class",0
-F,First-Class,800,350,5,,1
+code,name,type,price,cost,capacity,notes,active
+Y,Economy,0,100,0,200,This is the economy class,1
+B,Business,0,500,250,10,"This is business class",0
+F,First-Class,0,800,350,5,,1
+C,Cargo,1,20,0,10,,1

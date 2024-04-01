@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string     id
@@ -64,6 +66,7 @@ class Flight extends Model
     use HasFactory;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'flights';
 
@@ -273,6 +276,15 @@ class Flight extends Model
                 return $value;
             }
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logExcept(['visible'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /*

@@ -59,4 +59,9 @@ return [
         'sat'   => 'sábado',
         'sun'   => 'domingo',
     ],
+    'external_redirection' => 'Redirección Externa',
+    'abouttoleave'         => 'Estás a punto de abandonar este sitio web y ser redirigido a',
+    'wanttocontinue'       => '¿Quieres continuar?',
+    'continue'             => 'Continuar',
+    'alwaystrustdomain'    => 'Confiar siempre en este dominio',
 ];

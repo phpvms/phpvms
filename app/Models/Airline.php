@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Kyslik\ColumnSortable\Sortable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property mixed   id
@@ -32,6 +34,7 @@ class Airline extends Model
     use JournalTrait;
     use SoftDeletes;
     use Sortable;
+    use LogsActivity;
 
     public $table = 'airlines';
 
@@ -148,5 +151,13 @@ class Airline extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'airline_id', 'id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

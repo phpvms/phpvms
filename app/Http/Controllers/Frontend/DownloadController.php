@@ -74,7 +74,7 @@ class DownloadController extends Controller
             $downloadUrl = DB::table('vmsacars_config')->where(['id' => 'download_url'])->first();
             if (!empty($downloadUrl) && !empty($downloadUrl->value)) {
                 $regrouped_files['ACARS'] = collect([
-                    new File(['id' => 'vmsacars', 'name' => 'ACARS Client']),
+                    new File(['id' => 'vmsacars', 'name' => 'ACARS Client', 'disk' => null, 'path' => $downloadUrl->value]),
                 ]);
             }
         } catch (ModuleNotFoundException) {

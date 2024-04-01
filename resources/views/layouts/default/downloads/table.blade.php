@@ -1,7 +1,7 @@
 <ul class="list-group">
   @foreach($files as $file)
     <li class="list-group-item">
-      <a href="{{route('frontend.downloads.download', [$file->id])}}" target="_blank">
+      <a href="{{route('frontend.downloads.download', [$file->id])}}" target="_blank" @if($file->isExternalFile) data-external-redirect="{{ $file->url }}" @endif>
         {{ $file->name }}
       </a>
 

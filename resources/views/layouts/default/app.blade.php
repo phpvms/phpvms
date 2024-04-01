@@ -69,6 +69,9 @@
   </footer>
 </div>
 
+{{-- External Redirects Modal --}}
+@include('external_redirect_modal')
+
 <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 
 {{-- Start of the required tags block. Don't remove these or things will break!! --}}

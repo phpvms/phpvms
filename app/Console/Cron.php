@@ -5,6 +5,7 @@
 
 namespace App\Console;
 
+use App\Console\Cron\ActivityLogClean;
 use App\Console\Cron\Backups\BackupClean;
 use App\Console\Cron\Backups\BackupMonitor;
 use App\Console\Cron\Backups\BackupRun;
@@ -39,6 +40,7 @@ class Cron
         BackupRun::class,
         BackupClean::class,
         BackupMonitor::class,
+        ActivityLogClean::class,
     ];
 
     /**

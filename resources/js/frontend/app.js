@@ -11,6 +11,7 @@ import jQuery from "jquery";
 
 // Import the bids functionality
 import { addBid, removeBid } from "./bids";
+import handleExternalRedirects from "./external_redirect";
 
 // import '../entrypoint';
 
@@ -38,3 +39,6 @@ window.bootstrap = bootstrap;
 window.moment = moment;
 window.popper = popper;
 window.$ = jQuery;
+
+// External redirects handler
+handleExternalRedirects();

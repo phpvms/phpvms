@@ -9,6 +9,7 @@ use App\Models\Airport;
 use App\Models\Enums\AircraftStatus;
 use App\Models\Enums\Days;
 use App\Models\Enums\ExpenseType;
+use App\Models\Enums\FareType;
 use App\Models\Enums\FlightType;
 use App\Models\Expense;
 use App\Models\Fare;
@@ -461,13 +462,14 @@ final class ImporterTest extends TestCase
         $file_path = base_path('tests/data/fares.csv');
         $status = $this->importSvc->importFares($file_path);
 
-        $this->assertCount(3, $status['success']);
+        $this->assertCount(4, $status['success']);
         $this->assertCount(0, $status['errors']);
 
         $fares = Fare::all();
 
         $y_class = $fares->firstWhere('code', 'Y');
         $this->assertEquals('Economy', $y_class->name);
+        $this->assertEquals(FareType::PASSENGER, $y_class->type);
         $this->assertEquals(100, $y_class->price);
         $this->assertEquals(0, $y_class->cost);
         $this->assertEquals(200, $y_class->capacity);
@@ -476,6 +478,7 @@ final class ImporterTest extends TestCase
 
         $b_class = $fares->firstWhere('code', 'B');
         $this->assertEquals('Business', $b_class->name);
+        $this->assertEquals(FareType::PASSENGER, $b_class->type);
         $this->assertEquals(500, $b_class->price);
         $this->assertEquals(250, $b_class->cost);
         $this->assertEquals(10, $b_class->capacity);
@@ -484,11 +487,21 @@ final class ImporterTest extends TestCase
 
         $f_class = $fares->firstWhere('code', 'F');
         $this->assertEquals('First-Class', $f_class->name);
+        $this->assertEquals(FareType::PASSENGER, $f_class->type);
         $this->assertEquals(800, $f_class->price);
         $this->assertEquals(350, $f_class->cost);
         $this->assertEquals(5, $f_class->capacity);
         $this->assertEquals('', $f_class->notes);
         $this->assertTrue($f_class->active);
+
+        $cargo = $fares->firstWhere('code', 'C');
+        $this->assertEquals('Cargo', $cargo->name);
+        $this->assertEquals(FareType::CARGO, $cargo->type);
+        $this->assertEquals(20, $cargo->price);
+        $this->assertEquals(0, $cargo->cost);
+        $this->assertEquals(10, $cargo->capacity);
+        $this->assertEquals('', $cargo->notes);
+        $this->assertTrue($cargo->active);
     }
 
     /**

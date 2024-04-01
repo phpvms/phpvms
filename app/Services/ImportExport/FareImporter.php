@@ -19,6 +19,7 @@ class FareImporter extends ImportExport
     public static $columns = [
         'code'     => 'required',
         'name'     => 'required',
+        'type'     => 'required',
         'price'    => 'nullable|numeric',
         'cost'     => 'nullable|numeric',
         'capacity' => 'required|integer',
