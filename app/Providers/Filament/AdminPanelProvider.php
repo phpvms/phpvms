@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
+use App\Http\Middleware\EnableActivityLogging;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -72,6 +73,9 @@ class AdminPanelProvider extends PanelProvider
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
             ])
+            ->bootUsing(function() {
+                activity()->enableLogging();
+            })
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
             ->spa();

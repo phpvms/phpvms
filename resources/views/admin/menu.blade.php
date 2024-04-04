@@ -86,6 +86,8 @@
       <li><a href="{{ \App\Filament\Pages\Maintenance::getUrl() }}"><i class="pe-7s-tools"></i>maintenance</a></li>
       @endcan
 
+      <li><a href="{{ \App\Filament\Resources\ActivityLogResource::getUrl() }}"><i class="pe-7s-news-paper"></i>activities</a></li>
+
       @can('page_Settings')
       <li><a href="{{ \App\Filament\Pages\Settings::getUrl() }}"><i class="pe-7s-config"></i>settings</a></li>
       @endcan
