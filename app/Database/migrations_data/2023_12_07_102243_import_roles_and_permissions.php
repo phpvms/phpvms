@@ -16,42 +16,42 @@ return new class() extends Migration {
                 'id'                      => 1,
                 'name'                    => config('filament-shield.super_admin.name'),
                 'guard_name'              => 'web',
-                'disable_activity_checks' => 0,
+                'disable_activity_checks' => 1,
                 'created_at'              => now(),
                 'updated_at'              => now(),
             ]);
         }
 
         // First let's reimport the roles
-        $exportedRoles = DB::table('exported_roles')->get();
-        foreach ($exportedRoles as $role) {
-            if ($role->name === 'admin') {
-                continue;
+        if (Schema::hasTable('exported_roles')) {
+            $exportedRoles = DB::table('exported_roles')->get();
+            foreach ($exportedRoles as $role) {
+                DB::table('roles')->insert([
+                    'name'                    => $role->name,
+                    'guard_name'              => 'web',
+                    'disable_activity_checks' => $role->disable_activity_checks,
+                    'created_at'              => now(),
+                    'updated_at'              => now(),
+                ]);
             }
-
-            DB::table('roles')->insert([
-                'name'                    => $role->name,
-                'guard_name'              => 'web',
-                'disable_activity_checks' => $role->disable_activity_checks,
-                'created_at'              => now(),
-                'updated_at'              => now(),
-            ]);
         }
 
         // Now let's reassign roles to the users
-        $exportedRoleUser = DB::table('exported_role_user')->get();
-        foreach ($exportedRoleUser as $roleUser) {
-            if ($roleUser->role_name === 'admin') {
-                $roleUser->role_name = config('filament-shield.super_admin.name');
+        if (Schema::hasTable('exported_role_user')) {
+            $exportedRoleUser = DB::table('exported_role_user')->get();
+            foreach ($exportedRoleUser as $roleUser) {
+                if ($roleUser->role_name === 'admin') {
+                    $roleUser->role_name = config('filament-shield.super_admin.name');
+                }
+
+                $roleId = DB::table('roles')->where('name', $roleUser->role_name)->value('id');
+
+                DB::table('model_has_roles')->insert([
+                    'role_id'    => $roleId,
+                    'model_type' => 'App\Models\User',
+                    'model_id'   => $roleUser->user_id,
+                ]);
             }
-
-            $roleId = DB::table('roles')->where('name', $roleUser->role_name)->value('id');
-
-            DB::table('model_has_roles')->insert([
-                'role_id'    => $roleId,
-                'model_type' => 'App\Models\User',
-                'model_id'   => $roleUser->user_id,
-            ]);
         }
 
         // This is the permissionList between old ones (keys) and new ones (values)
@@ -325,26 +325,28 @@ return new class() extends Migration {
         }
 
         // now let's assign the permissions to the roles
-        $exportedPermissionRole = DB::table('exported_permission_role')->get();
-        foreach ($exportedPermissionRole as $permission) {
-            if ($permission->role_name === 'admin') {
-                $permission->role_name = config('filament-shield.super_admin.name');
-            }
+        if (Schema::hasTable('exported_permission_role')) {
+            $exportedPermissionRole = DB::table('exported_permission_role')->get();
+            foreach ($exportedPermissionRole as $permission) {
+                if ($permission->role_name === 'admin') {
+                    $permission->role_name = config('filament-shield.super_admin.name');
+                }
 
-            $roleId = DB::table('roles')->where('name', $permission->role_name)->value('id');
+                $roleId = DB::table('roles')->where('name', $permission->role_name)->value('id');
 
-            foreach ($permissions as $oldPermissionName => $newPermissionList) {
-                if (str_contains($permission->permission_name, $oldPermissionName)) {
-                    foreach ($newPermissionList as $newPermission) {
-                        $permissionId = DB::table('permissions')->where('name', $newPermission)->value('id');
-                        if (DB::table('role_has_permissions')->where(['role_id' => $roleId, 'permission_id' => $permissionId])->exists()) {
-                            continue;
+                foreach ($permissions as $oldPermissionName => $newPermissionList) {
+                    if (str_contains($permission->permission_name, $oldPermissionName)) {
+                        foreach ($newPermissionList as $newPermission) {
+                            $permissionId = DB::table('permissions')->where('name', $newPermission)->value('id');
+                            if (DB::table('role_has_permissions')->where(['role_id' => $roleId, 'permission_id' => $permissionId])->exists()) {
+                                continue;
+                            }
+
+                            DB::table('role_has_permissions')->insert([
+                                'permission_id' => $permissionId,
+                                'role_id'       => $roleId,
+                            ]);
                         }
-
-                        DB::table('role_has_permissions')->insert([
-                            'permission_id' => $permissionId,
-                            'role_id'       => $roleId,
-                        ]);
                     }
                 }
             }

@@ -17,6 +17,7 @@ users:
     state: 1
     opt_in: 1
     toc_accepted: 1
+    email_verified_at: now
     created_at: now
     updated_at: now
   - id: 2
@@ -32,6 +33,7 @@ users:
     flights: 1
     flight_time: 4320
     transfer_time: 360
+    email_verified_at: now
     created_at: now
     updated_at: now
     state: 1
@@ -50,6 +52,7 @@ users:
     flights: 1
     flight_time: 4320
     transfer_time: 120
+    email_verified_at: now
     created_at: now
     updated_at: now
     state: 1
@@ -57,10 +60,18 @@ users:
     toc_accepted: 1
 
 roles:
+  - id: 1
+    name: super_admin
+    guard_name: web
+    disable_activity_checks: 1
+    created_at: now
+    updated_at: now
   - id: 2
     name: pilot
     guard_name: web
     disable_activity_checks: 0
+    created_at: now
+    updated_at: now
 
 model_has_roles:
   - model_id: 1

@@ -1,10 +1,10 @@
-
 roles:
-  id_column: name
-  data:
-    - name: fleet-only
-    - guard_name: web
-    - disable_activity_checks: 0
+  - id: 3
+    name: fleet-only
+    guard_name: web
+    disable_activity_checks: 0
+    created_at: now
+    updated_at: now
 
 news:
   - id: 1
