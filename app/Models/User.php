@@ -386,7 +386,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     {
         // For the admin panel
         if ($panel->getId() === 'admin') {
-            return $this->hasRole(Utils::getSuperAdminName()) || $this->can('page_Dashboard');
+            return $this->hasAdminAccess();
         }
 
         // For modules panels
@@ -395,7 +395,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     public function hasAdminAccess(): bool
     {
-        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('page_Dashboard');
+        return $this->hasRole(Utils::getSuperAdminName().'|admin') || $this->can('page_Dashboard');
     }
 
     public function getFilamentAvatarUrl(): ?string
