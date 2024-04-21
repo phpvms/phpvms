@@ -77,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
             })
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
+            ->unsavedChangesAlerts()
             ->spa();
     }
 
