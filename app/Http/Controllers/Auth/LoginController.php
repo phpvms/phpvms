@@ -86,7 +86,7 @@ class LoginController extends Controller
                     $user = $this->userSvc->findUserByPilotId($value);
                 } catch (PilotIdNotFound $ex) {
                     Log::warning('Error logging in, pilot_id not found, id='.$value);
-                    $fail('Pilot not found');
+                    $fail(__('auth.failed'));
                     return;
                 }
 
