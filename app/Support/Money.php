@@ -57,7 +57,7 @@ class Money
     public static function convertToSubunit($amount)
     {
         $currency = setting('units.currency', 'USD');
-        return (int) ($amount * config('money.'.$currency.'.subunit'));
+        return (int) ($amount * config('money.currencies.'.$currency.'.subunit'));
     }
 
     /**

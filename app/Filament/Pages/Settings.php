@@ -192,7 +192,7 @@ class Settings extends Page
     private function getCurrencyList(): array
     {
         $curr = [];
-        foreach (config('money') as $currency => $attrs) {
+        foreach (config('money.currencies') as $currency => $attrs) {
             $name = $attrs['name'].' ('.$attrs['symbol'].'/'.$currency.')';
             $curr[$currency] = $name;
         }
