@@ -5,7 +5,7 @@
         <td>{{ __('common.name') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('name') ? ' has-danger' : '' }}">
-            {{ Form::text('name', null, ['class' => 'form-control']) }}
+            <input type="text" name="name" id="name" class="form-control" value="{{ $user->name }}" />
           </div>
           @if ($errors->has('name'))
             <p class="text-danger">{{ $errors->first('name') }}</p>
@@ -17,7 +17,7 @@
         <td>{{ __('common.email') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('email') ? ' has-danger' : '' }}">
-            {{ Form::text('email', null, ['class' => 'form-control']) }}
+            <input type="email" name="email" id="email" class="form-control" value="{{ $user->email }}" />
           </div>
           @if ($errors->has('email'))
             <p class="text-danger">{{ $errors->first('email') }}</p>
@@ -29,7 +29,11 @@
         <td>{{ __('common.airline') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('airline') ? ' has-danger' : '' }}">
-            {{ Form::select('airline_id', $airlines, null , ['class' => 'form-control select2']) }}
+            <select name="airline_id" id="airline_id" class="form-control select2">
+              @foreach($airlines as $airline_id => $airline_label)
+                <option value="{{ $airline_id }}" @if($user->airline_id === $airline_id) selected @endif>{{ $airline_label }}</option>
+              @endforeach
+            </select>
           </div>
           @if ($errors->has('airline_id'))
             <p class="text-danger">{{ $errors->first('airline_id') }}</p>
@@ -41,7 +45,11 @@
         <td>{{ __('airports.home') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('home_airport_id') ? ' has-danger' : '' }}">
-            {{ Form::select('home_airport_id', $airports, null , ['class' => 'form-control airport_search '.($hubs_only?'hubs_only':'')]) }}
+            <select name="home_airport_id" id="home_airport_id" class="form-control airport_search @if($hubs_only) hubs_only @endif">
+              @foreach($airports as $airport_id => $airport_label)
+                <option value="{{ $airport_id }}">{{ $airport_label }}</option>
+              @endforeach
+            </select>
           </div>
           @if ($errors->has('home_airport_id'))
             <p class="text-danger">{{ $errors->first('home_airport_id') }}</p>
@@ -53,7 +61,11 @@
         <td>{{ __('common.country') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('country') ? ' has-danger' : '' }}">
-            {{ Form::select('country', $countries, null, ['class' => 'form-control select2' ]) }}
+            <select name="country" id="country" class="form-control select2">
+              @foreach($countries as $country_id => $country_label)
+                <option value="{{ $country_id }}" @if($user->country === $country_id) selected @endif>{{ $country_label }}</option>
+              @endforeach
+            </select>
           </div>
           @if ($errors->has('country'))
             <p class="text-danger">{{ $errors->first('country') }}</p>
@@ -65,7 +77,15 @@
         <td>{{ __('common.timezone') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('timezone') ? ' has-danger' : '' }}">
-            {{ Form::select('timezone', $timezones, null, ['class' => 'form-control select2' ]) }}
+            <select name="timezone" id="timezone" class="form-control select2">}
+              @foreach($timezones as $group_name => $group_timezones)
+                <optgroup label="{{ $group_name }}">
+                  @foreach($group_timezones as $timezone_id => $timezone_label)
+                    <option value="{{ $timezone_id }}" @if($timezone_id === $user->timezone) selected @endif>{{ $timezone_label }}</option>
+                  @endforeach
+                </optgroup>
+              @endforeach
+            </select>
           </div>
           @if ($errors->has('timezone'))
             <p class="text-danger">{{ $errors->first('timezone') }}</p>
@@ -78,7 +98,7 @@
         <td>
           <p>{{ __('profile.newpassword') }}:</p>
           <div class="input-group form-group-no-border{{ $errors->has('password') ? ' has-danger' : '' }}">
-            {{ Form::password('password', ['class' => 'form-control']) }}
+            <input type="password" name="password" id="password" class="form-control" />
           </div>
           @if ($errors->has('password'))
             <p class="text-danger">{{ $errors->first('password') }}</p>
@@ -86,7 +106,7 @@
 
           <p>{{ __('passwords.confirm') }}:</p>
           <div class="input-group form-group-no-border{{ $errors->has('password_confirmation') ? ' has-danger' : '' }}">
-            {{ Form::password('password_confirmation', ['class' => 'form-control']) }}
+            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" />
           </div>
           @if ($errors->has('password_confirmation'))
             <p class="text-danger">{{ $errors->first('password_confirmation') }}</p>
@@ -97,7 +117,7 @@
         <td>{{ __('profile.avatar') }}</td>
         <td>
           <div class="input-group form-group-no-border{{ $errors->has('avatar') ? ' has-danger' : '' }}">
-            {{ Form::file('avatar', null) }}
+            <input type="file" name="avatar" id="avatar" />
           </div>
           <p class="small">{{ __('profile.avatarresize', [
                         'width' => config('phpvms.avatar.width'),
@@ -120,9 +140,7 @@
           </td>
           <td>
             <div class="input-group input-group-sm form-group">
-              {{ Form::text('field_'.$field->slug, $field->value, [
-                  'class' => 'form-control',
-                  ]) }}
+              <input type="text" name="field_{{ $field->slug }}" id="field_{{ $field->slug }}" class="form-control" value="{{ $field->value }}" />
             </div>
             <p class="text-danger">{{ $errors->first('field_'.$field->slug) }}</p>
           </td>
@@ -133,8 +151,8 @@
         <td>{{ __('profile.opt-in') }}</td>
         <td>
           <div class="input-group form-group-no-border">
-            {{ Form::hidden('opt_in', 0, false) }}
-            {{ Form::checkbox('opt_in', 1, null) }}
+            <input type="hidden" name="opt_in" value="0" />
+            <input type="checkbox" name="opt_in" id="opt_in" checked="{{ $user->opt_in }}" />
           </div>
           <p class="small">{{ __('profile.opt-in-descrip') }}
           </p>
@@ -144,7 +162,9 @@
     </table>
 
     <div style="width: 100%; text-align: right; padding-top: 20px;">
-      {{ Form::submit(__('profile.updateprofile'), ['class' => 'btn btn-primary']) }}
+      <button type="submit" class="btn btn-primary">
+        @lang('profile.updateprofile')
+      </button>
     </div>
   </div>
 </div>

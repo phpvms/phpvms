@@ -6,15 +6,11 @@
     <div class="col-md-12">
       <h2>@lang('pireps.newflightreport')</h2>
       @include('flash::message')
-      @if(!empty($pirep))
-        {{ Form::model($pirep, ['route' => 'frontend.pireps.store']) }}
-      @else
-        {{ Form::open(['route' => 'frontend.pireps.store']) }}
-      @endif
 
-      @include('pireps.fields')
-
-      {{ Form::close() }}
+      <form method="post" action="{{ route('frontend.pireps.store') }}">
+        @csrf
+        @include('pireps.fields')
+      </form>
     </div>
   </div>
 @endsection

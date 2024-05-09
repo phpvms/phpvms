@@ -11,10 +11,7 @@
   <td>
     <div class="input-group input-group-sm form-group">
       @if(!$field->read_only)
-        {{ Form::text($field->slug, $field->value, [
-            'class' => 'form-control',
-            'readonly' => (!empty($pirep) && $pirep->read_only),
-            ]) }}
+        <input type="text" name="{{ $field->slug }}" id="{{ $field->slug }}" class="form-control" value="{{ $field->value }}" @if(!empty($pirep) && $pirep->read_only) readonly @endif/>
       @else
         {{ $field->value }}
       @endif

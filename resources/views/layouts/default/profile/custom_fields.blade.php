@@ -7,9 +7,7 @@
   </td>
   <td>
     <div class="input-group input-group-sm form-group">
-      {{ Form::text($field->field->slug, $field->value, [
-          'class' => 'form-control',
-          ]) }}
+      <input type="text" name="{{ $text->field->slug  }}" id="{{ $text->field->slug }}" class="form-control " value="{{ $field->value }}" />
     </div>
     <p class="text-danger">{{ $errors->first('field_'.$field->slug) }}</p>
   </td>

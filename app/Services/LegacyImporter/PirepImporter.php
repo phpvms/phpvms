@@ -42,6 +42,7 @@ class PirepImporter extends BaseImporter
             'fuelprice',
             'expenses',
             'gross',
+            'pilotpay',
         ];
 
         // See if there's a flightlevel column, export that if there is
@@ -131,6 +132,14 @@ class PirepImporter extends BaseImporter
             // TODO: Add extra fields in as PIREP fields
             $this->idMapper->addMapping('pireps', $row->pirepid, $pirep->id);
 
+            if ($pirep->wasRecentlyCreated) {
+                $count++;
+            }
+
+            if (!$pirep->airline || !$pirep->airline->journal) {
+                continue;
+            }
+
             // Some financial imports
             if ($row->fuelprice && $row->fuelprice != 0) {
                 $fuel_price = Money::createFromAmount($row->fuelprice);
@@ -168,8 +177,25 @@ class PirepImporter extends BaseImporter
                 );
             }
 
-            if ($pirep->wasRecentlyCreated) {
-                $count++;
+            if ($row->pilotpay && $row->pilotpay != 0) {
+                $pilot_pay = Money::createFromAmount($row->pilotpay * $duration / 60);
+                $financeSvc->debitFromJournal(
+                    $pirep->airline->journal,
+                    $pilot_pay,
+                    $pirep,
+                    'Pilot payment',
+                    'Pilot Pay',
+                    'pilot_pay'
+                );
+
+                $financeSvc->creditToJournal(
+                    $pirep->user->journal,
+                    $pilot_pay,
+                    $pirep,
+                    'Pilot payment',
+                    'Pilot Pay',
+                    'pilot_pay'
+                );
             }
         }
 

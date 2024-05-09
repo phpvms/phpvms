@@ -6,9 +6,11 @@
     <div class="col-md-12">
       <h2 class="description">@lang('profile.edityourprofile')</h2>
       @include('flash::message')
-      {{ Form::model($user, ['route' => ['frontend.profile.update', $user->id], 'files' => true, 'method' => 'patch']) }}
-      @include("profile.fields")
-      {{ Form::close() }}
+      <form method="post" action="{{ route('frontend.profile.update', $user->id) }}" enctype="multipart/form-data">
+        @csrf
+        @method('PATCH')
+        @include("profile.fields")
+      </form>
     </div>
   </div>
 @endsection

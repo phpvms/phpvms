@@ -26,48 +26,60 @@ flight reports that have been filed. You've been warned!
       <div class="form-container-body">
         <div class="row">
           <div class="col-sm-4">
-            {{ Form::label('airline_id', __('common.airline')) }}
+            <label for="airline_id">@lang('common.airline')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->airline->name }}</p>
-              {{ Form::hidden('airline_id') }}
+              <input type="hidden" name="airline_id" value="{{ $pirep->airline_id }}" />
             @else
               <div class="input-group input-group form-group">
-                {{ Form::select('airline_id', $airline_list, null, [
-                    'class' => 'custom-select select2',
-                    'style' => 'width: 100%',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
+                <select name="airline_id" id="airline_id" class="custom-select select2" style="width: 100%">
+                  @foreach($airline_list as $airline_id => $airline_label)
+                    <option value="{{ $airline_id }}" @if(!empty($pirep) && $airline_id === $pirep->airline_id) selected @endif>{{ $airline_label }}</option>
+                  @endforeach
+                </select>
               </div>
               <p class="text-danger">{{ $errors->first('airline_id') }}</p>
             @endif
           </div>
           <div class="col-sm-4">
-            {{ Form::label('flight_number', __('pireps.flightident')) }}
+            <label for="flight_number">@lang('pireps.flightident')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->ident }}
-                {{ Form::hidden('flight_number') }}
-                {{ Form::hidden('flight_code') }}
-                {{ Form::hidden('flight_leg') }}
+                <input type="hidden" name="flight_number" value="{{ $pirep->flight_number }}" />
+                <input type="hidden" name="flight_code" value="{{ $pirep->flight_code }}" />
+                <input type="hidden" name="flight_leg" value="{{ $pirep->flight_leg }}" />
               </p>
             @else
               <div class="input-group input-group-sm mb3">
-                {{ Form::text('flight_number', null, [
-                    'placeholder' => __('flights.flightnumber'),
-                    'class' => 'form-control',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
-                &nbsp;
-                {{ Form::text('route_code', null, [
-                    'placeholder' => __('pireps.codeoptional'),
-                    'class' => 'form-control',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
-                &nbsp;
-                {{ Form::text('route_leg', null, [
-                    'placeholder' => __('pireps.legoptional'),
-                    'class' => 'form-control',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
+                <input
+                  type="text"
+                  name="flight_number"
+                  id="flight_number"
+                  class="form-control"
+                  @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                  value="{{ !empty($pirep) ? $pirep->flight_number : old('flight_number') }}"
+                  placeholder="@lang('flights.flightnumber')"
+                />
+
+                <input
+                  type="text"
+                  name="route_code"
+                  id="route_code"
+                  class="form-control"
+                  @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                  value="{{ !empty($pirep) ? $pirep->route_code : old('route_code') }}"
+                  placeholder="@lang('pireps.codeoptional')"
+                />
+
+                <input
+                  type="text"
+                  name="route_leg"
+                  id="route_leg"
+                  class="form-control"
+                  @if(!empty($pirep) && $pirep->route_leg) readonly @endif
+                  value="{{ !empty($pirep) ? $pirep->route_leg : old('route_leg') }}"
+                  placeholder="@lang('pireps.legoptional')"
+                />
               </div>
               <p class="text-danger">{{ $errors->first('flight_number') }}</p>
               <p class="text-danger">{{ $errors->first('route_code') }}</p>
@@ -75,19 +87,22 @@ flight reports that have been filed. You've been warned!
             @endif
           </div>
           <div class="col-lg-4">
-            {{ Form::label('flight_type', __('flights.flighttype')) }}
+            <label for="flight_type">@lang('flights.flighttype')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ \App\Models\Enums\FlightType::label($pirep->flight_type) }}</p>
-              {{ Form::hidden('flight_type') }}
+              <input type="hidden" name="flight_type" value="{{ $pirep->flight_type }}" />
             @else
               <div class="form-group">
-                {{ Form::select('flight_type',
-                    \App\Models\Enums\FlightType::select(), null, [
-                        'class' => 'custom-select select2',
-                        'style' => 'width: 100%',
-                        'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ])
-                }}
+                <select
+                  name="flight_type"
+                  id="flight_type"
+                  class="custom-select select2"
+                  style="width: 100%;"
+                >
+                  @foreach(\App\Models\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
+                    <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_label }}</option>
+                  @endforeach
+                </select>
               </div>
               <p class="text-danger">{{ $errors->first('flight_type') }}</p>
             @endif
@@ -96,46 +111,55 @@ flight reports that have been filed. You've been warned!
 
         <div class="row">
           <div class="col-6">
-            {{ Form::label('hours', __('flights.flighttime')) }}
+            <label for="hours">@lang('flights.flighttime')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>
                 {{ $pirep->hours.' '.trans_choice('common.hour', $pirep->hours) }}
                 , {{ $pirep->minutes.' '.trans_choice('common.minute', $pirep->minutes) }}
-                {{ Form::hidden('hours') }}
-                {{ Form::hidden('minutes') }}
+                <input type="hidden" name="hours" value="{{ $pirep->hours }}" />
+                <input type="hidden" name="minutes" value="{{ $pirep->minutes }}" />
               </p>
             @else
               <div class="input-group input-group-sm" style="max-width: 400px;">
-                {{ Form::number('hours', null, [
-                        'class' => 'form-control',
-                        'placeholder' => trans_choice('common.hour', 2),
-                        'min' => '0',
-                        'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
+                <input type="number"
+                       name="hours"
+                       id="hours"
+                       class="form-control"
+                       @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                       placeholder="{{ trans_choice('common.hour', 2) }}"
+                       min="0"
+                       value="{{ !empty($pirep) ? $pirep->hours : old('hours') }}"
+                />
 
-                {{ Form::number('minutes', null, [
-                    'class' => 'form-control',
-                    'placeholder' => trans_choice('common.minute', 2),
-                    'min' => 0,
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ]) }}
+                <input type="number"
+                       name="minutes"
+                       id="minutes"
+                       class="form-control"
+                       @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                       placeholder="{{ trans_choice('common.minute', 2) }}"
+                       min="0"
+                       value="{{ !empty($pirep) ? $pirep->minutes : old('minutes') }}"
+                />
               </div>
               <p class="text-danger">{{ $errors->first('hours') }}</p>
               <p class="text-danger">{{ $errors->first('minutes') }}</p>
             @endif
           </div>
           <div class="col-6">
-            {{ Form::label('level', __('flights.level')) }} ({{config('phpvms.internal_units.altitude')}})
+            <label for="level">@lang('flights.level') ({{config('phpvms.internal_units.altitude')}})</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->level }}</p>
             @else
               <div class="input-group input-group-sm form-group">
-                {{ Form::number('level', null, [
-                    'class' => 'form-control',
-                    'min' => '0',
-                    'step' => '0.01',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ]) }}
+                <input type="number"
+                       name="level"
+                       id="level"
+                       class="form-control"
+                       @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                       min="0"
+                       step="0.01"
+                       value="{{ !empty($pirep) ? $pirep->level : old('level') }}"
+                />
               </div>
               <p class="text-danger">{{ $errors->first('level') }}</p>
             @endif
@@ -152,40 +176,50 @@ flight reports that have been filed. You've been warned!
       <div class="form-container-body">
         <div class="row">
           <div class="col-6">
-            {{ Form::label('dpt_airport_id', __('airports.departure')) }}
-            @if(!empty($pirep) && $pirep->read_only)
+            <label for="dpt_airport_id">@lang('airports.departure')</label>
+            @if(!empty($pirep) && ($pirep->read_only || request()->has('flight_id')))
               {{ $pirep->dpt_airport->name }}
               (<a href="{{route('frontend.airports.show', [
                                     'id' => $pirep->dpt_airport->icao
                                     ])}}">{{$pirep->dpt_airport->icao}}</a>)
-              {{ Form::hidden('dpt_airport_id') }}
+              <input type="hidden" name="dpt_airport_id" value="{{ $pirep->dpt_airport_id }}" />
             @else
               <div class="form-group">
-                {{ Form::select('dpt_airport_id', $airport_list, null, [
-                        'class' => 'custom-select airport_search',
-                        'style' => 'width: 100%',
-                        'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
+                <select
+                  name="dpt_airport_id"
+                  id="dpt_airport_id"
+                  class="custom-select airport_search"
+                  style="width: 100%"
+                >
+                  @foreach($airport_list as $dpt_airport_id => $dpt_airport_label)
+                    <option value="{{ $dpt_airport_id }}" @if(!empty($pirep) && $pirep->dpt_airport_id == $dpt_airport_id) selected @endif>{{ $dpt_airport_label }}</option>
+                  @endforeach
+                </select>
               </div>
               <p class="text-danger">{{ $errors->first('dpt_airport_id') }}</p>
             @endif
           </div>
 
           <div class="col-6">
-            {{ Form::label('arr_airport_id', __('airports.arrival')) }}
-            @if(!empty($pirep) && $pirep->read_only)
+            <label for="arr_airport_id">@lang('airports.arrival')</label>
+            @if(!empty($pirep) && ($pirep->read_only || request()->has('flight_id')))
               {{ $pirep->arr_airport->name }}
               (<a href="{{route('frontend.airports.show', [
                                     'id' => $pirep->arr_airport->icao
                                     ])}}">{{$pirep->arr_airport->icao}}</a>)
-              {{ Form::hidden('arr_airport_id') }}
+              <input type="hidden" name="arr_airport_id" value="{{ $pirep->arr_airport_id }}" />
             @else
               <div class="input-group input-group-sm form-group">
-                {{ Form::select('arr_airport_id', $airport_list, null, [
-                        'class' => 'custom-select airport_search',
-                        'style' => 'width: 100%',
-                        'readonly' => (!empty($pirep) && $pirep->read_only),
-                ]) }}
+                <select
+                  name="arr_airport_id"
+                  id="arr_airport_id"
+                  class="custom-select airport_search"
+                  style="width: 100%"
+                >
+                  @foreach($airport_list as $arr_airport_id => $arr_airport_label)
+                    <option value="{{ $arr_airport_id }}" @if(!empty($pirep) && $pirep->arr_airport_id == $arr_airport_id) selected @endif>{{ $arr_airport_label }}</option>
+                  @endforeach
+                </select>
               </div>
               <p class="text-danger">{{ $errors->first('arr_airport_id') }}</p>
             @endif
@@ -201,50 +235,68 @@ flight reports that have been filed. You've been warned!
       <div class="form-container-body">
         <div class="row">
           <div class="col-4">
-            {{ Form::label('aircraft_id', __('common.aircraft')) }}
+            <label for="aircraft_id">@lang('common.aircraft')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->aircraft->name }}</p>
-              {{ Form::hidden('aircraft_id') }}
+              <input type="hidden" name="aircraft_id" value="{{ $pirep->aircraft_id }}" />
             @else
               <div class="input-group input-group-sm form-group">
                 {{-- You probably don't want to change this ID if you want the fare select to work --}}
-                {{ Form::select('aircraft_id', $aircraft_list, null, [
-                    'id' => 'aircraft_select',
-                    'class' => 'custom-select select2',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ]) }}
+                <select
+                  name="aircraft_id"
+                  id="aircraft_select"
+                  class="custom-select select2"
+                >
+                  @foreach($aircraft_list as $subfleet => $sf_aircraft)
+                    @if ($subfleet === '')
+                      <option value=""></option>
+                    @else
+                      @foreach($sf_aircraft as $aircraft_id => $aircraft_label)
+                        <option value="{{ $aircraft_id }}" @if(!empty($pirep) && $pirep->aircraft_id == $aircraft_id) selected @endif>{{ $aircraft_label }}</option>
+                      @endforeach
+                    @endif
+                  @endforeach
+                </select>
               </div>
               <p class="text-danger">{{ $errors->first('aircraft_id') }}</p>
             @endif
           </div>
           <div class="col-4">
-            {{ Form::label('block_fuel', __('pireps.block_fuel')) }} ({{setting('units.fuel')}})
+            <label for="block_fuel">@lang('pireps.block_fuel') ({{setting('units.fuel')}})</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->block_fuel }}</p>
             @else
               <div class="input-group input-group-sm form-group">
-                {{ Form::number('block_fuel', null, [
-                    'class' => 'form-control',
-                    'min' => '0',
-                    'step' => '0.01',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ]) }}
+                <input
+                  type="number"
+                  name="block_fuel"
+                  id="block_fuel"
+                  class="form-control"
+                  min="0"
+                  step="0.01"
+                  @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                  value="{{ !empty($pirep) ? $pirep->block_fuel : old('block_fuel') }}"
+                />
               </div>
               <p class="text-danger">{{ $errors->first('block_fuel') }}</p>
             @endif
           </div>
           <div class="col-4">
-            {{ Form::label('fuel_used', __('pireps.fuel_used')) }} ({{setting('units.fuel')}})
+            <label for="fuel_used">@lang('pireps.fuel_used') ({{ setting('units.fuel') }})</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->fuel_used }}</p>
             @else
               <div class="input-group input-group-sm form-group">
-                {{ Form::number('fuel_used', null, [
-                    'class' => 'form-control',
-                    'min' => '0',
-                    'step' => '0.01',
-                    'readonly' => (!empty($pirep) && $pirep->read_only),
-                    ]) }}
+                <input
+                  type="number"
+                  name="fuel_used"
+                  id="fuel_used"
+                  class="form-control"
+                  min="0"
+                  step="0.01"
+                  @if(!empty($pirep) && $pirep->read_only) readonly @endif
+                  value="{{ !empty($pirep) ? $pirep->fuel_used : old('fuel_used') }}"
+                />
               </div>
               <p class="text-danger">{{ $errors->first('fuel_used') }}</p>
             @endif
@@ -265,11 +317,7 @@ flight reports that have been filed. You've been warned!
         <div class="row">
           <div class="col">
             <div class="input-group input-group-sm form-group">
-              {{ Form::textarea('route', null, [
-                  'class' => 'form-control',
-                  'placeholder' => __('flights.route'),
-                  'readonly' => (!empty($pirep) && $pirep->read_only),
-              ]) }}
+              <textarea name="route" id="route" placeholder="@lang('flights.route')" class="form-control">@if(!empty($pirep)){{ $pirep->route }}@else{{ old('route') }}@endif</textarea>
               <p class="text-danger">{{ $errors->first('route') }}</p>
             </div>
           </div>
@@ -285,7 +333,7 @@ flight reports that have been filed. You've been warned!
         <div class="row">
           <div class="col">
             <div class="input-group input-group-sm form-group">
-              {{ Form::textarea('notes', null, ['class' => 'form-control', 'placeholder' => trans_choice('common.note', 2)]) }}
+              <textarea name="notes" id="notes" placeholder="{{ trans_choice('common.note', 2) }}" class="form-control">@if(!empty($pirep)){{ $pirep->notes }}@else{{ old('notes') }}@endif</textarea>
               <p class="text-danger">{{ $errors->first('notes') }}</p>
             </div>
           </div>
@@ -319,33 +367,23 @@ flight reports that have been filed. You've been warned!
     <div class="float-right">
       <div class="form-group">
 
-        {{ Form::hidden('flight_id') }}
-        {{ Form::hidden('sb_id', $simbrief_id) }}
+        <input type="hidden" name="flight_id" value="{{ !empty($pirep) ? $pirep->flight_id : '' }}"/>
+        <input type="hidden" name="sb_id" value="{{ $simbrief_id }}"/>
 
         @if(isset($pirep) && !$pirep->read_only)
-          {{ Form::button(__('pireps.deletepirep'), [
-              'name' => 'submit',
-              'value' => 'Delete',
-              'class' => 'btn btn-warning',
-              'type' => 'submit',
-              'onclick' => "return confirm('Are you sure you want to delete this PIREP?')"])
-              }}
+          <button name="submit" type="submit" class="btn btn-warning" value="Delete" onclick="return confirm('Are you sure you want to delete this PIREP?')">
+            @lang('pireps.deletepirep')
+          </button>
         @endif
 
-        {{ Form::button(__('pireps.savepirep'), [
-                'name' => 'submit',
-                'value' => 'Save',
-                'class' => 'btn btn-info',
-                'type' => 'submit'])
-            }}
+        <button name="submit" type="submit" class="btn btn-info" value="Save">
+          @lang('pireps.savepirep')
+        </button>
 
         @if(!isset($pirep) || (filled($pirep) && !$pirep->read_only))
-          {{ Form::button(__('pireps.submitpirep'), [
-              'name' => 'submit',
-              'value' => 'Submit',
-              'class' => 'btn btn-success',
-              'type' => 'submit'])
-          }}
+          <button name="submit" type="submit" class="btn btn-success" value="Submit">
+            @lang('pireps.submitpirep')
+          </button>
         @endif
       </div>
     </div>
