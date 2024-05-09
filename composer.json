@@ -15,6 +15,10 @@
         {
           "type": "vcs",
           "url": "https://github.com/arthurpar06/filament-modules"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/arthurpar06/sansdaemon"
         }
       ],
     "require": {
@@ -75,7 +79,7 @@
         "madnest/madzipper": "^1.4.0",
         "elcobvg/laravel-opcache": "^0.4.1",
         "fakerphp/faker": "^v1.19.0",
-        "queueworker/sansdaemon": "^1.2.7",
+        "queueworker/sansdaemon": "dev-patch-1",
         "jpkleemans/attribute-events": "^1.4.0",
         "akaunting/laravel-money": "^4.0.1",
         "staudenmeir/belongs-to-through": "^v2.13.0",
