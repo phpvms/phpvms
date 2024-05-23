@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
+use App\Filament\Plugins\ModuleLinksPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -71,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
+                ModuleLinksPlugin::make()
             ])
             ->bootUsing(function () {
                 activity()->enableLogging();

@@ -12,6 +12,7 @@ use App\Models\Pirep;
 use App\Repositories\AirportRepository;
 use App\Services\PirepService;
 use App\Support\Units\Time;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
@@ -173,6 +174,8 @@ class PirepResource extends Resource
 
     public static function table(Table $table): Table
     {
+        dd(Filament::getPanels());
+
         return $table
             ->columns([
                 TextColumn::make('ident')

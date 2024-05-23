@@ -14,6 +14,10 @@
         },
         {
           "type": "vcs",
+          "url": "https://github.com/arthurpar06/filament-modules"
+        },
+        {
+          "type": "vcs",
           "url": "https://github.com/arthurpar06/sansdaemon"
         }
       ],
@@ -83,7 +87,6 @@
         "kyslik/column-sortable": "^6.6",
         "jlorente/laravel-data-migrations": "^2.0",
         "filament/filament": "^3.2.74",
-        "coolsam/modules": "^4.0",
         "flowframe/laravel-trend": "^0.2.0",
         "bezhansalleh/filament-shield": "^3.2.4",
         "guava/filament-clusters": "^1.2.0",
@@ -96,7 +99,8 @@
         "league/flysystem-aws-s3-v3": "^3.0",
         "league/flysystem-sftp-v3": "^3.0",
         "nikolaposa/version": "^4.2",
-        "spatie/laravel-activitylog": "^4.7"
+        "spatie/laravel-activitylog": "^4.7",
+        "coolsam/modules": "3.x-dev"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
