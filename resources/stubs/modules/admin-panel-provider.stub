@@ -2,6 +2,7 @@
 
 namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Providers\Filament;
 
+use App\Filament\Plugins\ModuleLinksPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -28,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('$LOWER_NAME$::admin')
             ->path('admin/$LOWER_NAME$')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::Teal,
             ])
             ->discoverResources(in: module_path($this->module, 'Filament/Resources'), for: "$moduleNamespace\\Filament\\Resources")
             ->discoverPages(in: module_path($this->module, 'Filament/Pages'), for: "$moduleNamespace\\Filament\\Pages")
@@ -54,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class
             ])
+            ->plugin(ModuleLinksPlugin::make())
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
             ->spa();
