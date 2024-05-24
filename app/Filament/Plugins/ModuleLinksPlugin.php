@@ -25,6 +25,7 @@ class ModuleLinksPlugin implements Plugin
         $panel->renderHook('panels::topbar.start', function () {
 
             return view('filament.plugins.module-links', [
+                'current_panel' => Filament::getCurrentPanel(),
                 'panels' => Filament::getPanels(),
                 'old_links' => array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains($link['title'], 'Sample'))
             ]);

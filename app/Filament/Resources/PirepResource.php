@@ -174,8 +174,6 @@ class PirepResource extends Resource
 
     public static function table(Table $table): Table
     {
-        dd(Filament::getPanels());
-
         return $table
             ->columns([
                 TextColumn::make('ident')
