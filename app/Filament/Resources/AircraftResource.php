@@ -6,10 +6,10 @@ use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\AircraftResource\Pages;
 use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
 use App\Models\File;
-use App\Repositories\AirportRepository;
 use App\Services\FileService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -29,9 +29,6 @@ class AircraftResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $airportRepo = app(AirportRepository::class);
-        $airports = $airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]);
-
         return $form
             ->schema([
                 Forms\Components\Section::make('subfleet_and_status')
@@ -52,13 +49,15 @@ class AircraftResource extends Resource
 
                     Forms\Components\Select::make('hub_id')
                         ->label('Home')
-                        ->options($airports)
+                        ->relationship('home', 'icao')
+                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                         ->searchable()
                         ->native(false),
 
                     Forms\Components\Select::make('airport_id')
                         ->label('Location')
-                        ->options($airports)
+                        ->relationship('airport', 'icao')
+                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                         ->searchable()
                         ->native(false),
                 ])->columns(4),

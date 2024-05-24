@@ -5,10 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\RelationManagers\FaresRelationManager;
 use App\Filament\Resources\FlightResource\Pages;
 use App\Filament\Resources\FlightResource\RelationManagers;
+use App\Models\Airport;
 use App\Models\Enums\Days;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
-use App\Repositories\AirportRepository;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,9 +35,6 @@ class FlightResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $airportRepo = app(AirportRepository::class);
-        $airports = $airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]);
-
         return $form
             ->schema([
                 Forms\Components\Grid::make()->schema([
@@ -120,17 +117,18 @@ class FlightResource extends Resource
 
                 Forms\Components\Section::make('route')->heading('Route')->schema([
                     Forms\Components\Grid::make()->schema([
-                        // TODO: If we want to use an async search we need to change the dpt_airport relationship from hasOne to belongsTo (to use the relationship() method)
                         Forms\Components\Select::make('dpt_airport_id')
                             ->label('Departure Airport')
-                            ->options($airports)
+                            ->relationship('dpt_airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->required()
                             ->native(false),
 
                         Forms\Components\Select::make('arr_airport_id')
                             ->label('Arrival Airport')
-                            ->options($airports)
+                            ->relationship('arr_airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->required()
                             ->native(false),
@@ -141,7 +139,8 @@ class FlightResource extends Resource
                     Forms\Components\Grid::make('')->schema([
                         Forms\Components\Select::make('alt_aiport_id')
                             ->label('Alternate Airport')
-                            ->options($airports)
+                            ->relationship('alt_airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->native(false),
 

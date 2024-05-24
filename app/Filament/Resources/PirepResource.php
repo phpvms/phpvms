@@ -5,11 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PirepResource\Pages;
 use App\Filament\Resources\PirepResource\RelationManagers;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
+use App\Models\Airport;
 use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
-use App\Repositories\AirportRepository;
 use App\Services\PirepService;
 use App\Support\Units\Time;
 use Filament\Forms;
@@ -102,14 +102,18 @@ class PirepResource extends Resource
                             Forms\Components\Grid::make('')->schema([
                                 Forms\Components\Select::make('dpt_airport_id')
                                     ->label('Departure Airport')
-                                    ->options(app(AirportRepository::class)->selectBoxList())
+                                    ->relationship('dpt_airport', 'icao')
+                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                                    ->searchable()
                                     ->native(false)
                                     ->columnSpan(1)
                                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
                                 Forms\Components\Select::make('arr_airport_id')
                                     ->label('Arrival Airport')
-                                    ->options(app(AirportRepository::class)->selectBoxList())
+                                    ->relationship('arr_airport', 'icao')
+                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                                    ->searchable()
                                     ->native(false)
                                     ->columnSpan(1)
                                     ->disabled(fn (Pirep $record): bool => $record->read_only),

@@ -7,10 +7,10 @@ use App\Filament\RelationManagers\FaresRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\SubfleetResource\Pages;
 use App\Filament\Resources\SubfleetResource\RelationManagers;
+use App\Models\Airport;
 use App\Models\Enums\FuelType;
 use App\Models\File;
 use App\Models\Subfleet;
-use App\Repositories\AirportRepository;
 use App\Services\FileService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -35,9 +35,6 @@ class SubfleetResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $airportRepo = app(AirportRepository::class);
-        $airports = $airportRepo->all()->mapWithKeys(fn ($item) => [$item->id => $item->icao.' - '.$item->name]);
-
         return $form
             ->schema([
                 Forms\Components\Section::make('subfleet')
@@ -53,10 +50,10 @@ class SubfleetResource extends Resource
                             ->required()
                             ->native(false),
 
-                        // TODO: If we want to use an async search we need to change the dpt_airport relationship from hasOne to belongsTo (to use the relationship() method)
                         Forms\Components\Select::make('hub_id')
                             ->label('Home Base')
-                            ->options($airports)
+                            ->relationship('home', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->native(false),
 
