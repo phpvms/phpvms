@@ -72,7 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-                ModuleLinksPlugin::make()
+                ModuleLinksPlugin::make(),
             ])
             ->bootUsing(function () {
                 activity()->enableLogging();
