@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -59,6 +60,10 @@ class Maintenance extends Page
             $id = Utils::generateNewId(24);
             setting_save('cron.random_id', $id);
 
+            // Remove the webcron id from cache
+            $cache = config('cache.keys.SETTINGS');
+            Cache::forget($cache['key'].'cron.random_id');
+
             Notification::make()
                 ->title('Web cron refreshed!')
                 ->success()
@@ -70,6 +75,10 @@ class Maintenance extends Page
     {
         return Action::make('webCronDisable')->label('Disable')->color('warning')->action(function () {
             setting_save('cron.random_id', '');
+
+            // Remove the webcron id from cache
+            $cache = config('cache.keys.SETTINGS');
+            Cache::forget($cache['key'].'cron.random_id');
 
             Notification::make()
                 ->title('Web cron disabled!')
