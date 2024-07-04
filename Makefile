@@ -106,7 +106,7 @@ docker-test:
 	    -u $(shell id -u):$(shell id -g) \
 	    -v $(shell pwd):/var/www/html \
 	    -w /var/www/html \
-	    laravelsail/php82-composer:latest \
+	    laravelsail/php83-composer:latest \
 	    composer install --ignore-platform-reqs
 	@vendor/bin/sail up
 

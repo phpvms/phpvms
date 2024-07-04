@@ -40,6 +40,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property Airport  airport
  * @property Airport  hub
  * @property Airport  home
+ * @property Airline  airline
  * @property Subfleet subfleet
  * @property int      status
  * @property int      state

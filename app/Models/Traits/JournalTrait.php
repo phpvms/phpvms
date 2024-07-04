@@ -3,13 +3,14 @@
 namespace App\Models\Traits;
 
 use App\Models\Journal;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 trait JournalTrait
 {
     /**
      * Initialize a new journal when a new record is created
      */
-    public static function bootJournalTrait()
+    public static function bootJournalTrait(): void
     {
         static::created(function ($model) {
             $model->initJournal(setting('units.currency'));
@@ -21,7 +22,7 @@ trait JournalTrait
      *
      * @return mixed
      */
-    public function journal()
+    public function journal(): MorphOne
     {
         return $this->morphOne(Journal::class, 'morphed');
     }
@@ -35,7 +36,7 @@ trait JournalTrait
      *
      * @return Journal
      */
-    public function initJournal($currency_code = 'USD')
+    public function initJournal(string $currency_code = 'USD')
     {
         if (!$this->journal) {
             $journal = new Journal();

@@ -154,7 +154,7 @@ class ProfileController extends Controller
             'avatar'     => 'nullable|mimes:jpeg,png,jpg',
         ];
 
-        $userFields = UserField::where(['show_on_registration' => true, 'required' => true])->get();
+        $userFields = UserField::where(['show_on_registration' => true, 'required' => true, 'internal' => false])->get();
         foreach ($userFields as $field) {
             $rules['field_'.$field->slug] = 'required';
         }
@@ -217,7 +217,7 @@ class ProfileController extends Controller
         }
 
         // Save all of the user fields
-        $userFields = UserField::all();
+        $userFields = UserField::where('internal', false)->get();
         foreach ($userFields as $field) {
             $field_name = 'field_'.$field->slug;
             UserFieldValue::updateOrCreate([

@@ -69,7 +69,7 @@ class Handler extends ExceptionHandler
      */
     private function handleApiError($request, Throwable $exception)
     {
-        Log::error('API Error', $exception->getTrace());
+        Log::error('API Error: '.$exception->getMessage(), $exception->getTrace());
 
         if ($exception instanceof AbstractHttpException) {
             return $exception->getResponse();

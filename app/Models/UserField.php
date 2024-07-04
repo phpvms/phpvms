@@ -23,6 +23,7 @@ class UserField extends Model
         'show_on_registration', // Show on the registration form?
         'required',             // Required to be filled out in registration?
         'private',              // Whether this is shown on the user's public profile
+        'internal',             // Whether this field is for internal use only (e.g. modules)
         'active',
     ];
 
@@ -30,6 +31,7 @@ class UserField extends Model
         'show_on_registration' => 'boolean',
         'required'             => 'boolean',
         'private'              => 'boolean',
+        'internal'             => 'boolean',
         'active'               => 'boolean',
     ];
 

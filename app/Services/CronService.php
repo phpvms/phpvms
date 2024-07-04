@@ -34,9 +34,16 @@ class CronService extends Service
             $php_exec .= ' -d register_argc_argv=On';
         }
 
+        $command = base_path('bin/cron');
+
+        // If the server has proc_open then use the default laravel scheduler
+        if (function_exists('proc_open')) {
+            $command = base_path('artisan schedule:run');
+        }
+
         $path = [
             $php_exec,
-            base_path('bin/cron'),
+            $command,
         ];
 
         return implode(' ', $path);

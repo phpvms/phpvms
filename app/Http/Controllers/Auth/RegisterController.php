@@ -84,7 +84,7 @@ class RegisterController extends Controller
         }
 
         $airlines = $this->airlineRepo->selectBoxList();
-        $userFields = UserField::where(['show_on_registration' => true, 'active' => true])->get();
+        $userFields = UserField::where(['show_on_registration' => true, 'active' => true, 'internal' => false])->get();
 
         return view('auth.register', [
             'airports'   => [],
@@ -124,6 +124,7 @@ class RegisterController extends Controller
         $userFields = UserField::where([
             'show_on_registration' => true,
             'required'             => true,
+            'internal'             => false,
             'active'               => true,
         ])->get();
 
@@ -215,7 +216,7 @@ class RegisterController extends Controller
 
         Log::info('User registered: ', $user->toArray());
 
-        $userFields = UserField::where(['show_on_registration' => true, 'active' => true])->get();
+        $userFields = UserField::where(['show_on_registration' => true, 'active' => true, 'internal' => false])->get();
         foreach ($userFields as $field) {
             $field_name = 'field_'.$field->slug;
             UserFieldValue::updateOrCreate([

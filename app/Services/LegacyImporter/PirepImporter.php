@@ -136,6 +136,12 @@ class PirepImporter extends BaseImporter
                 $count++;
             }
 
+            if ($pirep->user && $pirep->state === PirepState::ACCEPTED) {
+                $pirep->user->update([
+                    'last_pirep_id' => $pirep->id,
+                ]);
+            }
+
             if (!$pirep->airline || !$pirep->airline->journal) {
                 continue;
             }

@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class OAuthTest extends TestCase
 {
     /** @var array|string[] The drivers we want to test */
-    protected array $drivers = ['discord'];
+    protected array $drivers = ['discord', 'ivao', 'vatsim'];
 
     protected function setUp(): void
     {
@@ -109,6 +109,8 @@ final class OAuthTest extends TestCase
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
             $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
+
+            Auth::logout();
         }
     }
 
@@ -120,12 +122,15 @@ final class OAuthTest extends TestCase
     public function testLoginWithLinkedAccount(): void
     {
         $user = User::factory()->create([
-            'name'       => 'OAuth user',
-            'email'      => 'oauth.user@phpvms.net',
-            'discord_id' => 123456789,
+            'name'  => 'OAuth user',
+            'email' => 'oauth.user@phpvms.net',
         ]);
 
         foreach ($this->drivers as $driver) {
+            $user->update([
+                $driver.'_id' => 123456789,
+            ]);
+
             UserOAuthToken::create([
                 'user_id'           => $user->id,
                 'provider'          => $driver,
@@ -149,6 +154,8 @@ final class OAuthTest extends TestCase
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
             $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
+
+            Auth::logout();
         }
     }
 
