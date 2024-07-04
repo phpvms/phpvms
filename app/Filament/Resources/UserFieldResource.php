@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserFieldResource extends Resource
 {
@@ -59,6 +60,7 @@ class UserFieldResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->where('internal', false))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
