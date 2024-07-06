@@ -7,6 +7,7 @@
     {{ $this->forceUpdateCheckAction() }}
     {{ $this->reseed() }}
     {{ $this->flushQueue() }}
+    {{ $this->optimizeApp() }}
   </x-filament::section>
 
   <x-filament::section>

@@ -102,6 +102,7 @@ class Maintenance extends Page
                 $calls[] = 'cache:clear';
                 $calls[] = 'route:cache';
                 $calls[] = 'clear-compiled';
+                $calls[] = 'filament:clear-cached-components';
 
                 $files = File::glob($module_cache_files);
                 foreach ($files as $file) {
@@ -148,6 +149,26 @@ class Maintenance extends Page
 
             Notification::make()
                 ->title('Seeds synced successfully!')
+                ->success()
+                ->send();
+        });
+    }
+
+    public function optimizeApp(): Action
+    {
+        return Action::make('optimizeApp')->icon('heroicon-o-wrench-screwdriver')->label('Optimize App')->action(function () {
+            $calls = [
+                //'icons:cache',
+                'filament:cache-components',
+                'optimize'
+            ];
+
+            foreach ($calls as $call) {
+                Artisan::call($call);
+            }
+
+            Notification::make()
+                ->title('Application optimized!')
                 ->success()
                 ->send();
         });
