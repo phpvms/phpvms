@@ -2,7 +2,6 @@
 
 namespace App\Filament\RelationManagers;
 
-use App\Contracts\Model;
 use App\Models\Aircraft;
 use App\Models\Enums\ExpenseType;
 use App\Models\Subfleet;
@@ -53,7 +52,7 @@ class ExpensesRelationManager extends RelationManager
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
                             $data['airline_id'] = $ownerRecord->airline_id;
-                        } else if ($ownerRecord instanceof Aircraft) {
+                        } elseif ($ownerRecord instanceof Aircraft) {
                             $data['airline_id'] = $ownerRecord->subfleet->airline_id;
                         }
 
@@ -77,7 +76,7 @@ class ExpensesRelationManager extends RelationManager
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
                             $data['airline_id'] = $ownerRecord->airline_id;
-                        } else if ($ownerRecord instanceof Aircraft) {
+                        } elseif ($ownerRecord instanceof Aircraft) {
                             $data['airline_id'] = $ownerRecord->subfleet->airline_id;
                         }
 

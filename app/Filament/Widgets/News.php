@@ -54,8 +54,8 @@ class News extends BaseWidget
 
                     Tables\Columns\TextColumn::make('user.name')
                         ->formatStateUsing(fn (NewsModel $record): string => $record->user->name.' - '.$record->created_at->diffForHumans())
-                        ->alignEnd()
-                ])
+                        ->alignEnd(),
+                ]),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -72,8 +72,8 @@ class News extends BaseWidget
                             }
                         }),
 
-                    Tables\Actions\DeleteAction::make()
-                ])
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make('create')
