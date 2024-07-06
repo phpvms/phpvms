@@ -2,7 +2,10 @@
 
 namespace App\Filament\RelationManagers;
 
+use App\Contracts\Model;
+use App\Models\Aircraft;
 use App\Models\Enums\ExpenseType;
+use App\Models\Subfleet;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -45,7 +48,17 @@ class ExpensesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle'),
+                Tables\Actions\CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle')
+                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                        $ownerRecord = $livewire->getOwnerRecord();
+                        if ($ownerRecord instanceof Subfleet) {
+                            $data['airline_id'] = $ownerRecord->airline_id;
+                        } else if ($ownerRecord instanceof Aircraft) {
+                            $data['airline_id'] = $ownerRecord->subfleet->airline_id;
+                        }
+
+                        return $data;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -59,7 +72,17 @@ class ExpensesRelationManager extends RelationManager
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
-                    ->label('Add Expense'),
+                    ->label('Add Expense')
+                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                        $ownerRecord = $livewire->getOwnerRecord();
+                        if ($ownerRecord instanceof Subfleet) {
+                            $data['airline_id'] = $ownerRecord->airline_id;
+                        } else if ($ownerRecord instanceof Aircraft) {
+                            $data['airline_id'] = $ownerRecord->subfleet->airline_id;
+                        }
+
+                        return $data;
+                    }),
             ]);
     }
 }
