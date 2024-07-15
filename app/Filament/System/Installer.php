@@ -47,7 +47,7 @@ class Installer extends Page
 
     public function mount()
     {
-        if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && request()->is('system/installer') && Schema::hasTable('users') && User::count() > 0) {
+        if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
             Notification::make()
                 ->title('phpVMS is already installed')
                 ->danger()
@@ -272,7 +272,7 @@ class Installer extends Page
         if (!$this->testDb()) {
             throw new Halt();
         }
-        
+
         // Now write out the env file
         $attrs = [
             'SITE_NAME' => $data['site_name'],
