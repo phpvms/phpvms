@@ -45,7 +45,7 @@ class Kernel extends HttpKernel
             'json',
         ],
         'web' => [
-            InstalledCheck::class,
+            //InstalledCheck::class,
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,

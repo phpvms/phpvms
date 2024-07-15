@@ -54,6 +54,7 @@ return [
         App\Providers\MeasurementsProvider::class,
         App\Providers\ObserverServiceProviders::class,
         App\Providers\Filament\AdminPanelProvider::class,
+        App\Providers\Filament\SystemPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),
 
