@@ -3,7 +3,8 @@
 
 @section('content')
   <div style="align-content: center;">
-    {{ Form::open(['route' => 'importer.complete', 'method' => 'POST']) }}
+    <form method="post" action="{{ route('importer.complete') }}">
+      @csrf
     <table class="table" width="25%">
 
       <tr>
@@ -24,12 +25,9 @@
 
     </table>
     <p style="text-align: right">
-      {{ Form::submit('Complete Import', [
-          'id' => 'completebutton',
-          'class' => 'btn btn-success'
-          ]) }}
+      <button type="submit" class="btn btn-success" id="completebutton">Complete Import</button>
     </p>
-    {{ Form::close() }}
+    </form>
   </div>
 @endsection
 

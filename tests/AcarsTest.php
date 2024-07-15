@@ -18,6 +18,9 @@ use App\Models\User;
 use App\Repositories\SettingRepository;
 use App\Services\FareService;
 use App\Support\Utils;
+use DateInterval;
+use DateTime;
+use DateTimeInterface;
 
 use function count;
 use function random_int;
@@ -630,6 +633,122 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
+    public function testMultipleAltitudes(): void
+    {
+        $subfleet = $this->createSubfleetWithAircraft(2);
+        $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
+
+        /** @var User user */
+        $this->user = User::factory()->create([
+            'rank_id' => $rank->id,
+        ]);
+
+        /** @var Airport $airport */
+        $airport = Airport::factory()->create();
+
+        /** @var Airline $airline */
+        $airline = Airline::factory()->create();
+
+        /** @var Aircraft $aircraft */
+        $aircraft = $subfleet['aircraft']->random();
+
+        $uri = '/api/pireps/prefile';
+        $pirep_create = [
+            'airline_id'          => $airline->id,
+            'aircraft_id'         => $aircraft->id,
+            'dpt_airport_id'      => $airport->icao,
+            'arr_airport_id'      => $airport->icao,
+            'flight_number'       => '6000',
+            'level'               => 38000,
+            'planned_distance'    => 400,
+            'planned_flight_time' => 120,
+            'status'              => PirepStatus::BOARDING,
+            'route'               => 'POINTA POINTB',
+            'source_name'         => 'AcarsTest::testAcarsUpdates',
+            'fields'              => [
+                'custom_field' => 'custom_value',
+            ],
+        ];
+
+        $response = $this->post($uri, $pirep_create);
+        $response->assertStatus(200);
+
+        // Get the PIREP ID
+        $body = $response->json();
+        $pirep_id = $body['data']['id'];
+
+        $dt = new DateTime('now');
+
+        // Post an ACARS update
+        $acars = Acars::factory()->make(['pirep_id' => $pirep_id])->toArray();
+        $acars['sim_time'] = $dt->format(\DateTime::ATOM);
+        unset($acars['altitude_agl']);
+        unset($acars['altitude_msl']);
+        $acars['altitude'] = 1000;
+
+        // $acars = $this->transformData($acars);
+
+        $inst = new Acars($acars);
+        $this->assertEquals($acars['altitude'], $inst->altitude_agl);
+        $this->assertEquals($acars['altitude'], $inst->altitude_msl);
+
+        $uri = '/api/pireps/'.$pirep_id.'/acars/position';
+
+        $response = $this->post($uri, ['positions' => [$acars]]);
+        $response->assertStatus(200)->assertJson(['count' => 1]);
+
+        // Read that if the ACARS record posted
+        $response = $this->get($uri);
+        $acars_data = $response->json('data')[0];
+        $this->assertEquals($acars['altitude'], $acars_data['altitude_agl']);
+        $this->assertEquals($acars['altitude'], $acars_data['altitude_msl']);
+
+        /**
+         * Now push the new fields without the old one
+         */
+        $acars2 = Acars::factory()->make(['pirep_id' => $pirep_id])->toArray();
+        $acars2['sim_time'] = $dt
+            ->add(DateInterval::createFromDateString('30 seconds'))
+            ->format(DateTimeInterface::ATOM);
+        // $acars2 = $this->transformData($acars2);
+
+        // send it in
+        $response = $this->post($uri, ['positions' => [$acars2]]);
+        $response->assertStatus(200)->assertJson(['count' => 1]);
+
+        // Read that if the ACARS record posted
+        $response = $this->get($uri);
+        $acars_data = $response->json('data')[1];
+        $this->assertEqualsWithDelta($acars2['altitude_agl'], $acars_data['altitude_agl'], 0.1);
+        $this->assertEqualsWithDelta($acars2['altitude_msl'], $acars_data['altitude_msl'], 0.1);
+    }
+
+    public function testAcarsDataInstantitaion()
+    {
+        $acars = Acars::factory()->make(['pirep_id' => 'abc'])->toArray();
+        $acars['altitude'] = 5000;
+
+        $acars = $this->transformData($acars);
+
+        // Set this to the model first
+        $inst = new Acars($acars);
+        $this->assertEquals($acars['altitude_agl'], $inst->altitude_agl);
+        $this->assertEquals($acars['altitude_msl'], $inst->altitude_msl);
+
+        // Now delete the agl/msl and recreate the instance
+        unset($acars['altitude_agl']);
+        unset($acars['altitude_msl']);
+
+        $inst = new Acars($acars);
+        $this->assertEquals($acars['altitude'], $inst->altitude_agl);
+        $this->assertEquals($acars['altitude'], $inst->altitude_msl);
+    }
+
+    /**
+     * Post a PIREP into a PREFILE state and post ACARS
+     *
+     * @throws \Exception
+     */
     public function testFilePirepApi(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
@@ -806,6 +925,7 @@ final class AcarsTest extends TestCase
         $acars = Acars::factory()->count($acars_count)->make(['id' => ''])
             ->map(function ($point) {
                 $point['id'] = Utils::generateNewId();
+
                 return $point;
             })
             ->toArray();

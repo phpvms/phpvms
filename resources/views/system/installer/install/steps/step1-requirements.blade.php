@@ -3,7 +3,8 @@
 
 @section('content')
   <div style="align-content: center;">
-    {{ Form::open(['route' => 'installer.step2', 'method' => 'GET']) }}
+    <form method="get" action="{{ route('installer.step2') }}">
+      @csrf
     <table class="table" width="25%">
       <tr>
         <td colspan="2"><h4>php version</h4></td>
@@ -56,9 +57,9 @@
     </table>
     @if($passed === true)
       <p style="text-align: right">
-        {{ Form::submit('Database Setup >>', ['class' => 'btn btn-success']) }}
+        <button type="submit" class="btn btn-success">Database Setup >></button>
       </p>
     @endif
-    {{ Form::close() }}
+    </form>
   </div>
 @endsection

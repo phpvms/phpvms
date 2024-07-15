@@ -2,8 +2,9 @@ name: 'Build'
 on:
   pull_request:
   push:
-#  release:
-#    types: [created]
+    branches:
+    - main
+    - dev
   workflow_dispatch:
 jobs:
   build:
@@ -20,7 +21,14 @@ jobs:
       MYSQL_ROOT_PASSWORD: root
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v1.2.0
+      with:
+        versionSpec: '5.x'
 
     # Configure Caching
     - name: Setup cache environment
@@ -86,6 +94,11 @@ jobs:
           sleep 1
         done
 
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v1.2.0
+      with:
+        useConfigFile: true
+
     - name: Configure Environment
       run: |
         php --version
@@ -95,7 +108,7 @@ jobs:
         composer install --dev --no-interaction --verbose
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh
+        .github/scripts/version.sh ${{ env.fullSemVer }}
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 

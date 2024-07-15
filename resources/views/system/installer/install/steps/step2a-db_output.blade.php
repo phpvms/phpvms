@@ -2,7 +2,8 @@
 @section('title', 'Database Setup Completed')
 @section('content')
   <div style="align-content: center;">
-    {{ Form::open(['route' => 'installer.step3', 'method' => 'GET']) }}
+    <form method="get" action="{{ route('installer.step3') }}">
+      @csrf
 
     <pre class="lang-sh">
         <code class="lang-sh">
@@ -12,8 +13,8 @@
     </pre>
 
     <p style="text-align: right">
-      {{ Form::submit('Continue >>', ['class' => 'btn btn-success']) }}
+      <button type="submit" class="btn btn-success">Continue >></button>
     </p>
-    {{ Form::close() }}
+    </form>
   </div>
 @endsection

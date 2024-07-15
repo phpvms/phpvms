@@ -85,6 +85,8 @@ return [
             ],
         ],
 
+        'database_dump_filename_base' => env('BACKUP_DATABASE_DUMP_FILENAME', 'database'),
+
         /*
          * The database dump can be compressed to decrease disk space usage.
          *
@@ -191,13 +193,31 @@ return [
     'notifications' => [
 
         'notifications' => [
-            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class         => explode(',', env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')),
-            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => explode(',', env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')),
-            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class        => explode(',', env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')),
+            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => explode(
+                ',',
+                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+            ),
+            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => explode(
+                ',',
+                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+            ),
+            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => explode(
+                ',',
+                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+            ),
 
-            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class   => explode(',', env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')),
-            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => explode(',', env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')),
-            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class  => explode(',', env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')),
+            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => explode(
+                ',',
+                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+            ),
+            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => explode(
+                ',',
+                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+            ),
+            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => explode(
+                ',',
+                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+            ),
         ],
 
         /*
@@ -240,7 +260,10 @@ return [
             /*
              * If this is an empty string, the avatar on the webhook will be used.
              */
-            'avatar_url' => env('BACKUP_DISCORD_AVATAR_URL', env('APP_URL').'/assets/img/logo.png'),
+            'avatar_url' => env(
+                'BACKUP_DISCORD_AVATAR_URL',
+                env('APP_URL').'/assets/img/logo.png'
+            ),
         ],
     ],
 
@@ -295,26 +318,38 @@ return [
              * of that day will be kept. Older backups within the same day will be removed.
              * If you create backups only once a day, no backups will be removed yet.
              */
-            'keep_daily_backups_for_days' => env('BACKUP_DAILY_MAX_DAYS', 0),
+            'keep_daily_backups_for_days' => env(
+                'BACKUP_DAILY_MAX_DAYS',
+                0
+            ),
 
             /*
              * After the "keep_daily_backups_for_days" period is over, the most recent backup
              * of that week will be kept. Older backups within the same week will be removed.
              * If you create backups only once a week, no backups will be removed yet.
              */
-            'keep_weekly_backups_for_weeks' => env('BACKUP_WEEKLY_MAX_WEEKS', 0),
+            'keep_weekly_backups_for_weeks' => env(
+                'BACKUP_WEEKLY_MAX_WEEKS',
+                0
+            ),
 
             /*
              * After the "keep_weekly_backups_for_weeks" period is over, the most recent backup
              * of that month will be kept. Older backups within the same month will be removed.
              */
-            'keep_monthly_backups_for_months' => env('BACKUP_MONTHLY_MAX_MONTHS', 0),
+            'keep_monthly_backups_for_months' => env(
+                'BACKUP_MONTHLY_MAX_MONTHS',
+                0
+            ),
 
             /*
              * After the "keep_monthly_backups_for_months" period is over, the most recent backup
              * of that year will be kept. Older backups within the same year will be removed.
              */
-            'keep_yearly_backups_for_years' => env('BACKUP_YEARLY_MAX_YEARS', 0),
+            'keep_yearly_backups_for_years' => env(
+                'BACKUP_YEARLY_MAX_YEARS',
+                0
+            ),
 
             /*
              * After cleaning up the backups remove the oldest backup until

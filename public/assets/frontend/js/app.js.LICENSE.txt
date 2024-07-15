@@ -3,6 +3,13 @@
  * (c) 2010-2022 Vladimir Agafonkin, (c) 2010-2011 CloudMade
  */
 
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <http://feross.org>
+ * @license  MIT
+ */
+
 /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
 
@@ -19,5 +26,7 @@
     ***************************************************************************** */
 
 /*! Leaflet.Geodesic 2.6.1 - (c) Henry Thasler - https://github.com/henrythasler/Leaflet.Geodesic */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
