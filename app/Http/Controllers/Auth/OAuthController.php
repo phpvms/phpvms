@@ -33,11 +33,22 @@ class OAuthController extends Controller
                 if (!config('services.discord.enabled')) {
                     abort(404);
                 }
-                return Socialite::driver('discord')->scopes(['identify'])->redirect();
+
+                $requiredScopes = ['identify'];
+                $envScopes = config('services.discord.scopes', []);
+                $scopes = array_unique(array_merge($envScopes, $requiredScopes));
+
+                return Socialite::driver('discord')->scopes($scopes)->redirect();
             case 'ivao':
-                return Socialite::driver('ivao')->redirect();
+                $scopes = config('services.ivao.scopes', []);
+
+                return Socialite::driver('ivao')->scopes($scopes)->redirect();
             case 'vatsim':
-                return Socialite::driver('vatsim')->scopes(['email'])->redirect();
+                $requiredScopes = ['email'];
+                $envScopes = config('services.vatsim.scopes', []);
+                $scopes = array_unique(array_merge($envScopes, $requiredScopes));
+
+                return Socialite::driver('vatsim')->scopes($scopes)->redirect();
             default:
                 abort(404);
         }

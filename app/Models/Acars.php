@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Models\Casts\DistanceCast;
 use App\Models\Casts\FuelCast;
 use App\Models\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,7 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string name
  * @property float  lat
  * @property float  lon
- * @property float  altitude
+ * @property float  altitude_agl
+ * @property float  altitude_msl
  * @property int    gs
  * @property int    ias
  * @property int    heading
@@ -32,8 +34,6 @@ class Acars extends Model
 
     protected $keyType = 'string';
 
-    public $incrementing = false;
-
     public $fillable = [
         'id',
         'pirep_id',
@@ -48,6 +48,8 @@ class Acars extends Model
         'distance',
         'heading',
         'altitude',
+        'altitude_agl',
+        'altitude_msl',
         'vs',
         'gs',
         'ias',
@@ -59,26 +61,54 @@ class Acars extends Model
         'updated_at',
     ];
 
+    public $incrementing = false;
+
     public $casts = [
-        'type'        => 'integer',
-        'order'       => 'integer',
-        'nav_type'    => 'integer',
-        'lat'         => 'float',
-        'lon'         => 'float',
-        'distance'    => DistanceCast::class,
-        'heading'     => 'integer',
-        'altitude'    => 'float',
-        'vs'          => 'float',
-        'gs'          => 'integer',
-        'ias'         => 'integer',
-        'transponder' => 'integer',
-        'fuel'        => FuelCast::class,
-        'fuel_flow'   => 'float',
+        'type'         => 'integer',
+        'order'        => 'integer',
+        'nav_type'     => 'integer',
+        'lat'          => 'float',
+        'lon'          => 'float',
+        'distance'     => DistanceCast::class,
+        'heading'      => 'integer',
+        'altitude_agl' => 'float',
+        'altitude_msl' => 'float',
+        'vs'           => 'float',
+        'gs'           => 'integer',
+        'ias'          => 'integer',
+        'transponder'  => 'integer',
+        'fuel'         => FuelCast::class,
+        'fuel_flow'    => 'float',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'pirep_id' => 'required',
     ];
+
+    /**
+     * This keeps things backwards compatible with previous versions
+     * which send in altitude only
+     *
+     * @return Attribute
+     */
+    public function altitude(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $_, array $attrs) => $attrs['altitude_msl'],
+            set: function (mixed $value) {
+                $ret = [];
+                if (!array_key_exists('altitude_agl', $this->attributes)) {
+                    $ret['altitude_agl'] = $value;
+                }
+
+                if (!array_key_exists('altitude_msl', $this->attributes)) {
+                    $ret['altitude_msl'] = $value;
+                }
+
+                return $ret;
+            }
+        );
+    }
 
     /**
      * Relationships

@@ -4,9 +4,10 @@
 @section('content')
   <h2>phpvms updater</h2>
   <p>Press continue to check if there are any updates available.</p>
-  {{ Form::open(['route' => 'update.step1post', 'method' => 'post']) }}
+  <form method="post" action="{{ route('update.step1post') }}">
+    @csrf
   <p style="text-align: right">
-    {{ Form::submit('Start >>', ['class' => 'btn btn-success']) }}
+    <button type="submit" class="btn btn-success">Start >></button>
   </p>
-  {{ Form::close() }}
+  </form>
 @endsection

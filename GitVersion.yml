@@ -1,0 +1,8 @@
+---
+# https://gitversion.net/docs/reference/modes/mainline
+mode: Mainline
+next-version: 7.0.1
+branches: {}
+ignore:
+  sha: []
+merge-message-formats: {}

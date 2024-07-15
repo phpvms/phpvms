@@ -85,5 +85,7 @@ sync.sh
 
 ###> phpunit/phpunit ###
 /phpunit.xml
-.phpunit.result.cache
 ###< phpunit/phpunit ###
+
+copy-from.sh
+copy-to.sh

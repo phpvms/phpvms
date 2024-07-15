@@ -4,10 +4,11 @@
 @section('content')
   <h2>phpvms updater</h2>
   <p>It seems like you're up to date!</p>
-  {{ Form::open(['route' => 'update.complete', 'method' => 'GET']) }}
+  <form method="get" action="{{ route('update.complete') }}">
+    @csrf
 
   <p style="text-align: right">
-    {{ Form::submit('Complete >>', ['class' => 'btn btn-success']) }}
+    <button type="submit" class="btn btn-success">Complete >></button>
   </p>
-  {{ Form::close() }}
+  </form>
 @endsection

@@ -5,9 +5,10 @@
   <h2>phpvms updater</h2>
   <p>Update completed!.</p>
 
-  {{ Form::open(['route' => 'update.complete', 'method' => 'GET']) }}
+  <form method="get" action="{{ route('update.complete') }}">
+    @csrf
   <p style="text-align: right">
-    {{ Form::submit('Finish >>', ['class' => 'btn btn-success']) }}
+    <button type="submit" class="btn btn-success">Finish >></button>
   </p>
-  {{ Form::close() }}
+  </form>
 @endsection
