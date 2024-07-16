@@ -216,7 +216,6 @@ class Installer extends Page
                 ]),
             ])
                 ->persistStepInQueryString()
-                ->skippable()
                 ->submitAction(new HtmlString(Blade::render(<<<BLADE
                     <x-filament::button
                         type="submit"
