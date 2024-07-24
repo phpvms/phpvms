@@ -190,7 +190,7 @@ class Installer extends Page
                         ->headerActions([
                             Action::make('test')
                                 ->label('phpVMS v5 Legacy Importer')
-                                ->url('/system/legacy'),
+                                ->url('/system/legacy-import'),
                         ])
                         ->schema([
                             TextInput::make('airline_icao')
