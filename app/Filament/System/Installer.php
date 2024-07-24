@@ -53,7 +53,8 @@ class Installer extends Page
                 ->danger()
                 ->send();
 
-            return $this->redirect(Filament::getDefaultPanel()->getUrl());
+            $this->redirect(Filament::getDefaultPanel()->getUrl());
+            return;
         }
 
         $this->fillForm();
