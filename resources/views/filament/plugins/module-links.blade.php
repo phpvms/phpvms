@@ -10,7 +10,7 @@
 
     @foreach($panels as $panel)
       @php
-        if ($panel->getId() === 'admin') {
+        if ($panel->getId() === 'admin' || $panel->getId() === 'system') {
           continue;
         }
 
