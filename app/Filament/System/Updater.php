@@ -20,6 +20,8 @@ class Updater extends Page
 
     protected static string $view = 'filament.system.updater';
 
+    protected static ?string $slug = 'update';
+
     public ?string $notes;
     public ?string $details;
     public function mount()

@@ -39,10 +39,10 @@ class Installer extends Page
 
     protected static string $view = 'filament.system.installer';
 
+    protected static ?string $slug = 'install';
+
     public ?string $requirements;
-
     public ?array $env;
-
     public ?array $user;
 
     public function mount()

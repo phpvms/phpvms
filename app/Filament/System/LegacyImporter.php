@@ -22,6 +22,8 @@ class LegacyImporter extends Page
 
     protected static string $view = 'filament.system.legacy-importer';
 
+    protected static ?string $slug = 'legacy-import';
+
     public ?string $notes;
     public ?array $db;
     public ?string $details;
