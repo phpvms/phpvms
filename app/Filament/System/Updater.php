@@ -6,8 +6,8 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Filament\Facades\Filament;
-use Filament\Forms\Form;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Blade;
@@ -24,6 +24,7 @@ class Updater extends Page
 
     public ?string $notes;
     public ?string $details;
+
     public function mount()
     {
         if (!app(InstallerService::class)->isUpgradePending()) {
@@ -31,7 +32,6 @@ class Updater extends Page
                 ->title('phpVMS is already up to date')
                 ->danger()
                 ->send();
-
 
             $this->redirect(Filament::getDefaultPanel()->getUrl());
             return;
@@ -63,10 +63,11 @@ class Updater extends Page
                 Forms\Components\Wizard\Step::make('Update')
                     ->schema([
                         Forms\Components\ViewField::make('details')
-                            ->view('filament.system.migrations_details')
-                    ])
+                            ->view('filament.system.migrations_details'),
+                    ]),
             ])
-                ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                ->submitAction(new HtmlString(Blade::render(
+                    <<<'BLADE'
                     <x-filament::button
                         type="submit"
                         size="sm"
@@ -74,7 +75,7 @@ class Updater extends Page
                         Finish Update
                     </x-filament::button>
                 BLADE
-                )))
+                ))),
         ]);
     }
 
@@ -106,7 +107,7 @@ class Updater extends Page
         $seederSvc->syncAllSeeds();
 
         if (count($dataMigrationsPending) !== 0) {
-            $output .=  $migrationSvc->runAllDataMigrations();
+            $output .= $migrationSvc->runAllDataMigrations();
         }
 
         $this->dispatch('migrations-completed', message: $output);

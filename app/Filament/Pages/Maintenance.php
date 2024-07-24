@@ -162,7 +162,7 @@ class Maintenance extends Page
             $calls = [
                 //'icons:cache',
                 'filament:cache-components',
-                'optimize'
+                'optimize',
             ];
 
             foreach ($calls as $call) {

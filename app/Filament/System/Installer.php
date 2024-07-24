@@ -7,14 +7,12 @@ use App\Models\User;
 use App\Services\AirlineService;
 use App\Services\Installer\ConfigService;
 use App\Services\Installer\DatabaseService;
-use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\RequirementsService;
 use App\Services\Installer\SeederService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
@@ -68,7 +66,6 @@ class Installer extends Page
 
     public function fillForm()
     {
-
         $this->callHook('beforeFill');
 
         $this->form->fill();
@@ -86,7 +83,7 @@ class Installer extends Page
                     ->schema([
                         ViewField::make('requirements')
                             ->view('filament.system.installer_requirements')
-                            ->viewData($requirementsData)
+                            ->viewData($requirementsData),
                     ])
                     ->beforeValidation(function () use ($requirementsData) {
                         if (!$requirementsData['php']['passed'] || !$requirementsData['extensionsPassed'] || !$requirementsData['directoriesPassed']) {
@@ -135,7 +132,7 @@ class Installer extends Page
                                     ->hintAction(
                                         Action::make('testDb')
                                             ->label('Test Database Credentials')
-                                            ->action(fn() => $this->testDb())
+                                            ->action(fn () => $this->testDb())
                                     )
                                     ->default('localhost'),
 
@@ -160,10 +157,10 @@ class Installer extends Page
                                     ->revealable()
                                     ->label('Database Password'),
                             ])
-                                ->visible(fn(Get $get): bool => $get('db_conn') && $get('db_conn') !== 'sqlite')
+                                ->visible(fn (Get $get): bool => $get('db_conn') && $get('db_conn') !== 'sqlite')
                                 ->columns()
                                 ->columnSpanFull(),
-                        ])
+                        ]),
                 ])->afterValidation(
                     function () {
                         $this->envAndDBSetup();
@@ -172,16 +169,16 @@ class Installer extends Page
 
                 Wizard\Step::make('Migrations')->schema([
                     ViewField::make('details')
-                        ->view('filament.system.migrations_details')
+                        ->view('filament.system.migrations_details'),
                 ])->afterValidation(function () {
-                   if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
-                       Notification::make()
-                           ->title('Error: you have pending migrations')
-                           ->danger()
-                           ->send();
+                    if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
+                        Notification::make()
+                            ->title('Error: you have pending migrations')
+                            ->danger()
+                            ->send();
 
-                       throw new Halt();
-                   }
+                        throw new Halt();
+                    }
                 }),
 
                 Wizard\Step::make('User & Airline Setup')->schema([
@@ -232,12 +229,13 @@ class Installer extends Page
 
                             TextInput::make('password_confirmation')
                                 ->password()
-                                ->required()
-                        ])->columns()
+                                ->required(),
+                        ])->columns(),
                 ]),
             ])
                 ->persistStepInQueryString()
-                ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                ->submitAction(new HtmlString(Blade::render(
+                    <<<'BLADE'
                     <x-filament::button
                         type="submit"
                         size="sm"
@@ -245,7 +243,7 @@ class Installer extends Page
                         Complete Setup
                     </x-filament::button>
                 BLADE
-                )))
+                ))),
         ]);
     }
 
@@ -261,10 +259,10 @@ class Installer extends Page
         $directoriesPassed = $this->allPassed($directories);
 
         return [
-            'php' => $php_version,
-            'extensions' => $extensions,
-            'extensionsPassed' => $extensionsPassed,
-            'directories' => $directories,
+            'php'               => $php_version,
+            'extensions'        => $extensions,
+            'extensionsPassed'  => $extensionsPassed,
+            'directories'       => $directories,
             'directoriesPassed' => $directoriesPassed,
         ];
     }
@@ -295,15 +293,15 @@ class Installer extends Page
 
         // Now write out the env file
         $attrs = [
-            'SITE_NAME' => $data['site_name'],
-            'APP_URL' => $data['app_url'],
+            'SITE_NAME'     => $data['site_name'],
+            'APP_URL'       => $data['app_url'],
             'DB_CONNECTION' => $data['db_conn'],
-            'DB_HOST' => $data['db_host'],
-            'DB_PORT' => $data['db_port'],
-            'DB_DATABASE' => $data['db_name'],
-            'DB_USERNAME' => $data['db_user'],
-            'DB_PASSWORD' => $data['db_pass'],
-            'DB_PREFIX' => $data['db_prefix'],
+            'DB_HOST'       => $data['db_host'],
+            'DB_PORT'       => $data['db_port'],
+            'DB_DATABASE'   => $data['db_name'],
+            'DB_USERNAME'   => $data['db_user'],
+            'DB_PASSWORD'   => $data['db_pass'],
+            'DB_PREFIX'     => $data['db_prefix'],
         ];
 
         /*
@@ -366,7 +364,7 @@ class Installer extends Page
         $attrs = [
             'icao'    => $data['airline_icao'],
             'name'    => $data['airline_name'],
-            'country' => $data['airline_country']
+            'country' => $data['airline_country'],
         ];
 
         $airline = app(AirlineService::class)->createAirline($attrs);
@@ -399,8 +397,14 @@ class Installer extends Page
         $data = $this->env ?? [];
 
         try {
-            app(DatabaseService::class)->checkDbConnection($data['db_conn'], $data['db_host'], $data['db_port'],
-                $data['db_name'], $data['db_user'], $data['db_pass']);
+            app(DatabaseService::class)->checkDbConnection(
+                $data['db_conn'],
+                $data['db_host'],
+                $data['db_port'],
+                $data['db_name'],
+                $data['db_user'],
+                $data['db_pass']
+            );
         } catch (\Exception $e) {
             Log::error('Testing db failed');
             Log::error($e->getMessage());
@@ -421,7 +425,6 @@ class Installer extends Page
 
         return true;
     }
-
 
     public function save()
     {

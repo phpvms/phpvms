@@ -7,12 +7,8 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
 use App\Filament\System\Installer;
-use App\Models\User;
-use App\Providers\Filament\SystemPanelProvider;
 use Closure;
-use Filament\Facades\Filament;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Check the app.key to see whether we're installed or not
