@@ -6,8 +6,11 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
+use App\Filament\System\Installer;
 use App\Models\User;
+use App\Providers\Filament\SystemPanelProvider;
 use Closure;
+use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -22,15 +25,8 @@ class InstalledCheck implements Middleware
     public function handle(Request $request, Closure $next)
     {
         $key = config('app.key');
-        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-            && !$request->is(['install', 'install/*'])
-            && !$request->is(['update', 'update/*'])
-        ) {
-            return response(view('system.errors.not_installed'));
-        }
-
-        if (!empty($key) && $key !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && $request->is(['install', 'install/*']) && Schema::hasTable('users') && User::count() > 0) {
-            return response(view('system.installer.errors.already-installed'));
+        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') && !$request->is('system*')) {
+            return redirect('/system/install');
         }
 
         return $next($request);
