@@ -202,39 +202,41 @@ class LegacyImporter extends Page
 
     }
 
-    public function startImport()
+    public function import(int $batch_index)
     {
-        die('nope');
-        Notification::make()
-            ->title('Starting import')
-            ->success()
-            ->send();
-
         $manifest = app(LegacyImporterService::class)->generateImportManifest();
 
-        foreach ($manifest as $completed => $batch) {
-            try {
-                Log::info('Starting stage '.$batch['importer'].' from offset '.$batch['start']);
-
-                app(LegacyImporterService::class)->run($batch['importer'], $batch['start']);
-
-                $this->dispatch('import-update', [
-                    'completed' => $completed * 100 / count($manifest),
-                    'error'     => false,
-                    'message'   => $batch['message']
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Legacy Importer Error: '. $e->getMessage(), $e->getTrace());
-
-                $this->dispatch('import-update', [
-                    'completed' => 0,
-                    'error'     => true,
-                    'message'   => 'Legacy Importer Error: '.$e->getMessage()
-                ]);
-            }
-
-
+        if ($batch_index === 0) {
+            Notification::make()
+                ->title('Starting import')
+                ->success()
+                ->send();
+        } else if ($batch_index >= count($manifest)) {
+            Notification::make()
+                ->title('Import completed')
+                ->success()
+                ->send();
+            return;
         }
+
+        try {
+            $batch = $manifest[$batch_index];
+
+            Log::info('Starting stage '.$batch['importer'].' from offset '.$batch['start']);
+
+            app(LegacyImporterService::class)->run($batch['importer'], $batch['start']);
+
+            $this->dispatch('import-update', completed: $batch_index * 100 / count($manifest), error: false, message: $batch['message'], nextIndex: $batch_index+1);
+        } catch (\Exception $e) {
+            Log::error('Legacy Importer Error: '. $e->getMessage(), $e->getTrace());
+
+            $this->dispatch('import-update', completed: $batch_index * 100 / count($manifest), error: true, message: 'Legacy Importer Error: '.$e->getMessage());
+        }
+    }
+
+    public function save()
+    {
+        $this->redirect('/admin');
     }
 
 }
