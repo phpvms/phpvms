@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\AirlineService;
 use App\Services\Installer\ConfigService;
 use App\Services\Installer\DatabaseService;
+use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\RequirementsService;
 use App\Services\Installer\SeederService;
@@ -42,6 +43,7 @@ class Installer extends Page
     protected static ?string $slug = 'install';
 
     public ?string $requirements;
+    public ?string $details;
     public ?array $env;
     public ?array $user;
 
@@ -55,6 +57,10 @@ class Installer extends Page
 
             $this->redirect('/admin');
             return;
+        }
+
+        if (request()->get('step') === 'migrations') {
+            $this->dispatch('start-migrations');
         }
 
         $this->fillForm();
@@ -163,6 +169,20 @@ class Installer extends Page
                         $this->envAndDBSetup();
                     }
                 ),
+
+                Wizard\Step::make('Migrations')->schema([
+                    ViewField::make('details')
+                        ->view('filament.system.migrations_details')
+                ])->afterValidation(function () {
+                   if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
+                       Notification::make()
+                           ->title('Error: you have pending migrations')
+                           ->danger()
+                           ->send();
+
+                       throw new Halt();
+                   }
+                }),
 
                 Wizard\Step::make('User & Airline Setup')->schema([
                     Section::make('Airline Information')
@@ -307,6 +327,11 @@ class Installer extends Page
             throw new Halt();
         }
 
+        $this->dispatch('start-migrations');
+    }
+
+    public function migrate()
+    {
         $console_out = '';
 
         try {
@@ -326,10 +351,11 @@ class Installer extends Page
                 ->persistent()
                 ->send();
 
-            throw new Halt();
+            return;
         }
 
         Log::info('DB Setup Details', [$console_out]);
+        $this->dispatch('migrations-completed', message: $console_out);
     }
 
     private function airlineAndUserSetup()
