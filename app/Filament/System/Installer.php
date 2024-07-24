@@ -53,7 +53,7 @@ class Installer extends Page
                 ->danger()
                 ->send();
 
-            $this->redirect(Filament::getDefaultPanel()->getUrl());
+            $this->redirect('/admin');
             return;
         }
 
