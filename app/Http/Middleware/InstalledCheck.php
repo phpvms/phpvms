@@ -21,8 +21,7 @@ class InstalledCheck implements Middleware
     public function handle(Request $request, Closure $next)
     {
         $key = config('app.key');
-        if (((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')) && !$request->is('system*') && !$request->is('livewire/update')) {
-
+        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') && !$request->is('system*') && !$request->is('livewire/update')) {
             return redirect('/system/install');
         }
 

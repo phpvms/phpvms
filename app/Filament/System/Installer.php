@@ -31,7 +31,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
-use Mockery\Matcher\Not;
 
 class Installer extends Page
 {
