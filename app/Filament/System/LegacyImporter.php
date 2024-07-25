@@ -28,7 +28,7 @@ class LegacyImporter extends Page
     public ?array $db;
     public ?string $details;
 
-    public function mount()
+    public function mount(): void
     {
         if (Schema::hasTable('users') && User::count() > 0) {
             if (!Auth::check()) {
@@ -42,7 +42,7 @@ class LegacyImporter extends Page
         $this->fillForm();
     }
 
-    public function fillForm()
+    public function fillForm(): void
     {
         $this->callHook('beforeFill');
 
@@ -176,7 +176,7 @@ class LegacyImporter extends Page
         return true;
     }
 
-    private function dbSetup()
+    private function dbSetup(): void
     {
         $data = $this->db ?? [];
 
@@ -211,7 +211,7 @@ class LegacyImporter extends Page
         $this->dispatch('dbsetup-completed');
     }
 
-    public function import(int $batch_index)
+    public function import(int $batch_index): void
     {
         $manifest = app(LegacyImporterService::class)->generateImportManifest();
 

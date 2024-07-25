@@ -25,7 +25,7 @@ class Updater extends Page
     public ?string $notes;
     public ?string $details;
 
-    public function mount()
+    public function mount(): void
     {
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
@@ -40,7 +40,7 @@ class Updater extends Page
         $this->fillForm();
     }
 
-    public function fillForm()
+    public function fillForm(): void
     {
         $this->callHook('beforeFill');
 
@@ -79,7 +79,7 @@ class Updater extends Page
         ]);
     }
 
-    public function migrate()
+    public function migrate(): void
     {
         Log::info('Update: run_migrations');
 
@@ -113,7 +113,7 @@ class Updater extends Page
         $this->dispatch('migrations-completed', message: $output);
     }
 
-    public function save()
+    public function save(): void
     {
         $this->redirect('/admin');
     }

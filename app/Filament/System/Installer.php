@@ -45,7 +45,7 @@ class Installer extends Page
     public ?array $env;
     public ?array $user;
 
-    public function mount()
+    public function mount(): void
     {
         if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
             Notification::make()
@@ -64,7 +64,7 @@ class Installer extends Page
         $this->fillForm();
     }
 
-    public function fillForm()
+    public function fillForm(): void
     {
         $this->callHook('beforeFill');
 
@@ -292,7 +292,7 @@ class Installer extends Page
         return true;
     }
 
-    private function envAndDbSetup()
+    private function envAndDbSetup(): void
     {
         $log_str = $this->env ?? [];
         $log_str['db_pass'] = '';
@@ -342,7 +342,7 @@ class Installer extends Page
         $this->dispatch('start-migrations');
     }
 
-    public function migrate()
+    public function migrate(): void
     {
         $console_out = '';
 
@@ -370,7 +370,7 @@ class Installer extends Page
         $this->dispatch('migrations-completed', message: $console_out);
     }
 
-    private function airlineAndUserSetup()
+    private function airlineAndUserSetup(): void
     {
         $data = $this->user ?? [];
 
@@ -440,7 +440,7 @@ class Installer extends Page
         return true;
     }
 
-    public function save()
+    public function save(): void
     {
         $this->validate();
         $this->airlineAndUserSetup();
