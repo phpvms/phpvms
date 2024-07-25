@@ -57,7 +57,7 @@ class Installer extends Page
             return;
         }
 
-        if (request()->get('step') === 'migrations' || (!request()->has('step') && config('app.name', 'default_dont_pick_this_name') !== 'default_dont_pick_this_name')) {
+        if (request()->get('step') === 'migrations' || (!request()->has('step') && !empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')) {
             $this->dispatch('start-migrations');
         }
 
@@ -103,12 +103,12 @@ class Installer extends Page
                         ->schema([
                             TextInput::make('site_name')
                                 ->label('Site Name')
-                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                 ->string(),
 
                             TextInput::make('app_url')
                                 ->label('Site URL')
-                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                 ->url()
                                 ->default(request()->root()),
                         ]),
@@ -120,7 +120,7 @@ class Installer extends Page
                         ->schema([
                             Select::make('db_conn')
                                 ->label('Database Type')
-                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                 ->live()
                                 ->options(['mysql' => 'mysql', 'mariadb' => 'mariadb', 'sqlite' => 'sqlite']),
 
@@ -132,7 +132,7 @@ class Installer extends Page
                             Group::make([
                                 TextInput::make('db_host')
                                     ->label('Database Host')
-                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                     ->string()
                                     ->hintAction(
                                         Action::make('testDb')
@@ -143,17 +143,17 @@ class Installer extends Page
 
                                 TextInput::make('db_port')
                                     ->label('Database Port')
-                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                     ->numeric()
                                     ->default('3306'),
 
                                 TextInput::make('db_name')
-                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                     ->string()
                                     ->label('Database Name'),
 
                                 TextInput::make('db_user')
-                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
+                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
                                     ->string()
                                     ->label('Database User'),
 
@@ -240,7 +240,7 @@ class Installer extends Page
             ])
                 ->startOnStep(function (): int {
                     // If .env hasn't been created yet we wanna create it
-                    if (config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name') {
+                    if (empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
                         return 1;
                     }
 
