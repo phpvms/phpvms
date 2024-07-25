@@ -45,6 +45,11 @@ class Installer extends Page
     public ?array $env;
     public ?array $user;
 
+    /**
+     * Called whenever the component is loaded
+     *
+     * @return void
+     */
     public function mount(): void
     {
         if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
@@ -57,6 +62,7 @@ class Installer extends Page
             return;
         }
 
+        // We want to run migrations if we are on the migrations page or if we're going to be moved there
         if (request()->get('step') === 'migrations' || (!request()->has('step') && !empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')) {
             $this->dispatch('start-migrations');
         }
@@ -64,6 +70,11 @@ class Installer extends Page
         $this->fillForm();
     }
 
+    /**
+     * To fill the form (set default values)
+     *
+     * @return void
+     */
     public function fillForm(): void
     {
         $this->callHook('beforeFill');
@@ -73,6 +84,13 @@ class Installer extends Page
         $this->callHook('afterFill');
     }
 
+
+    /**
+     * The filament form
+     *
+     * @param  Form  $form
+     * @return Form
+     */
     public function form(Form $form): Form
     {
         $requirementsData = $this->getRequirementsData();
@@ -96,6 +114,7 @@ class Installer extends Page
                         }
                     }),
 
+                // Required only if we haven't passed this step yet (ie no .env yet)
                 Wizard\Step::make('Database Setup')->schema([
                     Section::make('Site Config')
                         ->statePath('env')
@@ -239,7 +258,7 @@ class Installer extends Page
                 ]),
             ])
                 ->startOnStep(function (): int {
-                    // If .env hasn't been created yet we wanna create it
+                    // If .env hasn't been created yet, we want to create it
                     if (empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
                         return 1;
                     }
@@ -261,6 +280,11 @@ class Installer extends Page
         ]);
     }
 
+    /**
+     * Retrieve phpvms' requirements
+     *
+     * @return array
+     */
     private function getRequirementsData(): array
     {
         $reqSvc = app(RequirementsService::class);
@@ -281,6 +305,12 @@ class Installer extends Page
         ];
     }
 
+    /**
+     * Check if all item of an array passed requirements
+     *
+     * @param  array  $arr
+     * @return bool
+     */
     private function allPassed(array $arr): bool
     {
         foreach ($arr as $item) {
@@ -292,6 +322,12 @@ class Installer extends Page
         return true;
     }
 
+    /**
+     * Set up .env and trigger start migrations
+     *
+     * @return void
+     * @throws Halt
+     */
     private function envAndDbSetup(): void
     {
         $log_str = $this->env ?? [];
@@ -342,6 +378,11 @@ class Installer extends Page
         $this->dispatch('start-migrations');
     }
 
+    /**
+     * Run the migrations
+     *
+     * @return void
+     */
     public function migrate(): void
     {
         $console_out = '';
@@ -370,6 +411,12 @@ class Installer extends Page
         $this->dispatch('migrations-completed', message: $console_out);
     }
 
+    /**
+     * Create first user and airline
+     *
+     * @return void
+     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     */
     private function airlineAndUserSetup(): void
     {
         $data = $this->user ?? [];
@@ -406,6 +453,11 @@ class Installer extends Page
         setting_save('general.admin_email', $user->email);
     }
 
+    /**
+     * Test db connection
+     *
+     * @return bool
+     */
     private function testDb(): bool
     {
         $data = $this->env ?? [];
@@ -440,6 +492,12 @@ class Installer extends Page
         return true;
     }
 
+    /**
+     * Called when the form is filed
+     *
+     * @return void
+     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     */
     public function save(): void
     {
         $this->validate();

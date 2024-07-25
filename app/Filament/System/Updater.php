@@ -25,6 +25,11 @@ class Updater extends Page
     public ?string $notes;
     public ?string $details;
 
+    /**
+     * Called whenever the component is loaded
+     *
+     * @return void
+     */
     public function mount(): void
     {
         if (!app(InstallerService::class)->isUpgradePending()) {
@@ -40,6 +45,11 @@ class Updater extends Page
         $this->fillForm();
     }
 
+    /**
+     * To fill the form (set default values)
+     *
+     * @return void
+     */
     public function fillForm(): void
     {
         $this->callHook('beforeFill');
@@ -49,6 +59,12 @@ class Updater extends Page
         $this->callHook('afterFill');
     }
 
+    /**
+     * The filament form
+     *
+     * @param  Form  $form
+     * @return Form
+     */
     public function form(Form $form): Form
     {
         return $form->schema([
@@ -79,6 +95,11 @@ class Updater extends Page
         ]);
     }
 
+    /**
+     * Migrate the database
+     *
+     * @return void
+     */
     public function migrate(): void
     {
         Log::info('Update: run_migrations');
@@ -113,6 +134,11 @@ class Updater extends Page
         $this->dispatch('migrations-completed', message: $output);
     }
 
+    /**
+     * Called when the form is filed (ie update completed)
+     *
+     * @return void
+     */
     public function save(): void
     {
         $this->redirect('/admin');

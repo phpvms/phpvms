@@ -28,6 +28,11 @@ class LegacyImporter extends Page
     public ?array $db;
     public ?string $details;
 
+    /**
+     * Called whenever the component is loaded
+     *
+     * @return void
+     */
     public function mount(): void
     {
         if (Schema::hasTable('users') && User::count() > 0) {
@@ -42,6 +47,11 @@ class LegacyImporter extends Page
         $this->fillForm();
     }
 
+    /**
+     * To fill the form (set default values)
+     *
+     * @return void
+     */
     public function fillForm(): void
     {
         $this->callHook('beforeFill');
@@ -51,6 +61,12 @@ class LegacyImporter extends Page
         $this->callHook('afterFill');
     }
 
+    /**
+     * The filament form
+     *
+     * @param  Form  $form
+     * @return Form
+     */
     public function form(Form $form): Form
     {
         return $form->schema([
@@ -142,6 +158,11 @@ class LegacyImporter extends Page
         ]);
     }
 
+    /**
+     * Test db connection
+     *
+     * @return bool
+     */
     private function testDb(): bool
     {
         $data = $this->db ?? [];
@@ -176,6 +197,12 @@ class LegacyImporter extends Page
         return true;
     }
 
+    /**
+     * Save legacy db creds
+     *
+     * @return void
+     * @throws Halt
+     */
     private function dbSetup(): void
     {
         $data = $this->db ?? [];
@@ -211,6 +238,12 @@ class LegacyImporter extends Page
         $this->dispatch('dbsetup-completed');
     }
 
+    /**
+     * Import a batch
+     *
+     * @param  int  $batch_index
+     * @return void
+     */
     public function import(int $batch_index): void
     {
         $manifest = app(LegacyImporterService::class)->generateImportManifest();
@@ -243,6 +276,11 @@ class LegacyImporter extends Page
         }
     }
 
+    /**
+     * When the form is filed (ie import completed)
+     *
+     * @return void
+     */
     public function save()
     {
         $this->redirect('/admin');
