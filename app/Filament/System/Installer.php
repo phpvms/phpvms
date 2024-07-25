@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
+use Mockery\Matcher\Not;
 
 class Installer extends Page
 {
@@ -57,7 +58,7 @@ class Installer extends Page
             return;
         }
 
-        if (request()->get('step') === 'migrations') {
+        if (request()->get('step') === 'migrations' || (!request()->has('step') && config('app.name', 'default_dont_pick_this_name') !== 'default_dont_pick_this_name')) {
             $this->dispatch('start-migrations');
         }
 
@@ -87,6 +88,11 @@ class Installer extends Page
                     ])
                     ->beforeValidation(function () use ($requirementsData) {
                         if (!$requirementsData['php']['passed'] || !$requirementsData['extensionsPassed'] || !$requirementsData['directoriesPassed']) {
+                            Notification::make()
+                                ->title('Requirements are not met')
+                                ->danger()
+                                ->send();
+
                             throw new Halt();
                         }
                     }),
@@ -98,12 +104,12 @@ class Installer extends Page
                         ->schema([
                             TextInput::make('site_name')
                                 ->label('Site Name')
-                                ->required()
+                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                 ->string(),
 
                             TextInput::make('app_url')
                                 ->label('Site URL')
-                                ->required()
+                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                 ->url()
                                 ->default(request()->root()),
                         ]),
@@ -115,7 +121,7 @@ class Installer extends Page
                         ->schema([
                             Select::make('db_conn')
                                 ->label('Database Type')
-                                ->required()
+                                ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                 ->live()
                                 ->options(['mysql' => 'mysql', 'mariadb' => 'mariadb', 'sqlite' => 'sqlite']),
 
@@ -127,7 +133,7 @@ class Installer extends Page
                             Group::make([
                                 TextInput::make('db_host')
                                     ->label('Database Host')
-                                    ->required()
+                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                     ->string()
                                     ->hintAction(
                                         Action::make('testDb')
@@ -138,17 +144,17 @@ class Installer extends Page
 
                                 TextInput::make('db_port')
                                     ->label('Database Port')
-                                    ->required()
+                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                     ->numeric()
                                     ->default('3306'),
 
                                 TextInput::make('db_name')
-                                    ->required()
+                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                     ->string()
                                     ->label('Database Name'),
 
                                 TextInput::make('db_user')
-                                    ->required()
+                                    ->required(config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name')
                                     ->string()
                                     ->label('Database User'),
 
@@ -233,6 +239,15 @@ class Installer extends Page
                         ])->columns(),
                 ]),
             ])
+                ->startOnStep(function (): int {
+                    // If .env hasn't been created yet we wanna create it
+                    if (config('app.name', 'default_dont_pick_this_name') === 'default_dont_pick_this_name') {
+                        return 1;
+                    }
+
+                    // Else we directly skip to migrations
+                    return 3;
+                })
                 ->persistStepInQueryString()
                 ->submitAction(new HtmlString(Blade::render(
                     <<<'BLADE'
