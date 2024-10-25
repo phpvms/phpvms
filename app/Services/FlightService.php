@@ -190,6 +190,9 @@ class FlightService extends Service
         $aircraft_not_booked = setting('bids.block_aircraft', false);
 
         if ($aircraft_at_dpt_airport || $aircraft_not_booked) {
+            
+            $subfleets->loadMissing('aircraft');
+
             foreach ($subfleets as $subfleet) {
                 $subfleet->aircraft = $subfleet->aircraft->filter(
                     function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
