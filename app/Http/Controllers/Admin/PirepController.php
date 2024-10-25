@@ -73,7 +73,7 @@ class PirepController extends Controller
             $subfleets = $this->userSvc->getAllowableSubfleets($user);
         }
 
-        $subfleets->load('aircraft');
+        $subfleets->loadMissing('aircraft');
 
         foreach ($subfleets as $subfleet) {
             $tmp = [];
