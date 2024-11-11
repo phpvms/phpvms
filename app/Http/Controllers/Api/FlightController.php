@@ -65,13 +65,10 @@ class FlightController extends Controller
         $flight = $this->flightRepo->with([
             'airline',
             'fares',
-            'subfleets',
-            'subfleets.aircraft',
-            'subfleets.aircraft.bid',
-            'subfleets.fares',
+            'subfleets' => ['aircraft.bid', 'fares'],
             'field_values',
             'simbrief' => function ($query) use ($user) {
-                return $query->where('user_id', $user->id);
+                return $query->with('aircraft')->where('user_id', $user->id);
             },
         ])->find($id);
 
@@ -121,7 +118,7 @@ class FlightController extends Controller
                 'fares',
                 'field_values',
                 'simbrief' => function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
+                    return $query->with('aircraft')->where('user_id', $user->id);
                 },
             ];
 
@@ -145,9 +142,7 @@ class FlightController extends Controller
                 });
             }
 
-            $flights = $this->flightRepo
-                ->with($with)
-                ->paginate();
+            $flights = $this->flightRepo->with($with)->paginate();
         } catch (RepositoryException $e) {
             return response($e, 503);
         }

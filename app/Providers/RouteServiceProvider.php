@@ -170,6 +170,8 @@ class RouteServiceProvider extends ServiceProvider
                 Route::get('livemap', 'LiveMapController@index')->name('livemap.index');
 
                 Route::get('lang/{lang}', 'LanguageController@switchLang')->name('lang.switch');
+
+                Route::get('credits', 'CreditsController@index')->name('credits');
             });
 
             Route::group([
