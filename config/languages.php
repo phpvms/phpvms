@@ -29,4 +29,8 @@ return [
         'display'   => 'Japanese (日本語)',
         'flag-icon' => 'jp',
     ],
+    'tr' => [
+        'display'   => 'Turkish (Türkçe)',
+        'flag-icon' => 'tr',
+    ],
 ];
