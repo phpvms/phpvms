@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -e
+
+composer dump-autoload --optimize --classmap-authoritative --no-interaction --no-ansi
+
+# Since this will start before the app, we initialize everything here (allowing us to avoid overriding the app entrypoint).
+php artisan storage:link
+
+php artisan optimize:clear
+php artisan cache:clear
+php artisan view:clear
+
+php artisan event:cache
+php artisan config:cache
+php artisan route:cache
+#php artisan view:cache
+
+php artisan migrate --force
+
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.laravel.conf

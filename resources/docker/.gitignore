@@ -2,3 +2,8 @@
 !nginx/
 !php/
 !.gitignore
+!php.ini
+!start-task-runner
+!supervisord.conf
+!supervisord.laravel.conf
+!utilities.sh
