@@ -19,7 +19,7 @@
     "bootstrap3": "npm:bootstrap@~3.4",
     "ckeditor4": "4.14.0",
     "cookieconsent": "^3.1.0",
-    "cross-env": "^5.1.6",
+    "cross-env": "^7.0.3",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
     "flag-icon-css": "^2.9.0",
     "geolib": "^2.0.24",
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "copy-webpack-plugin": "^9.0.1",
-    "eslint": "^6.2.2",
+    "eslint": "^9.15.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.22.1",
