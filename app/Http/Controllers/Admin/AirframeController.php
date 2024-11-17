@@ -6,6 +6,7 @@ use App\Contracts\Controller;
 use App\Http\Requests\CreateAirframeRequest;
 use App\Http\Requests\UpdateAirframeRequest;
 use App\Models\Aircraft;
+use App\Models\Enums\AirframeSource;
 use App\Repositories\AirframeRepository;
 use App\Services\SimBriefService;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,7 @@ class AirframeController extends Controller
     public function index(Request $request): View
     {
         $this->airframeRepo->pushCriteria(new RequestCriteria($request));
-        $airframes = $this->airframeRepo->where('source', 'Custom')->orderby('icao', 'asc')->orderby('name', 'asc')->get();
+        $airframes = $this->airframeRepo->where('source', AirframeSource::INTERNAL)->orderby('icao', 'asc')->orderby('name', 'asc')->get();
 
         return view('admin.airframes.index', [
             'airframes' => $airframes,

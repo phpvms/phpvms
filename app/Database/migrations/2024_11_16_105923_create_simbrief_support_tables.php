@@ -23,7 +23,7 @@ return new class() extends Migration {
                 $table->string('icao');
                 $table->string('name');
                 $table->string('airframe_id')->nullable();
-                $table->string('source')->nullable();
+                $table->unsignedTinyInteger('source')->nullable();
                 $table->mediumText('details')->nullable();
                 $table->mediumText('options')->nullable();
                 $table->timestamps();

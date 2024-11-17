@@ -18,7 +18,7 @@
 <div class="row">
   <div class="col-sm-12">
     <div class="text-right">
-      {{ Form::hidden('source', 'Custom') }}
+      {{ Form::hidden('source', \App\Models\Enums\AirframeSource::INTERNAL) }}
       {{ Form::button('Save', ['type' => 'submit', 'class' => 'btn btn-success']) }}
     </div>
   </div>

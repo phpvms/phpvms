@@ -7,6 +7,7 @@ use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
+use App\Models\Enums\AirframeSource;
 use App\Models\Enums\FareType;
 use App\Models\Enums\FlightType;
 use App\Models\Fare;
@@ -258,7 +259,7 @@ class SimBriefController
 
         $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
         $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null;
-        $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', 'Custom') : $aircraft->sbairframes;
+        $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', AirframeSource::INTERNAL) : $aircraft->sbairframes;
 
         // Show the main simbrief form
         return view('flights.simbrief_form', [

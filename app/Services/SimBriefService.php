@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
+use App\Models\Enums\AirframeSource;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\SimBriefAircraft;
@@ -249,7 +250,7 @@ class SimBriefService extends Service
                         'icao'        => $af['airframe_icao'],
                         'name'        => $af['airframe_comments'],
                         'airframe_id' => ($af['airframe_id'] != false) ? $af['pilot_id'].'_'.$af['airframe_id'] : null,
-                        'source'      => 'SimBrief',
+                        'source'      => AirframeSource::SIMBRIEF,
                         'details'     => json_encode($af),
                         'options'     => json_encode($af['airframe_options']),
                     ]);
