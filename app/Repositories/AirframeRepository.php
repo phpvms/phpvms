@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Contracts\Repository;
+use App\Models\Enums\AirframeSource;
 use App\Models\SimBriefAirframe;
 use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
@@ -28,7 +29,7 @@ class AirframeRepository extends Repository implements CacheableInterface
         $retval = [];
         $where = [];
         if ($only_custom) {
-            $where['source'] = 'Custom';
+            $where['source'] = AirframeSource::INTERNAL;
         }
 
         if (filled($icao)) {
