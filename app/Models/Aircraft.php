@@ -47,7 +47,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property int      state
  * @property string   simbrief_type
  * @property Carbon   landing_time
- * @property float    fuel_onboard
+ * @property Fuel     fuel_onboard
  * @property Bid      bid
  */
 class Aircraft extends Model
