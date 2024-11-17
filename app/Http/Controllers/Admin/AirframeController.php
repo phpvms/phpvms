@@ -49,7 +49,6 @@ class AirframeController extends Controller
      */
     public function create(): View
     {
-
         return view('admin.airframes.create', [
             'icao_codes' => Aircraft::whereNotNull('icao')->groupBy('icao')->pluck('icao')->toArray(),
         ]);
@@ -162,7 +161,6 @@ class AirframeController extends Controller
     // Manually trigger update of SimBrief Airframe and Layouts
     public function updateSimbriefData()
     {
-
         Log::debug('Manually Updating SimBrief Support Data');
         $SimBriefSVC = app(SimBriefService::class);
         $SimBriefSVC->getAircraftAndAirframes();
