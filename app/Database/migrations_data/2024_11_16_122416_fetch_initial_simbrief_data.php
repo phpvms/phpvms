@@ -8,7 +8,6 @@ return new class() extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('simbrief_aircraft') && Schema::hasTable('simbrief_airframes')) {
-
             $SimBriefSVC = app(SimBriefService::class);
             $SimBriefSVC->getAircraftAndAirframes();
             $SimBriefSVC->GetBriefingLayouts();

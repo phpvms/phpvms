@@ -10,14 +10,14 @@ return new class() extends Migration {
         if (setting('units.weight') == 'kg') {
             // Get all aircraft data, directly from database which had weights defined
             $aircraft = DB::table('aircraft')->whereNotNull('dow')->orWhereNotNull('zfw')->orWhereNotNull('mtow')->orWhereNotNull('mlw')->orderBy('id')->get();
-            Log::debug('Begin weight conversion for ' . $aircraft->count() . ' aircraft records');
+            Log::debug('Begin weight conversion for '.$aircraft->count().' aircraft records');
             foreach ($aircraft as $ac) {
-                Log::debug('Converting and Updating Weights for ' . $ac->registration);
+                Log::debug('Converting and Updating Weights for '.$ac->registration);
                 DB::table('aircraft')->where('id', $ac->id)->update([
                     'dow'  => $this->PoundsConversion($ac->dow),
                     'zfw'  => $this->PoundsConversion($ac->zfw),
                     'mtow' => $this->PoundsConversion($ac->mtow),
-                    'mlw' => $this->PoundsConversion($ac->mlw),
+                    'mlw'  => $this->PoundsConversion($ac->mlw),
                 ]);
             }
         }

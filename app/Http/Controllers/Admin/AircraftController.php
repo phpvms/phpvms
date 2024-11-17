@@ -124,7 +124,7 @@ class AircraftController extends Controller
         $attrs['dow'] = (filled($attrs['dow']) && $attrs['dow'] > 0) ? Mass::make((float) $request->input('dow'), setting('units.weight')) : null;
         $attrs['zfw'] = (filled($attrs['zfw']) && $attrs['zfw'] > 0) ? Mass::make((float) $request->input('zfw'), setting('units.weight')) : null;
         $attrs['mtow'] = (filled($attrs['mtow']) && $attrs['mtow'] > 0) ? Mass::make((float) $request->input('mtow'), setting('units.weight')) : null;
-        $attrs['mlw'] = (filled($attrs['mlw']) &&  $attrs['mlw'] > 0) ? Mass::make((float) $request->input('mlw'), setting('units.weight')) : null;
+        $attrs['mlw'] = (filled($attrs['mlw']) && $attrs['mlw'] > 0) ? Mass::make((float) $request->input('mlw'), setting('units.weight')) : null;
 
         $aircraft = $this->aircraftRepo->create($attrs);
 
@@ -215,7 +215,7 @@ class AircraftController extends Controller
         $attrs['dow'] = (filled($attrs['dow']) && $attrs['dow'] > 0) ? Mass::make((float) $request->input('dow'), setting('units.weight')) : null;
         $attrs['zfw'] = (filled($attrs['zfw']) && $attrs['zfw'] > 0) ? Mass::make((float) $request->input('zfw'), setting('units.weight')) : null;
         $attrs['mtow'] = (filled($attrs['mtow']) && $attrs['mtow'] > 0) ? Mass::make((float) $request->input('mtow'), setting('units.weight')) : null;
-        $attrs['mlw'] = (filled($attrs['mlw']) &&  $attrs['mlw'] > 0) ? Mass::make((float) $request->input('mlw'), setting('units.weight')) : null;
+        $attrs['mlw'] = (filled($attrs['mlw']) && $attrs['mlw'] > 0) ? Mass::make((float) $request->input('mlw'), setting('units.weight')) : null;
 
         $this->aircraftRepo->update($attrs, $id);
 

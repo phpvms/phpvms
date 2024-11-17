@@ -246,8 +246,8 @@ class SimBriefController
 
         $acdata = [
             // Passenger and Baggage Weights needs to pounds, integer like 185
-            'paxwgt'  => $pax_weight,
-            'bagwgt'  => $bag_weight,
+            'paxwgt' => $pax_weight,
+            'bagwgt' => $bag_weight,
             // Airframe Weights needs to be thousands of pounds, with 3 digit precision like 85.715
             'mzfw'    => (filled($aircraft->zfw) && $aircraft->zfw->internal(0) > 0) ? round($aircraft->zfw->internal(0) / 1000, 3) : null,
             'mtow'    => (filled($aircraft->mtow) && $aircraft->mtow->internal(0) > 0) ? round($aircraft->mtow->internal(0) / 1000, 3) : null,

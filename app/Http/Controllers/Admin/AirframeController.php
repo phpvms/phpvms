@@ -19,7 +19,7 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class AirframeController extends Controller
 {
-     /**
+    /**
      * @param AirframeRepository $airframeRepo
      */
     public function __construct(
@@ -114,7 +114,7 @@ class AirframeController extends Controller
     }
 
     /**
-     * @param int                     $id
+     * @param int                   $id
      * @param UpdateAirframeRequest $request
      *
      * @throws ValidatorException

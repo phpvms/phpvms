@@ -251,7 +251,7 @@ class SimBriefService extends Service
                         'airframe_id' => ($af['airframe_id'] != false) ? $af['airframe_id'] : null,
                         'source'      => 'SimBrief',
                         'details'     => json_encode($af),
-                        'options'     => json_encode($af['airframe_options'])
+                        'options'     => json_encode($af['airframe_options']),
                     ]);
                 }
 
