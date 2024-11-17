@@ -9,6 +9,25 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+      - ./modules:/app/modules
+      - ./public/uploads:/app/public/uploads
+      - ./storage:/app/storage
+      - ./.env:/app/.env
+    networks:
+      - internal
+    depends_on:
+      - mariadb
+      - redis
+      - task-runner
+  task-runner:
+    build: .
+    command: start-task-runner
+    restart: unless-stopped
+    volumes:
+      - ./modules:/app/modules
+      - ./public/uploads:/app/public/uploads
+      - ./storage:/app/storage
+      - ./.env:/app/.env
     networks:
       - internal
     depends_on:
@@ -18,6 +37,7 @@ services:
   mariadb:
     image: 'mariadb:11'
     restart: unless-stopped
+    # May be useful if someone wants to access the db remotely
     ports:
       - '${FORWARD_DB_PORT:-3306}:3306'
     environment:
@@ -31,28 +51,23 @@ services:
     networks:
       - internal
     healthcheck:
-      test:
-        - CMD
-        - mysqladmin
-        - ping
-        - '-p${DB_PASSWORD}'
-      retries: 3
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
       timeout: 5s
+      retries: 3
 
   redis:
     image: 'redis:alpine'
     restart: unless-stopped
-    ports:
-      - '${FORWARD_REDIS_PORT:-6379}:6379'
+#    ports:
+#      - '${FORWARD_REDIS_PORT:-6379}:6379'
     volumes:
       - redis:/data
     networks:
       - internal
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
+      test: ["CMD", "redis-cli", "ping"]
       retries: 3
       timeout: 5s
 
