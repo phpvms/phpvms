@@ -28,10 +28,10 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user) {
-            // By default only allow the first user to view the horizon dashboard 
+            // By default only allow the first user to view the horizon dashboard
             // TODO: use an env key for this?
             return in_array($user->id, [
-                1
+                1,
             ]);
         });
     }
