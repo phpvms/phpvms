@@ -27,6 +27,7 @@
                       <div class="col-sm-6">
                         <label for="airframes">SimBrief Airframes</label>
                         <select name="airframes" id="sbairframe" class="form-control" onchange="CheckAirframe()">
+                            <option value="">Select an airframe if required...</option>
                           @foreach($sbairframes as $af)
                             <option value="{{ $af->airframe_id }}">{{ $af->name }}</option>
                           @endforeach
