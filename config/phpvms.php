@@ -58,6 +58,16 @@ return [
     'simbrief_update_url' => 'https://www.simbrief.com/api/xml.fetcher.php?userid={sb_user_id}&static_id={sb_static_id}',
 
     /*
+     * URL for fetching Simbrief aircraft and airframe data
+     */
+    'simbrief_airframes_url' => 'http://www.simbrief.com/api/inputs.airframes.json',
+
+    /*
+     * URL for fetching Simbrief layouts data
+     */
+    'simbrief_layouts_url' => 'http://www.simbrief.com/api/inputs.list.json',
+
+    /*
      * Your vaCentral API key
      */
     'vacentral_api_key' => env('VACENTRAL_API_KEY', ''),

@@ -12,6 +12,7 @@ use App\Models\Enums\FlightType;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;
+use App\Models\SimBriefLayout;
 use App\Models\User;
 use App\Repositories\FlightRepository;
 use App\Services\FareService;
@@ -102,7 +103,7 @@ class SimBriefController
 
             // Build proper aircraft collection considering all possible settings
             // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
-            $aircraft = Aircraft::withCount($withCount)->where($where)
+            $aircraft = Aircraft::withCount($withCount)->with(['sbaircraft', 'sbairframes'])->where($where)
                 ->when(setting('simbrief.block_aircraft'), function ($query) {
                     return $query->having('simbriefs_count', 0);
                 })->whereIn('subfleet_id', $subfleet_ids)
@@ -128,7 +129,7 @@ class SimBriefController
         // SimBrief profile does not exists and everything else is ok
         // Select aircraft which will be used for calculations and details
         /** @var Aircraft $aircraft */
-        $aircraft = Aircraft::with(['airline'])->where('id', $aircraft_id)->first();
+        $aircraft = Aircraft::with(['airline', 'sbaircraft', 'sbairframes'])->where('id', $aircraft_id)->first();
 
         // Figure out the proper fares to use for this flight/aircraft
         $all_fares = $this->fareSvc->getFareWithOverrides($aircraft->subfleet->fares, $flight->fares);
@@ -182,6 +183,7 @@ class SimBriefController
 
         $pax_load_sheet = [];
         $tpaxfig = 0;
+        $acd_maxpax = 0;
 
         /** @var Fare $fare */
         foreach ($all_fares as $fare) {
@@ -189,6 +191,7 @@ class SimBriefController
                 continue;
             }
 
+            $acd_maxpax = $acd_maxpax + $fare->capacity;
             $count = floor(($fare->capacity * rand($loadmin, $loadmax)) / 100);
             $tpaxfig += $count;
             $pax_load_sheet[] = [
@@ -203,7 +206,7 @@ class SimBriefController
             $loaddist[] = $fare->code.' '.$count;
         }
 
-        // Calculate total weights
+        // Calculate and convert weights according to SimBrief requirements
         if (setting('units.weight') === 'kg') {
             $tpaxload = round(($pax_weight * $tpaxfig) / 2.205);
             $tbagload = round(($bag_weight * $tpaxfig) / 2.205);
@@ -213,7 +216,6 @@ class SimBriefController
         }
 
         // Load up fares for cargo
-
         $tcargoload = 0;
         $cargo_load_sheet = [];
         foreach ($all_fares as $fare) {
@@ -239,6 +241,23 @@ class SimBriefController
 
         $request->session()->put('simbrief_fares', array_merge($pax_load_sheet, $cargo_load_sheet));
 
+        // Prepare SimBrief layouts, acdata json and actype code
+        $layouts = SimBriefLayout::get();
+
+        $acdata = [
+            // Passenger and Baggage Weights needs to pounds, integer like 185
+            'paxwgt'  => $pax_weight,
+            'bagwgt'  => $bag_weight,
+            // Airframe Weights needs to be thousands of pounds, with 3 digit precision like 85.715
+            'mzfw'    => (filled($aircraft->zfw) && $aircraft->zfw->internal(0) > 0) ? round($aircraft->zfw->internal(0) / 1000, 3) : null,
+            'mtow'    => (filled($aircraft->mtow) && $aircraft->mtow->internal(0) > 0) ? round($aircraft->mtow->internal(0) / 1000, 3) : null,
+            'mlw'     => (filled($aircraft->mlw) && $aircraft->mlw->internal(0) > 0) ? round($aircraft->mlw->internal(0) / 1000, 3) : null,
+            'hexcode' => filled($aircraft->hex_code) ? $aircraft->hex_code : null,
+            'maxpax'  => $acd_maxpax,
+        ];
+
+        $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
+
         // Show the main simbrief form
         return view('flights.simbrief_form', [
             'user'             => $user,
@@ -255,8 +274,13 @@ class SimBriefController
             'tbagload'         => $tbagload,
             'tpayload'         => $tpayload,
             'tcargoload'       => $tcargoload,
-            'loaddist'         => implode(' ', $loaddist),
+            'loaddist'         => implode(' ', $loaddist).' BAG '.$tbagload,
             'static_id'        => $static_id,
+            'sbaircraft'       => filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null,
+            'sbairframes'      => filled($aircraft->sbairframes) ? $aircraft->sbairframes : null,
+            'acdata'           => json_encode($acdata),
+            'actype'           => $actype,
+            'layouts'          => $layouts,
         ]);
     }
 

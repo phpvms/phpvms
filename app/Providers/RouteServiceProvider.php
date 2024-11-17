@@ -407,6 +407,9 @@ class RouteServiceProvider extends ServiceProvider
                 'delete',
             ], 'typeratings/{id}/users', 'TypeRatingController@users')->middleware('ability:admin,typeratings');
 
+            // SimBrief Airframes
+            Route::resource('airframes', 'AirframeController')->middleware('ability:admin,aircraft,fleet');
+
             // maintenance
             Route::match(['get'], 'maintenance', 'MaintenanceController@index')
                 ->name('maintenance.index')->middleware('ability:admin,maintenance');

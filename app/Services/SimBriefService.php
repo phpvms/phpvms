@@ -7,10 +7,14 @@ use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Pirep;
 use App\Models\SimBrief;
+use App\Models\SimBriefAircraft;
+use App\Models\SimBriefAirframe;
+use App\Models\SimBriefLayout;
 use App\Models\SimBriefXML;
 use Carbon\Carbon;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SimBriefService extends Service
@@ -216,6 +220,83 @@ class SimBriefService extends Service
             $brief->delete();
 
             // TODO: Delete any assets (Which assets ?)
+        }
+    }
+
+    /**
+     * Get Aircraft and Airframe Data from SimBrief
+     * Insert or Update relevant models, for proper and detailed flight planning
+     */
+    public function getAircraftAndAirframes()
+    {
+        $url = config('phpvms.simbrief_airframes_url');
+        $sbdata = Http::get($url);
+
+        if ($sbdata->ok()) {
+            Log::debug('SimBrief | Aircraft and Airframe data obtained');
+            $json = $sbdata->json();
+
+            // Update Or Create Aircraft Entries
+            foreach ($json as $ac) {
+                Log::debug('SimBrief | Importing Aircraft : '.$ac['aircraft_icao'].' '.$ac['aircraft_name']);
+
+                foreach ($ac['airframes'] as $af) {
+                    Log::debug('SimBrief | Importing Airframe : '.$af['airframe_name'].' '.$af['airframe_comments']);
+                    SimBriefAirframe::updateOrCreate([
+                        'icao' => $af['airframe_icao'],
+                        'name' => $af['airframe_comments'],
+                    ], [
+                        'icao'        => $af['airframe_icao'],
+                        'name'        => $af['airframe_comments'],
+                        'airframe_id' => ($af['airframe_id'] != false) ? $af['airframe_id'] : null,
+                        'source'      => 'SimBrief',
+                        'details'     => json_encode($af),
+                        'options'     => json_encode($af['airframe_options'])
+                    ]);
+                }
+
+                unset($ac['airframes']);
+
+                SimBriefAircraft::updateOrCreate([
+                    'icao' => $ac['aircraft_icao'],
+                ], [
+                    'icao'    => $ac['aircraft_icao'],
+                    'name'    => $ac['aircraft_name'],
+                    'details' => json_encode($ac),
+                ]);
+            }
+        } else {
+            Log::error('SimBrief | An Error Occured while trying to get aircraft and airframe data!');
+        }
+    }
+
+    /**
+     * Get OFP Layouts from SimBrief
+     * Insert or Update relevant model for proper flight planning
+     */
+    public function GetBriefingLayouts()
+    {
+        $url = config('phpvms.simbrief_layouts_url');
+        $sbdata = Http::get($url);
+
+        if ($sbdata->ok()) {
+            Log::debug('SimBrief | OFP Layouts data obtained');
+            $json = $sbdata->json();
+
+            // Update Or Create Layout Entries
+            foreach ($json['layouts'] as $sb) {
+                Log::debug('SimBrief | Importing Layout : '.$sb['name_long']);
+
+                SimBriefLayout::updateOrCreate([
+                    'id' => $sb['id'],
+                ], [
+                    'id'        => $sb['id'],
+                    'name'      => $sb['name_short'],
+                    'name_long' => $sb['name_long'],
+                ]);
+            }
+        } else {
+            Log::error('SimBrief | An Error Occured while trying to get layout data!');
         }
     }
 }
