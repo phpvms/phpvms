@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Contracts\Controller;
 use App\Http\Requests\CreateAirframeRequest;
 use App\Http\Requests\UpdateAirframeRequest;
+use App\Models\Aircraft;
 use App\Repositories\AirframeRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,10 @@ class AirframeController extends Controller
      */
     public function create(): View
     {
-        return view('admin.airframes.create');
+
+        return view('admin.airframes.create', [
+            'icao_codes' => Aircraft::whereNotNull('icao')->groupBy('icao')->pluck('icao')->toArray(),
+        ]);
     }
 
     /**
@@ -102,7 +106,8 @@ class AirframeController extends Controller
         }
 
         return view('admin.airframes.edit', [
-            'airframe' => $airframe,
+            'airframe'   => $airframe,
+            'icao_codes' => Aircraft::whereNotNull('icao')->groupBy('icao')->pluck('icao')->toArray(),
         ]);
     }
 
