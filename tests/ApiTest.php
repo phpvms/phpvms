@@ -309,7 +309,7 @@ final class ApiTest extends TestCase
         $aircraft = Aircraft::factory()->create([
             'subfleet_id' => $subfleet->id,
             'mtow'        => 93000,
-            'mzfw'        => 71500,
+            'zfw'         => 71500,
         ]);
 
         /**
