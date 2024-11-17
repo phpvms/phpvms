@@ -33,6 +33,7 @@ return [
         'enabled'       => env('DISCORD_OAUTH_ENABLED', false),
         'client_id'     => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'scopes'        => env('DISCORD_SCOPES', '') === '' ? [] : explode(',', env('DISCORD_SCOPES', '')),
         'redirect'      => '/oauth/discord/callback',
 
         // optional
@@ -45,6 +46,7 @@ return [
         'enabled'       => env('VATSIM_OAUTH_ENABLED', false),
         'client_id'     => env('VATSIM_CLIENT_ID'),
         'client_secret' => env('VATSIM_CLIENT_SECRET'),
+        'scopes'        => env('VATSIM_SCOPES', '') === '' ? [] : explode(',', env('VATSIM_SCOPES', '')),
         'redirect'      => '/oauth/vatsim/callback',
 
         // For local development only
@@ -55,6 +57,7 @@ return [
         'enabled'       => env('IVAO_OAUTH_ENABLED', false),
         'client_id'     => env('IVAO_CLIENT_ID'),
         'client_secret' => env('IVAO_CLIENT_SECRET'),
+        'scopes'        => env('IVAO_SCOPES', '') === '' ? [] : explode(',', env('IVAO_SCOPES', '')),
         'redirect'      => '/oauth/ivao/callback',
     ],
 ];

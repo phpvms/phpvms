@@ -55,6 +55,30 @@
         </select>
       </div>
 
+      @if(filled($type_ratings))
+        <div class="mt-3">
+          <div>Type Rating</div>
+          <select name="type_rating_id" id="type_rating_id" class="form-control select2">
+            <option value=""></option>
+            @foreach($type_ratings as $tr)
+              <option value="{{ $tr->id }}" @if(request()->get('type_rating_id') == $tr->id) selected @endif>{{ $tr->type.' | '.$tr->name }}</option>
+            @endforeach
+          </select>
+        </div>
+      @endif
+
+      @if(filled($icao_codes))
+        <div class="mt-3">
+          <div>ICAO Type</div>
+          <select name="icao_type" id="icao_type" class="form-control select2">
+            <option value=""></option>
+            @foreach($icao_codes as $icao)
+              <option value="{{ $icao }}" @if(request()->get('icao_type') == $icao) selected @endif>{{ $icao }}</option>
+            @endforeach
+          </select>
+        </div>
+      @endif
+
       <div class="clear mt-3" style="margin-top: 10px;">
         <button type="submit" class="btn btn-outline-primary">@lang('common.find')</button>
         <a href="{{ route('frontend.flights.index') }}">@lang('common.reset')</a>

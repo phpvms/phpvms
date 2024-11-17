@@ -87,6 +87,26 @@ airports:
     lat: 47.449
     lon: -122.309
     hub: 0
+  - id: KSAN
+    iata: SAN
+    icao: KSAN
+    name: San Diego International Airport
+    location: San Diego
+    country: United States
+    timezone: America/Los_Angeles
+    lat: 33.9425
+    lon: -118.408
+    hub: 0
+  - id: KLAX
+    iata: LAX
+    icao: KLAX
+    name: Los Angeles International Airport
+    location: Los Angeles
+    country: United States
+    timezone: America/Los_Angeles
+    lat: 32.7336
+    lon: -117.19
+    hub: 1
   - id: EGLL
     iata: LHR
     icao: EGLL
@@ -495,6 +515,21 @@ flights:
     flight_time: 240
     flight_type: J
     load_factor: 100
+    created_at: NOW
+    updated_at: NOW
+  - id: lkjSLDFSdlskdjf897
+    airline_id: 1
+    flight_number: 512
+    dpt_airport_id: KSAN
+    arr_airport_id: KLAX
+    route: KSAN CWARD2 SLI KLAX
+    distance: 106
+    level: 010
+    dpt_time: 6PM PST
+    arr_time: 7PM PST
+    flight_time: 55
+    flight_type: J
+    load_factor: 95
     created_at: NOW
     updated_at: NOW
   - id: flightid_3

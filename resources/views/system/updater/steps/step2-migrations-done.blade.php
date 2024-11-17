@@ -2,7 +2,8 @@
 @section('title', 'Update Completed')
 @section('content')
   <div style="align-content: center;">
-    {{ Form::open(['route' => 'update.complete', 'method' => 'GET']) }}
+    <form method="get" action="{{ route('update.complete') }}">
+      @csrf
 
     <pre class="lang-sh">
         <code class="lang-sh">
@@ -11,8 +12,8 @@
     </pre>
 
     <p style="text-align: right">
-      {{ Form::submit('Complete >>', ['class' => 'btn btn-success']) }}
+      <button type="submit" class="btn btn-success">Complete >></button>
     </p>
-    {{ Form::close() }}
+    </form>
   </div>
 @endsection

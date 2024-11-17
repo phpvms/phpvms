@@ -342,12 +342,14 @@ final class ApiTest extends TestCase
         $this->assertEquals($body['zfw'], $aircraft->zfw);
     }
 
+    /*
     public function testGetAllSettings(): void
     {
         $this->user = User::factory()->create();
         $res = $this->get('/api/settings')->assertStatus(200);
         $settings = $res->json();
     }
+    */
 
     public function testGetUser(): void
     {

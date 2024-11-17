@@ -92,6 +92,7 @@ class FlightImporter extends ImportExport
             'arr_airport_id' => strtoupper($row['arr_airport']),
             'route_code'     => filled($row['route_code']) ? $row['route_code'] : null,
             'route_leg'      => filled($row['route_leg']) ? $row['route_leg'] : null,
+            'days'           => filled($row['days']) ? $this->setDays($row['days']) : null,
         ], $row);
 
         $row['dpt_airport'] = strtoupper($row['dpt_airport']);
@@ -134,6 +135,8 @@ class FlightImporter extends ImportExport
 
         if (blank($row['pilot_pay'])) {
             $flight->setAttribute('pilot_pay', null);
+        } else {
+            $flight->setAttribute('pilot_pay', (float) $row['pilot_pay']);
         }
 
         if (blank($row['start_date'])) {

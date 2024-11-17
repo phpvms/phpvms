@@ -8,7 +8,8 @@ acars:
     lat: '18.981670375928'
     lon: '-79.987960713131'
     heading: '283'
-    altitude: '24954.890708875'
+    altitude_agl: '24954.890708875'
+    altitude_msl: '24954.890708875'
     vs: '-56'
     gs: '447.81957529674'
     transponder: null
@@ -27,7 +28,8 @@ acars:
     lat: '19.01074931075'
     lon: '-80.116947122245'
     heading: '283'
-    altitude: '21483.90439337'
+    altitude_agl: '21483.90439337'
+    altitude_msl: '21483.90439337'
     vs: '-57'
     gs: '450.05461228268'
     transponder: null
@@ -46,7 +48,8 @@ acars:
     lat: '19.039021032617'
     lon: '-80.242584645189'
     heading: '283'
-    altitude: '18000.954967422'
+    altitude_agl: '18000.954967422'
+    altitude_msl: '18000.954967422'
     vs: '-58'
     gs: '431.5690825604'
     transponder: null
@@ -65,7 +68,8 @@ acars:
     lat: '19.066116186076'
     lon: '-80.36338355333'
     heading: '284'
-    altitude: '14630.153058153'
+    altitude_agl: '14630.153058153'
+    altitude_msl: '14630.153058153'
     vs: '-55'
     gs: '414.70845758094'
     transponder: null
@@ -84,7 +88,8 @@ acars:
     lat: '19.091238961633'
     lon: '-80.475901417309'
     heading: '284'
-    altitude: '11927.379697397'
+    altitude_agl: '11927.379697397'
+    altitude_msl: '11927.379697397'
     vs: '-17'
     gs: '381.57664353055'
     transponder: null
@@ -103,7 +108,8 @@ acars:
     lat: '19.10261633392'
     lon: '-80.527021151647'
     heading: '284'
-    altitude: '11424.525210898'
+    altitude_agl: '11424.525210898'
+    altitude_msl: '11424.525210898'
     vs: '-17'
     gs: '337.58307680654'
     transponder: null
@@ -122,7 +128,8 @@ acars:
     lat: '19.112886513796'
     lon: '-80.57297038027'
     heading: '284'
-    altitude: '10919.983208888'
+    altitude_agl: '10919.983208888'
+    altitude_msl: '10919.983208888'
     vs: '-16'
     gs: '307.28164751381'
     transponder: null
@@ -141,7 +148,8 @@ acars:
     lat: '19.122449020305'
     lon: '-80.615560002642'
     heading: '284'
-    altitude: '10418.227268525'
+    altitude_agl: '10418.227268525'
+    altitude_msl: '10418.227268525'
     vs: '-16'
     gs: '292.97011599774'
     transponder: null
@@ -160,7 +168,8 @@ acars:
     lat: '19.131746364354'
     lon: '-80.657133675868'
     heading: '284'
-    altitude: '9921.6695218175'
+    altitude_agl: '9921.6695218175'
+    altitude_msl: '9921.6695218175'
     vs: '-16'
     gs: '293.10586428433'
     transponder: null
@@ -179,7 +188,8 @@ acars:
     lat: '19.141074988147'
     lon: '-80.698952940579'
     heading: '284'
-    altitude: '9423.0799985721'
+    altitude_agl: '9423.0799985721'
+    altitude_msl: '9423.0799985721'
     vs: '-16'
     gs: '291.77956791503'
     transponder: null
@@ -198,7 +208,8 @@ acars:
     lat: '19.150291803457'
     lon: '-80.740363792336'
     heading: '284'
-    altitude: '8921.7506913567'
+    altitude_agl: '8921.7506913567'
+    altitude_msl: '8921.7506913567'
     vs: '-16'
     gs: '289.03760297791'
     transponder: null

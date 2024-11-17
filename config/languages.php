@@ -25,4 +25,12 @@ return [
         'display'   => 'Portuguese (Brazilian)',
         'flag-icon' => 'br',
     ],
+    'jp' => [
+        'display'   => 'Japanese (日本語)',
+        'flag-icon' => 'jp',
+    ],
+    'tr' => [
+        'display'   => 'Turkish (Türkçe)',
+        'flag-icon' => 'tr',
+    ],
 ];

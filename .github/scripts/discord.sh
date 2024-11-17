@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](http://downloads.phpvms.net/$ZIP_NAME) | [tar](http://downloads.phpvms.net/$TAR_NAME)" >> "$GITHUB_OUTPUT"
+echo "discord_msg=Version ${NBGV_SemVer2} is available, download: [zip](https://phpvms.cdn.vmslabs.net/$ZIP_NAME) | [tar](https://phpvms.cdn.vmslabs.net/$TAR_NAME)" >> "$GITHUB_OUTPUT"
