@@ -39,15 +39,15 @@
                   <div class="row">
                     <div class="col-sm-2">
                       <label for="MZFW">Max.ZFW</label>
-                      <input id="mzfw" type="text" class="form-control" value="{{ $aircraft->zfw }}" disabled>
+                      <input id="mzfw" type="text" class="form-control" value="{{ $aircraft->zfw->local(0) }}" disabled>
                     </div>
                     <div class="col-sm-2">
                       <label for="MTOW">Max.TOW</label>
-                      <input id="mtow" type="text" class="form-control" value="{{ $aircraft->mtow }}" disabled>
+                      <input id="mtow" type="text" class="form-control" value="{{ $aircraft->mtow->local(0) }}" disabled>
                     </div>
                     <div class="col-sm-2">
                       <label for="MLW">Max.LW</label>
-                      <input id="mlw" type="text" class="form-control" value="{{ $aircraft->mlw }}" disabled>
+                      <input id="mlw" type="text" class="form-control" value="{{ $aircraft->mlw->local(0) }}" disabled>
                     </div>
                     <div class="col-sm-2">
                       <label for="selcal">Selcal</label>
