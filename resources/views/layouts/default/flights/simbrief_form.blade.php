@@ -27,7 +27,7 @@
                       <div class="col-sm-6">
                         <label for="airframes">SimBrief Airframes</label>
                         <select name="airframes" id="sbairframe" class="form-control" onchange="CheckAirframe()">
-                          @foreach($aircraft->sbairframes as $af)
+                          @foreach($sbairframes as $af)
                             <option value="{{ $af->airframe_id }}">{{ $af->name }}</option>
                           @endforeach
                         </select>
@@ -163,7 +163,7 @@
                 </div>
               </div>
               {{-- Prepare Form Fields For SimBrief --}}
-              <input class="form-control" type="hidden" name="acdata" id="acdata" value="{{ $acdata }}">
+              <input type="hidden" name="acdata" id="acdata" value="{{ $acdata }}">
               @if($tpaxfig)
                 <input type="hidden" name="pax" value="{{ $tpaxfig }}">
               @elseif(!$tpaxfig && $tcargoload)
@@ -476,6 +476,7 @@
   // Change Aircraft Type According to Airframe selection
   // And remove pax and baggage weights from acdata
   function CheckAirframe() {
+    let weight = Boolean({{ setting('simbrief.use_standard_weights', false) }})
     let actype = String("{{ $actype }}");
     let acdata = String("{{ $acdata }}");
     acOrig = JSON.parse(acdata.replace(/&quot;/g,'"'));
@@ -483,12 +484,16 @@
     let airframe = document.getElementById("sbairframe").value;
     if (airframe != "") {
       document.getElementById("actype").value = airframe
-      delete acJson.paxwgt
-      delete acJson.bagwgt
-      document.getElementById("acdata").value = JSON.stringify(acJson)
+      if (!weight) {
+        delete acJson.paxwgt
+        delete acJson.bagwgt
+        document.getElementById("acdata").value = JSON.stringify(acJson)
+      }
     } else {
       document.getElementById("actype").value = actype
-      document.getElementById("acdata").value = JSON.stringify(acOrig)
+      if (!weight) {
+        document.getElementById("acdata").value = JSON.stringify(acOrig)
+      }
     }
   }
 </script>

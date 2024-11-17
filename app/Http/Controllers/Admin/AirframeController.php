@@ -7,8 +7,10 @@ use App\Http\Requests\CreateAirframeRequest;
 use App\Http\Requests\UpdateAirframeRequest;
 use App\Models\Aircraft;
 use App\Repositories\AirframeRepository;
+use App\Services\SimBriefService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
 use Prettus\Repository\Criteria\RequestCriteria;
@@ -153,6 +155,20 @@ class AirframeController extends Controller
         $this->airframeRepo->delete($id);
 
         Flash::success('SimBrief Airframe deleted successfully.');
+
+        return redirect(route('admin.airframes.index'));
+    }
+
+    // Manually trigger update of SimBrief Airframe and Layouts
+    public function updateSimbriefData()
+    {
+
+        Log::debug('Manually Updating SimBrief Support Data');
+        $SimBriefSVC = app(SimBriefService::class);
+        $SimBriefSVC->getAircraftAndAirframes();
+        $SimBriefSVC->GetBriefingLayouts();
+
+        Flash::success('SimBrief Airframe and Layouts updated successfully.');
 
         return redirect(route('admin.airframes.index'));
     }

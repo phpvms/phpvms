@@ -4,7 +4,14 @@
   <li>
     <a href="{{ route('admin.airframes.create') }}">
       <i class="ti-plus"></i>
-      Add New
+      Add New Airframe
+    </a>
+  </li>
+  &nbsp;
+  <li>
+    <a href="{{ route('admin.airframes.sbupdate') }}">
+      <i class="ti-plus"></i>
+      Update SimBrief Airframes & Layouts
     </a>
   </li>
 @endsection

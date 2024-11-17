@@ -257,6 +257,8 @@ class SimBriefController
         ];
 
         $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
+        $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null;
+        $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', 'Custom') : $aircraft->sbairframes;
 
         // Show the main simbrief form
         return view('flights.simbrief_form', [
@@ -276,8 +278,8 @@ class SimBriefController
             'tcargoload'       => $tcargoload,
             'loaddist'         => implode(' ', $loaddist).' BAG '.$tbagload,
             'static_id'        => $static_id,
-            'sbaircraft'       => filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null,
-            'sbairframes'      => filled($aircraft->sbairframes) ? $aircraft->sbairframes : null,
+            'sbaircraft'       => $sbaircraft,
+            'sbairframes'      => filled($sbairframes) ? $sbairframes : null,
             'acdata'           => json_encode($acdata),
             'actype'           => $actype,
             'layouts'          => $layouts,

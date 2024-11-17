@@ -409,6 +409,7 @@ class RouteServiceProvider extends ServiceProvider
 
             // SimBrief Airframes
             Route::resource('airframes', 'AirframeController')->middleware('ability:admin,aircraft,fleet');
+            Route::get('sbupdate', 'AirframeController@updateSimbriefData')->name('airframes.sbupdate')->middleware('ability:admin,aircraft,fleet');
 
             // maintenance
             Route::match(['get'], 'maintenance', 'MaintenanceController@index')
