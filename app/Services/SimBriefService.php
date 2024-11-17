@@ -248,7 +248,7 @@ class SimBriefService extends Service
                     ], [
                         'icao'        => $af['airframe_icao'],
                         'name'        => $af['airframe_comments'],
-                        'airframe_id' => ($af['airframe_id'] != false) ? $af['airframe_id'] : null,
+                        'airframe_id' => ($af['airframe_id'] != false) ? $af['pilot_id'].'_'.$af['airframe_id'] : null,
                         'source'      => 'SimBrief',
                         'details'     => json_encode($af),
                         'options'     => json_encode($af['airframe_options']),
