@@ -3,8 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
-use App\Support\Units\Mass;
-use App\Support\Units\Fuel;
 
 /**
  * @mixin \App\Models\Aircraft
