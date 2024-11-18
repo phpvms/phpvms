@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Casts\FuelCast;
+use App\Models\Casts\MassCast;
 use App\Models\Enums\AircraftStatus;
 use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
@@ -31,10 +32,10 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property string   registration
  * @property string   fin
  * @property int      flight_time
- * @property float    dow
- * @property float    mlw
- * @property float    mtow
- * @property float    zfw
+ * @property Mass     dow
+ * @property Mass     mlw
+ * @property Mass     mtow
+ * @property Mass     zfw
  * @property string   hex_code
  * @property string   selcal
  * @property Airport  airport
@@ -46,7 +47,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property int      state
  * @property string   simbrief_type
  * @property Carbon   landing_time
- * @property float    fuel_onboard
+ * @property Fuel     fuel_onboard
  * @property Bid      bid
  */
 class Aircraft extends Model
@@ -90,12 +91,12 @@ class Aircraft extends Model
     protected $casts = [
         'flight_time'  => 'float',
         'fuel_onboard' => FuelCast::class,
-        'dow'          => 'float',
-        'mlw'          => 'float',
-        'mtow'         => 'float',
+        'dow'          => MassCast::class,
+        'mlw'          => MassCast::class,
+        'mtow'         => MassCast::class,
         'state'        => 'integer',
         'subfleet_id'  => 'integer',
-        'zfw'          => 'float',
+        'zfw'          => MassCast::class,
     ];
 
     /**
@@ -242,5 +243,15 @@ class Aircraft extends Model
     public function subfleet(): BelongsTo
     {
         return $this->belongsTo(Subfleet::class, 'subfleet_id');
+    }
+
+    public function sbaircraft(): HasOne
+    {
+        return $this->hasOne(SimBriefAircraft::class, 'icao', 'icao');
+    }
+
+    public function sbairframes(): HasMany
+    {
+        return $this->hasMany(SimBriefAirframe::class, 'icao', 'icao');
     }
 }
