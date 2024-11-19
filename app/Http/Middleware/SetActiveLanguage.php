@@ -18,7 +18,15 @@ class SetActiveLanguage
      */
     public function handle(Request $request, Closure $next)
     {
-        App::setLocale($request->cookie('lang', config('app.locale', 'en')));
+        $preferredLanguage = 'en';
+        if ($request->hasCookie('lang')) {
+            $preferredLanguage = $request->cookie('lang', config('app.locale', 'en'));
+        } else {
+            $preferredLanguage = $request->getPreferredLanguage(array_keys(config('languages')));
+        }
+
+        App::setLocale($preferredLanguage);
+
         return $next($request);
     }
 }
