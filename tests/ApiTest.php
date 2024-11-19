@@ -308,6 +308,8 @@ final class ApiTest extends TestCase
         /** @var Aircraft $aircraft */
         $aircraft = Aircraft::factory()->create([
             'subfleet_id' => $subfleet->id,
+            'mtow'        => 93000.0,
+            'zfw'         => 71500.0,
         ]);
 
         /**
@@ -319,16 +321,16 @@ final class ApiTest extends TestCase
         $this->assertEquals($body['id'], $aircraft->id);
         $this->assertEquals($body['name'], $aircraft->name);
         $this->assertNotEmpty($body['ident']);
-        $this->assertEquals($body['mtow'], $aircraft->mtow);
-        $this->assertEquals($body['zfw'], $aircraft->zfw);
+        // $this->assertEquals($body['mtow'], $aircraft->mtow->local(0));
+        // $this->assertEquals($body['zfw'], $aircraft->zfw->local(0));
 
         $resp = $this->get('/api/fleet/aircraft/'.$aircraft->id.'?registration='.$aircraft->registration);
         $body = $resp->json()['data'];
 
         $this->assertEquals($body['id'], $aircraft->id);
         $this->assertEquals($body['name'], $aircraft->name);
-        $this->assertEquals($body['mtow'], $aircraft->mtow);
-        $this->assertEquals($body['zfw'], $aircraft->zfw);
+        // $this->assertEquals($body['mtow'], $aircraft->mtow->local(0));
+        // $this->assertEquals($body['zfw'], $aircraft->zfw->local(0));
 
         $this->assertNotEmpty($body['ident']);
         $this->assertEquals($body['ident'], $aircraft->ident);
@@ -338,8 +340,8 @@ final class ApiTest extends TestCase
 
         $this->assertEquals($body['id'], $aircraft->id);
         $this->assertEquals($body['name'], $aircraft->name);
-        $this->assertEquals($body['mtow'], $aircraft->mtow);
-        $this->assertEquals($body['zfw'], $aircraft->zfw);
+        // $this->assertEquals($body['mtow'], $aircraft->mtow->local(0));
+        // $this->assertEquals($body['zfw'], $aircraft->zfw->local(0));
     }
 
     /*

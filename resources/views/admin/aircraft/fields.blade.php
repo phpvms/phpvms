@@ -84,6 +84,11 @@
             {{ Form::text('simbrief_type', null, ['class' => 'form-control']) }}
             <p class="text-danger">{{ $errors->first('simbrief_type') }}</p>
           </div>
+          <div class="form-group col-sm-3">
+            {{ Form::label('hex_code', 'Hex Code:') }}
+            {{ Form::text('hex_code', null, ['class' => 'form-control']) }}
+            <p class="text-danger">{{ $errors->first('hex_code') }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -93,28 +98,44 @@
 <div class="row">
   <div class="col-12">
     <div class="form-container">
-      <h6><i class="fas fa-plane"></i>&nbsp;Certified Weights</h6>
+      <h6><i class="fas fa-plane"></i>&nbsp;Certified Weights ({{ setting('units.weight') }})</h6>
       <div class="form-container-body">
         <div class="row">
           <div class="form-group col-sm-3">
             {{ Form::label('dow', 'Dry Operating Weight (DOW/OEW):') }}
-            {{ Form::number('dow', null, ['class' => 'form-control']) }}
-            <p class="text-danger">{{ $errors->first('dow') }}</p>
+            <div class="row">
+              <div class="col-sm-12">
+                <input class="form-control" type="number" name="dow" value="{{ $aircraft->dow->local(0) ?? null }}" step="1" />
+                <p class="text-danger">{{ $errors->first('dow') }}</p>
+              </div>
+            </div>
           </div>
           <div class="form-group col-sm-3">
             {{ Form::label('zfw', 'Max Zero Fuel Weight (MZFW):') }}
-            {{ Form::number('zfw', null, ['class' => 'form-control']) }}
-            <p class="text-danger">{{ $errors->first('zfw') }}</p>
+            <div class="row">
+              <div class="col-sm-12">
+                <input class="form-control" type="number" name="zfw" value="{{ $aircraft->zfw->local(0) ?? null }}" step="1" />
+                <p class="text-danger">{{ $errors->first('zfw') }}</p>
+              </div>
+            </div>            
           </div>
           <div class="form-group col-sm-3">
             {{ Form::label('mtow', 'Max Takeoff Weight (MTOW):') }}
-            {{ Form::number('mtow', null, ['class' => 'form-control']) }}
-            <p class="text-danger">{{ $errors->first('mtow') }}</p>
+            <div class="row">
+              <div class="col-sm-12">
+                <input class="form-control" type="number" name="mtow" value="{{ $aircraft->mtow->local(0) ?? null }}" step="1" />
+                <p class="text-danger">{{ $errors->first('mtow') }}</p>
+              </div>
+            </div> 
           </div>
           <div class="form-group col-sm-3">
             {{ Form::label('mlw', 'Max Landing Weight (MLW):') }}
-            {{ Form::number('mlw', null, ['class' => 'form-control']) }}
-            <p class="text-danger">{{ $errors->first('mlw') }}</p>
+            <div class="row">
+              <div class="col-sm-12">
+                <input class="form-control" type="number" name="mlw" value="{{ $aircraft->mlw->local(0) ?? null }}" step="1" />
+                <p class="text-danger">{{ $errors->first('mlw') }}</p>
+              </div>
+            </div> 
           </div>
         </div>
       </div>
