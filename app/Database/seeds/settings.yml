@@ -75,6 +75,13 @@
   options: ''
   type: boolean
   description: If checked, registrations will be disabled and only admins can add pilots
+- key: general.auto_language_detection
+  name: 'Auto language detection'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, the app's language will be inferred from the browser's preferences
 - key: captcha.enabled
   name: 'hCaptcha Enabled'
   group: captcha
