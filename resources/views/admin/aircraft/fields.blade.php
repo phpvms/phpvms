@@ -105,7 +105,7 @@
             {{ Form::label('dow', 'Dry Operating Weight (DOW/OEW):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="dow" value="{{ $aircraft->dow->local(0) ?? null }}" step="1" />
+                <input class="form-control" type="number" name="dow" value="@if(isset($aircraft)){{ $aircraft->dow->local(0) }}@endif" step="1" />
                 <p class="text-danger">{{ $errors->first('dow') }}</p>
               </div>
             </div>
@@ -114,7 +114,7 @@
             {{ Form::label('zfw', 'Max Zero Fuel Weight (MZFW):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="zfw" value="{{ $aircraft->zfw->local(0) ?? null }}" step="1" />
+                <input class="form-control" type="number" name="zfw" value="@if(isset($aircraft)){{ $aircraft->zfw->local(0) }}@endif" step="1" />
                 <p class="text-danger">{{ $errors->first('zfw') }}</p>
               </div>
             </div>            
@@ -123,7 +123,7 @@
             {{ Form::label('mtow', 'Max Takeoff Weight (MTOW):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="mtow" value="{{ $aircraft->mtow->local(0) ?? null }}" step="1" />
+                <input class="form-control" type="number" name="mtow" value="@if(isset($aircraft)){{ $aircraft->mtow->local(0) }}@endif" step="1" />
                 <p class="text-danger">{{ $errors->first('mtow') }}</p>
               </div>
             </div> 
@@ -132,7 +132,7 @@
             {{ Form::label('mlw', 'Max Landing Weight (MLW):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="mlw" value="{{ $aircraft->mlw->local(0) ?? null }}" step="1" />
+                <input class="form-control" type="number" name="mlw" value="@if(isset($aircraft)){{ $aircraft->mlw->local(0) }}@endif" step="1" />
                 <p class="text-danger">{{ $errors->first('mlw') }}</p>
               </div>
             </div> 
