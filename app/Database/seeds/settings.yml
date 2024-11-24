@@ -277,6 +277,13 @@
   options: ''
   type: number
   description: 'How much the cargo load factor can vary per-flight'
+- key: flights.only_company_aircraft
+  name: 'Allow Only Company Aircraft'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'If no subfleets are assigned to a flight, only company aircraft will be used'
 - key: simbrief.api_key
   name: 'Simbrief API Key'
   group: simbrief

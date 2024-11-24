@@ -159,6 +159,11 @@ class FlightService extends Service
         /** @var \Illuminate\Support\Collection $subfleets */
         $subfleets = $flight->subfleets;
 
+        // If no subfleets assigned and airline subfleets are forced, get airline subfleets
+        if (($subfleets === null || $subfleets->count() === 0) && setting('flights.only_company_aircraft', false)) {
+            $subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->get();
+        }
+
         // If no subfleets assigned to a flight get users allowed subfleets
         if ($subfleets === null || $subfleets->count() === 0) {
             $subfleets = $this->userSvc->getAllowableSubfleets($user);
@@ -169,10 +174,8 @@ class FlightService extends Service
             return $flight;
         }
 
-        /*
-         * Only allow aircraft that the user has access to in their rank
-         */
-        if (setting('pireps.restrict_aircraft_to_rank', false)) {
+        // Only allow aircraft that the user has access to by their rank or type rating
+        if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
             $subfleets = $subfleets->filter(function ($subfleet, $i) use ($allowed_subfleets) {
                 if ($allowed_subfleets->contains($subfleet->id)) {
