@@ -1,13 +1,14 @@
 <?php
 
 return [
-    'de' => [
-        'display'   => 'German',
-        'flag-icon' => 'de',
-    ],
+    // First in the list is the default
     'en' => [
         'display'   => 'English',
         'flag-icon' => 'us',
+    ],
+    'de' => [
+        'display'   => 'German',
+        'flag-icon' => 'de',
     ],
     'es-es' => [
         'display'   => 'Spanish (Spain)',

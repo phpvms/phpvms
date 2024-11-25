@@ -50,6 +50,10 @@
       <li><a href="{{ url('/admin/airlines') }}"><i class="pe-7s-paper-plane"></i>airlines</a></li>
       @endability
 
+      @ability('admin', 'aircraft', 'fleet')
+      <li><a href="{{ url('/admin/airframes') }}"><i class="pe-7s-plane"></i>sb airframes</a></li>
+      @endability
+
       @ability('admin', 'airports')
       <li><a href="{{ url('/admin/airports') }}"><i class="pe-7s-map-marker"></i>airports</a></li>
       @endability

@@ -9,6 +9,7 @@ use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
 use App\Models\Subfleet;
 use App\Support\ICAO;
+use App\Support\Units\Mass;
 
 /**
  * Import aircraft
@@ -90,12 +91,13 @@ class AircraftImporter extends ImportExport
         // Check fields and set to null if they are blank
         // Somehow they got empty strings instead of null without this!
         $row['fin'] = blank($row['fin']) ? null : $row['fin'];
-        $row['dow'] = blank($row['dow']) ? null : $row['dow'];
-        $row['zfw'] = blank($row['zfw']) ? null : $row['zfw'];
-        $row['mtow'] = blank($row['mtow']) ? null : $row['mtow'];
-        $row['mlw'] = blank($row['mlw']) ? null : $row['mlw'];
         $row['selcal'] = blank($row['selcal']) ? null : $row['selcal'];
         $row['simbrief_type'] = blank($row['simbrief_type']) ? null : $row['simbrief_type'];
+        // Set the correct mass units
+        $row['dow'] = $this->CorrectMassUnit($row['dow']);
+        $row['zfw'] = $this->CorrectMassUnit($row['zfw']);
+        $row['mtow'] = $this->CorrectMassUnit($row['mtow']);
+        $row['mlw'] = $this->CorrectMassUnit($row['mlw']);
 
         // Try to add or update
         try {
@@ -109,5 +111,14 @@ class AircraftImporter extends ImportExport
 
         $this->log('Imported '.$row['registration'].' '.$row['name']);
         return true;
+    }
+
+    public function CorrectMassUnit($value)
+    {
+        if ($value > 0) {
+            return Mass::make((float) $value, setting('units.weight'));
+        }
+
+        return null;
     }
 }

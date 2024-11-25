@@ -68,6 +68,7 @@ class Pirep extends Resource
             $res['block_off_time'] = $this->block_off_time->toIso8601ZuluString();
         }
 
+        $res['aircraft'] = new Aircraft($this->aircraft);
         $res['airline'] = new Airline($this->airline);
         $res['dpt_airport'] = new Airport($this->dpt_airport);
         $res['arr_airport'] = new Airport($this->arr_airport);
