@@ -34,10 +34,10 @@ class Stats extends Resource
             ->value('uresult');
 
         return [
-            'balance'       => $this->journal->balance->money->getValue() ?? 0,
-            'avgScore'      => number_format($avgScore) ?? 0,
-            'avgLanding'    => number_format($avgLanding) ?? 0,
-            'avgFuel'       => number_format($avgFuel / 2.20462262185) . ' kg' ?? '',
+            'balance'    => $this->journal->balance->money->getValue() ?? 0,
+            'avgScore'   => number_format($avgScore) ?? 0,
+            'avgLanding' => number_format($avgLanding) ?? 0,
+            'avgFuel'    => number_format($avgFuel / 2.20462262185) . ' kg' ?? '',
         ];
     }
 }
