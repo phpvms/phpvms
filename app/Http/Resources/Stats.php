@@ -2,10 +2,10 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Support\Facades\DB;
 use App\Contracts\Resource;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @mixin \App\Models\Stats
