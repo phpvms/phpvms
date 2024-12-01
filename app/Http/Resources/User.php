@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * @mixin \App\Models\User
