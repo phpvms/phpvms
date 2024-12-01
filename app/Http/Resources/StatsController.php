@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use App\Contracts\Controller;
 use App\Http\Resources\Stats;
 use App\Models\Enums\PirepState;
@@ -12,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class StatsController extends Controller
 {
-
-
     public function index(Request $request)
     {
         $table = 'pireps';
@@ -22,7 +19,6 @@ class StatsController extends Controller
         $where['state'] = PirepState::ACCEPTED;
         $avgStats = ['flight_time', 'landing_rate', 'fuel_used', 'score'];
         $response = [];
-
 
         $response['flights'] = DB::table($table)->selectRaw('count(id) as count')->where($where)->value('count');
         $response['flight_time'] = DB::table($table)->selectRaw('sum(flight_time) as count')->where($where)->value('count');
