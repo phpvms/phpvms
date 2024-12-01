@@ -24,7 +24,7 @@ class StatsController extends Controller
         $response['flight_time'] = Pirep::where($where)->count();
 
         foreach ($avgStats as $static) {
-            $response['average_' . $static] = Pirep::where($where)->avg($static);
+            $response['average_'.$static] = Pirep::where($where)->avg($static);
         }
 
         $response['balance'] = Auth::user()->journal->balance->getValue() ?? 0;
