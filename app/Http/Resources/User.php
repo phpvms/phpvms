@@ -31,7 +31,6 @@ class User extends Resource
             'total_time'    => $this->flight_time,
             'timezone'      => $this->timezone,
             'state'         => $this->state,
-
         ];
 
         $res['airline'] = Airline::make($this->whenLoaded('airline'));
