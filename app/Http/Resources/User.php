@@ -35,7 +35,6 @@ class User extends Resource
 
         ];
 
-        $res['stats'] = new Stats(Auth::user());
         $res['airline'] = Airline::make($this->whenLoaded('airline'));
         $res['bids'] = UserBid::collection($this->whenLoaded('bids'));
         $res['rank'] = Rank::make($this->whenLoaded('rank'));
