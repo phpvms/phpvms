@@ -19,7 +19,6 @@ class StatsController extends Controller
         $avgStats = ['flight_time', 'landing_rate', 'fuel_used', 'score'];
         $response = [];
 
-
         $response['flights'] = Pirep::where($where)->count();
         $response['flight_time'] = Pirep::where($where)->count();
 
