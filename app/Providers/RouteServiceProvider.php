@@ -192,7 +192,7 @@ class RouteServiceProvider extends ServiceProvider
     private function mapAdminRoutes()
     {
         Route::group([
-            'namespace'  => $this->namespace.'\\Admin',
+            'namespace'  => $this->namespace . '\\Admin',
             'prefix'     => 'admin',
             'as'         => 'admin.',
             'middleware' => ['web', 'auth', 'ability:admin,admin-access', EnableActivityLogging::class],
@@ -573,7 +573,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::group([
             'middleware' => ['api'],
-            'namespace'  => $this->namespace.'\\Api',
+            'namespace'  => $this->namespace . '\\Api',
             'prefix'     => 'api',
             'as'         => 'api.',
         ], function () {
@@ -660,6 +660,7 @@ class RouteServiceProvider extends ServiceProvider
 
                 // This is the info of the user whose token is in use
                 Route::get('user', 'UserController@index');
+                Route::get('user/stats', 'StatsController@index');
                 Route::get('user/fleet', 'UserController@fleet');
                 Route::get('user/pireps', 'UserController@pireps');
 
