@@ -71,9 +71,10 @@ class AcarsController extends Controller
 
         return PirepResource::collection($pireps);
     }
-    
+
     /**
      * Gets all the supported acars sources in the AcarsSource Enum
+     * 
      * @return void
      */
     public function get_supported_acars_sources()
