@@ -12,7 +12,7 @@ use App\Http\Requests\Acars\PositionRequest;
 use App\Http\Resources\AcarsRoute as AcarsRouteResource;
 use App\Http\Resources\Pirep as PirepResource;
 use App\Models\Acars;
-use App\Models\AcarsSource;
+use App\Models\Enums\AcarsSource;
 use App\Models\Enums\AcarsType;
 use App\Models\Pirep;
 use App\Repositories\AcarsRepository;
@@ -70,6 +70,15 @@ class AcarsController extends Controller
         );
 
         return PirepResource::collection($pireps);
+    }
+    
+    /**
+     * Gets all the supported acars sources in the AcarsSource Enum
+     * @return void
+     */
+    public function get_supported_acars_sources()
+    {
+        return response()->json(AcarsSource::$labels);
     }
 
     /**
@@ -197,12 +206,6 @@ class AcarsController extends Controller
                 }
             }
 
-            if (isset($position['source'])) {
-                $source = AcarsSource::firstOrCreate(['slug' => $position['source']]);
-                $position['source_id'] = $source->id;
-                unset($position['source']);
-            }
-
             try {
                 if (!empty($position['id'])) {
                     Acars::updateOrInsert(
@@ -271,12 +274,6 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
-            if (isset($log['source'])) {
-                $source = AcarsSource::firstOrCreate(['slug' => $log['source']]);
-                $log['source_id'] = $source->id;
-                unset($log['source']);
-            }
-
             try {
                 if (isset($log['id'])) {
                     Acars::updateOrInsert(
@@ -334,12 +331,6 @@ class AcarsController extends Controller
 
             if (isset($log['created_at'])) {
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
-            }
-
-            if (isset($log['source'])) {
-                $source = AcarsSource::firstOrCreate(['slug' => $log['source']]);
-                $log['source_id'] = $source->id;
-                unset($log['source']);
             }
 
             try {
