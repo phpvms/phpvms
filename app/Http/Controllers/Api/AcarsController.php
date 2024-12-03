@@ -74,7 +74,7 @@ class AcarsController extends Controller
 
     /**
      * Gets all the supported acars sources in the AcarsSource Enum
-     * 
+     *
      * @return void
      */
     public function get_supported_acars_sources()
