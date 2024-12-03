@@ -769,9 +769,10 @@ class PirepService extends Service
         $has_vmsacars = Module::find('VMSAcars');
 
         if ($has_vmsacars && $flight) {
-            $free_flights_enabled = DB::table('vmsacars_config')->find('free_flights_airline_aircraft_only')?->value;
+            $free_flights_disabled = DB::table('vmsacars_config')->find('disable_free_flights')?->value;
+            // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
-            if (get_truth_state($free_flights_enabled) === false) {
+            if (get_truth_state($free_flights_disabled) == true) {
                 // Lookup for flights from diversion airport to original destination airport
                 $reposition_flights_count = $this->flightRepo->where([
                     'dpt_airport_id' => $diversion_airport->id,
@@ -801,7 +802,9 @@ class PirepService extends Service
 
                     $reposition_flight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
 
-                    Log::info('Divertion repositioning flight '.$reposition_flight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
+                    Log::info('Diversion repositioning flight '.$reposition_flight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
+                } else {
+                    Log::info('Diversion repositioning flight NOT created, '.$reposition_flights_count.' flights found between '.$diversion_airport->id.' and '.$pirep->arr_airport_id);
                 }
             }
         }
