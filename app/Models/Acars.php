@@ -57,6 +57,7 @@ class Acars extends Model
         'autopilot',
         'fuel_flow',
         'sim_time',
+        'source',
         'created_at',
         'updated_at',
     ];
@@ -118,10 +119,5 @@ class Acars extends Model
     public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
-    }
-
-    public function source(): BelongsTo
-    {
-        return $this->belongsTo(AcarsSource::class);
     }
 }

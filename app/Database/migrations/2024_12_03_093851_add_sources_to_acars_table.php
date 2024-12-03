@@ -12,13 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('acars', function (Blueprint $table) {
-            $table->foreignId('source_id')->nullable();
-        });
-
-        Schema::create('acars_sources', function (Blueprint $table) {
-            $table->id();
-            $table->string('slug')->index();
-            $table->string('name')->nullable();
+            $table->integer('source')->nullable();
         });
     }
 
