@@ -119,4 +119,9 @@ class Acars extends Model
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(AcarsSource::class);
+    }
 }
