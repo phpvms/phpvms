@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\Api\AcarsController;
 use App\Http\Middleware\EnableActivityLogging;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -583,7 +582,6 @@ class RouteServiceProvider extends ServiceProvider
 
                 Route::get('acars', 'AcarsController@live_flights');
                 Route::get('acars/geojson', 'AcarsController@pireps_geojson');
-                Route::get('acars/sources', [AcarsController::class, 'get_supported_acars_sources']);
 
                 Route::get('airports/hubs', 'AirportController@index_hubs');
                 Route::get('airports/search', 'AirportController@search');
