@@ -12,7 +12,6 @@ use App\Http\Requests\Acars\PositionRequest;
 use App\Http\Resources\AcarsRoute as AcarsRouteResource;
 use App\Http\Resources\Pirep as PirepResource;
 use App\Models\Acars;
-use App\Models\Enums\AcarsSource;
 use App\Models\Enums\AcarsType;
 use App\Models\Pirep;
 use App\Repositories\AcarsRepository;
@@ -70,16 +69,6 @@ class AcarsController extends Controller
         );
 
         return PirepResource::collection($pireps);
-    }
-
-    /**
-     * Gets all the supported acars sources in the AcarsSource Enum
-     *
-     * @return void
-     */
-    public function get_supported_acars_sources()
-    {
-        return response()->json(AcarsSource::$labels);
     }
 
     /**
