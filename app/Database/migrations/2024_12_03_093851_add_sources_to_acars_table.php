@@ -11,7 +11,7 @@ return new class() extends Migration {
     public function up(): void
     {
         Schema::table('acars', function (Blueprint $table) {
-            $table->string('source', 5)->collation('latin1')->nullable();
+            $table->string('source', 5)->charset('latin1')->nullable();
         });
     }
 
