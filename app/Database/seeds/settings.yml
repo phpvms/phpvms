@@ -75,6 +75,13 @@
   options: ''
   type: boolean
   description: If checked, registrations will be disabled and only admins can add pilots
+- key: general.auto_language_detection
+  name: 'Auto language detection'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, the app's language will be inferred from the browser's preferences
 - key: captcha.enabled
   name: 'hCaptcha Enabled'
   group: captcha
@@ -270,6 +277,13 @@
   options: ''
   type: number
   description: 'How much the cargo load factor can vary per-flight'
+- key: flights.only_company_aircraft
+  name: 'Allow Only Company Aircraft'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'If no subfleets are assigned to a flight, only company aircraft will be used'
 - key: simbrief.api_key
   name: 'Simbrief API Key'
   group: simbrief
