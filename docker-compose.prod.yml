@@ -1,15 +1,23 @@
 services:
   app:
     container_name: phpvms-app
-    user: "${UID:-1000}:${GID:-1000}"
-    image: serversideup/php:8.3-fpm
+    user: "${PUID:-1000}:${PGID:-1000}"
+    image: phpvms:app
+    build:
+      context: .
+      args:
+        PUID: ${PUID:-1000}
+        PGID: ${PGID:-1000}
     restart: unless-stopped
     environment:
       PHP_OPCACHE_ENABLE: 1
       # some basic laravel stuff
       AUTORUN_ENABLED: true
+    env_file: .env
     volumes:
-      - ./:/var/www/html
+      - ./modules:/var/www/html/modules:ro
+      - ./public/uploads:/var/www/html/public/uploads:rw
+      - ./storage:/var/www/html/storage:rw
     depends_on:
       - caddy
       - mariadb
@@ -19,8 +27,8 @@ services:
 
   task:
     container_name: phpvms-task
-    user: "${UID:-1000}:${GID:-1000}"
-    image: serversideup/php:8.3-fpm
+    user: "${PUID:-1000}:${PGID:-1000}"
+    image: phpvms:app
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
@@ -29,15 +37,18 @@ services:
       # This is our native healthcheck script for the scheduler
       test: [ "CMD", "healthcheck-schedule" ]
       start_period: 10s
+    env_file: .env
     volumes:
-      - ./:/var/www/html
+      - ./modules:/var/www/html/modules:ro
+      - ./public/uploads:/var/www/html/public/uploads:rw
+      - ./storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
   queue:
     container_name: phpvms-queue
-    user: "${UID:-1000}:${GID:-1000}"
-    image: serversideup/php:8.3-fpm
+    user: "${PUID:-1000}:${PGID:-1000}"
+    image: phpvms:app
     restart: unless-stopped
     command: [ "php", "/var/www/html/artisan", "queue:work", "--tries=3" ]
     environment:
@@ -46,8 +57,11 @@ services:
       # This is our native healthcheck script for the queue
       test: [ "CMD", "healthcheck-queue" ]
       start_period: 10s
+    env_file: .env
     volumes:
-      - ./:/var/www/html
+      - ./modules:/var/www/html/modules:ro
+      - ./public/uploads:/var/www/html/public/uploads:rw
+      - ./storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
