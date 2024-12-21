@@ -173,7 +173,7 @@ function checkSBworker() {
 }
 
 
-async function Redirect_caller(nbAttemps = 0) {
+async function Redirect_caller(nbAttemps = 1) {
 
   /*
   * First check that the file actually exists.
