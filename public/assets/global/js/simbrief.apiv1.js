@@ -173,7 +173,7 @@ function checkSBworker() {
 }
 
 
-async function Redirect_caller() {
+async function Redirect_caller(nbAttemps = 1) {
 
   /*
   * First check that the file actually exists.
@@ -197,9 +197,13 @@ async function Redirect_caller() {
     });
   } catch (e) {
     console.log('request error', e);
-    setTimeout(function () {
-      Redirect_caller();
-    }, 500);
+    if (nbAttemps < 5) {
+      setTimeout(function () {
+        Redirect_caller(nbAttemps + 1);
+      }, 1500);
+    } else {
+      alert(`There was an error while generating an OFP. Please try reloading the page or contact your administrator. Error : ${e}`)
+    }
 
     return;
   }

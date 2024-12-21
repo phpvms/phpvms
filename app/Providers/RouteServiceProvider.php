@@ -140,7 +140,7 @@ class RouteServiceProvider extends ServiceProvider
                 // SimBrief stuff
                 Route::get('simbrief/generate', 'SimBriefController@generate')->name('simbrief.generate');
                 Route::post('simbrief/apicode', 'SimBriefController@api_code')->name('simbrief.api_code');
-                Route::get('simbrief/check_ofp', 'SimBriefController@check_ofp')->name('simbrief.check_ofp');
+                Route::get('simbrief/check_ofp', 'SimBriefController@check_ofp')->name('simbrief.check_ofp')->middleware('throttle:10,1');
                 Route::get('simbrief/update_ofp', 'SimBriefController@update_ofp')->name('simbrief.update_ofp');
                 Route::get('simbrief/{id}', 'SimBriefController@briefing')->name('simbrief.briefing');
                 Route::get('simbrief/{id}/prefile', 'SimBriefController@prefile')->name('simbrief.prefile');
