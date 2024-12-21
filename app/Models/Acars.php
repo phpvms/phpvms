@@ -57,6 +57,7 @@ class Acars extends Model
         'autopilot',
         'fuel_flow',
         'sim_time',
+        'source',
         'created_at',
         'updated_at',
     ];

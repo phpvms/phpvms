@@ -14,6 +14,7 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\SimBriefLayout;
+use App\Models\Subfleet;
 use App\Models\User;
 use App\Repositories\FlightRepository;
 use App\Services\FareService;
@@ -86,6 +87,10 @@ class SimBriefController
             // so we will have a proper list which the user is allowed to fly
             $user_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->toArray();
             $flight_subfleets = $flight->subfleets->pluck('id')->toArray();
+
+            if ((blank($flight_subfleets) || count($flight_subfleets) === 0) && setting('flights.only_company_aircraft', false)) {
+                $flight_subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->pluck('id')->toArray();
+            }
 
             $subfleet_ids = filled($flight_subfleets) ? array_intersect($user_subfleets, $flight_subfleets) : $user_subfleets;
 
