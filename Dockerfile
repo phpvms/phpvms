@@ -23,8 +23,11 @@ USER root
 # Install missing extensions with root permissions
 RUN install-php-extensions intl bcmath
 
-# Install mariadb client (may be required for backups)
-# RUN apt install mariadb-client
+# Install mariadb client (required for backups)
+RUN apt-get update; \
+        apt-get upgrade -yqq; \
+        apt-get install -yqq --no-install-recommends --show-progress \
+        mariadb-client
 
 # Deal with permissions
 RUN usermod -ou $PUID www-data \
