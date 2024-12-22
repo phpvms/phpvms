@@ -13,6 +13,7 @@ use App\Services\LegacyImporter\ExpenseImporter;
 use App\Services\LegacyImporter\FinalizeImporter;
 use App\Services\LegacyImporter\FlightImporter;
 use App\Services\LegacyImporter\GroupImporter;
+use App\Services\LegacyImporter\PirepCommentImporter;
 use App\Services\LegacyImporter\PirepImporter;
 use App\Services\LegacyImporter\RankImport;
 use App\Services\LegacyImporter\SettingsImporter;
@@ -43,6 +44,7 @@ class LegacyImporterService extends Service
         FlightImporter::class,
         UserImport::class,
         PirepImporter::class,
+        PirepCommentImporter::class,
         ExpenseImporter::class,
         SettingsImporter::class,
         FinalizeImporter::class,
