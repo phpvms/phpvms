@@ -41,10 +41,8 @@ class PirepCommentImporter extends BaseImporter
             if ($pirepcomment->wasRecentlyCreated) {
                 $count++;
             }
-
         }
 
         $this->info('Imported '.$count.' pirepcomments');
     }
-
 }
