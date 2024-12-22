@@ -27,11 +27,11 @@ class PirepCommentImporter extends BaseImporter
             $user_id = $this->idMapper->getMapping('users', $row->pilotid);
 
             $attrs = [
-                'pirep_id'    => $pirep_id,
-                'user_id'     => $user_id,
-                'comment'     => $row->comment,
-                'created_at'  => $this->parseDate($row->postdate),
-                'updated_at'  => $this->parseDate($row->postdate),
+                'pirep_id'   => $pirep_id,
+                'user_id'    => $user_id,
+                'comment'    => $row->comment,
+                'created_at' => $this->parseDate($row->postdate),
+                'updated_at' => $this->parseDate($row->postdate),
             ];
 
             $w = ['id' => $pirep_id];
