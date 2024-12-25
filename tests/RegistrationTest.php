@@ -22,9 +22,7 @@ final class RegistrationTest extends TestCase
 
         // Create a default user to prevent redirection to the installer
         User::factory()->create();
-
     }
-
 
     /**
      * A basic test example.
