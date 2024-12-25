@@ -3,13 +3,13 @@
 services:
   app:
     container_name: phpvms-app
-    user: "${PUID:-1000}:${PGID:-1000}"
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     image: phpvms:app
     build:
       context: .
       args:
-        PUID: ${PUID:-1000}
-        PGID: ${PGID:-1000}
+        WWWUSER: ${WWWUSER:-1000}
+        WWWGROUP: ${WWWGROUP:-1000}
     restart: unless-stopped
     environment:
       PHP_OPCACHE_ENABLE: 1
@@ -29,7 +29,7 @@ services:
 
   task:
     container_name: phpvms-task
-    user: "${PUID:-1000}:${PGID:-1000}"
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     image: phpvms:app
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
@@ -49,7 +49,7 @@ services:
 
   queue:
     container_name: phpvms-queue
-    user: "${PUID:-1000}:${PGID:-1000}"
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     image: phpvms:app
     restart: unless-stopped
     command: [ "php", "/var/www/html/artisan", "queue:work", "--tries=3" ]

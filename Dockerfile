@@ -16,8 +16,8 @@ RUN composer install \
 
 FROM serversideup/php:8.3-fpm
 
-ARG PUID=1000
-ARG PGID=1000
+ARG WWWUSER=1000
+ARG WWWGROUP=1000
 
 # Switch to root so we can do root things
 USER root
@@ -32,8 +32,8 @@ RUN apt-get update; \
         mariadb-client
 
 # Deal with permissions
-RUN usermod -ou $PUID www-data \
-    && groupmod -og $PGID www-data
+RUN usermod -ou $WWWUSER www-data \
+    && groupmod -og $WWWGROUP www-data
 
 # Drop back to our unprivileged user
 USER www-data
