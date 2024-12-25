@@ -1,3 +1,5 @@
+# This Docker Compose file is used by Laravel Sail. It should not be used in production and is only
+# useful in a development environment. See https://laravel.com/docs/10.x/sail
 services:
     laravel.test:
         build:

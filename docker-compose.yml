@@ -1,3 +1,5 @@
+# This Docker Compose file is an example of what a setup for running phpVMS in production could look like.
+# It is based on the image created in the Dockerfile. You can find more examples in phpvms' documentation.
 services:
   app:
     container_name: phpvms-app

@@ -1,3 +1,5 @@
+# This Dockerfile is used to create the base phpVMS image for Docker in production.
+# It is based on https://serversideup.net/open-source/docker-php/.
 FROM composer:latest AS vendor
 
 COPY composer.json composer.json
