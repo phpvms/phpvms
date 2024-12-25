@@ -32,6 +32,7 @@ CREATE TABLE `acars` (
   `sim_time` varchar(191) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `source` varchar(5) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `acars_pirep_id_index` (`pirep_id`),
   KEY `acars_created_at_index` (`created_at`)
@@ -75,10 +76,10 @@ CREATE TABLE `aircraft` (
   `fin` varchar(5) DEFAULT NULL,
   `hex_code` varchar(10) DEFAULT NULL,
   `selcal` varchar(5) DEFAULT NULL,
-  `dow` decimal(8,2) unsigned DEFAULT NULL,
-  `mtow` decimal(8,2) unsigned DEFAULT 0.00,
-  `mlw` decimal(8,2) unsigned DEFAULT NULL,
-  `zfw` decimal(8,2) unsigned DEFAULT 0.00,
+  `dow` decimal(10,2) unsigned DEFAULT NULL,
+  `mtow` decimal(10,2) unsigned DEFAULT 0.00,
+  `mlw` decimal(10,2) unsigned DEFAULT NULL,
+  `zfw` decimal(10,2) unsigned DEFAULT 0.00,
   `simbrief_type` varchar(25) DEFAULT NULL,
   `fuel_onboard` decimal(8,2) unsigned DEFAULT 0.00,
   `flight_time` bigint(20) unsigned DEFAULT 0,
@@ -812,6 +813,46 @@ CREATE TABLE `simbrief` (
   KEY `simbrief_pirep_id_index` (`pirep_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `simbrief_aircraft`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `simbrief_aircraft` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `icao` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `details` mediumtext DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `simbrief_airframes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `simbrief_airframes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `icao` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `airframe_id` varchar(191) DEFAULT NULL,
+  `source` tinyint(3) unsigned DEFAULT NULL,
+  `details` mediumtext DEFAULT NULL,
+  `options` mediumtext DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `simbrief_layouts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `simbrief_layouts` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `name_long` varchar(191) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `stats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -1124,3 +1165,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2024_01_26_142
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2024_07_02_164640_update_tokens_in_user_oauth_tokens',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2024_07_09_210356_update_db_charset',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (99,'2024_15_07_164640_add_detailed_altitude',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (100,'2024_11_16_105923_create_simbrief_support_tables',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (101,'2024_11_22_182419_update_aircraft_table',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (102,'2024_12_03_093851_add_sources_to_acars_table',5);
