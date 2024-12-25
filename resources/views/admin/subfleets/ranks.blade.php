@@ -57,11 +57,10 @@
                         'method' => 'post',
                         'class' => 'modify_rank form-inline'])
         }}
-        {{ Form::select('rank_id', $avail_ranks, null, [
-                'placeholder' => 'Select Rank',
-                'class' => 'ac-fare-dropdown form-control input-lg select2',
-
-            ])
+        <label for="rank_ids">Add ranks:</label>
+        {{ Form::select('rank_ids[]', $avail_ranks, null, [
+                'multiple' => 'multiple',
+                'class' => 'select2 form-control input-lg'])
         }}
         {{ Form::button('<i class="glyphicon glyphicon-plus"></i> add',
                          ['type' => 'submit',

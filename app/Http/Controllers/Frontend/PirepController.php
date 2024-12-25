@@ -85,6 +85,8 @@ class PirepController extends Controller
             $aircraft[''] = '';
         }
 
+        $subfleets->loadMissing('aircraft');
+
         foreach ($subfleets as $subfleet) {
             $tmp = [];
             foreach ($subfleet->aircraft->when($location_check, function ($query) use ($user_loc) {

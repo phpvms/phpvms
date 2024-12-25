@@ -527,8 +527,10 @@ class SubfleetController extends Controller
 
         // associate rank with the subfleet
         if ($request->isMethod('post')) {
-            $rank = $this->rankRepo->find($request->input('rank_id'));
-            $this->fleetSvc->addSubfleetToRank($subfleet, $rank);
+            foreach ($request->input('rank_ids') as $rank_id) {
+                $rank = $this->rankRepo->find($rank_id);
+                $this->fleetSvc->addSubfleetToRank($subfleet, $rank);
+            }
         } // override definitions
         elseif ($request->isMethod('put')) {
             $override = [];

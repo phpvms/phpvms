@@ -72,36 +72,52 @@ class BidService extends Service
      * Find all of the bids for a given user
      *
      * @param \App\Models\User $user
+     * @param array            $relations
      *
      * @return Bid[]
      */
-    public function findBidsForUser(User $user): Collection|array|null
+    public function findBidsForUser(User $user, array $relations = ['subfleets', 'simbrief_aircraft']): Collection|array|null
     {
         $with = [
             'aircraft',
             'flight',
+            'flight.airline',
             'flight.fares',
+            'flight.field_values',
             'flight.simbrief' => function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             },
-            'flight.simbrief.aircraft',
-            'flight.simbrief.aircraft.subfleet',
-            'flight.subfleets',
-            'flight.subfleets.aircraft',
-            'flight.subfleets.aircraft.bid',
-            'flight.subfleets.fares',
         ];
+
+        foreach ($relations as $relation) {
+            $with = array_merge($with, match ($relation) {
+                'subfleets' => [
+                    'flight.subfleets',
+                    'flight.subfleets.aircraft',
+                    'flight.subfleets.aircraft.bid',
+                    'flight.subfleets.fares',
+                ],
+                'simbrief_aircraft' => [
+                    'flight.simbrief.aircraft',
+                    'flight.simbrief.aircraft.subfleet',
+                    'flight.simbrief.aircraft.subfleet.fares',
+                ],
+                default => [],
+            });
+        }
 
         $bids = Bid::with($with)->where(['user_id' => $user->id])->get();
 
-        foreach ($bids as $bid) {
-            if (!empty($bid->aircraft)) {
-                $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
-            } else {
-                $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight, $bid);
-            }
+        if (in_array('subfleets', $relations, true)) {
+            foreach ($bids as $bid) {
+                if ($bid->aircraft) {
+                    $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
+                } else {
+                    $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight, $bid);
+                }
 
-            $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
+                $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
+            }
         }
 
         return $bids;

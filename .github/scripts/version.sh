@@ -17,7 +17,7 @@ else
   export FULL_VERSION=$NBGV_SemVer2
 fi
 
-export FILE_NAME="phpvms-${VERSION}"
+export FILE_NAME="phpvms-latest${NBGV_PrereleaseVersion}"
 export TAR_NAME="$FILE_NAME.tar.gz"
 export ZIP_NAME="$FILE_NAME.zip"
 export BASE_DIR=`pwd`

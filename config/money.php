@@ -1744,7 +1744,7 @@ return [
         'code'                => 952,
         'precision'           => 0,
         'subunit'             => 1,
-        'symbol'              => 'Fr',
+        'symbol'              => 'FCFA',
         'symbol_first'        => false,
         'decimal_mark'        => '.',
         'thousands_separator' => ',',

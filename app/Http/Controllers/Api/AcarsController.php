@@ -277,7 +277,7 @@ class AcarsController extends Controller
 
                 $count++;
             } catch (QueryException $ex) {
-                Log::info('Error on adding ACARS position: '.$ex->getMessage());
+                Log::info('Error on adding ACARS log: '.$ex->getMessage());
             }
         }
 
@@ -336,7 +336,7 @@ class AcarsController extends Controller
 
                 $count++;
             } catch (QueryException $ex) {
-                Log::info('Error on adding ACARS position: '.$ex->getMessage());
+                Log::info('Error on adding ACARS event: '.$ex->getMessage());
             }
         }
 

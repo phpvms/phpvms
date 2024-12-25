@@ -75,7 +75,16 @@ class ProfileController extends Controller
      */
     public function show(int $id): RedirectResponse|View
     {
-        $with = ['airline', 'awards', 'current_airport', 'fields.field', 'home_airport', 'last_pirep', 'rank', 'typeratings'];
+        $with = [
+            'airline',
+            'awards',
+            'current_airport',
+            'fields.field',
+            'home_airport',
+            'last_pirep',
+            'rank',
+            'typeratings',
+        ];
         /** @var \App\Models\User $user */
         $user = User::with($with)->where('id', $id)->first();
 
@@ -154,7 +163,9 @@ class ProfileController extends Controller
             'avatar'     => 'nullable|mimes:jpeg,png,jpg',
         ];
 
-        $userFields = UserField::where(['show_on_registration' => true, 'required' => true, 'internal' => false])->get();
+        $userFields = UserField::where(
+            ['show_on_registration' => true, 'required' => true, 'internal' => false]
+        )->get();
         foreach ($userFields as $field) {
             $rules['field_'.$field->slug] = 'required';
         }
@@ -263,14 +274,22 @@ class ProfileController extends Controller
      */
     public function acars(Request $request): Response
     {
+        /** @var User $user */
         $user = Auth::user();
-        $config = view('system.acars.config', ['user' => $user])->render();
+        $domain = Utils::getRootDomain(config('app.url'));
+
+        $config = json_encode([
+            'ApiKey' => $user->api_key,
+            'Domain' => $domain,
+            'Name'   => config('app.name'),
+            'Url'    => config('app.url'),
+        ], JSON_PRETTY_PRINT);
 
         return response($config)->withHeaders([
-            'Content-Type'        => 'text/xml',
+            'Content-Type'        => 'application/json',
             'Content-Length'      => strlen($config),
             'Cache-Control'       => 'no-store, no-cache',
-            'Content-Disposition' => 'attachment; filename="settings.xml',
+            'Content-Disposition' => 'attachment; filename="'.$domain.'.json"',
         ]);
     }
 }

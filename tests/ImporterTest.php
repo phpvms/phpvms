@@ -645,7 +645,7 @@ final class ImporterTest extends TestCase
         $this->assertEquals('A320-211', $aircraft->name);
         $this->assertEquals('N309US', $aircraft->registration);
         $this->assertEquals('780DH', $aircraft->fin);
-        $this->assertEquals(null, $aircraft->zfw);
+        $this->assertEquals(71500.0, $aircraft->zfw->local(0));
         $this->assertEquals(AircraftStatus::ACTIVE, $aircraft->status);
 
         // Now try importing the updated file, the status for the aircraft should change

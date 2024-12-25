@@ -40,7 +40,7 @@ jobs:
         key: ${{ env.key }}
 
     - name: Cache extensions
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.cache-env.outputs.dir }}
         key: ${{ steps.cache-env.outputs.key }}
@@ -51,7 +51,7 @@ jobs:
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -107,7 +107,7 @@ jobs:
     name: 'Create release package'
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
+    if: github.repository == 'nabeelio/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -156,6 +156,25 @@ jobs:
 
     - name: Build Distro
       run: .github/scripts/build.sh
+
+    - uses: altinukshini/deployment-action@releases/v1
+      name: start deployment
+      id: deployment
+      with:
+        token: ${{ secrets.GITHUB_TOKEN}}
+        description: Uploading files to CDN
+        environment: production
+
+    - uses: BetaHuhn/do-spaces-action@v2
+      id: spaces
+      with:
+        access_key: ${{ secrets.SPACE_ACCESS_KEY}}
+        secret_key: ${{ secrets.SPACE_SECRET_KEY }}
+        space_name: ${{ secrets.SPACE_NAME }}
+        space_region: ${{ secrets.SPACE_REGION }}
+        source: dist
+        cdn_domain: phpvms.cdn.vmslabs.net
+        permission: public-read
 
     - name: Upload S3
       uses: shallwefootball/s3-upload-action@master
@@ -179,6 +198,16 @@ jobs:
         name: phpvms-package
         path: 'dist/*'
 
+#     - name: update deployment status
+#       if: always()
+#       uses: altinukshini/deployment-status@releases/v1
+#       with:
+#         token: ${{ secrets.GITHUB_TOKEN }}
+#         state: ${{ job.status }}
+#         environment_url: ${{ steps.spaces.outputs.output_url }}
+#         deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+#         description: "Successfully uploaded files to CDN"
+
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
    # https://github.com/actions/create-release
@@ -186,7 +215,7 @@ jobs:
     name: 'Create Release'
     needs: artifacts
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.repository == 'nabeelio/phpvms' && startsWith(github.ref, 'refs/tags/')
     steps:
 
       - name: Download artifact from build job

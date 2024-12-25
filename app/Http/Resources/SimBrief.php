@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use Illuminate\Http\Resources\MissingValue;
 
 /**
  * @mixin \App\Models\SimBrief
@@ -32,7 +33,9 @@ class SimBrief extends Resource
             // Invalid fare data
         }
 
-        $data['subfleet'] = new BidSubfleet($this->aircraft->subfleet, $this->aircraft, $fares);
+        if (!($this->whenLoaded('aircraft') instanceof MissingValue)) {
+            $data['subfleet'] = new BidSubfleet($this->aircraft->subfleet, $this->aircraft, $fares);
+        }
 
         return $data;
     }

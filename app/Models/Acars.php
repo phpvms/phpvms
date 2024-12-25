@@ -57,6 +57,7 @@ class Acars extends Model
         'autopilot',
         'fuel_flow',
         'sim_time',
+        'source',
         'created_at',
         'updated_at',
     ];
@@ -84,6 +85,8 @@ class Acars extends Model
     public static array $rules = [
         'pirep_id' => 'required',
     ];
+
+    protected $appends = ['altitude'];
 
     /**
      * This keeps things backwards compatible with previous versions

@@ -44,9 +44,11 @@ class RecalculateBalances extends Listener
             $this->journalRepo->recalculateBalance($journal);
             $journal->refresh();
 
-            Log::info('Adjusting balance on '.
-                $journal->morphed_type.':'.$journal->morphed_id
-                .' from '.$old_balance.' to '.$journal->balance);
+            if (!$journal->balance->equals($old_balance)) {
+                Log::info('Adjusting balance on '.
+                    $journal->morphed_type.':'.$journal->morphed_id
+                    .' from '.$old_balance.' to '.$journal->balance);
+            }
         }
 
         Log::info('Done calculating balances');

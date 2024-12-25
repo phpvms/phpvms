@@ -176,7 +176,7 @@
             {{ Form::label('planned_distance', 'Pln.Dist. (nmi):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="planned_distance" value="{{ $pirep->planned_distance->internal() ?? null }}" min="0" step="0.1" readonly/>
+                <input class="form-control" type="number" name="planned_distance" value="{{ $pirep->planned_distance->internal() ?? null }}" min="0" step="0.01" readonly/>
                 <p class="text-danger">{{ $errors->first('planned_distance') }}</p>
               </div>
             </div>
@@ -186,7 +186,7 @@
             {{ Form::label('distance', 'Flt.Dist. (nmi):') }}
             <div class="row">
               <div class="col-sm-12">
-                <input class="form-control" type="number" name="distance" value="{{ $pirep->distance->internal() ?? null}}" min="0" step="0.1" />
+                <input class="form-control" type="number" name="distance" value="{{ $pirep->distance->internal() ?? null}}" min="0" step="0.01" />
                 <p class="text-danger">{{ $errors->first('distance') }}</p>
               </div>
             </div>

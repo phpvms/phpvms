@@ -56,7 +56,17 @@ class WhereCriteria implements CriteriaInterface
                 $model = $model
                     ->with($relation)
                     ->whereHas($relation, function (Builder $query) use ($criterea) {
-                        $query->where($criterea);
+                        // By Taylor Broad
+                        if (!isset($criterea['method'])) {
+                            $query->where($criterea);
+                        } else {
+                            if ($criterea['method'] == 'where') {
+                                $query->where($criterea['query']);
+                            }
+                            if ($criterea['method'] == 'whereIn') {
+                                $query->whereIn($criterea['query']['key'], $criterea['query']['values']);
+                            }
+                        }
                     });
             }
         }
