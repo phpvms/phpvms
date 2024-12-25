@@ -16,6 +16,16 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 final class RegistrationTest extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a default user to prevent redirection to the installer
+        User::factory()->create();
+
+    }
+
+
     /**
      * A basic test example.
      *
