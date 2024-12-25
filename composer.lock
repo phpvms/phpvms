@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d81015ac7af5212239384f3937ff0347",
+    "content-hash": "c280843391ba661a3475435e8e406b46",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -7246,45 +7246,6 @@
                 }
             ],
             "time": "2024-06-24T06:27:33+00:00"
-        },
-        {
-            "name": "phpvms/sample-module",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nabeelio/phpvms-module.git",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nabeelio/phpvms-module/zipball/6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "shasum": ""
-            },
-            "require": {
-                "composer/installers": "~1.0"
-            },
-            "type": "phpvms-module",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Modules\\Sample\\Providers\\SampleServiceProvider",
-                        "Modules\\Sample\\Providers\\EventServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Sample\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "A sample phpvms module",
-            "support": {
-                "issues": "https://github.com/nabeelio/phpvms-module/issues",
-                "source": "https://github.com/nabeelio/phpvms-module/tree/master"
-            },
-            "time": "2020-02-28T15:42:04+00:00"
         },
         {
             "name": "prettus/l5-repository",
@@ -15868,6 +15829,6 @@
         "ext-intl": "*",
         "ext-zip": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
