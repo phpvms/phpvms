@@ -3,11 +3,11 @@
 
 @section('content')
   <div class="row">
-    <div class="col-sm-8">
+    <div class="col-md-8">
 
       @if(Auth::user()->state === \App\Models\Enums\UserState::ON_LEAVE)
         <div class="row">
-          <div class="col-sm-12">
+          <div class="col-12">
             <div class="alert alert-warning" role="alert">
               You are on leave! File a PIREP to set your status to active!
             </div>
@@ -16,9 +16,9 @@
       @endif
 
       {{-- TOP BAR WITH BOXES --}}
-      <div class="row">
-        <div class="col-sm-3">
-          <div class="card card-primary text-white dashboard-box">
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
               <div class="icon-background">
                 <i class="fas fa-plane icon"></i>
@@ -29,8 +29,8 @@
           </div>
         </div>
 
-        <div class="col-sm-3">
-          <div class="card card-primary text-white dashboard-box">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
               <div class="icon-background">
                 <i class="far fa-clock icon"></i>
@@ -40,8 +40,8 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-3">
-          <div class="card card-primary text-white dashboard-box">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
               <div class="icon-background"> {{--110px font-size--}}
                 <i class="fas fa-money-bill-alt icon"></i>
@@ -52,8 +52,8 @@
           </div>
         </div>
 
-        <div class="col-sm-3">
-          <div class="card card-primary text-white dashboard-box">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
               <div class="icon-background">
                 <i class="fas fa-map-marker icon"></i>
@@ -65,20 +65,19 @@
         </div>
 
       </div>
-
-      <div class="nav nav-tabs" role="tablist" style="background: #067ec1; color: #FFF;">
-        @lang('dashboard.yourlastreport')
-      </div>
-      <div class="card border-blue-bottom">
+      <div class="card mb-3">
+        <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
+          @lang('dashboard.yourlastreport')
+        </div>
         @if($last_pirep === null)
-          <div class="card-body" style="text-align:center;">
-            @lang('dashboard.noreportsyet') <a
-              href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
+          <div class="card-body text-center">
+        @lang('dashboard.noreportsyet') <a href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
           </div>
         @else
           @include('dashboard.pirep_card', ['pirep' => $last_pirep])
         @endif
       </div>
+      
 
       {{ Widget::latestNews(['count' => 1]) }}
 
@@ -87,7 +86,7 @@
     {{-- Sidebar --}}
     <div class="col-sm-4">
       <div class="card">
-        <div class="nav nav-tabs" role="tablist" style="background: #067ec1; color: #FFF;">
+        <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
           @lang('dashboard.weatherat', ['ICAO' => $current_airport])
         </div>
         <div class="card-body">
@@ -98,8 +97,8 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="nav nav-tabs" role="tablist" style="background: #067ec1; color: #FFF;">
+      <div class="card mt-4">
+        <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
           @lang('dashboard.recentreports')
         </div>
         <div class="card-body">
@@ -110,8 +109,8 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="nav nav-tabs" role="tablist" style="background: #067ec1; color: #FFF;">
+      <div class="card mt-4">
+        <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
           @lang('common.newestpilots')
         </div>
         <div class="card-body">

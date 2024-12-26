@@ -1,7 +1,8 @@
-<div class="nav nav-tabs" role="tablist" style="background: #067ec1; color: #FFF;">
-  @lang('widgets.latestnews.news')
-</div>
-<div class="card border-blue-bottom">
+
+<div class="card">
+  <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
+    @lang('widgets.latestnews.news')
+  </div>
   <div class="card-body" style="min-height: 0px">
     @if($news->count() === 0)
       <div class="text-center text-muted" style="padding: 30px;">
