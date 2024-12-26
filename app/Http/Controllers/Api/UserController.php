@@ -67,19 +67,21 @@ class UserController extends Controller
      */
     public function index(Request $request): UserResource
     {
-        return $this->get(Auth::user()->id);
+        $with_subfleets = (!$request->has('with') || str_contains($request->input('with', ''), 'subfleets'));
+        return $this->get(Auth::user()->id, $with_subfleets);
     }
 
     /**
      * Get the profile for the passed-in user
      *
-     * @param int $id
+     * @param int     $id
+     * @param Request $request
      *
      * @return UserResource
      */
-    public function get(int $id): UserResource
+    public function get(int $id, bool $with_subfleets = true): UserResource
     {
-        $user = $this->userSvc->getUser($id);
+        $user = $this->userSvc->getUser($id, $with_subfleets);
         if ($user === null) {
             throw new UserNotFound();
         }
@@ -100,7 +102,7 @@ class UserController extends Controller
     public function bids(Request $request)
     {
         $user_id = $this->getUserId($request);
-        $user = $this->userSvc->getUser($user_id);
+        $user = $this->userSvc->getUser($user_id, false);
         if ($user === null) {
             throw new UserNotFound();
         }
@@ -130,8 +132,17 @@ class UserController extends Controller
             $this->bidSvc->removeBid($flight, $user);
         }
 
+        $relations = [
+            'subfleets',
+            'simbrief_aircraft',
+        ];
+
+        if ($request->has('with')) {
+            $relations = explode(',', $request->input('with', ''));
+        }
+
         // Return the flights they currently have bids on
-        $bids = $this->bidSvc->findBidsForUser($user);
+        $bids = $this->bidSvc->findBidsForUser($user, $relations);
 
         return BidResource::collection($bids);
     }
@@ -176,7 +187,7 @@ class UserController extends Controller
             throw new UserNotFound();
         }
 
-        $subfleets = $this->userSvc->getAllowableSubfleets($user);
+        $subfleets = $this->userSvc->getAllowableSubfleets($user, true);
 
         return SubfleetResource::collection($subfleets);
     }
@@ -205,6 +216,7 @@ class UserController extends Controller
         $this->pirepRepo->pushCriteria(new WhereCriteria($request, $where));
 
         $pireps = $this->pirepRepo
+            ->with(['airline', 'dpt_airport', 'arr_airport'])
             ->orderBy('created_at', 'desc')
             ->paginate();
 

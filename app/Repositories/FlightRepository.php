@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Contracts\Repository;
+use App\Models\Aircraft;
 use App\Models\Flight;
+use App\Models\Typerating;
 use App\Repositories\Criteria\WhereCriteria;
 use Illuminate\Http\Request;
 use Prettus\Repository\Contracts\CacheableInterface;
@@ -148,6 +150,34 @@ class FlightRepository extends Repository implements CacheableInterface
         if ($request->filled('subfleet_id')) {
             $relations['subfleets'] = [
                 'subfleets.id' => $request->input('subfleet_id'),
+            ];
+        }
+
+        // Search by TypeRating (based on SubFleet relationships)
+        if ($request->filled('type_rating_id')) {
+            $type_rating = Typerating::with(['subfleets'])->where('id', $request->input('type_rating_id'))->first();
+            $subfleet_ids = filled(optional($type_rating)->subfleets) ? $type_rating->subfleets->pluck('id')->toArray() : [];
+
+            $relations['subfleets'] = [
+                'method' => 'whereIn',
+                'query'  => [
+                    'key'    => 'subfleets.id',
+                    'values' => $subfleet_ids,
+                ],
+            ];
+        }
+
+        // Search By ICAO type code (based on Aircraft definitions)
+        if ($request->filled('icao_type')) {
+            $icao = $request->input('icao_type');
+            $subfleet_ids = Aircraft::where('icao', $icao)->groupBy('subfleet_id')->pluck('subfleet_id')->toArray();
+
+            $relations['subfleets'] = [
+                'method' => 'whereIn',
+                'query'  => [
+                    'key'    => 'subfleets.id',
+                    'values' => $subfleet_ids,
+                ],
             ];
         }
 

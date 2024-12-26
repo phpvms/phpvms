@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.repository == 'nabeelio/phpvms'
     strategy:
       fail-fast: true
       matrix:
@@ -25,10 +24,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1.2.0
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.4.2
       with:
-        versionSpec: '5.x'
+          setAllVars: true
 
     # Configure Caching
     - name: Setup cache environment
@@ -40,7 +40,7 @@ jobs:
         key: ${{ env.key }}
 
     - name: Cache extensions
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.cache-env.outputs.dir }}
         key: ${{ steps.cache-env.outputs.key }}
@@ -51,7 +51,7 @@ jobs:
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -69,16 +69,6 @@ jobs:
     - name: Shutdown Ubuntu MySQL
       run: sudo service mysql stop
 
-#    - name: Install MariaDB
-#      uses: getong/mariadb-action@v1.1
-#      with:
-#        character set server: 'utf8'
-#        collation server: 'utf8_general_ci'
-#        mysql database: 'phpvms'
-#        mysql root password: ''
-#        mysql user: ''
-#        mysql password: ''
-
     - name: Install MySQL
       uses: mirromutth/mysql-action@v1.1
       with:
@@ -94,21 +84,14 @@ jobs:
           sleep 1
         done
 
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v1.2.0
-      with:
-        useConfigFile: true
-
     - name: Configure Environment
       run: |
         php --version
         mysql --version
-        # sleep 10
-        # Downgrade composer version to 1.x
         composer install --dev --no-interaction --verbose
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh ${{ env.fullSemVer }}
+        .github/scripts/version.sh ${{ env.NBGV_SemVer2 }}
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 
@@ -124,69 +107,106 @@ jobs:
     name: 'Create release package'
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
+    if: github.repository == 'nabeelio/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Get Version
+      uses: dotnet/nbgv@v0.4.2
+      with:
+        setAllVars: true
 
-      - uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
 
-      # Configure Caching
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - uses: olegtarasov/get-tag@v2.1.2
+      id: tagName
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+    # Configure Caching
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-        # Dependencies
-      - name: 'Install Release Dependencies'
-        run: |
-          rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          sudo chmod +x ./.github/scripts/*
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
 
-      - name: Get version
-        run: .github/scripts/version.sh
+      # Dependencies
+    - name: 'Install Release Dependencies'
+      run: |
+        rm -rf vendor
+        composer install --no-dev --prefer-dist --no-interaction --verbose
+        sudo chmod +x ./.github/scripts/*
 
-      - name: Discord Message
-        id: discord
-        run: .github/scripts/discord.sh
+    - name: Get version
+      run: .github/scripts/version.sh
 
-      - name: Build Distro
-        run: .github/scripts/build.sh
+    - name: Discord Message
+      id: discord
+      run: .github/scripts/discord.sh
 
-      - name: Upload S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          aws_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET_NAME }}
-          source_dir: 'dist'
-          destination_dir: ''
+    - name: Build Distro
+      run: .github/scripts/build.sh
 
-      - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: ${{ steps.discord.outputs.discord_msg }}
+    - uses: altinukshini/deployment-action@releases/v1
+      name: start deployment
+      id: deployment
+      with:
+        token: ${{ secrets.GITHUB_TOKEN}}
+        description: Uploading files to CDN
+        environment: production
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
-        with:
-          name: phpvms-package
-          path: 'dist/*'
+    - uses: BetaHuhn/do-spaces-action@v2
+      id: spaces
+      with:
+        access_key: ${{ secrets.SPACE_ACCESS_KEY}}
+        secret_key: ${{ secrets.SPACE_SECRET_KEY }}
+        space_name: ${{ secrets.SPACE_NAME }}
+        space_region: ${{ secrets.SPACE_REGION }}
+        source: dist
+        cdn_domain: phpvms.cdn.vmslabs.net
+        permission: public-read
+
+    - name: Upload S3
+      uses: shallwefootball/s3-upload-action@master
+      with:
+        aws_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY}}
+        aws_bucket: ${{ secrets.S3_BUCKET_NAME }}
+        source_dir: 'dist'
+        destination_dir: ''
+
+    - name: Discord notification
+      uses: Ilshidur/action-discord@0.3.2
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: ${{ steps.discord.outputs.discord_msg }}
+
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v3
+      with:
+        name: phpvms-package
+        path: 'dist/*'
+
+#     - name: update deployment status
+#       if: always()
+#       uses: altinukshini/deployment-status@releases/v1
+#       with:
+#         token: ${{ secrets.GITHUB_TOKEN }}
+#         state: ${{ job.status }}
+#         environment_url: ${{ steps.spaces.outputs.output_url }}
+#         deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+#         description: "Successfully uploaded files to CDN"
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
@@ -195,7 +215,7 @@ jobs:
     name: 'Create Release'
     needs: artifacts
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.repository == 'nabeelio/phpvms' && startsWith(github.ref, 'refs/tags/')
     steps:
 
       - name: Download artifact from build job

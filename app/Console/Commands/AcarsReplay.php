@@ -128,7 +128,7 @@ class AcarsReplay extends Command
             'lon'          => $data->longitude,
             'heading'      => $data->heading,
             'altitude'     => $data->altitude,
-            'altitude_asl' => $data->altitude,
+            'altitude_agl' => $data->altitude,
             'altitude_msl' => $data->altitude,
             'gs'           => $data->groundspeed,
             'transponder'  => $data->transponder,

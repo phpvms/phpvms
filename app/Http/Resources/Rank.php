@@ -17,7 +17,7 @@ class Rank extends Resource
     {
         return [
             'name'      => $this->name,
-            'subfleets' => Subfleet::collection($this->subfleets),
+            'subfleets' => Subfleet::collection($this->whenLoaded('subfleets')),
         ];
     }
 }

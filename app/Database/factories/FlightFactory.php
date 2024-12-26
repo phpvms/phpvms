@@ -55,7 +55,7 @@ class FlightFactory extends Factory
                 DateTime::ATOM
             ),
             'updated_at' => static fn (array $flight) => $flight['created_at'],
-            'owner_type' => Flight::class,
+            'owner_type' => null,
             'owner_id'   => null,
         ];
     }

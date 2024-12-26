@@ -56,8 +56,8 @@
                             <td>
                                 <div class="form-group">
                                     <select name="airline_country" class="form-control select2">
-                                        @foreach ($countries as $country)
-                                            <option value="{{ $country }}">{{ $country }}</option>
+                                        @foreach ($countries as $code => $name)
+                                            <option value="{{ $code }}">{{ $name }}</option>
                                         @endforeach
                                     </select>
                                     @include('system.installer.flash/check_error', [

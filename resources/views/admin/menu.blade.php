@@ -50,6 +50,10 @@
       <li><a href="{{ \App\Filament\Resources\AirlineResource::getUrl() }}"><i class="pe-7s-paper-plane"></i>airlines</a></li>
       @endcan
 
+      @ability('admin', 'aircraft', 'fleet')
+      <li><a href="{{ url('/admin/airframes') }}"><i class="pe-7s-plane"></i>sb airframes</a></li>
+      @endability
+
       @can('view_any_airport')
       <li><a href="{{ \App\Filament\Resources\AirportResource::getUrl() }}"><i class="pe-7s-map-marker"></i>airports</a></li>
       @endcan

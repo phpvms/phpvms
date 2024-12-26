@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
 
 if test "$GIT_TAG_NAME"; then
-  export VERSION=$fullSemVer
+  export VERSION=$NBGV_SemVer2
 
-  # Pass in the tag as the version to write out
-  php artisan phpvms:version --write --write-full-version "${fullSemVer}"
-  export FULL_VERSION=$fullSemVer
+  php artisan phpvms:version --write --write-full-version "${VERSION}"
+  export FULL_VERSION=$NBGV_SemVer2
 else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
 
   # This now includes the pre-release version, so "-dev" by default
-  export VERSION=$fullSemVer
+  export VERSION=$NBGV_SemVer2
 
   # Don't pass in a version here, just write out the latest hash
-  php artisan phpvms:version --write "${fullSemVer}"
-  export FULL_VERSION=$fullSemVer
+  php artisan phpvms:version --write "${VERSION}"
+  export FULL_VERSION=$NBGV_SemVer2
 fi
 
-export FILE_NAME="phpvms-${VERSION}"
+export FILE_NAME="phpvms-latest${NBGV_PrereleaseVersion}"
 export TAR_NAME="$FILE_NAME.tar.gz"
 export ZIP_NAME="$FILE_NAME.zip"
 export BASE_DIR=`pwd`
