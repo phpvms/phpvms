@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be883ed4907b3a05c15ccf76978e410e",
+    "content-hash": "d1690f2180d275653631e31e3722210c",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -6277,12 +6277,12 @@
             "version": "4.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/thephpleague/iso3166.git",
+                "url": "https://github.com/alcohol/iso3166.git",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
+                "url": "https://api.github.com/repos/alcohol/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "shasum": ""
             },
