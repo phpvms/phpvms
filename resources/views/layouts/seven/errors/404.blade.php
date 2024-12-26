@@ -2,11 +2,15 @@
 @section('title', __('errors.404.title'))
 
 @section('content')
-  <div class="container registered-page">
-    <h3>@lang('errors.404.title')</h3>
-    <p>
-      {!! str_replace(':link', config('app.url'), __('errors.404.message')).'<br />' !!}
-      {{ $exception->getMessage() }}
-    </p>
+  <div class="d-flex align-items-center justify-content-center">
+    <div class="text-center">
+      <h1 class="display-1 fw-bold">404</h1>
+      <h3 class="fs-3">@lang('errors.404.title')</h3>
+      <p class="lead">
+        Well, this is embarrassing, the page you requested does not exist.
+      </p>
+      <a href="{{ route('frontend.home') }}" class="btn btn-primary">Go Home</a>
+      <a href="{{ url()->previous() }}" class="btn btn-primary">Go Back</a>
+    </div>
   </div>
 @endsection

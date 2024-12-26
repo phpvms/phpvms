@@ -1,47 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>@lang('errors.503.title')</title>
+@extends('app')
+@section('title', 'Server Maintenance')
 
-  <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
-
-  <style>
-    html, body {
-      height: 100%;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      color: #B0BEC5;
-      display: table;
-      font-weight: 100;
-      font-family: 'Lato', sans-serif;
-    }
-
-    .container {
-      text-align: center;
-      display: table-cell;
-      vertical-align: middle;
-    }
-
-    .content {
-      text-align: center;
-      display: inline-block;
-    }
-
-    .title {
-      font-size: 72px;
-      margin-bottom: 40px;
-    }
-  </style>
-</head>
-<body>
-<div class="container">
-  <div class="content">
-    <div class="title">@lang('errors.503.message')</div>
+@section('content')
+  <div class="d-flex align-items-center justify-content-center">
+    <div class="text-center">
+      <h1 class="display-1 fw-bold">503</h1>
+      <h3 class="fs-3">We'll Be Right Back!</h3>
+      <p class="lead">
+        Our server is currently undergoing maintenance, we'll be back online shortly. Thank you for your patience!
+      </p>
+    </div>
   </div>
-</div>
-</body>
-</html>
+@endsection
