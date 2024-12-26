@@ -19,7 +19,7 @@
         <a class="btn btn-secondary btn-lg"
            style="margin-top: -10px; margin-bottom: 5px"
            href="#"
-           data-toggle="modal" data-target="#OFP_Edit">Edit OFP</a>
+           data-bs-toggle="modal" data-bs-target="#OFP_Edit">Edit OFP</a>
     </div>
     @endif
     <div class="col">
@@ -281,12 +281,12 @@
 
   {{-- SimBrief Edit Modal --}}
   @if(!empty($simbrief->xml->params->static_id))
-    <div class="modal fade" id="OFP_Edit" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="OFP_Edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog" style="max-width: 1020px;">
         <div class="modal-content p-0" style="border-radius: 5px;">
           <div class="modal-header p-1">
             <h5 class="modal-title m-1 p-0">SimBrief</h5>
-            <span class="close"><i class="fas fa-times-circle" data-dismiss="modal" aria-label="Close" aria-hidden="true"></i></span>
+            <span class="close"><i class="fas fa-times-circle" data-bs-dismiss="modal" aria-label="Close" aria-hidden="true"></i></span>
           </div>
           <div class="modal-body p-0">
             <iframe src="https://www.simbrief.com/system/dispatch.php?editflight=last&static_id={{ $simbrief->xml->params->static_id }}" style="width: 100%; height: 80vh;" frameBorder="0" title="SimBrief"></iframe>
@@ -297,7 +297,7 @@
               href="{{ route('frontend.simbrief.update_ofp') }}?ofp_id={{ $simbrief->id }}&flight_id={{ $simbrief->flight_id }}&aircraft_id={{ $simbrief->aircraft_id }}&sb_userid={{ $simbrief->xml->params->user_id }}&sb_static_id={{ $simbrief->xml->params->static_id }}">
               Download Updated OFP & Close
             </a>
-            <button type="button" class="btn btn-danger btn-sm m-1 p-1" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-danger btn-sm m-1 p-1" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

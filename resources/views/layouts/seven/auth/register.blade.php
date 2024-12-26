@@ -119,7 +119,7 @@
 
           @if($captcha['enabled'] === true)
             <label for="h-captcha" class="control-label">@lang('auth.fillcaptcha')</label>
-            <div class="h-captcha" data-sitekey="{{ $captcha['site_key'] }}"></div>
+            <div class="h-captcha" data-bs-sitekey="{{ $captcha['site_key'] }}"></div>
             @if ($errors->has('h-captcha-response'))
               <p class="text-danger">{{ $errors->first('h-captcha-response') }}</p>
             @endif

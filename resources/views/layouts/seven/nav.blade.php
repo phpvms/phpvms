@@ -1,4 +1,4 @@
-<ul class="navbar-nav me-auto mb-2 mb-lg-0 mt-1">
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0 mt-1">
     @if (Auth::check())
         <li class="nav-item">
             <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.dashboard.index') }}">
@@ -104,12 +104,12 @@
         @endforeach
 
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown"
-                data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
+                data-bs-boundary="viewport" aria-haspopup="true" aria-expanded="false">
                 <span
                     class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $languages[$locale]['display'] }}
             </a>
-            <div class="dropdown-menu dropdown-menu-right">
+            <div class="dropdown-menu dropdown-menu-end">
                 @foreach ($languages as $lang => $language)
                     @if ($lang != $locale)
                         <a class="dropdown-item" href="{{ route('frontend.lang.switch', $lang) }}">
@@ -121,16 +121,16 @@
             </div>
         </li>
 
-        <li class="nav-item dropdown ">
+        <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button"
-                data-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+                data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
                 @if (Auth::user()->avatar == null)
                     <img src="{{ Auth::user()->gravatar(38) }}" style="height: 38px; width: 38px;">
                 @else
                     <img src="{{ Auth::user()->avatar->url }}" style="height: 38px; width: 38px;">
                 @endif
             </a>
-            <div class="dropdown-menu dropdown-menu-left">
+            <div class="dropdown-menu dropdown-menu-end">
 
                 <a class="dropdown-item" href="{{ route('frontend.profile.index') }}">
                     <i class="far fa-user"></i>&nbsp;&nbsp;@lang('common.profile')
@@ -148,5 +148,4 @@
             </div>
         </li>
     @endif
-
 </ul>

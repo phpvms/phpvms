@@ -18,13 +18,13 @@
     <div class="col-sm-2 float-right">
       <div class="col-sm-2 text-center">
           @if($pirep->state === PirepState::PENDING)
-            <div class="badge badge-warning">
+            <div class="badge bg-warning">
           @elseif($pirep->state === PirepState::ACCEPTED)
-              <div class="badge badge-success">
+              <div class="badge bg-success">
           @elseif($pirep->state === PirepState::REJECTED)
-              <div class="badge badge-danger">
+              <div class="badge bg-danger">
           @else
-             <div class="badge badge-info">
+             <div class="badge bg-info">
           @endif
             {{ PirepState::label($pirep->state) }}</div>
           <a href="{{ route('frontend.pireps.edit', [$pirep->id]) }}"

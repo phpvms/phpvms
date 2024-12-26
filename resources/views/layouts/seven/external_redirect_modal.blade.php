@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">@lang('common.external_redirection')</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">@lang('common.close')</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('common.close')</button>
         <a href="#" target="_blank" class="btn btn-primary" id="externalRedirectUrl">@lang('common.continue')</a>
       </div>
     </div>

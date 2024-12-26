@@ -5,7 +5,7 @@
       {{--
       This map uses rivets.js to fill in the updates from the livemap
       So the single brackets are used by rivets to fill in the values
-      And then the rv-* attributes are data-binds that will automatically
+      And then the rv-* attributes are data-bs-binds that will automatically
       update whenever the base model behind it updates:
 
           http://rivetsjs.com/docs/guide
