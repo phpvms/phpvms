@@ -3,8 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AirframeResource\Pages;
-use App\Filament\Resources\AirframeResource\RelationManagers;
-use App\Models\Airframe;
 use App\Models\Enums\AirframeSource;
 use App\Models\SimBriefAirframe;
 use Filament\Forms;
@@ -13,9 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AirframeResource extends Resource
 {
@@ -47,7 +43,7 @@ class AirframeResource extends Resource
 
                 Forms\Components\Hidden::make('source')
                     ->visibleOn('create')
-                    ->formatStateUsing(fn () => AirframeSource::INTERNAL)
+                    ->formatStateUsing(fn () => AirframeSource::INTERNAL),
             ])
             ->columns(3);
     }
