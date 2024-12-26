@@ -14,7 +14,7 @@
     "acorn": "^7.4.1",
     "animate.css": "~3.6",
     "axios": "^1.6.8",
-    "bootstrap": "~4.3",
+    "bootstrap": "~5.0",
     "bootstrap-sass": "^3.4.1",
     "bootstrap3": "npm:bootstrap@~3.4",
     "ckeditor4": "4.14.0",
