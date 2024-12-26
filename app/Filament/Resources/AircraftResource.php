@@ -92,6 +92,10 @@ class AircraftResource extends Resource
                     Forms\Components\TextInput::make('simbrief_type')
                         ->label('SimBrief Type')
                         ->string(),
+
+                    Forms\Components\TextInput::make('hex_code')
+                        ->label('Hex Code')
+                        ->string(),
                 ])->columns(4),
 
                 Forms\Components\Section::make('weights')
@@ -109,7 +113,7 @@ class AircraftResource extends Resource
                         ->label('Max Takeoff Weight (MTOW)')
                         ->numeric(),
 
-                    Forms\Components\TextInput::make('mtow')
+                    Forms\Components\TextInput::make('mlw')
                         ->label('Max Landing Weight (MLW)')
                         ->numeric(),
                 ])->columns(4),
