@@ -46,27 +46,9 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand text-white" href="{{ url('/') }}">
-                <img src="{{ public_asset('/assets/img/logo_blue_bg.svg') }}" width="135px" alt="phpvms Logo" />
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                @include('nav')
-            </div>
-        </div>
-    </nav>
-    <!-- /Navbar -->
-    <div id="top_anchor" class="clearfix" style="height: 25px;"></div>
-    <div class="wrapper">
-        <div class="clear"></div>
-        <div class="container-fluid" style="width: 85%!important;">
-
+    <div class="wrapper d-flex flex-column min-vh-100">
+        @include('nav')
+        <div class="body container-fluid flex-grow-1 pt-4" style="width: 85%!important;">
             {{-- These should go where you want your content to show up --}}
             @include('flash.message')
             @yield('content')
