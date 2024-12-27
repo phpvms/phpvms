@@ -19,10 +19,7 @@
       <div class="row mb-4">
         <div class="col-md-3">
           <div class="card bg-primary text-white dashboard-box">
-            <div class="card-body text-center">
-              <div class="icon-background">
-                <i class="fas fa-plane icon"></i>
-              </div>
+            <div class="card-body text-center d-flex flex-center flex-column m-auto">
               <h3 class="header">{{ $user->flights }}</h3>
               <h5 class="description">{{ trans_choice('common.flight', $user->flights) }}</h5>
             </div>
@@ -32,9 +29,6 @@
         <div class="col-md-3">
           <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
-              <div class="icon-background">
-                <i class="far fa-clock icon"></i>
-              </div>
               <h3 class="header">@minutestotime($user->flight_time)</h3>
               <h5 class="description">@lang('dashboard.totalhours')</h5>
             </div>
@@ -43,9 +37,6 @@
         <div class="col-md-3">
           <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
-              <div class="icon-background"> {{--110px font-size--}}
-                <i class="fas fa-money-bill-alt icon"></i>
-              </div>
               <h3 class="header">{{ optional($user->journal)->balance ?? 0 }}</h3>
               <h5 class="description">@lang('dashboard.yourbalance')</h5>
             </div>
@@ -55,9 +46,6 @@
         <div class="col-md-3">
           <div class="card bg-primary text-white dashboard-box">
             <div class="card-body text-center">
-              <div class="icon-background">
-                <i class="fas fa-map-marker icon"></i>
-              </div>
               <h3 class="header">{{ $current_airport }}</h3>
               <h5 class="description">@lang('airports.current')</h5>
             </div>
