@@ -76,19 +76,19 @@
   @else
     <li class="nav-item d-flex align-items-center">
       <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.flights.index') }}">
-        <i class="fab fa-avianex"></i>
+        <i class="bi bi-airplane"></i>
         {{ trans_choice('common.flight', 2) }}
       </a>
     </li>
     <li class="nav-item d-flex align-items-center">
       <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.pireps.index') }}">
-        <i class="fas fa-cloud-upload-alt"></i>
+        <i class="bi bi-file-arrow-up"></i>
         {{ trans_choice('common.pirep', 2) }}
       </a>
     </li>
     <li class="nav-item d-flex align-items-center">
       <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.downloads.index') }}">
-        <i class="fas fa-download"></i>
+        <i class="bi bi-download"></i>
         {{ trans_choice('common.download', 2) }}
       </a>
     </li>
@@ -133,17 +133,17 @@
       <div class="dropdown-menu dropdown-menu-end">
 
         <a class="dropdown-item" href="{{ route('frontend.profile.index') }}">
-          <i class="far fa-user"></i>&nbsp;&nbsp;@lang('common.profile')
+          <i class="bi bi-person"></i>&nbsp;&nbsp;@lang('common.profile')
         </a>
 
         @ability('admin', 'admin-access')
         <a class="dropdown-item" href="{{ url('/admin') }}">
-          <i class="fas fa-circle-notch"></i>&nbsp;&nbsp;@lang('common.administration')
+          <i class="bi bi-gear"></i>&nbsp;&nbsp;@lang('common.administration')
         </a>
         @endability
         <div class="dropdown-divider"></div>
         <a class="dropdown-item" href="{{ url('/logout') }}">
-          <i class="fas fa-sign-out-alt"></i>&nbsp;&nbsp;@lang('common.logout')
+          <i class="bi bi-box-arrow-right"></i>&nbsp;&nbsp;@lang('common.logout')
         </a>
       </div>
     </li>
