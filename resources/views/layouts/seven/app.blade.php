@@ -48,19 +48,22 @@
     <!-- Navbar -->
     <div class="wrapper d-flex flex-column min-vh-100">
         @include('nav')
-        <div class="body container-fluid flex-grow-1 pt-4" style="width: 85%!important;">
+        <div class="body container flex-grow-1 pt-4">
             {{-- These should go where you want your content to show up --}}
             @include('flash.message')
             @yield('content')
             {{-- End the above block --}}
 
         </div>
-        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 mt-4 border-top" style="padding: 0 7.5%;">
+        <footer class="py-3 mt-4 border-top">
+            <div class="container d-flex flex-wrap justify-content-between align-items-center">
+
             <div class="col-md-4 d-flex align-items-center">
                 <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }} {{ config('app.name') }}</span>
             </div>
             <div class="col-md-4 d-flex align-items-center justify-content-end">
                 <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net" target="_blank">phpVMS</a></span>
+            </div>
             </div>
         </footer>
     </div>
