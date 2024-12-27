@@ -10,7 +10,7 @@
             <div class="row">
                 @foreach ($users as $user)
                     <div class="card col-2 bg-primary mx-1">
-                        <div class="header header-primary text-center pt-4">
+                        <div class="text-center pt-4">
                             <h3 class="mb-4">
                                 <a href="{{ route('frontend.profile.show', [$user->id]) }}"
                                     class="text-white text-decoration-none fw-bold text-uppercase">{{ $user->name_private }}</a>
