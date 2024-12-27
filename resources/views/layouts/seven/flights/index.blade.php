@@ -15,7 +15,7 @@
   </div>
   <div class="row">
     <div class="col-12 text-center">
-      {{ $flights->withQueryString()->links('pagination.default') }}
+      {{ $flights->withQueryString()->links('pagination.bootstrap-5') }}
     </div>
   </div>
   @if (setting('bids.block_aircraft', false))
