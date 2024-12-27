@@ -185,6 +185,7 @@
 </div>
 
 @section('scripts')
+<script>
     new TomSelect("#airline_id",{
     create: false,
     });
@@ -192,4 +193,5 @@
     new TomSelect("#home_airport_id",{
     create: false,
     });
+    </script>
 @endsection
