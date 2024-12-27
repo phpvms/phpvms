@@ -9,10 +9,10 @@
     </div>
   </div>
   @if(!$grouped_files || \count($grouped_files) === 0)
-    <div class="jumbotron text-center">@lang('downloads.none')</div>
+    <div class="p-5 mb-4 bg-body-tertiary rounded-3 text-center fs-4">@lang('downloads.none')</div>
   @else
     @foreach($grouped_files as $group => $files)
-      <div class="row" style="margin-bottom: 40px;">
+      <div class="row mb-4">
         <div class="col-12">
           <h4 class="description">{{ $group }}</h4>
         </div>
