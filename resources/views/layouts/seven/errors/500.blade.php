@@ -7,16 +7,18 @@
       <h1 class="display-1 fw-bold">500</h1>
       <h3 class="fs-3">@lang('errors.503.title')</h3>
       <p class="lead">
-        If you are a regular user, please inform website administrators
+        If you are a regular user, please inform your webmaster of this error with the steps to how you got it.
       </p>
-      <div class="lead bg-light p-4 rounded shadow-sm">
-        <h4 class="text-danger fw-bold mb-3">For Administrators:</h4>
+      <div class="lead card">
+        <div class="card-body">
+          <h4 class="text-danger fw-bold mb-3">For Administrators:</h4>
         <ul class="list-unstyled">
           <li class="mb-2">
             <i class="bi bi-journal-code text-primary"></i> Check Laravel logs for error details
           </li>
           <li class="mb-2">
-            <i class="bi bi-gear text-primary"></i> Enable <code>APP_DEBUG</code> in the environment file and revisit this page
+            <i class="bi bi-gear text-primary"></i> Enable <code>APP_DEBUG</code> in the environment file and revisit this page<br>
+            <i class="fs-6">Once you enabled <code>APP_DEBUG</code>, for security reasons, remember to disable it after you're done.</i>
           </li>
         </ul>
         <p>Once you have more information:</p>
@@ -31,10 +33,12 @@
         <p class="text-danger fw-bold mt-4">
           <i class="bi bi-exclamation-triangle-fill"></i> Sharing a screenshot of this page won't help. Include detailed information instead.
         </p>
-
+        
         <a href="https://docs.phpvms.net/help" class="btn btn-danger">phpVMS Docs | Getting Help</a>
         <a href="{{ route('frontend.home') }}" class="btn btn-primary">Go Home</a>
         <a href="{{ url()->previous() }}" class="btn btn-primary">Go Back</a>
+        </div>
+
       </div>
     </div>
   </div>
