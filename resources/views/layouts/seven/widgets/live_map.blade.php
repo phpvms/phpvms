@@ -1,6 +1,20 @@
 @section('css')
   @parent
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .map-info-box {
+      position: absolute;
+      bottom: 0;
+      padding: 20px;
+      height: 100px;
+      z-index: 9999;
+      background-color: rgba(232, 232, 232, 0.9);
+    }
+
+    [data-bs-theme="dark"] .map-info-box {
+      background-color: rgba(33, 37, 41, 0.9);
+    }
+  </style>
 @endsection
 
 <div class="row">
