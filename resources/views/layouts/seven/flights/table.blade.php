@@ -15,14 +15,14 @@
   </div>
 </div>
 @foreach($flights as $flight)
-  <div class="card border-blue-bottom">
-    <div class="card-body" style="min-height: 0">
+  <div class="card mb-3">
+    <div class="card-body">
       <div class="row">
-        <div class="col-sm-9">
+        <div class="col-12 col-md-9">
           <h5>
             <a class="text-c" href="{{ route('frontend.flights.show', [$flight->id]) }}">
               @if(optional($flight->airline)->logo)
-                  <img src="{{ $flight->airline->logo }}"  alt="{{$flight->airline->name}}"
+                  <img src="{{ $flight->airline->logo }}" alt="{{$flight->airline->name}}"
                     style="max-width: 80px; width: 100%; height: auto;"/>
               @endif
               {{ $flight->ident }}
@@ -32,15 +32,7 @@
             </a>
           </h5>
         </div>
-        <div class="col-sm-3 align-top text-right">
-          {{--
-          !!! NOTE !!!
-           Don't remove the "save_flight" class, or the x-id attribute.
-           It will break the AJAX to save/delete
-
-           "x-saved-class" is the class to add/remove if the bid exists or not
-           If you change it, remember to change it in the in-array line as well
-          --}}
+        <div class="col-12 col-md-3 text-md-right text-center mt-2 mt-md-0">
           @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id == $user->current_airport->icao)
             <button class="btn btn-round btn-icon btn-icon-mini save_flight
                            {{ isset($saved[$flight->id]) ? 'btn-info':'' }}"
@@ -53,9 +45,8 @@
           @endif
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm-7">
-          {{--<table class="table-condensed"></table>--}}
+      <div class="row mt-3">
+        <div class="col-12 col-md-7">
           <span class="title">{{ strtoupper(__('flights.dep')) }}&nbsp;</span>
           {{ optional($flight->dpt_airport)->name ?? $flight->dpt_airport_id }}
           (<a href="{{route('frontend.airports.show', ['id' => $flight->dpt_airport_id])}}">{{$flight->dpt_airport_id}}</a>)
@@ -82,15 +73,15 @@
             <br/>
           @endif
         </div>
-        <div class="col-sm-5">
+        <div class="col-12 col-md-5 mt-3 mt-md-0">
           @if($flight->route)
             <span class="title">{{ strtoupper(__('flights.route')) }}&nbsp;</span>
             {{ $flight->route }}
           @endif
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm-12 text-right">
+      <div class="row mt-3">
+        <div class="col-12 text-right">
           @if ($acars_plugin)
             @if (isset($saved[$flight->id]))
               <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-outline-primary">Load in vmsACARS</a>
@@ -98,16 +89,13 @@
               <a href="vmsacars:flight/{{ $flight->id }}" class="btn btn-sm btn-outline-primary">Load in vmsACARS</a>
             @endif
           @endif
-          <!-- Simbrief enabled -->
           @if ($simbrief !== false)
-            <!-- If this flight has a briefing, show the link to view it-->
             @if ($flight->simbrief && $flight->simbrief->user_id === $user->id)
               <a href="{{ route('frontend.simbrief.briefing', $flight->simbrief->id) }}"
                  class="btn btn-sm btn-outline-primary">
                 View Simbrief Flight Plan
               </a>
             @else
-              <!-- Show button if the bids-only is disable, or if bids-only is enabled, they've saved it -->
               @if ($simbrief_bids === false || ($simbrief_bids === true && isset($saved[$flight->id])))
                 @php
                   $aircraft_id = isset($saved[$flight->id]) ? App\Models\Bid::find($saved[$flight->id])->aircraft_id : null;
