@@ -70,12 +70,7 @@
         <footer class="footer footer-default">
             <div class="container">
                 <div class="copyright">
-                    {{--
-        This "powered by phpVMS" must be kept visible. as-per the the license
-        If you want to remove the attribution, a license can be purchased
-        https://docs.phpvms.net/#license
-        --}}
-                    powered by <a href="http://www.phpvms.net" target="_blank">phpvms</a>
+                    Copyright {{ date('Y') }} {{ config('app.name') }}. Powered by <a href="https://www.phpvms.net" target="_blank">phpvms</a>
                 </div>
             </div>
         </footer>
@@ -94,6 +89,9 @@
     <script src="{{ public_mix('/assets/frontend/js/vendor.js') }}"></script>
     <script src="{{ public_mix('/assets/frontend/js/app.js') }}"></script>
     @yield('scripts')
+
+    {{-- This is the color theme switcher --}}
+    @include('scripts.bs_theme')
 
     {{--
 It's probably safe to keep this to ensure you're in compliance

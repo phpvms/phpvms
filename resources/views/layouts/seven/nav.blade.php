@@ -148,4 +148,30 @@
             </div>
         </li>
     @endif
+    <li class="nav-item dropdown my-0 my-md-auto">
+        <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="true" data-bs-toggle="dropdown" data-bs-display="static" aria-label="Toggle theme (light)">
+          <i class="bi-sun-fill" id="theme-icon-active"></i>
+          <span class="d-lg-none ms-2" id="bd-theme-text">Toggle Colors</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text" data-bs-popper="static">
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light" aria-pressed="true">
+              <i class="bi-sun-fill"></i>
+              &nbsp;Light
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+              <i class="bi-moon-stars-fill"></i>
+              &nbsp;Dark
+            </button>
+          </li>
+          <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+              <i class="bi-circle-half"></i>
+              &nbsp;Auto
+            </button>
+          </li>
+        </ul>
+      </li>
 </ul>
