@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -8,6 +8,14 @@
         name='viewport' />
 
     <title>@yield('title') - {{ config('app.name') }}</title>
+    <script>
+        // Check for saved user preference, if any, on initial load
+        (function() {
+            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
 
     {{-- Start of required lines block. DON'T REMOVE THESE LINES! They're required or might break things --}}
     <meta name="base-url" content="{!! url('') !!}">
