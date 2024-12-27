@@ -1,43 +1,32 @@
 <script>
-$(document).ready(function () {
-  $("select.airport_search").select2({
-    ajax: {
-      url: '{{ Config::get("app.url") }}/api/airports/search',
-      data: function (params) {
-        const hubs_only = $(this).hasClass('hubs_only') ? 1 : 0;
-        return {
-          search: params.term,
-          hubs: hubs_only,
-          page: params.page || 1,
-          orderBy: 'id',
-          sortedBy: 'asc'
-        }
-      },
-      processResults: function (data, params) {
-        if (!data.data) { return [] }
-        const results = data.data.map(apt => {
-          return {
-            id: apt.id,
-            text: apt.description,
-          }
-        })
 
-        const pagination = {
-          more: data.meta.next_page !== null,
+  // TODO: Change Search fields for better search experience.
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll("select.airport_search").forEach(function(element) {
+      new TomSelect(element, {
+        valueField: 'id',
+        labelField: 'description',
+        searchField: 'name',
+        load: function(query, callback) {
+          var url = new URL('{{ Config::get("app.url") }}/api/airports/search');
+          var params = {
+            search: query,
+            hubs: element.classList.contains('hubs_only') ? 1 : 0,
+            page: 1,
+            orderBy: 'id',
+            sortedBy: 'asc'
+          };
+          Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+          fetch(url)
+            .then(response => response.json())
+            .then(json => {
+              console.log(json);
+              callback(json.data);
+            }).catch(()=>{
+              callback();
+            });
         }
-
-        return {
-          results,
-          pagination,
-        };
-      },
-      cache: true,
-      dataType: 'json',
-      delay: 250,
-      minimumInputLength: 2,
-    },
-    width: 'resolve',
-    placeholder: 'Type to search',
+      });
+    });
   });
-});
 </script>

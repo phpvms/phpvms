@@ -193,5 +193,6 @@
     new TomSelect("#home_airport_id",{
     create: false,
     });
-    </script>
+
+</script>
 @endsection
