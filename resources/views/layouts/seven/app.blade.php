@@ -12,7 +12,7 @@
         // Check for saved user preference, if any, on initial load
         (function() {
             if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-bs-theme', "dark")
             }
         })();
     </script>
