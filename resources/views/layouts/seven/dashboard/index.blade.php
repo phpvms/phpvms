@@ -74,12 +74,12 @@
     {{-- Sidebar --}}
     <div class="col-sm-4">
       <div class="card">
-        <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
+        <div class="card-header" style="background: #067ec1; color: #FFF;">
           @lang('dashboard.weatherat', ['ICAO' => $current_airport])
         </div>
-        <div class="card-body">
+        <div>
           <!-- Tab panes -->
-          <div class="tab-content">
+          <div>
             {{ Widget::Weather(['icao' => $current_airport]) }}
           </div>
         </div>
