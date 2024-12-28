@@ -11,7 +11,8 @@
     <script>
         // Check for saved user preference, if any, on initial load
         (function() {
-          if (localStorage.getItem('theme') === 'dark' || ((!localStorage.getItem('theme') || localStorage.getItem('theme') === 'auto') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.getItem('theme') === 'dark' || ((!localStorage.getItem('theme') || localStorage.getItem(
+                    'theme') === 'auto') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.setAttribute('data-bs-theme', "dark")
             }
         })();
@@ -29,7 +30,7 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
-    <link href="{{public_asset('/assets/vendor/tomselect/tom-select.bootstrap5.css')}}" rel="stylesheet">
+    <link href="{{ public_asset('/assets/vendor/tomselect/tom-select.bootstrap5.css') }}" rel="stylesheet">
 
     {{-- Start of the required files in the head block --}}
     {{-- <link href="{{ public_mix('/assets/global/css/vendor.css') }}" rel="stylesheet" /> --}}
@@ -58,12 +59,14 @@
         <footer class="py-3 mt-4 border-top">
             <div class="container d-flex flex-wrap justify-content-between align-items-center">
 
-            <div class="col-md-4 d-flex align-items-center">
-                <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }} {{ config('app.name') }}</span>
-            </div>
-            <div class="col-md-4 d-flex align-items-center justify-content-end">
-                <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net" target="_blank">phpVMS</a></span>
-            </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }}
+                        {{ config('app.name') }}</span>
+                </div>
+                <div class="col-md-4 d-flex align-items-center justify-content-end">
+                    <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net"
+                            target="_blank">phpVMS</a></span>
+                </div>
             </div>
         </footer>
     </div>
@@ -106,14 +109,6 @@ with the EU Cookie Law https://privacypolicies.com/blog/eu-cookie-law
         });
     </script>
     {{-- End the required tags block --}}
-
-    <script>
-        $(document).ready(function() {
-            $("select.select2").select2({
-                width: 'resolve'
-            });
-        });
-    </script>
 
     {{--
 Google Analytics tracking code. Only active if an ID has been entered

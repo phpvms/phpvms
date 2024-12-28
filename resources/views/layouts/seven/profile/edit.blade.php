@@ -99,6 +99,22 @@
     @include('scripts.airport_search')
 
     <script>
+        new TomSelect("#airline_id", {
+            create: false,
+        });
+
+        new TomSelect("#home_airport_id", {
+            create: false,
+        });
+
+        new TomSelect("#country", {
+            create: false,
+        });
+
+        new TomSelect("#timezone", {
+            create: false,
+        });
+
         function apiKeyShow() {
             document.getElementById("apiKey_show").style = "display:block";
             document.getElementById("apiKey_hide").style = "display:none";

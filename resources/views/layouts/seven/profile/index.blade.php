@@ -37,20 +37,16 @@
                         @endif
                     </p>
                 </div>
-                <div class="card-footer">
+                <div class="card-footer d-grid gap-2">
                     @if (Auth::check() && $user->id === Auth::user()->id)
-                        <div class="row">
-                            <div class="col-sm-12">
-                                @if (isset($acars) && $acars === true)
-                                    <a href="{{ route('frontend.profile.acars') }}" class="btn btn-info"
-                                        onclick="alert('Copy or Save to \'My Documents/vmsacars/profiles\'')">ACARS
-                                        Config</a>
-                                    &nbsp;
-                                @endif
-                                <a href="{{ route('frontend.profile.edit', [$user->id]) }}"
-                                    class="btn btn-primary">@lang('common.edit')</a>
-                            </div>
-                        </div>
+                        @if (isset($acars) && $acars === true)
+                            <a href="{{ route('frontend.profile.acars') }}" class="btn btn-info"
+                                onclick="alert('Copy or Save to \'My Documents/vmsacars/profiles\'')">ACARS
+                                Config</a>
+                            &nbsp;
+                        @endif
+                        <a href="{{ route('frontend.profile.edit', [$user->id]) }}"
+                            class="btn btn-primary">@lang('common.edit')</a>
                     @endif
                 </div>
             </div>
