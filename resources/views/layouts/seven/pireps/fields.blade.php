@@ -8,6 +8,11 @@ an impact on your stats and financials, and will require a recalculation of all 
 flight reports that have been filed. You've been warned!
 
 --}}
+@php
+  $custom_fields_exist = (isset($pirep) && $pirep->fields && $pirep->fields->isNotEmpty()) || (!isset($pirep) && $pirep_fields && $pirep_fields->isNotEmpty());
+
+  $form_width = $custom_fields_exist ? 'col-lg-8' : 'col-lg-12';
+@endphp
 @if(!empty($pirep) && $pirep->read_only)
   <div class="row">
     <div class="col-sm-12">
@@ -18,12 +23,12 @@ flight reports that have been filed. You've been warned!
   </div>
 @endif
 <div class="row">
-  <div class="col-8">
-    <div class="form-container">
-      <h6><i class="fas fa-info-circle"></i>
-        &nbsp;@lang('pireps.flightinformations')
-      </h6>
-      <div class="form-container-body">
+  <div class="{{ $form_width }}">
+    <div class="card mb-3">
+      <div class="card-header">
+        @lang('pireps.flightinformations')
+      </div>
+      <div class="card-body">
         <div class="row">
           <div class="col-sm-4">
             <label for="airline_id">@lang('common.airline')</label>
@@ -31,8 +36,8 @@ flight reports that have been filed. You've been warned!
               <p>{{ $pirep->airline->name }}</p>
               <input type="hidden" name="airline_id" value="{{ $pirep->airline_id }}" />
             @else
-              <div class="input-group input-group form-group">
-                <select name="airline_id" id="airline_id" class="custom-select select2" style="width: 100%">
+              <div class="form-group">
+                <select name="airline_id" id="airline_id" class="form-select select2">
                   @foreach($airline_list as $airline_id => $airline_label)
                     <option value="{{ $airline_id }}" @if(!empty($pirep) && $airline_id === $pirep->airline_id) selected @endif>{{ $airline_label }}</option>
                   @endforeach
@@ -50,7 +55,7 @@ flight reports that have been filed. You've been warned!
                 <input type="hidden" name="flight_leg" value="{{ $pirep->flight_leg }}" />
               </p>
             @else
-              <div class="input-group input-group-sm mb3">
+              <div class="input-group mb-3">
                 <input
                   type="text"
                   name="flight_number"
@@ -96,8 +101,7 @@ flight reports that have been filed. You've been warned!
                 <select
                   name="flight_type"
                   id="flight_type"
-                  class="custom-select select2"
-                  style="width: 100%;"
+                  class="form-select select2"
                 >
                   @foreach(\App\Models\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
                     <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_label }}</option>
@@ -120,7 +124,7 @@ flight reports that have been filed. You've been warned!
                 <input type="hidden" name="minutes" value="{{ $pirep->minutes }}" />
               </p>
             @else
-              <div class="input-group input-group-sm" style="max-width: 400px;">
+              <div class="input-group" style="max-width: 400px;">
                 <input type="number"
                        name="hours"
                        id="hours"
@@ -150,7 +154,7 @@ flight reports that have been filed. You've been warned!
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->level }}</p>
             @else
-              <div class="input-group input-group-sm form-group">
+              <div class="form-group">
                 <input type="number"
                        name="level"
                        id="level"
@@ -169,11 +173,11 @@ flight reports that have been filed. You've been warned!
     </div>
 
 
-    <div class="form-container">
-      <h6><i class="fas fa-globe"></i>
-        &nbsp;@lang('pireps.deparrinformations')
-      </h6>
-      <div class="form-container-body">
+    <div class="card mb-3">
+      <div class="card-header">
+        @lang('pireps.deparrinformations')
+      </div>
+      <div class="card-body">
         <div class="row">
           <div class="col-6">
             <label for="dpt_airport_id">@lang('airports.departure')</label>
@@ -188,8 +192,7 @@ flight reports that have been filed. You've been warned!
                 <select
                   name="dpt_airport_id"
                   id="dpt_airport_id"
-                  class="custom-select airport_search"
-                  style="width: 100%"
+                  class="form-select airport_search"
                 >
                   @foreach($airport_list as $dpt_airport_id => $dpt_airport_label)
                     <option value="{{ $dpt_airport_id }}" @if(!empty($pirep) && $pirep->dpt_airport_id == $dpt_airport_id) selected @endif>{{ $dpt_airport_label }}</option>
@@ -209,12 +212,11 @@ flight reports that have been filed. You've been warned!
                                     ])}}">{{$pirep->arr_airport->icao}}</a>)
               <input type="hidden" name="arr_airport_id" value="{{ $pirep->arr_airport_id }}" />
             @else
-              <div class="input-group input-group-sm form-group">
+              <div class="form-group">
                 <select
                   name="arr_airport_id"
                   id="arr_airport_id"
-                  class="custom-select airport_search"
-                  style="width: 100%"
+                  class="form-select airport_search"
                 >
                   @foreach($airport_list as $arr_airport_id => $arr_airport_label)
                     <option value="{{ $arr_airport_id }}" @if(!empty($pirep) && $pirep->arr_airport_id == $arr_airport_id) selected @endif>{{ $arr_airport_label }}</option>
@@ -228,11 +230,11 @@ flight reports that have been filed. You've been warned!
       </div>
     </div>
 
-    <div class="form-container">
-      <h6><i class="fab fa-avianex"></i>
-        &nbsp;@lang('pireps.aircraftinformations')
-      </h6>
-      <div class="form-container-body">
+    <div class="card mb-3">
+      <div class="card-header">
+        @lang('pireps.aircraftinformations')
+      </div>
+      <div class="card-body">
         <div class="row">
           <div class="col-4">
             <label for="aircraft_id">@lang('common.aircraft')</label>
@@ -240,12 +242,12 @@ flight reports that have been filed. You've been warned!
               <p>{{ $pirep->aircraft->name }}</p>
               <input type="hidden" name="aircraft_id" value="{{ $pirep->aircraft_id }}" />
             @else
-              <div class="input-group input-group-sm form-group">
+              <div class="form-group">
                 {{-- You probably don't want to change this ID if you want the fare select to work --}}
                 <select
                   name="aircraft_id"
                   id="aircraft_select"
-                  class="custom-select select2"
+                  class="form-select select2"
                 >
                   @foreach($aircraft_list as $subfleet => $sf_aircraft)
                     @if ($subfleet === '')
@@ -266,7 +268,7 @@ flight reports that have been filed. You've been warned!
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->block_fuel }}</p>
             @else
-              <div class="input-group input-group-sm form-group">
+              <div class="form-group">
                 <input
                   type="number"
                   name="block_fuel"
@@ -286,7 +288,7 @@ flight reports that have been filed. You've been warned!
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->fuel_used }}</p>
             @else
-              <div class="input-group input-group-sm form-group">
+              <div class="form-group">
                 <input
                   type="number"
                   name="fuel_used"
@@ -304,40 +306,31 @@ flight reports that have been filed. You've been warned!
         </div>
       </div>
     </div>
-
-    <div id="fares_container" class="form-container">
+    <div id="fares_container">
       @include('pireps.fares')
     </div>
-
-    <div class="form-container">
-      <h6><i class="far fa-comments"></i>
-        &nbsp;@lang('flights.route')
-      </h6>
-      <div class="form-container-body">
-        <div class="row">
-          <div class="col">
-            <div class="input-group input-group-sm form-group">
-              <textarea name="route" id="route" placeholder="@lang('flights.route')" class="form-control">@if(!empty($pirep)){{ $pirep->route }}@else{{ old('route') }}@endif</textarea>
-              <p class="text-danger">{{ $errors->first('route') }}</p>
-            </div>
-          </div>
+    
+    <div class="card mb-3">
+      <div class="card-header">
+      @lang('flights.route') & {{ trans_choice('common.remark', 2) }}
+      </div>
+      <div class="card-body">
+      <div class="row">
+        <div class="col">
+        <div class="form-group">
+          <textarea name="route" id="route" placeholder="@lang('flights.route')" class="form-control">@if(!empty($pirep)){{ $pirep->route }}@else{{ old('route') }}@endif</textarea>
+          <p class="text-danger">{{ $errors->first('route') }}</p>
+        </div>
         </div>
       </div>
-    </div>
-
-    <div class="form-container">
-      <h6><i class="far fa-comments"></i>
-        &nbsp;{{ trans_choice('common.remark', 2) }}
-      </h6>
-      <div class="form-container-body">
-        <div class="row">
-          <div class="col">
-            <div class="input-group input-group-sm form-group">
-              <textarea name="notes" id="notes" placeholder="{{ trans_choice('common.note', 2) }}" class="form-control">@if(!empty($pirep)){{ $pirep->notes }}@else{{ old('notes') }}@endif</textarea>
-              <p class="text-danger">{{ $errors->first('notes') }}</p>
-            </div>
-          </div>
+      <div class="row">
+        <div class="col">
+        <div class="form-group">
+          <textarea name="notes" id="notes" placeholder="{{ trans_choice('common.note', 2) }}" class="form-control">@if(!empty($pirep)){{ $pirep->notes }}@else{{ old('notes') }}@endif</textarea>
+          <p class="text-danger">{{ $errors->first('notes') }}</p>
         </div>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -345,26 +338,30 @@ flight reports that have been filed. You've been warned!
   {{--
       Write out the custom fields, and label if they're required
   --}}
-  <div class="col-4">
-    <div class="form-container">
-      <h6><i class="fab fa-wpforms"></i>
-        &nbsp;{{ trans_choice('common.field', 2) }}
-      </h6>
-      <div class="form-container-body">
+  @if($custom_fields_exist)
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header">
+        {{ trans_choice('common.field', 2) }}
+      </div>
+      <div class="card-body">
         <table class="table table-striped">
-          @if(isset($pirep) && $pirep->fields)
-            @each('pireps.custom_fields', $pirep->fields, 'field')
-          @else
-            @each('pireps.custom_fields', $pirep_fields, 'field')
-          @endif
+          
+            @if(isset($pirep) && $pirep->fields)
+              @each('pireps.custom_fields', $pirep->fields, 'field')
+            @else
+              @each('pireps.custom_fields', $pirep_fields, 'field')
+            @endif
+          
         </table>
       </div>
     </div>
   </div>
+  @endif
 </div>
 <div class="row">
   <div class="col-sm-12">
-    <div class="float-right">
+    <div class="float-end">
       <div class="form-group">
 
         <input type="hidden" name="flight_id" value="{{ !empty($pirep) ? $pirep->flight_id : '' }}"/>

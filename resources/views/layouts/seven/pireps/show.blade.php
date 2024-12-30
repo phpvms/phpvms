@@ -36,17 +36,17 @@
 
   <div class="row">
     <div class="col-8">
-      <div class="row">
+      <div class="d-flex flex-column flex-md-row justify-content-between">
         {{--
             DEPARTURE INFO
         --}}
-        <div class="col-6 text-left">
+        <div class="text-left">
           <h4>
             {{$pirep->dpt_airport->location}}
           </h4>
           <p>
             <a href="{{route('frontend.airports.show', $pirep->dpt_airport_id)}}">
-              {{ $pirep->dpt_airport->full_name }} ({{  $pirep->dpt_airport_id }})</a>
+              {{ $pirep->dpt_airport->full_name }}</a>
             <br/>
             @if($pirep->block_off_time)
               {{ $pirep->block_off_time->toDayDateTimeString() }}
@@ -57,13 +57,13 @@
         {{--
             ARRIVAL INFO
         --}}
-        <div class="col-6 text-right">
+        <div class="text-md-end text-left">
           <h4>
             {{$pirep->arr_airport->location}}
           </h4>
           <p>
             <a href="{{route('frontend.airports.show', $pirep->arr_airport_id)}}">
-              {{ $pirep->arr_airport->full_name }} ({{  $pirep->arr_airport_id }})</a>
+              {{ $pirep->arr_airport->full_name }}</a>
             <br/>
             @if($pirep->block_on_time)
               {{ $pirep->block_on_time->toDayDateTimeString() }}
@@ -76,7 +76,7 @@
         <div class="row">
           <div class="col-12">
             <div class="progress" style="margin: 20px 0;">
-              <div class="progress-bar progress-bar-success" role="progressbar"
+              <div class="progress-bar @if($pirep->state === PirepState::IN_PROGRESS) bg-primary progress-bar-striped progress-bar-animated @else bg-success @endif" role="progressbar"
                   aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"
                   style="width: {{$pirep->progress_percent}}%;">
               </div>
@@ -99,111 +99,117 @@
     --}}
 
     <div class="col-4">
-      <table class="table table-striped">
-        <tr>
-          <td width="30%">@lang('common.state')</td>
-          <td>
-            <div class="badge badge-info">
-              {{ PirepState::label($pirep->state) }}
-            </div>
-          </td>
-        </tr>
+      <div class="list-group">
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('common.state')</span>
+        @php
+        $stateClass = 'bg-info';
+        if ($pirep->state === PirepState::PENDING) {
+          $stateClass = 'bg-warning';
+        } elseif ($pirep->state === PirepState::ACCEPTED) {
+          $stateClass = 'bg-success';
+        } elseif ($pirep->state === PirepState::REJECTED) {
+          $stateClass = 'bg-danger';
+        } elseif ($pirep->state === PirepState::IN_PROGRESS) {
+          $stateClass = 'bg-primary';
+        }
+        @endphp
+        <span class="badge {{ $stateClass }}">
+        {{ PirepState::label($pirep->state) }}
+        </span>
+      </div>
 
-        @if ($pirep->state !== PirepState::DRAFT)
-        <tr>
-          <td width="30%">@lang('common.status')</td>
-          <td>
-            <div class="badge badge-info">
-              {{ PirepStatus::label($pirep->status) }}
-            </div>
-          </td>
-        </tr>
-        @endif
-
-        <tr>
-          <td>@lang('pireps.source')</td>
-          <td>{{ PirepSource::label($pirep->source) }}</td>
-        </tr>
-
-        <tr>
-          <td>@lang('flights.flighttype')</td>
-          <td>{{ \App\Models\Enums\FlightType::label($pirep->flight_type) }}</td>
-        </tr>
-
-        <tr>
-          <td>@lang('pireps.filedroute')</td>
-          <td>{{ $pirep->route }}</td>
-        </tr>
-
-        <tr>
-          <td>{{ trans_choice('common.note', 2) }}</td>
-          <td>{{ $pirep->notes }}</td>
-        </tr>
-
-        @if($pirep->score && $pirep->landing_rate)
-          <tr>
-            <td>Score</td>
-            <td>{{ $pirep->score }}</td>
-          </tr>
-          <tr>
-            <td>Landing Rate</td>
-            <td>{{ number_format($pirep->landing_rate) }}</td>
-          </tr>
-        @endif
-
-        <tr>
-          <td>@lang('pireps.filedon')</td>
-          <td>{{ show_datetime($pirep->created_at) }}</td>
-        </tr>
-
-      </table>
-
-      @if(count($pirep->fields) > 0)
-        <div class="separator"></div>
+      @if ($pirep->state !== PirepState::DRAFT)
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('common.status')</span>
+        @php
+        $statusClass = 'bg-info';
+        if ($pirep->status === PirepStatus::SCHEDULED) {
+          $statusClass = 'bg-secondary';
+        } elseif ($pirep->status === PirepStatus::ENROUTE) {
+          $statusClass = 'bg-primary';
+        } elseif ($pirep->status === PirepStatus::ARRIVED) {
+          $statusClass = 'bg-success';
+        } elseif ($pirep->status === PirepStatus::CANCELLED) {
+          $statusClass = 'bg-danger';
+        } elseif ($pirep->status === PirepStatus::DIVERTED) {
+          $statusClass = 'bg-warning';
+        }
+        @endphp
+        <span class="badge {{ $statusClass }}">
+        {{ PirepStatus::label($pirep->status) }}
+        </span>
+      </div>
       @endif
 
-      @if(count($pirep->fields) > 0)
-        <h5>{{ trans_choice('common.field', 2) }}</h5>
-        <table class="table table-hover table-condensed">
-          <thead>
-          <th>@lang('common.name')</th>
-          <th>{{ trans_choice('common.value', 1) }}</th>
-          </thead>
-          <tbody>
-          @foreach($pirep->fields as $field)
-            <tr>
-              <td>{{ $field->name }}</td>
-              <td>{{ $field->value }}</td>
-            </tr>
-          @endforeach
-          </tbody>
-        </table>
-      @endif
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('pireps.source')</span>
+        <span>{{ PirepSource::label($pirep->source) }}</span>
+      </div>
 
-      {{--
-          Show the fares that have been entered
-      --}}
-      @if(count($pirep->fares) > 0)
-        <div class="separator"></div>
-        <div class="row">
-          <div class="col-12">
-            <h5>{{ trans_choice('pireps.fare', 2) }}</h5>
-            <table class="table table-hover table-condensed">
-              <thead>
-              <th>@lang('pireps.class')</th>
-              <th>@lang('pireps.count')</th>
-              </thead>
-              <tbody>
-              @foreach($pirep->fares as $fare)
-                <tr>
-                  <td>{{ $fare->name }} ({{ $fare->code }})</td>
-                  <td>{{ $fare->count }}</td>
-                </tr>
-              @endforeach
-              </tbody>
-            </table>
-          </div>
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('flights.flighttype')</span>
+        <span>{{ \App\Models\Enums\FlightType::label($pirep->flight_type) }}</span>
+      </div>
+
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('pireps.filedroute')</span>
+        <span>{{ $pirep->route }}</span>
+      </div>
+
+      <div class="d-flex justify-content-between list-group-item">
+        <span>{{ trans_choice('common.note', 2) }}</span>
+        <span>{{ $pirep->notes }}</span>
+      </div>
+
+      @if($pirep->score && $pirep->landing_rate)
+        <div class="d-flex justify-content-between list-group-item">
+        <span>Score</span>
+        <span>{{ $pirep->score }}</span>
         </div>
+        <div class="d-flex justify-content-between list-group-item">
+        <span>Landing Rate</span>
+        <span>{{ number_format($pirep->landing_rate) }}</span>
+        </div>
+      @endif
+
+      <div class="d-flex justify-content-between list-group-item">
+        <span>@lang('pireps.filedon')</span>
+        <span>{{ show_datetime($pirep->created_at) }}</span>
+      </div>
+      </div>
+
+      @if(count($pirep->fields) > 0)
+      <div class="separator"></div>
+      @endif
+
+      @if(count($pirep->fields) > 0)
+      <h5>{{ trans_choice('common.field', 2) }}</h5>
+      <div class="list-group">
+        @foreach($pirep->fields as $field)
+        <div class="d-flex justify-content-between list-group-item">
+          <span>{{ $field->name }}</span>
+          <span>{{ $field->value }}</span>
+        </div>
+        @endforeach
+      </div>
+      @endif
+
+      @if(count($pirep->fares) > 0)
+      <div class="separator"></div>
+      <div class="row">
+        <div class="col-12">
+        <h5>{{ trans_choice('pireps.fare', 2) }}</h5>
+        <div class="list-group">
+          @foreach($pirep->fares as $fare)
+          <div class="d-flex justify-content-between list-group-item">
+            <span>{{ $fare->name }} ({{ $fare->code }})</span>
+            <span>{{ $fare->count }}</span>
+          </div>
+          @endforeach
+        </div>
+        </div>
+      </div>
       @endif
     </div>
   </div>

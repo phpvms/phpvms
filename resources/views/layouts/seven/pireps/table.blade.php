@@ -1,3 +1,5 @@
+<div class="card">
+  <div class="card-body">
 <div class="table-responsive">
   <table class="table table-hover table-striped">
     <thead>
@@ -39,13 +41,13 @@
         </td>
         <td class="text-center">
           @php
-            $color = 'badge-info';
+            $color = 'bg-info';
             if($pirep->state === PirepState::PENDING) {
-                $color = 'badge-warning';
+                $color = 'bg-warning';
             } elseif ($pirep->state === PirepState::ACCEPTED) {
-                $color = 'badge-success';
+                $color = 'bg-success';
             } elseif ($pirep->state === PirepState::REJECTED) {
-                $color = 'badge-danger';
+                $color = 'bg-danger';
             }
           @endphp
           <div class="badge {{ $color }}">{{ PirepState::label($pirep->state) }}</div>
@@ -70,4 +72,11 @@
 
     </tbody>
   </table>
+</div>
+<div class="row">
+  <div class="col-12 text-center">
+    {{ $pireps->withQueryString()->links('pagination.bootstrap-5') }}
+  </div>
+</div>
+</div>
 </div>
