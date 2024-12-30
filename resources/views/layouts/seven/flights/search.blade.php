@@ -7,7 +7,7 @@
         <div>
           <div class="mb-3">
             <label for="airline_id" class="form-label">@lang('common.airline')</label>
-            <select name="airline_id" id="airline_id" class="form-select select2">
+            <select name="airline_id" id="airline_id" class="form-select">
               @foreach($airlines as $airline_id => $airline_label)
                 <option value="{{ $airline_id }}" @if(request()->get('airline_id') == $airline_id) selected @endif>{{ $airline_label }}</option>
               @endforeach
@@ -17,7 +17,7 @@
 
         <div class="mb-3">
           <label for="flight_type" class="form-label">@lang('flights.flighttype')</label>
-          <select name="flight_type" id="flight_type" class="form-select select2">
+          <select name="flight_type" id="flight_type" class="form-select">
             @foreach($flight_types as $flight_type_id => $flight_type_label)
               <option value="{{ $flight_type_id }}" @if(request()->get('flight_type') == $flight_type_id) selected @endif>{{ $flight_type_label }}</option>
             @endforeach
