@@ -32,18 +32,6 @@
             </a>
           </h5>
         </div>
-        <div class="col-12 col-md-3 text-md-right text-center mt-2 mt-md-0">
-          @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id == $user->current_airport->icao)
-            <button class="btn btn-round btn-icon btn-icon-mini save_flight
-                           {{ isset($saved[$flight->id]) ? 'btn-info':'' }}"
-                    x-id="{{ $flight->id }}"
-                    x-saved-class="btn-info"
-                    type="button"
-                    title="@lang('flights.addremovebid')">
-              <i class="fas fa-map-marker"></i>
-            </button>
-          @endif
-        </div>
       </div>
       <div class="row mt-3">
         <div class="col-12 col-md-7">
@@ -67,22 +55,18 @@
             {{ $flight->distance }} {{ setting('units.distance') }}
             <br/>
           @endif
-          @if($flight->level)
-            <span class="title">{{ strtoupper(__('flights.level')) }}&nbsp;</span>
-            {{ $flight->level }} {{ setting('units.altitude') }}
-            <br/>
-          @endif
         </div>
-        <div class="col-12 col-md-5 mt-3 mt-md-0">
-          @if($flight->route)
-            <span class="title">{{ strtoupper(__('flights.route')) }}&nbsp;</span>
-            {{ $flight->route }}
-          @endif
-        </div>
+        
       </div>
       <div class="row mt-3">
         <div class="col-12 text-right">
-          @if ($acars_plugin)
+          
+          
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      @if ($acars_plugin)
             @if (isset($saved[$flight->id]))
               <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-outline-primary">Load in vmsACARS</a>
             @else
@@ -107,13 +91,21 @@
               @endif
             @endif
           @endif
-          <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}"
-             class="btn btn-sm btn-outline-info">
-            {{ __('pireps.newpirep') }}
-          </a>
-        </div>
-      </div>
-    </div>
+      <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}"
+        class="btn btn-sm btn-outline-info">
+       {{ __('pireps.newpirep') }}
+     </a>
+      @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id == $user->current_airport->icao)
+            <button class="btn btn-sm save_flight
+                           {{ isset($saved[$flight->id]) ? 'btn-info':'btn-outline-info' }}"
+                    x-id="{{ $flight->id }}"
+                    x-saved-class="btn-info"
+                    type="button"
+                    title="@lang('flights.addremovebid')">
+              Add/Remove Bid
+            </button>
+          @endif
+          </div>
   </div>
 
 @endforeach
