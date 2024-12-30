@@ -1,6 +1,6 @@
-<nav class="navbar navbar-expand-lg bg-primary">
+<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
     <div class="container-fluid">
-        <a class="navbar-brand text-white" href="{{ url('/') }}">
+        <a class="navbar-brand " href="{{ url('/') }}">
             <img src="{{ public_asset('/assets/img/logo_blue_bg.svg') }}" width="135px" alt="phpvms Logo" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -12,7 +12,7 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 @if (Auth::check())
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.dashboard.index') }}">
+                    <a class="nav-link  d-flex gap-1" href="{{ route('frontend.dashboard.index') }}">
                       <i class="bi bi-speedometer2"></i>
                       @lang('common.dashboard')
                     </a>
@@ -20,14 +20,14 @@
                 @endif
               
                 <li class="nav-item d-flex align-items-center">
-                  <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.livemap.index') }}">
+                  <a class="nav-link  d-flex gap-1" href="{{ route('frontend.livemap.index') }}">
                     <i class="bi bi-globe"></i>
                     @lang('common.livemap')
                   </a>
                 </li>
               
                 <li class="nav-item d-flex align-items-center">
-                  <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.pilots.index') }}">
+                  <a class="nav-link  d-flex gap-1" href="{{ route('frontend.pilots.index') }}">
                     <i class="bi bi-people"></i>
                     {{ trans_choice('common.pilot', 2) }}
                   </a>
@@ -36,7 +36,7 @@
                 {{-- Show the module links that don't require being logged in --}}
                 @foreach ($moduleSvc->getFrontendLinks($logged_in = false) as &$link)
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ url($link['url']) }}">
+                    <a class="nav-link  d-flex gap-1" href="{{ url($link['url']) }}">
                       <i class="{{ $link['icon'] }}"></i>
                       {{ $link['title'] }}
                     </a>
@@ -45,7 +45,7 @@
               
                 @foreach ($page_links as $page)
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ $page->url }}"
+                    <a class="nav-link  d-flex gap-1" href="{{ $page->url }}"
                        target="{{ $page->new_window ? '_blank' : '_self' }}">
                       <i class="{{ $page['icon'] }}"></i>
                       {{ $page['name'] }}
@@ -55,20 +55,20 @@
               
                 @if (!Auth::check())
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ url('/register') }}">
+                    <a class="nav-link  d-flex gap-1" href="{{ url('/register') }}">
                       <i class="bi bi-person-vcard"></i>
                       @lang('common.register')
                     </a>
                   </li>
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ url('/login') }}">
+                    <a class="nav-link  d-flex gap-1" href="{{ url('/login') }}">
                       <i class="bi bi-box-arrow-in-right"></i>
                       @lang('common.login')
                     </a>
                   </li>
               
                   <li class="nav-item dropdown d-flex align-items-center">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown"
+                    <a class="nav-link dropdown-toggle " href="#" role="button" data-toggle="dropdown"
                        data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
                               <span
                                 class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $languages[$locale]['display'] }}
@@ -86,19 +86,13 @@
                   </li>
                 @else
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.flights.index') }}">
+                    <a class="nav-link d-flex gap-1" href="{{ route('frontend.flights.index') }}">
                       <i class="bi bi-airplane"></i>
                       {{ trans_choice('common.flight', 2) }}
                     </a>
                   </li>
                   <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.pireps.index') }}">
-                      <i class="bi bi-journal-check"></i>
-                      {{ trans_choice('common.pirep', 2) }}
-                    </a>
-                  </li>
-                  <li class="nav-item d-flex align-items-center">
-                    <a class="nav-link text-white d-flex gap-1" href="{{ route('frontend.downloads.index') }}">
+                    <a class="nav-link d-flex gap-1" href="{{ route('frontend.downloads.index') }}">
                       <i class="bi bi-download"></i>
                       {{ trans_choice('common.download', 2) }}
                     </a>
@@ -107,7 +101,7 @@
                   {{-- Show the module links for being logged in --}}
                   @foreach ($moduleSvc->getFrontendLinks($logged_in = true) as &$link)
                     <li class="nav-item d-flex align-items-center">
-                      <a class="nav-link text-white d-flex gap-1" href="{{ url($link['url']) }}">
+                      <a class="nav-link d-flex gap-1" href="{{ url($link['url']) }}">
                         <i class="{{ $link['icon'] }}"></i>
                         {{ $link['title'] }}
                       </a>
@@ -115,7 +109,7 @@
                   @endforeach
               
                   <li class="nav-item dropdown d-flex align-items-center">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
+                    <a class="nav-link dropdown-toggle " href="#" role="button" data-bs-toggle="dropdown"
                        data-bs-boundary="viewport" aria-haspopup="true" aria-expanded="false">
                               <span
                                 class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $languages[$locale]['display'] }}
@@ -133,7 +127,7 @@
                   </li>
               
                   <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button"
+                    <a class="nav-link dropdown-toggle " href="#" id="navbarDropdownMenuLink" role="button"
                        data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
                       @if (Auth::user()->avatar == null)
                         <img src="{{ Auth::user()->gravatar(38) }}" style="height: 38px; width: 38px;">
@@ -146,7 +140,14 @@
                       <a class="dropdown-item" href="{{ route('frontend.profile.index') }}">
                         <i class="bi bi-person"></i>&nbsp;&nbsp;@lang('common.profile')
                       </a>
-              
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="{{ route('frontend.pireps.index') }}">
+                        <i class="bi bi-journal-check"></i>&nbsp;&nbsp;{{ trans_choice('common.pirep', 2) }}
+                      </a>
+                      <a class="dropdown-item" href="{{ route('frontend.flights.bids') }}">
+                        <i class="bi bi-bookmark-check"></i>&nbsp;&nbsp;My Bids
+                      </a>
+                      <div class="dropdown-divider"></div>
                       @ability('admin', 'admin-access')
                       <a class="dropdown-item" href="{{ url('/admin') }}">
                         <i class="bi bi-gear"></i>&nbsp;&nbsp;@lang('common.administration')

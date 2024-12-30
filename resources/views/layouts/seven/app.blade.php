@@ -39,9 +39,21 @@
     {{-- End of the required stuff in the head block --}}
 
     <style>
+        .nav-link:hover {
+            color: orange !important;
+        }
+        :root {
+            --bs-primary: #067ec1 !important;
+            
+            
+        }
+        [data-bs-theme=light] {
+            --bs-primary: #067ec1 !important;
+            }
         .bg-primary {
             background-color: #067ec1 !important;
         }
+
     </style>
 </head>
 
