@@ -9,6 +9,7 @@ return [
     'callsign'         => 'Callsign',
     'route'            => 'Route',
     'mybid'            => 'My Bids',
+    'viewflight'       => 'View Flight',
     'search'           => 'Search',
     'addremovebid'     => 'Add/Remove Bid',
     'bidremoved'       => 'Your bid was removed.',
