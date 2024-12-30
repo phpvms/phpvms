@@ -2,10 +2,10 @@
 @section('title', __('auth.registrationdenied'))
 
 @section('content')
-  <div class="row">
-    <div class="col-md-12 " style="text-align: center;">
-      <div class="flex-center position-ref full-height">
-        <div class="title m-b-md">
+  <div class="row justify-content-center">
+    <div class="col-md-12 text-center">
+      <div class="d-flex align-items-center justify-content-center">
+        <div class="title mb-4">
           <h2 class="description">
             @lang('auth.deniedmessage')
           </h2>

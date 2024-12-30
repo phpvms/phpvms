@@ -2,177 +2,168 @@
 @section('title', __('auth.register'))
 
 @section('content')
-  <div class="row">
-    <div class="col-sm-3"></div>
-    <div class="col-sm-6">
-
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
       <form method="post" action="{{ url('/register') }}" class="form-signin">
-      @csrf
-      <div class="panel periodic-login">
-        <div class="panel-body">
-          <h2>@lang('common.register')</h2>
-          <label for="name" class="control-label">@lang('auth.fullname')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('name') ? 'has-danger' : '' }}">
-            <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" />
+        @csrf
+        <div class="card">
+          <div class="card-header">
+            <h2>@lang('common.register')</h2>
           </div>
-          @if ($errors->has('name'))
-            <p class="text-danger">{{ $errors->first('name') }}</p>
-          @endif
-
-          <label for="email" class="control-label">@lang('auth.emailaddress')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('email') ? 'has-danger' : '' }}">
-            <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" />
-          </div>
-          @if ($errors->has('email'))
-            <p class="text-danger">{{ $errors->first('email') }}</p>
-          @endif
-
-          <label for="airline" class="control-label">@lang('common.airline')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('airline') ? 'has-danger' : '' }}">
-            <select name="airline_id" id="airline_id" class="form-control select2">
-              @foreach($airlines as $airline_id => $airline_label)
-                <option value="{{ $airline_id }}" @if($airline_id === old('airline_id')) selected @endif>{{ $airline_label }}</option>
-              @endforeach
-            </select>
-          </div>
-          @if ($errors->has('airline_id'))
-            <p class="text-danger">{{ $errors->first('airline_id') }}</p>
-          @endif
-
-          <label for="home_airport" class="control-label">@lang('airports.home')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('home_airport') ? 'has-danger' : '' }}">
-            <select name="home_airport_id" id="home_airport_id" class="form-control airport_search @if($hubs_only) hubs_only @endif">
-              @foreach($airports as $airport_id => $airport_label)
-                <option value="{{ $airport_id }}">{{ $airport_label }}</option>
-              @endforeach
-            </select>
-          </div>
-          @if ($errors->has('home_airport_id'))
-            <p class="text-danger">{{ $errors->first('home_airport_id') }}</p>
-          @endif
-
-          <label for="country" class="control-label">@lang('common.country')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('country') ? 'has-danger' : '' }}">
-            <select name="country" id="country" class="form-control select2">
-              @foreach($countries as $country_id => $country_label)
-                <option value="{{ $country_id }}" @if($country_id === old('country')) selected @endif>{{ $country_label }}</option>
-              @endforeach
-            </select>
-          </div>
-          @if ($errors->has('country'))
-            <p class="text-danger">{{ $errors->first('country') }}</p>
-          @endif
-
-          <label for="timezone" class="control-label">@lang('common.timezone')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('timezone') ? 'has-danger' : '' }}">
-            <select name="timezone" id="timezone" class="form-control select2">
-              @foreach($timezones as $group_name => $group_timezones)
-                <optgroup label="{{ $group_name }}">
-                  @foreach($group_timezones as $timezone_id => $timezone_label)
-                    <option value="{{ $timezone_id }}" @if($timezone_id === old('timezone')) selected @endif>{{ $timezone_label }}</option>
-                  @endforeach
-                </optgroup>
-              @endforeach
-            </select>
-          </div>
-          @if ($errors->has('timezone'))
-            <p class="text-danger">{{ $errors->first('timezone') }}</p>
-          @endif
-
-          @if (setting('pilots.allow_transfer_hours') === true)
-            <label for="transfer_time" class="control-label">@lang('auth.transferhours')</label>
-            <div class="input-group form-group-no-border {{ $errors->has('transfer_time') ? 'has-danger' : '' }}">
-              <input type="number" name="transfer_time" id="transfer_time" class="form-control" value="{{ old('transfer_time') }}" />
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="name" class="form-label">@lang('auth.fullname')</label>
+              <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" />
+              @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
             </div>
-            @if ($errors->has('transfer_time'))
-              <p class="text-danger">{{ $errors->first('transfer_time') }}</p>
-            @endif
-          @endif
 
-          <label for="password" class="control-label">@lang('auth.password')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('password') ? 'has-danger' : '' }}">
-            <input type="password" name="password" id="password" class="form-control" />
-          </div>
-          @if ($errors->has('password'))
-            <p class="text-danger">{{ $errors->first('password') }}</p>
-          @endif
+            <div class="mb-3">
+              <label for="email" class="form-label">@lang('auth.emailaddress')</label>
+              <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" />
+              @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
 
-          <label for="password_confirmation" class="control-label">@lang('passwords.confirm')</label>
-          <div class="input-group form-group-no-border {{ $errors->has('password_confirmation') ? 'has-danger' : '' }}">
-            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" />
-          </div>
-          @if ($errors->has('password_confirmation'))
-            <p class="text-danger">{{ $errors->first('password_confirmation') }}</p>
-          @endif
+            <div class="mb-3">
+              <label for="airline_id" class="form-label">@lang('common.airline')</label>
+              <select name="airline_id" id="airline_id" class="form-select select2 @error('airline_id') is-invalid @enderror">
+                @foreach($airlines as $airline_id => $airline_label)
+                  <option value="{{ $airline_id }}" @if($airline_id === old('airline_id')) selected @endif>{{ $airline_label }}</option>
+                @endforeach
+              </select>
+              @error('airline_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
 
-          @if($userFields)
-            @foreach($userFields as $field)
-              <label for="field_{{ $field->slug }}" class="control-label">{{ $field->name }}</label>
-              <div class="input-group form-group-no-border {{ $errors->has('field_'.$field->slug) ? 'has-danger' : '' }}">
-                <input type="text" name="field_{{ $field->slug }}" id="field_{{ $field->slug }}" class="form-control" value="{{ old('field_' .$field->slug) }}" />
+            <div class="mb-3">
+              <label for="home_airport_id" class="form-label">@lang('airports.home')</label>
+              <select name="home_airport_id" id="home_airport_id" class="form-select airport_search @if($hubs_only) hubs_only @endif @error('home_airport_id') is-invalid @enderror">
+                @foreach($airports as $airport_id => $airport_label)
+                  <option value="{{ $airport_id }}">{{ $airport_label }}</option>
+                @endforeach
+              </select>
+              @error('home_airport_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="mb-3">
+              <label for="country" class="form-label">@lang('common.country')</label>
+              <select name="country" id="country" class="form-select select2 @error('country') is-invalid @enderror">
+                @foreach($countries as $country_id => $country_label)
+                  <option value="{{ $country_id }}" @if($country_id === old('country')) selected @endif>{{ $country_label }}</option>
+                @endforeach
+              </select>
+              @error('country')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="mb-3">
+              <label for="timezone" class="form-label">@lang('common.timezone')</label>
+              <select name="timezone" id="timezone" class="form-select select2 @error('timezone') is-invalid @enderror">
+                @foreach($timezones as $group_name => $group_timezones)
+                  <optgroup label="{{ $group_name }}">
+                    @foreach($group_timezones as $timezone_id => $timezone_label)
+                      <option value="{{ $timezone_id }}" @if($timezone_id === old('timezone')) selected @endif>{{ $timezone_label }}</option>
+                    @endforeach
+                  </optgroup>
+                @endforeach
+              </select>
+              @error('timezone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            @if (setting('pilots.allow_transfer_hours') === true)
+              <div class="mb-3">
+                <label for="transfer_time" class="form-label">@lang('auth.transferhours')</label>
+                <input type="number" name="transfer_time" id="transfer_time" class="form-control @error('transfer_time') is-invalid @enderror" value="{{ old('transfer_time') }}" />
+                @error('transfer_time')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
               </div>
-              @if ($errors->has('field_'.$field->slug))
-                <p class="text-danger">{{ $errors->first('field_'.$field->slug) }}</p>
-              @endif
-            @endforeach
-          @endif
-
-          @if($captcha['enabled'] === true)
-            <label for="h-captcha" class="control-label">@lang('auth.fillcaptcha')</label>
-            <div class="h-captcha" data-bs-sitekey="{{ $captcha['site_key'] }}"></div>
-            @if ($errors->has('h-captcha-response'))
-              <p class="text-danger">{{ $errors->first('h-captcha-response') }}</p>
             @endif
-          @endif
 
-          @if($invite)
-            <input type="hidden" name="invite" value="{{ $invite->id }}" />
-            <input type="hidden" name="invite_token" value="{{ base64_encode($invite->token) }}" />
-          @endif
+            <div class="mb-3">
+              <label for="password" class="form-label">@lang('auth.password')</label>
+              <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" />
+              @error('password')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
 
-          <div>
-            @include('auth.toc')
-            <br/>
-          </div>
+            <div class="mb-3">
+              <label for="password_confirmation" class="form-label">@lang('passwords.confirm')</label>
+              <input type="password" name="password_confirmation" id="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" />
+              @error('password_confirmation')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
 
-          <table>
-            <tr>
-              <td style="vertical-align: top; padding: 5px 10px 0 0">
-                <div class="input-group form-group-no-border">
-                  <input type="checkbox" name="toc_accepted" id="toc_accepted" />
+            @if($userFields)
+              @foreach($userFields as $field)
+                <div class="mb-3">
+                  <label for="field_{{ $field->slug }}" class="form-label">{{ $field->name }}</label>
+                  <input type="text" name="field_{{ $field->slug }}" id="field_{{ $field->slug }}" class="form-control @error('field_'.$field->slug) is-invalid @enderror" value="{{ old('field_' .$field->slug) }}" />
+                  @error('field_'.$field->slug)
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
-              </td>
-              <td style="vertical-align: top;">
-                <label for="toc_accepted" class="control-label">@lang('auth.tocaccept')</label>
-                @if ($errors->has('toc_accepted'))
-                  <p class="text-danger">{{ $errors->first('toc_accepted') }}</p>
-                @endif
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="input-group form-group-no-border">
-                  <input type="hidden" name="opt_in" value="0"/>
-                  <input type="checkbox" name="opt_in" id="opt_in" value="1"/>
-                </div>
-              </td>
-              <td>
-                <label for="opt_in" class="control-label">@lang('profile.opt-in-descrip')</label>
-              </td>
-            </tr>
-          </table>
+              @endforeach
+            @endif
 
-          <div style="width: 100%; text-align: right; padding-top: 20px;">
+            @if($captcha['enabled'] === true)
+              <div class="mb-3">
+                <label for="h-captcha" class="form-label">@lang('auth.fillcaptcha')</label>
+                <div class="h-captcha" data-bs-sitekey="{{ $captcha['site_key'] }}"></div>
+                @error('h-captcha-response')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            @endif
+
+            @if($invite)
+              <input type="hidden" name="invite" value="{{ $invite->id }}" />
+              <input type="hidden" name="invite_token" value="{{ base64_encode($invite->token) }}" />
+            @endif
+
+            <div class="mb-3">
+              @include('auth.toc')
+              <br/>
+            </div>
+
+            <div class="form-check mb-3">
+              <input class="form-check-input @error('toc_accepted') is-invalid @enderror" type="checkbox" name="toc_accepted" id="toc_accepted">
+              <label class="form-check-label" for="toc_accepted">
+                @lang('auth.tocaccept')
+              </label>
+              @error('toc_accepted')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="hidden" name="opt_in" value="0"/>
+              <input class="form-check-input" type="checkbox" name="opt_in" id="opt_in" value="1"/>
+              <label class="form-check-label" for="opt_in">
+                @lang('profile.opt-in-descrip')
+              </label>
+            </div>
+
+            <div class="d-grid">
               <button type="submit" class="btn btn-primary" id="register_button" disabled>
                 @lang('auth.register')
               </button>
+            </div>
           </div>
-
         </div>
-      </div>
       </form>
     </div>
-    <div class="col-sm-4"></div>
   </div>
 @endsection
 
@@ -182,11 +173,17 @@
   @endif
 
   <script>
-    $('#toc_accepted').click(function () {
-      if ($(this).is(':checked')) {
-        $('#register_button').removeAttr('disabled');
+    document.addEventListener('DOMContentLoaded', function () {
+      new TomSelect('#airline_id');
+      new TomSelect('#country');
+      new TomSelect('#timezone');
+    });
+    document.getElementById('toc_accepted').addEventListener('click', function () {
+      var registerButton = document.getElementById('register_button');
+      if (this.checked) {
+      registerButton.removeAttribute('disabled');
       } else {
-        $('#register_button').attr('disabled', 'true');
+      registerButton.setAttribute('disabled', 'true');
       }
     });
   </script>
