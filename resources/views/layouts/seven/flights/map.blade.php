@@ -7,6 +7,7 @@
 </div>
 
 @section('scripts')
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script type="text/javascript">
     phpvms.map.render_route_map({
       route_points: {!! json_encode($map_features['route_points']) !!},

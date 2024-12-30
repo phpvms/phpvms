@@ -18,54 +18,78 @@
   <div class="card mb-3">
     <div class="card-body">
       <div class="row">
-        <div class="col-12 col-md-9">
-          <h5>
-            <a class="text-c" href="{{ route('frontend.flights.show', [$flight->id]) }}">
+        <div class="col-sm-12">
+          <div class="flex-row justify-content-between d-flex">
+            <div class="d-flex flex-row center-align" style="font-size: 1.4rem; line-height: 1.4rem; font-weight: 600; text-align: center">
               @if(optional($flight->airline)->logo)
                   <img src="{{ $flight->airline->logo }}" alt="{{$flight->airline->name}}"
                     style="max-width: 80px; width: 100%; height: auto;"/>
+              @else
+                {{ $flight->airline->name }}: 
+              @endif
+              <span class="ms-1">
+              @if($flight->airline->iata)
+              {{ $flight->airline->icao }}{{$flight->flight_number}} |
               @endif
               {{ $flight->ident }}
               @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
                 {{ '| '. $flight->atc }}
               @endif
-            </a>
-          </h5>
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-12 col-md-7">
-          <span class="title">{{ strtoupper(__('flights.dep')) }}&nbsp;</span>
-          {{ optional($flight->dpt_airport)->name ?? $flight->dpt_airport_id }}
-          (<a href="{{route('frontend.airports.show', ['id' => $flight->dpt_airport_id])}}">{{$flight->dpt_airport_id}}</a>)
-          @if($flight->dpt_time), {{ $flight->dpt_time }}@endif
-          <br/>
-          <span class="title">{{ strtoupper(__('flights.arr')) }}&nbsp;</span>
-          {{ optional($flight->arr_airport)->name ?? $flight->arr_airport_id }}
-          (<a href="{{route('frontend.airports.show', ['id' => $flight->arr_airport_id])}}">{{$flight->arr_airport_id}}</a>)
-          @if($flight->arr_time), {{ $flight->arr_time }}@endif
-          <br/>
-          @if(filled($flight->callsign) && !setting('simbrief.callsign', true))
-            <span class="title">{{ strtoupper(__('flights.callsign')) }}&nbsp;</span>
-            {{ $flight->atc }}
-            <br/>
-          @endif
-          @if($flight->distance)
-            <span class="title">{{ strtoupper(__('common.distance')) }}&nbsp;</span>
-            {{ $flight->distance }} {{ setting('units.distance') }}
-            <br/>
-          @endif
-        </div>
-        
-      </div>
-      <div class="row mt-3">
-        <div class="col-12 text-right">
-          
-          
+              </span>
+              </div>
+              <div><span class="badge bg-secondary">{{$flight->flight_type}}&nbsp;<span class="d-none d-sm-inline">({{\App\Models\Enums\FlightType::label($flight->flight_type)}})</span></span></div>
+          </div>
+          <div class="my-2 d-flex flex-row justify-content-between">
+            <div class="d-flex flex-column text-start">
+              <div class="fs-2" style="font-weight: 600">
+                <a href="{{ route('frontend.airports.show', [$flight->dpt_airport_id]) }}">
+                  {{ $flight->dpt_airport_id }}
+                </a>
+              </div>
+              <div class="fs-5 d-none d-md-flex">{{$flight->dpt_airport->name}}</div>
+              <div class="fs-5">
+                {{$flight->dpt_time}}
+              </div>
+            </div>
+            <div class="d-flex flex-column text-end">
+              <div class="fs-2" style="font-weight: 600">
+                <a href="{{ route('frontend.airports.show', [$flight->arr_airport_id]) }}">
+                  {{$flight->arr_airport_id}}
+                </a>
+              </div>
+              <div class="fs-5 d-none d-md-flex">{{$flight->arr_airport->name}}</div>
+              <div class="fs-5">
+                {{$flight->arr_time}}
+              </div>
+            </div>
+          </div>
+          <div class="d-flex flex-row justify-content-between">
+            <div class="text-center fs-5">
+              @if($flight->flight_time)@minutestotime($flight->flight_time)@endif{{$flight->flight_time && $flight->distance ? '/' : ''}}{{$flight->distance ? $flight->distance.'nm' : ''}}
+            </div>
+            <div class="fs-5">
+              @if(count($flight->subfleets) !== 0)
+                @php
+                  $arr = [];
+                  foreach ($flight->subfleets as $sf) {
+                      $tps = explode('-', $sf->type);
+                      $type = last($tps);
+                      $arr[] = "{$sf->type}";
+                  }
+                @endphp
+                {{implode(", ", $arr)}}
+              @else
+                Any Subfleet
+              @endif
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <div class="card-footer">
+      <a class="btn btn-sm btn-primary" href="{{ route('frontend.flights.show', [$flight->id]) }}">
+        {{ __('flights.viewflight') }}
+      </a>
       @if ($acars_plugin)
             @if (isset($saved[$flight->id]))
               <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-outline-primary">Load in vmsACARS</a>
@@ -97,12 +121,12 @@
      </a>
       @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id == $user->current_airport->icao)
             <button class="btn btn-sm save_flight
-                           {{ isset($saved[$flight->id]) ? 'btn-info':'btn-outline-info' }}"
+                           {{ isset($saved[$flight->id]) ? 'btn-danger':'btn-success' }}"
                     x-id="{{ $flight->id }}"
-                    x-saved-class="btn-info"
+                    x-saved-class="btn-danger"
                     type="button"
                     title="@lang('flights.addremovebid')">
-              Add/Remove Bid
+                    {{ isset($saved[$flight->id]) ? 'Remove Bid':'Add Bid' }}
             </button>
           @endif
           </div>
