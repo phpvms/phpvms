@@ -1,21 +1,24 @@
-
 <div class="card">
-  <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
-    @lang('widgets.latestnews.news')
-  </div>
-  <div class="card-body" style="min-height: 0px">
-    @if($news->count() === 0)
-      <div class="text-center text-muted" style="padding: 30px;">
-        @lang('widgets.latestnews.nonewsfound')
-      </div>
-    @endif
+    <div class="card-header bg-primary text-white" role="tablist">
+        @lang('widgets.latestnews.news')
+    </div>
+    <div class="card-body p-4">
+        @if ($news->count() === 0)
+            <div class="text-center text-muted" style="padding: 30px;">
+                @lang('widgets.latestnews.nonewsfound')
+            </div>
+        @endif
 
-    @foreach($news as $item)
-      <h4 style="margin-top: 0px;">{{ $item->subject }}</h4>
-      <p class="category">{{ $item->user->name_private }}
-        - {{ show_datetime($item->created_at) }}</p>
-
-      {!! $item->body !!}
-    @endforeach
-  </div>
+        @foreach ($news as $item)
+            <div>
+                <h4>{{ $item->subject }}</h4>
+                <p class="category">{{ $item->user->name_private }}
+                    - {{ show_datetime($item->created_at) }}</p>
+                <span>
+                    {!! $item->body !!}
+                </span>
+                <hr>
+            </div>
+        @endforeach
+    </div>
 </div>
