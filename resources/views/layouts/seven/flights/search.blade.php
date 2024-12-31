@@ -1,4 +1,3 @@
-<h4 class="description">@lang('flights.search')</h4>
 <div class="row">
   <div class="col-12">
     <div class="form-group search-form">
@@ -80,8 +79,8 @@
         @endif
 
         <div class="d-flex justify-content-between mt-3">
-          <button type="submit" class="btn btn-outline-primary">@lang('common.find')</button>
-          <a href="{{ route('frontend.flights.index') }}" class="btn btn-outline-secondary">@lang('common.reset')</a>
+          <button type="submit" class="btn btn-primary">@lang('common.find')</button>
+          <a href="{{ route('frontend.flights.index') }}" class="btn btn-secondary">@lang('common.reset')</a>
         </div>
       </form>
     </div>

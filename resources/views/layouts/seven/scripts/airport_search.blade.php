@@ -6,7 +6,7 @@
       new TomSelect(element, {
         valueField: 'id',
         labelField: 'description',
-        searchField: 'name',
+        searchField: 'description',
         load: function(query, callback) {
           var url = new URL('{{ Config::get("app.url") }}/api/airports/search');
           var params = {
