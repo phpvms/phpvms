@@ -94,7 +94,7 @@ flight reports that have been filed. You've been warned!
           <div class="col-lg-4">
             <label for="flight_type">@lang('flights.flighttype')</label>
             @if(!empty($pirep) && $pirep->read_only)
-              <p>{{ \App\Models\Enums\FlightType::label($pirep->flight_type) }}</p>
+              <p>{{ $flight_type_id }} ({{ \App\Models\Enums\FlightType::label($pirep->flight_type) }})</p>
               <input type="hidden" name="flight_type" value="{{ $pirep->flight_type }}" />
             @else
               <div class="form-group">
@@ -104,7 +104,7 @@ flight reports that have been filed. You've been warned!
                   class="form-select select2"
                 >
                   @foreach(\App\Models\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
-                    <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_label }}</option>
+                    <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_id }} ({{ $flight_type_label }})</option>
                   @endforeach
                 </select>
               </div>

@@ -15,7 +15,7 @@
       @endif
 
       @if(!$pirep->read_only && $user && $pirep->user_id === $user->id)
-        <div class="float-right" style="margin-bottom: 10px;">
+        <div class="float-end" style="margin-bottom: 10px;">
           <form method="get"
                 action="{{ route('frontend.pireps.edit', $pirep->id) }}"
                 style="display: inline">
@@ -36,6 +36,59 @@
 
   <div class="row">
     <div class="col-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex flex-column flex-md-row justify-content-between">
+            {{-- DEPARTURE INFO --}}
+            <div class="text-left">
+              <h4>
+                {{$pirep->dpt_airport->location}}
+              </h4>
+              <p>
+                <a href="{{route('frontend.airports.show', $pirep->dpt_airport_id)}}">
+                  {{ $pirep->dpt_airport->full_name }}</a>
+                <br/>
+                @if($pirep->block_off_time)
+                  {{ $pirep->block_off_time->toDayDateTimeString() }}
+                @endif
+              </p>
+            </div>
+
+            {{-- ARRIVAL INFO --}}
+            <div class="text-md-end text-left">
+              <h4>
+                {{$pirep->arr_airport->location}}
+              </h4>
+              <p>
+                <a href="{{route('frontend.airports.show', $pirep->arr_airport_id)}}">
+                  {{ $pirep->arr_airport->full_name }}</a>
+                <br/>
+                @if($pirep->block_on_time)
+                  {{ $pirep->block_on_time->toDayDateTimeString() }}
+                @endif
+              </p>
+            </div>
+          </div>
+
+          @if(!empty($pirep->distance))
+            <div class="row">
+              <div class="col-12">
+                <div class="progress" style="margin: 20px 0;">
+                  <div class="progress-bar @if($pirep->state === PirepState::IN_PROGRESS) bg-primary progress-bar-striped progress-bar-animated @else bg-success @endif" role="progressbar"
+                       aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"
+                       style="width: {{$pirep->progress_percent}}%;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          @endif
+          </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              @include('pireps.map')
+            </div>
+          </div>
       <div class="d-flex flex-column flex-md-row justify-content-between">
         {{--
             DEPARTURE INFO
