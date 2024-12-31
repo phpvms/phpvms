@@ -16,9 +16,9 @@
         <div class="col-5">
             <div class="card">
                 <div class="card-title">
-                    <h4 class="card-header">Weather</h4>
+                    <h4 class="card-header">@lang('dashboard.weatherat', ['ICAO' => $airport->icao])</h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body d-flex flex-column gap-4">
                     {{ Widget::Weather(['icao' => $airport->icao]) }}
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 <div class="card-title">
                     <h4 class="card-header">Map</h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     {{ Widget::AirspaceMap(['width' => '100%', 'height' => '400px', 'lat' => $airport->lat, 'lon' => $airport->lon]) }}
                 </div>
             </div>
