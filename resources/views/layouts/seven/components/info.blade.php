@@ -1,10 +1,4 @@
-<div>
-  <p style="float:left; margin-right: 10px; margin-left: 2px;">
-        <span style="font-size: 1.0em;">
-            <i class="fas fa-info-circle" style="color: #067ec1"></i>
-        </span>
-  </p>
-  <p>
-    {{ $slot }}
-  </p>
+<div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle"></i>
+    <div>{{ $slot }}</div>
 </div>
