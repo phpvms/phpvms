@@ -118,6 +118,7 @@ class FlightController extends Controller
             ->with(['dpt_airport', 'arr_airport', 'alt_airport', 'airline', 'subfleets'])
             ->withCount(['subfleets', 'fares'])
             ->searchCriteria($request, false)
+            ->whereNull('owner_type')
             ->sortable('flight_number')->orderBy('route_code')->orderBy('route_leg')
             ->paginate();
 
