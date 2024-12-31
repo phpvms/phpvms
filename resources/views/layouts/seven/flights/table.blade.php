@@ -68,19 +68,21 @@
               @if($flight->flight_time)@minutestotime($flight->flight_time)@endif{{$flight->flight_time && $flight->distance ? '/' : ''}}{{$flight->distance ? $flight->distance.'nm' : ''}}
             </div>
             <div class="fs-5">
-              @if(count($flight->subfleets) !== 0)
+                @if(count($flight->subfleets) !== 0)
                 @php
                   $arr = [];
                   foreach ($flight->subfleets as $sf) {
-                      $tps = explode('-', $sf->type);
-                      $type = last($tps);
-                      $arr[] = "{$sf->type}";
+                    $arr[] = "{$sf->type}";
                   }
+                  $display = count($arr) > 2 ? implode(", ", array_slice($arr, 0, 2)) . '...' : implode(", ", $arr);
+                  $allSubfleets = implode(", ", $arr);
                 @endphp
-                {{implode(", ", $arr)}}
-              @else
+                <span data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="bottom" data-bs-content="{{ $allSubfleets }}">
+                  {{ $display }}
+                </span>
+                @else
                 Any Subfleet
-              @endif
+                @endif
             </div>
           </div>
         </div>

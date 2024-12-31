@@ -125,6 +125,5 @@
             });
         </script>
     @endif
-
     @include('scripts.airport_search')
 @endsection
