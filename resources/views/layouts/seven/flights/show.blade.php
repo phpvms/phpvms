@@ -3,11 +3,11 @@
 
 @section('content')
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-8 col-md-12">
             <div class="row">
                 <div class="col-12">
-                    <div class="row">
-                        <div class="col-sm-12">
+                    <div class="card mb-3">
+                        <div class="card-body">
                             <div class="flex-row justify-content-between d-flex">
                                 <div class="d-flex flex-row center-align"
                                     style="font-size: 1.4rem; line-height: 1.4rem; font-weight: 600; text-align: center">
@@ -104,31 +104,44 @@
         </div>
         <div class="col-lg-4">
             <div class="card">
-                <div class="card-title">
-                    <h4 class="card-header">@lang('dashboard.weatherat', ['ICAO' => $flight->dpt_airport_id])</h4>
-                </div>
-                <div class="card-body d-flex flex-column gap-4">
+            <div class="card-title">
+                <h4 class="card-header">Weather</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="weatherTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="dpt-tab" data-bs-toggle="tab" href="#dpt" role="tab" aria-controls="dpt" aria-selected="true">
+                    DPT: {{$flight->dpt_airport_id}}
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="arr-tab" data-bs-toggle="tab" href="#arr" role="tab" aria-controls="arr" aria-selected="false">
+                    ARR: {{$flight->arr_airport_id}}
+                    </a>
+                </li>
+                @if ($flight->alt_airport_id)
+                    <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="alt-tab" data-bs-toggle="tab" href="#alt" role="tab" aria-controls="alt" aria-selected="false">
+                        ALT: {{$flight->alt_airport_id}}
+                    </a>
+                    </li>
+                @endif
+                </ul>
+                <div class="tab-content mt-3" id="weatherTabsContent">
+                <div class="tab-pane fade show active" id="dpt" role="tabpanel" aria-labelledby="dpt-tab">
                     {{ Widget::Weather(['icao' => $flight->dpt_airport_id]) }}
                 </div>
-            </div>
-            <div class="card mt-2">
-                <div class="card-title">
-                    <h4 class="card-header">@lang('dashboard.weatherat', ['ICAO' => $flight->arr_airport_id])</h4>
-                </div>
-                <div class="card-body d-flex flex-column gap-4">
+                <div class="tab-pane fade" id="arr" role="tabpanel" aria-labelledby="arr-tab">
                     {{ Widget::Weather(['icao' => $flight->arr_airport_id]) }}
                 </div>
-            </div>
-            @if ($flight->alt_airport_id)
-                <div class="card mt-2">
-                    <div class="card-title">
-                        <h4 class="card-header">@lang('dashboard.weatherat', ['ICAO' => $flight->alt_airport_id])</h4>
+                @if ($flight->alt_airport_id)
+                    <div class="tab-pane fade" id="alt" role="tabpanel" aria-labelledby="alt-tab">
+                    {{ Widget::Weather(['icao' => $flight->alt_airport_id]) }}
                     </div>
-                    <div class="card-body d-flex flex-column gap-4">
-                        {{ Widget::Weather(['icao' => $flight->alt_airport_id]) }}
-                    </div>
+                @endif
                 </div>
-            @endif
+            </div>
+            </div>
         </div>
     </div>
 @endsection
