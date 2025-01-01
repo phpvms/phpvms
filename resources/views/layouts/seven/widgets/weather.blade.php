@@ -4,19 +4,22 @@ If you want to edit this, you can reference the CheckWX API docs:
 https://api.checkwx.com/#metar-decoded
 
 --}}
+@php
+    $randomId = rand();
+@endphp
 
 <span class="px-2">
     {{ $metar['raw'] }}
 </span>
 
-<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ $config['icao'] }}"
-    aria-controls="offcanvas{{ $config['icao'] }}">Show decoded
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ $randomId }}"
+    aria-controls="offcanvas{{ $randomId }}">Show decoded
     weather</button>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas{{ $config['icao'] }}"
-    aria-labelledby="offcanvas{{ $config['icao'] }}Label">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas{{ $randomId }}"
+    aria-labelledby="offcanvas{{ $randomId }}Label">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvas{{ $config['icao'] }}Label">@lang('dashboard.weatherat', ['ICAO' => $config['icao']])</h5>
+        <h5 class="offcanvas-title" id="offcanvas{{ $randomId }}Label">@lang('dashboard.weatherat', ['ICAO' => $config['icao']])</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
