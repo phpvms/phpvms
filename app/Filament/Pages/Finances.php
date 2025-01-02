@@ -4,14 +4,11 @@ namespace App\Filament\Pages;
 
 use App\Repositories\AirlineRepository;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
-use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Url;
 
 class Finances extends Page
 {
@@ -45,7 +42,7 @@ class Finances extends Page
                 Forms\Components\Select::make('airline_id')
                     ->native(false)
                     ->label('Airline')
-                    ->options(app(AirlineRepository::class)->selectBoxList())
+                    ->options(app(AirlineRepository::class)->selectBoxList()),
             ])
                 ->columns(3),
         ]);
