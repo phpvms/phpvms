@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Database\seeds;
 
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Seeder;
