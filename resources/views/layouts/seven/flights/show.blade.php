@@ -132,14 +132,20 @@
                     </ul>
                     <div class="tab-content mt-3" id="weatherTabsContent">
                         <div class="tab-pane fade show active" id="dpt" role="tabpanel" aria-labelledby="dpt-tab">
-                            {{ Widget::Weather(['icao' => $flight->dpt_airport_id]) }}
+                            <div class="d-flex flex-column gap-4">
+                                {{ Widget::Weather(['icao' => $flight->dpt_airport_id]) }}
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="arr" role="tabpanel" aria-labelledby="arr-tab">
-                            {{ Widget::Weather(['icao' => $flight->arr_airport_id]) }}
+                            <div class="d-flex flex-column gap-4">
+                                {{ Widget::Weather(['icao' => $flight->arr_airport_id]) }}
+                            </div>
                         </div>
                         @if ($flight->alt_airport_id)
                             <div class="tab-pane fade" id="alt" role="tabpanel" aria-labelledby="alt-tab">
-                                {{ Widget::Weather(['icao' => $flight->alt_airport_id]) }}
+                                <div class="d-flex flex-column gap-4">
+                                    {{ Widget::Weather(['icao' => $flight->alt_airport_id]) }}
+                                </div>
                             </div>
                         @endif
                     </div>

@@ -4,7 +4,6 @@
 @section('content')
     <div class="row">
         <div class="col-md-8">
-
             @if (Auth::user()->state === \App\Models\Enums\UserState::ON_LEAVE)
                 <div class="row">
                     <div class="col-12">
@@ -54,7 +53,7 @@
 
             </div>
             <div class="card mb-3">
-                <div class="card-header" role="tablist" style="background: #067ec1; color: #FFF;">
+                <div class="card-header" role="tablist">
                     @lang('dashboard.yourlastreport')
                 </div>
                 @if ($last_pirep === null)
@@ -74,7 +73,7 @@
         {{-- Sidebar --}}
         <div class="col-sm-4">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header">
                     @lang('dashboard.weatherat', ['ICAO' => $current_airport])
                 </div>
                 <div class="card-body d-flex flex-column gap-4">
@@ -83,7 +82,7 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header bg-primary text-white" role="tablist">
+                <div class="card-header" role="tablist">
                     @lang('dashboard.recentreports')
                 </div>
                 <div class="card-body">
@@ -95,7 +94,7 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header bg-primary text-white" role="tablist">
+                <div class="card-header" role="tablist">
                     @lang('common.newestpilots')
                 </div>
                 <div class="card-body">

@@ -45,18 +45,25 @@
         .nav-link:hover {
             color: orange !important;
         }
+
         :root {
             --bs-primary: #067ec1 !important;
 
 
         }
+
         [data-bs-theme=light] {
             --bs-primary: #067ec1 !important;
-            }
+        }
+
         .bg-primary {
             background-color: #067ec1 !important;
         }
 
+        .btn-primary {
+            background-color: #067ec1 !important;
+            border-color: #067ec1 !important;
+        }
     </style>
 </head>
 
@@ -89,7 +96,9 @@
     {{-- External Redirects Modal --}}
     @include('external_redirect_modal')
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
