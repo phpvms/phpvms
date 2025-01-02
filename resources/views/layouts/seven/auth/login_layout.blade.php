@@ -28,10 +28,30 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link href="{{ public_asset('/assets/vendor/tomselect/tom-select.bootstrap5.css') }}" rel="stylesheet">
+  <style>
+    .bg-brand {
+      background-color: #067EC1;
+    }
+    [data-bs-theme="dark"] .bg-brand {
+      background-color: var(--bs-body-bg);
+    }
+    .logo-light {
+      display: block;
+    }
+    .logo-dark {
+      display: none;
+    }
+    [data-bs-theme="dark"] .logo-light {
+      display: none;
+    }
+    [data-bs-theme="dark"] .logo-dark {
+      display: block;
+    }
+  </style>
   @yield('css')
 </head>
 
-<body style="background: #067ec1;">
+<body class="bg-brand">
   <div class="wrapper d-flex flex-column min-vh-100">
     <div class="body container flex-grow-1 pt-4">
         {{-- These should go where you want your content to show up --}}
@@ -40,15 +60,15 @@
         {{-- End the above block --}}
 
     </div>
-    <footer class="py-3 mt-4 border-top">
+    <footer class="py-3 mt-4 text-white">
         <div class="container d-flex flex-wrap justify-content-between align-items-center">
 
             <div class="col-md-4 d-flex align-items-center">
-                <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }}
+                <span class="mb-3 mb-md-0">Copyright {{ date('Y') }}
                     {{ config('app.name') }}</span>
             </div>
             <div class="col-md-4 d-flex align-items-center justify-content-end">
-                <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net"
+                <span class="mb-3 mb-md-0 text-end">Powered by <a style="color: orange" href="https://www.phpvms.net"
                         target="_blank">phpVMS</a></span>
             </div>
         </div>

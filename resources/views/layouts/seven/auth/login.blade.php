@@ -2,13 +2,11 @@
 @section('title', __('common.login'))
 
 @section('content')
-  <div class="d-flex justify-content-center align-items-center">
-    <div class="card card-login">
-      <div class="card-header text-center">
-        <div class="logo-container">
-          <img src="{{ public_asset('/assets/frontend/img/logo.svg') }}" width="320" height="320" style="background: #FFF">
-        </div>
-      </div>
+  <div class="d-flex flex-column justify-content-center align-items-center">
+  <div class="logo-container">
+    <img src="{{ public_asset('/assets/img/logo_white.svg') }}" width="320" height="320">
+    </div>
+    <div class="card w-100" style="max-width: 400px;">
       <div class="card-body">
         <form method="post" action="{{ url('/login') }}" class="form">
           @csrf
