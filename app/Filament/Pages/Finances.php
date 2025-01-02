@@ -4,9 +4,11 @@ namespace App\Filament\Pages;
 
 use App\Repositories\AirlineRepository;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
@@ -14,6 +16,7 @@ use Livewire\Attributes\Url;
 class Finances extends Page
 {
     use HasPageShield;
+    use HasFiltersForm;
 
     protected static ?string $navigationGroup = 'Operations';
     protected static ?int $navigationSort = 5;
@@ -24,43 +27,27 @@ class Finances extends Page
 
     protected static string $view = 'filament.pages.finances';
 
-    #[Url]
-    public ?array $filters = [];
-
-    public function mount(): void
+    public function filtersForm(Form $form): Form
     {
-        $this->filters = [
-            'start_date' => $this->filters['start_date'] ?? now()->subYear(),
-            'end_date'   => $this->filters['end_date'] ?? now(),
-            'airline_id' => $this->filters['airline_id'] ?? Auth::user()->airline_id,
-        ];
-        $this->fillForm();
-    }
+        return $form->schema([
+            Forms\Components\Section::make()->schema([
+                Forms\Components\DatePicker::make('start_date')
+                    ->native(false)
+                    // Some magic cause if no start_date is set, now is returned
+                    ->minDate(setting('general.start_date')->diffInSeconds() > 2 ? setting('general.start_date') : now()->subYear())
+                    ->maxDate(fn (Get $get) => $get('end_date') ?: now()),
 
-    protected function fillForm(): void
-    {
-        $this->callHook('beforeFill');
+                Forms\Components\DatePicker::make('end_date')
+                    ->native(false)
+                    ->minDate(fn (Get $get) => $get('start_date'))
+                    ->maxDate(now()),
 
-        $this->form->fill($this->filters);
-
-        $this->callHook('afterFill');
-    }
-
-    public function form(Form $form): Form
-    {
-        return $form->statePath('filters')->schema([
-            Forms\Components\DatePicker::make('start_date')->native(false)->maxDate(fn (Get $get) => $get('end_date'))->live()->afterStateUpdated(function () { $this->filtersUpdated(); }),
-            Forms\Components\DatePicker::make('end_date')->native(false)->minDate(fn (Get $get) => $get('start_date'))->maxDate(now())->live()->afterStateUpdated(function () { $this->filtersUpdated(); }),
-            Forms\Components\Select::make('airline_id')->label('Airline')->options(app(AirlineRepository::class)->selectBoxList())->live()->afterStateUpdated(function (?string $state) {
-                if (!$state || $state == '') {
-                    $this->filters['airline_id'] = Auth::user()->airline_id;
-                } $this->filtersUpdated();
-            }),
-        ])->columns(3);
-    }
-
-    public function filtersUpdated()
-    {
-        $this->dispatch('updateFinanceFilters', start_date: $this->filters['start_date'] ?? now()->subYear(), end_date: $this->filters['end_date'], airline_id: $this->filters['airline_id']);
+                Forms\Components\Select::make('airline_id')
+                    ->native(false)
+                    ->label('Airline')
+                    ->options(app(AirlineRepository::class)->selectBoxList())
+            ])
+                ->columns(3),
+        ]);
     }
 }
