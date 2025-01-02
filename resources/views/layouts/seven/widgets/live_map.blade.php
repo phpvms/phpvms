@@ -93,7 +93,7 @@ and being mindful of the rivets bindings
 --}}
 <div id="live_flights" class="row">
   <div class="col-md-12">
-    <div rv-hide="has_data" class="jumbotron text-center">@lang('widgets.livemap.noflights')</div>
+    <div rv-hide="has_data"  class="p-5 mb-4 bg-body-tertiary rounded-3 text-center fs-4">@lang('widgets.livemap.noflights')</div>
     <table rv-show="has_data" id="live_flights_table" class="table table-striped">
       <thead>
       <tr class="text-small header">
