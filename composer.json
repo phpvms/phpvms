@@ -58,7 +58,7 @@
         "laracasts/flash": "~3.2.3",
         "laravel/helpers": "~v1.7.0",
         "jeremykendall/php-domain-parser": "~6.3",
-        "league/commonmark": "~2.4",
+        "league/commonmark": "^2.6",
         "league/csv": "^9.14.0",
         "league/geotools": "~1.2.0",
         "league/iso3166": "~4.2.0",
