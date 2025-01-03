@@ -51,7 +51,7 @@ return [
         'company_specific'       => 'Company Specific (Non Standard)',
         'other'                  => 'Other (Non Standard)',
     ],
-    'createsimbrief'   => 'Create SimBrief Flight Plan',
-    'viewsimbrief'     => 'View SimBrief Flight Plan',
-    'weather'          => 'Weather',
+    'createsimbrief' => 'Create SimBrief Flight Plan',
+    'viewsimbrief'   => 'View SimBrief Flight Plan',
+    'weather'        => 'Weather',
 ];

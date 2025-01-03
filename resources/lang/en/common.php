@@ -69,5 +69,5 @@ return [
     'light'                => 'Light',
     'auto'                 => 'Auto',
     'map'                  => 'Map',
-    'notes'               => 'Notes',
+    'notes'                => 'Notes',
 ];

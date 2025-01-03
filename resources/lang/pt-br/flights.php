@@ -42,7 +42,7 @@ return [
         'military'          => 'Militar',
         'technical_stop'    => 'Parada Técnica',
     ],
-    'createsimbrief'   => 'Criar Plano de Voo SimBrief',
-    'viewsimbrief'     => 'Ver Plano de Voo SimBrief',
-    'weather'          => 'Clima',
+    'createsimbrief' => 'Criar Plano de Voo SimBrief',
+    'viewsimbrief'   => 'Ver Plano de Voo SimBrief',
+    'weather'        => 'Clima',
 ];
