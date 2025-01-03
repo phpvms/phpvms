@@ -24,17 +24,17 @@ return new class() extends Migration {
         if (file_exists(resource_path('views/layouts/default'))) {
             File::deleteDirectory(resource_path('views/layouts/default'));
         }
-        
+
         // check if the default theme is being extended by any other theme. If so, change the extension to beta in that theme's theme.json.
         $themes = File::directories(resource_path('views/layouts'));
         foreach ($themes as $theme) {
-            $themeJson = json_decode(File::get($theme . '/theme.json'));
+            $themeJson = json_decode(File::get($theme.'/theme.json'));
             if ($themeJson->extends === 'default') {
                 $themeJson->extends = 'beta';
-                File::put($theme . '/theme.json', json_encode($themeJson, JSON_PRETTY_PRINT));
+                File::put($theme.'/theme.json', json_encode($themeJson, JSON_PRETTY_PRINT));
             }
         }
-        
+
         // Clear the app and view cache
         Artisan::call('cache:clear');
         Artisan::call('view:clear');
