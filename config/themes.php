@@ -3,7 +3,7 @@
 return [
     'themes_path'     => resource_path('views/layouts'), // eg: base_path('resources/themes')
     'asset_not_found' => 'LOG_ERROR',
-    'default'         => env('DEFAULT_THEME', 'beta'),
+    'default'         => env('DEFAULT_THEME', 'seven'),
     'cache'           => true,
 
     /*
