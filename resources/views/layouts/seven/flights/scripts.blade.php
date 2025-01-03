@@ -21,7 +21,6 @@
                         sel.setAttribute('x-id', flight_id);
 
                         if (!btn.classList.contains(class_name)) {
-                            const bidModal = new bootstrap.Modal(document.getElementById('bidModal'))
 
                             bidModal.show();
 
@@ -72,6 +71,10 @@
                             });
                         }
                     });
+                });
+
+                document.getElementById('btn-close').addEventListener('click', () => {
+                    bidModal.hide();
                 });
 
                 document.getElementById('with_aircraft').addEventListener('click', () => {
