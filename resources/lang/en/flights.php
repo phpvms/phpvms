@@ -12,6 +12,8 @@ return [
     'viewflight'       => 'View Flight',
     'search'           => 'Search',
     'addremovebid'     => 'Add/Remove Bid',
+    'addbid'           => 'Add Bid',
+    'removebid'        => 'Remove Bid',
     'bidremoved'       => 'Your bid was removed.',
     'bidadded'         => 'Your bid was added.',
     'dep'              => 'Dep',
@@ -49,4 +51,7 @@ return [
         'company_specific'       => 'Company Specific (Non Standard)',
         'other'                  => 'Other (Non Standard)',
     ],
+    'createsimbrief'   => 'Create SimBrief Flight Plan',
+    'viewsimbrief'     => 'View SimBrief Flight Plan',
+    'weather'          => 'Weather',
 ];

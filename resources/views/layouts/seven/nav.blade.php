@@ -111,7 +111,7 @@
                                 <i class="bi bi-journal-check"></i>&nbsp;&nbsp;{{ trans_choice('common.pirep', 2) }}
                             </a>
                             <a class="dropdown-item" href="{{ route('frontend.flights.bids') }}">
-                                <i class="bi bi-bookmark-check"></i>&nbsp;&nbsp;My Bids
+                                <i class="bi bi-bookmark-check"></i>&nbsp;&nbsp;{{ trans_choice('flights.mybid', 2) }}
                             </a>
                             <div class="dropdown-divider"></div>
                             @ability('admin', 'admin-access')
@@ -151,7 +151,7 @@
                         id="bd-theme" type="button" aria-expanded="true" data-bs-toggle="dropdown"
                         data-bs-display="static" aria-label="Toggle theme (light)">
                         <i class="bi-sun-fill" id="theme-icon-active"></i>
-                        <span class="d-lg-none ms-2" id="bd-theme-text">Toggle Colors</span>
+                        <span class="d-lg-none ms-2" id="bd-theme-text">@lang('common.toggleColors')</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text"
                         data-bs-popper="static">
@@ -159,21 +159,21 @@
                             <button type="button" class="dropdown-item d-flex align-items-center active"
                                 data-bs-theme-value="light" aria-pressed="true">
                                 <i class="bi-sun-fill"></i>
-                                &nbsp;Light
+                                &nbsp;@lang('common.light')
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item d-flex align-items-center"
                                 data-bs-theme-value="dark" aria-pressed="false">
                                 <i class="bi-moon-stars-fill"></i>
-                                &nbsp;Dark
+                                &nbsp;@lang('common.dark')
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item d-flex align-items-center"
                                 data-bs-theme-value="system" aria-pressed="false">
                                 <i class="bi-circle-half"></i>
-                                &nbsp;Auto
+                                &nbsp;@lang('common.auto')
                             </button>
                         </li>
                     </ul>

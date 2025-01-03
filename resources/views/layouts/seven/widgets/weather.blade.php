@@ -13,8 +13,7 @@ https://api.checkwx.com/#metar-decoded
 </span>
 
 <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas{{ $randomId }}"
-    aria-controls="offcanvas{{ $randomId }}">Show decoded
-    weather</button>
+    aria-controls="offcanvas{{ $randomId }}">{{ __('widgets.weather.showdecoded') }}</button>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas{{ $randomId }}"
     aria-labelledby="offcanvas{{ $randomId }}Label">

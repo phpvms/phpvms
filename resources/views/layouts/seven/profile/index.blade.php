@@ -57,7 +57,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h2 class="card-title">{{ $user->flights }}</h2>
-                            <p class="card-text">Flights</p>
+                            <p class="card-text">{{ trans_choice('common.flight', $user->flights) }}</p>
                         </div>
                     </div>
                 </div>
