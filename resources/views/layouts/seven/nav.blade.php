@@ -92,7 +92,7 @@
           <div class="d-none d-lg-flex h-100 mx-lg-2 text-body-secondary"></div>
         </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle " href="#" id="navbarDropdownMenuLink" role="button"
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdownMenuLink" role="button"
                             data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true"
                             aria-expanded="false">
                             @if (Auth::user()->avatar == null)
