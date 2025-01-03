@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration {
@@ -21,6 +22,8 @@ return new class() extends Migration {
         if (file_exists(resource_path('views/layouts/default'))) {
             File::deleteDirectory(resource_path('views/layouts/default'));
         }
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
     }
 
     /**
