@@ -42,7 +42,7 @@
 
           @if(config('services.discord.enabled'))
             <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn btn-lg btn-block" style="background-color:#738ADB;">
+              <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">
                 @lang('auth.loginwith', ['provider' => 'Discord'])
               </a>
             </div>
@@ -50,7 +50,7 @@
 
           @if(config('services.ivao.enabled'))
             <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'ivao']) }}" class="btn btn-lg btn-block" style="background-color:#0d2c99;">
+              <a href="{{ route('oauth.redirect', ['provider' => 'ivao']) }}" class="btn" style="background-color:#0d2c99;">
                 @lang('auth.loginwith', ['provider' => 'IVAO'])
               </a>
             </div>
@@ -58,7 +58,7 @@
 
           @if(config('services.vatsim.enabled'))
             <div class="d-grid mt-3">
-              <a href="{{ route('oauth.redirect', ['provider' => 'vatsim']) }}" class="btn btn-lg btn-block" style="background-color:#29B473;">
+              <a href="{{ route('oauth.redirect', ['provider' => 'vatsim']) }}" class="btn" style="background-color:#29B473;">
                 @lang('auth.loginwith', ['provider' => 'VATSIM'])
               </a>
             </div>
