@@ -65,24 +65,6 @@
                             @lang('common.login')
                         </a>
                     </li>
-
-                    <li class="nav-item dropdown d-flex align-items-center">
-                        <a class="nav-link dropdown-toggle " href="#" role="button" data-toggle="dropdown"
-                            data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
-                            <span
-                                class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $languages[$locale]['display'] }}
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            @foreach ($languages as $lang => $language)
-                                @if ($lang != $locale)
-                                    <a class="dropdown-item" href="{{ route('frontend.lang.switch', $lang) }}">
-                                        <span
-                                            class="fi fi-{{ $language['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $language['display'] }}
-                                    </a>
-                                @endif
-                            @endforeach
-                        </div>
-                    </li>
                 @else
                     <li class="nav-item d-flex align-items-center">
                         <a class="nav-link d-flex gap-1" href="{{ route('frontend.flights.index') }}">
@@ -106,25 +88,9 @@
                             </a>
                         </li>
                     @endforeach
-
-                    <li class="nav-item dropdown d-flex align-items-center">
-                        <a class="nav-link dropdown-toggle " href="#" role="button" data-bs-toggle="dropdown"
-                            data-bs-boundary="viewport" aria-haspopup="true" aria-expanded="false">
-                            <span
-                                class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $languages[$locale]['display'] }}
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            @foreach ($languages as $lang => $language)
-                                @if ($lang != $locale)
-                                    <a class="dropdown-item" href="{{ route('frontend.lang.switch', $lang) }}">
-                                        <span
-                                            class="fi fi-{{ $language['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $language['display'] }}
-                                    </a>
-                                @endif
-                            @endforeach
-                        </div>
-                    </li>
-
+                    <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
+          <div class="d-none d-lg-flex h-100 mx-lg-2 text-body-secondary"></div>
+        </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle " href="#" id="navbarDropdownMenuLink" role="button"
                             data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true"
@@ -160,6 +126,26 @@
                         </div>
                     </li>
                 @endif
+                <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
+          <div class="d-none d-lg-flex h-100 mx-lg-2 text-body-secondary"></div>
+        </li>
+                <li class="nav-item dropdown my-0 my-md-auto">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+                            <span
+                                class="fi fi-{{ $languages[$locale]['flag-icon'] }}"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            @foreach ($languages as $lang => $language)
+                                @if ($lang != $locale)
+                                    <a class="dropdown-item" href="{{ route('frontend.lang.switch', $lang) }}">
+                                        <span
+                                            class="fi fi-{{ $language['flag-icon'] }}"></span>&nbsp;&nbsp;{{ $language['display'] }}
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    </li>
                 <li class="nav-item dropdown my-0 my-md-auto">
                     <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
                         id="bd-theme" type="button" aria-expanded="true" data-bs-toggle="dropdown"
