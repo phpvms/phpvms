@@ -20,8 +20,8 @@ return new class() extends Migration {
             }
         }
 
-        // Check if the default theme exists physically. If it does, delete it.
-        if (file_exists(resource_path('views/layouts/default'))) {
+        // Check if the default theme exists physically, and a beta directory exists delete it.
+        if (file_exists(resource_path('views/layouts/default')) && file_exists(resource_path('views/layouts/beta'))) {
             File::deleteDirectory(resource_path('views/layouts/default'));
         }
 
