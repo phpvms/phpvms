@@ -9,7 +9,7 @@
           <div class="row">
             <div class="col-8">
               <div class="card mb-3">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                   Aircraft Details, Configuration and Loading information for <b>{{ $aircraft->registration }}</b>
                 </div>
                 <div class="card-body">
@@ -81,7 +81,7 @@
               </div>
 
               <div class="card mb-3">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                   @lang('pireps.flightinformations') For
                   <b>{{ $flight->airline->code }}{{ $flight->flight_number }} ({{ \App\Models\Enums\FlightType::label($flight->flight_type) }})</b>
                 </div>
@@ -168,7 +168,7 @@
             </div>
             <div class="col-4">
               <div class="card mb-3">
-              <div class="card-header">
+              <div class="card-header bg-primary text-white">
                 Planning Options
               </div>
               <div class="card-body">
@@ -264,7 +264,7 @@
               </div>
 
               <div class="card mb-3">
-              <div class="card-header">
+              <div class="card-header bg-primary text-white">
                 Briefing Options
               </div>
               <div class="card-body">

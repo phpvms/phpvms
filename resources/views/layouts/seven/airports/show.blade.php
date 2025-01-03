@@ -15,7 +15,7 @@
         {{-- Show the weather widget in one column --}}
         <div class="col-5">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     @lang('dashboard.weatherat', ['ICAO' => $airport->icao])
                 </div>
                 <div class="card-body d-flex flex-column gap-4">
@@ -27,7 +27,7 @@
         {{-- Show the airspace map in the other column --}}
         <div class="col-7">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     {{ __('common.map') }}
                 </div>
                 <div class="card-body p-0">
@@ -37,7 +37,7 @@
 
             @if (filled($airport->notes))
                 <div class="card mt-4">
-                    <div class="card-header">
+                    <div class="card-header bg-primary text-white">
                         {{ __('airports.notes') }}
                     </div>
                     <div class="card-body">
@@ -52,7 +52,7 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-primary text-white">
                         {{ trans_choice('common.download', 2) }}
                     </div>
                     <div class="card-body">
@@ -65,7 +65,7 @@
     <div class="row mt-4">
         <div class="col-6">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     @lang('flights.inbound')
                 </div>
                 <div class="card-body">
@@ -106,7 +106,7 @@
 
         <div class="col-6">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     @lang('flights.outbound')
                 </div>
                 <div class="card-body">

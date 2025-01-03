@@ -91,7 +91,7 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header bg-primary text-white">
                                 {{ __('common.notes') }}
                             </div>
                             <div class="card-body">
@@ -105,7 +105,7 @@
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-title">
-                    <h4 class="card-header">{{ __('flights.weather') }}</h4>
+                    <h4 class="card-header bg-primary text-white">{{ __('flights.weather') }}</h4>
                 </div>
                 <div class="card-body">
                     <ul class="nav nav-tabs" id="weatherTabs" role="tablist">

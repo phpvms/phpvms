@@ -25,7 +25,7 @@ flight reports that have been filed. You've been warned!
 <div class="row">
   <div class="{{ $form_width }}">
     <div class="card mb-3">
-      <div class="card-header">
+      <div class="card-header bg-primary text-white">
         @lang('pireps.flightinformations')
       </div>
       <div class="card-body">
@@ -174,7 +174,7 @@ flight reports that have been filed. You've been warned!
 
 
     <div class="card mb-3">
-      <div class="card-header">
+      <div class="card-header bg-primary text-white">
         @lang('pireps.deparrinformations')
       </div>
       <div class="card-body">
@@ -231,7 +231,7 @@ flight reports that have been filed. You've been warned!
     </div>
 
     <div class="card mb-3">
-      <div class="card-header">
+      <div class="card-header bg-primary text-white">
         @lang('pireps.aircraftinformations')
       </div>
       <div class="card-body">
@@ -311,7 +311,7 @@ flight reports that have been filed. You've been warned!
     </div>
     
     <div class="card mb-3">
-      <div class="card-header">
+      <div class="card-header bg-primary text-white">
       @lang('flights.route') & {{ trans_choice('common.remark', 2) }}
       </div>
       <div class="card-body">
@@ -341,7 +341,7 @@ flight reports that have been filed. You've been warned!
   @if($custom_fields_exist)
   <div class="col-lg-4">
     <div class="card mb-3">
-      <div class="card-header">
+      <div class="card-header bg-primary text-white">
         {{ trans_choice('common.field', 2) }}
       </div>
       <div class="card-body">

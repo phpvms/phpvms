@@ -85,7 +85,7 @@
         <div class="col-6">
           <div class="d-grid gap-3">
           <div class="card">
-            <div class="card-header">
+            <div class="card-header bg-primary text-white">
               Dispatch Information
             </div>
             <div class="card-body">
@@ -172,7 +172,7 @@
           </div>
 
           <div class="card">
-            <div class="card-header"><i class="fas fa-info-circle"></i>
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i>
               &nbsp;Flight Plan
             </div>
             <div class="card-body">
@@ -187,7 +187,7 @@
           </div>
 
           <div class="card">
-            <div class="card-header">Weather</div>
+            <div class="card-header bg-primary text-white">Weather</div>
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
@@ -252,7 +252,7 @@
             <a href="http://skyvector.com/?chart=304&amp;fpl={{ $simbrief->xml->origin->icao_code}} {{ $simbrief->xml->general->route }} {{ $simbrief->xml->destination->icao_code}}" target="_blank" class="btn btn-info w-25">View @ SkyVector</a>
             </div>
           <div class="card">
-            <div class="card-header"><i class="fas fa-info-circle"></i>
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i>
               &nbsp;OFP
             </div>
             <div class="card-body">
@@ -267,7 +267,7 @@
       <div class="row mt-3">
         <div class="col-12">
           <div class="card">
-            <div class="card-header">
+            <div class="card-header bg-primary text-white">
               Flight Maps
             </div>
             <div class="card-body">

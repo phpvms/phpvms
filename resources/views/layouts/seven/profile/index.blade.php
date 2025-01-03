@@ -114,7 +114,7 @@
                         @foreach ($awards as $award)
                             <div class="col-md-4">
                                 <div class="card">
-                                    <div class="card-header bg-primary text-center">
+                                    <div class="card-header bg-primary text-white bg-primary text-center">
                                         <h4 class="text-white">{{ $award->name }}</h4>
                                         @if ($award->image_url)
                                             <img src="{{ $award->image_url }}" alt="{{ $award->description }}"

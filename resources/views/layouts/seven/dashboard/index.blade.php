@@ -53,7 +53,7 @@
 
             </div>
             <div class="card mb-3">
-                <div class="card-header" role="tablist">
+                <div class="card-header bg-primary text-white" role="tablist">
                     @lang('dashboard.yourlastreport')
                 </div>
                 @if ($last_pirep === null)
@@ -73,7 +73,7 @@
         {{-- Sidebar --}}
         <div class="col-sm-4">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     @lang('dashboard.weatherat', ['ICAO' => $current_airport])
                 </div>
                 <div class="card-body d-flex flex-column gap-4">
@@ -82,7 +82,7 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header" role="tablist">
+                <div class="card-header bg-primary text-white" role="tablist">
                     @lang('dashboard.recentreports')
                 </div>
                 <div class="card-body">
@@ -94,7 +94,7 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header" role="tablist">
+                <div class="card-header bg-primary text-white" role="tablist">
                     @lang('common.newestpilots')
                 </div>
                 <div class="card-body">

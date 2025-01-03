@@ -1,5 +1,5 @@
 <div class="card">
-    <div class="card-header" role="tablist">
+    <div class="card-header bg-primary text-white" role="tablist">
         @lang('widgets.latestnews.news')
     </div>
     <div class="card-body p-4">

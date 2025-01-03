@@ -1,6 +1,6 @@
 @if($aircraft && $aircraft->subfleet->fares->count() > 0)
   <div class="card mb-3">
-    <div class="card-header">
+    <div class="card-header bg-primary text-white">
       {{ trans_choice('pireps.fare', 2) }}
     </div>
     <div class="card-body">

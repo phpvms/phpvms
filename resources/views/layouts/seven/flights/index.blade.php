@@ -26,7 +26,7 @@
     </div>
     <div class="col-xl-3 d-none d-xl-block">
       <div class="card">
-        <div class="card-header">@lang('flights.search')</div>
+        <div class="card-header bg-primary text-white">@lang('flights.search')</div>
         <div class="card-body">
           @include('flights.search')
         </div>

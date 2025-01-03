@@ -7,7 +7,7 @@
       <form method="post" action="{{ url('/register') }}" class="form-signin">
         @csrf
         <div class="card">
-          <div class="card-header">
+          <div class="card-header bg-primary text-white">
             <h2>@lang('common.register')</h2>
           </div>
           <div class="card-body">
