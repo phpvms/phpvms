@@ -173,7 +173,7 @@ class ModuleService extends Service
             try {
                 Artisan::call('module:migrate', ['module' => $module_name, '--force' => true]);
             } catch (Exception $e) {
-                Log::error('Error running migration for ' . $module_name . '; error=' . $e);
+                Log::error('Error running migration for '.$module_name.'; error='.$e);
             }
 
             return true;
@@ -201,13 +201,13 @@ class ModuleService extends Service
 
         $new_dir = rand();
         File::makeDirectory(
-            storage_path('app/tmp/modules/' . $new_dir),
+            storage_path('app/tmp/modules/'.$new_dir),
             0777,
             true
         );
 
-        $temp_ext_folder = storage_path('app/tmp/modules/' . $new_dir);
-        $temp = storage_path('app/tmp/modules/' . $new_dir);
+        $temp_ext_folder = storage_path('app/tmp/modules/'.$new_dir);
+        $temp = storage_path('app/tmp/modules/'.$new_dir);
 
         $zipper = null;
 
@@ -232,12 +232,12 @@ class ModuleService extends Service
             throw new ModuleInstallationError();
         }
 
-        if (!File::exists($temp . '/module.json')) {
-            $directories = Storage::directories('tmp/modules/' . $new_dir);
-            $temp = storage_path('app/' . $directories[0]);
+        if (!File::exists($temp.'/module.json')) {
+            $directories = Storage::directories('tmp/modules/'.$new_dir);
+            $temp = storage_path('app/'.$directories[0]);
         }
 
-        $json_file = $temp . '/module.json';
+        $json_file = $temp.'/module.json';
 
         if (File::exists($json_file)) {
             $json = json_decode(file_get_contents($json_file), true);
@@ -252,7 +252,7 @@ class ModuleService extends Service
             return flash()->error('Not a Valid Module File.');
         }
 
-        $toCopy = base_path() . '/modules/' . $module;
+        $toCopy = base_path().'/modules/'.$module;
 
         if (File::exists($toCopy)) {
             File::deleteDirectory($temp_ext_folder);
@@ -288,7 +288,7 @@ class ModuleService extends Service
         $module = Module::find($id);
 
         $cache = config('cache.keys.MODULES');
-        Cache::forget($cache['key'] . '.' . $module->name);
+        Cache::forget($cache['key'].'.'.$module->name);
 
         $module->update([
             'enabled' => $status,
@@ -318,12 +318,12 @@ class ModuleService extends Service
             } catch (Exception $e) {
                 Log::emergency('Cannot Delete Module!');
             }
-            $moduleDir = base_path() . '/modules/' . $module->name;
+            $moduleDir = base_path().'/modules/'.$module->name;
 
             try {
                 File::deleteDirectory($moduleDir);
             } catch (Exception $e) {
-                Log::info('Folder Deleted Manually for Module : ' . $module->name);
+                Log::info('Folder Deleted Manually for Module : '.$module->name);
                 return true;
             }
             return true;
