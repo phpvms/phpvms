@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d81015ac7af5212239384f3937ff0347",
+    "content-hash": "cbd428d0f7753fcb5a753a11dacd452e",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -5107,12 +5107,12 @@
             "version": "4.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/thephpleague/iso3166.git",
+                "url": "https://github.com/alcohol/iso3166.git",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
+                "url": "https://api.github.com/repos/alcohol/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "shasum": ""
             },
@@ -5835,12 +5835,12 @@
             "version": "2.72.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/briannesbitt/Carbon.git",
+                "url": "https://github.com/CarbonPHP/carbon.git",
                 "reference": "2b3b3db0a2d0556a177392ff1a3bf5608fa09f78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/2b3b3db0a2d0556a177392ff1a3bf5608fa09f78",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/2b3b3db0a2d0556a177392ff1a3bf5608fa09f78",
                 "reference": "2b3b3db0a2d0556a177392ff1a3bf5608fa09f78",
                 "shasum": ""
             },
@@ -15835,6 +15835,6 @@
         "ext-intl": "*",
         "ext-zip": "*"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
