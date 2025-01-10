@@ -246,8 +246,8 @@ jobs:
   docker:
     name: 'Create docker image'
     runs-on: ubuntu-latest
-    # needs: [build]
-    if: github.event_name != 'pull_request'
+    needs: [build]
+    if: github.repository == 'nabeelio/phpvms' && github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
