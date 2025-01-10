@@ -61,7 +61,6 @@
         "nabeel/vacentral": "~2.1.0",
         "nwidart/laravel-modules": "~10.0.0",
         "php-units-of-measure/php-units-of-measure": "~2.1.0",
-        "phpvms/sample-module": "~1.0",
         "prettus/l5-repository": "~2.9.0",
         "santigarcor/laratrust": "^8.2.2",
         "spatie/valuestore": "~1.3.2",

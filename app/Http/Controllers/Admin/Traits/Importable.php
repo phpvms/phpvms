@@ -39,6 +39,10 @@ trait Importable
 
         $delete_previous = get_truth_state($request->get('delete'));
 
+        if ($importType === ImportExportType::FLIGHTS) {
+            $delete_previous = $request->get('delete');
+        }
+
         switch ($importType) {
             case ImportExportType::AIRCRAFT:
                 return $importSvc->importAircraft($path, $delete_previous);

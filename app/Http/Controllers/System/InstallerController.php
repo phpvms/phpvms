@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Contracts\Controller;
+use App\Models\User;
 use App\Services\AirlineService;
 use App\Services\AnalyticsService;
 use App\Services\Installer\ConfigService;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use RuntimeException;
@@ -56,10 +58,14 @@ class InstallerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(): RedirectResponse|View
     {
         if (config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
-            return view('system.installer.errors.already-installed');
+            if (Schema::hasTable('users') && User::count() > 0) {
+                return view('system.installer.errors.already-installed');
+            }
+
+            return redirect(route('installer.step3'));
         }
 
         return view('system.installer.install.index-start');

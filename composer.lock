@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e1b40436ce30d1b8368efd723b2f5aa4",
+    "content-hash": "cbd428d0f7753fcb5a753a11dacd452e",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -5107,12 +5107,12 @@
             "version": "4.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/thephpleague/iso3166.git",
+                "url": "https://github.com/alcohol/iso3166.git",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
+                "url": "https://api.github.com/repos/alcohol/iso3166/zipball/74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "reference": "74a08ffe08d4e0dd8ab0aac8c34ea5a641d57669",
                 "shasum": ""
             },
@@ -5832,16 +5832,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "2.72.1",
+            "version": "2.72.6",
             "source": {
                 "type": "git",
-                "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "2b3b3db0a2d0556a177392ff1a3bf5608fa09f78"
+                "url": "https://github.com/CarbonPHP/carbon.git",
+                "reference": "1e9d50601e7035a4c61441a208cb5bed73e108c5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/2b3b3db0a2d0556a177392ff1a3bf5608fa09f78",
-                "reference": "2b3b3db0a2d0556a177392ff1a3bf5608fa09f78",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/1e9d50601e7035a4c61441a208cb5bed73e108c5",
+                "reference": "1e9d50601e7035a4c61441a208cb5bed73e108c5",
                 "shasum": ""
             },
             "require": {
@@ -5861,7 +5861,7 @@
                 "doctrine/orm": "^2.7 || ^3.0",
                 "friendsofphp/php-cs-fixer": "^3.0",
                 "kylekatarnls/multi-tester": "^2.0",
-                "ondrejmirtes/better-reflection": "*",
+                "ondrejmirtes/better-reflection": "<6",
                 "phpmd/phpmd": "^2.9",
                 "phpstan/extension-installer": "^1.0",
                 "phpstan/phpstan": "^0.12.99 || ^1.7.14",
@@ -5874,10 +5874,6 @@
             ],
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-3.x": "3.x-dev",
-                    "dev-master": "2.x-dev"
-                },
                 "laravel": {
                     "providers": [
                         "Carbon\\Laravel\\ServiceProvider"
@@ -5887,6 +5883,10 @@
                     "includes": [
                         "extension.neon"
                     ]
+                },
+                "branch-alias": {
+                    "dev-2.x": "2.x-dev",
+                    "dev-master": "3.x-dev"
                 }
             },
             "autoload": {
@@ -5935,7 +5935,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-08T23:47:49+00:00"
+            "time": "2024-12-27T09:28:11+00:00"
         },
         {
             "name": "nette/schema",
@@ -7252,45 +7252,6 @@
                 }
             ],
             "time": "2024-06-24T06:27:33+00:00"
-        },
-        {
-            "name": "phpvms/sample-module",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nabeelio/phpvms-module.git",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nabeelio/phpvms-module/zipball/6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "shasum": ""
-            },
-            "require": {
-                "composer/installers": "~1.0"
-            },
-            "type": "phpvms-module",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Modules\\Sample\\Providers\\SampleServiceProvider",
-                        "Modules\\Sample\\Providers\\EventServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Sample\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "A sample phpvms module",
-            "support": {
-                "issues": "https://github.com/nabeelio/phpvms-module/issues",
-                "source": "https://github.com/nabeelio/phpvms-module/tree/master"
-            },
-            "time": "2020-02-28T15:42:04+00:00"
         },
         {
             "name": "prettus/l5-repository",
