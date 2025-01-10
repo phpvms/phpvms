@@ -6,4 +6,5 @@ return [
     'current'   => 'Aéroport Actuel',
     'departure' => 'Aéroport de Départ',
     'arrival'   => 'Aéroport d\'Arrivée',
+    'notes'     => 'Notes de l\'Aéroport',
 ];

@@ -41,7 +41,7 @@ class ModuleService extends Service
      * @param string $icon
      * @param bool   $logged_in
      */
-    public function addFrontendLink(string $title, string $url, string $icon = 'pe-7s-users', bool $logged_in = true)
+    public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true)
     {
         self::$frontendLinks[$logged_in][] = [
             'title' => $title,
@@ -69,7 +69,7 @@ class ModuleService extends Service
      * @param string $url
      * @param string $icon
      */
-    public function addAdminLink(string $title, string $url, string $icon = 'pe-7s-users')
+    public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people')
     {
         self::$adminLinks[] = [
             'title' => $title,
