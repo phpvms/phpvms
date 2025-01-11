@@ -64,4 +64,10 @@ return [
     'wanttocontinue'       => 'Voulez-vous continuer ?',
     'continue'             => 'Continuer',
     'alwaystrustdomain'    => 'Toujours faire confiance à ce domaine',
+    'toggleColors'         => 'Basculer les couleurs',
+    'dark'                 => 'Sombre',
+    'light'                => 'Clair',
+    'auto'                 => 'Auto',
+    'map'                  => 'Carte',
+    'notes'                => 'Notes',
 ];

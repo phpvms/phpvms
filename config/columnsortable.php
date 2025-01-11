@@ -5,15 +5,15 @@ return [
     'columns' => [
         'alpha' => [
             'rows'  => ['description', 'email', 'name', 'slug', 'registration', 'icao', 'iata', 'dpt_airport_id', 'arr_airport_id', 'home_airport_id', 'curr_airport_id', 'airport_id'],
-            'class' => 'fa fa-sort-alpha',
+            'class' => 'bi bi-sort-alpha',
         ],
         'amount' => [
             'rows'  => ['amount', 'price', 'cost', 'balance'],
-            'class' => 'fa fa-sort-amount',
+            'class' => 'bi bi-sort',
         ],
         'numeric' => [
             'rows'  => ['created_at', 'updated_at', 'submitted_at', 'level', 'id', 'phone_number', 'mtow', 'zfw', 'distance', 'flight_time', 'score', 'landing_rate'],
-            'class' => 'fa fa-sort-numeric',
+            'class' => 'bi bi-sort-numeric',
         ],
     ],
 
@@ -21,10 +21,10 @@ return [
     'enable_icons' => true,
 
     // defines icon set to use when sorted data is none above (alpha nor amount nor numeric)
-    'default_icon_set' => 'fa fa-sort',
+    'default_icon_set' => 'bi bi-sort-down',
 
     // icon that shows when generating sortable link while column is not sorted
-    'sortable_icon' => 'fa fa-sort',
+    'sortable_icon' => 'bi bi-sort-down',
 
     //generated icon is clickable non-clickable (default)
     'clickable_icon' => false,

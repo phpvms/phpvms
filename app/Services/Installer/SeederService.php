@@ -56,6 +56,10 @@ class SeederService extends Service
         $this->syncAllSettings();
         $this->syncAllPermissions();
         $this->syncAllModules();
+
+        // Seed base
+        $this->databaseSvc->seed_from_yaml_file(database_path('seeds/base.yml'));
+
         $this->syncAllYamlFileSeeds();
     }
 

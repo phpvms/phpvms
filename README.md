@@ -1,8 +1,8 @@
 # phpVMS <sup>7</sup>
 
-[![Build](https://github.com/nabeelio/phpvms/workflows/Build/badge.svg?branch=dev)](https://github.com/nabeelio/phpvms/actions) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d668bebb0a3c46bda381af16ce3d9450)](https://www.codacy.com/app/nabeelio/phpvms?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nabeelio/phpvms&amp;utm_campaign=Badge_Grade) [![Latest Stable Version](https://poser.pugx.org/nabeel/phpvms/v/stable)](https://packagist.org/packages/nabeel/phpvms) ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
+[![Build](https://github.com/phpvms/phpvms/actions/workflows/build.yml/badge.svg)](https://github.com/phpvms/phpvms/actions/workflows/build.yml)  ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
 
-The next phpvms version built on the laravel framework. work in progress. The latest documentation, with installation instructions is available [on the phpVMS documentation](https://docs.phpvms.net/) page.
+phpVMS is a PHP based application to run and simulate and airline. It allowed users to register, view flight schedules that you create, and file flight reports, built on the Laravel framework. The latest documentation, with installation instructions is available [on the phpVMS documentation](https://docs.phpvms.net/) page.
 
 ## Installation
 
@@ -86,3 +86,13 @@ make build-assets
 ```
 
 This will build all of the assets according to the webpack file.
+
+---
+
+## Contributors
+
+Thank you to everyone who've contributed to phpVMS!
+
+<a href="https://github.com/phpvms/phpvms/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=phpvms/phpvms" />
+</a>

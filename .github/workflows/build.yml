@@ -3,9 +3,17 @@ on:
   pull_request:
   push:
     branches:
-    - main
-    - dev
+      - main
+      - dev
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
   workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,11 +32,15 @@ jobs:
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/nerdbank-gitversioning
-    - name: Nerdbank.GitVersioning
-      uses: dotnet/nbgv@v0.4.2
+    # https://github.com/marketplace/actions/gittools
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.1
       with:
-          setAllVars: true
+        versionSpec: '6.0.x'
+
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v3.1.1
 
     # Configure Caching
     - name: Setup cache environment
@@ -48,7 +60,7 @@ jobs:
 
     - name: Get composer cache directory
       id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -89,16 +101,19 @@ jobs:
         php --version
         mysql --version
         composer install --dev --no-interaction --verbose
+        composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
         .github/scripts/version.sh ${{ env.NBGV_SemVer2 }}
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 
+    - name: Get version
+      run: .github/scripts/version.sh
+
     - name: Run Tests
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
-        #vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php -v --dry-run --diff --using-cache=no
         vendor/bin/phpunit
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
@@ -107,18 +122,21 @@ jobs:
     name: 'Create release package'
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.repository == 'nabeelio/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
+    if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/nerdbank-gitversioning
-    - name: Get Version
-      uses: dotnet/nbgv@v0.4.2
+    # https://github.com/marketplace/actions/gittools
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.1
       with:
-        setAllVars: true
+        versionSpec: '6.0.x'
+
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v3.1.1
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -131,7 +149,7 @@ jobs:
     # Configure Caching
     - name: Get composer cache directory
       id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -145,25 +163,15 @@ jobs:
       run: |
         rm -rf vendor
         composer install --no-dev --prefer-dist --no-interaction --verbose
+        composer dump-autoload
         sudo chmod +x ./.github/scripts/*
 
-    - name: Get version
+    - id: version
+      name: Get version
       run: .github/scripts/version.sh
-
-    - name: Discord Message
-      id: discord
-      run: .github/scripts/discord.sh
 
     - name: Build Distro
       run: .github/scripts/build.sh
-
-    - uses: altinukshini/deployment-action@releases/v1
-      name: start deployment
-      id: deployment
-      with:
-        token: ${{ secrets.GITHUB_TOKEN}}
-        description: Uploading files to CDN
-        environment: production
 
     - uses: BetaHuhn/do-spaces-action@v2
       id: spaces
@@ -176,64 +184,72 @@ jobs:
         cdn_domain: phpvms.cdn.vmslabs.net
         permission: public-read
 
-    - name: Upload S3
-      uses: shallwefootball/s3-upload-action@master
-      with:
-        aws_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
-        aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY}}
-        aws_bucket: ${{ secrets.S3_BUCKET_NAME }}
-        source_dir: 'dist'
-        destination_dir: ''
-
     - name: Discord notification
       uses: Ilshidur/action-discord@0.3.2
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       with:
-        args: ${{ steps.discord.outputs.discord_msg }}
+        args: ${{ steps.version.outputs.discord_msg }}
 
     - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: phpvms-package
         path: 'dist/*'
 
-#     - name: update deployment status
-#       if: always()
-#       uses: altinukshini/deployment-status@releases/v1
-#       with:
-#         token: ${{ secrets.GITHUB_TOKEN }}
-#         state: ${{ job.status }}
-#         environment_url: ${{ steps.spaces.outputs.output_url }}
-#         deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-#         description: "Successfully uploaded files to CDN"
-
-  # This runs after all of the tests, run have run. Creates a cleaned up version of the
-  # distro, and then creates the artifact to push up to S3 or wherever
-   # https://github.com/actions/create-release
-  release:
-    name: 'Create Release'
-    needs: artifacts
+  docker:
+    name: 'Create docker image'
     runs-on: ubuntu-latest
-    if: github.repository == 'nabeelio/phpvms' && startsWith(github.ref, 'refs/tags/')
+    needs: [build]
+    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
-
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          name: phpvms-package
+          fetch-depth: 0
 
-        # Dependencies
-      - name: 'List files'
-        run: |
-          find . -maxdepth 2  -type f
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1
+      # https://github.com/marketplace/actions/gittools
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.1
         with:
-          artifacts: "./*.*"
-          allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          versionSpec: '6.0.x'
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v3.1.1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

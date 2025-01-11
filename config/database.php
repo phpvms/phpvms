@@ -15,8 +15,8 @@ return [
             'prefix'         => env('DB_PREFIX', ''),
             'prefix_indexes' => true,
             'timezone'       => '+00:00',
-            'charset'        => 'utf8',
-            'collation'      => 'utf8_unicode_ci',
+            'charset'        => 'utf8mb4',
+            'collation'      => 'utf8mb4_unicode_ci',
             'strict'         => false,
             'engine'         => null,
             'options'        => [
