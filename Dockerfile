@@ -14,7 +14,7 @@ RUN composer install \
     --no-scripts \
     --prefer-dist
 
-FROM serversideup/php:8.3-fpm
+FROM serversideup/php:8.4-fpm
 
 ARG WWWUSER=1000
 ARG WWWGROUP=1000
