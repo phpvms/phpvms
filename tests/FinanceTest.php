@@ -70,7 +70,7 @@ final class FinanceTest extends TestCase
      *
      * @return array
      */
-    public function createFullPirep(Airline $airline = null): array
+    public function createFullPirep(?Airline $airline = null): array
     {
         /**
          * Setup tests
