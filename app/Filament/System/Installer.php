@@ -197,10 +197,11 @@ class Installer extends Page
                 ])->afterValidation(function () {
                     if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
                         Notification::make()
-                            ->title('Error: you have pending migrations')
-                            ->danger()
+                            ->title('You still have ' . count(app(MigrationService::class)->migrationsAvailable()) . ' migrations to run. Trying again...')
+                            ->warning()
                             ->send();
 
+                        $this->dispatch('start-migrations');
                         throw new Halt();
                     }
                 }),

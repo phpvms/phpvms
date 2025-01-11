@@ -7,8 +7,10 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
 use App\Filament\System\Installer;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Check the app.key to see whether we're installed or not
@@ -24,7 +26,10 @@ class InstalledCheck implements Middleware
 
         // TODO: update and fix
 
-        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') && !$request->is('system*') && !$request->is('livewire/update')) {
+        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' || !Schema::hasTable('users') || User::count() === 0)
+            && !$request->is('system*')
+            && !$request->is('livewire/update')
+        ) {
             return redirect('/system/install');
         }
 
