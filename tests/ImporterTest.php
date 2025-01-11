@@ -619,6 +619,42 @@ final class ImporterTest extends TestCase
     }
 
     /**
+     * Test the flight importer with "core" argument
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function testFlightImporterCore(): void
+    {
+        [$airline, $subfleet] = $this->insertFlightsScaffoldData();
+
+        $file_path = base_path('tests/data/flights.csv');
+        $status = $this->importSvc->importFlights($file_path, 'core');
+
+        $this->assertCount(3, $status['success']);
+        $this->assertCount(1, $status['errors']);
+
+        // Additional assertions for "core" argument can be added here
+    }
+
+    /**
+     * Test the flight importer with "all" argument
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function testFlightImporterAll(): void
+    {
+        [$airline, $subfleet] = $this->insertFlightsScaffoldData();
+
+        $file_path = base_path('tests/data/flights.csv');
+        $status = $this->importSvc->importFlights($file_path, 'all');
+
+        $this->assertCount(3, $status['success']);
+        $this->assertCount(1, $status['errors']);
+
+        // Additional assertions for "all" argument can be added here
+    }
+
+    /**
      * @throws \Illuminate\Validation\ValidationException
      */
     public function testAircraftImporter(): void

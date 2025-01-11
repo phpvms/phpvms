@@ -213,11 +213,11 @@ class ImportService extends Service
     {
         if (!empty($delete_previous)) {
             // If delete_previous contains all, then delete everything
-            if (in_array('all', $delete_previous)) {
+            if ('all' === $delete_previous) {
                 Flight::truncate();
                 FlightFieldValue::truncate();
-            } elseif (in_array('core', $delete_previous)) {
-                // Delete all flights where the onwer_type is null
+            } elseif ('core' === $delete_previous) {
+                // Delete all flights where the owner_type is null
                 Flight::whereNull('owner_type')->delete();
             }
         }
