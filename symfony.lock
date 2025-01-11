@@ -325,9 +325,6 @@
     "psr/simple-cache": {
         "version": "1.0.1"
     },
-    "queueworker/sansdaemon": {
-        "version": "v1.2.5"
-    },
     "ralouphie/getallheaders": {
         "version": "3.0.3"
     },

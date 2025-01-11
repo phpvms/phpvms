@@ -15,10 +15,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/arthurpar06/filament-modules"
-        },
-        {
-          "type": "vcs",
-          "url": "https://github.com/arthurpar06/sansdaemon"
         }
       ],
     "require": {
@@ -76,7 +72,6 @@
         "madnest/madzipper": "^1.5.0",
         "elcobvg/laravel-opcache": "^0.4.1",
         "fakerphp/faker": "^v1.19.0",
-        "queueworker/sansdaemon": "dev-patch-1",
         "jpkleemans/attribute-events": "^1.4.0",
         "akaunting/laravel-money": "^5.2.0",
         "staudenmeir/belongs-to-through": "^v2.16.0",
@@ -101,7 +96,8 @@
         "socialiteproviders/vatsim": "^5.0",
         "socialiteproviders/ivao": "^4.0",
         "mailersend/laravel-driver": "^2.6",
-        "coolsam/modules": "3.x-dev"
+        "coolsam/modules": "3.x-dev",
+        "arxeiss/sansdaemon": "^1.3"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
