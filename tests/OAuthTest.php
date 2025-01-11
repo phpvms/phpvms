@@ -21,6 +21,9 @@ final class OAuthTest extends TestCase
     {
         parent::setUp();
 
+        // Create a default user to prevent redirection to the installer
+        User::factory()->create();
+
         foreach ($this->drivers as $driver) {
             Config::set('services.'.$driver.'.enabled', true);
         }

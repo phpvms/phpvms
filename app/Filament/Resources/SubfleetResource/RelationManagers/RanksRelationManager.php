@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SubfleetResource\RelationManagers;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -38,7 +39,7 @@ class RanksRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()->icon('heroicon-o-plus-circle'),
+                Tables\Actions\AttachAction::make()->icon('heroicon-o-plus-circle')->recordSelect(fn (Select $select) => $select->multiple()),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make(),

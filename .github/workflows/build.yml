@@ -3,13 +3,20 @@ on:
   pull_request:
   push:
     branches:
-    - main
-    - dev
+      - main
+      - dev
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
   workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.repository == 'nabeelio/phpvms'
     strategy:
       fail-fast: true
       matrix:
@@ -25,10 +32,15 @@ jobs:
       with:
         fetch-depth: 0
 
+    # https://github.com/marketplace/actions/gittools
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1.2.0
+      uses: gittools/actions/gitversion/setup@v3.1.1
       with:
-        versionSpec: '5.x'
+        versionSpec: '6.0.x'
+
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v3.1.1
 
     # Configure Caching
     - name: Setup cache environment
@@ -40,7 +52,7 @@ jobs:
         key: ${{ env.key }}
 
     - name: Cache extensions
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.cache-env.outputs.dir }}
         key: ${{ steps.cache-env.outputs.key }}
@@ -48,10 +60,10 @@ jobs:
 
     - name: Get composer cache directory
       id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -69,16 +81,6 @@ jobs:
     - name: Shutdown Ubuntu MySQL
       run: sudo service mysql stop
 
-#    - name: Install MariaDB
-#      uses: getong/mariadb-action@v1.1
-#      with:
-#        character set server: 'utf8'
-#        collation server: 'utf8_general_ci'
-#        mysql database: 'phpvms'
-#        mysql root password: ''
-#        mysql user: ''
-#        mysql password: ''
-
     - name: Install MySQL
       uses: mirromutth/mysql-action@v1.1
       with:
@@ -94,28 +96,24 @@ jobs:
           sleep 1
         done
 
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v1.2.0
-      with:
-        useConfigFile: true
-
     - name: Configure Environment
       run: |
         php --version
         mysql --version
-        # sleep 10
-        # Downgrade composer version to 1.x
         composer install --dev --no-interaction --verbose
+        composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh ${{ env.fullSemVer }}
+        .github/scripts/version.sh ${{ env.NBGV_SemVer2 }}
         php artisan database:create --reset
         php artisan migrate:refresh --seed
+
+    - name: Get version
+      run: .github/scripts/version.sh
 
     - name: Run Tests
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
-        #vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php -v --dry-run --diff --using-cache=no
         vendor/bin/phpunit
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
@@ -124,96 +122,133 @@ jobs:
     name: 'Create release package'
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
+    if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # https://github.com/marketplace/actions/gittools
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.1
+      with:
+        versionSpec: '6.0.x'
+
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v3.1.1
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+
+    - uses: olegtarasov/get-tag@v2.1.2
+      id: tagName
+
+    # Configure Caching
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+      # Dependencies
+    - name: 'Install Release Dependencies'
+      run: |
+        rm -rf vendor
+        composer install --no-dev --prefer-dist --no-interaction --verbose
+        composer dump-autoload
+        sudo chmod +x ./.github/scripts/*
+
+    - id: version
+      name: Get version
+      run: .github/scripts/version.sh
+
+    - name: Build Distro
+      run: .github/scripts/build.sh
+
+    - uses: BetaHuhn/do-spaces-action@v2
+      id: spaces
+      with:
+        access_key: ${{ secrets.SPACE_ACCESS_KEY}}
+        secret_key: ${{ secrets.SPACE_SECRET_KEY }}
+        space_name: ${{ secrets.SPACE_NAME }}
+        space_region: ${{ secrets.SPACE_REGION }}
+        source: dist
+        cdn_domain: phpvms.cdn.vmslabs.net
+        permission: public-read
+
+    - name: Discord notification
+      uses: Ilshidur/action-discord@0.3.2
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: ${{ steps.version.outputs.discord_msg }}
+
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v4
+      with:
+        name: phpvms-package
+        path: 'dist/*'
+
+  docker:
+    name: 'Create docker image'
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: actions/checkout@v4
         with:
-          php-version: '8.1'
+          fetch-depth: 0
 
-      - uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
-
-      # Configure Caching
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      # https://github.com/marketplace/actions/gittools
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.1
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          versionSpec: '6.0.x'
 
-        # Dependencies
-      - name: 'Install Release Dependencies'
-        run: |
-          rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          sudo chmod +x ./.github/scripts/*
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v3.1.1
 
-      - name: Get version
-        run: .github/scripts/version.sh
-
-      - name: Discord Message
-        id: discord
-        run: .github/scripts/discord.sh
-
-      - name: Build Distro
-        run: .github/scripts/build.sh
-
-      - name: Upload S3
-        uses: shallwefootball/s3-upload-action@master
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          aws_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET_NAME }}
-          source_dir: 'dist'
-          destination_dir: ''
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          args: ${{ steps.discord.outputs.discord_msg }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
         with:
-          name: phpvms-package
-          path: 'dist/*'
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-  # This runs after all of the tests, run have run. Creates a cleaned up version of the
-  # distro, and then creates the artifact to push up to S3 or wherever
-   # https://github.com/actions/create-release
-  release:
-    name: 'Create Release'
-    needs: artifacts
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
         with:
-          name: phpvms-package
-
-        # Dependencies
-      - name: 'List files'
-        run: |
-          find . -maxdepth 2  -type f
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "./*.*"
-          allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

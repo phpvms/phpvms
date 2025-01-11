@@ -30,6 +30,11 @@ class EditAircraft extends EditRecord
     {
         $data['fuel_onboard'] = $data['fuel_onboard']->toUnit(setting('units.fuel'));
 
+        $data['dow'] = $data['dow']->toUnit(setting('units.weight'));
+        $data['zfw'] = $data['zfw']->toUnit(setting('units.weight'));
+        $data['mtow'] = $data['mtow']->toUnit(setting('units.weight'));
+        $data['mlw'] = $data['mlw']->toUnit(setting('units.weight'));
+
         return $data;
     }
 }

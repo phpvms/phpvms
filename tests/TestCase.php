@@ -9,6 +9,7 @@ use App\Exceptions\Handler;
 use App\Models\User;
 use App\Repositories\SettingRepository;
 use App\Services\DatabaseService;
+use App\Services\Installer\SeederService;
 use App\Services\ModuleService;
 use Carbon\Carbon;
 use DateTimeImmutable;
@@ -67,6 +68,8 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
         Artisan::call('database:create', ['--reset' => true]);
         Artisan::call('migrate', ['--env' => 'testing', '--force' => true]);
         $this->seed(ShieldSeeder::class);
+
+        app(SeederService::class)->syncAllSeeds();
 
         /** @var ModuleService $moduleSvc */
         $moduleSvc = app(ModuleService::class);

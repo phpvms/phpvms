@@ -1,7 +1,7 @@
 - key: general.theme
   name: 'Current Theme'
   group: general
-  value: 'default'
+  value: 'seven'
   options: ''
   type: select
   description: 'The currently active theme'
@@ -75,6 +75,13 @@
   options: ''
   type: boolean
   description: If checked, registrations will be disabled and only admins can add pilots
+- key: general.auto_language_detection
+  name: 'Auto language detection'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, the app's language will be inferred from the browser's preferences
 - key: captcha.enabled
   name: 'hCaptcha Enabled'
   group: captcha
@@ -270,6 +277,13 @@
   options: ''
   type: number
   description: 'How much the cargo load factor can vary per-flight'
+- key: flights.only_company_aircraft
+  name: 'Allow Only Company Aircraft'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'If no subfleets are assigned to a flight, only company aircraft will be used'
 - key: simbrief.api_key
   name: 'Simbrief API Key'
   group: simbrief
@@ -340,6 +354,20 @@
   options: ''
   type: boolean
   description: 'When enabled, an aircraft can only be used for one active SimBrief OFP and Flight/Pirep'
+- key: simbrief.use_standard_weights
+  name: 'Use Only phpVMS Weights'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled, only phpVMS Passenger and Baggage weights will be used (instead of Airframe definitions)'
+- key: simbrief.use_custom_airframes
+  name: 'Use Only Custom Airframes'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled, only phpVMS Airframes will be listed for flight planning (instead of combined list)'
 - key: pireps.duplicate_check_time
   name: 'PIREP duplicate time check'
   group: pireps

@@ -172,7 +172,6 @@ class PirepController extends Controller
     public function get(string $id): PirepResource
     {
         $with = [
-            'acars',
             'aircraft',
             'arr_airport',
             'dpt_airport',
@@ -439,7 +438,7 @@ class PirepController extends Controller
     {
         $pirep = Pirep::find($id);
         $transactions = $this->journalRepo->getAllForObject($pirep);
-        return JournalTransactionResource::collection($transactions);
+        return JournalTransactionResource::collection($transactions['transactions']);
     }
 
     /**

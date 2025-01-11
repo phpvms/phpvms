@@ -58,7 +58,7 @@ class FleetController extends Controller
         }
 
         $aircraft = $this->aircraftRepo
-            ->with(['subfleet', 'subfleet.fares'])
+            ->with('subfleet.fares')
             ->findWhere($where)
             ->first();
 

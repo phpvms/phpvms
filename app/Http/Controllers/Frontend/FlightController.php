@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
+use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
+use App\Models\Typerating;
 use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
 use App\Repositories\UserRepository;
+use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
 use App\Services\UserService;
@@ -30,6 +33,7 @@ class FlightController extends Controller
      * @param AirlineRepository  $airlineRepo
      * @param AirportRepository  $airportRepo
      * @param FlightRepository   $flightRepo
+     * @param FlightService      $flightSvc
      * @param GeoService         $geoSvc
      * @param ModuleService      $moduleSvc
      * @param SubfleetRepository $subfleetRepo
@@ -40,6 +44,7 @@ class FlightController extends Controller
         private readonly AirlineRepository $airlineRepo,
         private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo,
+        private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
         private readonly ModuleService $moduleSvc,
         private readonly SubfleetRepository $subfleetRepo,
@@ -78,7 +83,7 @@ class FlightController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $user->loadMissing('current_airport');
+        $user->loadMissing(['current_airport', 'typeratings']);
 
         if (setting('pilots.restrict_to_company')) {
             $where['airline_id'] = $user->airline_id;
@@ -117,10 +122,17 @@ class FlightController extends Controller
                 ->toArray();
             // Get flight_id's of open (non restricted) flights
             $open_flights = Flight::withCount('subfleets')->whereNull('user_id')->having('subfleets_count', 0)->pluck('id')->toArray();
-            // Merge results
             $allowed_flights = array_merge($user_flights, $open_flights);
+            // Build aircraft icao codes by considering allowed subfleets
+            $icao_codes = Aircraft::whereIn('subfleet_id', $user_subfleets)->groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
+            // Build type ratings collection by considering user's capabilities
+            $type_ratings = $user->typeratings;
         } else {
             $allowed_flights = [];
+            // Build aircraft icao codes array from complete fleet
+            $icao_codes = Aircraft::groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
+            // Build type ratings collection from all active ratings
+            $type_ratings = Typerating::where('active', 1)->select('id', 'name', 'type')->orderBy('type')->get();
         }
 
         // Get only used Flight Types for the search form
@@ -181,6 +193,8 @@ class FlightController extends Controller
             'simbrief'      => !empty(setting('simbrief.api_key')),
             'simbrief_bids' => setting('simbrief.only_bids'),
             'acars_plugin'  => $this->moduleSvc->isModuleActive('VMSAcars'),
+            'icao_codes'    => $icao_codes,
+            'type_ratings'  => $type_ratings,
         ]);
     }
 
@@ -232,7 +246,7 @@ class FlightController extends Controller
      */
     public function show(string $id): View
     {
-        $user_id = Auth::id();
+        $user = Auth::user();
         // Support retrieval of deleted relationships
         $with_flight = [
             'airline' => function ($query) {
@@ -248,8 +262,8 @@ class FlightController extends Controller
                 return $query->withTrashed();
             },
             'subfleets.airline',
-            'simbrief' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
+            'simbrief' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             },
         ];
 
@@ -259,10 +273,14 @@ class FlightController extends Controller
             return redirect(route('frontend.dashboard.index'));
         }
 
+        if (setting('flights.only_company_aircraft', false)) {
+            $flight = $this->flightSvc->filterSubfleets($user, $flight);
+        }
+
         $map_features = $this->geoSvc->flightGeoJson($flight);
 
         // See if the user has a bid for this flight
-        $bid = Bid::where(['user_id' => $user_id, 'flight_id' => $flight->id])->first();
+        $bid = Bid::where(['user_id' => $user->id, 'flight_id' => $flight->id])->first();
 
         return view('flights.show', [
             'flight'       => $flight,

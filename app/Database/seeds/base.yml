@@ -1,0 +1,12 @@
+#
+# Initial minimal data required. You probably don't want to modify or erase any of this here
+#
+ranks:
+  id_column: id
+  ignore_if_exists: true
+  data:
+    - id: 1
+      name: 'New Pilot'
+      hours: 0
+      acars_base_pay_rate: 50
+      manual_base_pay_rate: 25

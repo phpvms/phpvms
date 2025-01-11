@@ -39,7 +39,7 @@ class GeoJson
         $this->line_coords[] = [$lon, $lat];
 
         if (array_key_exists('alt', $attrs)) {
-            $point[] = $attrs['alt'];
+            $point[] = (float) $attrs['alt'];
         }
 
         $this->point_coords[] = new Feature(new Point($point), $attrs);

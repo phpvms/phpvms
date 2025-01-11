@@ -6,4 +6,5 @@ return [
     'current'   => 'Current Airport',
     'departure' => 'Departure Airport',
     'arrival'   => 'Arrival Airport',
+    'notes'     => 'Airport Notes',
 ];

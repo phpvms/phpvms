@@ -7,47 +7,40 @@ use App\Models\JournalTransaction;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use Illuminate\Support\Carbon;
-use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Auth;
 
 class AirlineFinanceChart extends ChartWidget
 {
     use HasWidgetShield;
+    use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Finance';
     protected static ?string $pollingInterval = null;
 
-    public int $airline_id;
-    public string $start_date;
-    public string $end_date;
-
-    #[On('updateFinanceFilters')]
-    public function refresh(int $airline_id, string $start_date, string $end_date): void
-    {
-        $this->airline_id = $airline_id;
-        $this->start_date = Carbon::createFromTimeString($start_date);
-        $this->end_date = Carbon::createFromTimeString($end_date);
-        $this->updateChartData();
-    }
-
     protected function getData(): array
     {
-        $airline = Airline::find($this->airline_id);
+        $start_date = Carbon::createFromTimeString($this->filters['start_date']);
+        $end_date = Carbon::createFromTimeString($this->filters['end_date']);
+        $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
+
+        $airline = Airline::find($airline_id);
 
         $debit = Trend::query(JournalTransaction::where(['journal_id' => $airline->journal->id]))
             ->between(
-                start: Carbon::createFromTimeString($this->start_date),
-                end: Carbon::createFromTimeString($this->end_date)
+                start: $start_date,
+                end: $end_date
             )
             ->perMonth()
             ->sum('debit');
 
         $credit = Trend::query(JournalTransaction::where(['journal_id' => $airline->journal->id]))
             ->between(
-                start: Carbon::createFromTimeString($this->start_date),
-                end: Carbon::createFromTimeString($this->end_date)
+                start: $start_date,
+                end: $end_date
             )
             ->perMonth()
             ->sum('credit');
