@@ -64,7 +64,8 @@ class LegacyImporter extends Page
     /**
      * The filament form
      *
-     * @param  Form  $form
+     * @param Form $form
+     *
      * @return Form
      */
     public function form(Form $form): Form
@@ -200,8 +201,9 @@ class LegacyImporter extends Page
     /**
      * Save legacy db creds
      *
-     * @return void
      * @throws Halt
+     *
+     * @return void
      */
     private function dbSetup(): void
     {
@@ -241,7 +243,8 @@ class LegacyImporter extends Page
     /**
      * Import a batch
      *
-     * @param  int  $batch_index
+     * @param int $batch_index
+     *
      * @return void
      */
     public function import(int $batch_index): void

@@ -62,7 +62,8 @@ class Updater extends Page
     /**
      * The filament form
      *
-     * @param  Form  $form
+     * @param Form $form
+     *
      * @return Form
      */
     public function form(Form $form): Form

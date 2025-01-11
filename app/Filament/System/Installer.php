@@ -84,11 +84,11 @@ class Installer extends Page
         $this->callHook('afterFill');
     }
 
-
     /**
      * The filament form
      *
-     * @param  Form  $form
+     * @param Form $form
+     *
      * @return Form
      */
     public function form(Form $form): Form
@@ -197,11 +197,12 @@ class Installer extends Page
                 ])->afterValidation(function () {
                     if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
                         Notification::make()
-                            ->title('You still have ' . count(app(MigrationService::class)->migrationsAvailable()) . ' migrations to run. Trying again...')
+                            ->title('You still have '.count(app(MigrationService::class)->migrationsAvailable()).' migrations to run. Trying again...')
                             ->warning()
                             ->send();
 
                         $this->dispatch('start-migrations');
+
                         throw new Halt();
                     }
                 }),
@@ -309,7 +310,8 @@ class Installer extends Page
     /**
      * Check if all item of an array passed requirements
      *
-     * @param  array  $arr
+     * @param array $arr
+     *
      * @return bool
      */
     private function allPassed(array $arr): bool
@@ -326,8 +328,9 @@ class Installer extends Page
     /**
      * Set up .env and trigger start migrations
      *
-     * @return void
      * @throws Halt
+     *
+     * @return void
      */
     private function envAndDbSetup(): void
     {
@@ -415,8 +418,9 @@ class Installer extends Page
     /**
      * Create first user and airline
      *
-     * @return void
      * @throws \Prettus\Validator\Exceptions\ValidatorException
+     *
+     * @return void
      */
     private function airlineAndUserSetup(): void
     {
@@ -496,8 +500,9 @@ class Installer extends Page
     /**
      * Called when the form is filed
      *
-     * @return void
      * @throws \Prettus\Validator\Exceptions\ValidatorException
+     *
+     * @return void
      */
     public function save(): void
     {
