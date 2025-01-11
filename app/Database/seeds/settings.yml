@@ -1,7 +1,7 @@
 - key: general.theme
   name: 'Current Theme'
   group: general
-  value: 'default'
+  value: 'seven'
   options: ''
   type: select
   description: 'The currently active theme'

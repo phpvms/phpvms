@@ -1,0 +1,160 @@
+---
+name: release
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # https://github.com/marketplace/actions/gittools
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.1
+        with:
+          versionSpec: '6.0.x'
+
+      - name: Install GitReleaseManager
+        uses: ./gitreleasemanager/setup
+        with:
+            versionSpec: '0.18.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.1.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: tagName
+
+      # Configure Caching
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+#       - name: Update Release Notes
+#         uses: ./gitreleasemanager/create
+#         with:
+#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#           owner: ${{ github.repository_owner }}
+#           repository: phpvms
+#           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
+#           name: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
+#           isPreRelease: ${{ github.event.release.prerelease }}
+#           targetcommitish: 'main'
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.*"
+          allowUpdates: true
+          generateReleaseNotes: true
+          name: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+        # Dependencies
+      - name: 'Install Release Dependencies'
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --verbose
+          composer dump-autoload
+          sudo chmod +x ./.github/scripts/*
+
+      - name: Get version
+        run: .github/scripts/version.sh
+
+      - name: Build Distro
+        run: .github/scripts/build.sh
+
+      - uses: BetaHuhn/do-spaces-action@v2
+        id: spaces
+        with:
+          access_key: ${{ secrets.SPACE_ACCESS_KEY}}
+          secret_key: ${{ secrets.SPACE_SECRET_KEY }}
+          space_name: ${{ secrets.SPACE_NAME }}
+          space_region: ${{ secrets.SPACE_REGION }}
+          source: dist
+          cdn_domain: phpvms.cdn.vmslabs.net
+          permission: public-read
+
+      - name: Add Assets
+        uses: ./gitreleasemanager/addasset
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repository: phpvms
+          targetDirectory: dist/
+          assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
+
+#       - name: Close Release
+#         uses: ./gitreleasemanager/close
+#         with:
+#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#           owner: ${{ github.repository_owner }}
+#           repository: actions
+#           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
+
+        # Dependencies
+      - name: 'List files'
+        run: |
+          find . -maxdepth 2  -type f
+
+      - name: Discord notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.discord.outputs.discord_msg }}
+
+      # Push to Docker
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

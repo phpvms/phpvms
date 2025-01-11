@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ae8dba9e33e92ed43ea0470fc1ae39e3",
+    "content-hash": "e1b40436ce30d1b8368efd723b2f5aa4",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -7378,6 +7378,10 @@
                     "includes": [
                         "extension.neon"
                     ]
+                },
+                "branch-alias": {
+                    "dev-2.x": "2.x-dev",
+                    "dev-master": "3.x-dev"
                 }
             },
             "autoload": {
@@ -8785,45 +8789,6 @@
                 }
             ],
             "time": "2024-06-24T06:27:33+00:00"
-        },
-        {
-            "name": "phpvms/sample-module",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nabeelio/phpvms-module.git",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nabeelio/phpvms-module/zipball/6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "reference": "6332c03a6d552c03a1b70d2f2c24da86c6a12132",
-                "shasum": ""
-            },
-            "require": {
-                "composer/installers": "~1.0"
-            },
-            "type": "phpvms-module",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Modules\\Sample\\Providers\\SampleServiceProvider",
-                        "Modules\\Sample\\Providers\\EventServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Sample\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "A sample phpvms module",
-            "support": {
-                "issues": "https://github.com/nabeelio/phpvms-module/issues",
-                "source": "https://github.com/nabeelio/phpvms-module/tree/master"
-            },
-            "time": "2020-02-28T15:42:04+00:00"
         },
         {
             "name": "prettus/l5-repository",

@@ -1,10 +1,6 @@
 - name: 'Awards'
   enabled: 1
-- name: 'Sample'
-  enabled: 1
-- name: 'VMSAcars'
-  enabled: 1
 - name: 'Vacentral'
   enabled: 1
-- name: 'TestModule'
+- name: 'VMSAcars'
   enabled: 1

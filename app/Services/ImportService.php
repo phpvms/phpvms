@@ -209,11 +209,17 @@ class ImportService extends Service
      *
      * @return mixed
      */
-    public function importFlights($csv_file, bool $delete_previous = true)
+    public function importFlights($csv_file, string $delete_previous = null)
     {
-        if ($delete_previous) {
-            Flight::truncate();
-            FlightFieldValue::truncate();
+        if (!empty($delete_previous)) {
+            // If delete_previous contains all, then delete everything
+            if ('all' === $delete_previous) {
+                Flight::truncate();
+                FlightFieldValue::truncate();
+            } elseif ('core' === $delete_previous) {
+                // Delete all flights where the owner_type is null
+                Flight::whereNull('owner_type')->delete();
+            }
         }
 
         $importer = new FlightImporter();

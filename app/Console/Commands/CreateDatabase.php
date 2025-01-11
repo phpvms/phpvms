@@ -64,7 +64,7 @@ class CreateDatabase extends Command
             }
         }
 
-        $sql = "CREATE DATABASE IF NOT EXISTS `$name` CHARACTER SET UTF8 COLLATE utf8_unicode_ci";
+        $sql = "CREATE DATABASE IF NOT EXISTS `$name` CHARACTER SET UTF8MB4 COLLATE utf8mb4_unicode_ci";
 
         try {
             Log::info('Creating database: '.$sql);
