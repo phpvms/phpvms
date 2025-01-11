@@ -23,8 +23,8 @@ class AirlineFinanceChart extends ChartWidget
 
     protected function getData(): array
     {
-        $start_date = Carbon::createFromTimeString($this->filters['start_date']);
-        $end_date = Carbon::createFromTimeString($this->filters['end_date']);
+        $start_date = $this->filters['start_date'] !== null ? Carbon::createFromTimeString($this->filters['start_date']) : now()->startOfYear();
+        $end_date =  $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
         $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
 
         $airline = Airline::find($airline_id);
