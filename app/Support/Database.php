@@ -10,21 +10,13 @@ use Symfony\Component\Yaml\Yaml;
 
 class Database
 {
-    /**
-     * @return string
-     */
     protected static function time(): string
     {
         return Carbon::now('UTC');
     }
 
     /**
-     * @param      $yaml_file
-     * @param bool $ignore_errors
-     *
      * @throws \Exception
-     *
-     * @return array
      */
     public static function seed_from_yaml_file($yaml_file, bool $ignore_errors = false): array
     {
@@ -34,12 +26,6 @@ class Database
         return static::seed_from_yaml($yml, $ignore_errors);
     }
 
-    /**
-     * @param mixed $yml
-     * @param bool  $ignore_errors
-     *
-     * @return array
-     */
     public static function seed_from_yaml(mixed $yml, bool $ignore_errors = false): array
     {
         $imported = [];
@@ -98,12 +84,7 @@ class Database
     }
 
     /**
-     * @param string $table
-     * @param array  $row
-     * @param string $id_col            The ID column to use for update/insert
-     * @param array  $ignore_on_updates
-     * @param bool   $ignore_errors
-     *
+     * @param  string $id_col The ID column to use for update/insert
      * @return mixed
      */
     public static function insert_row(

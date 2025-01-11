@@ -8,6 +8,7 @@ use App\Contracts\Command;
 class EmailTest extends Command
 {
     protected $signature = 'phpvms:email-test';
+
     protected $description = 'Send a test notification to admins';
 
     /**

@@ -31,10 +31,8 @@ use Illuminate\Support\Facades\Notification;
 
 final class PIREPTest extends TestCase
 {
-    /** @var PirepService */
     protected PirepService $pirepSvc;
 
-    /** @var SettingRepository */
     protected SettingRepository $settingsRepo;
 
     protected function setUp(): void
@@ -75,7 +73,7 @@ final class PIREPTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAddPirep(): void
+    public function test_add_pirep(): void
     {
         $user = User::factory()->create();
 
@@ -168,7 +166,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testUnitFields(): void
+    public function test_unit_fields(): void
     {
         /** @var Pirep $pirep */
         $pirep = $this->createPirep();
@@ -206,7 +204,7 @@ final class PIREPTest extends TestCase
             round($body['planned_distance']['nmi'])
         );
 
-        //Check conversion on save
+        // Check conversion on save
         $val = random_int(1000, 9999999);
         $pirep->block_fuel = $val;
         $pirep->fuel_used = $val;
@@ -236,7 +234,7 @@ final class PIREPTest extends TestCase
         );
     }
 
-    public function testGetUserPireps(): void
+    public function test_get_user_pireps(): void
     {
         $this->user = User::factory()->create();
         $pirep_done = Pirep::factory()->create([
@@ -280,7 +278,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPirepNotifications(): void
+    public function test_pirep_notifications(): void
     {
         /** @var User $user */
         $user = User::factory()->create([
@@ -310,7 +308,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPilotStatsIncr(): void
+    public function test_pilot_stats_incr(): void
     {
         $this->updateSetting('pilots.count_transfer_hours', false);
 
@@ -386,7 +384,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPilotDontChangeRank(): void
+    public function test_pilot_dont_change_rank(): void
     {
         /** @var Rank $rank */
         $rank = Rank::factory()->create([
@@ -425,7 +423,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPilotStatsIncrWithTransferHours(): void
+    public function test_pilot_stats_incr_with_transfer_hours(): void
     {
         $this->updateSetting('pilots.count_transfer_hours', true);
 
@@ -478,7 +476,7 @@ final class PIREPTest extends TestCase
      * When a PIREP is filed by a user on leave, make sure they flip from leave to active
      * It doesn't matter if the PIREP is accepted or rejected
      */
-    public function testPilotStatusChange(): void
+    public function test_pilot_status_change(): void
     {
         /** @var \App\Models\User $user */
         $user = User::factory()->create([
@@ -504,7 +502,7 @@ final class PIREPTest extends TestCase
     /**
      * Find and check for any duplicate PIREPs by a user
      */
-    public function testDuplicatePireps(): void
+    public function test_duplicate_pireps(): void
     {
         $user = User::factory()->create();
         $pirep = Pirep::factory()->create([
@@ -532,7 +530,7 @@ final class PIREPTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testCancelViaAPI(): void
+    public function test_cancel_via_api(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -566,7 +564,7 @@ final class PIREPTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPirepBidRemoved(): void
+    public function test_pirep_bid_removed(): void
     {
         $bidSvc = app(BidService::class);
         $flightSvc = app(FlightService::class);
@@ -600,7 +598,7 @@ final class PIREPTest extends TestCase
         $this->assertNull($user_bid);
     }
 
-    public function testPirepProgressPercent(): void
+    public function test_pirep_progress_percent(): void
     {
         $this->updateSetting('units.distance', 'km');
 
@@ -631,7 +629,7 @@ final class PIREPTest extends TestCase
     /**
      * See that the notifications are properly formatted
      */
-    public function testNotificationFormatting(): void
+    public function test_notification_formatting(): void
     {
         $this->updateSetting('units.distance', 'km');
 
@@ -666,7 +664,7 @@ final class PIREPTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testDiversionHandler(): void
+    public function test_diversion_handler(): void
     {
         $this->updateSetting('pireps.handle_diversion', true);
         $this->updateSetting('notifications.discord_pirep_diverted', true);

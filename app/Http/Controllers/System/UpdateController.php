@@ -15,22 +15,14 @@ use function count;
 
 class UpdateController extends Controller
 {
-    /**
-     * @param InstallerService $installerSvc
-     * @param MigrationService $migrationSvc
-     * @param SeederService    $seederSvc
-     */
     public function __construct(
         private readonly InstallerService $installerSvc,
         private readonly MigrationService $migrationSvc,
         private readonly SeederService $seederSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -40,8 +32,6 @@ class UpdateController extends Controller
     /**
      * Step 1. Check if there's an update available. Check if there
      * are any unrun migrations
-     *
-     * @return View
      */
     public function step1(): View
     {
@@ -56,10 +46,6 @@ class UpdateController extends Controller
 
     /**
      * Step 2 Run all of the migrations
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function run_migrations(Request $request): View
     {
@@ -69,6 +55,7 @@ class UpdateController extends Controller
         $data_migrations = $this->migrationSvc->dataMigrationsAvailable();
         if (count($migrations) === 0 && count($data_migrations) === 0) {
             $this->seederSvc->syncAllSeeds();
+
             return view('system.updater.steps.step3-update-complete');
         }
 
@@ -83,8 +70,6 @@ class UpdateController extends Controller
 
     /**
      * Final step
-     *
-     * @return RedirectResponse
      */
     public function complete(): RedirectResponse
     {

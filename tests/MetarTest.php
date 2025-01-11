@@ -11,7 +11,6 @@ use App\Support\Metar;
  */
 final class MetarTest extends TestCase
 {
-    /** @var SettingRepository */
     private SettingRepository $settingsRepo;
 
     protected function setUp(): void
@@ -23,7 +22,7 @@ final class MetarTest extends TestCase
     /**
      * Make sure a blank metar doesn't give problems
      */
-    public function testBlankMetar(): void
+    public function test_blank_metar(): void
     {
         $metar = '';
         $parsed = Metar::parse($metar);
@@ -33,13 +32,13 @@ final class MetarTest extends TestCase
     /**
      * Test adding/subtracting a percentage
      */
-    public function testMetar1(): void
+    public function test_metar1(): void
     {
         $metar =
             'KJFK 042151Z 28026G39KT 10SM FEW055 SCT095 BKN110 BKN230 12/M04 A2958 RMK AO2 PK WND 27045/2128 PRESRR SLP018 T01221044';
 
-        //$m = new Metar($metar);
-        //$parsed = $m->result;
+        // $m = new Metar($metar);
+        // $parsed = $m->result;
         $parsed = Metar::parse($metar);
 
         /*
@@ -82,7 +81,7 @@ final class MetarTest extends TestCase
         $this->assertEquals('AO2 PK WND 27045/2128 PRESRR SLP018 T01221044', $parsed['remarks']);
     }
 
-    public function testMetar2(): void
+    public function test_metar2(): void
     {
         $metar = 'EGLL 261250Z AUTO 17014KT 8000 -RA BKN010/// '
                 .'BKN016/// OVC040/// //////TCU 13/12 Q1008 TEMPO 4000 RA';
@@ -96,7 +95,7 @@ final class MetarTest extends TestCase
         $this->assertNull($parsed['clouds'][3]['height']);
     }
 
-    public function testMetar3(): void
+    public function test_metar3(): void
     {
         $metar = 'LEBL 310337Z 24006G18KT 210V320 1000 '
                 .'R25R/P2000 R07L/1900N R07R/1700D R25L/1900N '
@@ -105,7 +104,7 @@ final class MetarTest extends TestCase
         $parsed = Metar::parse($metar);
     }
 
-    public function testMetarTrends(): void
+    public function test_metar_trends(): void
     {
         $metar =
             'KJFK 070151Z 20005KT 10SM BKN100 08/07 A2970 RMK AO2 SLP056 T00780067';
@@ -119,7 +118,7 @@ final class MetarTest extends TestCase
         $parsed = Metar::parse($metar);
     }
 
-    public function testMetarTrends2(): void
+    public function test_metar_trends2(): void
     {
         $metar = 'KAUS 092135Z 26018G25KT 8SM -TSRA BR SCT045CB BKN060 OVC080 30/21 A2992 RMK FQT LTGICCCCG OHD-W MOVG E  RAB25 TSB32 CB ALQDS  SLP132 P0035 T03020210 =';
         $parsed = Metar::parse($metar);
@@ -133,7 +132,7 @@ final class MetarTest extends TestCase
         );
     }
 
-    public function testMetarTrends3(): void
+    public function test_metar_trends3(): void
     {
         $metar = 'EHAM 041455Z 13012KT 9999 FEW034CB BKN040 05/01 Q1007 TEMPO 14017G28K 4000 SHRA =';
         $metar = Metar::parse($metar);
@@ -141,7 +140,7 @@ final class MetarTest extends TestCase
         $this->assertEquals('VFR', $metar['category']);
     }
 
-    public function testMetar4Clouds(): void
+    public function test_metar4_clouds(): void
     {
         $metar = 'KAUS 171153Z 18006KT 9SM FEW015 FEW250 26/24 A3003 RMK AO2 SLP156 T02560244 10267 20239 $';
         $metar = Metar::parse($metar);
@@ -154,7 +153,7 @@ final class MetarTest extends TestCase
     /**
      * https://github.com/nabeelio/phpvms/issues/1071
      */
-    public function testMetarWindSpeedChill(): void
+    public function test_metar_wind_speed_chill(): void
     {
         $metar = 'EKYT 091020Z /////KT CAVOK 02/M03 Q1019';
         $metar = Metar::parse($metar);
@@ -169,7 +168,7 @@ final class MetarTest extends TestCase
      *
      * https://github.com/nabeelio/phpvms/issues/680
      */
-    public function testMetar5(): void
+    public function test_metar5(): void
     {
         $metar = 'NZOH 031300Z 04004KT 38KM SCT075 BKN090 15/14 Q1002 RMK AUTO NZPM VATSIM USE ONL';
         $metar = Metar::parse($metar);
@@ -178,7 +177,7 @@ final class MetarTest extends TestCase
         $this->assertEquals('38 km', $metar['visibility_report']);
     }
 
-    public function testLGKL(): void
+    public function test_lgkl(): void
     {
         $metar = 'LGKL 160320Z AUTO VRB02KT //// -RA ////// 07/04 Q1008 RE//';
         $metar = Metar::parse($metar);
@@ -187,7 +186,7 @@ final class MetarTest extends TestCase
         $this->assertEquals('Light rain', $metar['present_weather_report']);
     }
 
-    public function testLBBG(): void
+    public function test_lbbg(): void
     {
         $metar = 'LBBG 041600Z 12003MPS 310V290 1400 R04/1000D R22/P1500U +SN BKN022 OVC050 M04/M07 Q1020 NOSIG 9949//91=';
         $metar = Metar::parse($metar);
@@ -195,7 +194,7 @@ final class MetarTest extends TestCase
         $this->assertEquals('1000m and decreasing', $metar['runways_visual_range'][0]['report']);
     }
 
-    public function testHttpCallSuccess(): void
+    public function test_http_call_success(): void
     {
         $this->mockPlainTextResponse('aviationweather/kjfk.txt');
 
@@ -209,7 +208,7 @@ final class MetarTest extends TestCase
      * TEMPO and trend causing issue with values being overwritten
      * https://github.com/nabeelio/phpvms/issues/861
      */
-    public function testLFRSCall(): void
+    public function test_lfrs_call(): void
     {
         $this->mockPlainTextResponse('aviationweather/lfrs.txt');
 
@@ -221,7 +220,7 @@ final class MetarTest extends TestCase
         $this->assertTrue($metar['cavok']);
     }
 
-    public function testHttpCallSuccessFullResponse(): void
+    public function test_http_call_success_full_response(): void
     {
         $this->mockPlainTextResponse('aviationweather/kphx.txt');
         $airportSvc = app(AirportService::class);
@@ -229,7 +228,7 @@ final class MetarTest extends TestCase
         $this->assertInstanceOf(Metar::class, $airportSvc->getMetar('kphx'));
     }
 
-    public function testHttpCallEmpty(): void
+    public function test_http_call_empty(): void
     {
         $this->mockPlainTextResponse('aviationweather/empty.txt');
         $airportSvc = app(AirportService::class);

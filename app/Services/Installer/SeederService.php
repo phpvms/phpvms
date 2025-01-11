@@ -17,6 +17,7 @@ use function trim;
 class SeederService extends Service
 {
     private array $counters = [];
+
     private array $offsets = [];
 
     // Map an environment to a seeder directory, if we want to share
@@ -26,13 +27,10 @@ class SeederService extends Service
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
-    ) {
-    }
+    ) {}
 
     /**
      * See if there are any seeds that are out of sync
-     *
-     * @return bool
      */
     public function seedsPending(): bool
     {
@@ -82,6 +80,7 @@ class SeederService extends Service
             })
             ->filter(function ($file) {
                 $info = pathinfo($file);
+
                 return $info['extension'] === 'yml';
             })
             ->each(function ($file) {
@@ -137,10 +136,6 @@ class SeederService extends Service
         }
     }
 
-    /**
-     * @param $key
-     * @param $attrs
-     */
     public function addSetting($key, $attrs): void
     {
         $id = Setting::formatKey($key);
@@ -180,7 +175,6 @@ class SeederService extends Service
      * This way we don't need to mess with how to order things
      * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on
      *
-     * @param      $name
      * @param null $offset
      * @param int  $start_offset
      */
@@ -219,10 +213,6 @@ class SeederService extends Service
 
     /**
      * Get the next increment number from a group
-     *
-     * @param $group
-     *
-     * @return int
      */
     private function getNextOrderNumber($group): int
     {
@@ -238,8 +228,6 @@ class SeederService extends Service
 
     /**
      * See if there are seeds pending for the settings
-     *
-     * @return bool
      */
     private function settingsSeedsPending(): bool
     {
@@ -259,6 +247,7 @@ class SeederService extends Service
             // Doesn't exist in the table, quit early and say there is stuff pending
             if (!$row) {
                 Log::info('Setting '.$id.' missing, update available');
+
                 return true;
             }
 
@@ -275,6 +264,7 @@ class SeederService extends Service
             if ($row->type === 'select') {
                 if (!empty($row->options) && $row->options !== $setting['options']) {
                     Log::info('Options for '.$id.' changed, update available');
+
                     return true;
                 }
             }
@@ -285,8 +275,6 @@ class SeederService extends Service
 
     /**
      * See if there are seeds pending for the permissions
-     *
-     * @return bool
      */
     private function permissionsSeedsPending(): bool
     {

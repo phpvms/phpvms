@@ -32,9 +32,9 @@ class Airline extends Model
     use FilesTrait;
     use HasFactory;
     use JournalTrait;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'airlines';
 

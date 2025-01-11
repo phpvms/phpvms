@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Log;
  */
 class SetActiveFlights extends Listener
 {
-    /**
-     * @param CronNightly $event
-     */
     public function handle(CronNightly $event): void
     {
         Log::info('Nightly: Setting active flights');
@@ -58,6 +55,7 @@ class SetActiveFlights extends Listener
                 }
 
                 $flight->save();
+
                 continue;
             }
 

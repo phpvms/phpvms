@@ -26,10 +26,6 @@ class Kernel extends ConsoleKernel
      *
      * Then the CronServiceProvider has the list of cronjobs which then run according to the events
      * and then calls those at the proper times.
-     *
-     * @param \Illuminate\Console\Scheduling\Schedule $schedule
-     *
-     * @return void
      */
     protected function schedule(Schedule $schedule): void
     {
@@ -73,8 +69,6 @@ class Kernel extends ConsoleKernel
 
     /**
      * Register the Closure based commands for the application.
-     *
-     * @return void
      */
     protected function commands(): void
     {

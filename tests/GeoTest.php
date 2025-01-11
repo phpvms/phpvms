@@ -10,7 +10,7 @@ final class GeoTest extends TestCase
 {
     use WithoutMiddleware;
 
-    public function testClosestPoint(): void
+    public function test_closest_point(): void
     {
         $geoSvc = app('\App\Services\GeoService');
 
@@ -42,7 +42,7 @@ final class GeoTest extends TestCase
      *
      * @throws Exception
      */
-    public function testGetCoords(): void
+    public function test_get_coords(): void
     {
         $geoSvc = app('\App\Services\GeoService');
 

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Notification;
 
 final class NewsTest extends TestCase
 {
-    /** @var NewsService */
     private NewsService $newsSvc;
 
     protected function setUp(): void
@@ -24,7 +23,7 @@ final class NewsTest extends TestCase
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function testNewsNotifications(): void
+    public function test_news_notifications(): void
     {
         /** @var User[] $users */
         $users_opt_in = User::factory()->count(5)->create(['opt_in' => true]);

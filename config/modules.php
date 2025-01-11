@@ -86,7 +86,7 @@ return [
             'seeds'     => ['path' => 'Database/seeds', 'generate' => true],
             'factory'   => ['path' => 'Database/factories', 'generate' => true],
             'model'     => ['path' => 'Models', 'generate' => true],
-            //'controller'       => ['path' => 'Http/Controllers', 'generate' => true],
+            // 'controller'       => ['path' => 'Http/Controllers', 'generate' => true],
             'controller-admin' => ['path' => 'Http/Controllers/Admin', 'generate' => true],
             'controller-api'   => ['path' => 'Http/Controllers/Api', 'generate' => true],
             'controller-index' => ['path' => 'Http/Controllers/Frontend', 'generate' => true],

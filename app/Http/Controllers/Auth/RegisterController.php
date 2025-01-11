@@ -36,11 +36,6 @@ class RegisterController extends Controller
 
     /**
      * RegisterController constructor.
-     *
-     * @param AirlineRepository $airlineRepo
-     * @param AirportRepository $airportRepo
-     * @param UserService       $userService
-     * @param HttpClient        $httpClient
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
@@ -53,11 +48,6 @@ class RegisterController extends Controller
         $this->redirectTo = config('phpvms.registration_redirect');
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function showRegistrationForm(Request $request): View
     {
         if (setting('general.disable_registrations', false)) {
@@ -104,10 +94,6 @@ class RegisterController extends Controller
 
     /**
      * Get a validator for an incoming registration request.
-     *
-     * @param array $data
-     *
-     * @return Validator
      */
     protected function validator(array $data): Validator
     {
@@ -163,8 +149,6 @@ class RegisterController extends Controller
      *
      * @throws \Exception
      * @throws \RuntimeException
-     *
-     * @return User
      */
     protected function create(Request $request): User
     {
@@ -231,11 +215,8 @@ class RegisterController extends Controller
     /**
      * Handle a registration request for the application.
      *
-     * @param Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse|View
      */
     public function register(Request $request): RedirectResponse|View
     {

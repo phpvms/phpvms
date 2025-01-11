@@ -12,26 +12,38 @@ use Carbon\Carbon;
 class DiscordMessage
 {
     const COLOR_SUCCESS = '0B6623';
+
     const COLOR_WARNING = 'FD6A02';
+
     const COLOR_ERROR = 'ED2939';
 
     public $webhook_url;
 
     protected $title;
+
     protected $url;
+
     protected $thumbnail = [];
+
     protected $image = [];
+
     protected $description;
+
     protected $timestamp;
+
     protected $footer;
+
     protected $color;
+
     protected $author = [];
+
     protected $fields = [];
 
     // Supply the webhook URL that this should be going to
     public function webhook(string $url): self
     {
         $this->webhook_url = $url;
+
         return $this;
     }
 
@@ -39,6 +51,7 @@ class DiscordMessage
     public function title(string $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -46,6 +59,7 @@ class DiscordMessage
     public function url(string $url): self
     {
         $this->url = $url;
+
         return $this;
     }
 
@@ -54,6 +68,7 @@ class DiscordMessage
     public function thumbnail(array $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
+
         return $this;
     }
 
@@ -62,6 +77,7 @@ class DiscordMessage
     public function image(array $image): self
     {
         $this->image = $image;
+
         return $this;
     }
 
@@ -75,6 +91,7 @@ class DiscordMessage
         }
 
         $this->description = implode(PHP_EOL, $descriptionLines);
+
         return $this;
     }
 
@@ -83,6 +100,7 @@ class DiscordMessage
     public function author(array $author): self
     {
         $this->author = $author;
+
         return $this;
     }
 
@@ -104,6 +122,7 @@ class DiscordMessage
     public function footer(string $footer): self
     {
         $this->footer = $footer;
+
         return $this;
     }
 
@@ -111,6 +130,7 @@ class DiscordMessage
     public function success(): self
     {
         $this->color = hexdec('0B6623'); // static::COLOR_SUCCESS;
+
         return $this;
     }
 
@@ -118,6 +138,7 @@ class DiscordMessage
     public function warning(): self
     {
         $this->color = hexdec('FD6A02'); // static::COLOR_WARNING;
+
         return $this;
     }
 
@@ -125,6 +146,7 @@ class DiscordMessage
     public function error(): self
     {
         $this->color = hexdec('ED2939'); // static::COLOR_ERROR;
+
         return $this;
     }
 
@@ -132,6 +154,7 @@ class DiscordMessage
     public function color(string $embed_color): self
     {
         $this->color = hexdec($embed_color);
+
         return $this;
     }
 

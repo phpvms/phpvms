@@ -12,7 +12,7 @@ final class MathTest extends TestCase
     /**
      * Test adding/subtracting a percentage
      */
-    public function testAddPercent(): void
+    public function test_add_percent(): void
     {
         $tests = [
             ['expected' => 112, 'fn' => Math::getPercent(100, 112)],
@@ -36,7 +36,7 @@ final class MathTest extends TestCase
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    public function testDistanceMeasurement(): void
+    public function test_distance_measurement(): void
     {
         $dist = new Distance(1, 'mi');
         $this->assertEqualsWithDelta(1609.34, $dist['m'], 0.1);

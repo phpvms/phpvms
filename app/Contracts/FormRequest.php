@@ -8,17 +8,12 @@ class FormRequest extends \Illuminate\Foundation\Http\FormRequest
 {
     /**
      * Authorized by default
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [];
@@ -27,7 +22,6 @@ class FormRequest extends \Illuminate\Foundation\Http\FormRequest
     /**
      * Set a given column as being unique
      *
-     * @param $table
      *
      * @return array
      */

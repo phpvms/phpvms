@@ -11,6 +11,7 @@ class LogRequest extends FormRequest
     public function authorize(): bool
     {
         $pirep = Pirep::findOrFail($this->route('pirep_id'), ['user_id']);
+
         return $pirep->user_id === Auth::id();
     }
 

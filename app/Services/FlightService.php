@@ -23,14 +23,8 @@ class FlightService extends Service
     /**
      * FlightService constructor.
      *
-     * @param AirportService    $airportSvc
-     * @param FareService       $fareSvc
-     * @param FlightRepository  $flightRepo
-     * @param NavdataRepository $navDataRepo
      *
      * @parma PirepRepository   $pirepRepo
-     *
-     * @param UserService $userSvc
      */
     public function __construct(
         private readonly AirportService $airportSvc,
@@ -39,17 +33,15 @@ class FlightService extends Service
         private readonly NavdataRepository $navDataRepo,
         private readonly PirepRepository $pirepRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Create a new flight
      *
-     * @param array $fields
+     * @param  array                             $fields
+     * @return \Illuminate\Http\RedirectResponse
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function createFlight($fields)
     {
@@ -73,12 +65,11 @@ class FlightService extends Service
     /**
      * Update a flight with values from the given fields
      *
-     * @param Flight $flight
-     * @param array  $fields
+     * @param  Flight                   $flight
+     * @param  array                    $fields
+     * @return \App\Models\Flight|mixed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return \App\Models\Flight|mixed
      */
     public function updateFlight($flight, $fields)
     {
@@ -99,8 +90,7 @@ class FlightService extends Service
     /**
      * Check the fields for a flight and transform them
      *
-     * @param array $fields
-     *
+     * @param  array $fields
      * @return array
      */
     protected function transformFlightFields($fields)
@@ -126,7 +116,6 @@ class FlightService extends Service
     /**
      * Return the proper subfleets for the given bid
      *
-     * @param Bid $bid
      *
      * @return mixed
      */
@@ -146,15 +135,13 @@ class FlightService extends Service
     /**
      * Filter out subfleets to only include aircraft that a user has access to
      *
-     * @param User   $user
-     * @param Flight $flight
      *
      * @return mixed
      */
     public function filterSubfleets(User $user, Flight $flight)
     {
         // Eager load some of the relationships needed
-        //$flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
+        // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
 
         /** @var \Illuminate\Support\Collection $subfleets */
         $subfleets = $flight->subfleets;
@@ -222,7 +209,6 @@ class FlightService extends Service
     /**
      * Check if this flight has a duplicate already
      *
-     * @param Flight $flight
      *
      * @return bool
      */
@@ -256,7 +242,6 @@ class FlightService extends Service
     /**
      * Delete a flight, and all the user bids, etc associated with it
      *
-     * @param Flight $flight
      *
      * @throws \Exception
      */
@@ -269,9 +254,6 @@ class FlightService extends Service
 
     /**
      * Update any custom PIREP fields
-     *
-     * @param Flight $flight
-     * @param array  $field_values
      */
     public function updateCustomFields(Flight $flight, array $field_values): void
     {
@@ -291,7 +273,6 @@ class FlightService extends Service
     /**
      * Return all of the navaid points as a collection
      *
-     * @param Flight $flight
      *
      * @return \Illuminate\Support\Collection
      */

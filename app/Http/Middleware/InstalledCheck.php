@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Handle the authentication for the API layer
  */

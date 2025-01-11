@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Handle the authentication for the API layer
  */
@@ -17,8 +18,6 @@ class ApiAuth implements Middleware
     /**
      * Handle an incoming request.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure                 $next
      *
      * @return mixed
      */
@@ -59,8 +58,7 @@ class ApiAuth implements Middleware
     /**
      * Return an unauthorized message
      *
-     * @param mixed $details
-     *
+     * @param  mixed                                                                                    $details
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
     private function unauthorized($details = '')

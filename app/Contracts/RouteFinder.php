@@ -14,11 +14,6 @@ abstract class RouteFinder
 {
     /**
      * Find a route from the departure ICAO to the arrival ICAO
-     *
-     * @param $dptIcao
-     * @param $arrIcao
-     *
-     * @return string
      */
     abstract public function findRoute($dptIcao, $arrIcao): string;
 }

@@ -11,6 +11,7 @@ use App\Services\Installer\ConfigService;
 class RewriteConfigs extends Command
 {
     protected $signature = 'phpvms:rewrite-configs';
+
     protected $description = 'Rewrite the config files';
 
     /**

@@ -36,8 +36,6 @@ class Navdata extends Model
 
     /**
      * Make sure the ID is in all caps
-     *
-     * @return Attribute
      */
     public function id(): Attribute
     {

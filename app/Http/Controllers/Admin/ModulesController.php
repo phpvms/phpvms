@@ -15,13 +15,10 @@ class ModulesController extends Controller
 {
     public function __construct(
         private readonly ModuleService $moduleSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the Module.
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -46,27 +43,21 @@ class ModulesController extends Controller
 
     /**
      * Store a newly Uploaded Module in the Storage.
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function store(Request $request): View
     {
         $this->moduleSvc->installModule($request->file('module_file'));
+
         return $this->index();
     }
 
     /**
      * Show the form for editing the specified Module.
-     *
-     * @param int $id
-     *
-     * @return View
      */
     public function edit(int $id): View
     {
         $module = $this->moduleSvc->getModule($id);
+
         return view('admin.modules.edit', [
             'module' => $module,
         ]);
@@ -74,25 +65,17 @@ class ModulesController extends Controller
 
     /**
      * Update the specified Module in storage.
-     *
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, Request $request): RedirectResponse
     {
         $this->moduleSvc->updateModule($id, $request->has('enabled'));
         flash()->success('Module Status Changed!');
+
         return redirect(route('admin.modules.index'));
     }
 
     /**
      * Enabling Module Present in the Modules Folder
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function enable(Request $request): RedirectResponse
     {
@@ -109,20 +92,17 @@ class ModulesController extends Controller
 
     /**
      * Verify and Remove the specified Module from storage.
-     *
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function destroy(int $id, Request $request): RedirectResponse
     {
         $delete = $this->moduleSvc->deleteModule($id, $request->all());
         if ($delete == true) {
             flash()->success('Module Deleted Successfully!');
+
             return redirect(route('admin.modules.index'));
         }
         flash()->error('Verification Failed!');
+
         return redirect(route('admin.modules.edit', $id));
     }
 }

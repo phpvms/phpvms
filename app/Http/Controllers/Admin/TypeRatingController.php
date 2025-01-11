@@ -20,24 +20,14 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class TypeRatingController extends Controller
 {
-    /**
-     * @param FleetService         $fleetSvc
-     * @param SubfleetRepository   $subfleetRepo
-     * @param TypeRatingRepository $typeratingRepo
-     */
     public function __construct(
         private readonly FleetService $fleetSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly TypeRatingRepository $typeratingRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * @param Request $request
-     *
      * @throws RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -49,20 +39,13 @@ class TypeRatingController extends Controller
         ]);
     }
 
-    /**
-     * @return View
-     */
     public function create(): View
     {
         return view('admin.typeratings.create');
     }
 
     /**
-     * @param CreateTypeRatingRequest $request
-     *
      * @throws ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function store(CreateTypeRatingRequest $request): RedirectResponse
     {
@@ -74,11 +57,6 @@ class TypeRatingController extends Controller
         return redirect(route('admin.typeratings.edit', [$model->id]));
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse|View
-     */
     public function show(int $id): RedirectResponse|View
     {
         $typerating = $this->typeratingRepo->findWithoutFail($id);
@@ -94,11 +72,6 @@ class TypeRatingController extends Controller
         ]);
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse|View
-     */
     public function edit(int $id): RedirectResponse|View
     {
         $typerating = $this->typeratingRepo->findWithoutFail($id);
@@ -118,12 +91,7 @@ class TypeRatingController extends Controller
     }
 
     /**
-     * @param int                     $id
-     * @param UpdateTypeRatingRequest $request
-     *
      * @throws ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, UpdateTypeRatingRequest $request): RedirectResponse
     {
@@ -142,11 +110,6 @@ class TypeRatingController extends Controller
         return redirect(route('admin.typeratings.index'));
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse
-     */
     public function destroy(int $id): RedirectResponse
     {
         $typerating = $this->typeratingRepo->findWithoutFail($id);
@@ -164,11 +127,6 @@ class TypeRatingController extends Controller
         return redirect(route('admin.typeratings.index'));
     }
 
-    /**
-     * @param Typerating $typerating
-     *
-     * @return array
-     */
     protected function getAvailSubfleets(Typerating $typerating): array
     {
         $retval = [];
@@ -181,11 +139,6 @@ class TypeRatingController extends Controller
         return $retval;
     }
 
-    /**
-     * @param Typerating $typerating
-     *
-     * @return View
-     */
     protected function return_subfleet_view(Typerating $typerating): View
     {
         $avail_subfleets = $this->getAvailSubfleets($typerating);
@@ -196,17 +149,12 @@ class TypeRatingController extends Controller
         ]);
     }
 
-    /**
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return RedirectResponse|View
-     */
     public function subfleets(int $id, Request $request): RedirectResponse|View
     {
         $typerating = $this->typeratingRepo->findWithoutFail($id);
         if (empty($typerating)) {
             Flash::error('Type Rating not found!');
+
             return redirect(route('admin.typeratings.index'));
         }
 

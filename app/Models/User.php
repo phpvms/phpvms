@@ -76,10 +76,10 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     use HasRelationships;
     use HasRolesAndPermissions;
     use JournalTrait;
+    use LogsActivity;
     use Notifiable;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'users';
 
@@ -182,8 +182,6 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
 
     /**
      * Format the pilot ID/ident
-     *
-     * @return Attribute
      */
     public function ident(): Attribute
     {
@@ -201,8 +199,6 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
 
     /**
      * Format the pilot atc callsign, either return alphanumeric callsign or ident
-     *
-     * @return Attribute
      */
     public function atc(): Attribute
     {
@@ -218,8 +214,6 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
 
     /**
      * Return a "privatized" version of someones name - First and middle names full, last name initials
-     *
-     * @return Attribute
      */
     public function namePrivate(): Attribute
     {
@@ -249,8 +243,6 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
 
     /**
      * Shortcut for timezone
-     *
-     * @return Attribute
      */
     public function tz(): Attribute
     {
@@ -281,8 +273,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * @param mixed $size Size of the gravatar, in pixels
-     *
+     * @param  mixed  $size Size of the gravatar, in pixels
      * @return string
      */
     public function gravatar($size = null)

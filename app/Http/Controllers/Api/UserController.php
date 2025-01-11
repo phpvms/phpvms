@@ -27,27 +27,14 @@ use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserController extends Controller
 {
-    /**
-     * @param BidService       $bidSvc
-     * @param FlightRepository $flightRepo
-     * @param PirepRepository  $pirepRepo
-     * @param UserRepository   $userRepo
-     * @param UserService      $userSvc
-     */
     public function __construct(
         private readonly BidService $bidSvc,
         private readonly FlightRepository $flightRepo,
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
-    /**
-     * @param Request $request
-     *
-     * @return mixed
-     */
     protected function getUserId(Request $request): mixed
     {
         $id = $request->get('id');
@@ -60,24 +47,18 @@ class UserController extends Controller
 
     /**
      * Return the profile for the currently auth'd user
-     *
-     * @param Request $request
-     *
-     * @return UserResource
      */
     public function index(Request $request): UserResource
     {
         $with_subfleets = (!$request->has('with') || str_contains($request->input('with', ''), 'subfleets'));
+
         return $this->get(Auth::user()->id, $with_subfleets);
     }
 
     /**
      * Get the profile for the passed-in user
      *
-     * @param int     $id
      * @param Request $request
-     *
-     * @return UserResource
      */
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
@@ -92,12 +73,11 @@ class UserController extends Controller
     /**
      * Return all of the bids for the passed-in user
      *
-     * @param Request $request
+     *
+     * @return mixed
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      * @throws \App\Exceptions\BidExistsForFlight
-     *
-     * @return mixed
      */
     public function bids(Request $request)
     {
@@ -150,8 +130,6 @@ class UserController extends Controller
     /**
      * Get a particular bid for a user
      *
-     * @param int                      $bid_id
-     * @param \Illuminate\Http\Request $request
      *
      * @return Bid
      */
@@ -175,10 +153,6 @@ class UserController extends Controller
 
     /**
      * Return the fleet that this user is allowed to
-     *
-     * @param Request $request
-     *
-     * @return AnonymousResourceCollection
      */
     public function fleet(Request $request): AnonymousResourceCollection
     {
@@ -193,11 +167,7 @@ class UserController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
      * @throws RepositoryException
-     *
-     * @return AnonymousResourceCollection
      */
     public function pireps(Request $request): AnonymousResourceCollection
     {

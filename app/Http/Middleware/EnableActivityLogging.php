@@ -16,6 +16,7 @@ class EnableActivityLogging
     public function handle(Request $request, Closure $next): Response
     {
         activity()->enableLogging();
+
         return $next($request);
     }
 }

@@ -35,8 +35,6 @@ class AwardAwarded extends Notification implements ShouldQueue
      *
      * @param Pirep $pirep
      * @param mixed $userAward
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($userAward): ?DiscordMessage
     {
@@ -45,7 +43,7 @@ class AwardAwarded extends Notification implements ShouldQueue
         $user = User::where('id', $userAward->user_id)->first();
 
         $title = 'Received award '.$award->name;
-        //$fields = $this->createFields($user);
+        // $fields = $this->createFields($user);
 
         // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
         $user_avatar = !empty($user->avatar)
@@ -53,6 +51,7 @@ class AwardAwarded extends Notification implements ShouldQueue
             : $user->gravatar(256);
 
         $dm = new DiscordMessage();
+
         return $dm
             ->webhook(setting('notifications.discord_public_webhook_url'))
             ->success()
@@ -73,8 +72,7 @@ class AwardAwarded extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

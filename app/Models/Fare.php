@@ -23,8 +23,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Fare extends Model
 {
     use HasFactory;
-    use SoftDeletes;
     use LogsActivity;
+    use SoftDeletes;
 
     public $table = 'fares';
 

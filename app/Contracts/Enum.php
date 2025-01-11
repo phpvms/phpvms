@@ -8,18 +8,15 @@ namespace App\Contracts;
 abstract class Enum
 {
     protected static array $cache = [];
+
     protected static array $codes = [];
+
     protected static array $labels = [];
 
-    /**
-     * @var int
-     */
     protected int $value;
 
     /**
      * Create an instance of this Enum
-     *
-     * @param $val
      */
     public function __construct($val)
     {
@@ -28,8 +25,6 @@ abstract class Enum
 
     /**
      * Return the value that's been set if this is an instance
-     *
-     * @return int|null
      */
     final public function getValue(): ?int
     {
@@ -38,10 +33,6 @@ abstract class Enum
 
     /**
      * Return the label, try to return the translated version as well
-     *
-     * @param $value
-     *
-     * @return string
      */
     final public static function label($value): string
     {
@@ -73,7 +64,6 @@ abstract class Enum
     /**
      * Get the numeric value from a string code
      *
-     * @param $code
      *
      * @return mixed|null
      */
@@ -85,7 +75,6 @@ abstract class Enum
     /**
      * Convert the integer value into one of the codes
      *
-     * @param $value
      *
      * @return false|int|string
      */
@@ -103,8 +92,6 @@ abstract class Enum
      * Select box entry items
      *
      * @param bool $add_blank
-     *
-     * @return array
      */
     public static function select($add_blank = false): array
     {
@@ -123,9 +110,9 @@ abstract class Enum
     /**
      * Returns all possible values as an array
      *
-     * @throws \ReflectionException
-     *
      * @return array Constant name in key, constant value in value
+     *
+     * @throws \ReflectionException
      */
     public static function toArray(): array
     {
@@ -138,11 +125,6 @@ abstract class Enum
         return static::$cache[$class];
     }
 
-    /**
-     * @param Enum $enum
-     *
-     * @return bool
-     */
     final public function equals(self $enum): bool
     {
         return $this->getValue() === $enum->getValue() && static::class === \get_class($enum);
@@ -152,13 +134,12 @@ abstract class Enum
      * Returns a value when called statically like so: MyEnum::SOME_VALUE() given SOME_VALUE is a
      * class constant
      *
-     * @param string $name
-     * @param array  $arguments
+     * @param  string $name
+     * @param  array  $arguments
+     * @return static
      *
      * @throws \BadMethodCallException
      * @throws \ReflectionException
-     *
-     * @return static
      */
     public static function __callStatic($name, $arguments)
     {

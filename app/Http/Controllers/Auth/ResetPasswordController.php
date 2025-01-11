@@ -16,12 +16,6 @@ class ResetPasswordController extends Controller
 
     protected $redirectTo = '/login';
 
-    /**
-     * @param Request $request
-     * @param ?string $token
-     *
-     * @return View
-     */
     public function showResetForm(Request $request, ?string $token = null): View
     {
         return view(

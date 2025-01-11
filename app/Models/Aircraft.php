@@ -56,9 +56,9 @@ class Aircraft extends Model
     use ExpensableTrait;
     use FilesTrait;
     use HasFactory;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'aircraft';
 
@@ -139,9 +139,6 @@ class Aircraft extends Model
         'state',
     ];
 
-    /**
-     * @return Attribute
-     */
     public function active(): Attribute
     {
         return Attribute::make(
@@ -149,9 +146,6 @@ class Aircraft extends Model
         );
     }
 
-    /**
-     * @return Attribute
-     */
     public function icao(): Attribute
     {
         return Attribute::make(
@@ -159,9 +153,6 @@ class Aircraft extends Model
         );
     }
 
-    /**
-     * @return Attribute
-     */
     public function ident(): Attribute
     {
         return Attribute::make(
@@ -171,8 +162,6 @@ class Aircraft extends Model
 
     /**
      * Return the landing time
-     *
-     * @return Attribute
      */
     public function landingTime(): Attribute
     {
@@ -222,8 +211,6 @@ class Aircraft extends Model
      * Use home()
      *
      * @deprecated
-     *
-     * @return HasOne
      */
     public function hub(): HasOne
     {

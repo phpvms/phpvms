@@ -20,7 +20,6 @@ class DeletePireps extends Listener
     /**
      * Delete old rejected PIREPs
      *
-     * @param CronHourly $event
      *
      * @throws \Exception
      */

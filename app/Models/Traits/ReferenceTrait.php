@@ -11,8 +11,7 @@ namespace App\Models\Traits;
 trait ReferenceTrait
 {
     /**
-     * @param \App\Contracts\Model $object
-     *
+     * @param  \App\Contracts\Model $object
      * @return self
      */
     public function referencesObject($object)
@@ -42,6 +41,7 @@ trait ReferenceTrait
         try {
             $klass = new $this->ref_model();
             $obj = $klass->find($this->ref_model_id);
+
             return $obj;
         } catch (\Exception $e) {
             return;

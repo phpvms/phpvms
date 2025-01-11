@@ -7,7 +7,7 @@ use App\Models\User;
 
 final class AirportTest extends TestCase
 {
-    public function testSavingAirportFromApiResponse(): void
+    public function test_saving_airport_from_api_response(): void
     {
         // This is the response from the API
         $airportResponse = [
@@ -26,7 +26,7 @@ final class AirportTest extends TestCase
         $this->assertEquals($airportResponse['tz'], $airport->timezone);
     }
 
-    public function testAirportSearch(): void
+    public function test_airport_search(): void
     {
         foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
             Airport::factory()->create(['id' => $a, 'icao' => $a]);
@@ -49,7 +49,7 @@ final class AirportTest extends TestCase
         $this->assertEquals('KJFK', $airports[0]['icao']);
     }
 
-    public function testAirportSearchMultiLetter(): void
+    public function test_airport_search_multi_letter(): void
     {
         foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
             Airport::factory()->create(['id' => $a, 'icao' => $a]);
@@ -65,7 +65,7 @@ final class AirportTest extends TestCase
         $this->assertEquals('KJFK', $airports[0]['icao']);
     }
 
-    public function testAirportSearchMissing(): void
+    public function test_airport_search_missing(): void
     {
         foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
             Airport::factory()->create(['id' => $a, 'icao' => $a]);

@@ -7,6 +7,7 @@ use App\Contracts\Enum;
 class PirepSource extends Enum
 {
     public const MANUAL = 0;
+
     public const ACARS = 1;
 
     protected static array $labels = [

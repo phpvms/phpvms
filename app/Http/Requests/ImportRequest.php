@@ -15,8 +15,6 @@ class ImportRequest extends FormRequest
     ];
 
     /**
-     * @param Request $request
-     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public static function validate(Request $request)

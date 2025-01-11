@@ -25,8 +25,6 @@ class ImporterController extends Controller
     /**
      * Show the main page for the importer; show form for the admin email
      * and the credentials for the other database
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -47,10 +45,6 @@ class ImporterController extends Controller
 
     /**
      * Check the database connection
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function dbtest(Request $request): View
     {
@@ -72,10 +66,6 @@ class ImporterController extends Controller
 
     /**
      * The post from the above
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function config(Request $request): View
     {
@@ -108,11 +98,8 @@ class ImporterController extends Controller
      * stage=STAGE NAME
      * start=record_start
      *
-     * @param Request $request
      *
      * @throws Exception
-     *
-     * @return JsonResponse
      */
     public function run(Request $request): JsonResponse
     {
@@ -130,8 +117,6 @@ class ImporterController extends Controller
 
     /**
      * Complete the import
-     *
-     * @return RedirectResponse
      */
     public function complete(): RedirectResponse
     {

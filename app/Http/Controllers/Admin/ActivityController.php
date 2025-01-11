@@ -25,6 +25,7 @@ class ActivityController extends Controller
 
         if (!$activity) {
             flash()->error('Activity not found');
+
             return redirect()->route('admin.activities.index');
         }
 

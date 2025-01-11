@@ -36,17 +36,13 @@ class SimBriefController
         private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Show the main OFP form
      *
-     * @param Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse|View
      */
     public function generate(Request $request): RedirectResponse|View
     {
@@ -61,12 +57,14 @@ class SimBriefController
 
         if (!$flight) {
             flash()->error('Unknown flight');
+
             return redirect(route('frontend.flights.index'));
         }
 
         $apiKey = setting('simbrief.api_key');
         if (empty($apiKey)) {
             flash()->error('Invalid SimBrief API key!');
+
             return redirect(route('frontend.flights.index'));
         }
 
@@ -296,8 +294,6 @@ class SimBriefController
      * Show the briefing
      *
      * @param string $id The OFP ID
-     *
-     * @return RedirectResponse|View
      */
     public function briefing(string $id): RedirectResponse|View
     {
@@ -308,6 +304,7 @@ class SimBriefController
         $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');
+
             return redirect(route('frontend.flights.index'));
         }
 
@@ -337,11 +334,8 @@ class SimBriefController
      * Remove the flight_id from the SimBrief Briefing (to a create a new one)
      * or if no pirep_id is attached to the briefing delete it completely
      *
-     * @param \Illuminate\Http\Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse
      */
     public function generate_new(Request $request): RedirectResponse
     {
@@ -368,10 +362,6 @@ class SimBriefController
     /**
      * Create a prefile of this PIREP with a given OFP. Then redirect the
      * user to the newly prefiled PIREP
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return RedirectResponse
      */
     public function prefile(Request $request): RedirectResponse
     {
@@ -382,15 +372,12 @@ class SimBriefController
 
         // Redirect to the prefile page, with the flight_id and a simbrief_id
         $rd = route('frontend.pireps.create').'?sb_id='.$sb->id;
+
         return redirect($rd);
     }
 
     /**
      * Cancel the SimBrief request
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return RedirectResponse
      */
     public function cancel(Request $request): RedirectResponse
     {
@@ -405,10 +392,6 @@ class SimBriefController
     /**
      * Check whether the OFP was generated. Pass in two items, the flight_id and ofp_id
      * This does the actual "attachment" of the Simbrief to the flight
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return JsonResponse
      */
     public function check_ofp(Request $request): JsonResponse
     {
@@ -422,6 +405,7 @@ class SimBriefController
         $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares);
         if ($simbrief === null) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
+
             return $error->getResponse();
         }
 
@@ -434,10 +418,6 @@ class SimBriefController
      * Get the latest generated OFP. Pass in two additional items, the Simbrief userid and static_id
      * This will get the latest edited/regenerated of from Simbrief and update our records
      * We do not need to send the fares again, so used an empty array
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse|JsonResponse
      */
     public function update_ofp(Request $request): RedirectResponse|JsonResponse
     {
@@ -453,6 +433,7 @@ class SimBriefController
         $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares, $sb_userid, $sb_static_id);
         if ($simbrief === null) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
+
             return $error->getResponse();
         }
 
@@ -462,17 +443,15 @@ class SimBriefController
     /**
      * Generate the API code
      *
-     * @param \Illuminate\Http\Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse|JsonResponse
      */
     public function api_code(Request $request): RedirectResponse|JsonResponse
     {
         $apiKey = setting('simbrief.api_key', null);
         if (empty($apiKey)) {
             flash()->error('Invalid SimBrief API key!');
+
             return redirect(route('frontend.flights.index'));
         }
 

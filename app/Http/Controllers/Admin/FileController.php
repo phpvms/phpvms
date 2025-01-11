@@ -15,17 +15,13 @@ class FileController extends Controller
 {
     public function __construct(
         private readonly FileService $fileSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly file
      *
-     * @param Request $request
      *
      * @throws \Hashids\HashidsException
-     *
-     * @return RedirectResponse
      */
     public function store(Request $request): RedirectResponse
     {
@@ -77,6 +73,7 @@ class FileController extends Controller
 
         if (!$request->hasFile('file') && !$request->filled('url')) {
             $validator->errors()->add('url', 'A URL or file must be uploaded!');
+
             return redirect()->back()->withErrors($validator)->withInput($request->all());
         }
 
@@ -106,17 +103,15 @@ class FileController extends Controller
     /**
      * Remove the file from storage.
      *
-     * @param string $id
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse
      */
     public function destroy(string $id): RedirectResponse
     {
         $file = File::find($id);
         if (!$file) {
             Flash::error('File doesn\'t exist');
+
             return redirect()->back();
         }
 

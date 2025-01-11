@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Set the content type in the API layer
  */

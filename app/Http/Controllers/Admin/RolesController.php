@@ -18,26 +18,18 @@ class RolesController extends Controller
 {
     /**
      * AirlinesController constructor.
-     *
-     * @param PermissionsRepository $permsRepo
-     * @param RoleRepository        $rolesRepo
-     * @param RoleService           $roleSvc
      */
     public function __construct(
         private readonly PermissionsRepository $permsRepo,
         private readonly RoleRepository $rolesRepo,
         private readonly RoleService $roleSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the Airlines.
      *
-     * @param Request $request
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -62,11 +54,8 @@ class RolesController extends Controller
     /**
      * Store a newly created Airlines in storage.
      *
-     * @param CreateRoleRequest $request
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function store(CreateRoleRequest $request): RedirectResponse
     {
@@ -78,15 +67,12 @@ class RolesController extends Controller
         $this->rolesRepo->create($input);
 
         Flash::success('Role saved successfully.');
+
         return redirect(route('admin.roles.index'));
     }
 
     /**
      * Display the specified role
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|View
      */
     public function show(int $id): RedirectResponse|View
     {
@@ -94,6 +80,7 @@ class RolesController extends Controller
 
         if (empty($roles)) {
             Flash::error('Role not found');
+
             return redirect(route('admin.roles.index'));
         }
 
@@ -104,10 +91,6 @@ class RolesController extends Controller
 
     /**
      * Show the form for editing the specified roles
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|View
      */
     public function edit(int $id): RedirectResponse|View
     {
@@ -115,6 +98,7 @@ class RolesController extends Controller
 
         if (empty($role)) {
             Flash::error('Role not found');
+
             return redirect(route('admin.role.index'));
         }
 
@@ -128,11 +112,6 @@ class RolesController extends Controller
 
     /**
      * Update the specified Airlines in storage.
-     *
-     * @param int               $id
-     * @param UpdateRoleRequest $request
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, UpdateRoleRequest $request): RedirectResponse
     {
@@ -140,6 +119,7 @@ class RolesController extends Controller
 
         if (empty($role)) {
             Flash::error('Role not found');
+
             return redirect(route('admin.roles.index'));
         }
 
@@ -147,15 +127,12 @@ class RolesController extends Controller
         $this->roleSvc->setPermissionsForRole($role, $request->permissions);
 
         Flash::success('Roles updated successfully.');
+
         return redirect(route('admin.roles.index'));
     }
 
     /**
      * Remove the specified Airlines from storage.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse
      */
     public function destroy(int $id): RedirectResponse
     {
@@ -163,12 +140,14 @@ class RolesController extends Controller
 
         if (empty($roles)) {
             Flash::error('Role not found');
+
             return redirect(route('admin.roles.index'));
         }
 
         $this->rolesRepo->delete($id);
 
         Flash::success('Role deleted successfully.');
+
         return redirect(route('admin.roles.index'));
     }
 }

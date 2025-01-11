@@ -1,4 +1,5 @@
 <?php
+
 /**
  * MIT License
  * Copyright (c) 2017 Anh Vũ Đỗ
@@ -37,6 +38,7 @@ class Timezonelist
      * Whitespace seperate
      */
     const WHITESPACE_SEP = '&nbsp;&nbsp;&nbsp;&nbsp;';
+
     /**
      * Popular timezones
      *
@@ -46,6 +48,7 @@ class Timezonelist
         'GMT' => 'GMT timezone',
         'UTC' => 'UTC timezone',
     ];
+
     /**
      * All continents of the world
      *
@@ -67,10 +70,9 @@ class Timezonelist
     /**
      * Format to display timezones
      *
-     * @param string $timezone
-     * @param string $continent
-     * @param bool   $htmlencode
-     *
+     * @param  string $timezone
+     * @param  string $continent
+     * @param  bool   $htmlencode
      * @return string
      */
     public static function formatTimezone($timezone, $continent, $htmlencode = true)
@@ -79,6 +81,7 @@ class Timezonelist
             $time = new \DateTimeImmutable('now', new DateTimeZone($timezone));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+
             return '';
         }
 
@@ -95,14 +98,13 @@ class Timezonelist
     /**
      * Create a GMT timezone select element for form
      *
-     * @param string $name
-     * @param string $selected
-     * @param mixed  $attr
-     * @param bool   $htmlencode
+     * @param  string $name
+     * @param  string $selected
+     * @param  mixed  $attr
+     * @param  bool   $htmlencode
+     * @return string
      *
      * @throws \Exception
-     *
-     * @return string
      */
     public static function create($name, $selected = '', $attr = '', $htmlencode = true)
     {
@@ -143,14 +145,14 @@ class Timezonelist
         }
         // end select element
         $listbox .= '</select>';
+
         return $listbox;
     }
 
     /**
      * Create a timezone array
      *
-     * @param bool $htmlencode
-     *
+     * @param  bool  $htmlencode
      * @return mixed
      */
     public static function toArray($htmlencode = false)
@@ -167,6 +169,7 @@ class Timezonelist
                 $list[$continent][$timezone] = self::formatTimezone($timezone, $continent, $htmlencode);
             }
         }
+
         return $list;
     }
 }

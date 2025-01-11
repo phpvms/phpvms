@@ -8,6 +8,7 @@ namespace App\Http\Resources;
 class BidSubfleet extends Subfleet
 {
     protected $aircraft;
+
     protected $fares;
 
     public function __construct($resource, $aircraft, $fares)

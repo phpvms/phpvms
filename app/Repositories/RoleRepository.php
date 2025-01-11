@@ -28,8 +28,6 @@ class RoleRepository extends Repository implements CacheableInterface
      *
      * @param bool $include_read_only
      * @param bool $add_blank
-     *
-     * @return array
      */
     public function selectBoxList($include_read_only = true, $add_blank = false): array
     {

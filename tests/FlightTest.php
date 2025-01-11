@@ -22,6 +22,7 @@ use Exception;
 final class FlightTest extends TestCase
 {
     protected FlightService $flightSvc;
+
     protected SettingRepository $settingsRepo;
 
     protected function setUp(): void
@@ -36,7 +37,7 @@ final class FlightTest extends TestCase
     /**
      * Test adding a flight and also if there are duplicates
      */
-    public function testDuplicateFlight(): void
+    public function test_duplicate_flight(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
@@ -96,7 +97,7 @@ final class FlightTest extends TestCase
         $this->assertFalse($this->flightSvc->isFlightDuplicate($flight_leg));
     }
 
-    public function testGetFlight(): void
+    public function test_get_flight(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user, [
@@ -123,7 +124,7 @@ final class FlightTest extends TestCase
     /**
      * Search based on all different criteria
      */
-    public function testSearchFlight(): void
+    public function test_search_flight(): void
     {
         /** @var \App\Models\User user */
         $this->user = User::factory()->create();
@@ -144,7 +145,7 @@ final class FlightTest extends TestCase
         $this->assertCount(1, $data);
     }
 
-    public function testSearchFlightInactiveAirline(): void
+    public function test_search_flight_inactive_airline(): void
     {
         /** @var \App\Models\Airline $airline_inactive */
         $airline_inactive = Airline::factory()->create(['active' => 0]);
@@ -172,7 +173,7 @@ final class FlightTest extends TestCase
      *
      * @throws Exception
      */
-    public function testFlightRoute(): void
+    public function test_flight_route(): void
     {
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
@@ -206,7 +207,7 @@ final class FlightTest extends TestCase
     /**
      * Find all of the flights
      */
-    public function testFindAllFlights(): void
+    public function test_find_all_flights(): void
     {
         $this->user = User::factory()->create();
         Flight::factory()->count(20)->create([
@@ -225,7 +226,7 @@ final class FlightTest extends TestCase
     /**
      * Search for flights based on a subfleet. If subfleet is blank
      */
-    public function testSearchFlightBySubfleet(): void
+    public function test_search_flight_by_subfleet(): void
     {
         $airline = Airline::factory()->create();
         $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);
@@ -241,7 +242,7 @@ final class FlightTest extends TestCase
         $this->addFlightsForSubfleet($subfleetB, 10);
 
         // search specifically for a given subfleet
-        //$query = 'subfleet_id='.$subfleetB->id;
+        // $query = 'subfleet_id='.$subfleetB->id;
         $query = 'subfleet_id='.$subfleetB->id;
         $res = $this->get('/api/flights/search?'.$query);
         $res->assertStatus(200);
@@ -259,7 +260,7 @@ final class FlightTest extends TestCase
     /**
      * Search for flights based on a subfleet. If subfleet is blank
      */
-    public function testSearchFlightBySubfleetPagination(): void
+    public function test_search_flight_by_subfleet_pagination(): void
     {
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
@@ -280,7 +281,7 @@ final class FlightTest extends TestCase
         $this->addFlightsForSubfleet($subfleetB, 10);
 
         // search specifically for a given subfleet
-        //$query = 'subfleet_id='.$subfleetB->id;
+        // $query = 'subfleet_id='.$subfleetB->id;
         $query = 'subfleet_id='.$subfleetB->id.'&limit=2';
         $res = $this->get('/api/flights/search?'.$query);
         $res->assertStatus(200);
@@ -303,7 +304,7 @@ final class FlightTest extends TestCase
      * Test the bitmasks that they work for setting the day of week and
      * then retrieving by searching on those
      */
-    public function testFindDaysOfWeek(): void
+    public function test_find_days_of_week(): void
     {
         /** @var User user */
         $this->user = User::factory()->create();
@@ -340,7 +341,7 @@ final class FlightTest extends TestCase
      * zones. also make sure that flights with a specific day of the week are only
      * active on those days
      */
-    public function testDayOfWeekActive(): void
+    public function test_day_of_week_active(): void
     {
         /** @var User user */
         $this->user = User::factory()->create();
@@ -370,7 +371,7 @@ final class FlightTest extends TestCase
         $this->assertNull($flights);
     }
 
-    public function testDayOfWeekTests(): void
+    public function test_day_of_week_tests(): void
     {
         $mask = 127;
         $this->assertTrue(Days::in($mask, Days::$isoDayMap[1]));
@@ -397,7 +398,7 @@ final class FlightTest extends TestCase
         $this->assertFalse(Days::in($mask, Days::$isoDayMap[1]));
     }
 
-    public function testStartEndDate(): void
+    public function test_start_end_date(): void
     {
         $this->user = User::factory()->create();
 
@@ -426,7 +427,7 @@ final class FlightTest extends TestCase
         $this->assertNull($flights);
     }
 
-    public function testStartEndDateDayOfWeek(): void
+    public function test_start_end_date_day_of_week(): void
     {
         $this->user = User::factory()->create();
 
@@ -465,7 +466,7 @@ final class FlightTest extends TestCase
         $this->assertNull($flights);
     }
 
-    public function testFlightSearchApi(): void
+    public function test_flight_search_api(): void
     {
         $this->user = User::factory()->create();
         $flights = Flight::factory()->count(10)->create([
@@ -481,7 +482,7 @@ final class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testFlightSearchApiDepartureAirport(): void
+    public function test_flight_search_api_departure_airport(): void
     {
         $this->user = User::factory()->create();
         Flight::factory()->count(10)->create([
@@ -501,7 +502,7 @@ final class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testFlightSearchApiDistance(): void
+    public function test_flight_search_api_distance(): void
     {
         $total_flights = 10;
 
@@ -544,7 +545,7 @@ final class FlightTest extends TestCase
         $this->assertEquals($flight->id, $body['data'][0]['id']);
     }
 
-    public function testAddSubfleet(): void
+    public function test_add_subfleet(): void
     {
         $subfleet = Subfleet::factory()->create();
         $flight = Flight::factory()->create();
@@ -568,7 +569,7 @@ final class FlightTest extends TestCase
      *
      * @throws Exception
      */
-    public function testDeleteFlight(): void
+    public function test_delete_flight(): void
     {
         $user = User::factory()->create();
 
@@ -579,7 +580,7 @@ final class FlightTest extends TestCase
         $this->assertNull($empty_flight);
     }
 
-    public function testAirportDistance(): void
+    public function test_airport_distance(): void
     {
         // KJFK
         $fromIcao = Airport::factory()->create([
@@ -599,7 +600,7 @@ final class FlightTest extends TestCase
         $this->assertEquals(2244.33, $distance['nmi']);
     }
 
-    public function testAirportDistanceApi(): void
+    public function test_airport_distance_api(): void
     {
         $user = User::factory()->create();
         $headers = $this->headers($user);

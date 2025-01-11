@@ -21,9 +21,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Setting extends Model
 {
     use LogsActivity;
+
     public $table = 'settings';
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -42,11 +44,6 @@ class Setting extends Model
         'group' => 'required',
     ];
 
-    /**
-     * @param $key
-     *
-     * @return string
-     */
     public static function formatKey($key): string
     {
         return str_replace('.', '_', strtolower($key));
@@ -54,8 +51,6 @@ class Setting extends Model
 
     /**
      * Force formatting the key
-     *
-     * @return Attribute
      */
     public function id(): Attribute
     {
@@ -66,8 +61,6 @@ class Setting extends Model
 
     /**
      * Set the key to lowercase
-     *
-     * @return Attribute
      */
     public function key(): Attribute
     {

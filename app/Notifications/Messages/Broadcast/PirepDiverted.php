@@ -12,8 +12,6 @@ class PirepDiverted extends Notification
 
     /**
      * Create a new notification instance.
-     *
-     * @param Pirep $pirep
      */
     public function __construct(Pirep $pirep)
     {
@@ -31,8 +29,6 @@ class PirepDiverted extends Notification
      * Send a Discord notification
      *
      * @param Pirep $pirep
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($pirep): ?DiscordMessage
     {
@@ -43,6 +39,7 @@ class PirepDiverted extends Notification
         $user_avatar = $pirep->user->avatar?->url ?? $pirep->user->gravatar(256);
 
         $dm = new DiscordMessage();
+
         return $dm->webhook(setting('notifications.discord_public_webhook_url'))
             ->success()
             ->title($title)
@@ -54,11 +51,6 @@ class PirepDiverted extends Notification
             ->fields($fields);
     }
 
-    /**
-     * @param Pirep $pirep
-     *
-     * @return array
-     */
     public function createFields(Pirep $pirep): array
     {
         $diversion_apt = $pirep->fields->firstWhere('slug', 'diversion-airport')->value;
@@ -85,8 +77,7 @@ class PirepDiverted extends Notification
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

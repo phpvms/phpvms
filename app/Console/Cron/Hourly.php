@@ -12,7 +12,9 @@ use App\Events\CronHourly;
 class Hourly extends CronCommand
 {
     protected $signature = 'cron:hourly';
+
     protected $description = 'Run the hourly cron tasks';
+
     protected $schedule;
 
     public function handle(): void

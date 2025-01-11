@@ -13,13 +13,11 @@ class FileService extends Service
     /**
      * Save a file to disk and return a File asset
      *
-     * @param \Illuminate\Http\UploadedFile $file
-     * @param string                        $folder
-     * @param array                         $attrs
+     * @param  \Illuminate\Http\UploadedFile $file
+     * @param  string                        $folder
+     * @return File
      *
      * @throws \Hashids\HashidsException
-     *
-     * @return File
      */
     public function saveFile($file, $folder, array $attrs)
     {

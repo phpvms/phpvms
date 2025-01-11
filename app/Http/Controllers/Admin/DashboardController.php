@@ -19,13 +19,6 @@ class DashboardController extends Controller
 {
     /**
      * DashboardController constructor.
-     *
-     * @param CronService     $cronSvc
-     * @param KvpRepository   $kvpRepo
-     * @param NewsRepository  $newsRepo
-     * @param NewsService     $newsSvc
-     * @param PirepRepository $pirepRepo
-     * @param UserRepository  $userRepo
      */
     public function __construct(
         private readonly CronService $cronSvc,
@@ -34,8 +27,7 @@ class DashboardController extends Controller
         private readonly NewsService $newsSvc,
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Check if a new version is available by checking the VERSION file from
@@ -60,12 +52,9 @@ class DashboardController extends Controller
     /**
      * Show the admin dashboard
      *
-     * @param Request $request
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \GuzzleHttp\Exception\GuzzleException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -80,11 +69,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return View
      */
     public function news(Request $request): View
     {

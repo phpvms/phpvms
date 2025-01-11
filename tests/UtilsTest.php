@@ -13,7 +13,7 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 
 final class UtilsTest extends TestCase
 {
-    public function testDates(): void
+    public function test_dates(): void
     {
         $carbon = new Carbon('2018-04-28T12:55:40Z');
         $this->assertNotNull($carbon);
@@ -23,7 +23,7 @@ final class UtilsTest extends TestCase
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    public function testUnitRounding(): void
+    public function test_unit_rounding(): void
     {
         $this->updateSetting('units.distance', 'km');
 
@@ -67,7 +67,7 @@ final class UtilsTest extends TestCase
     /**
      * Simple test for KVP
      */
-    public function testKvp(): void
+    public function test_kvp(): void
     {
         /** @var KvpRepository $kvpRepo */
         $kvpRepo = app(KvpRepository::class);
@@ -85,7 +85,7 @@ final class UtilsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testSecondsToTimeParts(): void
+    public function test_seconds_to_time_parts(): void
     {
         $t = Time::secondsToTimeParts(3600);
         $this->assertEquals(['h' => 1, 'm' => 0, 's' => 0], $t);
@@ -106,7 +106,7 @@ final class UtilsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testSecondsToTime(): void
+    public function test_seconds_to_time(): void
     {
         $t = Time::secondsToTimeString(3600);
         $this->assertEquals('1h 0m', $t);
@@ -121,7 +121,7 @@ final class UtilsTest extends TestCase
         $this->assertEquals('1h 2m 2s', $t);
     }
 
-    public function testMinutesToTime(): void
+    public function test_minutes_to_time(): void
     {
         $t = Time::minutesToTimeParts(65);
         $this->assertEquals(['h' => 1, 'm' => 5], $t);
@@ -133,7 +133,7 @@ final class UtilsTest extends TestCase
         $this->assertEquals('720h 0m', $t);
     }
 
-    public function testApiKey(): void
+    public function test_api_key(): void
     {
         $api_key = Utils::generateApiKey();
         $this->assertNotNull($api_key);
@@ -142,13 +142,13 @@ final class UtilsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testHexCode(): void
+    public function test_hex_code(): void
     {
         $hex_code = ICAO::createHexCode();
         $this->assertNotNull($hex_code);
     }
 
-    public function testGetDomain(): void
+    public function test_get_domain(): void
     {
         $tests = [
             'http://phpvms.net',

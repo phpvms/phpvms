@@ -16,7 +16,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 final class RegistrationTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -28,10 +28,8 @@ final class RegistrationTest extends TestCase
      * A basic test example.
      *
      * @throws \Exception
-     *
-     * @return void
      */
-    public function testRegistration(): void
+    public function test_registration(): void
     {
         $admin = $this->createAdminUser(['name' => 'testRegistration Admin']);
 
@@ -71,7 +69,7 @@ final class RegistrationTest extends TestCase
         ];
     }
 
-    public function testAccessToRegistrationWhenRegistrationEnabled(): void
+    public function test_access_to_registration_when_registration_enabled(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', false);
@@ -83,7 +81,7 @@ final class RegistrationTest extends TestCase
             ->assertRedirect('/dashboard');
     }
 
-    public function testAccessToRegistrationWhenRegistrationDisabled(): void
+    public function test_access_to_registration_when_registration_disabled(): void
     {
         $this->updateSetting('general.disable_registrations', true);
 
@@ -96,7 +94,7 @@ final class RegistrationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testAccessWithoutInvite(): void
+    public function test_access_without_invite(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', true);
@@ -110,7 +108,7 @@ final class RegistrationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testAccessWithValidInvite(): void
+    public function test_access_with_valid_invite(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', true);
@@ -131,7 +129,7 @@ final class RegistrationTest extends TestCase
             ->assertRedirect('/dashboard');
     }
 
-    public function testAccessWithInvalidInvite(): void
+    public function test_access_with_invalid_invite(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', true);
@@ -186,7 +184,7 @@ final class RegistrationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testWithInvalidEmail(): void
+    public function test_with_invalid_email(): void
     {
         $this->updateSetting('general.disable_registrations', false);
         $this->updateSetting('general.invite_only_registrations', true);

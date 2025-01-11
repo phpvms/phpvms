@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Add a `flight_id` column to the PIREPs table
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up()
     {
         Schema::table('pireps', function (Blueprint $table) {

@@ -14,13 +14,11 @@ class ProfileUpdated
     use SerializesModels;
 
     public $user;
+
     public $avatarUpdated;
 
     /**
      * Create a new event instance.
-     *
-     * @param User $user
-     * @param bool $avatarUpdated
      */
     public function __construct(User $user, bool $avatarUpdated)
     {

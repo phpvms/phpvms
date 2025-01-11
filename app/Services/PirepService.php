@@ -48,17 +48,6 @@ use Nwidart\Modules\Facades\Module;
 
 class PirepService extends Service
 {
-    /**
-     * @param AirportRepository  $airportRepo
-     * @param AirportService     $airportSvc
-     * @param AircraftRepository $aircraftRepo
-     * @param FareService        $fareSvc
-     * @param FlightRepository   $flightRepo
-     * @param GeoService         $geoSvc
-     * @param PirepRepository    $pirepRepo
-     * @param SimBriefService    $simBriefSvc
-     * @param UserService        $userSvc
-     */
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly AirportService $airportSvc,
@@ -69,21 +58,16 @@ class PirepService extends Service
         private readonly PirepRepository $pirepRepo,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Create a prefiled PIREP
      *
-     * @param User              $user
-     * @param array             $attrs
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
      * @throws \Exception
      * @throws AirportNotFound If one of the departure or arrival airports isn't found locally
-     *
-     * @return \App\Models\Pirep
      */
     public function prefile(User $user, array $attrs, array $fields = [], array $fares = []): Pirep
     {
@@ -198,10 +182,7 @@ class PirepService extends Service
     /**
      * Create a new PIREP with some given fields
      *
-     * @param Pirep $pirep
      * @param array PirepFieldValue[] $field_values
-     *
-     * @return Pirep
      */
     public function create(Pirep $pirep, array $fields = []): Pirep
     {
@@ -266,14 +247,10 @@ class PirepService extends Service
     /**
      * Finalize a PIREP (meaning it's been filed)
      *
-     * @param Pirep             $pirep
-     * @param array             $attrs
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
      * @throws \Exception
-     *
-     * @return Pirep
      */
     public function file(Pirep $pirep, array $attrs = [], array $fields = [], array $fares = []): Pirep
     {
@@ -345,7 +322,6 @@ class PirepService extends Service
      * Find if there are duplicates to a given PIREP. Ideally, the passed
      * in PIREP hasn't been saved or gone through the create() method
      *
-     * @param Pirep $pirep
      *
      * @return bool|Pirep
      */
@@ -391,11 +367,8 @@ class PirepService extends Service
      * This attempts to create the route from the navdata and the route
      * entered into the PIREP's route field
      *
-     * @param Pirep $pirep
      *
      * @throws \Exception
-     *
-     * @return Pirep
      */
     public function saveRoute(Pirep $pirep): Pirep
     {
@@ -412,6 +385,7 @@ class PirepService extends Service
 
         if (!filled($pirep->dpt_airport)) {
             Log::error('saveRoute: dpt_airport not found: '.$pirep->dpt_airport_id);
+
             return $pirep;
         }
 
@@ -446,7 +420,6 @@ class PirepService extends Service
     /**
      * Submit the PIREP. Figure out its default state
      *
-     * @param Pirep $pirep
      *
      * @throws \Exception
      */
@@ -501,11 +474,8 @@ class PirepService extends Service
     /**
      * Cancel a PIREP
      *
-     * @param Pirep $pirep
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return Pirep
      */
     public function cancel(Pirep $pirep): Pirep
     {
@@ -535,8 +505,6 @@ class PirepService extends Service
      * pirep_fares
      * pirep_field_values
      * simbrief
-     *
-     * @param Pirep $pirep
      */
     public function delete(Pirep $pirep): void
     {
@@ -562,7 +530,6 @@ class PirepService extends Service
     /**
      * Update any custom PIREP fields
      *
-     * @param string            $pirep_id
      * @param PirepFieldValue[] $field_values
      */
     public function updateCustomFields(string $pirep_id, array $field_values): void
@@ -580,12 +547,7 @@ class PirepService extends Service
     }
 
     /**
-     * @param Pirep $pirep
-     * @param int   $new_state
-     *
      * @throws \Exception
-     *
-     * @return Pirep
      */
     public function changeState(Pirep $pirep, int $new_state): Pirep
     {
@@ -615,6 +577,7 @@ class PirepService extends Service
          */
         if ($pirep->state === PirepState::ACCEPTED) {
             $pirep = $this->reject($pirep);
+
             return $pirep;
         }
 
@@ -623,6 +586,7 @@ class PirepService extends Service
          */
         if ($pirep->state === PirepState::REJECTED) {
             $pirep = $this->accept($pirep);
+
             return $pirep;
         }
 
@@ -630,11 +594,7 @@ class PirepService extends Service
     }
 
     /**
-     * @param Pirep $pirep
-     *
      * @throws \Exception
-     *
-     * @return Pirep
      */
     public function accept(Pirep $pirep): Pirep
     {
@@ -677,11 +637,6 @@ class PirepService extends Service
         return $pirep;
     }
 
-    /**
-     * @param Pirep $pirep
-     *
-     * @return Pirep
-     */
     public function reject(Pirep $pirep): Pirep
     {
         // If this was previously ACCEPTED, then reconcile the flight hours
@@ -711,10 +666,6 @@ class PirepService extends Service
         return $pirep;
     }
 
-    /**
-     * @param User  $pilot
-     * @param Pirep $pirep
-     */
     public function setPilotState(User $pilot, Pirep $pirep)
     {
         $pilot->refresh();

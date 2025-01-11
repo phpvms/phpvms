@@ -16,13 +16,10 @@ use App\Services\FlightService;
 
 final class BidTest extends TestCase
 {
-    /** @var BidService */
     protected BidService $bidSvc;
 
-    /** @var FlightService */
     protected FlightService $flightSvc;
 
-    /** @var SettingRepository */
     protected SettingRepository $settingsRepo;
 
     protected function setUp(): void
@@ -40,7 +37,7 @@ final class BidTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testBids(): void
+    public function test_bids(): void
     {
         $this->settingsRepo->store('bids.allow_multiple_bids', true);
         $this->settingsRepo->store('bids.disable_flight_on_bid', false);
@@ -145,7 +142,7 @@ final class BidTest extends TestCase
         $this->assertCount(0, $body);
     }
 
-    public function testMultipleBidsSingleFlight(): void
+    public function test_multiple_bids_single_flight(): void
     {
         $this->settingsRepo->store('bids.disable_flight_on_bid', true);
 
@@ -167,7 +164,7 @@ final class BidTest extends TestCase
     /**
      * Add a flight bid VIA the API
      */
-    public function testAddBidApi(): void
+    public function test_add_bid_api(): void
     {
         $this->user = User::factory()->create();
         $user2 = User::factory()->create();
@@ -207,7 +204,7 @@ final class BidTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDeleteFlightWithBids(): void
+    public function test_delete_flight_with_bids(): void
     {
         $user = User::factory()->create();
         $headers = $this->headers($user);
@@ -249,7 +246,7 @@ final class BidTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testBidWithAircraft(): void
+    public function test_bid_with_aircraft(): void
     {
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
         $this->settingsRepo->store('pireps.only_aircraft_at_dpt_airport', false);

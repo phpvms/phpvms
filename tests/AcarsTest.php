@@ -30,10 +30,8 @@ use function random_int;
  */
 final class AcarsTest extends TestCase
 {
-    /** @var SettingRepository */
     protected SettingRepository $settingsRepo;
 
-    /** @var FareService */
     protected FareService $fareSvc;
 
     protected function setUp(): void
@@ -45,11 +43,6 @@ final class AcarsTest extends TestCase
         $this->settingsRepo = app(SettingRepository::class);
     }
 
-    /**
-     * @param array $route
-     * @param array $points
-     * @param array $addtl_fields
-     */
     protected function allPointsInRoute(array $route, array $points, array $addtl_fields = []): void
     {
         if (empty($addtl_fields)) {
@@ -90,7 +83,7 @@ final class AcarsTest extends TestCase
     /**
      * Test some prefile error conditions
      */
-    public function testPrefileErrors(): void
+    public function test_prefile_errors(): void
     {
         $this->user = User::factory()->create();
 
@@ -117,7 +110,7 @@ final class AcarsTest extends TestCase
         $response->assertStatus(400);
     }
 
-    public function testPrefileAircraftNotAtAirport(): void
+    public function test_prefile_aircraft_not_at_airport(): void
     {
         $this->settingsRepo->store('pilots.only_flights_from_current', false);
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
@@ -161,7 +154,7 @@ final class AcarsTest extends TestCase
         );
     }
 
-    public function testBlankAirport(): void
+    public function test_blank_airport(): void
     {
         $this->user = User::factory()->create();
 
@@ -196,7 +189,7 @@ final class AcarsTest extends TestCase
     /**
      * Make sure an error is thrown if the pilot is not at the current airport
      */
-    public function testPilotNotAtAirport(): void
+    public function test_pilot_not_at_airport(): void
     {
         $this->settingsRepo->store('pilots.only_flights_from_current', true);
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
@@ -234,7 +227,7 @@ final class AcarsTest extends TestCase
     /**
      * Make sure an error is thrown if the pilot is not at the current airport
      */
-    public function testAircraftNotAtAirport(): void
+    public function test_aircraft_not_at_airport(): void
     {
         $this->settingsRepo->store('pireps.only_aircraft_at_dpt_airport', true);
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
@@ -283,7 +276,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testPrefileAndUpdates(): void
+    public function test_prefile_and_updates(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -403,7 +396,7 @@ final class AcarsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testPrefileAndInvalidUpdates(): void
+    public function test_prefile_and_invalid_updates(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -454,7 +447,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testAcarsUpdates(): void
+    public function test_acars_updates(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -633,7 +626,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testMultipleAltitudes(): void
+    public function test_multiple_altitudes(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -723,7 +716,7 @@ final class AcarsTest extends TestCase
         $this->assertEqualsWithDelta($acars2['altitude_msl'], $acars_data['altitude_msl'], 0.1);
     }
 
-    public function testAcarsDataInstantitaion()
+    public function test_acars_data_instantitaion()
     {
         $acars = Acars::factory()->make(['pirep_id' => 'abc'])->toArray();
         $acars['altitude'] = 5000;
@@ -749,7 +742,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testFilePirepApi(): void
+    public function test_file_pirep_api(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -817,7 +810,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testAircraftAllowed(): void
+    public function test_aircraft_allowed(): void
     {
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', true);
 
@@ -865,7 +858,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testIgnoreAircraftAllowed(): void
+    public function test_ignore_aircraft_allowed(): void
     {
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
 
@@ -908,7 +901,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testMultipleAcarsPositionUpdates(): void
+    public function test_multiple_acars_position_updates(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -942,7 +935,7 @@ final class AcarsTest extends TestCase
         $response->assertStatus(200)->assertJsonCount($acars_count, 'data');
     }
 
-    public function testNonExistentPirepGet(): void
+    public function test_non_existent_pirep_get(): void
     {
         $this->user = User::factory()->create();
 
@@ -951,7 +944,7 @@ final class AcarsTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function testNonExistentPirepStore(): void
+    public function test_non_existent_pirep_store(): void
     {
         $this->user = User::factory()->create();
 
@@ -964,7 +957,7 @@ final class AcarsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAcarsIsoDate(): void
+    public function test_acars_iso_date(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -988,7 +981,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testAcarsInvalidRoutePost(): void
+    public function test_acars_invalid_route_post(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -1020,7 +1013,7 @@ final class AcarsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAcarsLogPost(): void
+    public function test_acars_log_post(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -1060,7 +1053,7 @@ final class AcarsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAcarsRoutePost(): void
+    public function test_acars_route_post(): void
     {
         $pirep = $this->createPirep()->toArray();
 
@@ -1120,7 +1113,7 @@ final class AcarsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDuplicatePirep(): void
+    public function test_duplicate_pirep(): void
     {
         $pirep = $this->createPirep()->toArray();
 

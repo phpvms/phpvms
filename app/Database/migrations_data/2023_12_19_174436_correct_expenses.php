@@ -6,7 +6,8 @@ use App\Models\Expense;
 /**
  * Update the expenses to add the airline ID
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up(): void
     {
         /** @var Expense[] $all_expenses */
@@ -18,10 +19,6 @@ return new class() extends Migration {
 
     /**
      * Figure out the airline ID
-     *
-     * @param Expense $expense
-     *
-     * @return void
      */
     public function getAirlineId(Expense $expense): void
     {

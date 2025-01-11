@@ -14,7 +14,9 @@ use App\Events\CronWeekly;
 class Weekly extends CronCommand
 {
     protected $signature = 'cron:weekly';
+
     protected $description = 'Run the weekly cron tasks';
+
     protected $schedule;
 
     public function handle(): void

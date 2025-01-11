@@ -10,14 +10,8 @@ class Version extends Command
 {
     protected $signature = 'phpvms:version {--write} {--base-only} {--write-full-version} {version?}';
 
-    /**
-     * @var VersionService
-     */
     private VersionService $versionSvc;
 
-    /**
-     * @param VersionService $versionSvc
-     */
     public function __construct(VersionService $versionSvc)
     {
         parent::__construct();
