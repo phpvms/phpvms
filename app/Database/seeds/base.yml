@@ -1,17 +1,6 @@
 #
 # Initial minimal data required. You probably don't want to modify or erase any of this here
 #
-
-roles:
-  id_column: id
-  ignore_if_exists: true
-  data:
-    - id: 1
-      name: admin
-      display_name: Administrators
-      read_only: true
-      disable_activity_checks: true
-
 ranks:
   id_column: id
   ignore_if_exists: true

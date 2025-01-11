@@ -4,6 +4,7 @@
       Update
     </x-slot>
 
+    {{ $this->update() }}
     {{ $this->forceUpdateCheckAction() }}
     {{ $this->reseed() }}
     {{ $this->flushQueue() }}

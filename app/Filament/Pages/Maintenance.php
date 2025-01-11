@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Repositories\KvpRepository;
+use App\Services\Installer\InstallerService;
+use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\VersionService;
 use App\Support\Utils;
@@ -172,5 +174,48 @@ class Maintenance extends Page
                 ->success()
                 ->send();
         });
+    }
+
+    public function update(): Action
+    {
+        return Action::make('update')
+            ->icon('heroicon-o-arrow-path')
+            ->color('success')
+            ->label('Update App')
+            ->visible(fn (): bool => app(InstallerService::class)->isUpgradePending())
+            ->action(function () {
+                Log::info('Update: run_migrations');
+
+                $migrationSvc = app(MigrationService::class);
+                $seederSvc = app(SeederService::class);
+
+                $migrationsPending = $migrationSvc->migrationsAvailable();
+                $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
+
+                if (count($migrationsPending) === 0 && count($dataMigrationsPending) === 0) {
+                    $seederSvc->syncAllSeeds();
+                    Notification::make()
+                        ->title('Application updated successfully')
+                        ->body('See logs for details')
+                        ->success()
+                        ->send();
+                    return;
+                }
+
+                if (count($migrationsPending) !== 0) {
+                    $migrationSvc->runAllMigrations();
+                }
+                $seederSvc->syncAllSeeds();
+
+                if (count($dataMigrationsPending) !== 0) {
+                    $migrationSvc->runAllDataMigrations();
+                }
+
+                Notification::make()
+                    ->title('Application updated successfully')
+                    ->body('See logs for details')
+                    ->success()
+                    ->send();
+            });
     }
 }

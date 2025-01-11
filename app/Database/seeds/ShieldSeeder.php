@@ -18,7 +18,7 @@ class ShieldSeeder extends Seeder
         static::makeRolesWithPermissions($rolesWithPermissions);
         static::makeDirectPermissions($directPermissions);
 
-        $this->command->info('Shield Seeding Completed.');
+        $this->command?->info('Shield Seeding Completed.');
     }
 
     protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
