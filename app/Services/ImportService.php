@@ -43,7 +43,7 @@ class ImportService extends Service
      *
      * @throws ValidationException
      */
-    protected function throwError($error, \Exception $e = null): void
+    protected function throwError($error, ?\Exception $e = null): void
     {
         Log::error($error);
         if ($e) {
@@ -209,7 +209,7 @@ class ImportService extends Service
      *
      * @return mixed
      */
-    public function importFlights($csv_file, string $delete_previous = null)
+    public function importFlights($csv_file, ?string $delete_previous = null)
     {
         if (!empty($delete_previous)) {
             // If delete_previous contains all, then delete everything

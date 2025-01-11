@@ -303,11 +303,11 @@ if (!function_exists('show_datetime')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param Carbon $date
+     * @param Carbon|null $date
      *
      * @return string
      */
-    function show_datetime(Carbon $date = null)
+    function show_datetime(?Carbon $date = null)
     {
         if ($date === null) {
             return '-';

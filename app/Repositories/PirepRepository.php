@@ -34,7 +34,7 @@ class PirepRepository extends Repository
      *
      * @return Pirep
      */
-    public function getPending(User $user = null)
+    public function getPending(?User $user = null)
     {
         $where = [];
         if ($user !== null) {
@@ -53,7 +53,7 @@ class PirepRepository extends Repository
      *
      * @return mixed
      */
-    public function getPendingCount(User $user = null)
+    public function getPendingCount(?User $user = null)
     {
         $where = [
             'state' => PirepState::PENDING,

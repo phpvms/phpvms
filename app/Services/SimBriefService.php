@@ -48,8 +48,8 @@ class SimBriefService extends Service
         string $flight_id,
         string $ac_id,
         array $fares = [],
-        string $sb_user_id = null,
-        string $sb_static_id = null
+        ?string $sb_user_id = null,
+        ?string $sb_static_id = null
     ) {
         $uri = str_replace('{id}', $ofp_id, config('phpvms.simbrief_url'));
 

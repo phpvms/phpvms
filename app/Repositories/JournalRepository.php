@@ -34,7 +34,7 @@ class JournalRepository extends Repository implements CacheableInterface
      *
      * @return string
      */
-    public function formatPostDate(Carbon $date = null)
+    public function formatPostDate(?Carbon $date = null)
     {
         if (!$date) {
             return;
@@ -89,8 +89,8 @@ class JournalRepository extends Repository implements CacheableInterface
      */
     public function post(
         Journal &$journal,
-        Money $credit = null,
-        Money $debit = null,
+        ?Money $credit = null,
+        ?Money $debit = null,
         $reference = null,
         $memo = null,
         $post_date = null,
@@ -142,7 +142,7 @@ class JournalRepository extends Repository implements CacheableInterface
      *
      * @return Money
      */
-    public function getBalance(Journal $journal = null, Carbon $date = null)
+    public function getBalance(?Journal $journal = null, ?Carbon $date = null)
     {
         $journal->refresh();
 
@@ -171,8 +171,8 @@ class JournalRepository extends Repository implements CacheableInterface
      */
     public function getCreditBalanceBetween(
         Carbon $date,
-        Journal $journal = null,
-        Carbon $start_date = null,
+        ?Journal $journal = null,
+        ?Carbon $start_date = null,
         $transaction_group = null
     ): Money {
         $where = [];
@@ -210,8 +210,8 @@ class JournalRepository extends Repository implements CacheableInterface
      */
     public function getDebitBalanceBetween(
         Carbon $date,
-        Journal $journal = null,
-        Carbon $start_date = null,
+        ?Journal $journal = null,
+        ?Carbon $start_date = null,
         $transaction_group = null
     ): Money {
         $where = [];
@@ -248,7 +248,7 @@ class JournalRepository extends Repository implements CacheableInterface
      *
      * @return array
      */
-    public function getAllForObject($object, $journal = null, Carbon $date = null)
+    public function getAllForObject($object, $journal = null, ?Carbon $date = null)
     {
         $where = [
             'ref_model'    => \get_class($object),

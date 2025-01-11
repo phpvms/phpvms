@@ -31,7 +31,7 @@ class FinanceService extends Service
      *
      * @return Expense
      */
-    public function addExpense(array $attrs, Model $model = null, int $airline_id = null): Expense
+    public function addExpense(array $attrs, ?Model $model = null, ?int $airline_id = null): Expense
     {
         $expense = new Expense($attrs);
 
