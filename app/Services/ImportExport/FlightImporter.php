@@ -202,6 +202,8 @@ class FlightImporter extends ImportExport
      * Return the mask of the days
      *
      *
+     * @param mixed $day_str
+     *
      * @return int|mixed
      */
     protected function setDays($day_str)
@@ -244,6 +246,8 @@ class FlightImporter extends ImportExport
 
     /**
      * Process the airport
+     *
+     * @param mixed $airport
      */
     protected function processAirport($airport): Airport
     {
@@ -253,6 +257,8 @@ class FlightImporter extends ImportExport
     /**
      * Parse out all of the subfleets and associate them to the flight
      * The subfleet is created if it doesn't exist
+     *
+     * @param mixed $col
      */
     protected function processSubfleets(Flight &$flight, $col): void
     {
@@ -284,6 +290,8 @@ class FlightImporter extends ImportExport
 
     /**
      * Parse all of the fares in the multi-format
+     *
+     * @param mixed $col
      */
     protected function processFares(Flight &$flight, $col): void
     {
@@ -302,6 +310,8 @@ class FlightImporter extends ImportExport
 
     /**
      * Parse all of the subfields
+     *
+     * @param mixed $col
      */
     protected function processFields(Flight &$flight, $col): void
     {

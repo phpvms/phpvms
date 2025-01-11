@@ -41,7 +41,8 @@ class UserService extends Service
         private readonly FareService $fareSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Find the user and return them with all of the data properly attached
@@ -307,6 +308,8 @@ class UserService extends Service
      * based on their current Rank and/or by Type Rating
      *
      *
+     * @param mixed $user
+     *
      * @return Collection
      */
     public function getAllowableSubfleets($user, bool $paginate = false)
@@ -355,6 +358,9 @@ class UserService extends Service
      * Return a bool if a user is allowed to fly the current aircraft
      *
      *
+     * @param mixed $user
+     * @param mixed $aircraft_id
+     *
      * @return bool
      */
     public function aircraftAllowed($user, $aircraft_id)
@@ -369,6 +375,8 @@ class UserService extends Service
     /**
      * Change the user's state. PENDING to ACCEPTED, etc
      * Send out an email
+     *
+     * @param mixed $old_state
      */
     public function changeUserState(User $user, $old_state): User
     {

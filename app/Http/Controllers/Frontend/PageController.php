@@ -14,7 +14,8 @@ class PageController extends Controller
 {
     public function __construct(
         private readonly PageRepository $pageRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Show the page

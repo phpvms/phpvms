@@ -71,6 +71,8 @@ abstract class Command extends \Illuminate\Console\Command
 
     /**
      * Streaming file reader
+     *
+     * @param mixed $filename
      */
     public function readFile($filename): ?\Generator
     {

@@ -22,18 +22,20 @@ class SimBriefService extends Service
 {
     public function __construct(
         private readonly GuzzleClient $httpClient
-    ) {}
+    ) {
+    }
 
     /**
      * Check to see if the OFP exists server-side. If it does, download it and
      * cache it immediately
      *
-     * @param  string        $user_id      User who generated this
-     * @param  string        $ofp_id       The SimBrief OFP ID
-     * @param  string        $flight_id    The flight ID
-     * @param  string        $ac_id        The aircraft ID
-     * @param  array         $fares        Full list of fares for the flight
-     * @param  string|null   $sb_static_id Static ID for the generated OFP (Used for Update)
+     * @param string      $user_id      User who generated this
+     * @param string      $ofp_id       The SimBrief OFP ID
+     * @param string      $flight_id    The flight ID
+     * @param string      $ac_id        The aircraft ID
+     * @param array       $fares        Full list of fares for the flight
+     * @param string|null $sb_static_id Static ID for the generated OFP (Used for Update)
+     *
      * @return SimBrief|null
      */
     public function downloadOfp(
@@ -150,6 +152,7 @@ class SimBriefService extends Service
      *
      * @param SimBrief $simBrief    The briefing to create the PIREP from
      * @param bool     $keep_flight True keeps the flight_id, default is false
+     * @param mixed    $pirep
      */
     public function attachSimbriefToPirep($pirep, SimBrief $simBrief, $keep_flight = false): Pirep
     {

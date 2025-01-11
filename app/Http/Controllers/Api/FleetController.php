@@ -20,7 +20,8 @@ class FleetController extends Controller
     public function __construct(
         private readonly AircraftRepository $aircraftRepo,
         private readonly SubfleetRepository $subfleetRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Return all the subfleets and the aircraft and any other associated data

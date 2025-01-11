@@ -85,9 +85,12 @@ class AcarsReplay extends Command
      * Mark the PIREP as filed
      *
      *
-     * @return mixed
+     *
+     * @param mixed $pirep_id
      *
      * @throws \RuntimeException
+     *
+     * @return mixed
      */
     protected function filePirep($pirep_id)
     {
@@ -101,9 +104,12 @@ class AcarsReplay extends Command
     }
 
     /**
-     * @return array
+     * @param mixed $pirep_id
+     * @param mixed $data
      *
      * @throws \RuntimeException
+     *
+     * @return array
      */
     protected function postUpdate($pirep_id, $data)
     {
@@ -227,9 +233,9 @@ class AcarsReplay extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
-     *
      * @throws \RuntimeException
+     *
+     * @return mixed
      */
     public function handle(): void
     {

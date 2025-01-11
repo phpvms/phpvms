@@ -17,7 +17,8 @@ class DashboardController extends Controller
      */
     public function __construct(
         private readonly PirepRepository $pirepRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Show the application dashboard.

@@ -117,6 +117,8 @@ class UserImport extends BaseImporter
      * Get the user's new state from their original state
      *
      *
+     * @param mixed $state
+     *
      * @return int
      */
     protected function getUserState($state)

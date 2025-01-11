@@ -13,6 +13,13 @@ class DatabaseService extends Service
      * Check the PHP version that it meets the minimum requirement
      *
      *
+     * @param mixed $driver
+     * @param mixed $host
+     * @param mixed $port
+     * @param mixed $name
+     * @param mixed $user
+     * @param mixed $pass
+     *
      * @return bool
      */
     public function checkDbConnection($driver, $host, $port, $name, $user, $pass)

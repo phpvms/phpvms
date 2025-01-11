@@ -30,7 +30,8 @@ class FlightController extends Controller
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Return all the flights, paginated
@@ -144,7 +145,8 @@ class FlightController extends Controller
     /**
      * Output the flight briefing from simbrief or whatever other format
      *
-     * @param  string                                                                  $id The flight ID
+     * @param string $id The flight ID
+     *
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
      */
     public function briefing(string $id)

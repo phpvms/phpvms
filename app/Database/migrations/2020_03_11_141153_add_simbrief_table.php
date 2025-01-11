@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Add a table to store the Simbrief data
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::create('simbrief', function (Blueprint $table) {

@@ -21,9 +21,11 @@ class ExpenseRepository extends Repository implements CacheableInterface
      * Get all of the expenses for a given type, and also
      * include expenses for a given airline ID
      *
-     * @param  null       $airline_id
-     * @param  null       $ref_model
-     * @param  mixed      $ref_model_id
+     * @param null  $airline_id
+     * @param null  $ref_model
+     * @param mixed $ref_model_id
+     * @param mixed $type
+     *
      * @return Collection
      */
     public function getAllForType($type, $airline_id = null, $ref_model = null, $ref_model_id = null)

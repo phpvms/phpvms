@@ -21,11 +21,12 @@ class Money
     /**
      * Create a new Money instance, passing in the amount in the subunit, e.,g, $5, you pass in 500)
      *
-     * @param  mixed     $amount The amount, in pennies
-     * @return MoneyBase
+     * @param mixed $amount The amount, in pennies
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return MoneyBase
      */
     public static function create($amount)
     {
@@ -35,11 +36,12 @@ class Money
     /**
      * Create from a whole amount (e.g, dollars and cents - 50.05)
      *
-     * @param  mixed $amount The amount in dollar
-     * @return Money
+     * @param mixed $amount The amount in dollar
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public static function createFromAmount($amount)
     {
@@ -51,7 +53,8 @@ class Money
     /**
      * Convert a whole unit into it's subunit, e,g: dollar to cents
      *
-     * @param  mixed $amount
+     * @param mixed $amount
+     *
      * @return int
      */
     public static function convertToSubunit($amount)
@@ -65,9 +68,9 @@ class Money
      * Create a new currency object using the currency setting
      * Fall back to USD if it's not valid
      *
-     * @return Currency
-     *
      * @throws \OutOfBoundsException
+     *
+     * @return Currency
      */
     public static function currency()
     {
@@ -155,11 +158,12 @@ class Money
     /**
      * Add an amount
      *
-     * @param  mixed $amount
-     * @return Money
+     * @param mixed $amount
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function add($amount)
     {
@@ -173,11 +177,12 @@ class Money
     }
 
     /**
-     * @param  mixed $percent
-     * @return $this
+     * @param mixed $percent
      *
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
+     *
+     * @return $this
      */
     public function addPercent($percent)
     {
@@ -195,10 +200,13 @@ class Money
      * Subtract an amount
      *
      *
-     * @return Money
+     *
+     * @param mixed $amount
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function subtract($amount)
     {
@@ -215,11 +223,14 @@ class Money
      * Multiply by an amount
      *
      *
-     * @return Money
+     *
+     * @param mixed $amount
      *
      * @throws \UnexpectedValueException
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function multiply($amount)
     {
@@ -236,10 +247,13 @@ class Money
      * Divide by an amount
      *
      *
-     * @return Money
+     *
+     * @param mixed $amount
      *
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function divide($amount)
     {
@@ -249,10 +263,12 @@ class Money
     }
 
     /**
-     * @return bool
+     * @param mixed $money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return bool
      */
     public function equals($money)
     {

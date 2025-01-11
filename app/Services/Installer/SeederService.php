@@ -27,7 +27,8 @@ class SeederService extends Service
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
-    ) {}
+    ) {
+    }
 
     /**
      * See if there are any seeds that are out of sync
@@ -175,8 +176,9 @@ class SeederService extends Service
      * This way we don't need to mess with how to order things
      * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on
      *
-     * @param null $offset
-     * @param int  $start_offset
+     * @param null  $offset
+     * @param int   $start_offset
+     * @param mixed $name
      */
     private function addCounterGroup($name, $offset = null, $start_offset = 0): void
     {
@@ -213,6 +215,8 @@ class SeederService extends Service
 
     /**
      * Get the next increment number from a group
+     *
+     * @param mixed $group
      */
     private function getNextOrderNumber($group): int
     {

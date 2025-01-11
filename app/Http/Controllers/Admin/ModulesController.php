@@ -15,7 +15,8 @@ class ModulesController extends Controller
 {
     public function __construct(
         private readonly ModuleService $moduleSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Module.

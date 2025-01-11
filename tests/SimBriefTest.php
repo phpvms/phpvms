@@ -64,6 +64,11 @@ final class SimBriefTest extends TestCase
 
     /**
      * Download an OFP file
+     *
+     * @param mixed $user
+     * @param mixed $flight
+     * @param mixed $aircraft
+     * @param mixed $fares
      */
     protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {

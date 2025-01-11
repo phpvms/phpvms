@@ -31,10 +31,11 @@ class SettingRepository extends Repository implements CacheableInterface
     /**
      * Get a setting, reading it from the cache possibly
      *
-     * @param  string $key
-     * @return mixed
+     * @param string $key
      *
      * @throws SettingNotFound
+     *
+     * @return mixed
      */
     public function retrieve($key)
     {
@@ -68,8 +69,9 @@ class SettingRepository extends Repository implements CacheableInterface
     /**
      * @alias store($key,$value)
      *
-     * @param  mixed $key
-     * @param  mixed $value
+     * @param mixed $key
+     * @param mixed $value
+     *
      * @return null
      */
     public function save($key, $value)
@@ -81,6 +83,9 @@ class SettingRepository extends Repository implements CacheableInterface
      * Update an existing setting with a new value. Doesn't create
      * a new setting
      *
+     *
+     * @param mixed $key
+     * @param mixed $value
      *
      * @return null
      */

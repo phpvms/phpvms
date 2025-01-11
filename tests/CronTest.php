@@ -14,6 +14,8 @@ final class CronTest extends TestCase
 {
     /**
      * Create a new sample PIREP
+     *
+     * @param mixed $subtractTime
      */
     protected static function getPirep($subtractTime): Pirep
     {

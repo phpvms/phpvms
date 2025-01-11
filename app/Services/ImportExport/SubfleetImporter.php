@@ -77,6 +77,8 @@ class SubfleetImporter extends ImportExport
 
     /**
      * Parse all of the fares in the multi-format
+     *
+     * @param mixed $col
      */
     protected function processFares(Subfleet &$subfleet, $col): void
     {
@@ -95,6 +97,8 @@ class SubfleetImporter extends ImportExport
 
     /**
      * Parse all of the rakns in the multi-format
+     *
+     * @param mixed $col
      */
     protected function processRanks(Subfleet &$subfleet, $col): void
     {

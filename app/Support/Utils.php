@@ -40,6 +40,8 @@ class Utils
 
     /**
      * Simple check on the first character if it's an object or not
+     *
+     * @param mixed $obj
      */
     public static function isObject($obj): bool
     {

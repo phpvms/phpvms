@@ -18,7 +18,9 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      *
      * This is normally where you'd register the routes or other startup tasks for your module
      */
-    public function boot(): void {}
+    public function boot(): void
+    {
+    }
 
     /**
      * This is required to register the links in either the public or admin toolbar
@@ -30,7 +32,9 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      *
      * $this->moduleSvc->addAdminLink('Sample', '/admin/sample');
      */
-    public function registerLinks(): void {}
+    public function registerLinks(): void
+    {
+    }
 
     /**
      * Deferred providers:

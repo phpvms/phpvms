@@ -28,6 +28,8 @@ class UserRegistered extends Notification implements ShouldQueue
     }
 
     /**
+     * @param mixed $notifiable
+     *
      * @return string[]
      */
     public function via($notifiable)
@@ -37,6 +39,8 @@ class UserRegistered extends Notification implements ShouldQueue
 
     /**
      * Send a Discord notification
+     *
+     * @param mixed $notifiable
      */
     public function toDiscordChannel($notifiable): ?DiscordMessage
     {
@@ -54,6 +58,8 @@ class UserRegistered extends Notification implements ShouldQueue
     }
 
     /**
+     * @param mixed $notifiable
+     *
      * @return array
      */
     public function toArray($notifiable)

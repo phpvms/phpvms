@@ -18,11 +18,14 @@ class AviationWeather extends Metar
 
     public function __construct(
         private readonly HttpClient $httpClient
-    ) {}
+    ) {
+    }
 
     /**
      * Implement the METAR - Return the string
      *
+     *
+     * @param mixed $icao
      *
      * @throws \Exception
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -49,6 +52,8 @@ class AviationWeather extends Metar
     /**
      * Do the actual retrieval of the TAF
      *
+     *
+     * @param mixed $icao
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */

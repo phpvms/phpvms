@@ -24,16 +24,18 @@ class GeoService extends Service
     public function __construct(
         private readonly AcarsRepository $acarsRepo,
         private readonly NavdataRepository $navRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Determine the closest set of coordinates from the starting position
      *
-     * @param  array $coordStart
-     * @param  array $all_coords
-     * @return mixed
+     * @param array $coordStart
+     * @param array $all_coords
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
+     *
+     * @return mixed
      */
     public function getClosestCoords($coordStart, $all_coords)
     {
@@ -152,9 +154,15 @@ class GeoService extends Service
      * Determine the center point between two sets of coordinates
      *
      *
-     * @return array
+     *
+     * @param mixed $latA
+     * @param mixed $lonA
+     * @param mixed $latB
+     * @param mixed $lonB
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
+     *
+     * @return array
      */
     public function getCenter($latA, $lonA, $latB, $lonB)
     {
@@ -233,7 +241,8 @@ class GeoService extends Service
     /**
      * Return a single feature point for the
      *
-     * @param  mixed                              $pireps
+     * @param mixed $pireps
+     *
      * @return mixed
      * @return \GeoJson\Feature\FeatureCollection
      */

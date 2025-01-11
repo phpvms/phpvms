@@ -15,7 +15,8 @@ class VersionService extends Service
     public function __construct(
         private readonly HttpClient $httpClient,
         private readonly KvpRepository $kvpRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Clean the version string (e.,g strip the v in front)
@@ -35,6 +36,9 @@ class VersionService extends Service
      * Set the latest release version/tag into the KVP repo and return the tag
      *
      *
+     * @param mixed $version_tag
+     * @param mixed $download_url
+     *
      * @return string The version string
      */
     private function setLatestRelease($version_tag, $download_url): string
@@ -49,6 +53,8 @@ class VersionService extends Service
 
     /**
      * Find and return the Github asset line
+     *
+     * @param mixed $release
      */
     private function getGithubAsset($release): string
     {
@@ -118,7 +124,8 @@ class VersionService extends Service
     /**
      * Get the build ID, which is the date and the git log version
      *
-     * @param  array  $cfg
+     * @param array $cfg
+     *
      * @return string
      */
     public function getBuildId($cfg)
@@ -129,7 +136,8 @@ class VersionService extends Service
     /**
      * Generate a build ID
      *
-     * @param  array        $cfg The version config
+     * @param array $cfg The version config
+     *
      * @return false|string
      */
     public function generateBuildId($cfg)
@@ -151,7 +159,8 @@ class VersionService extends Service
     /**
      * Get the current version
      *
-     * @param  bool   $include_build True will include the build ID
+     * @param bool $include_build True will include the build ID
+     *
      * @return string
      */
     public function getCurrentVersion($include_build = true)
@@ -183,6 +192,7 @@ class VersionService extends Service
      * See if a new version is available. Saves a flag into the KVP store if there is
      *
      * @param null [$current_version]
+     *
      * @return bool
      */
     public function isNewVersionAvailable($current_version = null)
@@ -217,9 +227,10 @@ class VersionService extends Service
     }
 
     /**
-     * @param  string $version1
-     * @param  string $version2
-     * @return bool   If $version1 is greater than $version2
+     * @param string $version1
+     * @param string $version2
+     *
+     * @return bool If $version1 is greater than $version2
      */
     public function isGreaterThan($version1, $version2): bool
     {

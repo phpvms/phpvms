@@ -22,9 +22,12 @@ class HttpClient
      * content into that file
      *
      *
-     * @return string
+     *
+     * @param mixed $uri
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @return string
      */
     public function get($uri, array $opts = [])
     {
@@ -44,6 +47,9 @@ class HttpClient
     }
 
     /**
+     * @param mixed $uri
+     * @param mixed $body
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function post($uri, $body, array $opts = []): mixed
@@ -65,6 +71,9 @@ class HttpClient
     }
 
     /**
+     * @param mixed $uri
+     * @param mixed $body
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function form_post($uri, $body, array $opts = []): mixed
@@ -88,6 +97,9 @@ class HttpClient
     /**
      * Download a file to a given path
      *
+     *
+     * @param mixed $uri
+     * @param mixed $local_path
      *
      * @return string
      */

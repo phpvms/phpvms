@@ -11,6 +11,9 @@ class Time implements Arrayable
     public $minutes;
 
     /**
+     * @param mixed $minutes
+     * @param mixed $hours
+     *
      * @return static
      */
     public static function init($minutes, $hours)
@@ -21,6 +24,9 @@ class Time implements Arrayable
     /**
      * Pass just minutes to figure out how many hours
      * Or both hours and minutes
+     *
+     * @param mixed      $minutes
+     * @param null|mixed $hours
      */
     public function __construct($minutes, $hours = null)
     {
@@ -105,9 +111,10 @@ class Time implements Arrayable
      * Convert seconds to an array of hours, minutes, seconds
      *
      * @param int $seconds
-     * @return array['h', 'm', 's']
      *
      * @throws \Exception
+     *
+     * @return array['h', 'm', 's']
      */
     public static function secondsToTimeParts($seconds): array
     {
@@ -144,6 +151,8 @@ class Time implements Arrayable
     }
 
     /**
+     * @param mixed $minutes
+     *
      * @return float|int
      */
     public static function minutesToSeconds($minutes)
@@ -154,6 +163,8 @@ class Time implements Arrayable
     /**
      * Convert the seconds to minutes and then round it up
      *
+     *
+     * @param mixed $seconds
      *
      * @return float|int
      */
@@ -166,6 +177,8 @@ class Time implements Arrayable
      * Convert hours to minutes. Pretty complex
      *
      *
+     * @param mixed $minutes
+     *
      * @return float|int
      */
     public static function minutesToHours($minutes)
@@ -174,7 +187,9 @@ class Time implements Arrayable
     }
 
     /**
-     * @param  null      $minutes
+     * @param null  $minutes
+     * @param mixed $hours
+     *
      * @return float|int
      */
     public static function hoursToMinutes($hours, $minutes = null)

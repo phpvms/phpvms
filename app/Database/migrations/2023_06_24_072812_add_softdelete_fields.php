@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 // Adds deleted_at fields to tables with SoftDelete trait
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         // Aircraft

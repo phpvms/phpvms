@@ -22,7 +22,8 @@ class NewsRepository extends Repository implements CacheableInterface
     /**
      * Latest news items
      *
-     * @param  int   $count
+     * @param int $count
+     *
      * @return mixed
      */
     public function getLatest($count = 5)

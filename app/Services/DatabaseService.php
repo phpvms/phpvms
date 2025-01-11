@@ -26,7 +26,8 @@ class DatabaseService extends Service
     }
 
     /**
-     * @param bool $ignore_errors
+     * @param bool  $ignore_errors
+     * @param mixed $yaml_file
      *
      * @throws \Exception
      */
@@ -36,7 +37,8 @@ class DatabaseService extends Service
     }
 
     /**
-     * @param bool $ignore_errors
+     * @param bool  $ignore_errors
+     * @param mixed $yml
      *
      * @throws \Exception
      */
@@ -46,9 +48,12 @@ class DatabaseService extends Service
     }
 
     /**
-     * @return mixed
+     * @param mixed $table
+     * @param mixed $row
      *
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function insert_row($table, $row)
     {

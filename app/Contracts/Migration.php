@@ -24,7 +24,9 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     /**
      * A method to reverse a migration doesn't need to be made
      */
-    public function down() {}
+    public function down()
+    {
+    }
 
     /**
      * Add a module and enable it
@@ -65,6 +67,9 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
 
     /**
      * Add rows to a table
+     *
+     * @param mixed $table
+     * @param mixed $rows
      */
     public function addData($table, $rows)
     {

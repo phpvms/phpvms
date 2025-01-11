@@ -32,6 +32,8 @@ class InviteLink extends Notification
 
     /**
      * Get the array representation of the notification.
+     *
+     * @param mixed $notifiable
      */
     public function toArray($notifiable): array
     {

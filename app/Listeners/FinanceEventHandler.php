@@ -24,7 +24,8 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
 
     public function __construct(
         private readonly PirepFinanceService $financeSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Kick off the finance events when a PIREP is accepted

@@ -28,6 +28,8 @@ class CreateDatabase extends Command
      * Create the mysql database
      *
      *
+     * @param mixed $dbkey
+     *
      * @return bool
      */
     protected function create_mysql($dbkey)
@@ -75,6 +77,8 @@ class CreateDatabase extends Command
 
     /**
      * Create the sqlite database
+     *
+     * @param mixed $dbkey
      */
     protected function create_sqlite($dbkey)
     {

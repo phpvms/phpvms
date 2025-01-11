@@ -74,6 +74,9 @@ class Days extends Enum
 
     /**
      * See if the given mask has a day
+     *
+     * @param mixed $mask
+     * @param mixed $day
      */
     public static function in($mask, $day): bool
     {
@@ -82,6 +85,8 @@ class Days extends Enum
 
     /**
      * Does the mask contain today?
+     *
+     * @param mixed $val
      */
     public static function isToday($val): bool
     {

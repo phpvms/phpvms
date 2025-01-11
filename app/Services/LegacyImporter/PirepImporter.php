@@ -213,7 +213,8 @@ class PirepImporter extends BaseImporter
      * Map the old state to the current
      * https://github.com/nabeelio/phpvms_v2/blob/master/core/app.config.php#L450
      *
-     * @param  int $old_state
+     * @param int $old_state
+     *
      * @return int
      */
     private function mapState($old_state)

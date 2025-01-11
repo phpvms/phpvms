@@ -20,10 +20,13 @@ class BidService extends Service
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly FlightService $flightSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Get a specific bid for a user
+     *
+     * @param mixed $bid_id
      */
     public function getBid(User $user, $bid_id): ?Bid
     {
@@ -119,9 +122,9 @@ class BidService extends Service
      * Allow a user to bid on a flight. Check settings and all that good stuff
      *
      *
-     * @return mixed
-     *
      * @throws \App\Exceptions\BidExistsForFlight
+     *
+     * @return mixed
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null)
     {

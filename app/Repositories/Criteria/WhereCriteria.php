@@ -38,10 +38,11 @@ class WhereCriteria implements CriteriaInterface
     /**
      * Apply criteria in query repository
      *
-     * @param  Builder|Model $model
-     * @return mixed
+     * @param Builder|Model $model
      *
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function apply($model, RepositoryInterface $repository)
     {

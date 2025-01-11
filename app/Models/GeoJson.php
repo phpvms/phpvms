@@ -30,6 +30,8 @@ class GeoJson
 
     /**
      * @param array $attrs Attributes of the Feature
+     * @param mixed $lat
+     * @param mixed $lon
      */
     public function addPoint($lat, $lon, array $attrs)
     {

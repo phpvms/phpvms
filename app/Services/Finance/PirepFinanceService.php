@@ -36,19 +36,20 @@ class PirepFinanceService extends Service
         private readonly FareService $fareSvc,
         private readonly FinanceService $financeSvc,
         private readonly JournalRepository $journalRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Process all of the finances for a pilot report. This is called
      * from a listener (FinanceEvents)
      *
      *
-     * @return mixed
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function processFinancesForPirep(Pirep $pirep)
     {
@@ -95,6 +96,8 @@ class PirepFinanceService extends Service
      * Collect all of the fares and then post each fare class's profit and
      * the costs for each seat and post it to the journal
      *
+     *
+     * @param mixed $pirep
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
@@ -559,6 +562,8 @@ class PirepFinanceService extends Service
      * Return all of the fares for the PIREP
      *
      *
+     * @param mixed $pirep
+     *
      * @return \Illuminate\Support\Collection
      */
     public function getFaresForPirep($pirep)
@@ -593,9 +598,9 @@ class PirepFinanceService extends Service
      * Return the pilot's hourly pay for the given PIREP
      *
      *
-     * @return float
-     *
      * @throws \InvalidArgumentException
+     *
+     * @return float
      */
     public function getPilotPayRateForPirep(Pirep $pirep)
     {
@@ -640,10 +645,10 @@ class PirepFinanceService extends Service
      * Get the user's payment amount for a PIREP
      *
      *
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getPilotPay(Pirep $pirep)
     {

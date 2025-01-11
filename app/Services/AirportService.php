@@ -22,10 +22,13 @@ class AirportService extends Service
         private readonly AirportLookup $lookupProvider,
         private readonly AirportRepository $airportRepo,
         private readonly MetarProvider $metarProvider
-    ) {}
+    ) {
+    }
 
     /**
      * Return the METAR for a given airport
+     *
+     * @param mixed $icao
      */
     public function getMetar($icao): ?Metar
     {
@@ -44,6 +47,8 @@ class AirportService extends Service
 
     /**
      * Return the METAR for a given airport
+     *
+     * @param mixed $icao
      */
     public function getTaf($icao): ?Metar
     {
@@ -64,7 +69,8 @@ class AirportService extends Service
      * Lookup an airport's information from a remote provider. This handles caching
      * the data internally
      *
-     * @param  string $icao ICAO
+     * @param string $icao ICAO
+     *
      * @return mixed
      */
     public function lookupAirport($icao)
@@ -95,7 +101,8 @@ class AirportService extends Service
     /**
      * Lookup an airport and save it if it hasn't been found
      *
-     * @param  string                                   $icao
+     * @param string $icao
+     *
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function lookupAirportIfNotFound($icao)
@@ -135,8 +142,9 @@ class AirportService extends Service
     /**
      * Calculate the distance from one airport to another
      *
-     * @param  string   $fromIcao
-     * @param  string   $toIcao
+     * @param string $fromIcao
+     * @param string $toIcao
+     *
      * @return Distance
      */
     public function calculateDistance($fromIcao, $toIcao)

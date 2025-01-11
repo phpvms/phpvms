@@ -99,6 +99,8 @@ class Unit implements ArrayAccess
 
     /**
      * Implements ArrayAccess
+     *
+     * @param mixed $offset
      */
     public function offsetExists($offset): bool
     {
@@ -107,6 +109,8 @@ class Unit implements ArrayAccess
 
     /**
      * Implements ArrayAccess
+     *
+     * @param mixed $unit
      */
     public function offsetGet($unit): ?float
     {
@@ -120,6 +124,9 @@ class Unit implements ArrayAccess
 
     /**
      * Implements ArrayAccess
+     *
+     * @param mixed $offset
+     * @param mixed $value
      */
     public function offsetSet($offset, $value): void
     {
@@ -128,6 +135,8 @@ class Unit implements ArrayAccess
 
     /**
      * Implements ArrayAccess
+     *
+     * @param mixed $offset
      */
     public function offsetUnset($offset): void
     {

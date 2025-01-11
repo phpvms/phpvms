@@ -58,7 +58,8 @@ class PirepService extends Service
         private readonly PirepRepository $pirepRepo,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Create a prefiled PIREP

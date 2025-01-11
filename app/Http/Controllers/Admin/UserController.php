@@ -42,7 +42,8 @@ class UserController extends Controller
         private readonly TypeRatingRepository $typeratingRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View
     {
@@ -117,9 +118,9 @@ class UserController extends Controller
      * Show the form for editing the specified User.
      *
      *
-     * @return mixed
-     *
      * @throws RepositoryException
+     *
+     * @return mixed
      */
     public function edit(int $id): View
     {

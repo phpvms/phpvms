@@ -40,7 +40,8 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  Request $request
+     * @param Request $request
+     *
      * @return mixed
      */
     public function render($request, Throwable $exception)
@@ -60,6 +61,8 @@ class Handler extends ExceptionHandler
     /**
      * Handle errors in the API
      *
+     *
+     * @param mixed $request
      *
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
@@ -103,7 +106,8 @@ class Handler extends ExceptionHandler
     /**
      * Convert an authentication exception into an unauthenticated response.
      *
-     * @param  Request                   $request
+     * @param Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function unauthenticated($request, AuthenticationException $exception)

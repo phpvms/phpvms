@@ -120,6 +120,9 @@ trait TestData
 
     /**
      * Add a given number of flights for a subfleet
+     *
+     * @param mixed $subfleet
+     * @param mixed $num_flights
      */
     public function addFlightsForSubfleet($subfleet, $num_flights): Collection
     {

@@ -33,7 +33,8 @@ class UserController extends Controller
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     protected function getUserId(Request $request): mixed
     {
@@ -74,10 +75,10 @@ class UserController extends Controller
      * Return all of the bids for the passed-in user
      *
      *
-     * @return mixed
-     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      * @throws \App\Exceptions\BidExistsForFlight
+     *
+     * @return mixed
      */
     public function bids(Request $request)
     {

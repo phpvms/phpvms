@@ -118,10 +118,12 @@ class LegacyImporterService extends Service
     /**
      * Run a given stage
      *
-     * @param  int      $start
-     * @return int|void
+     * @param int   $start
+     * @param mixed $importer
      *
      * @throws \Exception
+     *
+     * @return int|void
      */
     public function run($importer, $start = 0)
     {

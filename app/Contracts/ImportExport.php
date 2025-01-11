@@ -44,6 +44,8 @@ class ImportExport
 
     /**
      * Get the airline from the ICAO. Create it if it doesn't exist
+     *
+     * @param mixed $code
      */
     public function getAirline($code): Airline
     {
@@ -64,6 +66,8 @@ class ImportExport
 
     /**
      * Do a basic check that the number of columns match
+     *
+     * @param mixed $row
      */
     public function checkColumns($row): bool
     {
@@ -73,6 +77,8 @@ class ImportExport
     /**
      * Bubble up an error to the interface that we need to stop
      *
+     *
+     * @param mixed $error
      *
      * @throws ValidationException
      */
@@ -91,6 +97,8 @@ class ImportExport
 
     /**
      * Add to the log messages for this importer
+     *
+     * @param mixed $msg
      */
     public function log($msg): void
     {
@@ -100,6 +108,8 @@ class ImportExport
 
     /**
      * Add to the error log for this import
+     *
+     * @param mixed $msg
      */
     public function errorLog($msg): void
     {
@@ -109,6 +119,8 @@ class ImportExport
 
     /**
      * Set a key-value pair to an array
+     *
+     * @param mixed $kvp_str
      */
     protected function kvpToArray($kvp_str, array &$arr)
     {
@@ -130,6 +142,8 @@ class ImportExport
      *
      * Converted into a multi-dimensional array
      *
+     *
+     * @param mixed $field
      *
      * @return array|string
      */
@@ -205,6 +219,8 @@ class ImportExport
     }
 
     /**
+     * @param mixed $obj
+     *
      * @return mixed
      */
     public function objectToMultiString($obj)

@@ -57,7 +57,8 @@ abstract class BaseImporter
     /**
      * The start method. Takes the offset to start from
      *
-     * @param  int   $start
+     * @param int $start
+     *
      * @return mixed
      */
     abstract public function run($start = 0);
@@ -111,6 +112,8 @@ abstract class BaseImporter
     }
 
     /**
+     * @param mixed $date
+     *
      * @return Carbon
      */
     protected function parseDate($date)
@@ -121,6 +124,8 @@ abstract class BaseImporter
     /**
      * Take a decimal duration and convert it to minutes
      *
+     *
+     * @param mixed $duration
      *
      * @return float|int
      */

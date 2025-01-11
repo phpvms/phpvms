@@ -17,6 +17,8 @@ abstract class Enum
 
     /**
      * Create an instance of this Enum
+     *
+     * @param mixed $val
      */
     public function __construct($val)
     {
@@ -33,6 +35,8 @@ abstract class Enum
 
     /**
      * Return the label, try to return the translated version as well
+     *
+     * @param mixed $value
      */
     final public static function label($value): string
     {
@@ -65,6 +69,8 @@ abstract class Enum
      * Get the numeric value from a string code
      *
      *
+     * @param mixed $code
+     *
      * @return mixed|null
      */
     public static function getFromCode($code)
@@ -75,6 +81,8 @@ abstract class Enum
     /**
      * Convert the integer value into one of the codes
      *
+     *
+     * @param mixed $value
      *
      * @return false|int|string
      */
@@ -110,9 +118,9 @@ abstract class Enum
     /**
      * Returns all possible values as an array
      *
-     * @return array Constant name in key, constant value in value
-     *
      * @throws \ReflectionException
+     *
+     * @return array Constant name in key, constant value in value
      */
     public static function toArray(): array
     {
@@ -134,12 +142,13 @@ abstract class Enum
      * Returns a value when called statically like so: MyEnum::SOME_VALUE() given SOME_VALUE is a
      * class constant
      *
-     * @param  string $name
-     * @param  array  $arguments
-     * @return static
+     * @param string $name
+     * @param array  $arguments
      *
      * @throws \BadMethodCallException
      * @throws \ReflectionException
+     *
+     * @return static
      */
     public static function __callStatic($name, $arguments)
     {

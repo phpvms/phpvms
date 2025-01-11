@@ -46,6 +46,8 @@ class AircraftImporter extends ImportExport
      * first airline that's been found
      *
      *
+     * @param mixed $type
+     *
      * @return Subfleet|\Illuminate\Database\Eloquent\Model|null|object|static
      */
     protected function getSubfleet($type)

@@ -124,6 +124,8 @@ class ModuleService extends Service
 
     /**
      * Get Module Information from Database.
+     *
+     * @param mixed $id
      */
     public function getModule($id): Module
     {
@@ -132,6 +134,8 @@ class ModuleService extends Service
 
     /**
      * Adding installed module to the database
+     *
+     * @param mixed $module_name
      */
     public function addModule($module_name): bool
     {
@@ -248,6 +252,9 @@ class ModuleService extends Service
 
     /**
      * Update module with the status passed by user.
+     *
+     * @param mixed $id
+     * @param mixed $status
      */
     public function updateModule($id, $status): bool
     {
@@ -269,6 +276,9 @@ class ModuleService extends Service
 
     /**
      * Delete Module from the Storage & Database.
+     *
+     * @param mixed $id
+     * @param mixed $data
      */
     public function deleteModule($id, $data): bool
     {

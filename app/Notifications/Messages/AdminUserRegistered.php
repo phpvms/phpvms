@@ -27,6 +27,8 @@ class AdminUserRegistered extends Notification implements ShouldQueue
     }
 
     /**
+     * @param mixed $notifiable
+     *
      * @return string[]
      */
     public function via($notifiable)
@@ -35,6 +37,8 @@ class AdminUserRegistered extends Notification implements ShouldQueue
     }
 
     /**
+     * @param mixed $notifiable
+     *
      * @return array
      */
     public function toArray($notifiable)

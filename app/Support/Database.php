@@ -16,6 +16,8 @@ class Database
     }
 
     /**
+     * @param mixed $yaml_file
+     *
      * @throws \Exception
      */
     public static function seed_from_yaml_file($yaml_file, bool $ignore_errors = false): array
@@ -84,7 +86,8 @@ class Database
     }
 
     /**
-     * @param  string $id_col The ID column to use for update/insert
+     * @param string $id_col The ID column to use for update/insert
+     *
      * @return mixed
      */
     public static function insert_row(

@@ -48,6 +48,8 @@ class ConfigService extends Service
      * Create the .env file. This is called by an initial install
      *
      *
+     * @param mixed $attrs
+     *
      * @throws FileException
      */
     public function createConfigFiles($attrs): bool
@@ -170,6 +172,8 @@ class ConfigService extends Service
      * of mysql/maria, etc used. ATM, only make a change for MariaDB
      *
      *
+     * @param mixed $opts
+     *
      * @return mixed
      */
     protected function determinePdoOptions($opts)
@@ -200,6 +204,8 @@ class ConfigService extends Service
      * Determine is APC is installed, if so, then use it as a cache driver
      *
      *
+     * @param mixed $opts
+     *
      * @return mixed
      */
     protected function configCacheDriver($opts)
@@ -229,6 +235,8 @@ class ConfigService extends Service
      * Setup a queue driver that's not the default "sync"
      * driver, if a database is being used
      *
+     *
+     * @param mixed $opts
      *
      * @return mixed
      */
@@ -273,6 +281,8 @@ class ConfigService extends Service
     /**
      * Get the template file name and write it out
      *
+     *
+     * @param mixed $opts
      *
      * @throws FileException
      */

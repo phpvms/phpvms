@@ -83,6 +83,8 @@ class application extends Illuminate\Foundation\Application
      * Added for the custom filesystem driver. Used in the index.php
      * in the root of the install to set it to point to /public,
      * instead of just /
+     *
+     * @param mixed $publicUrlPath
      */
     public function setPublicUrlPath($publicUrlPath)
     {

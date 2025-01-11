@@ -10,6 +10,9 @@ class Math
     /**
      * Determine from the base rate, if we want to return the overridden rate
      * or if the overridden rate is a percentage, then return that amount
+     *
+     * @param mixed      $base_rate
+     * @param null|mixed $override_rate
      */
     public static function applyAmountOrPercent($base_rate, $override_rate = null): ?float
     {
@@ -28,6 +31,9 @@ class Math
 
     /**
      * Apply a percentage to a number
+     *
+     * @param mixed $number
+     * @param mixed $percent
      */
     public static function getPercent($number, $percent): float
     {

@@ -31,6 +31,9 @@ class IdMapper extends Service
      * Return the ID for a mapping
      *
      *
+     * @param mixed $entity
+     * @param mixed $old_id
+     *
      * @return bool
      */
     public function getMapping($entity, $old_id): bool|int

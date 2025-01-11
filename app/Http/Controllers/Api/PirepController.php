@@ -47,7 +47,8 @@ class PirepController extends Controller
         private readonly PirepRepository $pirepRepo,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Parse any PIREP added in
@@ -122,9 +123,9 @@ class PirepController extends Controller
      * Save the fares
      *
      *
-     * @return ?PirepFare[]
-     *
      * @throws \Exception
+     *
+     * @return ?PirepFare[]
      */
     protected function getFares(Request $request): ?array
     {
@@ -303,9 +304,9 @@ class PirepController extends Controller
      * Cancel the PIREP
      *
      *
-     * @return mixed
-     *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
+     *
+     * @return mixed
      */
     public function cancel(string $pirep_id, Request $request)
     {

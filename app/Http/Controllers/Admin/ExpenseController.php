@@ -29,7 +29,8 @@ class ExpenseController extends Controller
         private readonly ExpenseRepository $expenseRepo,
         private readonly ImportService $importSvc,
         private readonly FinanceService $financeSvc,
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the expenses.

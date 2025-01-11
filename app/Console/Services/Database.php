@@ -12,7 +12,10 @@ class Database
     /**
      * Create the base connection DSN, optionally include the DB name
      *
-     * @param  null   $name
+     * @param null  $name
+     * @param mixed $host
+     * @param mixed $port
+     *
      * @return string
      */
     public function createDsn($host, $port, $name = null)
@@ -27,9 +30,13 @@ class Database
     }
 
     /**
-     * @return PDO
+     * @param mixed $dsn
+     * @param mixed $user
+     * @param mixed $pass
      *
      * @throws \PDOException
+     *
+     * @return PDO
      */
     public function createPDO($dsn, $user, $pass)
     {

@@ -375,6 +375,8 @@ class Pirep extends Model
 
     /**
      * Return a custom field value
+     *
+     * @param mixed $field_name
      */
     public function field($field_name): string
     {
