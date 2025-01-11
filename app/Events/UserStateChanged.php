@@ -11,6 +11,7 @@ use App\Models\User;
 class UserStateChanged extends Event
 {
     public User $user;
+
     public $old_state;
 
     public function __construct(User $user, $old_state)

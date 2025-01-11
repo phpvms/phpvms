@@ -41,9 +41,9 @@ class Airport extends Model
     use ExpensableTrait;
     use FilesTrait;
     use HasFactory;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'airports';
 
@@ -155,8 +155,6 @@ class Airport extends Model
     /**
      * Return full description like:
      * KJFK/JFK - John F Kennedy (hub)
-     *
-     * @return Attribute
      */
     public function description(): Attribute
     {
@@ -170,8 +168,6 @@ class Airport extends Model
 
     /**
      * Shortcut for timezone
-     *
-     * @return Attribute
      */
     public function tz(): Attribute
     {

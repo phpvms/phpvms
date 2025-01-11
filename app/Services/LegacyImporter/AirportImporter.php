@@ -56,7 +56,7 @@ class AirportImporter extends BaseImporter
             }
 
             $w = ['id' => $attrs['id']];
-            //$airport = Airport::updateOrCreate($w, $attrs);
+            // $airport = Airport::updateOrCreate($w, $attrs);
 
             try {
                 $airport = Airport::create(array_merge($w, $attrs));
@@ -65,6 +65,7 @@ class AirportImporter extends BaseImporter
                 $errorCode = $e->errorInfo[1];
                 if ($sqlState === '23000' && $errorCode === 1062) {
                     Log::info('Found duplicate for '.$row->icao.', ignoring');
+
                     return true;
                 }
 
@@ -77,6 +78,7 @@ class AirportImporter extends BaseImporter
         }
 
         $this->info('Imported '.$count.' airports');
+
         return true;
     }
 }

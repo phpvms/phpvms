@@ -29,7 +29,9 @@ use League\Csv\CannotInsertRecord;
 final class ImporterTest extends TestCase
 {
     private ImportExport $importBaseClass;
+
     private ImportService $importSvc;
+
     private FareService $fareSvc;
 
     protected function setUp(): void
@@ -77,7 +79,7 @@ final class ImporterTest extends TestCase
      * Test the parsing of different field/column which can be used
      * for specifying different field values
      */
-    public function testConvertStringtoObjects(): void
+    public function test_convert_stringto_objects(): void
     {
         $tests = [
             [
@@ -170,7 +172,7 @@ final class ImporterTest extends TestCase
      * Tests for converting the different object/array key values
      * into the format that we use in CSV files
      */
-    public function testConvertObjectToString(): void
+    public function test_convert_object_to_string(): void
     {
         $tests = [
             [
@@ -259,7 +261,7 @@ final class ImporterTest extends TestCase
      * @throws \Illuminate\Validation\ValidationException
      * @throws CannotInsertRecord
      */
-    public function testAircraftExporter(): void
+    public function test_aircraft_exporter(): void
     {
         $aircraft = Aircraft::factory()->create();
 
@@ -288,7 +290,7 @@ final class ImporterTest extends TestCase
      *
      * @throws CannotInsertRecord
      */
-    public function testAirportExporter(): void
+    public function test_airport_exporter(): void
     {
         $airport_name = 'Adolfo Suárez Madrid–Barajas Airport';
 
@@ -317,7 +319,7 @@ final class ImporterTest extends TestCase
      *
      * @throws CannotInsertRecord
      */
-    public function testFlightExporter(): void
+    public function test_flight_exporter(): void
     {
         $fareSvc = app(FareService::class);
 
@@ -379,7 +381,7 @@ final class ImporterTest extends TestCase
     /**
      * Try importing the aicraft in the airports. Should fail
      */
-    public function testInvalidFileImport(): void
+    public function test_invalid_file_import(): void
     {
         // $this->expectException(ValidationException::class);
         $file_path = base_path('tests/data/aircraft.csv');
@@ -391,7 +393,7 @@ final class ImporterTest extends TestCase
      * Try importing the aicraft in the airports. Should fail because of
      * empty/invalid rows
      */
-    public function testEmptyCols(): void
+    public function test_empty_cols(): void
     {
         $file_path = base_path('tests/data/expenses_empty_rows.csv');
         $status = $this->importSvc->importExpenses($file_path);
@@ -401,10 +403,8 @@ final class ImporterTest extends TestCase
 
     /**
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return void
      */
-    public function testExpenseExporter(): void
+    public function test_expense_exporter(): void
     {
         $expenses = Expense::factory(10)->create();
 
@@ -418,7 +418,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testExpenseImporter(): void
+    public function test_expense_importer(): void
     {
         $airline = Airline::factory()->create(['icao' => 'VMS']);
         $subfleet = Subfleet::factory()->create(['type' => '744-3X-RB211']);
@@ -457,7 +457,7 @@ final class ImporterTest extends TestCase
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testFareImporter(): void
+    public function test_fare_importer(): void
     {
         $file_path = base_path('tests/data/fares.csv');
         $status = $this->importSvc->importFares($file_path);
@@ -509,7 +509,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testFlightImporter(): void
+    public function test_flight_importer(): void
     {
         [$airline, $subfleet] = $this->insertFlightsScaffoldData();
 
@@ -592,7 +592,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testFlightImporterEmptyCustomFields(): void
+    public function test_flight_importer_empty_custom_fields(): void
     {
         [$airline, $subfleet] = $this->insertFlightsScaffoldData();
 
@@ -623,7 +623,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testFlightImporterCore(): void
+    public function test_flight_importer_core(): void
     {
         [$airline, $subfleet] = $this->insertFlightsScaffoldData();
 
@@ -641,7 +641,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testFlightImporterAll(): void
+    public function test_flight_importer_all(): void
     {
         [$airline, $subfleet] = $this->insertFlightsScaffoldData();
 
@@ -657,7 +657,7 @@ final class ImporterTest extends TestCase
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testAircraftImporter(): void
+    public function test_aircraft_importer(): void
     {
         Airline::factory()->create();
         // $subfleet = \App\Models\Subfleet::factory()->create(['type' => 'A32X']);
@@ -701,7 +701,7 @@ final class ImporterTest extends TestCase
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testAirportImporter(): void
+    public function test_airport_importer(): void
     {
         $file_path = base_path('tests/data/airports.csv');
         $status = $this->importSvc->importAirports($file_path);
@@ -741,7 +741,7 @@ final class ImporterTest extends TestCase
         $this->assertEquals(setting('airports.default_ground_handling_cost'), $airport->ground_handling_cost);
     }
 
-    public function testAirportImporterInvalidInputs(): void
+    public function test_airport_importer_invalid_inputs(): void
     {
         $file_path = base_path('tests/data/airports_errors.csv');
         $status = $this->importSvc->importAirports($file_path);
@@ -769,7 +769,7 @@ final class ImporterTest extends TestCase
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function testSubfleetImporter(): void
+    public function test_subfleet_importer(): void
     {
         $fare_economy = Fare::factory()->create(['code' => 'Y', 'capacity' => 150]);
         $fare_business = Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
@@ -831,7 +831,7 @@ final class ImporterTest extends TestCase
         $this->assertEquals($rank_fo->manual_pay, $fo->manual_pay);
     }
 
-    public function testAirportSpecialCharsImporter(): void
+    public function test_airport_special_chars_importer(): void
     {
         $file_path = base_path('tests/data/airports_special_chars.csv');
         $status = $this->importSvc->importAirports($file_path);

@@ -29,17 +29,6 @@ use Prettus\Repository\Exceptions\RepositoryException;
 
 class FlightController extends Controller
 {
-    /**
-     * @param AirlineRepository  $airlineRepo
-     * @param AirportRepository  $airportRepo
-     * @param FlightRepository   $flightRepo
-     * @param FlightService      $flightSvc
-     * @param GeoService         $geoSvc
-     * @param ModuleService      $moduleSvc
-     * @param SubfleetRepository $subfleetRepo
-     * @param UserRepository     $userRepo
-     * @param UserService        $userSvc
-     */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
         private readonly AirportRepository $airportRepo,
@@ -50,15 +39,10 @@ class FlightController extends Controller
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
-     * @param Request $request
-     *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -68,11 +52,8 @@ class FlightController extends Controller
     /**
      * Make a search request using the Repository search
      *
-     * @param Request $request
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
-     *
-     * @return View
      */
     public function search(Request $request): View
     {
@@ -171,6 +152,7 @@ class FlightController extends Controller
         foreach ($bids as $bid) {
             if (!$bid->flight) {
                 $bid->delete();
+
                 continue;
             }
 
@@ -200,10 +182,6 @@ class FlightController extends Controller
 
     /**
      * Find the user's bids and display them
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function bids(Request $request): View
     {
@@ -217,6 +195,7 @@ class FlightController extends Controller
             // Remove any invalid bids (flight doesn't exist or something)
             if (!$bid->flight) {
                 $bid->delete();
+
                 continue;
             }
 
@@ -240,7 +219,6 @@ class FlightController extends Controller
     /**
      * Show the flight information page
      *
-     * @param string $id
      *
      * @return mixed
      */
@@ -270,6 +248,7 @@ class FlightController extends Controller
         $flight = $this->flightRepo->with($with_flight)->find($id);
         if (empty($flight)) {
             Flash::error('Flight not found!');
+
             return redirect(route('frontend.dashboard.index'));
         }
 

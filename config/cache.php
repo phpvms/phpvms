@@ -18,7 +18,7 @@ return [
             'time' => 60 * 10,
         ],
         'SETTINGS' => [
-            'key'  => 'settings.', //append setting key
+            'key'  => 'settings.', // append setting key
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
         'MODULES' => [

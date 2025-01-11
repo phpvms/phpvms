@@ -16,23 +16,16 @@ class AviationWeather extends Metar
 
     private const TAF_URL = 'https://aviationweather.gov/api/data/taf?ids=';
 
-    /**
-     * @param HttpClient $httpClient
-     */
     public function __construct(
         private readonly HttpClient $httpClient
-    ) {
-    }
+    ) {}
 
     /**
      * Implement the METAR - Return the string
      *
-     * @param $icao
      *
      * @throws \Exception
      * @throws \GuzzleHttp\Exception\GuzzleException
-     *
-     * @return string
      */
     protected function get_metar($icao): string
     {
@@ -44,9 +37,11 @@ class AviationWeather extends Metar
 
         try {
             $raw_metar = $this->httpClient->get($url);
+
             return trim($raw_metar);
         } catch (Exception $e) {
             Log::error('Error reading METAR: '.$e->getMessage());
+
             return '';
         }
     }
@@ -54,11 +49,8 @@ class AviationWeather extends Metar
     /**
      * Do the actual retrieval of the TAF
      *
-     * @param $icao
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
-     *
-     * @return string
      */
     protected function get_taf($icao): string
     {
@@ -70,10 +62,12 @@ class AviationWeather extends Metar
 
         try {
             $raw_taf = $this->httpClient->get($url);
+
             // Remove " \n" to remove new lines from the metar content
             return trim(str_replace(" \n", '', $raw_taf));
         } catch (Exception $e) {
             Log::error('Error reading TAF: '.$e->getMessage());
+
             return '';
         }
     }

@@ -42,8 +42,6 @@ class UserField extends Model
 
     /**
      * Get the slug so we can use it in forms
-     *
-     * @return Attribute
      */
     public function slug(): Attribute
     {

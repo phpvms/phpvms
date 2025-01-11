@@ -47,11 +47,8 @@ class ConfigService extends Service
     /**
      * Create the .env file. This is called by an initial install
      *
-     * @param $attrs
      *
      * @throws FileException
-     *
-     * @return bool
      */
     public function createConfigFiles($attrs): bool
     {
@@ -127,7 +124,6 @@ class ConfigService extends Service
     /**
      * Update the environment file and update certain keys/values
      *
-     * @param array $kvp
      *
      * @return void
      */
@@ -163,8 +159,6 @@ class ConfigService extends Service
 
     /**
      * Generate a fresh new APP_KEY
-     *
-     * @return string
      */
     protected function createAppKey(): string
     {
@@ -175,7 +169,6 @@ class ConfigService extends Service
      * Change a few options within the PDO driver, depending on the version
      * of mysql/maria, etc used. ATM, only make a change for MariaDB
      *
-     * @param $opts
      *
      * @return mixed
      */
@@ -206,7 +199,6 @@ class ConfigService extends Service
     /**
      * Determine is APC is installed, if so, then use it as a cache driver
      *
-     * @param $opts
      *
      * @return mixed
      */
@@ -222,12 +214,14 @@ class ConfigService extends Service
             if (extension_loaded($ext)) {
                 Log::info('Detected extension "'.$ext.'", setting driver to "'.$driver.'"');
                 $opts['CACHE_DRIVER'] = $driver;
+
                 return $opts;
             }
         }
 
         Log::info('No extension detected, using file cache');
         $opts['CACHE_DRIVER'] = config('installer.cache.default');
+
         return $opts;
     }
 
@@ -235,7 +229,6 @@ class ConfigService extends Service
      * Setup a queue driver that's not the default "sync"
      * driver, if a database is being used
      *
-     * @param $opts
      *
      * @return mixed
      */
@@ -280,7 +273,6 @@ class ConfigService extends Service
     /**
      * Get the template file name and write it out
      *
-     * @param $opts
      *
      * @throws FileException
      */

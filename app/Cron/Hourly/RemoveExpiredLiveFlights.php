@@ -19,7 +19,6 @@ class RemoveExpiredLiveFlights extends Listener
     /**
      * Remove expired live flights that haven't had an update in the live time
      *
-     * @param CronHourly $event
      *
      * @throws \Exception
      */

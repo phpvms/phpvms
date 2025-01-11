@@ -14,18 +14,12 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
-    /**
-     * @param FinanceService $financeSvc
-     */
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Get a list of themes formatted for a select box
-     *
-     * @return array
      */
     private function getThemes(): array
     {
@@ -44,8 +38,6 @@ class SettingsController extends Controller
 
     /**
      * Return the currency list
-     *
-     * @return array
      */
     private function getCurrencyList(): array
     {
@@ -75,10 +67,6 @@ class SettingsController extends Controller
 
     /**
      * Update the specified setting in storage.
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function update(Request $request): RedirectResponse
     {

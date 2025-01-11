@@ -10,11 +10,17 @@ use App\Contracts\Enum;
 class Days extends Enum
 {
     public const MONDAY = 1 << 0;
+
     public const TUESDAY = 1 << 1;
+
     public const WEDNESDAY = 1 << 2;
+
     public const THURSDAY = 1 << 3;
+
     public const FRIDAY = 1 << 4;
+
     public const SATURDAY = 1 << 5;
+
     public const SUNDAY = 1 << 6;
 
     public static array $labels = [
@@ -53,7 +59,6 @@ class Days extends Enum
     /**
      * Create the masked value for the days of week
      *
-     * @param array $days
      *
      * @return int|mixed
      */
@@ -69,11 +74,6 @@ class Days extends Enum
 
     /**
      * See if the given mask has a day
-     *
-     * @param $mask
-     * @param $day
-     *
-     * @return bool
      */
     public static function in($mask, $day): bool
     {
@@ -82,10 +82,6 @@ class Days extends Enum
 
     /**
      * Does the mask contain today?
-     *
-     * @param $val
-     *
-     * @return bool
      */
     public static function isToday($val): bool
     {

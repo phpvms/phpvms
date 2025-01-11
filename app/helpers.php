@@ -25,8 +25,6 @@ if (!function_exists('in_mask')) {
     /**
      * Return true/false if a value exists in a mask
      *
-     * @param $mask
-     * @param $value
      *
      * @return bool
      */
@@ -45,7 +43,6 @@ if (!function_exists('get_truth_state')) {
      * Check if the passed state matches any of the states that
      * we regard as being true or false
      *
-     * @param $state
      *
      * @return bool
      */
@@ -78,7 +75,6 @@ if (!function_exists('list_to_assoc')) {
      * to:
      *    ['item1' => 'item1', 'item2' => 'item2']
      *
-     * @param array $list
      *
      * @return array
      */
@@ -111,7 +107,6 @@ if (!function_exists('list_to_editable')) {
      * Return:
      *    [{value: 1, text: "text1"}, {value: 2, text: "text2"}, ...]
      *
-     * @param array $list
      *
      * @return array
      */
@@ -133,9 +128,6 @@ if (!function_exists('skin_view')) {
     /**
      * Render a skin
      *
-     * @param       $template
-     * @param array $vars
-     * @param array $merge_data
      *
      * @return Factory|\Illuminate\View\View
      */
@@ -160,9 +152,7 @@ if (!function_exists('setting')) {
     /**
      * Read a setting from the settings table
      *
-     * @param       $key
-     * @param mixed $default
-     *
+     * @param  mixed      $default
      * @return mixed|null
      */
     function setting($key, $default = null)
@@ -199,6 +189,7 @@ if (!function_exists('setting_save')) {
         /** @var \App\Repositories\SettingRepository $settingRepo */
         $settingRepo = app(SettingRepository::class);
         $settingRepo->save($key, $value);
+
         return $value;
     }
 }
@@ -210,9 +201,7 @@ if (!function_exists('kvp')) {
     /**
      * Read a setting from the KVP repository
      *
-     * @param string      $key
-     * @param string|null $default
-     *
+     * @param  string|null $default
      * @return mixed|null
      */
     function kvp(string $key, $default = null)
@@ -237,8 +226,6 @@ if (!function_exists('kvp_save')) {
     /**
      * Read a setting from the KVP repository
      *
-     * @param string $key
-     * @param string $value
      *
      * @return mixed|null
      */
@@ -303,11 +290,10 @@ if (!function_exists('show_datetime')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param Carbon $date
      *
      * @return string
      */
-    function show_datetime(Carbon $date = null)
+    function show_datetime(?Carbon $date = null)
     {
         if ($date === null) {
             return '-';
@@ -330,9 +316,7 @@ if (!function_exists('show_date')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param \Carbon\Carbon $date
-     * @param string         $default_timezone Default timezone to use, defaults to UTC
-     *
+     * @param  string $default_timezone Default timezone to use, defaults to UTC
      * @return string
      */
     function show_date(Carbon $date, $default_timezone = 'UTC')
@@ -354,10 +338,8 @@ if (!function_exists('show_datetime_format')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param \Carbon\Carbon $date
-     * @param string         $format
-     * @param string         $default_timezone A default timezone to use (UTC by default)
-     *
+     * @param  string $format
+     * @param  string $default_timezone A default timezone to use (UTC by default)
      * @return string
      */
     function show_datetime_format(Carbon $date, $format, $default_timezone = 'UTC')
@@ -374,8 +356,6 @@ if (!function_exists('show_datetime_format')) {
 if (!function_exists('secstohhmm')) {
     /**
      * Convert seconds to hhmm format
-     *
-     * @param $seconds
      */
     function secstohhmm($seconds)
     {
@@ -389,9 +369,8 @@ if (!function_exists('_fmt')) {
     /**
      * Replace strings
      *
-     * @param       $line    "Hi, my name is :name"
-     * @param array $replace ['name' => 'Nabeel']
-     *
+     * @param        $line    "Hi, my name is :name"
+     * @param  array $replace ['name' => 'Nabeel']
      * @return mixed
      */
     function _fmt($line, array $replace)
@@ -417,8 +396,7 @@ if (!function_exists('docs_link')) {
     /**
      * Return a link to the docs
      *
-     * @param string $key Key from phpvms.config.docs
-     *
+     * @param  string $key Key from phpvms.config.docs
      * @return string
      */
     function docs_link($key)
@@ -431,8 +409,7 @@ if (!function_exists('check_module')) {
     /**
      * Check if a module is installed and active
      *
-     * @param string $module_name
-     *
+     * @param  string $module_name
      * @return bool
      */
     function check_module($module_name)
@@ -447,8 +424,7 @@ if (!function_exists('decode_days')) {
     /**
      * Decode days of flights for schedule display
      *
-     * @param int $flight_days
-     *
+     * @param  int    $flight_days
      * @return string Monday, Tuesday, Friday, Sunday
      */
     function decode_days($flight_days)

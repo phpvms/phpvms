@@ -12,12 +12,6 @@ class DatabaseService extends Service
     /**
      * Check the PHP version that it meets the minimum requirement
      *
-     * @param $driver
-     * @param $host
-     * @param $port
-     * @param $name
-     * @param $user
-     * @param $pass
      *
      * @return bool
      */

@@ -10,7 +10,6 @@ use App\Models\User;
  */
 class ProcessAward extends Event
 {
-    /** @var User */
     public User $user;
 
     public function __construct(User $user)

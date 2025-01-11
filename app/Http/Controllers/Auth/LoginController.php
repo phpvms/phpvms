@@ -24,13 +24,10 @@ class LoginController extends Controller
      */
     protected mixed $redirectTo = '/dashboard';
 
-    /** @var string */
     private string $loginFieldValue;
 
     /**
      * LoginController constructor.
-     *
-     * @param UserService $userSvc
      */
     public function __construct(
         private readonly UserService $userSvc
@@ -44,10 +41,6 @@ class LoginController extends Controller
      * Overriding the value from the trait
      *
      * @override
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return array
      */
     protected function credentials(Request $request): array
     {
@@ -61,10 +54,6 @@ class LoginController extends Controller
      * Validate the user login request.
      *
      * @override
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return void
      */
     protected function validateLogin(Request $request): void
     {
@@ -87,6 +76,7 @@ class LoginController extends Controller
                 } catch (PilotIdNotFound $ex) {
                     Log::warning('Error logging in, pilot_id not found, id='.$value);
                     $fail(__('auth.failed'));
+
                     return;
                 }
 
@@ -101,11 +91,6 @@ class LoginController extends Controller
         ]);
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return RedirectResponse|View
-     */
     protected function sendLoginResponse(Request $request): RedirectResponse|View
     {
         /** @var User $user */

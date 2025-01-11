@@ -146,6 +146,7 @@
             "@php artisan package:discover --ansi",
             "@php artisan phpvms:caches"
         ],
+        "pint": "pint --dirty",
         "test": "phpunit"
     },
     "config": {

@@ -20,8 +20,6 @@ trait TestData
      * @param array $attrs Additional user attributes
      *
      * @throws Exception
-     *
-     * @return User
      */
     public function createUser(array $attrs = []): User
     {
@@ -37,10 +35,6 @@ trait TestData
 
     /**
      * Create an admin user
-     *
-     * @param array $attrs
-     *
-     * @return User
      */
     public function createAdminUser(array $attrs = []): User
     {
@@ -62,8 +56,6 @@ trait TestData
      * @param array $pirep_attrs Additional attributes for the PIREP
      *
      * @throws \Exception
-     *
-     * @return \App\Models\Pirep
      */
     protected function createPirep(array $user_attrs = [], array $pirep_attrs = []): Pirep
     {
@@ -85,8 +77,6 @@ trait TestData
     /**
      * Create a rank and associate the given subfleet IDs with it
      *
-     * @param int   $hours
-     * @param array $subfleet_ids
      *
      * @return mixed
      */
@@ -105,8 +95,6 @@ trait TestData
     /**
      * Add a single flight
      *
-     * @param User  $user
-     * @param array $flight_properties
      *
      * @return mixed
      */
@@ -132,11 +120,6 @@ trait TestData
 
     /**
      * Add a given number of flights for a subfleet
-     *
-     * @param $subfleet
-     * @param $num_flights
-     *
-     * @return Collection
      */
     public function addFlightsForSubfleet($subfleet, $num_flights): Collection
     {
@@ -150,11 +133,6 @@ trait TestData
 
     /**
      * Create a subfleet with a number of aircraft assigned
-     *
-     * @param int|null    $aircraft_count
-     * @param string|null $airport_id
-     *
-     * @return array
      */
     public function createSubfleetWithAircraft(?int $aircraft_count = null, ?string $airport_id = null): array
     {
@@ -182,8 +160,6 @@ trait TestData
      * Create a role
      *
      * @param array $attrs Additional role attributes
-     *
-     * @return Role
      */
     public function createRole(array $attrs = []): Role
     {

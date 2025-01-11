@@ -12,23 +12,16 @@ use Illuminate\View\View;
 
 class FinanceController extends Controller
 {
-    /**
-     * @param FinanceService $financeSvc
-     */
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display the summation tables for a given month by airline
      *
-     * @param Request $request
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -53,7 +46,5 @@ class FinanceController extends Controller
      *
      * @param mixed $id
      */
-    public function show($id)
-    {
-    }
+    public function show($id) {}
 }

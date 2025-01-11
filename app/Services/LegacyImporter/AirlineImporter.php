@@ -27,7 +27,7 @@ class AirlineImporter extends BaseImporter
 
             $w = ['icao' => $row->code];
 
-            //$airline = Airline::firstOrCreate($w, $attrs);
+            // $airline = Airline::firstOrCreate($w, $attrs);
             $airline = Airline::create(array_merge($w, $attrs));
 
             $this->idMapper->addMapping('airlines', $row->id, $airline->id);

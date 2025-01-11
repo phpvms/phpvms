@@ -532,31 +532,31 @@ class RouteServiceProvider extends ServiceProvider
                 ->only(['index', 'show'])
                 ->middleware('ability:admin,admin-access');
 
-            //Modules
+            // Modules
             Route::group([
                 'as'         => 'modules.',
                 'prefix'     => 'modules',
                 'middleware' => ['ability:admin,modules'],
             ], function () {
-                //Modules Index
+                // Modules Index
                 Route::get('/', 'ModulesController@index')->name('index');
 
-                //Add Module
+                // Add Module
                 Route::get('/create', 'ModulesController@create')->name('create');
 
-                //Store Module
+                // Store Module
                 Route::post('/create', 'ModulesController@store')->name('store');
 
-                //Enable Module
+                // Enable Module
                 Route::post('/enable', 'ModulesController@enable')->name('enable');
 
-                //Edit Module
+                // Edit Module
                 Route::get('/{id}/edit', 'ModulesController@edit')->name('edit');
 
-                //Update Module
+                // Update Module
                 Route::post('/{id}', 'ModulesController@update')->name('update');
 
-                //Delete Module
+                // Delete Module
                 Route::delete('/{id}', 'ModulesController@destroy')->name('destroy');
             });
         });

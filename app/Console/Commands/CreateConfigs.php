@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\App;
 class CreateConfigs extends Command
 {
     protected $signature = 'phpvms:config {db_host} {db_name} {db_user} {db_pass}';
+
     protected $description = 'Create the config files';
 
     public function __construct(
@@ -65,7 +66,7 @@ class CreateConfigs extends Command
             unlink($env_file);
         }
 
-        //{name} {db_host} {db_name} {db_user} {db_pass}
+        // {name} {db_host} {db_name} {db_user} {db_pass}
 
         $this->info('Regenerating the config files');
         $cfgSvc->createConfigFiles([

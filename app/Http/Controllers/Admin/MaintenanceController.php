@@ -23,8 +23,7 @@ class MaintenanceController extends Controller
         private readonly KvpRepository $kvpRepo,
         private readonly VersionService $versionSvc,
         private readonly SeederService $seederSvc,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -43,10 +42,6 @@ class MaintenanceController extends Controller
 
     /**
      * Clear caches depending on the type passed in
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return RedirectResponse
      */
     public function cache(Request $request): RedirectResponse
     {
@@ -82,6 +77,7 @@ class MaintenanceController extends Controller
         }
 
         Flash::success('Cache cleared!');
+
         return redirect(route('admin.maintenance.index'));
     }
 
@@ -90,15 +86,12 @@ class MaintenanceController extends Controller
         Artisan::call('queue:flush');
 
         Flash::success('Failed jobs flushed!');
+
         return redirect(route('admin.maintenance.index'));
     }
 
     /**
      * Force an update check
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return RedirectResponse
      */
     public function forcecheck(Request $request): RedirectResponse
     {
@@ -120,21 +113,16 @@ class MaintenanceController extends Controller
 
     /**
      * Run the module reseeding tasks
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return RedirectResponse
      */
     public function reseed(Request $request): RedirectResponse
     {
         $this->seederSvc->syncAllSeeds();
+
         return redirect(route('admin.maintenance.index'));
     }
 
     /**
      * Enable the cron, or if it's enabled, change the ID that is used
-     *
-     * @param Request $request
      */
     public function cron_enable(Request $request): RedirectResponse
     {
@@ -142,21 +130,19 @@ class MaintenanceController extends Controller
         setting_save('cron.random_id', $id);
 
         Flash::success('Web cron refreshed!');
+
         return redirect(route('admin.maintenance.index'));
     }
 
     /**
      * Disable the web cron
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function cron_disable(Request $request): RedirectResponse
     {
         setting_save('cron.random_id', '');
 
         Flash::success('Web cron disabled!');
+
         return redirect(route('admin.maintenance.index'));
     }
 }

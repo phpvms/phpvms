@@ -48,8 +48,6 @@ class PirepStatusChanged extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param Pirep $pirep
      */
     public function __construct(Pirep $pirep)
     {
@@ -66,8 +64,6 @@ class PirepStatusChanged extends Notification implements ShouldQueue
      * Send a Discord notification
      *
      * @param Pirep $pirep
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($pirep): ?DiscordMessage
     {
@@ -94,6 +90,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
         $color = in_array($pirep->status, $danger_types, true) ? 'ED2939' : 'FD6A02';
 
         $dm = new DiscordMessage();
+
         return $dm->webhook(setting('notifications.discord_public_webhook_url'))
             ->color($color)
             ->title($title)
@@ -106,11 +103,6 @@ class PirepStatusChanged extends Notification implements ShouldQueue
             ->fields($fields);
     }
 
-    /**
-     * @param Pirep $pirep
-     *
-     * @return array
-     */
     public function createFields(Pirep $pirep): array
     {
         $fields = [
@@ -145,8 +137,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

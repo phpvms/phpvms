@@ -7,10 +7,15 @@ use App\Contracts\Enum;
 class AircraftStatus extends Enum
 {
     public const ACTIVE = 'A';
+
     public const MAINTENANCE = 'M';
+
     public const STORED = 'S';
+
     public const RETIRED = 'R';
+
     public const SCRAPPED = 'C';
+
     public const WRITTEN_OFF = 'W';
 
     public static array $labels = [

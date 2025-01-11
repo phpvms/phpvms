@@ -19,8 +19,6 @@ trait Importable
      * @param int     $importType Refer to \App\Models\Enums\ImportExportType
      *
      * @throws \Illuminate\Validation\ValidationException
-     *
-     * @return mixed
      */
     public function importFile(Request $request, int $importType): mixed
     {

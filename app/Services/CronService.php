@@ -14,13 +14,10 @@ class CronService extends Service
 {
     public function __construct(
         private readonly KvpRepository $kvpRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Get the path for running a cron job
-     *
-     * @return string
      */
     public function getCronPath(): string
     {
@@ -51,8 +48,6 @@ class CronService extends Service
 
     /**
      * Show an example cron command that runs every minute
-     *
-     * @return string
      */
     public function getCronExecString(): string
     {
@@ -75,8 +70,6 @@ class CronService extends Service
     /**
      * True/false if there's a problem with the cron. Now this is mainly
      * if the cron hasn't run in the last 5 minutes at least
-     *
-     * @return bool
      */
     public function cronProblemExists(): bool
     {
@@ -90,11 +83,13 @@ class CronService extends Service
             $dt_now = new DateTime('now', new DateTimeZone('UTC'));
         } catch (Exception $e) {
             Log::error('Error checking for cron problem: '.$e->getMessage());
+
             return true;
         }
 
         // More than 5 minutes... there's a problem
         $diff = $dt_now->diff($dt);
+
         return $diff->i > 60 * 12;  // Hasn't run for 12 hours
     }
 }

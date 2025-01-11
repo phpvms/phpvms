@@ -20,9 +20,6 @@ class AcarsRepository extends Repository
     }
 
     /**
-     * @param $pirep_id
-     * @param $type
-     *
      * @return mixed
      */
     public function forPirep($pirep_id, $type)
@@ -50,8 +47,7 @@ class AcarsRepository extends Repository
      * Get all of the PIREPS that are in-progress, and then
      * get the latest update for those flights
      *
-     * @param int $live_time Age in hours of the oldest flights to show
-     *
+     * @param  int   $live_time Age in hours of the oldest flights to show
      * @return Pirep
      */
     public function getPositions($live_time = 0)
@@ -74,6 +70,7 @@ class AcarsRepository extends Repository
         }
 
         $q = $q->orderBy('updated_at', 'desc');
+
         return $q->get();
     }
 

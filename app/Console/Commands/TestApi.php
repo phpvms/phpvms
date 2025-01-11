@@ -9,9 +9,6 @@ class TestApi extends Command
 {
     protected $signature = 'phpvms:test-api {apikey} {url}';
 
-    /**
-     * @var Client
-     */
     protected Client $httpClient;
 
     /**

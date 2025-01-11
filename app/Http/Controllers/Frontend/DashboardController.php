@@ -14,18 +14,13 @@ class DashboardController extends Controller
 {
     /**
      * DashboardController constructor.
-     *
-     * @param PirepRepository $pirepRepo
      */
     public function __construct(
         private readonly PirepRepository $pirepRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Show the application dashboard.
-     *
-     * @return View
      */
     public function index(): View
     {

@@ -21,26 +21,16 @@ class RankController extends Controller
 {
     /**
      * RankController constructor.
-     *
-     * @param FleetService       $fleetSvc
-     * @param RankRepository     $rankRepo
-     * @param SubfleetRepository $subfleetRepo
-     * @param UserRepository     $userRepo
      */
     public function __construct(
         private readonly FleetService $fleetSvc,
         private readonly RankRepository $rankRepo,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Get the available subfleets for a rank
-     *
-     * @param Rank $rank
-     *
-     * @return array
      */
     protected function getAvailSubfleets(Rank $rank): array
     {
@@ -58,11 +48,8 @@ class RankController extends Controller
     /**
      * Display a listing of the Ranking.
      *
-     * @param Request $request
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -76,8 +63,6 @@ class RankController extends Controller
 
     /**
      * Show the form for creating a new Ranking.
-     *
-     * @return View
      */
     public function create(): View
     {
@@ -87,11 +72,8 @@ class RankController extends Controller
     /**
      * Store a newly created Ranking in storage.
      *
-     * @param CreateRankRequest $request
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function store(CreateRankRequest $request): RedirectResponse
     {
@@ -107,10 +89,6 @@ class RankController extends Controller
 
     /**
      * Display the specified Ranking.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|View
      */
     public function show(int $id): RedirectResponse|View
     {
@@ -129,10 +107,6 @@ class RankController extends Controller
 
     /**
      * Show the form for editing the specified Ranking.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|View
      */
     public function edit(int $id): RedirectResponse|View
     {
@@ -155,12 +129,8 @@ class RankController extends Controller
     /**
      * Update the specified Ranking in storage.
      *
-     * @param int               $id
-     * @param UpdateRankRequest $request
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, UpdateRankRequest $request): RedirectResponse
     {
@@ -182,10 +152,6 @@ class RankController extends Controller
 
     /**
      * Remove the specified Ranking from storage.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse
      */
     public function destroy(int $id): RedirectResponse
     {
@@ -217,11 +183,6 @@ class RankController extends Controller
         return redirect(route('admin.ranks.index'));
     }
 
-    /**
-     * @param Rank $rank
-     *
-     * @return View
-     */
     protected function return_subfleet_view(Rank $rank): View
     {
         $avail_subfleets = $this->getAvailSubfleets($rank);
@@ -234,17 +195,13 @@ class RankController extends Controller
 
     /**
      * Subfleet operations on a rank
-     *
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return RedirectResponse|View
      */
     public function subfleets(int $id, Request $request): RedirectResponse|View
     {
         $rank = $this->rankRepo->findWithoutFail($id);
         if (empty($rank)) {
             Flash::error('Rank not found!');
+
             return redirect(route('admin.ranks.index'));
         }
 

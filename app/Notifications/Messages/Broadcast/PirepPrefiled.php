@@ -18,8 +18,6 @@ class PirepPrefiled extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param Pirep $pirep
      */
     public function __construct(Pirep $pirep)
     {
@@ -36,8 +34,6 @@ class PirepPrefiled extends Notification implements ShouldQueue
      * Send a Discord notification
      *
      * @param Pirep $pirep
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($pirep): ?DiscordMessage
     {
@@ -65,11 +61,6 @@ class PirepPrefiled extends Notification implements ShouldQueue
             ->fields($fields);
     }
 
-    /**
-     * @param Pirep $pirep
-     *
-     * @return array
-     */
     public function createFields(Pirep $pirep): array
     {
         $fields = [
@@ -90,8 +81,7 @@ class PirepPrefiled extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

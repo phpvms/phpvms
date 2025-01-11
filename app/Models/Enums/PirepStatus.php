@@ -12,29 +12,53 @@ use App\Contracts\Enum;
 class PirepStatus extends Enum
 {
     public const INITIATED = 'INI';
+
     public const SCHEDULED = 'SCH';
+
     public const BOARDING = 'BST';
+
     public const RDY_START = 'RDT';
+
     public const PUSHBACK_TOW = 'PBT';
+
     public const DEPARTED = 'OFB'; // Off block
+
     public const RDY_DEICE = 'DIR';
+
     public const STRT_DEICE = 'DIC';
+
     public const GRND_RTRN = 'GRT'; // Ground return
+
     public const TAXI = 'TXI'; // Taxi
+
     public const TAKEOFF = 'TOF';
+
     public const INIT_CLIM = 'ICL';
+
     public const AIRBORNE = 'TKO';
+
     public const ENROUTE = 'ENR';
+
     public const DIVERTED = 'DV';
+
     public const APPROACH = 'TEN';
+
     public const APPROACH_ICAO = 'APR';
+
     public const ON_FINAL = 'FIN';
+
     public const LANDING = 'LDG';
+
     public const LANDED = 'LAN';
+
     public const ON_BLOCK = 'ONB';
+
     public const ARRIVED = 'ARR';
+
     public const CANCELLED = 'DX';
+
     public const EMERG_DESCENT = 'EMG';
+
     public const PAUSED = 'PSD';
 
     protected static array $labels = [

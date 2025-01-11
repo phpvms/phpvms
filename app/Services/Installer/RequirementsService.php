@@ -8,8 +8,6 @@ class RequirementsService extends Service
 {
     /**
      * Check the PHP version that it meets the minimum requirement
-     *
-     * @return array
      */
     public function checkPHPVersion(): array
     {
@@ -23,8 +21,6 @@ class RequirementsService extends Service
 
     /**
      * Make sure the minimal extensions required are loaded
-     *
-     * @return array
      */
     public function checkExtensions(): array
     {
@@ -47,8 +43,6 @@ class RequirementsService extends Service
     /**
      * Check the permissions for the directories specified
      * Make sure they exist and are writable
-     *
-     * @return array
      */
     public function checkPermissions(): array
     {

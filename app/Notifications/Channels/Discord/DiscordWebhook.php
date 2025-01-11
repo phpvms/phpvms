@@ -21,7 +21,7 @@ class DiscordWebhook
     {
         $message = $notification->toDiscordChannel($notifiable);
         if ($message === null) {
-            //Log::debug('Discord notifications not configured, skipping');
+            // Log::debug('Discord notifications not configured, skipping');
             return;
         }
 
@@ -29,7 +29,7 @@ class DiscordWebhook
         if (empty($webhook_url)) {
             $webhook_url = setting('notifications.discord_private_webhook_url');
             if (empty($webhook_url)) {
-                //Log::debug('Discord notifications not configured, skipping');
+                // Log::debug('Discord notifications not configured, skipping');
                 return;
             }
         }

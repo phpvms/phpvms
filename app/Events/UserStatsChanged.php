@@ -8,7 +8,9 @@ use App\Models\User;
 class UserStatsChanged extends Event
 {
     public User $user;
+
     public $stat_name;
+
     public $old_value;
 
     /*

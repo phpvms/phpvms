@@ -7,7 +7,9 @@ use App\Contracts\Enum;
 class FuelType extends Enum
 {
     public const LOW_LEAD = 0;
+
     public const JET_A = 1;
+
     public const MOGAS = 2;
 
     public static array $labels = [

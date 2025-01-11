@@ -16,6 +16,7 @@ class MigrationService extends Service
     {
         $m = app('migrator');
         $m->setConnection(config('database.default'));
+
         return $m;
     }
 
@@ -23,6 +24,7 @@ class MigrationService extends Service
     {
         $m = app('migrator.data');
         $m->setConnection(config('database.default'));
+
         return $m;
     }
 
@@ -31,8 +33,6 @@ class MigrationService extends Service
      * Include looking in all of the modules Database/migrations directories
      *
      * @param mixed $dir
-     *
-     * @return array
      */
     public function getMigrationPaths($dir = 'migrations'): array
     {
@@ -77,7 +77,7 @@ class MigrationService extends Service
             $availMigrations[] = $filepath;
         }
 
-        //Log::info('Migrations available: '.count($availMigrations));
+        // Log::info('Migrations available: '.count($availMigrations));
 
         return $availMigrations;
     }
@@ -138,7 +138,7 @@ class MigrationService extends Service
             $availMigrations[] = $filepath;
         }
 
-        //Log::info('Migrations available: '.count($availMigrations));
+        // Log::info('Migrations available: '.count($availMigrations));
 
         // dd($availMigrations);
         return $availMigrations;

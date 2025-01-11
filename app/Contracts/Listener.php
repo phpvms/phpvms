@@ -10,8 +10,6 @@ abstract class Listener
 
     /**
      * Sets up any callbacks that are defined in the child class
-     *
-     * @param $events
      */
     public function subscribe(Dispatcher $events): void
     {

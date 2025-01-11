@@ -10,8 +10,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Typerating extends Model
 {
-    use Sortable;
     use LogsActivity;
+    use Sortable;
 
     public $table = 'typeratings';
 

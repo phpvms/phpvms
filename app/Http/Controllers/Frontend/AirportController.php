@@ -15,16 +15,10 @@ class AirportController extends Controller
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Show the airport
-     *
-     * @param string  $id
-     * @param Request $request
-     *
-     * @return RedirectResponse|View
      */
     public function show(string $id, Request $request): RedirectResponse|View
     {
@@ -45,6 +39,7 @@ class AirportController extends Controller
         $airport = $this->airportRepo->with('files')->where('id', $id)->first();
         if (!$airport) {
             Flash::error('Airport not found!');
+
             return redirect(route('frontend.dashboard.index'));
         }
 

@@ -53,8 +53,6 @@ class File extends Model
 
     /**
      * Return the file extension
-     *
-     * @return Attribute
      */
     public function extension(): Attribute
     {
@@ -71,8 +69,6 @@ class File extends Model
 
     /**
      * Get just the filename
-     *
-     * @return Attribute
      */
     public function filename(): Attribute
     {
@@ -89,8 +85,6 @@ class File extends Model
 
     /**
      * Get the full URL to this attribute
-     *
-     * @return Attribute
      */
     public function url(): Attribute
     {

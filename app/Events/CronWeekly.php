@@ -10,7 +10,5 @@ use App\Contracts\Event;
  */
 class CronWeekly extends Event
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 }

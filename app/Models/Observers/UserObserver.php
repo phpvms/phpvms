@@ -16,8 +16,6 @@ class UserObserver
 
     /**
      * After a user has been created, do some stuff
-     *
-     * @param User $user
      */
     public function created(User $user): void
     {

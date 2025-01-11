@@ -18,9 +18,9 @@ class Airline extends Resource
             'name'    => $this->name,
             'country' => $this->country,
             'logo'    => $this->logo,
-            //'active' => $this->active,
-            //'created_at' => $this->created_at,
-            //'updated_at' => $this->updated_at,
+            // 'active' => $this->active,
+            // 'created_at' => $this->created_at,
+            // 'updated_at' => $this->updated_at,
         ];
     }
 }

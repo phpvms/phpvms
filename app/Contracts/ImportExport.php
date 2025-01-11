@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 class ImportExport
 {
     public $assetType;
+
     public $status = [
         'success' => [],
         'errors'  => [],
@@ -25,8 +26,6 @@ class ImportExport
 
     /**
      * @param mixed $row
-     *
-     * @return array
      */
     public function export($row): array
     {
@@ -34,12 +33,9 @@ class ImportExport
     }
 
     /**
-     * @param array $row
      * @param mixed $index
      *
      * @throws \RuntimeException
-     *
-     * @return bool
      */
     public function import(array $row, $index): bool
     {
@@ -48,10 +44,6 @@ class ImportExport
 
     /**
      * Get the airline from the ICAO. Create it if it doesn't exist
-     *
-     * @param $code
-     *
-     * @return Airline
      */
     public function getAirline($code): Airline
     {
@@ -72,10 +64,6 @@ class ImportExport
 
     /**
      * Do a basic check that the number of columns match
-     *
-     * @param $row
-     *
-     * @return bool
      */
     public function checkColumns($row): bool
     {
@@ -85,12 +73,10 @@ class ImportExport
     /**
      * Bubble up an error to the interface that we need to stop
      *
-     * @param $error
-     * @param $e
      *
      * @throws ValidationException
      */
-    protected function throwError($error, \Exception $e = null): void
+    protected function throwError($error, ?\Exception $e = null): void
     {
         Log::error($error);
         if ($e) {
@@ -105,8 +91,6 @@ class ImportExport
 
     /**
      * Add to the log messages for this importer
-     *
-     * @param $msg
      */
     public function log($msg): void
     {
@@ -116,8 +100,6 @@ class ImportExport
 
     /**
      * Add to the error log for this import
-     *
-     * @param $msg
      */
     public function errorLog($msg): void
     {
@@ -127,9 +109,6 @@ class ImportExport
 
     /**
      * Set a key-value pair to an array
-     *
-     * @param       $kvp_str
-     * @param array $arr
      */
     protected function kvpToArray($kvp_str, array &$arr)
     {
@@ -151,7 +130,6 @@ class ImportExport
      *
      * Converted into a multi-dimensional array
      *
-     * @param $field
      *
      * @return array|string
      */
@@ -200,6 +178,7 @@ class ImportExport
             // just a straight key-value pair set
             if (strpos($value, '?') === false) {
                 $this->kvpToArray($value, $ret);
+
                 continue;
             }
 
@@ -226,8 +205,6 @@ class ImportExport
     }
 
     /**
-     * @param $obj
-     *
      * @return mixed
      */
     public function objectToMultiString($obj)
@@ -240,6 +217,7 @@ class ImportExport
         foreach ($obj as $key => $val) {
             if (is_numeric($key) && !\is_array($val)) {
                 $ret_list[] = $val;
+
                 continue;
             }
 

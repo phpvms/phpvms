@@ -14,8 +14,6 @@ class PirepFiled extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param \App\Models\Pirep $pirep
      */
     public function __construct(Pirep $pirep)
     {
@@ -33,8 +31,6 @@ class PirepFiled extends Notification implements ShouldQueue
      * Send a Discord notification
      *
      * @param Pirep $pirep
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($pirep): ?DiscordMessage
     {
@@ -45,6 +41,7 @@ class PirepFiled extends Notification implements ShouldQueue
         $user_avatar = !empty($pirep->user->avatar) ? $pirep->user->avatar->url : $pirep->user->gravatar(256);
 
         $dm = new DiscordMessage();
+
         return $dm->webhook(setting('notifications.discord_public_webhook_url'))
             ->success()
             ->title($title)
@@ -58,11 +55,6 @@ class PirepFiled extends Notification implements ShouldQueue
             ->fields($fields);
     }
 
-    /**
-     * @param Pirep $pirep
-     *
-     * @return array
-     */
     public function createFields(Pirep $pirep): array
     {
         $fields = [
@@ -82,8 +74,7 @@ class PirepFiled extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

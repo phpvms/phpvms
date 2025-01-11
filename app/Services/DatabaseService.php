@@ -20,21 +20,15 @@ class DatabaseService extends Service
         'pireps',
     ];
 
-    /**
-     * @return string
-     */
     protected function time(): string
     {
-        return Carbon::now('UTC'); //->format('Y-m-d H:i:s');
+        return Carbon::now('UTC'); // ->format('Y-m-d H:i:s');
     }
 
     /**
-     * @param      $yaml_file
      * @param bool $ignore_errors
      *
      * @throws \Exception
-     *
-     * @return array
      */
     public function seed_from_yaml_file($yaml_file, $ignore_errors = false): array
     {
@@ -42,12 +36,9 @@ class DatabaseService extends Service
     }
 
     /**
-     * @param      $yml
      * @param bool $ignore_errors
      *
      * @throws \Exception
-     *
-     * @return array
      */
     public function seed_from_yaml($yml, $ignore_errors = false): array
     {
@@ -55,12 +46,9 @@ class DatabaseService extends Service
     }
 
     /**
-     * @param $table
-     * @param $row
+     * @return mixed
      *
      * @throws \Exception
-     *
-     * @return mixed
      */
     public function insert_row($table, $row)
     {

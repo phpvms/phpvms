@@ -10,14 +10,11 @@ class RoleService extends Service
 {
     public function __construct(
         private readonly RoleRepository $roleRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Update a role with the given attributes
      *
-     * @param Role  $role
-     * @param array $attrs
      *
      * @return Role
      */
@@ -29,10 +26,6 @@ class RoleService extends Service
         return $role;
     }
 
-    /**
-     * @param Role  $role
-     * @param array $permissions
-     */
     public function setPermissionsForRole(Role $role, array $permissions)
     {
         // Update the permissions, filter out null/invalid values

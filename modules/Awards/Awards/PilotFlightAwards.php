@@ -38,8 +38,6 @@ class PilotFlightAwards extends Award
      * sense with the $param_description.
      *
      * @param int|null $number_of_flights The parameters passed in from the UI
-     *
-     * @return bool
      */
     public function check($number_of_flights = null): bool
     {

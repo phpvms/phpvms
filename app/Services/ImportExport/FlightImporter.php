@@ -57,7 +57,9 @@ class FlightImporter extends ImportExport
     ];
 
     private $airportSvc;
+
     private $fareSvc;
+
     private $flightSvc;
 
     /**
@@ -73,10 +75,7 @@ class FlightImporter extends ImportExport
     /**
      * Import a flight, parse out the different rows
      *
-     * @param array $row
-     * @param int   $index
-     *
-     * @return bool
+     * @param int $index
      */
     public function import(array $row, $index): bool
     {
@@ -179,6 +178,7 @@ class FlightImporter extends ImportExport
             $flight->save();
         } catch (\Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+
             return false;
         }
 
@@ -194,13 +194,13 @@ class FlightImporter extends ImportExport
         $this->processFields($flight, $row['fields']);
 
         $this->log('Imported row '.($index + 1));
+
         return true;
     }
 
     /**
      * Return the mask of the days
      *
-     * @param $day_str
      *
      * @return int|mixed
      */
@@ -244,10 +244,6 @@ class FlightImporter extends ImportExport
 
     /**
      * Process the airport
-     *
-     * @param $airport
-     *
-     * @return Airport
      */
     protected function processAirport($airport): Airport
     {
@@ -257,9 +253,6 @@ class FlightImporter extends ImportExport
     /**
      * Parse out all of the subfleets and associate them to the flight
      * The subfleet is created if it doesn't exist
-     *
-     * @param Flight $flight
-     * @param        $col
      */
     protected function processSubfleets(Flight &$flight, $col): void
     {
@@ -291,9 +284,6 @@ class FlightImporter extends ImportExport
 
     /**
      * Parse all of the fares in the multi-format
-     *
-     * @param Flight $flight
-     * @param        $col
      */
     protected function processFares(Flight &$flight, $col): void
     {
@@ -312,9 +302,6 @@ class FlightImporter extends ImportExport
 
     /**
      * Parse all of the subfields
-     *
-     * @param Flight $flight
-     * @param        $col
      */
     protected function processFields(Flight &$flight, $col): void
     {

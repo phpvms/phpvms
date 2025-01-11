@@ -10,11 +10,9 @@ use Tivie\OS\Detector;
 class CreateDatabase extends Command
 {
     protected $signature = 'database:create {--reset} {--migrate} {--conn=?}';
+
     protected $description = 'Create a database';
 
-    /**
-     * @var Detector
-     */
     protected Detector $os;
 
     /**
@@ -29,7 +27,6 @@ class CreateDatabase extends Command
     /**
      * Create the mysql database
      *
-     * @param $dbkey
      *
      * @return bool
      */
@@ -78,8 +75,6 @@ class CreateDatabase extends Command
 
     /**
      * Create the sqlite database
-     *
-     * @param $dbkey
      */
     protected function create_sqlite($dbkey)
     {

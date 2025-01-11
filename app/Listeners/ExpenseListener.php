@@ -9,14 +9,13 @@ use App\Models\Expense;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ExpenseListener extends Listener //implements ShouldQueue
+class ExpenseListener extends Listener // implements ShouldQueue
 {
-    //use Queueable;
+    // use Queueable;
 
     /**
      * Return a list of additional expenses
      *
-     * @param Expenses $event
      *
      * @return mixed
      */

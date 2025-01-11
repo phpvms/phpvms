@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /**
  * Do stuff with bids - like if a PIREP is accepted, then remove the bid
  */
-class BidEventHandler extends Listener //implements ShouldQueue
+class BidEventHandler extends Listener // implements ShouldQueue
 {
     // use Queueable;
 
@@ -21,13 +21,11 @@ class BidEventHandler extends Listener //implements ShouldQueue
 
     public function __construct(
         private readonly BidService $bidSvc
-    ) {
-    }
+    ) {}
 
     /**
      * When a PIREP is filed, remove any bids
      *
-     * @param PirepFiled $event
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException

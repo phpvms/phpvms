@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 class GroupImporter extends BaseImporter
 {
     protected $table = 'groups';
+
     protected $idField = 'groupid';
 
     /**
@@ -79,6 +80,7 @@ class GroupImporter extends BaseImporter
             if (strtolower($row->name) === 'administrators') {
                 $role = Role::where('name', 'admin')->first();
                 $this->idMapper->addMapping('group', $row->groupid, $role->id);
+
                 continue;
             }
 
@@ -87,6 +89,7 @@ class GroupImporter extends BaseImporter
             // for any of the users that are being imported. these groups are unused
             if ($row->core === 1 || $row->core === '1') {
                 $this->idMapper->addMapping('group', $row->groupid, -1);
+
                 continue;
             }
 
@@ -148,8 +151,6 @@ class GroupImporter extends BaseImporter
     /**
      * Get all of the permissions from locally and return a kvp with the
      * key being the permission short-name and the value being the ID
-     *
-     * @return array
      */
     private function getPermissions(): array
     {

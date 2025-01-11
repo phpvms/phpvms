@@ -14,17 +14,11 @@ class PageLinksComposer extends Composer
 
     /**
      * PageLinksComposer constructor.
-     *
-     * @param \App\Repositories\PageRepository $pageRepo
      */
     public function __construct(
         private readonly PageRepository $pageRepo
-    ) {
-    }
+    ) {}
 
-    /**
-     * @param \Illuminate\View\View $view
-     */
     public function compose(View $view)
     {
         try {

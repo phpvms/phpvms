@@ -8,14 +8,13 @@ use App\Services\ImportService;
 class ImportCsv extends Command
 {
     protected $signature = 'phpvms:csv-import {type} {file}';
+
     protected $description = 'Import from a CSV file';
 
     private ImportService $importer;
 
     /**
      * Import constructor.
-     *
-     * @param ImportService $importer
      */
     public function __construct(ImportService $importer)
     {
@@ -25,9 +24,9 @@ class ImportCsv extends Command
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
-     *
      * @return mixed|void
+     *
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function handle()
     {

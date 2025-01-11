@@ -33,14 +33,6 @@ class UserController extends Controller
 {
     /**
      * UserController constructor.
-     *
-     * @param AirlineRepository    $airlineRepo
-     * @param AirportRepository    $airportRepo
-     * @param PirepRepository      $pirepRepo
-     * @param RoleRepository       $roleRepo
-     * @param TypeRatingRepository $typeratingRepo
-     * @param UserRepository       $userRepo
-     * @param UserService          $userSvc
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
@@ -50,14 +42,8 @@ class UserController extends Controller
         private readonly TypeRatingRepository $typeratingRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function index(Request $request): View
     {
         try {
@@ -73,8 +59,6 @@ class UserController extends Controller
 
     /**
      * Show the form for creating a new User.
-     *
-     * @return View
      */
     public function create(): View
     {
@@ -99,11 +83,8 @@ class UserController extends Controller
     /**
      * Store a newly created User in storage.
      *
-     * @param CreateUserRequest $request
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function store(CreateUserRequest $request): RedirectResponse
     {
@@ -117,17 +98,15 @@ class UserController extends Controller
         $user = $this->userSvc->createUser($opts, $opts['roles'] ?? [], $opts['state'] ?? null);
 
         Flash::success('User created successfully.');
+
         return redirect(route('admin.users.edit', [$user->id]));
     }
 
     /**
      * Display the specified User.
      *
-     * @param int $id
      *
      * @throws RepositoryException
-     *
-     * @return View
      */
     public function show(int $id): View
     {
@@ -137,11 +116,10 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified User.
      *
-     * @param int $id
-     *
-     * @throws RepositoryException
      *
      * @return mixed
+     *
+     * @throws RepositoryException
      */
     public function edit(int $id): View
     {
@@ -152,6 +130,7 @@ class UserController extends Controller
 
         if (empty($user)) {
             Flash::error('User not found');
+
             return redirect(route('admin.users.index'));
         }
 
@@ -189,12 +168,8 @@ class UserController extends Controller
     /**
      * Update the specified User in storage.
      *
-     * @param int               $id
-     * @param UpdateUserRequest $request
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, UpdateUserRequest $request): RedirectResponse
     {
@@ -260,11 +235,8 @@ class UserController extends Controller
     /**
      * Remove the specified User from storage.
      *
-     * @param int $id
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse
      */
     public function destroy(int $id): RedirectResponse
     {
@@ -283,12 +255,6 @@ class UserController extends Controller
 
     /**
      * Remove the award from a user
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int                      $id
-     * @param int                      $award_id
-     *
-     * @return RedirectResponse
      */
     public function destroy_user_award(int $id, int $award_id, Request $request): RedirectResponse
     {
@@ -306,11 +272,6 @@ class UserController extends Controller
 
     /**
      * Regenerate the user's API key
-     *
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function regen_apikey(int $id, Request $request): RedirectResponse
     {
@@ -331,11 +292,13 @@ class UserController extends Controller
 
         if (empty($user)) {
             Flash::error('User not found');
+
             return back();
         }
 
         if ($user->hasVerifiedEmail()) {
             Flash::error('User email already verified');
+
             return back();
         }
 
@@ -344,6 +307,7 @@ class UserController extends Controller
         }
 
         Flash::success('User email verified successfully');
+
         return back();
     }
 
@@ -353,11 +317,13 @@ class UserController extends Controller
 
         if (empty($user)) {
             Flash::error('User not found');
+
             return back();
         }
 
         if (!$user->hasVerifiedEmail()) {
             Flash::error('User email already not verified');
+
             return back();
         }
 
@@ -368,15 +334,12 @@ class UserController extends Controller
         $user->sendEmailVerificationNotification();
 
         Flash::success('User email verification requested successfully');
+
         return back();
     }
 
     /**
      * Get the type ratings that are available to the user
-     *
-     * @param User $user
-     *
-     * @return array
      */
     protected function getAvailTypeRatings(User $user): array
     {
@@ -390,16 +353,12 @@ class UserController extends Controller
         return $retval;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return View
-     */
     protected function return_typeratings_view(?User $user): View
     {
         $user->refresh();
 
         $avail_ratings = $this->getAvailTypeRatings($user);
+
         return view('admin.users.type_ratings', [
             'user'          => $user,
             'avail_ratings' => $avail_ratings,
@@ -408,11 +367,6 @@ class UserController extends Controller
 
     /**
      * Operations for associating type ratings to the user
-     *
-     * @param int     $id
-     * @param Request $request
-     *
-     * @return View
      */
     public function typeratings(int $id, Request $request): View
     {

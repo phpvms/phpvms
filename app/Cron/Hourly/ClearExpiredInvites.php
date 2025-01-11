@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Log;
  */
 class ClearExpiredInvites extends Listener
 {
-    /**
-     * @param CronHourly $event
-     */
     public function handle(CronHourly $event): void
     {
         Log::info('Hourly: Removing expired invites');

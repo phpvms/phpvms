@@ -11,18 +11,14 @@ class AirlineController extends Controller
 {
     /**
      * AirlineController constructor.
-     *
-     * @param AirlineRepository $airlineRepo
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the airlines, paginated
      *
-     * @param Request $request
      *
      * @return mixed
      */
@@ -35,10 +31,6 @@ class AirlineController extends Controller
 
     /**
      * Return a specific airline
-     *
-     * @param int $id
-     *
-     * @return AirlineResource
      */
     public function get(int $id): AirlineResource
     {

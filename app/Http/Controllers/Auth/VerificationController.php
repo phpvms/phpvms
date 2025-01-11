@@ -26,8 +26,6 @@ class VerificationController extends Controller
 
     /**
      * Where to redirect users after verification.
-     *
-     * @var string
      */
     protected string $redirectTo = '/dashboard';
 

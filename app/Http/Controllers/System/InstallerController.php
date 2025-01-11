@@ -32,15 +32,6 @@ class InstallerController extends Controller
 {
     /**
      * InstallerController constructor.
-     *
-     * @param AirlineService      $airlineSvc
-     * @param AnalyticsService    $analyticsSvc
-     * @param DatabaseService     $dbSvc
-     * @param ConfigService       $envSvc
-     * @param MigrationService    $migrationSvc
-     * @param RequirementsService $reqSvc
-     * @param SeederService       $seederSvc
-     * @param UserService         $userService
      */
     public function __construct(
         private readonly AirlineService $airlineSvc,
@@ -85,10 +76,6 @@ class InstallerController extends Controller
 
     /**
      * Check the database connection
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function dbtest(Request $request): View
     {
@@ -110,10 +97,6 @@ class InstallerController extends Controller
 
     /**
      * Check if any of the items has been marked as failed
-     *
-     * @param array $arr
-     *
-     * @return bool
      */
     protected function allPassed(array $arr): bool
     {
@@ -128,8 +111,6 @@ class InstallerController extends Controller
 
     /**
      * Step 1. Check the modules and permissions
-     *
-     * @return View
      */
     public function step1(): View
     {
@@ -157,12 +138,11 @@ class InstallerController extends Controller
 
     /**
      * Step 2. Database Setup
-     *
-     * @return View
      */
     public function step2(): View
     {
         $db_types = ['mysql' => 'mysql', 'sqlite' => 'sqlite'];
+
         return view('system.installer.install.steps.step2-db', [
             'db_types' => $db_types,
         ]);
@@ -170,10 +150,6 @@ class InstallerController extends Controller
 
     /**
      * Step 2a. Create the .env
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function envsetup(Request $request): RedirectResponse
     {
@@ -190,6 +166,7 @@ class InstallerController extends Controller
             Log::error($e->getMessage());
 
             flash()->error($e->getMessage());
+
             return redirect(route('installer.step2'))->withInput();
         }
 
@@ -218,18 +195,18 @@ class InstallerController extends Controller
             Log::error($e->getMessage());
 
             flash()->error($e->getMessage());
+
             return redirect(route('installer.step2'))->withInput();
         }
 
         // Needs to redirect so it can load the new .env
         Log::info('Redirecting to database setup');
+
         return redirect(route('installer.dbsetup'));
     }
 
     /**
      * Step 2b. Setup the database
-     *
-     * @return RedirectResponse|View
      */
     public function dbsetup(): RedirectResponse|View
     {
@@ -241,9 +218,10 @@ class InstallerController extends Controller
             $this->seederSvc->syncAllSeeds();
         } catch (QueryException $e) {
             Log::error('Error on db setup: '.$e->getMessage());
-            //dd($e);
+            // dd($e);
             $this->envSvc->removeConfigFiles();
             flash()->error($e->getMessage());
+
             return redirect(route('installer.step2'))->withInput();
         }
 
@@ -256,8 +234,6 @@ class InstallerController extends Controller
 
     /**
      * Step 3. Setup the admin user and initial settings
-     *
-     * @return View
      */
     public function step3(): View
     {
@@ -269,12 +245,9 @@ class InstallerController extends Controller
     /**
      * Step 3 submit
      *
-     * @param Request $request
      *
      * @throws RuntimeException
      * @throws Exception
-     *
-     * @return RedirectResponse|View
      */
     public function usersetup(Request $request): RedirectResponse|View
     {

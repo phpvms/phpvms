@@ -17,7 +17,7 @@ final class SubfleetTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testSubfleetFaresNoOverride(): void
+    public function test_subfleet_fares_no_override(): void
     {
         /** @var FareService $fare_svc */
         $fare_svc = app(FareService::class);

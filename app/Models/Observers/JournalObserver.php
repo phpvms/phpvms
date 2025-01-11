@@ -10,8 +10,6 @@ use App\Models\Journal;
 class JournalObserver
 {
     /**
-     * @param Journal $journal
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */

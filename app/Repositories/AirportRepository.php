@@ -27,8 +27,6 @@ class AirportRepository extends Repository implements CacheableInterface
      *
      * @param bool $add_blank
      * @param bool $only_hubs
-     *
-     * @return array
      */
     public function selectBoxList($add_blank = false, $only_hubs = false): array
     {

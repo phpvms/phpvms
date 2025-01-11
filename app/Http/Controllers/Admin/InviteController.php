@@ -17,6 +17,7 @@ class InviteController extends Controller
     {
         if (!setting('general.invite_only_registrations', false)) {
             Flash::error('Registration is not on invite only');
+
             return redirect(route('admin.users.index'));
         }
 
@@ -31,6 +32,7 @@ class InviteController extends Controller
     {
         if (!setting('general.invite_only_registrations', false)) {
             Flash::error('Registration is not on invite only');
+
             return redirect(route('admin.users.index'));
         }
 
@@ -41,6 +43,7 @@ class InviteController extends Controller
     {
         if (!setting('general.invite_only_registrations', false)) {
             Flash::error('Registration is not on invite only');
+
             return redirect(route('admin.users.index'));
         }
 
@@ -66,6 +69,7 @@ class InviteController extends Controller
     {
         if (!setting('general.invite_only_registrations', false)) {
             Flash::error('Registration is not on invite only');
+
             return redirect(route('admin.users.index'));
         }
 
@@ -73,12 +77,14 @@ class InviteController extends Controller
 
         if (!$invite) {
             Flash::error('Invite not found');
+
             return redirect(route('admin.invites.index'));
         }
 
         $invite->delete();
 
         Flash::success('Invite deleted successfully');
+
         return redirect(route('admin.invites.index'));
     }
 }

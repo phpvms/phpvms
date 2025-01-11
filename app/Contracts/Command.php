@@ -32,8 +32,6 @@ abstract class Command extends \Illuminate\Console\Command
 
     /**
      * Return the signature of the command
-     *
-     * @return string
      */
     public function getSignature(): string
     {
@@ -73,10 +71,6 @@ abstract class Command extends \Illuminate\Console\Command
 
     /**
      * Streaming file reader
-     *
-     * @param $filename
-     *
-     * @return \Generator
      */
     public function readFile($filename): ?\Generator
     {
@@ -100,8 +94,6 @@ abstract class Command extends \Illuminate\Console\Command
      *
      * @throws \Symfony\Component\Process\Exception\RuntimeException
      * @throws \Symfony\Component\Process\Exception\LogicException
-     *
-     * @return string
      */
     public function runCommand($cmd, $return = false, $verbose = true): string
     {

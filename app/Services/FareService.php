@@ -27,7 +27,6 @@ class FareService extends Service
      *
      * If count > capacity, count will be adjusted to capacity
      *
-     * @param Pirep       $pirep
      * @param PirepFare[] $fares
      *
      * @throws \Exception
@@ -56,6 +55,7 @@ class FareService extends Service
 
             if (!$pirep_fare) {
                 Log::info('Finance: PIREP: '.$pirep->id.', original fare not found', $fare->toArray());
+
                 return;
             }
 
@@ -101,7 +101,6 @@ class FareService extends Service
      *
      * @param Collection[Fare] $subfleet_fares The fare for a subfleet
      * @param Collection[Fare] $flight_fares   The fares on a flight
-     *
      * @return Collection[Fare] Collection of Fare
      */
     public function getFareWithOverrides($subfleet_fares, $flight_fares): Collection
@@ -159,10 +158,6 @@ class FareService extends Service
     /**
      * This will return the flight but all of the subfleets will have the corrected fares with the
      * right amounts based on the pivots, and with the correct "inheritence" for the flights
-     *
-     * @param Flight $flight
-     *
-     * @return \App\Models\Flight
      */
     public function getReconciledFaresForFlight(Flight $flight): Flight
     {
@@ -178,15 +173,15 @@ class FareService extends Service
         }
 
         $flight->subfleets = $subfleets;
+
         return $flight;
     }
 
     /**
      * Get the fares for a particular flight, with the subfleet that is in use being passed in
      *
-     * @param Flight|null   $flight
-     * @param Subfleet|null $subfleet
-     *
+     * @param  Flight|null   $flight
+     * @param  Subfleet|null $subfleet
      * @return Collection
      */
     public function getAllFares($flight, $subfleet)
@@ -207,7 +202,6 @@ class FareService extends Service
     /**
      * Get a fare with the proper prices/costs populated in the pivot
      *
-     * @param $fare
      *
      * @return mixed
      */
@@ -218,11 +212,6 @@ class FareService extends Service
 
     /**
      * Get the correct price of something supplied with the correct pivot
-     *
-     * @param Fare  $fare
-     * @param Pivot $pivot
-     *
-     * @return \App\Models\Fare
      */
     public function getFareWithPivot(Fare $fare, Pivot $pivot): Fare
     {
@@ -261,7 +250,6 @@ class FareService extends Service
      * table to see if the price/cost/capacity has been overridden
      * and return the correct amounts.
      *
-     * @param Subfleet $subfleet
      *
      * @return Collection
      */
@@ -277,11 +265,7 @@ class FareService extends Service
     /**
      * Attach a fare to an flight
      *
-     * @param Flight $flight
-     * @param Fare   $fare
      * @param array    set the price/cost/capacity
-     *
-     * @return Flight
      */
     public function setForFlight(Flight $flight, Fare $fare, array $override = []): Flight
     {
@@ -301,9 +285,6 @@ class FareService extends Service
     }
 
     /**
-     * @param Flight $flight
-     * @param Fare   $fare
-     *
      * @return Flight
      */
     public function delFareFromFlight(Flight $flight, Fare $fare)
@@ -319,11 +300,7 @@ class FareService extends Service
     /**
      * Attach a fare to a subfleet
      *
-     * @param Subfleet $subfleet
-     * @param Fare     $fare
      * @param array    set the price/cost/capacity
-     *
-     * @return Subfleet
      */
     public function setForSubfleet(Subfleet $subfleet, Fare $fare, array $override = []): Subfleet
     {
@@ -345,8 +322,6 @@ class FareService extends Service
     /**
      * Delete the fare from a subfleet
      *
-     * @param Subfleet $subfleet
-     * @param Fare     $fare
      *
      * @return Subfleet|null|static
      */
@@ -364,7 +339,6 @@ class FareService extends Service
      * Get the fares for a PIREP, this just returns the PirepFare
      * model which includes the counts for that particular fare
      *
-     * @param Pirep $pirep
      *
      * @return Collection
      */

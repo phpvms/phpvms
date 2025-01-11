@@ -25,8 +25,6 @@ class SubfleetExporter extends ImportExport
      * Import a flight, parse out the different rows
      *
      * @param Subfleet $subfleet
-     *
-     * @return array
      */
     public function export($subfleet): array
     {
@@ -45,10 +43,6 @@ class SubfleetExporter extends ImportExport
 
     /**
      * Return any custom fares that have been made to this flight
-     *
-     * @param Subfleet $subfleet
-     *
-     * @return string
      */
     protected function getFares(Subfleet &$subfleet): string
     {
@@ -75,10 +69,6 @@ class SubfleetExporter extends ImportExport
 
     /**
      * Return any ranks that have been linked to this subfleet
-     *
-     * @param Subfleet $subfleet
-     *
-     * @return string
      */
     protected function getRanks(Subfleet &$subfleet): string
     {
@@ -101,10 +91,6 @@ class SubfleetExporter extends ImportExport
 
     /**
      * Parse all of the subfields
-     *
-     * @param Flight $flight
-     *
-     * @return string
      */
     protected function getFields(Flight &$flight): string
     {
@@ -118,10 +104,6 @@ class SubfleetExporter extends ImportExport
 
     /**
      * Create the list of subfleets that are associated here
-     *
-     * @param Flight $flight
-     *
-     * @return string
      */
     protected function getSubfleets(Flight &$flight): string
     {

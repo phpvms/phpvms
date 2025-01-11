@@ -33,13 +33,11 @@ class UserRankChanged extends Notification implements ShouldQueue
      *
      * @param Pirep $pirep
      * @param mixed $user
-     *
-     * @return DiscordMessage|null
      */
     public function toDiscordChannel($user): ?DiscordMessage
     {
         $title = 'Rank changed '.$user->rank->name;
-        //$fields = $this->createFields($user);
+        // $fields = $this->createFields($user);
 
         // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
         $user_avatar = !empty($user->avatar)
@@ -47,6 +45,7 @@ class UserRankChanged extends Notification implements ShouldQueue
             : $user->gravatar(256);
 
         $dm = new DiscordMessage();
+
         return $dm
             ->webhook(setting('notifications.discord_public_webhook_url'))
             ->success()
@@ -67,8 +66,7 @@ class UserRankChanged extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

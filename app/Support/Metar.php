@@ -334,7 +334,6 @@ class Metar implements \ArrayAccess
      * UBBB 251900Z 34015KT 9999 FEW013 BKN030 16/14 Q1016 88CLRD70 NOSIG
      * UMMS 251936Z 19002MPS 9999 SCT006 OVC026 06/05 Q1015 R31/D NOSIG RMK QBB080 OFE745
      *
-     * @param      $raw
      * @param bool $taf
      * @param bool $debug
      * @param bool $icao
@@ -372,21 +371,19 @@ class Metar implements \ArrayAccess
     /**
      * Shortcut to call
      *
-     * @param        $metar
-     * @param string $taf
-     *
+     * @param  string $taf
      * @return mixed
      */
     public static function parse($metar, $taf = '')
     {
         $mtr = new static($metar, $taf);
+
         return $mtr->parse_all();
     }
 
     /**
      * Gets the value from result array as class property.
      *
-     * @param $parameter
      *
      * @return mixed|null
      */
@@ -400,9 +397,8 @@ class Metar implements \ArrayAccess
     /**
      * Return an Altitude value or object
      *
-     * @param int|float $value
-     * @param string    $unit  "feet" or "meters"
-     *
+     * @param  int|float $value
+     * @param  string    $unit  "feet" or "meters"
      * @return Altitude
      */
     protected function createAltitude($value, $unit)
@@ -413,9 +409,8 @@ class Metar implements \ArrayAccess
     /**
      * Return a Distance value or object
      *
-     * @param int|float $value
-     * @param string    $unit  "m" (meters) or "mi" (miles)
-     *
+     * @param  int|float $value
+     * @param  string    $unit  "m" (meters) or "mi" (miles)
      * @return Distance
      */
     protected function createDistance($value, $unit)
@@ -426,13 +421,12 @@ class Metar implements \ArrayAccess
     /**
      * Return a Pressure value or object
      *
-     * @param int|float $value
-     * @param string    $unit  "F" or "C"
+     * @param  int|float $value
+     * @param  string    $unit  "F" or "C"
+     * @return Pressure
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
-     *
-     * @return Pressure
      */
     protected function createPressure($value, $unit)
     {
@@ -442,13 +436,12 @@ class Metar implements \ArrayAccess
     /**
      * Return a Temperature value or object
      *
-     * @param int|float $value
-     * @param string    $unit  "F" or "C"
+     * @param  int|float   $value
+     * @param  string      $unit  "F" or "C"
+     * @return Temperature
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
-     *
-     * @return Temperature
      */
     protected function createTemperature($value, $unit)
     {
@@ -458,13 +451,12 @@ class Metar implements \ArrayAccess
     /**
      * Create a new velocity unit
      *
-     * @param int|float $value
-     * @param string    $unit  "knots", "km/hour", "m/s"
+     * @param  int|float $value
+     * @param  string    $unit  "knots", "km/hour", "m/s"
+     * @return Velocity
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return Velocity
      */
     protected function createVelocity($value, $unit)
     {
@@ -579,8 +571,6 @@ class Metar implements \ArrayAccess
     /**
      * Sets the new value to parameter in result array.
      *
-     * @param      $parameter
-     * @param      $value
      * @param bool $only_if_null
      */
     private function set_result_value($parameter, $value, $only_if_null = false)
@@ -612,8 +602,6 @@ class Metar implements \ArrayAccess
     /**
      * Sets the report text to parameter in result array.
      *
-     * @param        $parameter
-     * @param        $report
      * @param string $separator
      */
     private function set_result_report($parameter, $report, $separator = ';')
@@ -653,8 +641,7 @@ class Metar implements \ArrayAccess
     /**
      * Decodes TAF code if present.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_taf($part)
@@ -669,16 +656,16 @@ class Metar implements \ArrayAccess
             $this->part++;
         }
 
-        //$this->set_debug('TAF information detected.');
+        // $this->set_debug('TAF information detected.');
         $this->set_result_value('taf', true);
+
         return true;
     }
 
     /**
      * Decodes station code.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_station($part)
@@ -690,6 +677,7 @@ class Metar implements \ArrayAccess
 
         $this->set_result_value('station', $found[1]);
         $this->method++;
+
         return true;
     }
 
@@ -697,8 +685,7 @@ class Metar implements \ArrayAccess
      * Decodes observation time.
      * Format is ddhhmmZ where dd = day, hh = hours, mm = minutes in UTC time.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_time($part)
@@ -732,14 +719,14 @@ class Metar implements \ArrayAccess
         $this->set_result_value('observed_day', $day);
         $this->set_result_value('observed_time', $found[2].':'.$found[3].' UTC');
         $this->method++;
+
         return true;
     }
 
     /**
      * Ignore station type if present.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_station_type($part)
@@ -749,6 +736,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -758,7 +746,6 @@ class Metar implements \ArrayAccess
      * or dddssGggKT where G stands for gust and gg = gust speed. (ss or gg can be a 3-digit number.)
      * KT can be replaced with MPH for meters per second or KMH for kilometers per hour.
      *
-     * @param $part
      *
      * @return bool
      */
@@ -802,6 +789,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -832,6 +820,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -842,12 +831,11 @@ class Metar implements \ArrayAccess
      * or just a 4-digit number nnnn (with leading zeros) for nnnn = meters.
      * Unit can also be in KM
      *
-     * @param mixed $part
+     * @param  mixed $part
+     * @return bool
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return bool
      */
     private function get_visibility($part)
     {
@@ -933,13 +921,12 @@ class Metar implements \ArrayAccess
      * visibility of 50 m or less), and for DD = the approximate direction of minimum and
      * maximum visibility is given as one of eight compass points (N, SW, ...).
      *
-     * @param $part
+     *
+     * @return bool
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
      * @throws NonStringUnitName
-     *
-     * @return bool
      */
     private function get_visibility_min($part)
     {
@@ -955,6 +942,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -963,12 +951,11 @@ class Metar implements \ArrayAccess
      * Format is Rrrr/vvvvFT where rrr = runway number, vvvv = visibility,
      * and FT = the visibility in feet.
      *
-     * @param $part
+     *
+     * @return bool
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return bool
      */
     private function get_runway_vr($part)
     {
@@ -1038,7 +1025,7 @@ class Metar implements \ArrayAccess
                 }
             }
 
-            if (null !== $observed['tendency'] && isset(static::$rvr_tendency_codes[$observed['tendency']])) {
+            if ($observed['tendency'] !== null && isset(static::$rvr_tendency_codes[$observed['tendency']])) {
                 $report[] = 'and '.static::$rvr_tendency_codes[$observed['tendency']];
             }
 
@@ -1046,6 +1033,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->set_result_group('runways_visual_range', $observed);
+
         return true;
     }
 
@@ -1055,7 +1043,6 @@ class Metar implements \ArrayAccess
      * 12.6.8 - Present Weather Group of the Federal Meteorological Handbook No. 1 at
      * www.nws.noaa.gov/oso/oso1/oso12/fmh1/fmh1ch12.htm
      *
-     * @param $part
      *
      * @return bool
      */
@@ -1071,12 +1058,11 @@ class Metar implements \ArrayAccess
      * nnn = height of cloud layer in hundreds of feet. 'VV' seems to be used for
      * very low cloud layers.
      *
-     * @param $part
+     *
+     * @return bool
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return bool
      */
     private function get_clouds($part)
     {
@@ -1106,7 +1092,7 @@ class Metar implements \ArrayAccess
             $observed['height'] = $this->createAltitude($found[5] * 100, 'feet');
 
             // Cloud height
-            if (null === $this->result['cloud_height'] || $observed['height']['m'] < $this->result['cloud_height']['m']) {
+            if ($this->result['cloud_height'] === null || $observed['height']['m'] < $this->result['cloud_height']['m']) {
                 $this->set_result_value('cloud_height', $observed['height']);
             }
 
@@ -1120,7 +1106,7 @@ class Metar implements \ArrayAccess
         }
 
         // Build clouds report
-        if (null !== $observed['amount']) {
+        if ($observed['amount'] !== null) {
             $report = [];
             $report_ft = [];
 
@@ -1128,7 +1114,7 @@ class Metar implements \ArrayAccess
             $report_ft[] = static::$cloud_codes[$observed['amount']];
 
             if ($observed['height']) {
-                if (null !== $observed['type']) {
+                if ($observed['type'] !== null) {
                     $report[] = 'at '.round($observed['height']['m'], 0).' meters, '.static::$cloud_type_codes[$observed['type']];
                     $report_ft[] = 'at '.round($observed['height']['ft'], 0).' feet, '.static::$cloud_type_codes[$observed['type']];
                 } else {
@@ -1149,6 +1135,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->set_result_group('clouds', $observed);
+
         return true;
     }
 
@@ -1159,12 +1146,11 @@ class Metar implements \ArrayAccess
      * in Celsius. A 'M' preceeding the tt or dd indicates a negative temperature. Some
      * stations do not report dew point, so the format is tt/ or tt/XX.
      *
-     * @param mixed $part
+     * @param  mixed $part
+     * @return bool
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
-     *
-     * @return bool
      */
     private function get_temperature($part)
     {
@@ -1187,7 +1173,7 @@ class Metar implements \ArrayAccess
         $this->calculate_wind_chill($temperature['F']);
 
         // Dew point
-        if (isset($found[2]) && '' !== $found[2] && $found[2] !== 'XX') {
+        if (isset($found[2]) && $found[2] !== '' && $found[2] !== 'XX') {
             $dew_point_c = (int) str_replace('M', '-', $found[2]);
             $dew_point = $this->createTemperature($dew_point_c, 'C');
             $rh = round(100 * (((112 - (0.1 * $temperature_c) + $dew_point_c) / (112 + (0.9 * $temperature_c))) ** 8));
@@ -1198,6 +1184,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -1213,12 +1200,11 @@ class Metar implements \ArrayAccess
      *   1 atm      = 0.33421 in Hg  = 0.0009869 hPa
      *
      *
-     * @param mixed $part
+     * @param  mixed $part
+     * @return bool
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
-     *
-     * @return bool
      */
     private function get_pressure($part)
     {
@@ -1235,6 +1221,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
@@ -1242,8 +1229,7 @@ class Metar implements \ArrayAccess
      * Decodes recent weather conditions if present.
      * Format is REww where ww = Weather phenomenon code (see get_present_weather above).
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_recent_weather($part)
@@ -1256,8 +1242,7 @@ class Metar implements \ArrayAccess
      * Format rrrECeeBB or Rrrr/ECeeBB where rr = runway number, E = deposits,
      * C = extent of deposit, ee = depth of deposit, BB = friction coefficient.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_runways_report($part)
@@ -1332,7 +1317,7 @@ class Metar implements \ArrayAccess
             $report = [];
             if ($observed['deposits'] !== null) {
                 $report[] = static::$runway_deposits_codes[$observed['deposits']];
-                if (null !== $observed['deposits_extent']) {
+                if ($observed['deposits_extent'] !== null) {
                     $report[] = 'contamination '.static::$runway_deposits_extent_codes[$observed['deposits_extent']];
                 }
 
@@ -1366,8 +1351,7 @@ class Metar implements \ArrayAccess
      * Decodes wind shear information if present.
      * Format is 'WS ALL RWY' or 'WS RWYdd' where dd = Runway designator (see get_runway_vr above).
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_wind_shear($part)
@@ -1419,8 +1403,6 @@ class Metar implements \ArrayAccess
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return bool
      */
     private function get_forecast_temperature($part): bool
     {
@@ -1455,6 +1437,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->set_result_group($parameter, $forecast);
+
         return true;
     }
 
@@ -1463,8 +1446,7 @@ class Metar implements \ArrayAccess
      * All METAR trend and TAF records is beginning at: NOSIG, BECMG, TEMP, ATDDhhmm, FMDDhhmm,
      * LTDDhhmm or DDhh/DDhh, where hh = hours, mm = minutes, DD = day of month.
      *
-     * @param mixed $part
-     *
+     * @param  mixed $part
      * @return bool
      */
     private function get_trends($part)
@@ -1566,6 +1548,7 @@ class Metar implements \ArrayAccess
         if (empty($raw_parts)) {
             if ($trend['flag'] !== 'CNL' && $trend['flag'] !== 'NIL') {
                 $this->part--; // return pointer to previous part
+
                 return false;
             }
         } // Parse raw data from trend
@@ -1596,12 +1579,12 @@ class Metar implements \ArrayAccess
         }
         // Build the report
         $report = [];
-        if (null !== $trend['flag']) {
+        if ($trend['flag'] !== null) {
             $report[] = static::$trends_flag_codes[$trend['flag']];
         }
 
-        if (null !== $trend['period']['flag']) {
-            if (null !== $trend['period']['day']) {
+        if ($trend['period']['flag'] !== null) {
+            if ($trend['period']['day'] !== null) {
                 $report[] = static::$trends_time_codes[$trend['period']['flag']].
                     ' a '.$trend['period']['day'].' day of the month on '.$trend['period']['time'];
             } else {
@@ -1609,12 +1592,12 @@ class Metar implements \ArrayAccess
             }
         }
 
-        if (null !== $trend['period']['from_day'] && null !== $trend['period']['to_day']) {
+        if ($trend['period']['from_day'] !== null && $trend['period']['to_day'] !== null) {
             $report[] = 'from a '.$trend['period']['from_day'].' day of the month on '.$trend['period']['from_time'];
             $report[] = 'to a '.$trend['period']['to_day'].' day of the month on '.$trend['period']['to_time'];
         }
 
-        if (null !== $trend['probability']) {
+        if ($trend['probability'] !== null) {
             $report[] = 'probability '.$trend['probability'].'% of the conditions existing';
         }
 
@@ -1623,6 +1606,7 @@ class Metar implements \ArrayAccess
         }
 
         $this->set_result_group('trends', $trend);
+
         return true;
     }
 
@@ -1631,8 +1615,6 @@ class Metar implements \ArrayAccess
      * The information is everything that comes after RMK.
      *
      * @param string $part
-     *
-     * @return bool
      */
     private function get_remarks($part): bool
     {
@@ -1656,16 +1638,14 @@ class Metar implements \ArrayAccess
         }
 
         $this->method++;
+
         return true;
     }
 
     /**
      * Decodes present or recent weather conditions.
      *
-     * @param        $part
-     * @param        $method
-     * @param string $regexp_prefix
-     *
+     * @param  string $regexp_prefix
      * @return bool
      */
     private function decode_weather($part, $method, $regexp_prefix = '')
@@ -1690,7 +1670,7 @@ class Metar implements \ArrayAccess
         foreach (\array_slice($found, 1) as $code) {
             // Types
             if (isset(static::$weather_type_codes[$code])) {
-                if (null === $observed['types']) {
+                if ($observed['types'] === null) {
                     $observed['types'] = [];
                 }
 
@@ -1704,9 +1684,9 @@ class Metar implements \ArrayAccess
         }
 
         // Build recent weather report
-        if (null !== $observed['characteristics'] || null !== $observed['types']) {
+        if ($observed['characteristics'] !== null || $observed['types'] !== null) {
             $report = [];
-            if (null !== $observed['intensity']) {
+            if ($observed['intensity'] !== null) {
                 if ($observed['intensity'] === 'VC') {
                     $report[] = static::$weather_intensity_codes[$observed['intensity']].',';
                 } else {
@@ -1731,14 +1711,13 @@ class Metar implements \ArrayAccess
         }
 
         $this->set_result_group($method.'_weather', $observed);
+
         return true;
     }
 
     /**
      * Calculate Heat Index based on temperature in F and relative humidity (65 = 65%)
      *
-     * @param $temperature_f
-     * @param $rh
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
@@ -1761,7 +1740,6 @@ class Metar implements \ArrayAccess
      * Calculate Wind Chill Temperature based on temperature in F
      * and wind speed in miles per hour.
      *
-     * @param $temperature_f
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
@@ -1790,13 +1768,11 @@ class Metar implements \ArrayAccess
      *   1 km/hr = 0.539957 knots  = 0.277778 m/s   = 0.911344 ft/s = 0.621371 mi/hr
      *   1 m/s   = 1.943844 knots  = 3.6      km/h  = 3.28084  ft/s = 2.236936 mi/hr
      *
-     * @param $speed
-     * @param $unit
+     *
+     * @return Velocity
      *
      * @throws NonStringUnitName
      * @throws NonNumericValue
-     *
-     * @return Velocity
      */
     private function convert_speed($speed, $unit)
     {
@@ -1815,8 +1791,7 @@ class Metar implements \ArrayAccess
     /**
      * Convert direction degrees to compass label.
      *
-     * @param mixed $direction
-     *
+     * @param  mixed  $direction
      * @return string Direction string
      */
     private function convert_direction_label($direction): string
@@ -1839,14 +1814,13 @@ class Metar implements \ArrayAccess
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetexists.php
      *
-     * @param mixed $offset <p>
-     *                      An offset to check for.
-     *                      </p>
-     *
-     * @return bool true on success or false on failure.
-     *              </p>
-     *              <p>
-     *              The return value will be casted to boolean if non-boolean was returned.
+     * @param  mixed $offset <p>
+     *                       An offset to check for.
+     *                       </p>
+     * @return bool  true on success or false on failure.
+     *               </p>
+     *               <p>
+     *               The return value will be casted to boolean if non-boolean was returned.
      *
      * @since 5.0.0
      */
@@ -1860,10 +1834,9 @@ class Metar implements \ArrayAccess
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetget.php
      *
-     * @param mixed $offset <p>
-     *                      The offset to retrieve.
-     *                      </p>
-     *
+     * @param  mixed $offset <p>
+     *                       The offset to retrieve.
+     *                       </p>
      * @return mixed Can return all value types.
      *
      * @since 5.0.0
@@ -1885,8 +1858,6 @@ class Metar implements \ArrayAccess
      *                      The value to set.
      *                      </p>
      *
-     * @return void
-     *
      * @since 5.0.0
      */
     public function offsetSet($offset, $value): void
@@ -1902,8 +1873,6 @@ class Metar implements \ArrayAccess
      * @param mixed $offset <p>
      *                      The offset to unset.
      *                      </p>
-     *
-     * @return void
      *
      * @since 5.0.0
      */
