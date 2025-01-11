@@ -9,7 +9,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,7 +22,7 @@ class AirlineFinanceTable extends TableWidget
     public function table(Table $table): Table
     {
         $start_date = $this->filters['start_date'] !== null ? Carbon::createFromTimeString($this->filters['start_date']) : now()->startOfYear();
-        $end_date =  $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
+        $end_date = $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
         $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
         $airline_journal_id = Airline::find($airline_id)->journal->id;
 
