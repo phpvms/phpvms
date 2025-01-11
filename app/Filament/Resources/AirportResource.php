@@ -176,16 +176,20 @@ class AirportResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextInputColumn::make('ground_handling_cost')
-                    ->label('GH Cost'),
+                    ->label('GH Cost')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextInputColumn::make('fuel_jeta_cost')
-                    ->label('JetA'),
+                    ->label('JetA')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextInputColumn::make('fuel_100ll_cost')
-                    ->label('100LL'),
+                    ->label('100LL')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextInputColumn::make('fuel_mogas_cost')
-                    ->label('MOGAS'),
+                    ->label('MOGAS')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\Filter::make('only_hubs')->query(fn (Builder $query): Builder => $query->where('hub', 1)),
