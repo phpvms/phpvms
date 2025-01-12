@@ -7,8 +7,7 @@ use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
 use Illuminate\Database\Schema\Blueprint;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      *

@@ -22,9 +22,9 @@ class NewsService extends Service
      * Add a news item.
      *
      *
-     * @return mixed
-     *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
+     *
+     * @return mixed
      */
     public function addNews(array $attrs)
     {
