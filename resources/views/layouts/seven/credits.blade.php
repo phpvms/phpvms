@@ -33,13 +33,13 @@
             @endif
             <span class="float-end">
               @if($module->attribution)
-              <a href="{{ $module->attribution->url }}" target="_blank" class="btn btn-sm btn-outline-danger">{{ $module->attribution->text }}</a>
+                <a href="{{ $module->attribution->url }}" target="_blank" class="btn btn-sm btn-outline-danger">{{ $module->attribution->text }}</a>
               @endif
               @if($module->readme_url)
-              <a href="{{ $module->readme_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Readme</a>
+                <a href="{{ $module->readme_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Readme</a>
               @endif
               @if($module->license_url)
-              <a href="{{ $module->license_url }}" target="_blank" class="btn btn-sm btn-outline-primary">License</a>
+                <a href="{{ $module->license_url }}" target="_blank" class="btn btn-sm btn-outline-primary">License</a>
               @endif
             </span>
           </div>
