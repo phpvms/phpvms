@@ -6,8 +6,7 @@ use App\Models\Expense;
 /**
  * Update the expenses to add the airline ID.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up(): void
     {
         /** @var Expense[] $all_expenses */

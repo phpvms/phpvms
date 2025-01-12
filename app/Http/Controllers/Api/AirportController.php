@@ -23,7 +23,8 @@ class AirportController extends Controller
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly AirportService $airportSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Return all the airports, paginated.

@@ -57,7 +57,8 @@ abstract class BaseImporter
     /**
      * The start method. Takes the offset to start from.
      *
-     * @param  int   $start
+     * @param int $start
+     *
      * @return mixed
      */
     abstract public function run($start = 0);

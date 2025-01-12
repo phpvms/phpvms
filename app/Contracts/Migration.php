@@ -24,7 +24,9 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     /**
      * A method to reverse a migration doesn't need to be made.
      */
-    public function down() {}
+    public function down()
+    {
+    }
 
     /**
      * Add a module and enable it.

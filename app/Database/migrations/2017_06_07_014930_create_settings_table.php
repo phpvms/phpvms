@@ -4,8 +4,7 @@ use App\Contracts\Migration;
 use App\Services\Installer\SeederService;
 use Illuminate\Database\Schema\Blueprint;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     private $seederSvc;
 
     public function __construct()

@@ -97,7 +97,8 @@ class Journal extends Model
     }
 
     /**
-     * @param  Journal                                         $object
+     * @param Journal $object
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function transactionsReferencingObjectQuery($object)
@@ -112,10 +113,10 @@ class Journal extends Model
      * Get the credit only balance of the journal based on a given date.
      *
      *
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getCreditBalanceOn(Carbon $date)
     {
@@ -130,10 +131,10 @@ class Journal extends Model
      * Get the balance of the journal based on a given date.
      *
      *
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getBalanceOn(Carbon $date)
     {
@@ -144,10 +145,10 @@ class Journal extends Model
     /**
      * Get the balance of the journal as of right now, excluding future transactions.
      *
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getCurrentBalance()
     {
@@ -157,10 +158,10 @@ class Journal extends Model
     /**
      * Get the balance of the journal.  This "could" include future dates.
      *
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getBalance()
     {

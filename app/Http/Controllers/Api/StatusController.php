@@ -13,7 +13,8 @@ class StatusController extends Controller
 {
     public function __construct(
         private readonly VersionService $versionSvc
-    ) {}
+    ) {
+    }
 
     public function status(): JsonResponse
     {

@@ -31,9 +31,9 @@ trait JournalTrait
      * Initialize a journal for a given model object.
      *
      *
-     * @return Journal
-     *
      * @throws \Exception
+     *
+     * @return Journal
      */
     public function initJournal(string $currency_code = 'USD')
     {
