@@ -22,7 +22,8 @@ class DiversionHandler extends Listener // implements ShouldQueue
     public function __construct(
         private readonly FlightService $flightSvc,
         private readonly PirepService $pirepSvc
-    ) {}
+    ) {
+    }
 
     /**
      * When a PIREP is filed, check for diversion.

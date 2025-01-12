@@ -27,7 +27,8 @@ class RankController extends Controller
         private readonly RankRepository $rankRepo,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Get the available subfleets for a rank.

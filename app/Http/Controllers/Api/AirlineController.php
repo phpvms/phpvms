@@ -14,7 +14,8 @@ class AirlineController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Return all the airlines, paginated.

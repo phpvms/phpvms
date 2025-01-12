@@ -14,7 +14,8 @@ class CronService extends Service
 {
     public function __construct(
         private readonly KvpRepository $kvpRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Get the path for running a cron job.
