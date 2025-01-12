@@ -95,11 +95,10 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      */
     protected function disableExceptionHandling(): void
     {
-        $this->app->instance(ExceptionHandler::class, new class() extends Handler {
+        $this->app->instance(ExceptionHandler::class, new class() extends Handler
+        {
             /** @noinspection PhpMissingParentConstructorInspection */
-            public function __construct()
-            {
-            }
+            public function __construct() {}
 
             public function report(\Throwable $e)
             {
