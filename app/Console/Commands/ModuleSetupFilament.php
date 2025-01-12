@@ -29,6 +29,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
     protected ?Module $module = null;
 
     private string $basePath = 'Providers/Filament';
+
     private string $className = 'AdminPanelProvider';
 
     private string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
@@ -53,8 +54,8 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
             ->prepend($this->getModuleNamespace());
 
         $this->copyPanelStubToApp($path, [
-            'STUDLY_NAME' => $this->module->getStudlyName(),
-            'LOWER_NAME'  => $this->module->getLowerName(),
+            'STUDLY_NAME'      => $this->module->getStudlyName(),
+            'LOWER_NAME'       => $this->module->getLowerName(),
             'MODULE_NAMESPACE' => $this->laravel['modules']->config('namespace'),
         ]);
 
@@ -97,7 +98,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
 
         foreach ($replacements as $key => $replacement) {
             $stub = $stub->replace("{{ {$key} }}", $replacement);
-            $stub = $stub->replace("$".$key."$", $replacement);
+            $stub = $stub->replace('$'.$key.'$', $replacement);
         }
 
         $stub = (string) $stub;
