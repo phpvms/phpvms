@@ -39,8 +39,7 @@ class FlightController extends Controller
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Prettus\Repository\Exceptions\RepositoryException

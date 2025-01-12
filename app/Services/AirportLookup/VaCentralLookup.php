@@ -11,14 +11,12 @@ class VaCentralLookup extends AirportLookup
 {
     public function __construct(
         private readonly IVaCentral $client
-    ) {
-    }
+    ) {}
 
     /**
      * Lookup the information for an airport.
      *
-     * @param string $icao
-     *
+     * @param  string $icao
      * @return mixed
      */
     public function getAirport($icao)

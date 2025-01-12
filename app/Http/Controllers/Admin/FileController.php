@@ -15,8 +15,7 @@ class FileController extends Controller
 {
     public function __construct(
         private readonly FileService $fileSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly file.

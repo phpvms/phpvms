@@ -46,8 +46,7 @@ class SubfleetController extends Controller
         private readonly SubfleetRepository $subfleetRepo,
         private readonly TypeRatingRepository $typeratingRepo,
         private readonly FinanceService $financeSvc,
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the Subfleet.

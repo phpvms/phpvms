@@ -10,8 +10,7 @@ class RoleService extends Service
 {
     public function __construct(
         private readonly RoleRepository $roleRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Update a role with the given attributes.
