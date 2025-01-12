@@ -35,8 +35,7 @@ class ProfileController extends Controller
         private readonly AirlineRepository $airlineRepo,
         private readonly AirportRepository $airportRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return whether the vmsACARS module is enabled or not.

@@ -17,8 +17,7 @@ class FlightFieldController extends Controller
      */
     public function __construct(
         private readonly FlightFieldRepository $flightFieldRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the FlightField.
