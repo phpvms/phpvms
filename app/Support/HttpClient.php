@@ -22,9 +22,9 @@ class HttpClient
      * content into that file.
      *
      *
-     * @return string
-     *
      * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @return string
      */
     public function get($uri, array $opts = [])
     {
