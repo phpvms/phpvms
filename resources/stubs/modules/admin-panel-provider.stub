@@ -58,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugin(ModuleLinksPlugin::make())
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
+            ->unsavedChangesAlerts()
             ->spa();
     }
 
