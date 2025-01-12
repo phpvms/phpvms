@@ -15,8 +15,7 @@ class AirportController extends Controller
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Show the airport.

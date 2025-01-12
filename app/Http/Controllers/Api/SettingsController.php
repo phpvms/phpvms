@@ -18,8 +18,7 @@ class SettingsController extends Controller
      */
     public function __construct(
         private readonly SettingRepository $settingRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the airlines, paginated.
