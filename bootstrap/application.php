@@ -8,7 +8,7 @@ if (!defined('DS')) {
 
 /**
  * Customized container to allow some of the base Laravel
- * configurations to be overridden
+ * configurations to be overridden.
  */
 class application extends Illuminate\Foundation\Application
 {
@@ -29,7 +29,7 @@ class application extends Illuminate\Foundation\Application
             // clear the bootstrap and storage cache
             $cachePaths = [
                 $rootPath.'/bootstrap/cache',
-                $rootPath.'/storage/framework/cache'
+                $rootPath.'/storage/framework/cache',
             ];
 
             foreach ($cachePaths as $path) {
@@ -54,7 +54,7 @@ class application extends Illuminate\Foundation\Application
     /**
      * Override this method so we can inject our own LoadConfiguration
      * class, which looks for any configurations that have been overridden
-     * in the root's config.php file
+     * in the root's config.php file.
      *
      * @param array $bootstrappers
      */
@@ -93,7 +93,7 @@ class application extends Illuminate\Foundation\Application
     }
 
     /**
-     * Override paths
+     * Override paths.
      *
      * @param mixed $publicDirPath
      */
@@ -106,7 +106,7 @@ class application extends Illuminate\Foundation\Application
     /**
      * Added for the custom filesystem driver. Used in the index.php
      * in the root of the install to set it to point to /public,
-     * instead of just /
+     * instead of just /.
      *
      * @param $publicUrlPath
      */
@@ -117,7 +117,7 @@ class application extends Illuminate\Foundation\Application
 
     /**
      * Added for the custom filesystem driver lookup on what to use
-     * for the base URL
+     * for the base URL.
      *
      * @return string
      */
