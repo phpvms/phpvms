@@ -14,8 +14,7 @@ class UserFieldController extends Controller
 {
     public function __construct(
         private readonly UserFieldRepository $userFieldRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the UserField.

@@ -27,8 +27,7 @@ class DashboardController extends Controller
         private readonly NewsService $newsSvc,
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Check if a new version is available by checking the VERSION file from

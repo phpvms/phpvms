@@ -47,8 +47,7 @@ class FlightController extends Controller
         private readonly FlightService $flightSvc,
         private readonly ImportService $importSvc,
         private readonly SubfleetRepository $subfleetRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Save any custom fields found.
