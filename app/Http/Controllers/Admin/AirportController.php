@@ -31,8 +31,7 @@ class AirportController extends Controller
         private readonly FileService $fileSvc,
         private readonly ImportService $importSvc,
         private readonly FinanceService $financeSvc,
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the Airport.

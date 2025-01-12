@@ -101,7 +101,6 @@ class FareService extends Service
      *
      * @param Collection[Fare] $subfleet_fares The fare for a subfleet
      * @param Collection[Fare] $flight_fares   The fares on a flight
-     *
      * @return Collection[Fare] Collection of Fare
      */
     public function getFareWithOverrides($subfleet_fares, $flight_fares): Collection
@@ -181,9 +180,8 @@ class FareService extends Service
     /**
      * Get the fares for a particular flight, with the subfleet that is in use being passed in.
      *
-     * @param Flight|null   $flight
-     * @param Subfleet|null $subfleet
-     *
+     * @param  Flight|null   $flight
+     * @param  Subfleet|null $subfleet
      * @return Collection
      */
     public function getAllFares($flight, $subfleet)
