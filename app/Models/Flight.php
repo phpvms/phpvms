@@ -174,7 +174,8 @@ class Flight extends Model
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks.
      *
-     * @param  Days[] $days List of the enumerated values
+     * @param Days[] $days List of the enumerated values
+     *
      * @return Flight
      */
     public static function findByDays(array $days)

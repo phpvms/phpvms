@@ -19,7 +19,8 @@ class PirepFieldController extends Controller
      */
     public function __construct(
         private readonly PirepFieldRepository $pirepFieldRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the PirepField.

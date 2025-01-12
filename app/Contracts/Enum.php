@@ -110,9 +110,9 @@ abstract class Enum
     /**
      * Returns all possible values as an array.
      *
-     * @return array Constant name in key, constant value in value
-     *
      * @throws \ReflectionException
+     *
+     * @return array Constant name in key, constant value in value
      */
     public static function toArray(): array
     {
@@ -134,12 +134,13 @@ abstract class Enum
      * Returns a value when called statically like so: MyEnum::SOME_VALUE() given SOME_VALUE is a
      * class constant.
      *
-     * @param  string $name
-     * @param  array  $arguments
-     * @return static
+     * @param string $name
+     * @param array  $arguments
      *
      * @throws \BadMethodCallException
      * @throws \ReflectionException
+     *
+     * @return static
      */
     public static function __callStatic($name, $arguments)
     {

@@ -46,9 +46,9 @@ class DatabaseService extends Service
     }
 
     /**
-     * @return mixed
-     *
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function insert_row($table, $row)
     {

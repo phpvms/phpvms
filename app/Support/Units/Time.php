@@ -105,9 +105,10 @@ class Time implements Arrayable
      * Convert seconds to an array of hours, minutes, seconds.
      *
      * @param int $seconds
-     * @return array['h', 'm', 's']
      *
      * @throws \Exception
+     *
+     * @return array['h', 'm', 's']
      */
     public static function secondsToTimeParts($seconds): array
     {
@@ -174,7 +175,8 @@ class Time implements Arrayable
     }
 
     /**
-     * @param  null      $minutes
+     * @param null $minutes
+     *
      * @return float|int
      */
     public static function hoursToMinutes($hours, $minutes = null)
