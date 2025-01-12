@@ -273,8 +273,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * @param mixed $size Size of the gravatar, in pixels
-     *
+     * @param  mixed  $size Size of the gravatar, in pixels
      * @return string
      */
     public function gravatar($size = null)

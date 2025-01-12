@@ -31,8 +31,7 @@ class Resource extends JsonResource
      * Customize the response to exclude all the extra data that isn't used. Based on:
      * https://gist.github.com/derekphilipau/4be52164a69ce487dcd0673656d280da
      *
-     * @param \Illuminate\Http\Request $request
-     *
+     * @param  \Illuminate\Http\Request      $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function toResponse($request)
