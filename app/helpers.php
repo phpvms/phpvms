@@ -23,7 +23,7 @@ if (!function_exists('array_key_first')) {
 
 if (!function_exists('in_mask')) {
     /**
-     * Return true/false if a value exists in a mask
+     * Return true/false if a value exists in a mask.
      *
      *
      * @return bool
@@ -41,7 +41,7 @@ if (!function_exists('in_mask')) {
 if (!function_exists('get_truth_state')) {
     /**
      * Check if the passed state matches any of the states that
-     * we regard as being true or false
+     * we regard as being true or false.
      *
      *
      * @return bool
@@ -68,7 +68,7 @@ if (!function_exists('get_truth_state')) {
 if (!function_exists('list_to_assoc')) {
     /**
      * Converts a straight list into an assoc array with
-     * key and value being the same. Mainly for a select box
+     * key and value being the same. Mainly for a select box.
      *
      * e.g.:
      *    [ 0 => 'item1', 1 => 'item2']
@@ -105,7 +105,7 @@ if (!function_exists('list_to_editable')) {
      * Takes a list of:
      *    [value => text, valueN => textN, ...]
      * Return:
-     *    [{value: 1, text: "text1"}, {value: 2, text: "text2"}, ...]
+     *    [{value: 1, text: "text1"}, {value: 2, text: "text2"}, ...].
      *
      *
      * @return array
@@ -126,7 +126,7 @@ if (!function_exists('list_to_editable')) {
 
 if (!function_exists('skin_view')) {
     /**
-     * Render a skin
+     * Render a skin.
      *
      *
      * @return Factory|\Illuminate\View\View
@@ -150,9 +150,10 @@ if (!function_exists('skin_view')) {
  */
 if (!function_exists('setting')) {
     /**
-     * Read a setting from the settings table
+     * Read a setting from the settings table.
      *
-     * @param  mixed      $default
+     * @param mixed $default
+     *
      * @return mixed|null
      */
     function setting($key, $default = null)
@@ -199,9 +200,10 @@ if (!function_exists('setting_save')) {
  */
 if (!function_exists('kvp')) {
     /**
-     * Read a setting from the KVP repository
+     * Read a setting from the KVP repository.
      *
-     * @param  string|null $default
+     * @param string|null $default
+     *
      * @return mixed|null
      */
     function kvp(string $key, $default = null)
@@ -224,7 +226,7 @@ if (!function_exists('kvp')) {
  */
 if (!function_exists('kvp_save')) {
     /**
-     * Read a setting from the KVP repository
+     * Read a setting from the KVP repository.
      *
      *
      * @return mixed|null
@@ -268,7 +270,7 @@ if (!function_exists('public_mix')) {
 }
 
 /**
- * Wrap a call to url() and append the public folder before it
+ * Wrap a call to url() and append the public folder before it.
  */
 if (!function_exists('public_url')) {
     function public_url($path, array $parameters = [])
@@ -288,7 +290,7 @@ if (!function_exists('public_url')) {
 if (!function_exists('show_datetime')) {
     /**
      * Format the a Carbon date into the datetime string
-     * but convert it into the user's timezone
+     * but convert it into the user's timezone.
      *
      *
      * @return string
@@ -314,9 +316,10 @@ if (!function_exists('show_datetime')) {
 if (!function_exists('show_date')) {
     /**
      * Format the a Carbon date into the datetime string
-     * but convert it into the user's timezone
+     * but convert it into the user's timezone.
      *
-     * @param  string $default_timezone Default timezone to use, defaults to UTC
+     * @param string $default_timezone Default timezone to use, defaults to UTC
+     *
      * @return string
      */
     function show_date(Carbon $date, $default_timezone = 'UTC')
@@ -336,10 +339,11 @@ if (!function_exists('show_date')) {
 if (!function_exists('show_datetime_format')) {
     /**
      * Format the a Carbon date into the datetime string
-     * but convert it into the user's timezone
+     * but convert it into the user's timezone.
      *
-     * @param  string $format
-     * @param  string $default_timezone A default timezone to use (UTC by default)
+     * @param string $format
+     * @param string $default_timezone A default timezone to use (UTC by default)
+     *
      * @return string
      */
     function show_datetime_format(Carbon $date, $format, $default_timezone = 'UTC')
@@ -355,7 +359,7 @@ if (!function_exists('show_datetime_format')) {
 
 if (!function_exists('secstohhmm')) {
     /**
-     * Convert seconds to hhmm format
+     * Convert seconds to hhmm format.
      */
     function secstohhmm($seconds)
     {
@@ -367,10 +371,11 @@ if (!function_exists('secstohhmm')) {
 
 if (!function_exists('_fmt')) {
     /**
-     * Replace strings
+     * Replace strings.
      *
-     * @param        $line    "Hi, my name is :name"
-     * @param  array $replace ['name' => 'Nabeel']
+     * @param       $line    "Hi, my name is :name"
+     * @param array $replace ['name' => 'Nabeel']
+     *
      * @return mixed
      */
     function _fmt($line, array $replace)
@@ -394,9 +399,10 @@ if (!function_exists('_fmt')) {
 
 if (!function_exists('docs_link')) {
     /**
-     * Return a link to the docs
+     * Return a link to the docs.
      *
-     * @param  string $key Key from phpvms.config.docs
+     * @param string $key Key from phpvms.config.docs
+     *
      * @return string
      */
     function docs_link($key)
@@ -407,9 +413,10 @@ if (!function_exists('docs_link')) {
 
 if (!function_exists('check_module')) {
     /**
-     * Check if a module is installed and active
+     * Check if a module is installed and active.
      *
-     * @param  string $module_name
+     * @param string $module_name
+     *
      * @return bool
      */
     function check_module($module_name)
@@ -422,9 +429,10 @@ if (!function_exists('check_module')) {
 
 if (!function_exists('decode_days')) {
     /**
-     * Decode days of flights for schedule display
+     * Decode days of flights for schedule display.
      *
-     * @param  int    $flight_days
+     * @param int $flight_days
+     *
      * @return string Monday, Tuesday, Friday, Sunday
      */
     function decode_days($flight_days)

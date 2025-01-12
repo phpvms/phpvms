@@ -3,7 +3,7 @@
 namespace App\Contracts;
 
 /**
- * Borrowed some ideas from myclabs/php-enum after this was created
+ * Borrowed some ideas from myclabs/php-enum after this was created.
  */
 abstract class Enum
 {
@@ -16,7 +16,7 @@ abstract class Enum
     protected int $value;
 
     /**
-     * Create an instance of this Enum
+     * Create an instance of this Enum.
      */
     public function __construct($val)
     {
@@ -24,7 +24,7 @@ abstract class Enum
     }
 
     /**
-     * Return the value that's been set if this is an instance
+     * Return the value that's been set if this is an instance.
      */
     final public function getValue(): ?int
     {
@@ -32,7 +32,7 @@ abstract class Enum
     }
 
     /**
-     * Return the label, try to return the translated version as well
+     * Return the label, try to return the translated version as well.
      */
     final public static function label($value): string
     {
@@ -49,7 +49,7 @@ abstract class Enum
     }
 
     /**
-     * Return all of the (translated) labels
+     * Return all of the (translated) labels.
      */
     final public static function labels(): array
     {
@@ -62,7 +62,7 @@ abstract class Enum
     }
 
     /**
-     * Get the numeric value from a string code
+     * Get the numeric value from a string code.
      *
      *
      * @return mixed|null
@@ -73,7 +73,7 @@ abstract class Enum
     }
 
     /**
-     * Convert the integer value into one of the codes
+     * Convert the integer value into one of the codes.
      *
      *
      * @return false|int|string
@@ -89,7 +89,7 @@ abstract class Enum
     }
 
     /**
-     * Select box entry items
+     * Select box entry items.
      *
      * @param bool $add_blank
      */
@@ -108,11 +108,11 @@ abstract class Enum
     }
 
     /**
-     * Returns all possible values as an array
-     *
-     * @return array Constant name in key, constant value in value
+     * Returns all possible values as an array.
      *
      * @throws \ReflectionException
+     *
+     * @return array Constant name in key, constant value in value
      */
     public static function toArray(): array
     {
@@ -132,14 +132,15 @@ abstract class Enum
 
     /**
      * Returns a value when called statically like so: MyEnum::SOME_VALUE() given SOME_VALUE is a
-     * class constant
+     * class constant.
      *
-     * @param  string $name
-     * @param  array  $arguments
-     * @return static
+     * @param string $name
+     * @param array  $arguments
      *
      * @throws \BadMethodCallException
      * @throws \ReflectionException
+     *
+     * @return static
      */
     public static function __callStatic($name, $arguments)
     {

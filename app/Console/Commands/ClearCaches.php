@@ -26,12 +26,14 @@ class ClearCaches extends Command
     }
 
     /**
-     * Clear the bootstrap/cache dir
+     * Clear the bootstrap/cache dir.
      */
-    private static function clearBootstrapCache() {}
+    private static function clearBootstrapCache()
+    {
+    }
 
     /**
-     * Rescan for new modules
+     * Rescan for new modules.
      */
     private static function clearModuleCache()
     {

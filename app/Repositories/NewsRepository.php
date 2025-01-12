@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class NewsRepository
+ * Class NewsRepository.
  */
 class NewsRepository extends Repository implements CacheableInterface
 {
@@ -20,9 +20,10 @@ class NewsRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Latest news items
+     * Latest news items.
      *
-     * @param  int   $count
+     * @param int $count
+     *
      * @return mixed
      */
     public function getLatest($count = 5)

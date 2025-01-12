@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Add a `mtow` column for the max takeoff weight
+ * Add a `mtow` column for the max takeoff weight.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::table('aircraft', function (Blueprint $table) {

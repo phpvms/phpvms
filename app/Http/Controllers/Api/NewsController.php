@@ -14,10 +14,11 @@ class NewsController extends Controller
      */
     public function __construct(
         private readonly NewsRepository $newsRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Return all the airlines, paginated
+     * Return all the airlines, paginated.
      *
      *
      * @return mixed

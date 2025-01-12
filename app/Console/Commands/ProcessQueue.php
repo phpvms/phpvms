@@ -14,7 +14,7 @@ class ProcessQueue extends Command
     protected $description = 'Process the queue from a cron job';
 
     /**
-     * Run the queue tasks
+     * Run the queue tasks.
      */
     public function handle()
     {

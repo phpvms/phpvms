@@ -84,7 +84,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     public $table = 'users';
 
     /**
-     * The journal type for when it's being created
+     * The journal type for when it's being created.
      */
     public $journal_type = JournalType::USER;
 
@@ -181,7 +181,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     ];
 
     /**
-     * Format the pilot ID/ident
+     * Format the pilot ID/ident.
      */
     public function ident(): Attribute
     {
@@ -198,7 +198,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * Format the pilot atc callsign, either return alphanumeric callsign or ident
+     * Format the pilot atc callsign, either return alphanumeric callsign or ident.
      */
     public function atc(): Attribute
     {
@@ -213,7 +213,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * Return a "privatized" version of someones name - First and middle names full, last name initials
+     * Return a "privatized" version of someones name - First and middle names full, last name initials.
      */
     public function namePrivate(): Attribute
     {
@@ -242,7 +242,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * Shortcut for timezone
+     * Shortcut for timezone.
      */
     public function tz(): Attribute
     {
@@ -255,7 +255,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * Return a File model
+     * Return a File model.
      */
     public function avatar(): Attribute
     {
@@ -273,7 +273,8 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * @param  mixed  $size Size of the gravatar, in pixels
+     * @param mixed $size Size of the gravatar, in pixels
+     *
      * @return string
      */
     public function gravatar($size = null)
@@ -310,7 +311,7 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function airline(): BelongsTo
     {

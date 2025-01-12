@@ -20,28 +20,28 @@ abstract class BaseImporter
     use Queueable;
 
     /**
-     * Holds the connection to the legacy database
+     * Holds the connection to the legacy database.
      *
      * @var ImporterDB
      */
     protected $db;
 
     /**
-     * The mapper class used for old IDs to new IDs
+     * The mapper class used for old IDs to new IDs.
      *
      * @var IdMapper
      */
     protected $idMapper;
 
     /**
-     * The legacy table this importer targets
+     * The legacy table this importer targets.
      *
      * @var string
      */
     protected $table;
 
     /**
-     * The column used for the ID, used for the ORDER BY
+     * The column used for the ID, used for the ORDER BY.
      *
      * @var string
      */
@@ -55,16 +55,17 @@ abstract class BaseImporter
     }
 
     /**
-     * The start method. Takes the offset to start from
+     * The start method. Takes the offset to start from.
      *
-     * @param  int   $start
+     * @param int $start
+     *
      * @return mixed
      */
     abstract public function run($start = 0);
 
     /**
      * Return a manifest of the import tasks to run. Returns an array of objects,
-     * which contain a start and end row
+     * which contain a start and end row.
      */
     public function getManifest(): array
     {
@@ -103,7 +104,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Determine what columns exist, can be used for feature testing between v2/v5
+     * Determine what columns exist, can be used for feature testing between v2/v5.
      */
     public function getColumns(): array
     {
@@ -119,7 +120,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Take a decimal duration and convert it to minutes
+     * Take a decimal duration and convert it to minutes.
      *
      *
      * @return float|int

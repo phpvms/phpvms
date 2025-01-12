@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
 
 /**
- * The Award model
+ * The Award model.
  *
  * @property mixed      id
  * @property string     name
@@ -53,7 +53,7 @@ class Award extends Model
     ];
 
     /**
-     * Get the referring object
+     * Get the referring object.
      *
      *
      * @return null

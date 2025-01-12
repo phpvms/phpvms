@@ -4,10 +4,9 @@ use App\Contracts\Migration;
 use App\Services\Installer\ConfigService;
 
 /**
- * Migrate the configuration files
+ * Migrate the configuration files.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         /** @var ConfigService $configSvc */
@@ -15,5 +14,7 @@ return new class() extends Migration
         // $configSvc->rewriteConfigFiles();
     }
 
-    public function down() {}
+    public function down()
+    {
+    }
 };

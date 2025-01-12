@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class AwardRepository
+ * Class AwardRepository.
  */
 class AwardRepository extends Repository implements CacheableInterface
 {

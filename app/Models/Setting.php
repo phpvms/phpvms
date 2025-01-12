@@ -50,7 +50,7 @@ class Setting extends Model
     }
 
     /**
-     * Force formatting the key
+     * Force formatting the key.
      */
     public function id(): Attribute
     {
@@ -60,7 +60,7 @@ class Setting extends Model
     }
 
     /**
-     * Set the key to lowercase
+     * Set the key to lowercase.
      */
     public function key(): Attribute
     {

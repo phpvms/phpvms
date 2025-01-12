@@ -12,7 +12,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class FlightRepository
+ * Class FlightRepository.
  */
 class FlightRepository extends Repository implements CacheableInterface
 {
@@ -38,10 +38,11 @@ class FlightRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Find a flight based on the given criterea
+     * Find a flight based on the given criterea.
      *
-     * @param  null  $route_code
-     * @param  null  $route_leg
+     * @param null $route_code
+     * @param null $route_leg
+     *
      * @return mixed
      */
     public function findFlight($airline_id, $flight_num, $route_code = null, $route_leg = null)
@@ -64,12 +65,12 @@ class FlightRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Create the search criteria and return this with the stuff pushed
+     * Create the search criteria and return this with the stuff pushed.
      *
-     *
-     * @return $this
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
+     *
+     * @return $this
      */
     public function searchCriteria(Request $request, bool $only_active = true): self
     {

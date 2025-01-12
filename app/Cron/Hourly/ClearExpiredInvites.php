@@ -8,7 +8,7 @@ use App\Models\Invite;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Clear any expired invites
+ * Clear any expired invites.
  */
 class ClearExpiredInvites extends Listener
 {

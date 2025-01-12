@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
  * Subscribe for events that we do some financial processing for
- * This includes when a PIREP is accepted, or rejected
+ * This includes when a PIREP is accepted, or rejected.
  */
 class FinanceEventHandler extends Listener // implements ShouldQueue
 {
@@ -24,10 +24,11 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
 
     public function __construct(
         private readonly PirepFinanceService $financeSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Kick off the finance events when a PIREP is accepted
+     * Kick off the finance events when a PIREP is accepted.
      *
      *
      * @throws \UnexpectedValueException
@@ -41,7 +42,7 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
     }
 
     /**
-     * Delete all finances in the journal for a given PIREP
+     * Delete all finances in the journal for a given PIREP.
      *
      *
      * @throws \UnexpectedValueException

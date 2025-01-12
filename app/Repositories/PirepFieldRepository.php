@@ -6,7 +6,7 @@ use App\Contracts\Repository;
 use App\Models\PirepField;
 
 /**
- * Class PirepFieldRepository
+ * Class PirepFieldRepository.
  */
 class PirepFieldRepository extends Repository
 {

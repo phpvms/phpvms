@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * ICAO Helper Tools
+ * ICAO Helper Tools.
  */
 class ICAO
 {

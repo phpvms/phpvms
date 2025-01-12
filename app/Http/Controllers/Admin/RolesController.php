@@ -23,7 +23,8 @@ class RolesController extends Controller
         private readonly PermissionsRepository $permsRepo,
         private readonly RoleRepository $rolesRepo,
         private readonly RoleService $roleSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Airlines.
@@ -72,7 +73,7 @@ class RolesController extends Controller
     }
 
     /**
-     * Display the specified role
+     * Display the specified role.
      */
     public function show(int $id): RedirectResponse|View
     {
@@ -90,7 +91,7 @@ class RolesController extends Controller
     }
 
     /**
-     * Show the form for editing the specified roles
+     * Show the form for editing the specified roles.
      */
     public function edit(int $id): RedirectResponse|View
     {

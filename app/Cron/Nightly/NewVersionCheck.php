@@ -17,7 +17,7 @@ class NewVersionCheck extends Listener
     }
 
     /**
-     * Set any users to being on leave after X days
+     * Set any users to being on leave after X days.
      */
     public function handle(CronNightly $event): void
     {

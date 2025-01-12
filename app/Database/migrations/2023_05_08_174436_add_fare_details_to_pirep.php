@@ -6,8 +6,7 @@ use App\Models\PirepFare;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::table('fares', function (Blueprint $table) {
@@ -31,7 +30,7 @@ return new class() extends Migration
         }
 
         /**
-         * Update all of the existing PIREP fares to include the existing fare info
+         * Update all of the existing PIREP fares to include the existing fare info.
          */
         $all_fares = PirepFare::with('fare')->get();
         /** @var PirepFare $fare */

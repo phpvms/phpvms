@@ -3,6 +3,8 @@
 namespace App\Contracts;
 
 /**
- * Class Service
+ * Class Service.
  */
-abstract class Service {}
+abstract class Service
+{
+}

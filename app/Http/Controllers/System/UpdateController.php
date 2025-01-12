@@ -19,7 +19,8 @@ class UpdateController extends Controller
         private readonly InstallerService $installerSvc,
         private readonly MigrationService $migrationSvc,
         private readonly SeederService $seederSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
@@ -31,7 +32,7 @@ class UpdateController extends Controller
 
     /**
      * Step 1. Check if there's an update available. Check if there
-     * are any unrun migrations
+     * are any unrun migrations.
      */
     public function step1(): View
     {
@@ -45,7 +46,7 @@ class UpdateController extends Controller
     }
 
     /**
-     * Step 2 Run all of the migrations
+     * Step 2 Run all of the migrations.
      */
     public function run_migrations(Request $request): View
     {
@@ -69,7 +70,7 @@ class UpdateController extends Controller
     }
 
     /**
-     * Final step
+     * Final step.
      */
     public function complete(): RedirectResponse
     {

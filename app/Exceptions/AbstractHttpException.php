@@ -6,27 +6,27 @@ use Symfony\Component\HttpKernel\Exception\HttpException as SymfonyHttpException
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
- * Abstract class for an exception which needs to satisty the RFC 78707 interface
+ * Abstract class for an exception which needs to satisty the RFC 78707 interface.
  */
 abstract class AbstractHttpException extends SymfonyHttpException implements HttpExceptionInterface
 {
     /**
-     * Return the RFC 7807 error type (without the URL root)
+     * Return the RFC 7807 error type (without the URL root).
      */
     abstract public function getErrorType(): string;
 
     /**
-     * Get the detailed error string
+     * Get the detailed error string.
      */
     abstract public function getErrorDetails(): string;
 
     /**
-     * Return an array with the error details, merged with the RFC7807 response
+     * Return an array with the error details, merged with the RFC7807 response.
      */
     abstract public function getErrorMetadata(): array;
 
     /**
-     * Return the error message as JSON
+     * Return the error message as JSON.
      */
     public function getJson()
     {
@@ -47,7 +47,7 @@ abstract class AbstractHttpException extends SymfonyHttpException implements Htt
     }
 
     /**
-     * Return a response object that can be used by Laravel
+     * Return a response object that can be used by Laravel.
      *
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */

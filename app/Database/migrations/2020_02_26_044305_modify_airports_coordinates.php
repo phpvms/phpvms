@@ -4,10 +4,9 @@ use App\Contracts\Migration;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Turn the airport coordinates and other lat/lon coords into decimal type
+ * Turn the airport coordinates and other lat/lon coords into decimal type.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      *

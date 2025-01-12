@@ -55,7 +55,7 @@ class Expense extends Model
     ];
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function airline(): BelongsTo
     {

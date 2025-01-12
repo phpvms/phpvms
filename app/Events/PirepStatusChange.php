@@ -6,7 +6,7 @@ use App\Contracts\Event;
 use App\Models\Pirep;
 
 /**
- * Status change like Boarding, Taxi, etc
+ * Status change like Boarding, Taxi, etc.
  */
 class PirepStatusChange extends Event
 {

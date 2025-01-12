@@ -9,7 +9,7 @@ use App\Services\Finance\RecurringFinanceService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Go through and apply any finances that are daily
+ * Go through and apply any finances that are daily.
  */
 class ApplyExpenses extends Listener
 {
@@ -24,7 +24,7 @@ class ApplyExpenses extends Listener
     }
 
     /**
-     * Apply all of the expenses for a day
+     * Apply all of the expenses for a day.
      *
      *
      * @throws \UnexpectedValueException

@@ -6,10 +6,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Add two tables for holding user fields and the values
+ * Add two tables for holding user fields and the values.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         /*

@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 use function is_array;
 
 /**
- * Class BaseCommand
+ * Class BaseCommand.
  */
 abstract class Command extends \Illuminate\Console\Command
 {
@@ -18,7 +18,7 @@ abstract class Command extends \Illuminate\Console\Command
     abstract public function handle();
 
     /**
-     * Adjust the logging depending on where we're running from
+     * Adjust the logging depending on where we're running from.
      */
     public function __construct()
     {
@@ -31,7 +31,7 @@ abstract class Command extends \Illuminate\Console\Command
     }
 
     /**
-     * Return the signature of the command
+     * Return the signature of the command.
      */
     public function getSignature(): string
     {
@@ -40,7 +40,7 @@ abstract class Command extends \Illuminate\Console\Command
 
     /**
      * Splice the logger and replace the active handlers with the handlers from the
-     * a stack in config/logging.php
+     * a stack in config/logging.php.
      *
      * @param string $channel_name Channel name from config/logging.php
      */
@@ -70,7 +70,7 @@ abstract class Command extends \Illuminate\Console\Command
     }
 
     /**
-     * Streaming file reader
+     * Streaming file reader.
      */
     public function readFile($filename): ?\Generator
     {

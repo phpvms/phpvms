@@ -48,10 +48,11 @@ class PirepController extends Controller
         private readonly PirepFieldRepository $pirepFieldRepo,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Dropdown with aircraft grouped by subfleet
+     * Dropdown with aircraft grouped by subfleet.
      */
     public function aircraftList(bool $add_blank = false): array
     {
@@ -85,7 +86,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Save any custom fields found
+     * Save any custom fields found.
      */
     protected function saveCustomFields(Request $request): array
     {
@@ -110,7 +111,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Save the fares that have been specified/saved
+     * Save the fares that have been specified/saved.
      *
      *
      * @throws \Exception
@@ -223,7 +224,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Return the fares form for a given aircraft
+     * Return the fares form for a given aircraft.
      */
     public function fares(Request $request): View
     {
@@ -237,7 +238,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Create a new flight report
+     * Create a new flight report.
      */
     public function create(Request $request): View
     {
@@ -251,7 +252,7 @@ class PirepController extends Controller
         }
 
         /**
-         * They have a SimBrief ID, load that up and figure out the flight that it's from
+         * They have a SimBrief ID, load that up and figure out the flight that it's from.
          */
         $fare_values = [];
         $simbrief = null;
@@ -277,7 +278,7 @@ class PirepController extends Controller
 
                 $aircraft->subfleet->fares = collect($fares);
             }
-            // TODO: Set more fields from the Simbrief to the PIREP form
+        // TODO: Set more fields from the Simbrief to the PIREP form
         } else {
             $aircraft_list = $this->aircraftList(true);
         }
@@ -564,7 +565,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Submit the PIREP
+     * Submit the PIREP.
      *
      *
      * @throws \Exception

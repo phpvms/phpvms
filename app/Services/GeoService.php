@@ -24,16 +24,18 @@ class GeoService extends Service
     public function __construct(
         private readonly AcarsRepository $acarsRepo,
         private readonly NavdataRepository $navRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Determine the closest set of coordinates from the starting position
+     * Determine the closest set of coordinates from the starting position.
      *
-     * @param  array $coordStart
-     * @param  array $all_coords
-     * @return mixed
+     * @param array $coordStart
+     * @param array $all_coords
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
+     *
+     * @return mixed
      */
     public function getClosestCoords($coordStart, $all_coords)
     {
@@ -56,7 +58,7 @@ class GeoService extends Service
     /**
      * Pass in a route string, with the departure/arrival airports, and the
      * starting coordinates. Return the route points that have been found
-     * from the `navdata` table
+     * from the `navdata` table.
      *
      * @param $dep_icao     string  ICAO to ignore
      * @param $arr_icao     string  ICAO to ignore
@@ -149,12 +151,12 @@ class GeoService extends Service
     }
 
     /**
-     * Determine the center point between two sets of coordinates
+     * Determine the center point between two sets of coordinates.
      *
-     *
-     * @return array
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
+     *
+     * @return array
      */
     public function getCenter($latA, $lonA, $latB, $lonB)
     {
@@ -174,7 +176,7 @@ class GeoService extends Service
     }
 
     /**
-     * Read an array/relationship of ACARS model points
+     * Read an array/relationship of ACARS model points.
      *
      *
      * @return array
@@ -231,9 +233,10 @@ class GeoService extends Service
     }
 
     /**
-     * Return a single feature point for the
+     * Return a single feature point for the.
      *
-     * @param  mixed                              $pireps
+     * @param mixed $pireps
+     *
      * @return mixed
      * @return \GeoJson\Feature\FeatureCollection
      */
@@ -264,7 +267,7 @@ class GeoService extends Service
     }
 
     /**
-     * Return a FeatureCollection GeoJSON object
+     * Return a FeatureCollection GeoJSON object.
      */
     public function flightGeoJson(Flight $flight): array
     {
@@ -308,7 +311,7 @@ class GeoService extends Service
     }
 
     /**
-     * Return a GeoJSON FeatureCollection for a PIREP
+     * Return a GeoJSON FeatureCollection for a PIREP.
      *
      *
      * @return array
@@ -341,7 +344,7 @@ class GeoService extends Service
         ]);
 
         /**
-         * ACTUAL ROUTE
+         * ACTUAL ROUTE.
          */
         $actual_route = $this->acarsRepo->forPirep($pirep->id, AcarsType::FLIGHT_PATH);
         foreach ($actual_route as $point) {

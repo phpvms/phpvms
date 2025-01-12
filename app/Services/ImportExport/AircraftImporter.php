@@ -12,7 +12,7 @@ use App\Support\ICAO;
 use App\Support\Units\Mass;
 
 /**
- * Import aircraft
+ * Import aircraft.
  */
 class AircraftImporter extends ImportExport
 {
@@ -20,7 +20,7 @@ class AircraftImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part
+     * Should match the database fields, for the most part.
      */
     public static $columns = [
         'subfleet'      => 'required',
@@ -43,7 +43,7 @@ class AircraftImporter extends ImportExport
 
     /**
      * Find the subfleet specified, or just create it on the fly and attach it to the
-     * first airline that's been found
+     * first airline that's been found.
      *
      *
      * @return Subfleet|\Illuminate\Database\Eloquent\Model|null|object|static
@@ -59,7 +59,7 @@ class AircraftImporter extends ImportExport
     }
 
     /**
-     * Import an aircraft, parse out the different rows
+     * Import an aircraft, parse out the different rows.
      *
      * @param int $index
      *

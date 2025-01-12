@@ -51,7 +51,7 @@ class PirepFare extends Model
     ];
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function fare(): BelongsTo
     {

@@ -20,7 +20,7 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect after logging in
+     * Where to redirect after logging in.
      */
     protected mixed $redirectTo = '/dashboard';
 
@@ -38,7 +38,7 @@ class LoginController extends Controller
 
     /**
      * Get the needed authorization credentials from the request.
-     * Overriding the value from the trait
+     * Overriding the value from the trait.
      *
      * @override
      */

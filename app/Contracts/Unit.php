@@ -5,37 +5,37 @@ namespace App\Contracts;
 use ArrayAccess;
 
 /**
- * Abstract unit wrapper
+ * Abstract unit wrapper.
  */
 class Unit implements ArrayAccess
 {
     /**
-     * The localized unit the user wants it displayed in
+     * The localized unit the user wants it displayed in.
      */
     public string $localUnit;
 
     /**
-     * The unit that this value is stored in locally
+     * The unit that this value is stored in locally.
      */
     public string $internalUnit;
 
     /**
-     * All of the units of this class which are reported in an API response
+     * All of the units of this class which are reported in an API response.
      */
     public array $units;
 
     /**
-     * Holds an instance of the PhpUnit type
+     * Holds an instance of the PhpUnit type.
      */
     protected mixed $instance;
 
     /**
-     * Units that are included as part of the REST response
+     * Units that are included as part of the REST response.
      */
     public array $responseUnits = [];
 
     /**
-     * Factory method for creating a new unit type
+     * Factory method for creating a new unit type.
      *
      *
      * @throws \Exception
@@ -50,7 +50,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Return the value in an internal format
+     * Return the value in an internal format.
      *
      * @param int|null $round Optional value to round to
      */
@@ -60,7 +60,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Return the value in the localized format
+     * Return the value in the localized format.
      *
      * @param int|null $round Optional value to round to
      */
@@ -70,7 +70,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Just call toUnit() on the PhpUnitOfMeasure instance
+     * Just call toUnit() on the PhpUnitOfMeasure instance.
      *
      * @param int|null $round Optional value to round to
      */
@@ -85,7 +85,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Return all of the units that get sent back in a response
+     * Return all of the units that get sent back in a response.
      */
     public function getResponseUnits(): array
     {
@@ -98,7 +98,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Implements ArrayAccess
+     * Implements ArrayAccess.
      */
     public function offsetExists($offset): bool
     {
@@ -106,7 +106,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Implements ArrayAccess
+     * Implements ArrayAccess.
      */
     public function offsetGet($unit): ?float
     {
@@ -119,7 +119,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Implements ArrayAccess
+     * Implements ArrayAccess.
      */
     public function offsetSet($offset, $value): void
     {
@@ -127,7 +127,7 @@ class Unit implements ArrayAccess
     }
 
     /**
-     * Implements ArrayAccess
+     * Implements ArrayAccess.
      */
     public function offsetUnset($offset): void
     {

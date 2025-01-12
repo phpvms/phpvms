@@ -6,7 +6,7 @@ use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
- * Class FlightField
+ * Class FlightField.
  *
  * @property string name
  * @property string slug
@@ -33,7 +33,7 @@ class FlightField extends Model
     ];
 
     /**
-     * When setting the name attribute, also set the slug
+     * When setting the name attribute, also set the slug.
      */
     public function name(): Attribute
     {

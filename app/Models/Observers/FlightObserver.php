@@ -5,7 +5,7 @@ namespace App\Models\Observers;
 use App\Models\Flight;
 
 /**
- * Make sure that the fields are properly capitalized
+ * Make sure that the fields are properly capitalized.
  */
 class FlightObserver
 {

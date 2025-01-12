@@ -12,7 +12,7 @@ class EmailTest extends Command
     protected $description = 'Send a test notification to admins';
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */

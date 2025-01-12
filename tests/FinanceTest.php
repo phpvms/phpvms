@@ -59,14 +59,14 @@ final class FinanceTest extends TestCase
 
     /**
      * Create a user and a PIREP, that has all of the data filled out
-     * so that we can test all of the disparate parts of the finances
+     * so that we can test all of the disparate parts of the finances.
      *
      * @throws Exception
      */
     public function createFullPirep(?Airline $airline = null): array
     {
         /**
-         * Setup tests
+         * Setup tests.
          */
         $subfleet = $this->createSubfleetWithAircraft(2);
         $subfleet['subfleet']->cost_block_hour = 10;
@@ -129,7 +129,7 @@ final class FinanceTest extends TestCase
 
         /**
          * Add fares to the subfleet, and then add the fares
-         * to the PIREP when it's saved, and set the capacity
+         * to the PIREP when it's saved, and set the capacity.
          */
 
         /** @var Fare $fares */
@@ -184,7 +184,7 @@ final class FinanceTest extends TestCase
 
     /**
      * Make sure that the API is returning the fares properly for a subfleet on a flight
-     * https://github.com/nabeelio/phpvms/issues/899
+     * https://github.com/nabeelio/phpvms/issues/899.
      *
      * The fares, etc for a subfleet has to be adjusted to the fleet
      * https://github.com/nabeelio/phpvms/issues/905
@@ -207,7 +207,7 @@ final class FinanceTest extends TestCase
          * Set a base fare
          * Then override on multiple layers - subfleet modifies the cost, the flight modifies
          * the price. This should then all be reflected as we go down the chain. This is
-         * mostly for the output side
+         * mostly for the output side.
          */
         /** @var Fare $fare */
         $fare = Fare::factory()->create([
@@ -303,7 +303,7 @@ final class FinanceTest extends TestCase
         $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
 
         /**
-         * Add a user and flights
+         * Add a user and flights.
          */
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
@@ -327,7 +327,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Assign percentage values and make sure they're valid
+     * Assign percentage values and make sure they're valid.
      */
     public function test_flight_fare_override_as_percent(): void
     {
@@ -433,7 +433,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Assign percentage values and make sure they're valid
+     * Assign percentage values and make sure they're valid.
      */
     public function test_subfleet_fare_override_as_percent(): void
     {
@@ -464,7 +464,7 @@ final class FinanceTest extends TestCase
 
     /**
      * Test getting the fares from the flight svc. Have a few base fares
-     * and then override some of them
+     * and then override some of them.
      */
     public function test_get_fares_with_overrides(): void
     {
@@ -562,7 +562,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Get the pilot pay, derived from the rank
+     * Get the pilot pay, derived from the rank.
      */
     public function test_get_pilot_pay_no_override(): void
     {
@@ -585,7 +585,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Get the pilot pay, but include different overrides
+     * Get the pilot pay, but include different overrides.
      */
     public function test_get_pilot_pay_with_override(): void
     {
@@ -636,7 +636,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Get the payment for a pilot
+     * Get the payment for a pilot.
      */
     public function test_get_pirep_pilot_pay(): void
     {
@@ -802,7 +802,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Test that all expenses are pulled properly
+     * Test that all expenses are pulled properly.
      */
     public function test_pirep_expenses(): void
     {
@@ -1177,7 +1177,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * Test that all expenses are pulled properly
+     * Test that all expenses are pulled properly.
      */
     public function test_pirep_expenses_nightly()
     {

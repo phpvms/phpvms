@@ -35,7 +35,7 @@ class Role extends LaratrustRole
     ];
 
     /**
-     * Validation rules
+     * Validation rules.
      *
      * @var array
      */

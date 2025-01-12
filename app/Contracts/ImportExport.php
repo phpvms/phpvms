@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Common functionality used across all of the importers
+ * Common functionality used across all of the importers.
  */
 class ImportExport
 {
@@ -20,7 +20,7 @@ class ImportExport
     ];
 
     /**
-     * Hold the columns for the particular table
+     * Hold the columns for the particular table.
      */
     public static $columns = [];
 
@@ -43,7 +43,7 @@ class ImportExport
     }
 
     /**
-     * Get the airline from the ICAO. Create it if it doesn't exist
+     * Get the airline from the ICAO. Create it if it doesn't exist.
      */
     public function getAirline($code): Airline
     {
@@ -63,7 +63,7 @@ class ImportExport
     }
 
     /**
-     * Do a basic check that the number of columns match
+     * Do a basic check that the number of columns match.
      */
     public function checkColumns($row): bool
     {
@@ -71,7 +71,7 @@ class ImportExport
     }
 
     /**
-     * Bubble up an error to the interface that we need to stop
+     * Bubble up an error to the interface that we need to stop.
      *
      *
      * @throws ValidationException
@@ -90,7 +90,7 @@ class ImportExport
     }
 
     /**
-     * Add to the log messages for this importer
+     * Add to the log messages for this importer.
      */
     public function log($msg): void
     {
@@ -99,7 +99,7 @@ class ImportExport
     }
 
     /**
-     * Add to the error log for this import
+     * Add to the error log for this import.
      */
     public function errorLog($msg): void
     {
@@ -108,7 +108,7 @@ class ImportExport
     }
 
     /**
-     * Set a key-value pair to an array
+     * Set a key-value pair to an array.
      */
     protected function kvpToArray($kvp_str, array &$arr)
     {

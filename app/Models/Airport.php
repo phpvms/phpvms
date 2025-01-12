@@ -14,7 +14,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * Class Airport
+ * Class Airport.
  *
  * @property string id
  * @property string iata
@@ -85,7 +85,7 @@ class Airport extends Model
     ];
 
     /**
-     * Validation rules
+     * Validation rules.
      */
     public static $rules = [
         'icao'                 => 'required',
@@ -117,7 +117,7 @@ class Airport extends Model
     ];
 
     /**
-     * Capitalize the ICAO
+     * Capitalize the ICAO.
      */
     public function icao(): Attribute
     {
@@ -130,7 +130,7 @@ class Airport extends Model
     }
 
     /**
-     * Capitalize the IATA code
+     * Capitalize the IATA code.
      */
     public function iata(): Attribute
     {
@@ -167,7 +167,7 @@ class Airport extends Model
     }
 
     /**
-     * Shortcut for timezone
+     * Shortcut for timezone.
      */
     public function tz(): Attribute
     {
@@ -188,7 +188,7 @@ class Airport extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function departures(): HasMany
     {

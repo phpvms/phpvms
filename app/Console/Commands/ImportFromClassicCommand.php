@@ -13,7 +13,7 @@ class ImportFromClassicCommand extends Command
     protected $description = 'Import from an older version of phpVMS';
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      */
     public function handle()
     {

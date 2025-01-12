@@ -7,7 +7,7 @@ use App\Contracts\Enum;
 /**
  * Tied to the ACARS statuses/states.
  * Corresponds to values from AIDX and ICAO ADREP
- * https://www.skybrary.aero/index.php/Flight_Phase_Taxonomy
+ * https://www.skybrary.aero/index.php/Flight_Phase_Taxonomy.
  */
 class PirepStatus extends Enum
 {

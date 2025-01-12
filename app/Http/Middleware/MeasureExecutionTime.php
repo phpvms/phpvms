@@ -1,7 +1,7 @@
 <?php
 
 /**
- * https://stackoverflow.com/a/34894933
+ * https://stackoverflow.com/a/34894933.
  */
 
 namespace App\Http\Middleware;

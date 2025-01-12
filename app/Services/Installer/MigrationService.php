@@ -30,7 +30,7 @@ class MigrationService extends Service
 
     /**
      * Find all of the possible paths that migrations exist.
-     * Include looking in all of the modules Database/migrations directories
+     * Include looking in all of the modules Database/migrations directories.
      *
      * @param mixed $dir
      */
@@ -52,7 +52,7 @@ class MigrationService extends Service
     }
 
     /**
-     * Return what migrations are available
+     * Return what migrations are available.
      */
     public function migrationsAvailable(): array
     {
@@ -84,7 +84,7 @@ class MigrationService extends Service
 
     /**
      * Run all of the migrations that are available. Just call artisan since
-     * it looks into all of the module directories, etc
+     * it looks into all of the module directories, etc.
      */
     public function runAllMigrations(): string
     {
@@ -113,7 +113,7 @@ class MigrationService extends Service
     }
 
     /**
-     * Return what migrations are available
+     * Return what migrations are available.
      */
     public function dataMigrationsAvailable(): array
     {
@@ -146,7 +146,7 @@ class MigrationService extends Service
 
     /**
      * Run all of the migrations that are available. Just call artisan since
-     * it looks into all of the module directories, etc
+     * it looks into all of the module directories, etc.
      */
     public function runAllDataMigrations(): string
     {

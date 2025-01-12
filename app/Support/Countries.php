@@ -5,12 +5,12 @@ namespace App\Support;
 use League\ISO3166\ISO3166;
 
 /**
- * Class Countries
+ * Class Countries.
  */
 class Countries
 {
     /**
-     * Get a select box list of all the countries
+     * Get a select box list of all the countries.
      *
      * @return \Illuminate\Support\Collection
      */

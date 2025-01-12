@@ -5,7 +5,7 @@ namespace App\Models\Enums;
 use App\Contracts\Enum;
 
 /**
- * Start on Monday - ISO8601
+ * Start on Monday - ISO8601.
  */
 class Days extends Enum
 {
@@ -44,7 +44,7 @@ class Days extends Enum
     ];
 
     /**
-     * Map the ISO8601 numeric today to day
+     * Map the ISO8601 numeric today to day.
      */
     public static $isoDayMap = [
         1 => self::MONDAY,
@@ -57,7 +57,7 @@ class Days extends Enum
     ];
 
     /**
-     * Create the masked value for the days of week
+     * Create the masked value for the days of week.
      *
      *
      * @return int|mixed
@@ -73,7 +73,7 @@ class Days extends Enum
     }
 
     /**
-     * See if the given mask has a day
+     * See if the given mask has a day.
      */
     public static function in($mask, $day): bool
     {
