@@ -6,6 +6,7 @@ use App\Filament\Plugins\ModuleLinksPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -54,6 +55,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class
+            ])
+            ->navigationItems([
+                NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
             ])
             ->plugin(ModuleLinksPlugin::make())
             ->brandName('phpVMS')
