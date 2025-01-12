@@ -19,8 +19,7 @@ class UpdateController extends Controller
         private readonly InstallerService $installerSvc,
         private readonly MigrationService $migrationSvc,
         private readonly SeederService $seederSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.

@@ -29,8 +29,7 @@ class ImportService extends Service
      */
     public function __construct(
         private readonly FlightRepository $flightRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Throw a validation error back up because it will automatically show
@@ -53,9 +52,9 @@ class ImportService extends Service
     }
 
     /**
-     * @throws ValidationException
-     *
      * @return Reader
+     *
+     * @throws ValidationException
      */
     public function openCsv($csv_file)
     {
@@ -115,11 +114,10 @@ class ImportService extends Service
     /**
      * Import aircraft.
      *
-     * @param string $csv_file
+     * @param  string $csv_file
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importAircraft($csv_file, bool $delete_previous = true)
     {
@@ -135,11 +133,10 @@ class ImportService extends Service
     /**
      * Import airports.
      *
-     * @param string $csv_file
+     * @param  string $csv_file
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importAirports($csv_file, bool $delete_previous = true)
     {
@@ -155,11 +152,10 @@ class ImportService extends Service
     /**
      * Import expenses.
      *
-     * @param string $csv_file
+     * @param  string $csv_file
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importExpenses($csv_file, bool $delete_previous = true)
     {
@@ -175,11 +171,10 @@ class ImportService extends Service
     /**
      * Import fares.
      *
-     * @param string $csv_file
+     * @param  string $csv_file
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importFares($csv_file, bool $delete_previous = true)
     {
@@ -195,12 +190,11 @@ class ImportService extends Service
     /**
      * Import flights.
      *
-     * @param string $csv_file
-     * @param bool   $delete_previous
+     * @param  string $csv_file
+     * @param  bool   $delete_previous
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importFlights($csv_file, ?string $delete_previous = null)
     {
@@ -223,11 +217,10 @@ class ImportService extends Service
     /**
      * Import subfleets.
      *
-     * @param string $csv_file
+     * @param  string $csv_file
+     * @return mixed
      *
      * @throws ValidationException
-     *
-     * @return mixed
      */
     public function importSubfleets($csv_file, bool $delete_previous = true)
     {
