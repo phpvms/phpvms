@@ -10,8 +10,7 @@ class VersionComposer extends Composer
 {
     public function __construct(
         private readonly VersionService $versionSvc
-    ) {
-    }
+    ) {}
 
     public function compose(View $view)
     {

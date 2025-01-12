@@ -23,8 +23,7 @@ class MaintenanceController extends Controller
         private readonly KvpRepository $kvpRepo,
         private readonly VersionService $versionSvc,
         private readonly SeederService $seederSvc,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {

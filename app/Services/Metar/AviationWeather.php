@@ -18,8 +18,7 @@ class AviationWeather extends Metar
 
     public function __construct(
         private readonly HttpClient $httpClient
-    ) {
-    }
+    ) {}
 
     /**
      * Implement the METAR - Return the string.
