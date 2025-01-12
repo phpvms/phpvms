@@ -32,8 +32,7 @@ class AcarsController extends Controller
         private readonly AcarsRepository $acarsRepo,
         private readonly GeoService $geoSvc,
         private readonly PirepRepository $pirepRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Check if a PIREP is cancelled.

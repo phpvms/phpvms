@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Bring the sessions table in line with the latest.
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up()
     {
         Schema::table('sessions', function (Blueprint $table) {

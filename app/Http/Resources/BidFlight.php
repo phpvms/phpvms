@@ -10,12 +10,11 @@ use App\Http\Resources\SimBrief as SimbriefResource;
 class BidFlight extends Flight
 {
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request $request
+     * @return array
      *
      * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
      * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
-     *
-     * @return array
      */
     public function toArray($request)
     {

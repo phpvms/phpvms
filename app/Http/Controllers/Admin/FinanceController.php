@@ -14,8 +14,7 @@ class FinanceController extends Controller
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display the summation tables for a given month by airline.
@@ -47,7 +46,5 @@ class FinanceController extends Controller
      *
      * @param mixed $id
      */
-    public function show($id)
-    {
-    }
+    public function show($id) {}
 }
