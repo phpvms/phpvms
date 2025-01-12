@@ -24,9 +24,9 @@ class ImportCsv extends Command
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
-     *
      * @return mixed|void
+     *
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function handle()
     {

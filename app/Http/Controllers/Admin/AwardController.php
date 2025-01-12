@@ -22,8 +22,7 @@ class AwardController extends Controller
     public function __construct(
         private readonly AwardRepository $awardRepo,
         private readonly AwardService $awardSvc
-    ) {
-    }
+    ) {}
 
     protected function getAwardClassesAndDescriptions(): array
     {

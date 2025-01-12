@@ -41,8 +41,7 @@ class UserService extends Service
         private readonly FareService $fareSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Find the user and return them with all of the data properly attached.
