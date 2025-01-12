@@ -24,8 +24,7 @@ class TypeRatingController extends Controller
         private readonly FleetService $fleetSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly TypeRatingRepository $typeratingRepo
-    ) {
-    }
+    ) {}
 
     /**
      * @throws RepositoryException

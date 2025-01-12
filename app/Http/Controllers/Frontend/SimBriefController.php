@@ -36,8 +36,7 @@ class SimBriefController
         private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Show the main OFP form.

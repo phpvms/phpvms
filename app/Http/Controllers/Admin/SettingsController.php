@@ -16,8 +16,7 @@ class SettingsController extends Controller
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Get a list of themes formatted for a select box.
