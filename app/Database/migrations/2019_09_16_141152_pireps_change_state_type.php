@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Change the PIREP state column to be a TINYINT.
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up()
     {
         // Migrate the old rejected state

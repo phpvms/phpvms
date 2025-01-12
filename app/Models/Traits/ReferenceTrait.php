@@ -11,8 +11,7 @@ namespace App\Models\Traits;
 trait ReferenceTrait
 {
     /**
-     * @param \App\Contracts\Model $object
-     *
+     * @param  \App\Contracts\Model $object
      * @return self
      */
     public function referencesObject($object)

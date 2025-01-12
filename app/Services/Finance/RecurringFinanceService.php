@@ -20,8 +20,7 @@ class RecurringFinanceService extends Service
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Determine the journal to charge to, otherwise, it's charged
