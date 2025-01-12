@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class FieldsRelationManager extends RelationManager
 {
@@ -24,6 +25,7 @@ class FieldsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
+            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('field', fn(Builder $subQuery) => $subQuery->where('internal', false)))
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextInputColumn::make('value'),
