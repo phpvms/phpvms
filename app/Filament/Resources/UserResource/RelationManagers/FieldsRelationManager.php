@@ -25,7 +25,7 @@ class FieldsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
-            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('field', fn(Builder $subQuery) => $subQuery->where('internal', false)))
+            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('field', fn (Builder $subQuery) => $subQuery->where('internal', false)))
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextInputColumn::make('value'),
