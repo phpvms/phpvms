@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Increase string ID lengths because of collisions
+ * Increase string ID lengths because of collisions.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         $tables = [

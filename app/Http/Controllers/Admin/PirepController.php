@@ -43,10 +43,11 @@ class PirepController extends Controller
         private readonly PirepService $pirepSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Dropdown with aircraft grouped by subfleet
+     * Dropdown with aircraft grouped by subfleet.
      */
     public function aircraftList(?User $user = null): array
     {
@@ -73,7 +74,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Save any custom fields found
+     * Save any custom fields found.
      */
     protected function saveCustomFields(Pirep $pirep, Request $request): void
     {
@@ -96,7 +97,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Save the fares that have been specified/saved
+     * Save the fares that have been specified/saved.
      *
      *
      * @throws \Exception
@@ -118,7 +119,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Return the fares form for a given aircraft
+     * Return the fares form for a given aircraft.
      */
     public function fares(Request $request): View
     {
@@ -344,7 +345,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Change or update the PIREP status. Just return the new actionbar
+     * Change or update the PIREP status. Just return the new actionbar.
      */
     public function status(Request $request): View
     {
@@ -362,7 +363,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Add a comment to the Pirep
+     * Add a comment to the Pirep.
      *
      *
      * @throws \Exception

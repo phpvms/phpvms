@@ -84,7 +84,8 @@ class Database
     }
 
     /**
-     * @param  string $id_col The ID column to use for update/insert
+     * @param string $id_col The ID column to use for update/insert
+     *
      * @return mixed
      */
     public static function insert_row(

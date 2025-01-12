@@ -6,12 +6,12 @@ use Illuminate\Support\Collection;
 use SimpleXMLElement;
 
 /**
- * Represents the SimBrief XML instance with some helper methods
+ * Represents the SimBrief XML instance with some helper methods.
  */
 class SimBriefXML extends SimpleXMLElement
 {
     /**
-     * Return a padded flight level
+     * Return a padded flight level.
      */
     public function getFlightLevel(): string
     {
@@ -25,7 +25,7 @@ class SimBriefXML extends SimpleXMLElement
     }
 
     /**
-     * Return the URL to the vmsACARS flight plan file
+     * Return the URL to the vmsACARS flight plan file.
      *
      * @return string|null
      */
@@ -41,7 +41,7 @@ class SimBriefXML extends SimpleXMLElement
     }
 
     /**
-     * Retrieve all of the flightplans
+     * Retrieve all of the flightplans.
      */
     public function getFlightPlans(): Collection
     {
@@ -71,7 +71,7 @@ class SimBriefXML extends SimpleXMLElement
     }
 
     /**
-     * Return a generator which sends out the fix values. This can be a long list
+     * Return a generator which sends out the fix values. This can be a long list.
      *
      * @return \Generator
      */
@@ -94,7 +94,7 @@ class SimBriefXML extends SimpleXMLElement
     }
 
     /**
-     * Get the route as a string
+     * Get the route as a string.
      */
     public function getRouteString(): string
     {
@@ -111,7 +111,7 @@ class SimBriefXML extends SimpleXMLElement
     }
 
     /**
-     * Retrieve all of the image links
+     * Retrieve all of the image links.
      */
     public function getImages(): Collection
     {

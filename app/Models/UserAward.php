@@ -31,7 +31,7 @@ class UserAward extends Model
     ];
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function award(): BelongsTo
     {

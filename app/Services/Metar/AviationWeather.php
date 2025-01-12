@@ -8,7 +8,7 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Return the raw METAR/TAF string from the NOAA Aviation Weather Service
+ * Return the raw METAR/TAF string from the NOAA Aviation Weather Service.
  */
 class AviationWeather extends Metar
 {
@@ -18,10 +18,11 @@ class AviationWeather extends Metar
 
     public function __construct(
         private readonly HttpClient $httpClient
-    ) {}
+    ) {
+    }
 
     /**
-     * Implement the METAR - Return the string
+     * Implement the METAR - Return the string.
      *
      *
      * @throws \Exception
@@ -47,7 +48,7 @@ class AviationWeather extends Metar
     }
 
     /**
-     * Do the actual retrieval of the TAF
+     * Do the actual retrieval of the TAF.
      *
      *
      * @throws \GuzzleHttp\Exception\GuzzleException

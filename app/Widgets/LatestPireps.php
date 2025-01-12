@@ -8,7 +8,7 @@ use App\Repositories\PirepRepository;
 
 /**
  * Show the latest PIREPs in a view
- * sorted nicely by their submit time
+ * sorted nicely by their submit time.
  */
 class LatestPireps extends Widget
 {

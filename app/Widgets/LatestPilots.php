@@ -7,7 +7,7 @@ use App\Models\Enums\UserState;
 use App\Repositories\UserRepository;
 
 /**
- * Show the latest pilots in a view
+ * Show the latest pilots in a view.
  */
 class LatestPilots extends Widget
 {

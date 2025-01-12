@@ -6,7 +6,7 @@ use App\Contracts\Unit;
 use PhpUnitsOfMeasure\PhysicalQuantity\Volume as VolumeUnit;
 
 /**
- * Wrap the converter class
+ * Wrap the converter class.
  */
 class Volume extends Unit
 {

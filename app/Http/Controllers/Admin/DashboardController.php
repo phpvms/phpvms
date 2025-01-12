@@ -27,12 +27,13 @@ class DashboardController extends Controller
         private readonly NewsService $newsSvc,
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Check if a new version is available by checking the VERSION file from
      * S3 and then using the semver library to do the comparison. Just show
-     * a session flash file on this page that'll get cleared right away
+     * a session flash file on this page that'll get cleared right away.
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -50,7 +51,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Show the admin dashboard
+     * Show the admin dashboard.
      *
      *
      * @throws \GuzzleHttp\Exception\GuzzleException

@@ -5,10 +5,9 @@ use App\Contracts\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     /**
-     * Create the files table. Acts as a morphable
+     * Create the files table. Acts as a morphable.
      *
      * @return void
      */

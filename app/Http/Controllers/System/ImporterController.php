@@ -24,7 +24,7 @@ class ImporterController extends Controller
 
     /**
      * Show the main page for the importer; show form for the admin email
-     * and the credentials for the other database
+     * and the credentials for the other database.
      */
     public function index(): View
     {
@@ -44,7 +44,7 @@ class ImporterController extends Controller
     }
 
     /**
-     * Check the database connection
+     * Check the database connection.
      */
     public function dbtest(Request $request): View
     {
@@ -65,7 +65,7 @@ class ImporterController extends Controller
     }
 
     /**
-     * The post from the above
+     * The post from the above.
      */
     public function config(Request $request): View
     {
@@ -116,7 +116,7 @@ class ImporterController extends Controller
     }
 
     /**
-     * Complete the import
+     * Complete the import.
      */
     public function complete(): RedirectResponse
     {

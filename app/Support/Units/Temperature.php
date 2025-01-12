@@ -6,7 +6,7 @@ use App\Contracts\Unit;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature as TemperatureUnit;
 
 /**
- * Composition for the converter
+ * Composition for the converter.
  */
 class Temperature extends Unit
 {

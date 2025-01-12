@@ -7,14 +7,14 @@ use App\Models\Enums\Days;
 use App\Models\Flight;
 
 /**
- * The flight importer can be imported or export. Operates on rows
+ * The flight importer can be imported or export. Operates on rows.
  */
 class FlightExporter extends ImportExport
 {
     public $assetType = 'flight';
 
     /**
-     * Set the current columns and other setup
+     * Set the current columns and other setup.
      */
     public function __construct()
     {
@@ -22,7 +22,7 @@ class FlightExporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows
+     * Import a flight, parse out the different rows.
      *
      * @param Flight $flight
      */
@@ -52,7 +52,7 @@ class FlightExporter extends ImportExport
     }
 
     /**
-     * Return the days string
+     * Return the days string.
      *
      *
      * @return string
@@ -93,7 +93,7 @@ class FlightExporter extends ImportExport
     }
 
     /**
-     * Return any custom fares that have been made to this flight
+     * Return any custom fares that have been made to this flight.
      */
     protected function getFares(Flight &$flight): string
     {
@@ -119,7 +119,7 @@ class FlightExporter extends ImportExport
     }
 
     /**
-     * Parse all of the subfields
+     * Parse all of the subfields.
      */
     protected function getFields(Flight &$flight): string
     {
@@ -132,7 +132,7 @@ class FlightExporter extends ImportExport
     }
 
     /**
-     * Create the list of subfleets that are associated here
+     * Create the list of subfleets that are associated here.
      */
     protected function getSubfleets(Flight &$flight): string
     {

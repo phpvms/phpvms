@@ -34,7 +34,8 @@ class AircraftController extends Controller
         private readonly FileService $fileSvc,
         private readonly ImportService $importSvc,
         private readonly FinanceService $financeSvc,
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Aircraft.
@@ -59,7 +60,7 @@ class AircraftController extends Controller
     }
 
     /**
-     * Recycle Bin operations, either restore or permanently delete the object
+     * Recycle Bin operations, either restore or permanently delete the object.
      */
     public function trashbin(Request $request)
     {
@@ -232,7 +233,7 @@ class AircraftController extends Controller
     }
 
     /**
-     * Run the aircraft exporter
+     * Run the aircraft exporter.
      *
      *
      * @throws \League\Csv\Exception
@@ -282,7 +283,7 @@ class AircraftController extends Controller
     }
 
     /**
-     * Operations for associating ranks to the subfleet
+     * Operations for associating ranks to the subfleet.
      *
      *
      * @throws Exception

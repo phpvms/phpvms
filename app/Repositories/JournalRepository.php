@@ -13,7 +13,7 @@ use Prettus\Repository\Traits\CacheableRepository;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
- * Class JournalRepository
+ * Class JournalRepository.
  */
 class JournalRepository extends Repository implements CacheableInterface
 {
@@ -28,7 +28,7 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Return a Y-m-d string for the post date
+     * Return a Y-m-d string for the post date.
      *
      *
      * @return string
@@ -43,13 +43,13 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Recalculate the balance of the given journal
+     * Recalculate the balance of the given journal.
      *
-     *
-     * @return Journal
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Journal
      */
     public function recalculateBalance(Journal $journal)
     {
@@ -70,18 +70,19 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Post a new transaction to a journal, and also adjust the balance
      * on the transaction itself. A cron will run to reconcile the journal
-     * balance nightly, since they're not atomic operations
+     * balance nightly, since they're not atomic operations.
      *
-     * @param  Money|null        $credit            Amount to credit
-     * @param  Money|null        $debit             Amount to debit
-     * @param  Model|null        $reference         The object this is a reference to
-     * @param  string|null       $memo              Memo for this transaction
-     * @param  string|null       $post_date         Date of the posting
-     * @param  string|null       $transaction_group Grouping name for the summaries
-     * @param  array|string|null $tags              Tag used for grouping/finding items
-     * @return mixed
+     * @param Money|null        $credit            Amount to credit
+     * @param Money|null        $debit             Amount to debit
+     * @param Model|null        $reference         The object this is a reference to
+     * @param string|null       $memo              Memo for this transaction
+     * @param string|null       $post_date         Date of the posting
+     * @param string|null       $transaction_group Grouping name for the summaries
+     * @param array|string|null $tags              Tag used for grouping/finding items
      *
      * @throws ValidatorException
+     *
+     * @return mixed
      */
     public function post(
         Journal &$journal,
@@ -130,10 +131,10 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getBalance(?Journal $journal = null, ?Carbon $date = null)
     {
@@ -220,13 +221,14 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Return all transactions for a given object
+     * Return all transactions for a given object.
      *
-     * @param  null  $journal
-     * @return array
+     * @param null $journal
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return array
      */
     public function getAllForObject($object, $journal = null, ?Carbon $date = null)
     {
@@ -257,9 +259,10 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Delete all transactions for a given object
+     * Delete all transactions for a given object.
      *
-     * @param  null $journal
+     * @param null $journal
+     *
      * @return void
      */
     public function deleteAllForObject($object, $journal = null)

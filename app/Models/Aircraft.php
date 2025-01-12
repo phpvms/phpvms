@@ -100,7 +100,7 @@ class Aircraft extends Model
     ];
 
     /**
-     * Validation rules
+     * Validation rules.
      */
     public static $rules = [
         'name'          => 'required',
@@ -161,7 +161,7 @@ class Aircraft extends Model
     }
 
     /**
-     * Return the landing time
+     * Return the landing time.
      */
     public function landingTime(): Attribute
     {
@@ -185,7 +185,7 @@ class Aircraft extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function airline(): ZnckBelongsToThrough
     {
@@ -208,7 +208,7 @@ class Aircraft extends Model
     }
 
     /**
-     * Use home()
+     * Use home().
      *
      * @deprecated
      */

@@ -30,10 +30,11 @@ class FlightController extends Controller
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Return all the flights, paginated
+     * Return all the flights, paginated.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -142,9 +143,10 @@ class FlightController extends Controller
     }
 
     /**
-     * Output the flight briefing from simbrief or whatever other format
+     * Output the flight briefing from simbrief or whatever other format.
      *
-     * @param  string                                                                  $id The flight ID
+     * @param string $id The flight ID
+     *
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
      */
     public function briefing(string $id)
@@ -172,7 +174,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Get a flight's route
+     * Get a flight's route.
      */
     public function route(string $id, Request $request): AnonymousResourceCollection
     {
@@ -183,7 +185,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Get a flight's aircrafts
+     * Get a flight's aircrafts.
      */
     public function aircraft(string $id, Request $request)
     {

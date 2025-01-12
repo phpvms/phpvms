@@ -6,7 +6,7 @@ use App\Contracts\Command;
 use App\Services\DatabaseService;
 
 /**
- * Class YamlImport
+ * Class YamlImport.
  */
 class YamlImport extends Command
 {
@@ -27,7 +27,7 @@ class YamlImport extends Command
     }
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      *
      * @throws \Exception
      */

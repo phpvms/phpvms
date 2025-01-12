@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Keep custom directives that can be used in templates
+ * Keep custom directives that can be used in templates.
  */
 class DirectiveServiceProvider extends ServiceProvider
 {

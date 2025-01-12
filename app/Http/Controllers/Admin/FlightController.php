@@ -47,10 +47,11 @@ class FlightController extends Controller
         private readonly FlightService $flightSvc,
         private readonly ImportService $importSvc,
         private readonly SubfleetRepository $subfleetRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Save any custom fields found
+     * Save any custom fields found.
      */
     protected function saveCustomFields(Flight $flight, Request $request): void
     {
@@ -248,7 +249,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Run the flight exporter
+     * Run the flight exporter.
      *
      *
      * @throws \League\Csv\Exception
@@ -387,7 +388,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Get all the fares that haven't been assigned to a given subfleet
+     * Get all the fares that haven't been assigned to a given subfleet.
      */
     protected function getAvailFares(Flight $flight): array
     {

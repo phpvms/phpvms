@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This runs any of the cron tasks that are set to run according to the Laravel schedule
+ * This runs any of the cron tasks that are set to run according to the Laravel schedule.
  */
 
 namespace App\Console;
@@ -66,7 +66,7 @@ class Cron
     }
 
     /**
-     * Try to figure out which commands are supposed to run right now
+     * Try to figure out which commands are supposed to run right now.
      *
      * @return array string of tasks that were run
      */

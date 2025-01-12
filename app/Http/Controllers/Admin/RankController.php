@@ -27,10 +27,11 @@ class RankController extends Controller
         private readonly RankRepository $rankRepo,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Get the available subfleets for a rank
+     * Get the available subfleets for a rank.
      */
     protected function getAvailSubfleets(Rank $rank): array
     {
@@ -194,7 +195,7 @@ class RankController extends Controller
     }
 
     /**
-     * Subfleet operations on a rank
+     * Subfleet operations on a rank.
      */
     public function subfleets(int $id, Request $request): RedirectResponse|View
     {

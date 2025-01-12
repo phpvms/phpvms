@@ -34,7 +34,7 @@ class ModuleService extends Service
     ];
 
     /**
-     * Add a module link in the frontend
+     * Add a module link in the frontend.
      */
     public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true)
     {
@@ -46,7 +46,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Get all of the frontend links
+     * Get all of the frontend links.
      */
     public function getFrontendLinks(mixed $logged_in): array
     {
@@ -54,7 +54,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Add a module link in the admin panel
+     * Add a module link in the admin panel.
      */
     public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people')
     {
@@ -66,7 +66,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Get all of the module links in the admin panel
+     * Get all of the module links in the admin panel.
      */
     public function getAdminLinks(): array
     {
@@ -74,7 +74,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Get all of the modules from database but make sure they also exist on disk
+     * Get all of the modules from database but make sure they also exist on disk.
      *
      * @return object
      */
@@ -100,7 +100,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Determine if a module is active - also checks that the module exists properly
+     * Determine if a module is active - also checks that the module exists properly.
      */
     public function isModuleActive(string $name): bool
     {
@@ -131,7 +131,7 @@ class ModuleService extends Service
     }
 
     /**
-     * Adding installed module to the database
+     * Adding installed module to the database.
      */
     public function addModule($module_name): bool
     {

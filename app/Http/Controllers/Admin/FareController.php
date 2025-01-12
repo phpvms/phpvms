@@ -30,7 +30,8 @@ class FareController extends Controller
     public function __construct(
         private readonly FareRepository $fareRepo,
         private readonly ImportService $importSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Fare.
@@ -51,7 +52,7 @@ class FareController extends Controller
     }
 
     /**
-     * Recycle Bin operations, either restore or permanently delete the object
+     * Recycle Bin operations, either restore or permanently delete the object.
      */
     public function trashbin(Request $request)
     {
@@ -178,7 +179,7 @@ class FareController extends Controller
     }
 
     /**
-     * Run the aircraft exporter
+     * Run the aircraft exporter.
      *
      *
      * @throws \League\Csv\Exception

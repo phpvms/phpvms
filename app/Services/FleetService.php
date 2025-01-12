@@ -37,7 +37,7 @@ class FleetService extends Service
     }
 
     /**
-     * Add the subfleet to a type rating
+     * Add the subfleet to a type rating.
      */
     public function addSubfleetToTypeRating(Subfleet $subfleet, Typerating $typerating)
     {
@@ -49,7 +49,7 @@ class FleetService extends Service
     }
 
     /**
-     * Remove the subfleet from a type rating
+     * Remove the subfleet from a type rating.
      */
     public function removeSubfleetFromTypeRating(Subfleet $subfleet, Typerating $typerating)
     {
@@ -61,7 +61,7 @@ class FleetService extends Service
     }
 
     /**
-     * Add the subfleet to a flight
+     * Add the subfleet to a flight.
      */
     public function addSubfleetToFlight(Subfleet $subfleet, Flight $flight)
     {
@@ -71,7 +71,7 @@ class FleetService extends Service
     }
 
     /**
-     * Remove the subfleet from a flight
+     * Remove the subfleet from a flight.
      */
     public function removeSubfleetFromFlight(Subfleet $subfleet, Flight $flight)
     {

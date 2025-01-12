@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 
 /**
- * Determine if an update is pending by checking in with the Installer service
+ * Determine if an update is pending by checking in with the Installer service.
  */
 class UpdatePending implements Middleware
 {

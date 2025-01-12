@@ -30,7 +30,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Simulate what would be returned by the OAuth provider
+     * Simulate what would be returned by the OAuth provider.
      */
     protected function getMockedProvider(): LegacyMockInterface|MockInterface
     {
@@ -52,7 +52,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to link a logged-in user to an OAuth account from profile
+     * Try to link a logged-in user to an OAuth account from profile.
      */
     public function test_link_account_from_profile(): void
     {
@@ -81,7 +81,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to link a non-logged-in user from the login page using its email
+     * Try to link a non-logged-in user from the login page using its email.
      */
     public function test_link_account_from_login(): void
     {
@@ -112,7 +112,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to log in an already linked user
+     * Try to log in an already linked user.
      */
     public function test_login_with_linked_account(): void
     {
@@ -155,7 +155,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to log in a user with a pending account
+     * Try to log in a user with a pending account.
      */
     public function test_login_with_pending_account(): void
     {
@@ -174,7 +174,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to log in someone not in DB
+     * Try to log in someone not in DB.
      *
      * @return void
      */
@@ -189,7 +189,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to unlink an account from profile
+     * Try to unlink an account from profile.
      */
     public function test_unlink_account(): void
     {
@@ -214,7 +214,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to access a non-existing provider callback
+     * Try to access a non-existing provider callback.
      */
     public function test_non_existing_provider(): void
     {
@@ -228,7 +228,7 @@ final class OAuthTest extends TestCase
     }
 
     /**
-     * Try to access a disabled provider callback
+     * Try to access a disabled provider callback.
      */
     public function test_disabled_provider(): void
     {

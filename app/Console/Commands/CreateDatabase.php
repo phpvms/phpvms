@@ -25,7 +25,7 @@ class CreateDatabase extends Command
     }
 
     /**
-     * Create the mysql database
+     * Create the mysql database.
      *
      *
      * @return bool
@@ -74,7 +74,7 @@ class CreateDatabase extends Command
     }
 
     /**
-     * Create the sqlite database
+     * Create the sqlite database.
      */
     protected function create_sqlite($dbkey)
     {

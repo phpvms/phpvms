@@ -20,7 +20,7 @@ class Time implements Arrayable
 
     /**
      * Pass just minutes to figure out how many hours
-     * Or both hours and minutes
+     * Or both hours and minutes.
      */
     public function __construct($minutes, $hours = null)
     {
@@ -36,7 +36,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Get the total number minutes, adding up the hours
+     * Get the total number minutes, adding up the hours.
      *
      * @return float|int
      */
@@ -46,7 +46,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Alias to getMinutes()
+     * Alias to getMinutes().
      *
      * @alias getMinutes()
      *
@@ -58,7 +58,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Return a time string
+     * Return a time string.
      *
      * @return string
      */
@@ -102,12 +102,13 @@ class Time implements Arrayable
     }
 
     /**
-     * Convert seconds to an array of hours, minutes, seconds
+     * Convert seconds to an array of hours, minutes, seconds.
      *
      * @param int $seconds
-     * @return array['h', 'm', 's']
      *
      * @throws \Exception
+     *
+     * @return array['h', 'm', 's']
      */
     public static function secondsToTimeParts($seconds): array
     {
@@ -125,7 +126,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Convert seconds to HH MM format
+     * Convert seconds to HH MM format.
      *
      * @param int  $seconds
      * @param bool $incl_sec
@@ -152,7 +153,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Convert the seconds to minutes and then round it up
+     * Convert the seconds to minutes and then round it up.
      *
      *
      * @return float|int
@@ -163,7 +164,7 @@ class Time implements Arrayable
     }
 
     /**
-     * Convert hours to minutes. Pretty complex
+     * Convert hours to minutes. Pretty complex.
      *
      *
      * @return float|int
@@ -174,7 +175,8 @@ class Time implements Arrayable
     }
 
     /**
-     * @param  null      $minutes
+     * @param null $minutes
+     *
      * @return float|int
      */
     public static function hoursToMinutes($hours, $minutes = null)

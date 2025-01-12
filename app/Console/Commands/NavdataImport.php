@@ -13,9 +13,9 @@ class NavdataImport extends Command
     protected $description = '';
 
     /**
-     * @return void
-     *
      * @throws \League\Geotools\Exception\InvalidArgumentException
+     *
+     * @return void
      */
     public function handle()
     {
@@ -28,7 +28,7 @@ class NavdataImport extends Command
     }
 
     /**
-     * Read and parse in the navaid file
+     * Read and parse in the navaid file.
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
      */

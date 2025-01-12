@@ -13,7 +13,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Prettus\Repository\Criteria\RequestCriteria;
 
 /**
- * Class AirportController
+ * Class AirportController.
  */
 class AirportController extends Controller
 {
@@ -23,10 +23,11 @@ class AirportController extends Controller
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly AirportService $airportSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Return all the airports, paginated
+     * Return all the airports, paginated.
      *
      *
      * @return mixed
@@ -61,7 +62,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Return a specific airport
+     * Return a specific airport.
      */
     public function get(string $id): AirportResource
     {
@@ -71,7 +72,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Do a lookup, via vaCentral, for the airport information
+     * Do a lookup, via vaCentral, for the airport information.
      */
     public function lookup(string $id): AirportResource
     {
@@ -81,7 +82,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Do a lookup, via vaCentral, for the airport information
+     * Do a lookup, via vaCentral, for the airport information.
      */
     public function distance(string $fromIcao, string $toIcao): AirportDistanceResource
     {
@@ -95,7 +96,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Search for airports in the database
+     * Search for airports in the database.
      *
      * @param string $searchString
      */

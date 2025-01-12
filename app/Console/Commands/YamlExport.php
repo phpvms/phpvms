@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Class YamlExport
+ * Class YamlExport.
  */
 class YamlExport extends Command
 {
@@ -16,7 +16,7 @@ class YamlExport extends Command
     protected $description = 'YAML table export';
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      */
     public function handle()
     {

@@ -42,7 +42,7 @@ class News extends Model
     ];
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function user(): BelongsTo
     {

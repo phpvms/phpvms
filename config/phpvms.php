@@ -2,7 +2,7 @@
 
 /**
  * DO NOT MODIFY THIS FILE DIRECTLY!
- * It will just make upgrading (a little) more difficult
+ * It will just make upgrading (a little) more difficult.
  *
  * Create a local.conf.php in the root (in the same directory
  * as your .env file), and then copy this file into there, and
@@ -88,12 +88,12 @@ return [
     'version_file' => 'https://api.github.com/repos/nabeelio/phpvms/releases',
 
     /**
-     * The URL to download the latest phpVMS version from
+     * The URL to download the latest phpVMS version from.
      */
     'distrib_url' => 'http://downloads.phpvms.net/phpvms-{VERSION}.zip',
 
     /**
-     * The URL to download the latest TLD list
+     * The URL to download the latest TLD list.
      */
     'tld_list_url' => 'https://publicsuffix.org/list/public_suffix_list.dat',
 
@@ -124,7 +124,7 @@ return [
     'error_root' => 'https://phpvms.net/errors',
 
     /**
-     * The links to various docs on the documentation site
+     * The links to various docs on the documentation site.
      */
     'docs' => [
         'root'             => 'https://docs.phpvms.net',

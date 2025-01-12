@@ -31,7 +31,8 @@ class AirportController extends Controller
         private readonly FileService $fileSvc,
         private readonly ImportService $importSvc,
         private readonly FinanceService $financeSvc,
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Airport.
@@ -170,7 +171,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Run the airport exporter
+     * Run the airport exporter.
      *
      *
      * @throws \League\Csv\Exception
@@ -218,7 +219,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Operations for associating ranks to the subfleet
+     * Operations for associating ranks to the subfleet.
      *
      *
      * @throws \Exception
@@ -253,7 +254,7 @@ class AirportController extends Controller
     }
 
     /**
-     * Set fuel prices for this airport
+     * Set fuel prices for this airport.
      */
     public function fuel(Request $request): ?RedirectResponse
     {

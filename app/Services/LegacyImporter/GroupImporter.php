@@ -8,7 +8,7 @@ use App\Services\RoleService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Imports the groups into the permissions feature(s)
+ * Imports the groups into the permissions feature(s).
  */
 class GroupImporter extends BaseImporter
 {
@@ -17,7 +17,7 @@ class GroupImporter extends BaseImporter
     protected $idField = 'groupid';
 
     /**
-     * Permissions in the legacy system, mapping them to the current system
+     * Permissions in the legacy system, mapping them to the current system.
      */
     protected $legacy_permission_set = [
         'EDIT_NEWS'              => 0x1,
@@ -45,7 +45,7 @@ class GroupImporter extends BaseImporter
     ];
 
     /**
-     * Map a legacy value over to one of the current permission values
+     * Map a legacy value over to one of the current permission values.
      */
     protected $legacy_to_permission = [
         'FULL_ADMIN'             => 'admin',
@@ -150,7 +150,7 @@ class GroupImporter extends BaseImporter
 
     /**
      * Get all of the permissions from locally and return a kvp with the
-     * key being the permission short-name and the value being the ID
+     * key being the permission short-name and the value being the ID.
      */
     private function getPermissions(): array
     {

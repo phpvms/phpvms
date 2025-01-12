@@ -6,7 +6,7 @@ use App\Contracts\FormRequest;
 use Illuminate\Http\Request;
 
 /**
- * Validate that the files are imported
+ * Validate that the files are imported.
  */
 class ImportRequest extends FormRequest
 {

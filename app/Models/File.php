@@ -52,7 +52,7 @@ class File extends Model
     private $pathinfo;
 
     /**
-     * Return the file extension
+     * Return the file extension.
      */
     public function extension(): Attribute
     {
@@ -68,7 +68,7 @@ class File extends Model
     }
 
     /**
-     * Get just the filename
+     * Get just the filename.
      */
     public function filename(): Attribute
     {
@@ -84,7 +84,7 @@ class File extends Model
     }
 
     /**
-     * Get the full URL to this attribute
+     * Get the full URL to this attribute.
      */
     public function url(): Attribute
     {

@@ -15,7 +15,7 @@ class IdMapper extends Service
     }
 
     /**
-     * Create a new mapping between an old ID and the new one
+     * Create a new mapping between an old ID and the new one.
      *
      * @param string $entity Name of the entity (e,g table)
      */
@@ -28,7 +28,7 @@ class IdMapper extends Service
     }
 
     /**
-     * Return the ID for a mapping
+     * Return the ID for a mapping.
      *
      *
      * @return bool
@@ -44,7 +44,7 @@ class IdMapper extends Service
     }
 
     /**
-     * Clear the value store
+     * Clear the value store.
      */
     public function clear()
     {

@@ -54,7 +54,7 @@ class SimBrief extends Model
     private $xml_instance;
 
     /**
-     * Return a SimpleXML object of the $ofp_xml
+     * Return a SimpleXML object of the $ofp_xml.
      */
     public function getXmlAttribute(): ?SimBriefXML
     {
@@ -73,7 +73,7 @@ class SimBrief extends Model
     }
 
     /**
-     * Returns a list of images
+     * Returns a list of images.
      */
     public function getImagesAttribute(): Collection
     {
@@ -81,7 +81,7 @@ class SimBrief extends Model
     }
 
     /**
-     * Return all of the flight plans
+     * Return all of the flight plans.
      */
     public function getFilesAttribute(): Collection
     {

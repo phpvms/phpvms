@@ -13,7 +13,7 @@ namespace App\Contracts;
 abstract class RouteFinder
 {
     /**
-     * Find a route from the departure ICAO to the arrival ICAO
+     * Find a route from the departure ICAO to the arrival ICAO.
      */
     abstract public function findRoute($dptIcao, $arrIcao): string;
 }

@@ -172,9 +172,10 @@ class Flight extends Model
 
     /**
      * Return all of the flights on any given day(s) of the week
-     * Search using bitmasks
+     * Search using bitmasks.
      *
-     * @param  Days[] $days List of the enumerated values
+     * @param Days[] $days List of the enumerated values
+     *
      * @return Flight
      */
     public static function findByDays(array $days)
@@ -189,7 +190,7 @@ class Flight extends Model
     }
 
     /**
-     * Get the flight ident, e.,g JBU1900/C.nn/L.yy
+     * Get the flight ident, e.,g JBU1900/C.nn/L.yy.
      */
     public function ident(): Attribute
     {
@@ -212,7 +213,7 @@ class Flight extends Model
     }
 
     /**
-     * Get the flight atc callsign, JBU1900 or JBU8FK
+     * Get the flight atc callsign, JBU1900 or JBU8FK.
      */
     public function atc(): Attribute
     {
@@ -237,7 +238,7 @@ class Flight extends Model
     }
 
     /**
-     * Return a custom field value
+     * Return a custom field value.
      */
     public function field($field_name): string
     {
@@ -251,7 +252,7 @@ class Flight extends Model
 
     /**
      * Set the days parameter. If an array is passed, it's
-     * AND'd together to create the mask value
+     * AND'd together to create the mask value.
      */
     public function days(): Attribute
     {
