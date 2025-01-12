@@ -3,8 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      *
@@ -75,7 +74,8 @@ return new class() extends Migration
      * Get an instance of the database connection provided with an optional string referring to the connection. This
      * should be null if referring to the default connection.
      *
-     * @param  string|null                     $connection
+     * @param string|null $connection
+     *
      * @return \Illuminate\Database\Connection
      */
     protected function getDatabaseConnection($connection = null)
@@ -86,7 +86,8 @@ return new class() extends Migration
     /**
      * Get a list of tables on the provided connection.
      *
-     * @param  null  $connection
+     * @param null $connection
+     *
      * @return array
      */
     protected function getTables($connection = null)
@@ -109,7 +110,8 @@ return new class() extends Migration
      * returned will contain the field name, the type of field (Without the length), the length where applicable (or
      * null), true/false indicating the column allowing null values and the default value.
      *
-     * @param  stdClass $column
+     * @param stdClass $column
+     *
      * @return array
      */
     protected function extractInformationFromColumn($column)
@@ -145,7 +147,8 @@ return new class() extends Migration
     /**
      * Tell if the provided column is a string/character type and needs to have it's charset/collation changed.
      *
-     * @param  string $column
+     * @param string $column
+     *
      * @return bool
      */
     protected function isStringType($column)
@@ -156,7 +159,8 @@ return new class() extends Migration
     /**
      * Tell if the provided column is a string/character type with a length.
      *
-     * @param  string $column
+     * @param string $column
+     *
      * @return bool
      */
     protected function isStringTypeWithLength($column)
@@ -213,8 +217,9 @@ return new class() extends Migration
     /**
      * Get a list of all the columns for the provided table. Returns an array of stdClass objects.
      *
-     * @param  string      $table
-     * @param  string|null $connection
+     * @param string      $table
+     * @param string|null $connection
+     *
      * @return array
      */
     protected function getColumnsFromTable($table, $connection = null)

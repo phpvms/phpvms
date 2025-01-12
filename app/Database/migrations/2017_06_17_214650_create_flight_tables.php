@@ -5,8 +5,7 @@ use App\Contracts\Model;
 use App\Models\Enums\FlightType;
 use Illuminate\Database\Schema\Blueprint;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::create('flights', function (Blueprint $table) {
