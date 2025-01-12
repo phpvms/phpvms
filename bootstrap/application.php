@@ -8,21 +8,43 @@ if (!defined('DS')) {
 
 /**
  * Customized container to allow some of the base Laravel
- * configurations to be overridden.
+ * configurations to be overridden
  */
 class application extends Illuminate\Foundation\Application
 {
     private $publicDirPath;
-
     private $publicUrlPath = '/';
 
-    public function __construct(?string $basePath = null)
+    public function __construct(string $basePath = null)
     {
         $rootPath = dirname(__DIR__).'/';
         parent::__construct($rootPath);
 
         if (is_file($rootPath.'/env.php')) {
             exit('Please rename env.php to .env');
+        }
+        // if the sample module is still there, then we need to rename it
+        if (is_dir($rootPath.'/modules/sample-module')) {
+            rename($rootPath.'/modules/sample-module', $rootPath.'/modules/Sample');
+            // clear the bootstrap and storage cache
+            $cachePaths = [
+                $rootPath.'/bootstrap/cache',
+                $rootPath.'/storage/framework/cache'
+            ];
+
+            foreach ($cachePaths as $path) {
+                $files = glob($path.'/*');
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    } elseif (is_dir($file)) {
+                        array_map('unlink', glob("$file/*.*"));
+                        // remove directories recursively
+                        $this->deleteDirectory($file);
+                    }
+                }
+            }
+            exit('The sample module has been renamed to "Sample". Please refresh this page.');
         }
 
         $this->useDatabasePath($this->basePath.'/app/Database');
@@ -32,7 +54,9 @@ class application extends Illuminate\Foundation\Application
     /**
      * Override this method so we can inject our own LoadConfiguration
      * class, which looks for any configurations that have been overridden
-     * in the root's config.php file.
+     * in the root's config.php file
+     *
+     * @param array $bootstrappers
      */
     public function bootstrapWith(array $bootstrappers)
     {
@@ -69,7 +93,7 @@ class application extends Illuminate\Foundation\Application
     }
 
     /**
-     * Override paths.
+     * Override paths
      *
      * @param mixed $publicDirPath
      */
@@ -82,7 +106,9 @@ class application extends Illuminate\Foundation\Application
     /**
      * Added for the custom filesystem driver. Used in the index.php
      * in the root of the install to set it to point to /public,
-     * instead of just /.
+     * instead of just /
+     *
+     * @param $publicUrlPath
      */
     public function setPublicUrlPath($publicUrlPath)
     {
@@ -91,7 +117,7 @@ class application extends Illuminate\Foundation\Application
 
     /**
      * Added for the custom filesystem driver lookup on what to use
-     * for the base URL.
+     * for the base URL
      *
      * @return string
      */
@@ -118,5 +144,27 @@ class application extends Illuminate\Foundation\Application
     public function resourcePath($path = '')
     {
         return $this->basePath.DS.'resources'.($path ? DS.$path : $path);
+    }
+
+    private function deleteDirectory($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            if ($item->isDir()) {
+                rmdir($item->getRealPath());
+            } else {
+                unlink($item->getRealPath());
+            }
+        }
+
+        rmdir($dir);
     }
 }
