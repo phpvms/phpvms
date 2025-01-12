@@ -21,7 +21,8 @@ class BidEventHandler extends Listener // implements ShouldQueue
 
     public function __construct(
         private readonly BidService $bidSvc
-    ) {}
+    ) {
+    }
 
     /**
      * When a PIREP is filed, remove any bids.

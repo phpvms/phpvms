@@ -16,7 +16,8 @@ class AirlineService extends Service
         private readonly FlightRepository $flightRepo,
         private readonly PirepRepository $pirepRepo,
         private readonly SubfleetRepository $subfleetRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Create a new airline, and initialize the journal.
