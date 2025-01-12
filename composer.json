@@ -11,10 +11,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/arthurpar06/laravel-theme"
-        },
-        {
-          "type": "vcs",
-          "url": "https://github.com/arthurpar06/filament-modules"
         }
       ],
     "require": {
@@ -96,7 +92,6 @@
         "socialiteproviders/vatsim": "^5.0",
         "socialiteproviders/ivao": "^4.0",
         "mailersend/laravel-driver": "^2.6",
-        "coolsam/modules": "3.x-dev",
         "arxeiss/sansdaemon": "^1.3"
     },
     "require-dev": {
