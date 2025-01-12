@@ -70,9 +70,10 @@ class Timezonelist
     /**
      * Format to display timezones.
      *
-     * @param  string $timezone
-     * @param  string $continent
-     * @param  bool   $htmlencode
+     * @param string $timezone
+     * @param string $continent
+     * @param bool   $htmlencode
+     *
      * @return string
      */
     public static function formatTimezone($timezone, $continent, $htmlencode = true)
@@ -98,13 +99,14 @@ class Timezonelist
     /**
      * Create a GMT timezone select element for form.
      *
-     * @param  string $name
-     * @param  string $selected
-     * @param  mixed  $attr
-     * @param  bool   $htmlencode
-     * @return string
+     * @param string $name
+     * @param string $selected
+     * @param mixed  $attr
+     * @param bool   $htmlencode
      *
      * @throws \Exception
+     *
+     * @return string
      */
     public static function create($name, $selected = '', $attr = '', $htmlencode = true)
     {
@@ -152,7 +154,8 @@ class Timezonelist
     /**
      * Create a timezone array.
      *
-     * @param  bool  $htmlencode
+     * @param bool $htmlencode
+     *
      * @return mixed
      */
     public static function toArray($htmlencode = false)

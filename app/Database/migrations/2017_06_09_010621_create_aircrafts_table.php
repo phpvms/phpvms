@@ -5,8 +5,7 @@ use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
 use Illuminate\Database\Schema\Blueprint;
 
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::create('aircraft', function (Blueprint $table) {
