@@ -4,4 +4,6 @@ namespace App\Events;
 
 use App\Contracts\Event;
 
-class CronFifteenMinute extends Event {}
+class CronFifteenMinute extends Event
+{
+}
