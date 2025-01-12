@@ -20,6 +20,7 @@ class FieldValuesRelationManager extends RelationManager
         $pirepFieldValues = PirepFieldValue::where('pirep_id', $this->getOwnerRecord()->id)->pluck('name');
 
         $pirepFields = PirepField::whereNotIn('name', $pirepFieldValues)->pluck('name', 'name')->toArray();
+
         return $form
             ->schema([
                 Forms\Components\Select::make('name')->required()->options($pirepFields),
@@ -41,12 +42,12 @@ class FieldValuesRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()->label('Add Pirep Field Value')->hidden($this->getOwnerRecord()->read_only)
-                ->mutateFormDataUsing(function (array $data): array {
-                    $data['pirep_id'] = $this->getOwnerRecord()->id;
-                    $data['slug'] = str_slug($data['name']);
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['pirep_id'] = $this->getOwnerRecord()->id;
+                        $data['slug'] = str_slug($data['name']);
 
-                    return $data;
-                }),
+                        return $data;
+                    }),
             ])
             ->actions([
                 //

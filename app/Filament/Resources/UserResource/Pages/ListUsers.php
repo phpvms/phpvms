@@ -38,7 +38,7 @@ class ListUsers extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            //UserStats::class
+            // UserStats::class
         ];
     }
 }

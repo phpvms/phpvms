@@ -18,6 +18,7 @@ class RankResource extends Resource
     protected static ?string $model = Rank::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Rank';

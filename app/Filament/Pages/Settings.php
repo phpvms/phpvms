@@ -23,10 +23,11 @@ use Illuminate\Support\Str;
 
 class Settings extends Page
 {
-    use InteractsWithFormActions;
     use HasPageShield;
+    use InteractsWithFormActions;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Settings';
@@ -157,8 +158,10 @@ class Settings extends Page
                         } elseif ($setting->id === 'units_currency') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getCurrencyList()));
                         }
+
                         return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
                     }
+
                     return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->string();
                 })->toArray()
             );

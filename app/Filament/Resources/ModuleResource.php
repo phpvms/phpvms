@@ -19,9 +19,11 @@ class ModuleResource extends Resource
     protected static ?string $model = Module::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 8;
 
     protected static ?string $navigationLabel = 'Modules';
+
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
     protected static ?string $recordTitleAttribute = 'name';

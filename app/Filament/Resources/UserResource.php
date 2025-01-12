@@ -25,6 +25,7 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Users';
@@ -45,101 +46,101 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Group::make()
-                ->schema([
-                    Forms\Components\Section::make('Basic Information')
                     ->schema([
-                        Forms\Components\TextInput::make('pilot_id')
-                            ->required()
-                            ->numeric()
-                            ->label('Pilot ID'),
+                        Forms\Components\Section::make('Basic Information')
+                            ->schema([
+                                Forms\Components\TextInput::make('pilot_id')
+                                    ->required()
+                                    ->numeric()
+                                    ->label('Pilot ID'),
 
-                        Forms\Components\TextInput::make('callsign'),
+                                Forms\Components\TextInput::make('callsign'),
 
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->string(),
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->string(),
 
-                        Forms\Components\TextInput::make('email')
-                            ->required()
-                            ->email(),
+                                Forms\Components\TextInput::make('email')
+                                    ->required()
+                                    ->email(),
 
-                        Forms\Components\TextInput::make('password')
-                            ->required(fn (string $operation) => $operation === 'create')
-                            ->password()
-                            ->autocomplete('new-password')
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-                    Forms\Components\Section::make('Location Information')
-                    ->schema([
-                        Forms\Components\Select::make('country')
-                            ->required()
-                            ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
-                            ->searchable()
-                            ->native(false),
+                                Forms\Components\TextInput::make('password')
+                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->password()
+                                    ->autocomplete('new-password')
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(2),
+                        Forms\Components\Section::make('Location Information')
+                            ->schema([
+                                Forms\Components\Select::make('country')
+                                    ->required()
+                                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                                    ->searchable()
+                                    ->native(false),
 
-                        Forms\Components\Select::make('timezone')
-                            ->options(Timezonelist::toArray())
-                            ->searchable()
-                            ->allowHtml()
-                            ->required(fn (string $operation) => $operation === 'create')
-                            ->native(false),
+                                Forms\Components\Select::make('timezone')
+                                    ->options(Timezonelist::toArray())
+                                    ->searchable()
+                                    ->allowHtml()
+                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->native(false),
 
-                        Forms\Components\Select::make('home_airport_id')
-                            ->label('Home Airport')
-                            ->relationship('home_airport', 'icao')
-                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                            ->searchable()
-                            ->required(fn (string $operation) => $operation === 'create')
-                            ->native(false),
+                                Forms\Components\Select::make('home_airport_id')
+                                    ->label('Home Airport')
+                                    ->relationship('home_airport', 'icao')
+                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                                    ->searchable()
+                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->native(false),
 
-                        Forms\Components\Select::make('current_airport_id')
-                            ->label('Current Airport')
-                            ->relationship('current_airport', 'icao')
-                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                            ->searchable()
-                            ->native(false),
-                    ])
-                    ->columns(2),
-                ])->columnSpan(['lg' => 2]),
+                                Forms\Components\Select::make('current_airport_id')
+                                    ->label('Current Airport')
+                                    ->relationship('current_airport', 'icao')
+                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                                    ->searchable()
+                                    ->native(false),
+                            ])
+                            ->columns(2),
+                    ])->columnSpan(['lg' => 2]),
                 Forms\Components\Group::make()
                     ->schema([
                         Forms\Components\Section::make('User Information')
-                        ->schema([
-                            Forms\Components\Select::make('state')
-                                ->options(UserState::labels())
-                                ->searchable()
-                                ->native(false),
+                            ->schema([
+                                Forms\Components\Select::make('state')
+                                    ->options(UserState::labels())
+                                    ->searchable()
+                                    ->native(false),
 
-                            Forms\Components\Select::make('airline_id')
-                                ->relationship('airline', 'name')
-                                ->searchable()
-                                ->required(fn (string $operation) => $operation === 'create')
-                                ->native(false),
+                                Forms\Components\Select::make('airline_id')
+                                    ->relationship('airline', 'name')
+                                    ->searchable()
+                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->native(false),
 
-                            Forms\Components\Select::make('rank_id')
-                                ->relationship('rank', 'name')
-                                ->searchable()
-                                ->native(false),
+                                Forms\Components\Select::make('rank_id')
+                                    ->relationship('rank', 'name')
+                                    ->searchable()
+                                    ->native(false),
 
-                            Forms\Components\TextInput::make('transfer_time')
-                                ->label('Transferred Hours')
-                                ->numeric(),
+                                Forms\Components\TextInput::make('transfer_time')
+                                    ->label('Transferred Hours')
+                                    ->numeric(),
 
-                            Forms\Components\Select::make('roles')
-                                ->label('Roles')
-                                ->visible(Auth::user()?->hasRole('super_admin') ?? false)
-                                ->relationship('roles', 'name')
-                                ->searchable()
-                                ->preload()
-                                ->native(false)
-                                ->multiple(),
+                                Forms\Components\Select::make('roles')
+                                    ->label('Roles')
+                                    ->visible(Auth::user()?->hasRole('super_admin') ?? false)
+                                    ->relationship('roles', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->native(false)
+                                    ->multiple(),
 
-                            Forms\Components\RichEditor::make('notes')
-                                ->label('Management Notes')
-                                ->columnSpanFull(),
-                        ])
-                        ->columnSpan(['lg' => 1]),
+                                Forms\Components\RichEditor::make('notes')
+                                    ->label('Management Notes')
+                                    ->columnSpanFull(),
+                            ])
+                            ->columnSpan(['lg' => 1]),
                     ]),
             ])->columns(3);
     }

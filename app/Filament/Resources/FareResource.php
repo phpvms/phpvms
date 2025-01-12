@@ -18,9 +18,11 @@ class FareResource extends Resource
     protected static ?string $model = Fare::class;
 
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Fares';
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static ?string $recordTitleAttribute = 'name';

@@ -36,6 +36,7 @@ class CommentsRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()->mutateFormDataUsing(function ($data) {
                     $data['user_id'] = auth()->id();
+
                     return $data;
                 }),
             ])

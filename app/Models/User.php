@@ -72,7 +72,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Illuminate\Database\Eloquent\Builder
  * @mixin \Illuminate\Notifications\Notifiable
  */
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasFactory;
     use HasRelationships;

@@ -22,6 +22,7 @@ class AirlineResource extends Resource
     protected static ?string $model = Airline::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Airlines';
@@ -58,9 +59,9 @@ class AirlineResource extends Resource
                         ->string(),
 
                     Forms\Components\Select::make('country')
-                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
-                    ->searchable()
-                    ->native(false),
+                        ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                        ->searchable()
+                        ->native(false),
 
                     Forms\Components\Toggle::make('active')
                         ->inline()
@@ -85,6 +86,7 @@ class AirlineResource extends Resource
                         if (filled($record->iata)) {
                             $html .= $record->iata.'/';
                         }
+
                         return $html.$record->icao;
                     })
                     ->sortable()

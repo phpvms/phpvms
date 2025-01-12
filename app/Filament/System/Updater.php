@@ -23,12 +23,11 @@ class Updater extends Page
     protected static ?string $slug = 'update';
 
     public ?string $notes;
+
     public ?string $details;
 
     /**
      * Called whenever the component is loaded
-     *
-     * @return void
      */
     public function mount(): void
     {
@@ -39,6 +38,7 @@ class Updater extends Page
                 ->send();
 
             $this->redirect(Filament::getDefaultPanel()->getUrl());
+
             return;
         }
 
@@ -47,8 +47,6 @@ class Updater extends Page
 
     /**
      * To fill the form (set default values)
-     *
-     * @return void
      */
     public function fillForm(): void
     {
@@ -61,10 +59,6 @@ class Updater extends Page
 
     /**
      * The filament form
-     *
-     * @param Form $form
-     *
-     * @return Form
      */
     public function form(Form $form): Form
     {
@@ -98,8 +92,6 @@ class Updater extends Page
 
     /**
      * Migrate the database
-     *
-     * @return void
      */
     public function migrate(): void
     {
@@ -120,6 +112,7 @@ class Updater extends Page
                 ->send();
 
             $this->redirect('/admin');
+
             return;
         }
         $output = '';
@@ -137,8 +130,6 @@ class Updater extends Page
 
     /**
      * Called when the form is filed (ie update completed)
-     *
-     * @return void
      */
     public function save(): void
     {

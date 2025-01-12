@@ -25,13 +25,13 @@ class LegacyImporter extends Page
     protected static ?string $slug = 'legacy-import';
 
     public ?string $notes;
+
     public ?array $db;
+
     public ?string $details;
 
     /**
      * Called whenever the component is loaded
-     *
-     * @return void
      */
     public function mount(): void
     {
@@ -49,8 +49,6 @@ class LegacyImporter extends Page
 
     /**
      * To fill the form (set default values)
-     *
-     * @return void
      */
     public function fillForm(): void
     {
@@ -63,10 +61,6 @@ class LegacyImporter extends Page
 
     /**
      * The filament form
-     *
-     * @param Form $form
-     *
-     * @return Form
      */
     public function form(Form $form): Form
     {
@@ -161,8 +155,6 @@ class LegacyImporter extends Page
 
     /**
      * Test db connection
-     *
-     * @return bool
      */
     private function testDb(): bool
     {
@@ -187,6 +179,7 @@ class LegacyImporter extends Page
                 ->danger()
                 ->persistent()
                 ->send();
+
             return false;
         }
 
@@ -202,8 +195,6 @@ class LegacyImporter extends Page
      * Save legacy db creds
      *
      * @throws Halt
-     *
-     * @return void
      */
     private function dbSetup(): void
     {
@@ -242,10 +233,6 @@ class LegacyImporter extends Page
 
     /**
      * Import a batch
-     *
-     * @param int $batch_index
-     *
-     * @return void
      */
     public function import(int $batch_index): void
     {
@@ -261,6 +248,7 @@ class LegacyImporter extends Page
                 ->title('Import completed')
                 ->success()
                 ->send();
+
             return;
         }
 

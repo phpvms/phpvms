@@ -19,9 +19,11 @@ class AwardResource extends Resource
     protected static ?string $model = Award::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationLabel = 'Awards';
+
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?string $recordTitleAttribute = 'name';

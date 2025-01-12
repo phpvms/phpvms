@@ -26,7 +26,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class SubfleetResource extends Resource
 {
     protected static ?string $model = Subfleet::class;
+
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Fleet';
@@ -62,8 +64,8 @@ class SubfleetResource extends Resource
                             ->string(),
 
                         Forms\Components\TextInput::make('simbrief_type')
-                        ->label('Simbrief Type')
-                        ->string(),
+                            ->label('Simbrief Type')
+                            ->string(),
 
                         Forms\Components\TextInput::make('name')
                             ->required()
