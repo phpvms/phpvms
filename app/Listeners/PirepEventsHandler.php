@@ -22,5 +22,7 @@ class PirepEventsHandler extends Listener // implements ShouldQueue
     /**
      * Called when a PIREP is prefiled.
      */
-    public function onPirepPrefile(PirepPrefiled $event) {}
+    public function onPirepPrefile(PirepPrefiled $event)
+    {
+    }
 }

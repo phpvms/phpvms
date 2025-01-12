@@ -22,7 +22,8 @@ class AirlinesController extends Controller
         private readonly AirlineRepository $airlineRepo,
         private readonly AirlineService $airlineSvc,
         private readonly FileService $fileSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Airlines.

@@ -4,4 +4,6 @@ namespace App\Exceptions;
 
 use Exception;
 
-class SettingNotFound extends Exception {}
+class SettingNotFound extends Exception
+{
+}
