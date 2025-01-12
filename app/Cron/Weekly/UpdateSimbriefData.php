@@ -12,7 +12,6 @@ class UpdateSimbriefData extends Listener
     /**
      * Update SimBrief Support Data
      *
-     * @param CronWeekly $event
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException

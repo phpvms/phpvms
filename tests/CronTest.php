@@ -14,10 +14,6 @@ final class CronTest extends TestCase
 {
     /**
      * Create a new sample PIREP
-     *
-     * @param $subtractTime
-     *
-     * @return Pirep
      */
     protected static function getPirep($subtractTime): Pirep
     {
@@ -35,7 +31,7 @@ final class CronTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testExpiredFlightNotBeingRemoved(): void
+    public function test_expired_flight_not_being_removed(): void
     {
         $this->updateSetting('acars.live_time', 0);
         $pirep = $this->getPirep(2);
@@ -53,7 +49,7 @@ final class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testExpiredFlightShouldNotBeRemoved(): void
+    public function test_expired_flight_should_not_be_removed(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(2);
@@ -71,7 +67,7 @@ final class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testExpiredFlightShouldBeRemoved(): void
+    public function test_expired_flight_should_be_removed(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(4);
@@ -89,7 +85,7 @@ final class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testCompletedFlightsShouldNotBeDeleted(): void
+    public function test_completed_flights_should_not_be_deleted(): void
     {
         $this->updateSetting('acars.live_time', 3);
         $pirep = $this->getPirep(4);
@@ -111,7 +107,7 @@ final class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDeleteRejectedPireps(): void
+    public function test_delete_rejected_pireps(): void
     {
         $this->updateSetting('pireps.delete_rejected_hours', 3);
         $pirep = $this->getPirep(4);
@@ -133,7 +129,7 @@ final class CronTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testDeleteCancelledPireps(): void
+    public function test_delete_cancelled_pireps(): void
     {
         $this->updateSetting('pireps.delete_cancelled_hours', 3);
         $pirep = $this->getPirep(4);

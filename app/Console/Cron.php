@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This runs any of the cron tasks that are set to run according to the Laravel schedule
  */
@@ -48,9 +49,6 @@ class Cron
      */
     private $cronRunners = [];
 
-    /**
-     * @param Schedule $scheduler
-     */
     public function __construct(Schedule $scheduler)
     {
         $this->scheduler = $scheduler;

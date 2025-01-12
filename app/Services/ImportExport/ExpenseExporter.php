@@ -27,8 +27,6 @@ class ExpenseExporter extends ImportExport
      * Import a flight, parse out the different rows
      *
      * @param Expense $expense
-     *
-     * @return array
      */
     public function export($expense): array
     {

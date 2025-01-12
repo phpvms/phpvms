@@ -38,6 +38,7 @@ declare -a remove_files=(
   phpunit.xml
   phpvms.iml
   phpstan.neon
+  pint.json
   Procfile
   swagger.yml
   composer.phar

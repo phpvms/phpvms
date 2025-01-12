@@ -54,16 +54,12 @@ class DatabaseActivator implements ActivatorInterface
         $this->path = $path;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return \App\Models\Module|null
-     */
     public function getModuleByName(string $name): ?\App\Models\Module
     {
         try {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.MODULES');
+
                 return Cache::remember($cache['key'].'.'.$name, $cache['time'], function () use ($name) {
                     return \App\Models\Module::where(['name' => $name])->first();
                 });
@@ -77,8 +73,6 @@ class DatabaseActivator implements ActivatorInterface
 
     /**
      * Get modules statuses, from the database
-     *
-     * @return array
      */
     private function getModulesStatuses(): array
     {
@@ -103,6 +97,7 @@ class DatabaseActivator implements ActivatorInterface
                     $retVal[$i->name] = $i->enabled;
                 }
             }
+
             return $retVal;
         } catch (Exception $e) {
             return [];
@@ -190,6 +185,7 @@ class DatabaseActivator implements ActivatorInterface
             ])->delete();
         } catch (Exception $e) {
             Log::error('Module '.$module.' Delete failed! Exception : '.$e->getMessage());
+
             return;
         }
     }

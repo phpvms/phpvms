@@ -57,8 +57,6 @@ class LegacyImporterService extends Service
 
     /**
      * Save the credentials from a request
-     *
-     * @param \Illuminate\Http\Request $request
      */
     public function saveCredentialsFromRequest(Request $request)
     {
@@ -76,8 +74,6 @@ class LegacyImporterService extends Service
 
     /**
      * Save the given credentials
-     *
-     * @param array $creds
      */
     public function saveCredentials(array $creds)
     {
@@ -122,12 +118,10 @@ class LegacyImporterService extends Service
     /**
      * Run a given stage
      *
-     * @param     $importer
-     * @param int $start
+     * @param  int      $start
+     * @return int|void
      *
      * @throws \Exception
-     *
-     * @return int|void
      */
     public function run($importer, $start = 0)
     {

@@ -16,8 +16,6 @@ class PilotLeave extends Listener
 
     /**
      * PilotLeave constructor.
-     *
-     * @param UserService $userSvc
      */
     public function __construct(UserService $userSvc)
     {
@@ -27,7 +25,6 @@ class PilotLeave extends Listener
     /**
      * Set any users to being on leave after X days
      *
-     * @param CronNightly $event
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException

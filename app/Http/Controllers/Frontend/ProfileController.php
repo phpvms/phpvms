@@ -30,17 +30,12 @@ class ProfileController extends Controller
 {
     /**
      * ProfileController constructor.
-     *
-     * @param AirlineRepository $airlineRepo
-     * @param AirportRepository $airportRepo
-     * @param UserRepository    $userRepo
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
         private readonly AirportRepository $airportRepo,
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return whether the vmsACARS module is enabled or not
@@ -60,19 +55,12 @@ class ProfileController extends Controller
     /**
      * Redirect to show() since only a single page gets shown and the template controls
      * the other items that are/aren't shown
-     *
-     * @return View
      */
     public function index(): View
     {
         return $this->show(Auth::user()->id);
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse|View
-     */
     public function show(int $id): RedirectResponse|View
     {
         $with = [
@@ -106,11 +94,8 @@ class ProfileController extends Controller
     /**
      * Show the edit for form the user's profile
      *
-     * @param Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse|View
      */
     public function edit(Request $request): RedirectResponse|View
     {
@@ -144,11 +129,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(Request $request): RedirectResponse
     {
@@ -247,10 +228,6 @@ class ProfileController extends Controller
 
     /**
      * Regenerate the user's API key
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse
      */
     public function regen_apikey(Request $request): RedirectResponse
     {
@@ -267,10 +244,6 @@ class ProfileController extends Controller
 
     /**
      * Generate the ACARS config and send it to download
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return Response
      */
     public function acars(Request $request): Response
     {

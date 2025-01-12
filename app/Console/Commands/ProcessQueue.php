@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class ProcessQueue extends Command
 {
     protected $signature = 'queue:cron';
+
     protected $description = 'Process the queue from a cron job';
 
     /**
@@ -18,7 +19,7 @@ class ProcessQueue extends Command
     public function handle()
     {
         Artisan::call('queue:work', [
-            //'--sansdaemon'      => null,
+            // '--sansdaemon'      => null,
             '--stop-when-empty' => null,
         ]);
 
@@ -27,11 +28,11 @@ class ProcessQueue extends Command
             Log::info($jobOutput);
         }
 
-        ///** @var App\Support\WorkCommand $queueWorker */
-        //$queueWorker = new App\Support\WorkCommand(app('queue.worker'), app('cache.store'));
+        // /** @var App\Support\WorkCommand $queueWorker */
+        // $queueWorker = new App\Support\WorkCommand(app('queue.worker'), app('cache.store'));
 
-        //$queueWorker->setInput($queueWorker->createInputFromArguments([]));
-        //$queueWorker->handle();
+        // $queueWorker->setInput($queueWorker->createInputFromArguments([]));
+        // $queueWorker->handle();
 
         /*$output = $this->call('queue:work', [
             '--stop-when-empty' => null,

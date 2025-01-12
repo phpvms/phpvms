@@ -7,6 +7,7 @@ use App\Models\Rank;
 class RankImport extends BaseImporter
 {
     protected $table = 'ranks';
+
     protected $idField = 'rankid';
 
     public function run($start = 0)

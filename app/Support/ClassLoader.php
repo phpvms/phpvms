@@ -11,11 +11,6 @@ use Log;
  */
 class ClassLoader
 {
-    /**
-     * @param $path
-     *
-     * @return array
-     */
     public static function getClassesInPath($path): array
     {
         if (!file_exists($path)) {
@@ -29,6 +24,7 @@ class ClassLoader
                 $klass = new $cl();
             } catch (\Exception $e) {
                 Log::error('Error loading class: '.$e->getMessage());
+
                 continue;
             }
 

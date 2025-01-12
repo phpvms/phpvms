@@ -7,7 +7,9 @@ use App\Contracts\Enum;
 class ExpenseType extends Enum
 {
     public const FLIGHT = 'F';
+
     public const DAILY = 'D';
+
     public const MONTHLY = 'M';
 
     protected static array $labels = [

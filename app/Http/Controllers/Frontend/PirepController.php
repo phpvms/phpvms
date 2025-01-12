@@ -37,18 +37,6 @@ use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
 {
-    /**
-     * @param AircraftRepository   $aircraftRepo
-     * @param AirlineRepository    $airlineRepo
-     * @param AirportRepository    $airportRepo
-     * @param FareService          $fareSvc
-     * @param FlightRepository     $flightRepo
-     * @param GeoService           $geoSvc
-     * @param PirepRepository      $pirepRepo
-     * @param PirepFieldRepository $pirepFieldRepo
-     * @param PirepService         $pirepSvc
-     * @param UserService          $userSvc
-     */
     public function __construct(
         private readonly AircraftRepository $aircraftRepo,
         private readonly AirlineRepository $airlineRepo,
@@ -60,15 +48,10 @@ class PirepController extends Controller
         private readonly PirepFieldRepository $pirepFieldRepo,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Dropdown with aircraft grouped by subfleet
-     *
-     * @param bool $add_blank
-     *
-     * @return array
      */
     public function aircraftList(bool $add_blank = false): array
     {
@@ -103,10 +86,6 @@ class PirepController extends Controller
 
     /**
      * Save any custom fields found
-     *
-     * @param Request $request
-     *
-     * @return array
      */
     protected function saveCustomFields(Request $request): array
     {
@@ -133,12 +112,8 @@ class PirepController extends Controller
     /**
      * Save the fares that have been specified/saved
      *
-     * @param Pirep   $pirep
-     * @param Request $request
      *
      * @throws \Exception
-     *
-     * @return void
      */
     protected function saveFares(Pirep $pirep, Request $request): void
     {
@@ -165,11 +140,7 @@ class PirepController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -205,11 +176,6 @@ class PirepController extends Controller
         ]);
     }
 
-    /**
-     * @param string $id
-     *
-     * @return RedirectResponse|View
-     */
     public function show(string $id): RedirectResponse|View
     {
         // Support retrieval of deleted relationships
@@ -258,10 +224,6 @@ class PirepController extends Controller
 
     /**
      * Return the fares form for a given aircraft
-     *
-     * @param Request $request
-     *
-     * @return View
      */
     public function fares(Request $request): View
     {
@@ -276,10 +238,6 @@ class PirepController extends Controller
 
     /**
      * Create a new flight report
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return View
      */
     public function create(Request $request): View
     {
@@ -319,7 +277,7 @@ class PirepController extends Controller
 
                 $aircraft->subfleet->fares = collect($fares);
             }
-        // TODO: Set more fields from the Simbrief to the PIREP form
+            // TODO: Set more fields from the Simbrief to the PIREP form
         } else {
             $aircraft_list = $this->aircraftList(true);
         }
@@ -342,11 +300,7 @@ class PirepController extends Controller
     }
 
     /**
-     * @param CreatePirepRequest $request
-     *
      * @throws \Exception
-     *
-     * @return RedirectResponse
      */
     public function store(CreatePirepRequest $request): RedirectResponse
     {
@@ -479,10 +433,6 @@ class PirepController extends Controller
 
     /**
      * Show the form for editing the specified Pirep.
-     *
-     * @param string $id
-     *
-     * @return RedirectResponse|View
      */
     public function edit(string $id): RedirectResponse|View
     {
@@ -555,13 +505,8 @@ class PirepController extends Controller
     }
 
     /**
-     * @param string             $id
-     * @param UpdatePirepRequest $request
-     *
      * @throws \Exception
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(string $id, UpdatePirepRequest $request): RedirectResponse
     {
@@ -621,12 +566,8 @@ class PirepController extends Controller
     /**
      * Submit the PIREP
      *
-     * @param string  $id
-     * @param Request $request
      *
      * @throws \Exception
-     *
-     * @return RedirectResponse
      */
     public function submit(string $id, Request $request): RedirectResponse
     {

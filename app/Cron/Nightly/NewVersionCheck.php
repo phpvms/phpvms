@@ -11,9 +11,6 @@ class NewVersionCheck extends Listener
 {
     private VersionService $versionSvc;
 
-    /**
-     * @param VersionService $versionSvc
-     */
     public function __construct(VersionService $versionSvc)
     {
         $this->versionSvc = $versionSvc;
@@ -21,8 +18,6 @@ class NewVersionCheck extends Listener
 
     /**
      * Set any users to being on leave after X days
-     *
-     * @param CronNightly $event
      */
     public function handle(CronNightly $event): void
     {

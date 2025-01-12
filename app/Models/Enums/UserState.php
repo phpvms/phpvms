@@ -7,10 +7,15 @@ use App\Contracts\Enum;
 class UserState extends Enum
 {
     public const PENDING = 0;
+
     public const ACTIVE = 1;
+
     public const REJECTED = 2;
+
     public const ON_LEAVE = 3;
+
     public const SUSPENDED = 4;
+
     public const DELETED = 5;
 
     protected static array $labels = [

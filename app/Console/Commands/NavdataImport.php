@@ -9,12 +9,13 @@ use App\Models\Navdata;
 class NavdataImport extends Command
 {
     protected $signature = 'phpvms:navdata';
+
     protected $description = '';
 
     /**
-     * @throws \League\Geotools\Exception\InvalidArgumentException
-     *
      * @return void
+     *
+     * @throws \League\Geotools\Exception\InvalidArgumentException
      */
     public function handle()
     {
@@ -30,8 +31,6 @@ class NavdataImport extends Command
      * Read and parse in the navaid file
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
-     *
-     * @return void
      */
     public function read_wp_nav_aid(): void
     {
@@ -67,6 +66,7 @@ class NavdataImport extends Command
         $file_path = storage_path('/navdata/WPNAVAID.txt');
         if (!file_exists($file_path)) {
             $this->error('WPNAVAID.txt not found in storage/navdata');
+
             return;
         }
 
@@ -128,9 +128,6 @@ class NavdataImport extends Command
         $this->info('Imported a total of '.$imported.' nav aids');
     }
 
-    /**
-     * @return void
-     */
     public function read_wp_nav_fix(): void
     {
         /*
@@ -155,6 +152,7 @@ class NavdataImport extends Command
         $file_path = storage_path('/navdata/WPNAVFIX.txt');
         if (!file_exists($file_path)) {
             $this->error('WPNAVFIX.txt not found in storage/navdata');
+
             return;
         }
 

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class BackupRun extends CronCommand
 {
     protected $signature = 'cron:backup-run';
+
     protected $description = 'Create a new backup';
 
     public function handle(): void

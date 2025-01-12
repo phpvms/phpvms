@@ -31,8 +31,6 @@ final class OAuthTest extends TestCase
 
     /**
      * Simulate what would be returned by the OAuth provider
-     *
-     * @return LegacyMockInterface|MockInterface
      */
     protected function getMockedProvider(): LegacyMockInterface|MockInterface
     {
@@ -55,10 +53,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to link a logged-in user to an OAuth account from profile
-     *
-     * @return void
      */
-    public function testLinkAccountFromProfile(): void
+    public function test_link_account_from_profile(): void
     {
         $user = User::factory()->create([
             'name'  => 'OAuth user',
@@ -86,10 +82,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to link a non-logged-in user from the login page using its email
-     *
-     * @return void
      */
-    public function testLinkAccountFromLogin(): void
+    public function test_link_account_from_login(): void
     {
         $user = User::factory()->create([
             'name'  => 'OAuth user',
@@ -119,10 +113,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to log in an already linked user
-     *
-     * @return void
      */
-    public function testLoginWithLinkedAccount(): void
+    public function test_login_with_linked_account(): void
     {
         $user = User::factory()->create([
             'name'  => 'OAuth user',
@@ -164,10 +156,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to log in a user with a pending account
-     *
-     * @return void
      */
-    public function testLoginWithPendingAccount(): void
+    public function test_login_with_pending_account(): void
     {
         $user = User::factory()->create([
             'name'  => 'OAuth user',
@@ -188,7 +178,7 @@ final class OAuthTest extends TestCase
      *
      * @return void
      */
-    public function testNoAccountFound()
+    public function test_no_account_found()
     {
         foreach ($this->drivers as $driver) {
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
@@ -200,10 +190,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to unlink an account from profile
-     *
-     * @return void
      */
-    public function testUnlinkAccount(): void
+    public function test_unlink_account(): void
     {
         $user = User::factory()->create([
             'name'  => 'OAuth user',
@@ -227,10 +215,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to access a non-existing provider callback
-     *
-     * @return void
      */
-    public function testNonExistingProvider(): void
+    public function test_non_existing_provider(): void
     {
         $this->expectException(NotFoundHttpException::class);
 
@@ -243,10 +229,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to access a disabled provider callback
-     *
-     * @return void
      */
-    public function testDisabledProvider(): void
+    public function test_disabled_provider(): void
     {
         $originalConfigValue = config('services.discord.enabled');
         Config::set('services.discord.enabled', false);

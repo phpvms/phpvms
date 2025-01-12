@@ -24,9 +24,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Rank extends Model
 {
     use HasFactory;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'ranks';
 
@@ -65,8 +65,6 @@ class Rank extends Model
 
     /**
      * Return image_url always as full uri
-     *
-     * @return Attribute
      */
     public function imageUrl(): Attribute
     {

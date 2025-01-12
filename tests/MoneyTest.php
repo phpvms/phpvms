@@ -9,7 +9,7 @@ final class MoneyTest extends TestCase
     /**
      * Test adding/subtracting a percentage
      */
-    public function testMoney(): void
+    public function test_money(): void
     {
         $money = Money::create(100);
         $this->assertEquals('$1.00', $money->render());

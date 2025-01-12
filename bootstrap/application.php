@@ -13,9 +13,10 @@ if (!defined('DS')) {
 class application extends Illuminate\Foundation\Application
 {
     private $publicDirPath;
+
     private $publicUrlPath = '/';
 
-    public function __construct(string $basePath = null)
+    public function __construct(?string $basePath = null)
     {
         $rootPath = dirname(__DIR__).'/';
         parent::__construct($rootPath);
@@ -32,8 +33,6 @@ class application extends Illuminate\Foundation\Application
      * Override this method so we can inject our own LoadConfiguration
      * class, which looks for any configurations that have been overridden
      * in the root's config.php file
-     *
-     * @param array $bootstrappers
      */
     public function bootstrapWith(array $bootstrappers)
     {
@@ -84,8 +83,6 @@ class application extends Illuminate\Foundation\Application
      * Added for the custom filesystem driver. Used in the index.php
      * in the root of the install to set it to point to /public,
      * instead of just /
-     *
-     * @param $publicUrlPath
      */
     public function setPublicUrlPath($publicUrlPath)
     {

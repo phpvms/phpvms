@@ -2,6 +2,8 @@
 # It is based on https://serversideup.net/open-source/docker-php/.
 FROM composer:latest AS vendor
 
+LABEL org.opencontainers.image.description="The official phpVMS image"
+
 COPY composer.json composer.json
 COPY composer.lock composer.lock
 

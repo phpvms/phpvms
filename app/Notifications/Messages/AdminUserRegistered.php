@@ -13,8 +13,6 @@ class AdminUserRegistered extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param \App\Models\User $user
      */
     public function __construct(
         private readonly User $user
@@ -29,8 +27,6 @@ class AdminUserRegistered extends Notification implements ShouldQueue
     }
 
     /**
-     * @param $notifiable
-     *
      * @return string[]
      */
     public function via($notifiable)
@@ -39,8 +35,6 @@ class AdminUserRegistered extends Notification implements ShouldQueue
     }
 
     /**
-     * @param $notifiable
-     *
      * @return array
      */
     public function toArray($notifiable)

@@ -10,6 +10,7 @@ class Notification extends \Illuminate\Notifications\Notification implements Sho
     use Queueable;
 
     public $channels = [];
+
     public $requires_opt_in = false;
 
     public function __construct()

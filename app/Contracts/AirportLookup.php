@@ -19,8 +19,7 @@ abstract class AirportLookup
      *
      * @example App\Services\AirportLookup\VaCentralLookup
      *
-     * @param string $icao
-     *
+     * @param  string       $icao
      * @return Airport|null
      */
     abstract public function getAirport($icao);

@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 class YamlExport extends Command
 {
     protected $signature = 'phpvms:yaml-export {tables*}';
+
     protected $description = 'YAML table export';
 
     /**

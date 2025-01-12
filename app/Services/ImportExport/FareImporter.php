@@ -30,10 +30,7 @@ class FareImporter extends ImportExport
     /**
      * Import a flight, parse out the different rows
      *
-     * @param array $row
-     * @param int   $index
-     *
-     * @return bool
+     * @param int $index
      */
     public function import(array $row, $index): bool
     {
@@ -44,10 +41,12 @@ class FareImporter extends ImportExport
             ], $row);
         } catch (\Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+
             return false;
         }
 
         $this->log('Imported '.$row['code'].' '.$row['name']);
+
         return true;
     }
 }

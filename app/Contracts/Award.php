@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 abstract class Award
 {
     public $name = '';
+
     public $param_description = '';
 
     /**
@@ -27,8 +28,6 @@ abstract class Award
      * be awarded to a user. This is the only method that needs to be implemented
      *
      * @param null $parameter Optional parameters that are passed in from the UI
-     *
-     * @return bool
      */
     abstract public function check($parameter = null): bool;
 
@@ -36,13 +35,11 @@ abstract class Award
      * You don't really need to mess with anything below here
      */
 
-    /** @var \App\Models\Award|null */
     protected ?AwardModel $award;
 
-    /** @var \App\Models\User|null */
     protected ?User $user;
 
-    public function __construct(AwardModel $award = null, User $user = null)
+    public function __construct(?AwardModel $award = null, ?User $user = null)
     {
         $this->award = $award;
         $this->user = $user;
@@ -68,8 +65,6 @@ abstract class Award
 
     /**
      * Add the award to this user, if they don't already have it
-     *
-     * @return bool|UserAward|null
      */
     protected function addAward(): bool|UserAward|null
     {

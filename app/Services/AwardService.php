@@ -21,8 +21,8 @@ class AwardService extends Service
         $formatted_awards = [];
 
         // Find the awards in the modules/Awards directory
-//        $classes = ClassLoader::getClassesInPath(module_path('Awards'));
-//        $awards = array_merge($awards, $classes);
+        //        $classes = ClassLoader::getClassesInPath(module_path('Awards'));
+        //        $awards = array_merge($awards, $classes);
 
         // Look throughout all the other modules, in the module/{MODULE}/Awards directory
         foreach (Module::all() as $module) {

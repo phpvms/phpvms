@@ -106,7 +106,8 @@
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v8.1.0",
         "phpunit/phpunit": "^10.5",
-        "laravel/sail": "^1.23"
+        "laravel/sail": "^1.23",
+        "laravel/pint": "^1.19"
     },
     "autoload": {
         "classmap": [
@@ -152,6 +153,7 @@
             "@php artisan phpvms:caches",
             "@php artisan filament:upgrade"
         ],
+        "pint": "pint --dirty",
         "test": "phpunit"
     },
     "config": {

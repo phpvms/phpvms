@@ -16,6 +16,7 @@ class PirepField extends Model
     use LogsActivity;
 
     public $table = 'pirep_fields';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -37,8 +38,6 @@ class PirepField extends Model
 
     /**
      * When setting the name attribute, also set the slug
-     *
-     * @return Attribute
      */
     public function name(): Attribute
     {

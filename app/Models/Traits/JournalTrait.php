@@ -30,11 +30,10 @@ trait JournalTrait
     /**
      * Initialize a journal for a given model object
      *
-     * @param string $currency_code
-     *
-     * @throws \Exception
      *
      * @return Journal
+     *
+     * @throws \Exception
      */
     public function initJournal(string $currency_code = 'USD')
     {

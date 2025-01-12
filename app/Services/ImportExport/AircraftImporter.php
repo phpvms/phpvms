@@ -45,7 +45,6 @@ class AircraftImporter extends ImportExport
      * Find the subfleet specified, or just create it on the fly and attach it to the
      * first airline that's been found
      *
-     * @param $type
      *
      * @return Subfleet|\Illuminate\Database\Eloquent\Model|null|object|static
      */
@@ -62,12 +61,9 @@ class AircraftImporter extends ImportExport
     /**
      * Import an aircraft, parse out the different rows
      *
-     * @param array $row
-     * @param int   $index
+     * @param int $index
      *
      * @throws \Exception
-     *
-     * @return bool
      */
     public function import(array $row, $index): bool
     {
@@ -106,10 +102,12 @@ class AircraftImporter extends ImportExport
             ], $row);
         } catch (\Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+
             return false;
         }
 
         $this->log('Imported '.$row['registration'].' '.$row['name']);
+
         return true;
     }
 

@@ -15,20 +15,13 @@ class SettingsController extends Controller
 {
     /**
      * SettingsController constructor.
-     *
-     * @param SettingRepository $settingRepo
      */
     public function __construct(
         private readonly SettingRepository $settingRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the airlines, paginated
-     *
-     * @param Request $request
-     *
-     * @return AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {

@@ -8,14 +8,10 @@ use Illuminate\Support\Facades\Cookie;
 
 class LanguageController extends Controller
 {
-    /**
-     * @param string $lang
-     *
-     * @return RedirectResponse
-     */
     public function switchLang(string $lang): RedirectResponse
     {
         $cookie = Cookie::make('lang', $lang, 60 * 24 * 365);
+
         return back()->withCookie($cookie);
     }
 }

@@ -20,16 +20,10 @@ class BidService extends Service
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly FlightService $flightSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Get a specific bid for a user
-     *
-     * @param User $user
-     * @param      $bid_id
-     *
-     * @return Bid|null
      */
     public function getBid(User $user, $bid_id): ?Bid
     {
@@ -71,8 +65,6 @@ class BidService extends Service
     /**
      * Find all of the bids for a given user
      *
-     * @param \App\Models\User $user
-     * @param array            $relations
      *
      * @return Bid[]
      */
@@ -126,13 +118,10 @@ class BidService extends Service
     /**
      * Allow a user to bid on a flight. Check settings and all that good stuff
      *
-     * @param Flight    $flight
-     * @param User      $user
-     * @param ?Aircraft $aircraft
-     *
-     * @throws \App\Exceptions\BidExistsForFlight
      *
      * @return mixed
+     *
+     * @throws \App\Exceptions\BidExistsForFlight
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null)
     {
@@ -206,9 +195,6 @@ class BidService extends Service
 
     /**
      * Remove a bid from a given flight
-     *
-     * @param Flight $flight
-     * @param User   $user
      */
     public function removeBid(Flight $flight, User $user)
     {
@@ -240,7 +226,6 @@ class BidService extends Service
     /**
      * If the setting is enabled, remove the bid
      *
-     * @param Pirep $pirep
      *
      * @throws \Exception
      */

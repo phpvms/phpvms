@@ -15,7 +15,6 @@ abstract class Metar
      * since this shouldn't be directly called. Call `metar($icao)`. If not implemented,
      * return a blank string
      *
-     * @param $icao
      *
      * @return mixed
      */
@@ -25,7 +24,6 @@ abstract class Metar
      * Implement retrieving the TAF - return the string. Call `taf($icao)`. If not implemented,
      * return a blank string
      *
-     * @param $icao
      *
      * @return mixed
      */
@@ -33,10 +31,6 @@ abstract class Metar
 
     /**
      * Download the METAR, wrap in caching
-     *
-     * @param $icao
-     *
-     * @return string
      */
     public function metar($icao): string
     {
@@ -54,6 +48,7 @@ abstract class Metar
             $raw_metar = $this->get_metar($icao);
         } catch (\Exception $e) {
             Log::error('Error getting METAR: '.$e->getMessage(), $e->getTrace());
+
             return '';
         }
 
@@ -66,10 +61,6 @@ abstract class Metar
 
     /**
      * Download the TAF, wrap in caching
-     *
-     * @param $icao
-     *
-     * @return string
      */
     public function taf($icao): string
     {
@@ -87,6 +78,7 @@ abstract class Metar
             $taf = $this->get_taf($icao);
         } catch (\Exception $e) {
             Log::error('Error getting TAF: '.$e->getMessage(), $e->getTrace());
+
             return '';
         }
 

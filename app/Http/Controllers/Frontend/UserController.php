@@ -14,20 +14,12 @@ use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserController extends Controller
 {
-    /**
-     * @param UserRepository $userRepo
-     */
     public function __construct(
         private readonly UserRepository $userRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * @param Request $request
-     *
      * @throws RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {

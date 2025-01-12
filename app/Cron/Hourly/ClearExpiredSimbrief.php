@@ -19,9 +19,6 @@ class ClearExpiredSimbrief extends Listener
         $this->simbriefSvc = $simbriefSvc;
     }
 
-    /**
-     * @param CronHourly $event
-     */
     public function handle(CronHourly $event): void
     {
         Log::info('Hourly: Removing expired Simbrief entries');

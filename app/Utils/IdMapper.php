@@ -18,8 +18,6 @@ class IdMapper extends Service
      * Create a new mapping between an old ID and the new one
      *
      * @param string $entity Name of the entity (e,g table)
-     * @param string $old_id
-     * @param string $new_id
      */
     public function addMapping(string $entity, string $old_id, string $new_id)
     {
@@ -32,8 +30,6 @@ class IdMapper extends Service
     /**
      * Return the ID for a mapping
      *
-     * @param $entity
-     * @param $old_id
      *
      * @return bool
      */

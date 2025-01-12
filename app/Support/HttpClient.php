@@ -21,12 +21,10 @@ class HttpClient
      * Download a URI. If a file is given, it will save the downloaded
      * content into that file
      *
-     * @param       $uri
-     * @param array $opts
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
      *
      * @return string
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function get($uri, array $opts = [])
     {
@@ -46,13 +44,7 @@ class HttpClient
     }
 
     /**
-     * @param       $uri
-     * @param       $body
-     * @param array $opts
-     *
      * @throws \GuzzleHttp\Exception\GuzzleException
-     *
-     * @return mixed
      */
     public function post($uri, $body, array $opts = []): mixed
     {
@@ -73,13 +65,7 @@ class HttpClient
     }
 
     /**
-     * @param       $uri
-     * @param       $body
-     * @param array $opts
-     *
      * @throws \GuzzleHttp\Exception\GuzzleException
-     *
-     * @return mixed
      */
     public function form_post($uri, $body, array $opts = []): mixed
     {
@@ -102,8 +88,6 @@ class HttpClient
     /**
      * Download a file to a given path
      *
-     * @param $uri
-     * @param $local_path
      *
      * @return string
      */

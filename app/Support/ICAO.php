@@ -14,12 +14,11 @@ class ICAO
      * @param null $country
      *
      * @throws \Exception
-     *
-     * @return string
      */
     public static function createHexCode($country = null): string
     {
         $bytes = random_bytes(4);
+
         return bin2hex($bytes);
     }
 }

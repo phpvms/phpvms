@@ -8,7 +8,9 @@ use Illuminate\Validation\ValidationException as IlluminateValidationException;
 class ValidationException extends AbstractHttpException
 {
     private $validationException;
+
     private $errorDetail;
+
     private $errors;
 
     public function __construct(IlluminateValidationException $validationException)

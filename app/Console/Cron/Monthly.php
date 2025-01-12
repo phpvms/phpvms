@@ -14,7 +14,9 @@ use App\Events\CronMonthly;
 class Monthly extends CronCommand
 {
     protected $signature = 'cron:monthly';
+
     protected $description = 'Run the monthly cron tasks';
+
     protected $schedule;
 
     public function handle(): void

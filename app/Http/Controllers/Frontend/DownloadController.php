@@ -22,8 +22,6 @@ class DownloadController extends Controller
 {
     /**
      * Show all of the available files
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -90,10 +88,6 @@ class DownloadController extends Controller
 
     /**
      * Download a specific file
-     *
-     * @param string $id
-     *
-     * @return RedirectResponse|StreamedResponse
      */
     public function show(string $id): RedirectResponse|StreamedResponse
     {

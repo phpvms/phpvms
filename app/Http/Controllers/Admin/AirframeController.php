@@ -20,20 +20,12 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class AirframeController extends Controller
 {
-    /**
-     * @param AirframeRepository $airframeRepo
-     */
     public function __construct(
         private readonly AirframeRepository $airframeRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * @param Request $request
-     *
      * @throws RepositoryException
-     *
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -45,9 +37,6 @@ class AirframeController extends Controller
         ]);
     }
 
-    /**
-     * @return View
-     */
     public function create(): View
     {
         return view('admin.airframes.create', [
@@ -56,11 +45,7 @@ class AirframeController extends Controller
     }
 
     /**
-     * @param CreateAirframeRequest $request
-     *
      * @throws ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function store(CreateAirframeRequest $request): RedirectResponse
     {
@@ -72,11 +57,6 @@ class AirframeController extends Controller
         return redirect(route('admin.airframes.index'));
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse|View
-     */
     public function show(int $id): RedirectResponse|View
     {
         $airframe = $this->airframeRepo->findWithoutFail($id);
@@ -92,11 +72,6 @@ class AirframeController extends Controller
         ]);
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse|View
-     */
     public function edit(int $id): RedirectResponse|View
     {
         $airframe = $this->airframeRepo->findWithoutFail($id);
@@ -114,12 +89,7 @@ class AirframeController extends Controller
     }
 
     /**
-     * @param int                   $id
-     * @param UpdateAirframeRequest $request
-     *
      * @throws ValidatorException
-     *
-     * @return RedirectResponse
      */
     public function update(int $id, UpdateAirframeRequest $request): RedirectResponse
     {
@@ -137,11 +107,6 @@ class AirframeController extends Controller
         return redirect(route('admin.airframes.index'));
     }
 
-    /**
-     * @param int $id
-     *
-     * @return RedirectResponse
-     */
     public function destroy(int $id): RedirectResponse
     {
         $airframe = $this->airframeRepo->findWithoutFail($id);

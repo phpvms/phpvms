@@ -7,6 +7,7 @@ use App\Contracts\Enum;
 class ActiveState extends Enum
 {
     public const INACTIVE = 0;
+
     public const ACTIVE = 1;
 
     public static array $labels = [

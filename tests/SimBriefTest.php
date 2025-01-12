@@ -23,8 +23,6 @@ final class SimBriefTest extends TestCase
      * @param array $attrs Additional user attributes
      *
      * @throws \Exception
-     *
-     * @return array
      */
     public function createUserData(array $attrs = []): array
     {
@@ -47,13 +45,6 @@ final class SimBriefTest extends TestCase
 
     /**
      * Load SimBrief
-     *
-     * @param User        $user
-     * @param Aircraft    $aircraft
-     * @param array       $fares
-     * @param string|null $flight_id
-     *
-     * @return SimBrief
      */
     protected function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string $flight_id = null): SimBrief
     {
@@ -73,13 +64,6 @@ final class SimBriefTest extends TestCase
 
     /**
      * Download an OFP file
-     *
-     * @param $user
-     * @param $flight
-     * @param $aircraft
-     * @param $fares
-     *
-     * @return SimBrief|null
      */
     protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {
@@ -99,7 +83,7 @@ final class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testReadSimbrief(): void
+    public function test_read_simbrief(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -141,7 +125,7 @@ final class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testApiCalls(): void
+    public function test_api_calls(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -188,7 +172,7 @@ final class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testUserBidSimbrief(): void
+    public function test_user_bid_simbrief(): void
     {
         $fares = [
             [
@@ -235,7 +219,7 @@ final class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testUserBidSimbriefDoesntLeak(): void
+    public function test_user_bid_simbrief_doesnt_leak(): void
     {
         $this->updateSetting('bids.disable_flight_on_bid', false);
         $fares = [
@@ -288,7 +272,7 @@ final class SimBriefTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAttachToPirep(): void
+    public function test_attach_to_pirep(): void
     {
         $userinfo = $this->createUserData();
         $this->user = $userinfo['user'];
@@ -338,7 +322,7 @@ final class SimBriefTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testClearExpiredBriefs(): void
+    public function test_clear_expired_briefs(): void
     {
         $userinfo = $this->createUserData();
         $user = $userinfo['user'];

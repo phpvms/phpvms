@@ -11,7 +11,6 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 final class AirlineTest extends TestCase
 {
-    /** @var AirlineService */
     protected AirlineService $airlineSvc;
 
     protected function setUp(): void
@@ -25,7 +24,7 @@ final class AirlineTest extends TestCase
     /**
      * @throws ValidatorException
      */
-    public function testAddAirline(): void
+    public function test_add_airline(): void
     {
         $attrs = Airline::factory()->make([
             'iata' => '',
@@ -53,7 +52,7 @@ final class AirlineTest extends TestCase
     /**
      * Try deleting an airline which has flights/other assets that exist
      */
-    public function testDeleteAirlineWithFlight(): void
+    public function test_delete_airline_with_flight(): void
     {
         $airline = Airline::factory()->create();
         Flight::factory()->create([
@@ -66,7 +65,7 @@ final class AirlineTest extends TestCase
     /**
      * Try deleting an airline with existing PIREPs
      */
-    public function testDeleteAirlineWithPirep(): void
+    public function test_delete_airline_with_pirep(): void
     {
         $airline = Airline::factory()->create();
         Pirep::factory()->create([

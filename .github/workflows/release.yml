@@ -21,10 +21,10 @@ jobs:
         with:
           versionSpec: '6.0.x'
 
-      - name: Install GitReleaseManager
-        uses: ./gitreleasemanager/setup
-        with:
-            versionSpec: '0.18.x'
+#       - name: Install GitReleaseManager
+#         uses: ./gitreleasemanager/setup
+#         with:
+#             versionSpec: '0.18.x'
 
       - name: Determine Version
         id: gitversion
@@ -61,16 +61,6 @@ jobs:
 #           isPreRelease: ${{ github.event.release.prerelease }}
 #           targetcommitish: 'main'
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "dist/*.*"
-          allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
         # Dependencies
       - name: 'Install Release Dependencies'
         run: |
@@ -85,6 +75,21 @@ jobs:
       - name: Build Distro
         run: .github/scripts/build.sh
 
+      # Dependencies
+      - name: 'List files'
+        run: |
+          find . -maxdepth 2  -type f
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.*"
+          allowUpdates: true
+          generateReleaseNotes: true
+          name: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: BetaHuhn/do-spaces-action@v2
         id: spaces
         with:
@@ -96,14 +101,14 @@ jobs:
           cdn_domain: phpvms.cdn.vmslabs.net
           permission: public-read
 
-      - name: Add Assets
-        uses: ./gitreleasemanager/addasset
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          owner: ${{ github.repository_owner }}
-          repository: phpvms
-          targetDirectory: dist/
-          assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
+#       - name: Add Assets
+#         uses: ./gitreleasemanager/addasset
+#         with:
+#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#           owner: ${{ github.repository_owner }}
+#           repository: phpvms
+#           targetDirectory: dist/
+#           assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
 
 #       - name: Close Release
 #         uses: ./gitreleasemanager/close
@@ -112,11 +117,6 @@ jobs:
 #           owner: ${{ github.repository_owner }}
 #           repository: actions
 #           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
-
-        # Dependencies
-      - name: 'List files'
-        run: |
-          find . -maxdepth 2  -type f
 
       - name: Discord notification
         uses: Ilshidur/action-discord@0.3.2
@@ -138,6 +138,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}

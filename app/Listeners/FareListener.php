@@ -9,14 +9,13 @@ use App\Models\Fare;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class FareListener extends Listener //implements ShouldQueue
+class FareListener extends Listener // implements ShouldQueue
 {
-    //use Queueable;
+    // use Queueable;
 
     /**
      * Return a list of additional fares/income items
      *
-     * @param Fares $event
      *
      * @return mixed
      */

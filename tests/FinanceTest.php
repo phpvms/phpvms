@@ -31,19 +31,14 @@ use Exception;
 
 final class FinanceTest extends TestCase
 {
-    /** @var ExpenseRepository */
     private ExpenseRepository $expenseRepo;
 
-    /** @var FareService */
     private FareService $fareSvc;
 
-    /** @var PirepFinanceService */
     private PirepFinanceService $financeSvc;
 
-    /** @var FleetService */
     private FleetService $fleetSvc;
 
-    /** @var PirepService */
     private PirepService $pirepSvc;
 
     /**
@@ -67,10 +62,8 @@ final class FinanceTest extends TestCase
      * so that we can test all of the disparate parts of the finances
      *
      * @throws Exception
-     *
-     * @return array
      */
-    public function createFullPirep(Airline $airline = null): array
+    public function createFullPirep(?Airline $airline = null): array
     {
         /**
          * Setup tests
@@ -196,7 +189,7 @@ final class FinanceTest extends TestCase
      * The fares, etc for a subfleet has to be adjusted to the fleet
      * https://github.com/nabeelio/phpvms/issues/905
      */
-    public function testFlightFaresOverAPI(): void
+    public function test_flight_fares_over_api(): void
     {
         $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
         $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
@@ -266,7 +259,7 @@ final class FinanceTest extends TestCase
         $this->assertEquals(20, $body['subfleets'][0]['fares'][0]['cost']);
     }
 
-    public function testFlightFaresOverAPIOnUserBids(): void
+    public function test_flight_fares_over_api_on_user_bids(): void
     {
         $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
         $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
@@ -304,7 +297,7 @@ final class FinanceTest extends TestCase
         $this->assertEquals($fare->capacity, $body[0]['flight']['fares'][0]['capacity']);
     }
 
-    public function testSubfleetFaresOverAPI(): void
+    public function test_subfleet_fares_over_api(): void
     {
         $this->updateSetting('pireps.only_aircraft_at_dpt_airport', false);
         $this->updateSetting('pireps.restrict_aircraft_to_rank', false);
@@ -336,7 +329,7 @@ final class FinanceTest extends TestCase
     /**
      * Assign percentage values and make sure they're valid
      */
-    public function testFlightFareOverrideAsPercent(): void
+    public function test_flight_fare_override_as_percent(): void
     {
         /** @var Flight $flight */
         $flight = Flight::factory()->create();
@@ -371,7 +364,7 @@ final class FinanceTest extends TestCase
         $this->assertEquals($new_capacity, $ac_fares[0]->capacity);
     }
 
-    public function testSubfleetFaresNoOverride(): void
+    public function test_subfleet_fares_no_override(): void
     {
         $subfleet = Subfleet::factory()->create();
         $fare = Fare::factory()->create();
@@ -403,7 +396,7 @@ final class FinanceTest extends TestCase
         $this->assertCount(0, $this->fareSvc->getForSubfleet($subfleet));
     }
 
-    public function testSubfleetFaresOverride(): void
+    public function test_subfleet_fares_override(): void
     {
         $subfleet = Subfleet::factory()->create();
         $fare = Fare::factory()->create();
@@ -442,7 +435,7 @@ final class FinanceTest extends TestCase
     /**
      * Assign percentage values and make sure they're valid
      */
-    public function testSubfleetFareOverrideAsPercent(): void
+    public function test_subfleet_fare_override_as_percent(): void
     {
         $subfleet = Subfleet::factory()->create();
         $fare = Fare::factory()->create();
@@ -473,7 +466,7 @@ final class FinanceTest extends TestCase
      * Test getting the fares from the flight svc. Have a few base fares
      * and then override some of them
      */
-    public function testGetFaresWithOverrides(): void
+    public function test_get_fares_with_overrides(): void
     {
         $flight = Flight::factory()->create();
         $subfleet = Subfleet::factory()->create();
@@ -527,7 +520,7 @@ final class FinanceTest extends TestCase
         }
     }
 
-    public function testGetFaresNoFlightOverrides(): void
+    public function test_get_fares_no_flight_overrides(): void
     {
         $subfleet = Subfleet::factory()->create();
         [$fare1, $fare2, $fare3] = Fare::factory()->count(3)->create();
@@ -571,7 +564,7 @@ final class FinanceTest extends TestCase
     /**
      * Get the pilot pay, derived from the rank
      */
-    public function testGetPilotPayNoOverride(): void
+    public function test_get_pilot_pay_no_override(): void
     {
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
@@ -594,7 +587,7 @@ final class FinanceTest extends TestCase
     /**
      * Get the pilot pay, but include different overrides
      */
-    public function testGetPilotPayWithOverride(): void
+    public function test_get_pilot_pay_with_override(): void
     {
         $acars_pay_rate = 100;
 
@@ -645,7 +638,7 @@ final class FinanceTest extends TestCase
     /**
      * Get the payment for a pilot
      */
-    public function testGetPirepPilotPay(): void
+    public function test_get_pirep_pilot_pay(): void
     {
         $acars_pay_rate = 100;
 
@@ -683,7 +676,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testGetPirepPilotPayWithFixedPrice(): void
+    public function test_get_pirep_pilot_pay_with_fixed_price(): void
     {
         $acars_pay_rate = 100;
 
@@ -727,7 +720,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function testJournalOperations(): void
+    public function test_journal_operations(): void
     {
         $journalRepo = app(JournalRepository::class);
 
@@ -781,7 +774,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPirepFares(): void
+    public function test_pirep_fares(): void
     {
         [$user, $pirep, $fares] = $this->createFullPirep();
 
@@ -811,7 +804,7 @@ final class FinanceTest extends TestCase
     /**
      * Test that all expenses are pulled properly
      */
-    public function testPirepExpenses(): void
+    public function test_pirep_expenses(): void
     {
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
@@ -873,7 +866,7 @@ final class FinanceTest extends TestCase
         $this->assertEquals($obj->id, $expense->ref_model_id);
     }
 
-    public function testAirportExpenses(): void
+    public function test_airport_expenses(): void
     {
         /** @var Airport $apt1 */
         $apt1 = Airport::factory()->create();
@@ -914,7 +907,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPirepFinances(): void
+    public function test_pirep_finances(): void
     {
         $journalRepo = app(JournalRepository::class);
 
@@ -971,7 +964,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPirepFinancesSpecificExpense(): void
+    public function test_pirep_finances_specific_expense(): void
     {
         $journalRepo = app(JournalRepository::class);
 
@@ -1093,7 +1086,7 @@ final class FinanceTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPirepFinancesExpensesMultiAirline(): void
+    public function test_pirep_finances_expenses_multi_airline(): void
     {
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
@@ -1186,7 +1179,7 @@ final class FinanceTest extends TestCase
     /**
      * Test that all expenses are pulled properly
      */
-    public function testPirepExpensesNightly()
+    public function test_pirep_expenses_nightly()
     {
         /** @var JournalRepository $journalRepo */
         $journalRepo = app(JournalRepository::class);

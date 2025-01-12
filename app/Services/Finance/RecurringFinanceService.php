@@ -20,14 +20,12 @@ class RecurringFinanceService extends Service
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Determine the journal to charge to, otherwise, it's charged
      * to every airline journal
      *
-     * @param Expense $expense
      *
      * @return Journal[]
      */
@@ -50,10 +48,6 @@ class RecurringFinanceService extends Service
 
     /**
      * Get the name of the transaction group from the expense
-     *
-     * @param Expense $expense
-     *
-     * @return array
      */
     protected function getMemoAndGroup(Expense $expense): array
     {
@@ -88,7 +82,6 @@ class RecurringFinanceService extends Service
     /**
      * Run all of the daily expense/financials
      *
-     * @param string $type
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
@@ -129,6 +122,7 @@ class RecurringFinanceService extends Service
 
                 if ($found > 0) {
                     Log::info('Expense "'.$expense->name.'" already charged for today, skipping');
+
                     continue;
                 }
 
@@ -144,6 +138,7 @@ class RecurringFinanceService extends Service
                         Log::info(
                             $type.' id '.$expense->ref_model_id.' does not belong to airline id '.$expense->airline_id.', skipping expense "'.$expense->name.'"'
                         );
+
                         continue;
                     }
                 }

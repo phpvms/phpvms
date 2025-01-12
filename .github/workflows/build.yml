@@ -201,7 +201,7 @@ jobs:
     name: 'Create docker image'
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))
+    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev')
     permissions:
       contents: read
       packages: write
@@ -235,7 +235,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=edge,branch=dev
             type=ref,event=branch
+            type=sha,enable=false
 
       - name: Build and push
         id: push

@@ -21,9 +21,6 @@ class ForgotPasswordController extends Controller
         $this->middleware('guest');
     }
 
-    /**
-     * @return View
-     */
     public function showLinkRequestForm(): View
     {
         return view('auth.passwords.email');

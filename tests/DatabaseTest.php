@@ -11,7 +11,7 @@ final class DatabaseTest extends TestCase
     /**
      * Make sure the seeder works correctly
      */
-    public function testSeeder(): void
+    public function test_seeder(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
@@ -36,7 +36,7 @@ final class DatabaseTest extends TestCase
         $this->assertEquals('changed', $value);
     }
 
-    public function testSeederValueIgnoreValue(): void
+    public function test_seeder_value_ignore_value(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
@@ -55,7 +55,7 @@ final class DatabaseTest extends TestCase
         $this->assertEquals('default', $value);
     }
 
-    public function testSeederDontIgnoreValue(): void
+    public function test_seeder_dont_ignore_value(): void
     {
         /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));

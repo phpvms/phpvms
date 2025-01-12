@@ -13,6 +13,7 @@ use App\Support\Money;
 class PirepImporter extends BaseImporter
 {
     protected $table = 'pireps';
+
     protected $idField = 'pirepid';
 
     public function run($start = 0)
@@ -115,9 +116,9 @@ class PirepImporter extends BaseImporter
             $w = ['id' => $pirep_id];
 
             $pirep = Pirep::updateOrCreate($w, $attrs);
-            //$pirep = Pirep::create(array_merge($w, $attrs));
+            // $pirep = Pirep::create(array_merge($w, $attrs));
 
-            //Log::debug('pirep oldid='.$pirep_id.', olduserid='.$row->pilotid
+            // Log::debug('pirep oldid='.$pirep_id.', olduserid='.$row->pilotid
             //    .'; new id='.$pirep->id.', user id='.$user_id);
 
             $source = strtoupper($row->source);
@@ -212,8 +213,7 @@ class PirepImporter extends BaseImporter
      * Map the old state to the current
      * https://github.com/nabeelio/phpvms_v2/blob/master/core/app.config.php#L450
      *
-     * @param int $old_state
-     *
+     * @param  int $old_state
      * @return int
      */
     private function mapState($old_state)

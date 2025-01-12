@@ -38,9 +38,9 @@ class Subfleet extends Model
     use ExpensableTrait;
     use FilesTrait;
     use HasFactory;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $fillable = [
         'airline_id',
@@ -86,9 +86,6 @@ class Subfleet extends Model
         'name',
     ];
 
-    /**
-     * @return Attribute
-     */
     public function type(): Attribute
     {
         return Attribute::make(
@@ -126,8 +123,6 @@ class Subfleet extends Model
     }
 
     /**
-     * @return HasOne
-     *
      * @deprecated use home()
      */
     public function hub(): HasOne

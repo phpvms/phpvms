@@ -12,8 +12,6 @@ class InviteLink extends Notification
 
     /**
      * Create a new notification instance.
-     *
-     * @param Invite $invite
      */
     public function __construct(
         private readonly Invite $invite
@@ -34,10 +32,6 @@ class InviteLink extends Notification
 
     /**
      * Get the array representation of the notification.
-     *
-     * @param $notifiable
-     *
-     * @return array
      */
     public function toArray($notifiable): array
     {

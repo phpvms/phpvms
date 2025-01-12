@@ -19,9 +19,6 @@ class UserFactory extends Factory
      */
     protected $model = User::class;
 
-    /**
-     * @var string
-     */
     private static string $password;
 
     /**

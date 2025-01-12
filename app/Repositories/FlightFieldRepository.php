@@ -14,9 +14,6 @@ class FlightFieldRepository extends Repository
         'name' => 'like',
     ];
 
-    /**
-     * @return string
-     */
     public function model(): string
     {
         return FlightField::class;

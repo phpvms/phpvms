@@ -7,7 +7,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 trait MailChannel
 {
     protected $mailSubject;
+
     protected $mailTemplate;
+
     protected $mailTemplateArgs;
 
     /**
@@ -27,8 +29,7 @@ trait MailChannel
     /**
      * Get the mail representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed                                          $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)

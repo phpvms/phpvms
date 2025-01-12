@@ -15,7 +15,6 @@ class RemoveExpiredBids extends Listener
     /**
      * Remove expired bids
      *
-     * @param CronHourly $event
      *
      * @throws \Exception
      */

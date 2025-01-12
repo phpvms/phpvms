@@ -9,9 +9,6 @@ use App\Models\Airport;
  */
 class AirportObserver
 {
-    /**
-     * @param Airport $airport
-     */
     public function creating(Airport $airport): void
     {
         if (filled($airport->iata)) {
@@ -22,9 +19,6 @@ class AirportObserver
         $airport->id = $airport->icao;
     }
 
-    /**
-     * @param Airport $airport
-     */
     public function updating(Airport $airport): void
     {
         if (filled($airport->iata)) {

@@ -9,6 +9,7 @@ use Symfony\Component\Yaml\Yaml;
 class PirepExport extends Command
 {
     protected $signature = 'phpvms:pirep-export {id}';
+
     protected $description = 'PIREP table export';
 
     /**

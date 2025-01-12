@@ -30,11 +30,10 @@ class PirepRepository extends Repository
      * Get all the pending reports in order. Returns the Pirep
      * model but you still need to call ->all() or ->paginate()
      *
-     * @param User|null $user
      *
      * @return Pirep
      */
-    public function getPending(User $user = null)
+    public function getPending(?User $user = null)
     {
         $where = [];
         if ($user !== null) {
@@ -49,11 +48,10 @@ class PirepRepository extends Repository
     /**
      * Number of PIREPs that are pending
      *
-     * @param User|null $user
      *
      * @return mixed
      */
-    public function getPendingCount(User $user = null)
+    public function getPendingCount(?User $user = null)
     {
         $where = [
             'state' => PirepState::PENDING,

@@ -12,8 +12,6 @@ class SimBriefXML extends SimpleXMLElement
 {
     /**
      * Return a padded flight level
-     *
-     * @return string
      */
     public function getFlightLevel(): string
     {
@@ -35,6 +33,7 @@ class SimBriefXML extends SimpleXMLElement
     {
         if (!empty($this->fms_downloads->vms)) {
             $base_url = $this->fms_downloads->directory;
+
             return $base_url.$this->fms_downloads->vms->link;
         }
 
@@ -43,8 +42,6 @@ class SimBriefXML extends SimpleXMLElement
 
     /**
      * Retrieve all of the flightplans
-     *
-     * @return Collection
      */
     public function getFlightPlans(): Collection
     {
@@ -98,8 +95,6 @@ class SimBriefXML extends SimpleXMLElement
 
     /**
      * Get the route as a string
-     *
-     * @return string
      */
     public function getRouteString(): string
     {
@@ -117,8 +112,6 @@ class SimBriefXML extends SimpleXMLElement
 
     /**
      * Retrieve all of the image links
-     *
-     * @return Collection
      */
     public function getImages(): Collection
     {

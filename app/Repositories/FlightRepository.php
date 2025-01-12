@@ -40,11 +40,8 @@ class FlightRepository extends Repository implements CacheableInterface
     /**
      * Find a flight based on the given criterea
      *
-     * @param      $airline_id
-     * @param      $flight_num
-     * @param null $route_code
-     * @param null $route_leg
-     *
+     * @param  null  $route_code
+     * @param  null  $route_leg
      * @return mixed
      */
     public function findFlight($airline_id, $flight_num, $route_code = null, $route_leg = null)
@@ -69,12 +66,10 @@ class FlightRepository extends Repository implements CacheableInterface
     /**
      * Create the search criteria and return this with the stuff pushed
      *
-     * @param Request $request
-     * @param bool    $only_active
-     *
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
      *
      * @return $this
+     *
+     * @throws \Prettus\Repository\Exceptions\RepositoryException
      */
     public function searchCriteria(Request $request, bool $only_active = true): self
     {

@@ -11,17 +11,13 @@ use App\Services\DatabaseService;
 class YamlImport extends Command
 {
     protected $signature = 'phpvms:yaml-import {files*}';
+
     protected $description = 'Developer commands';
 
-    /**
-     * @var DatabaseService
-     */
     protected DatabaseService $dbSvc;
 
     /**
      * YamlImport constructor.
-     *
-     * @param DatabaseService $dbSvc
      */
     public function __construct(DatabaseService $dbSvc)
     {

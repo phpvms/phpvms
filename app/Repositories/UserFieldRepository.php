@@ -12,9 +12,6 @@ class UserFieldRepository extends Repository
         'name' => 'like',
     ];
 
-    /**
-     * @return string
-     */
     public function model(): string
     {
         return UserField::class;
@@ -22,8 +19,6 @@ class UserFieldRepository extends Repository
 
     /**
      * Return whether or not this field is in use by a value
-     *
-     * @param $id
      */
     public function isInUse($id): bool
     {
