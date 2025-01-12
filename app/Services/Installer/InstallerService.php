@@ -11,8 +11,7 @@ class InstallerService extends Service
     public function __construct(
         private readonly MigrationService $migrationSvc,
         private readonly SeederService $seederSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Check to see if there is an upgrade pending by checking the migrations or seeds.

@@ -43,8 +43,7 @@ class PirepController extends Controller
         private readonly PirepService $pirepSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Dropdown with aircraft grouped by subfleet.

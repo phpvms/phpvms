@@ -18,8 +18,7 @@ class OAuthController extends Controller
 {
     public function __construct(
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     public function redirectToProvider(string $provider): RedirectResponse
     {
