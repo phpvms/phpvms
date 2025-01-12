@@ -6,7 +6,9 @@ use App\Models\Expense;
 
 trait ExpensableTrait
 {
-    public static function bootExpensableTrait() {}
+    public static function bootExpensableTrait()
+    {
+    }
 
     /**
      * Morph to Expenses.

@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Add a SimBrief Type to subfleet.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::table('subfleets', function (Blueprint $table) {

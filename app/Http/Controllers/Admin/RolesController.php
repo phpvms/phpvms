@@ -23,7 +23,8 @@ class RolesController extends Controller
         private readonly PermissionsRepository $permsRepo,
         private readonly RoleRepository $rolesRepo,
         private readonly RoleService $roleSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Airlines.
