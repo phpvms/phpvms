@@ -27,8 +27,7 @@ class SeederService extends Service
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
-    ) {
-    }
+    ) {}
 
     /**
      * See if there are any seeds that are out of sync.

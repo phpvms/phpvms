@@ -30,8 +30,7 @@ class FareController extends Controller
     public function __construct(
         private readonly FareRepository $fareRepo,
         private readonly ImportService $importSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the Fare.

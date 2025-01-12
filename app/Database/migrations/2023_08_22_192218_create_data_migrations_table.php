@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 // Add events table and update flights & pirep tables for references
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up()
     {
         // Create events table

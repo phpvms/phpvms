@@ -22,8 +22,7 @@ class AirframeController extends Controller
 {
     public function __construct(
         private readonly AirframeRepository $airframeRepo
-    ) {
-    }
+    ) {}
 
     /**
      * @throws RepositoryException
