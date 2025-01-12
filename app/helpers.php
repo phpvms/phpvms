@@ -152,7 +152,8 @@ if (!function_exists('setting')) {
     /**
      * Read a setting from the settings table.
      *
-     * @param  mixed      $default
+     * @param mixed $default
+     *
      * @return mixed|null
      */
     function setting($key, $default = null)
@@ -201,7 +202,8 @@ if (!function_exists('kvp')) {
     /**
      * Read a setting from the KVP repository.
      *
-     * @param  string|null $default
+     * @param string|null $default
+     *
      * @return mixed|null
      */
     function kvp(string $key, $default = null)
@@ -316,7 +318,8 @@ if (!function_exists('show_date')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone.
      *
-     * @param  string $default_timezone Default timezone to use, defaults to UTC
+     * @param string $default_timezone Default timezone to use, defaults to UTC
+     *
      * @return string
      */
     function show_date(Carbon $date, $default_timezone = 'UTC')
@@ -338,8 +341,9 @@ if (!function_exists('show_datetime_format')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone.
      *
-     * @param  string $format
-     * @param  string $default_timezone A default timezone to use (UTC by default)
+     * @param string $format
+     * @param string $default_timezone A default timezone to use (UTC by default)
+     *
      * @return string
      */
     function show_datetime_format(Carbon $date, $format, $default_timezone = 'UTC')
@@ -369,8 +373,9 @@ if (!function_exists('_fmt')) {
     /**
      * Replace strings.
      *
-     * @param        $line    "Hi, my name is :name"
-     * @param  array $replace ['name' => 'Nabeel']
+     * @param       $line    "Hi, my name is :name"
+     * @param array $replace ['name' => 'Nabeel']
+     *
      * @return mixed
      */
     function _fmt($line, array $replace)
@@ -396,7 +401,8 @@ if (!function_exists('docs_link')) {
     /**
      * Return a link to the docs.
      *
-     * @param  string $key Key from phpvms.config.docs
+     * @param string $key Key from phpvms.config.docs
+     *
      * @return string
      */
     function docs_link($key)
@@ -409,7 +415,8 @@ if (!function_exists('check_module')) {
     /**
      * Check if a module is installed and active.
      *
-     * @param  string $module_name
+     * @param string $module_name
+     *
      * @return bool
      */
     function check_module($module_name)
@@ -424,7 +431,8 @@ if (!function_exists('decode_days')) {
     /**
      * Decode days of flights for schedule display.
      *
-     * @param  int    $flight_days
+     * @param int $flight_days
+     *
      * @return string Monday, Tuesday, Friday, Sunday
      */
     function decode_days($flight_days)
