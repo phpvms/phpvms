@@ -1064,28 +1064,46 @@ return new class() extends Migration
 
         if (Schema::hasTable('permission_role')) {
             Schema::table('permission_role', function (Blueprint $table) {
-                $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
-                    'cascade'
-                )->onDelete('cascade');
-                $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
-                    'cascade'
-                )->onDelete('cascade');
+                // Check if the foreign key already exists
+                // Will have to be changed during Laravel 11 upgrade
+                // See https://github.com/laravel/framework/discussions/43443
+                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('permission_role');
+
+                if (!$doctrineTable->hasForeignKey('permission_role_permission_id_foreign')) {
+                    $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
+
+                if (!$doctrineTable->hasForeignKey('permission_role_role_id_foreign')) {
+                    $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
             });
         }
 
         if (Schema::hasTable('permission_user')) {
             Schema::table('permission_user', function (Blueprint $table) {
-                $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
-                    'cascade'
-                )->onDelete('cascade');
+                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('permission_user');
+
+                if (!$doctrineTable->hasForeignKey('permission_user_permission_id_foreign')) {
+                    $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
             });
         }
 
         if (Schema::hasTable('role_user')) {
             Schema::table('role_user', function (Blueprint $table) {
-                $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
-                    'cascade'
-                )->onDelete('cascade');
+                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('role_user');
+
+                if (!$doctrineTable->hasForeignKey('role_user_role_id_foreign')) {
+                    $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
             });
         }
     }
