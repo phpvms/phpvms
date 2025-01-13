@@ -11,7 +11,7 @@ use function get_class;
 class AwardService extends Service
 {
     /**
-     * Find any of the award classes
+     * Find any of the award classes.
      *
      * @return \App\Contracts\Award[]
      */

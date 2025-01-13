@@ -6,7 +6,7 @@ use App\Contracts\ImportExport;
 use App\Models\Airport;
 
 /**
- * Import airports
+ * Import airports.
  */
 class AirportImporter extends ImportExport
 {
@@ -14,7 +14,7 @@ class AirportImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part
+     * Should match the database fields, for the most part.
      */
     public static $columns = [
         'icao'                 => 'required',
@@ -36,7 +36,7 @@ class AirportImporter extends ImportExport
     ];
 
     /**
-     * Import a flight, parse out the different rows
+     * Import a flight, parse out the different rows.
      *
      * @param int $index
      */

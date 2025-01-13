@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class UpdateSimbriefData extends Listener
 {
     /**
-     * Update SimBrief Support Data
+     * Update SimBrief Support Data.
      *
      *
      * @throws \UnexpectedValueException

@@ -75,7 +75,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Check the database connection
+     * Check the database connection.
      */
     public function dbtest(Request $request): View
     {
@@ -96,7 +96,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Check if any of the items has been marked as failed
+     * Check if any of the items has been marked as failed.
      */
     protected function allPassed(array $arr): bool
     {
@@ -110,7 +110,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 1. Check the modules and permissions
+     * Step 1. Check the modules and permissions.
      */
     public function step1(): View
     {
@@ -137,7 +137,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 2. Database Setup
+     * Step 2. Database Setup.
      */
     public function step2(): View
     {
@@ -149,7 +149,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 2a. Create the .env
+     * Step 2a. Create the .env.
      */
     public function envsetup(Request $request): RedirectResponse
     {
@@ -206,7 +206,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 2b. Setup the database
+     * Step 2b. Setup the database.
      */
     public function dbsetup(): RedirectResponse|View
     {
@@ -233,7 +233,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 3. Setup the admin user and initial settings
+     * Step 3. Setup the admin user and initial settings.
      */
     public function step3(): View
     {
@@ -243,7 +243,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Step 3 submit
+     * Step 3 submit.
      *
      *
      * @throws RuntimeException
@@ -267,7 +267,7 @@ class InstallerController extends Controller
         }
 
         /**
-         * Create the first airline
+         * Create the first airline.
          */
         $attrs = [
             'icao'    => $request->get('airline_icao'),
@@ -308,7 +308,7 @@ class InstallerController extends Controller
     }
 
     /**
-     * Final step
+     * Final step.
      *
      * @return RedirectResponse|Redirector
      */

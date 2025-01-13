@@ -7,13 +7,14 @@ use App\Services\VersionService;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Class StatusController
+ * Class StatusController.
  */
 class StatusController extends Controller
 {
     public function __construct(
         private readonly VersionService $versionSvc
-    ) {}
+    ) {
+    }
 
     public function status(): JsonResponse
     {

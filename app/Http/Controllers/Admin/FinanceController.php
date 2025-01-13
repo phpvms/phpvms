@@ -14,10 +14,11 @@ class FinanceController extends Controller
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Display the summation tables for a given month by airline
+     * Display the summation tables for a given month by airline.
      *
      *
      * @throws \UnexpectedValueException
@@ -42,9 +43,11 @@ class FinanceController extends Controller
     }
 
     /**
-     * Show a month
+     * Show a month.
      *
      * @param mixed $id
      */
-    public function show($id) {}
+    public function show($id)
+    {
+    }
 }

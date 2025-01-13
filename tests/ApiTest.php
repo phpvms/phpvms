@@ -18,7 +18,7 @@ use Exception;
 use function random_int;
 
 /**
- * Test API calls and authentication, etc
+ * Test API calls and authentication, etc.
  */
 final class ApiTest extends TestCase
 {
@@ -29,7 +29,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Ensure authentication against the API works
+     * Ensure authentication against the API works.
      */
     public function test_api_authentication(): void
     {
@@ -74,7 +74,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Test getting the news from the API
+     * Test getting the news from the API.
      */
     public function test_get_news(): void
     {
@@ -182,7 +182,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Make sure the airport data is returned
+     * Make sure the airport data is returned.
      */
     public function test_airport_request(): void
     {
@@ -198,7 +198,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Make sure the airport data is returned
+     * Make sure the airport data is returned.
      */
     public function test_airport_request5_char(): void
     {
@@ -216,7 +216,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Get all the airports, test the pagination
+     * Get all the airports, test the pagination.
      */
     public function test_get_all_airports(): void
     {
@@ -242,7 +242,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Test getting the subfleets
+     * Test getting the subfleets.
      *
      * @throws Exception
      */
@@ -287,7 +287,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Test getting an aircraft
+     * Test getting an aircraft.
      */
     public function test_get_aircraft(): void
     {
@@ -313,7 +313,7 @@ final class ApiTest extends TestCase
         ]);
 
         /**
-         * Just try retrieving by ID
+         * Just try retrieving by ID.
          */
         $resp = $this->get('/api/fleet/aircraft/'.$aircraft->id);
         $body = $resp->json()['data'];
@@ -375,7 +375,7 @@ final class ApiTest extends TestCase
     }
 
     /**
-     * Test that the web cron runs
+     * Test that the web cron runs.
      */
     public function test_web_cron(): void
     {

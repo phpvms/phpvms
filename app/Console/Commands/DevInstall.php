@@ -6,7 +6,7 @@ use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
 
 /**
- * Create a fresh development install
+ * Create a fresh development install.
  */
 class DevInstall extends Command
 {
@@ -24,7 +24,7 @@ class DevInstall extends Command
     }
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */
@@ -51,7 +51,7 @@ class DevInstall extends Command
     }
 
     /**
-     * Rewrite the configuration files
+     * Rewrite the configuration files.
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */

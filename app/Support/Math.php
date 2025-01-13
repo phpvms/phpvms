@@ -3,13 +3,13 @@
 namespace App\Support;
 
 /**
- * Helper math
+ * Helper math.
  */
 class Math
 {
     /**
      * Determine from the base rate, if we want to return the overridden rate
-     * or if the overridden rate is a percentage, then return that amount
+     * or if the overridden rate is a percentage, then return that amount.
      */
     public static function applyAmountOrPercent($base_rate, $override_rate = null): ?float
     {
@@ -27,7 +27,7 @@ class Math
     }
 
     /**
-     * Apply a percentage to a number
+     * Apply a percentage to a number.
      */
     public static function getPercent($number, $percent): float
     {

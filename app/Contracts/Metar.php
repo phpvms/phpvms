@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Base class for implementing retrieving METARs
+ * Base class for implementing retrieving METARs.
  */
 abstract class Metar
 {
     /**
      * Implement retrieving the METAR - return the METAR string. Needs to be protected,
      * since this shouldn't be directly called. Call `metar($icao)`. If not implemented,
-     * return a blank string
+     * return a blank string.
      *
      *
      * @return mixed
@@ -22,7 +22,7 @@ abstract class Metar
 
     /**
      * Implement retrieving the TAF - return the string. Call `taf($icao)`. If not implemented,
-     * return a blank string
+     * return a blank string.
      *
      *
      * @return mixed
@@ -30,7 +30,7 @@ abstract class Metar
     abstract protected function get_taf($icao): string;
 
     /**
-     * Download the METAR, wrap in caching
+     * Download the METAR, wrap in caching.
      */
     public function metar($icao): string
     {
@@ -60,7 +60,7 @@ abstract class Metar
     }
 
     /**
-     * Download the TAF, wrap in caching
+     * Download the TAF, wrap in caching.
      */
     public function taf($icao): string
     {

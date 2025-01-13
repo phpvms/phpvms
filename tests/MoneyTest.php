@@ -7,7 +7,7 @@ use App\Support\Money;
 final class MoneyTest extends TestCase
 {
     /**
-     * Test adding/subtracting a percentage
+     * Test adding/subtracting a percentage.
      */
     public function test_money(): void
     {

@@ -22,10 +22,11 @@ class DiversionHandler extends Listener // implements ShouldQueue
     public function __construct(
         private readonly FlightService $flightSvc,
         private readonly PirepService $pirepSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * When a PIREP is filed, check for diversion
+     * When a PIREP is filed, check for diversion.
      */
     public function onPirepFiled(PirepFiled $event): void
     {
@@ -33,7 +34,7 @@ class DiversionHandler extends Listener // implements ShouldQueue
     }
 
     /**
-     * Every night, remove expired re-position flights
+     * Every night, remove expired re-position flights.
      */
     public function onCronNightly(CronNightly $event): void
     {

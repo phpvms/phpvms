@@ -23,7 +23,8 @@ class MaintenanceController extends Controller
         private readonly KvpRepository $kvpRepo,
         private readonly VersionService $versionSvc,
         private readonly SeederService $seederSvc,
-    ) {}
+    ) {
+    }
 
     public function index(): View
     {
@@ -41,7 +42,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Clear caches depending on the type passed in
+     * Clear caches depending on the type passed in.
      */
     public function cache(Request $request): RedirectResponse
     {
@@ -91,7 +92,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Force an update check
+     * Force an update check.
      */
     public function forcecheck(Request $request): RedirectResponse
     {
@@ -112,7 +113,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Run the module reseeding tasks
+     * Run the module reseeding tasks.
      */
     public function reseed(Request $request): RedirectResponse
     {
@@ -122,7 +123,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Enable the cron, or if it's enabled, change the ID that is used
+     * Enable the cron, or if it's enabled, change the ID that is used.
      */
     public function cron_enable(Request $request): RedirectResponse
     {
@@ -135,7 +136,7 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Disable the web cron
+     * Disable the web cron.
      */
     public function cron_disable(Request $request): RedirectResponse
     {

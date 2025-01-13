@@ -15,7 +15,8 @@ class PagesController extends Controller
 {
     public function __construct(
         private readonly PageRepository $pageRepo
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View
     {
@@ -51,7 +52,7 @@ class PagesController extends Controller
     }
 
     /**
-     * Display the specified page
+     * Display the specified page.
      */
     public function show(int $id): View
     {
@@ -69,7 +70,7 @@ class PagesController extends Controller
     }
 
     /**
-     * Show the form for editing the specified pages
+     * Show the form for editing the specified pages.
      */
     public function edit(int $id): RedirectResponse|View
     {

@@ -5,7 +5,7 @@ namespace App\Models\Observers;
 use App\Models\Subfleet;
 
 /**
- * Class SubfleetObserver
+ * Class SubfleetObserver.
  */
 class SubfleetObserver
 {

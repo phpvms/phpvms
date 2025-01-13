@@ -16,10 +16,11 @@ class SettingsController extends Controller
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * Get a list of themes formatted for a select box
+     * Get a list of themes formatted for a select box.
      */
     private function getThemes(): array
     {
@@ -37,7 +38,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * Return the currency list
+     * Return the currency list.
      */
     private function getCurrencyList(): array
     {
@@ -51,7 +52,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * Display the settings. Group them by the setting group
+     * Display the settings. Group them by the setting group.
      */
     public function index(): View
     {

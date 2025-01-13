@@ -14,7 +14,7 @@ use Nwidart\Modules\Module;
 class DatabaseActivator implements ActivatorInterface
 {
     /**
-     * Laravel config instance
+     * Laravel config instance.
      *
      * @var Config
      */
@@ -40,7 +40,7 @@ class DatabaseActivator implements ActivatorInterface
     protected $paths = [];
 
     /**
-     * Array of modules activation statuses
+     * Array of modules activation statuses.
      *
      * @var array
      */
@@ -72,7 +72,7 @@ class DatabaseActivator implements ActivatorInterface
     }
 
     /**
-     * Get modules statuses, from the database
+     * Get modules statuses, from the database.
      */
     private function getModulesStatuses(): array
     {

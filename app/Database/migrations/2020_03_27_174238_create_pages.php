@@ -7,10 +7,9 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Create the pages
- * https://github.com/nabeelio/phpvms/issues/641
+ * https://github.com/nabeelio/phpvms/issues/641.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::create('pages', function (Blueprint $table) {

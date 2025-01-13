@@ -174,7 +174,7 @@ return [
          */
         'handlers' => [
             /**
-             * Aborts the execution with a 403 code and allows you to provide the response text
+             * Aborts the execution with a 403 code and allows you to provide the response text.
              */
             'abort' => [
                 'code'    => 403,

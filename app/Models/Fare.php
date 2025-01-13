@@ -65,7 +65,7 @@ class Fare extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function subfleets(): BelongsToMany
     {

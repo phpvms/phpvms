@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class NavdataRepository
+ * Class NavdataRepository.
  */
 class NavdataRepository extends Repository implements CacheableInterface
 {

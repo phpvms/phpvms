@@ -11,13 +11,14 @@ use Illuminate\Support\Str;
 class FileService extends Service
 {
     /**
-     * Save a file to disk and return a File asset
+     * Save a file to disk and return a File asset.
      *
-     * @param  \Illuminate\Http\UploadedFile $file
-     * @param  string                        $folder
-     * @return File
+     * @param \Illuminate\Http\UploadedFile $file
+     * @param string                        $folder
      *
      * @throws \Hashids\HashidsException
+     *
+     * @return File
      */
     public function saveFile($file, $folder, array $attrs)
     {
@@ -49,7 +50,7 @@ class FileService extends Service
     }
 
     /**
-     * Remove a file, if it exists on disk
+     * Remove a file, if it exists on disk.
      *
      * @param File $file
      *

@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Handler for PIREP events
+ * Handler for PIREP events.
  */
 class PirepEventsHandler extends Listener // implements ShouldQueue
 {
@@ -20,7 +20,9 @@ class PirepEventsHandler extends Listener // implements ShouldQueue
     ];
 
     /**
-     * Called when a PIREP is prefiled
+     * Called when a PIREP is prefiled.
      */
-    public function onPirepPrefile(PirepPrefiled $event) {}
+    public function onPirepPrefile(PirepPrefiled $event)
+    {
+    }
 }

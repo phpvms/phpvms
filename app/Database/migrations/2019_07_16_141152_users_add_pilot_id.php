@@ -10,10 +10,9 @@ use Illuminate\Support\Facades\Schema;
  * 1. Add an `pilot_id` column, which will get populated with the current ID
  * 2. Drop the `id` column, and then recreate it as a string field
  * 3. Iterate through all of the users and set their `id` to the `pilot_id`
- * 4. Change the other tables column types that reference `user_id`
+ * 4. Change the other tables column types that reference `user_id`.
  */
-return new class() extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::table('users', static function (Blueprint $table) {

@@ -49,7 +49,7 @@ class Page extends Model
     ];
 
     /**
-     * Return the full URL to this page; determines if it's internal or external
+     * Return the full URL to this page; determines if it's internal or external.
      *
      * @throws \App\Exceptions\UnknownPageType
      */

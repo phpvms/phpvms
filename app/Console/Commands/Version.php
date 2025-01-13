@@ -20,7 +20,7 @@ class Version extends Command
     }
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      *
      * @throws \Symfony\Component\Yaml\Exception\ParseException
      */

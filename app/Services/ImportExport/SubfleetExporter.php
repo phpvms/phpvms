@@ -7,14 +7,14 @@ use App\Models\Flight;
 use App\Models\Subfleet;
 
 /**
- * The flight importer can be imported or export. Operates on rows
+ * The flight importer can be imported or export. Operates on rows.
  */
 class SubfleetExporter extends ImportExport
 {
     public $assetType = 'subfleet';
 
     /**
-     * Set the current columns and other setup
+     * Set the current columns and other setup.
      */
     public function __construct()
     {
@@ -22,7 +22,7 @@ class SubfleetExporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows
+     * Import a flight, parse out the different rows.
      *
      * @param Subfleet $subfleet
      */
@@ -42,7 +42,7 @@ class SubfleetExporter extends ImportExport
     }
 
     /**
-     * Return any custom fares that have been made to this flight
+     * Return any custom fares that have been made to this flight.
      */
     protected function getFares(Subfleet &$subfleet): string
     {
@@ -68,7 +68,7 @@ class SubfleetExporter extends ImportExport
     }
 
     /**
-     * Return any ranks that have been linked to this subfleet
+     * Return any ranks that have been linked to this subfleet.
      */
     protected function getRanks(Subfleet &$subfleet): string
     {
@@ -90,7 +90,7 @@ class SubfleetExporter extends ImportExport
     }
 
     /**
-     * Parse all of the subfields
+     * Parse all of the subfields.
      */
     protected function getFields(Flight &$flight): string
     {
@@ -103,7 +103,7 @@ class SubfleetExporter extends ImportExport
     }
 
     /**
-     * Create the list of subfleets that are associated here
+     * Create the list of subfleets that are associated here.
      */
     protected function getSubfleets(Flight &$flight): string
     {

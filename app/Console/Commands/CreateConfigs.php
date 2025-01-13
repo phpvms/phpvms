@@ -10,7 +10,7 @@ use DatabaseSeeder;
 use Illuminate\Support\Facades\App;
 
 /**
- * Create the config files
+ * Create the config files.
  */
 class CreateConfigs extends Command
 {
@@ -27,7 +27,7 @@ class CreateConfigs extends Command
     }
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */
@@ -44,7 +44,7 @@ class CreateConfigs extends Command
     }
 
     /**
-     * Rewrite the configuration files
+     * Rewrite the configuration files.
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */

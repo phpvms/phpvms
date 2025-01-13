@@ -25,9 +25,9 @@ class AircraftFactory extends Factory
     /**
      * Define the model's default state.
      *
-     * @return array<string, mixed>
-     *
      * @throws \Exception
+     *
+     * @return array<string, mixed>
      */
     public function definition(): array
     {

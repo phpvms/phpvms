@@ -478,7 +478,7 @@ class RouteServiceProvider extends ServiceProvider
             Route::post('subfleets/trashbin', 'SubfleetController@trashbin')->name('subfleets.trashbin')->middleware('ability:admin,fleet');
 
             /**
-             * USERS
+             * USERS.
              */
             Route::delete('users/{id}/award/{award_id}', 'UserController@destroy_user_award')
                 ->name('users.destroy_user_award')->middleware('ability:admin,users');

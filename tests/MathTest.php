@@ -10,7 +10,7 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 final class MathTest extends TestCase
 {
     /**
-     * Test adding/subtracting a percentage
+     * Test adding/subtracting a percentage.
      */
     public function test_add_percent(): void
     {

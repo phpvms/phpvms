@@ -47,7 +47,7 @@ class FareService extends Service
         $all_fares = $this->getAllFares($pirep->flight, $pirep->aircraft->subfleet);
         $all_fares->map(function ($fare, $_) use ($fares, $pirep) {
             /**
-             * See if there's match with the provided fares, so we can copy the information over
+             * See if there's match with the provided fares, so we can copy the information over.
              *
              * @var PirepFare $pirep_fare
              */
@@ -97,16 +97,17 @@ class FareService extends Service
 
     /**
      * Determine the correct fares to use between a subfleet and flight. You probably aren't
-     * looking to call this one directly, but instead, call getReconciledFaresForFlight()
+     * looking to call this one directly, but instead, call getReconciledFaresForFlight().
      *
      * @param Collection[Fare] $subfleet_fares The fare for a subfleet
      * @param Collection[Fare] $flight_fares   The fares on a flight
+     *
      * @return Collection[Fare] Collection of Fare
      */
     public function getFareWithOverrides($subfleet_fares, $flight_fares): Collection
     {
         /**
-         * Make sure we've got something in terms of fares on the subfleet or the flight
+         * Make sure we've got something in terms of fares on the subfleet or the flight.
          */
         if (empty($subfleet_fares) && empty($flight_fares)) {
             return collect();
@@ -114,7 +115,7 @@ class FareService extends Service
 
         /**
          * Check to see if there are any subfleet fares. This might only have fares on the
-         * flight, no matter how rare that might be
+         * flight, no matter how rare that might be.
          */
         if ($subfleet_fares === null || count($subfleet_fares) === 0) {
             return $flight_fares->map(function ($fare, $_) {
@@ -125,7 +126,7 @@ class FareService extends Service
         return $subfleet_fares->map(function ($sf_fare, $_) use ($flight_fares) {
             /**
              * Get the fare, using the subfleet's pivot values. This will return
-             * the fares with all the costs, etc, that are overridden for the given subfleet
+             * the fares with all the costs, etc, that are overridden for the given subfleet.
              */
             $fare = $this->getFareWithPivot($sf_fare, $sf_fare->pivot);
 
@@ -143,13 +144,13 @@ class FareService extends Service
 
             /**
              * Found an override on the flight for the given fare. Check to see if we
-             * have values there that can be used to override or act as a pivot
+             * have values there that can be used to override or act as a pivot.
              */
             $fare = $this->getFareWithPivot($fare, $flight_fare->pivot);
 
             /**
              * Finally return the fare that we have, it should have gone through the
-             * multiple levels of reconciliation that were required
+             * multiple levels of reconciliation that were required.
              */
             return $fare;
         });
@@ -157,7 +158,7 @@ class FareService extends Service
 
     /**
      * This will return the flight but all of the subfleets will have the corrected fares with the
-     * right amounts based on the pivots, and with the correct "inheritence" for the flights
+     * right amounts based on the pivots, and with the correct "inheritence" for the flights.
      */
     public function getReconciledFaresForFlight(Flight $flight): Flight
     {
@@ -178,10 +179,11 @@ class FareService extends Service
     }
 
     /**
-     * Get the fares for a particular flight, with the subfleet that is in use being passed in
+     * Get the fares for a particular flight, with the subfleet that is in use being passed in.
      *
-     * @param  Flight|null   $flight
-     * @param  Subfleet|null $subfleet
+     * @param Flight|null   $flight
+     * @param Subfleet|null $subfleet
+     *
      * @return Collection
      */
     public function getAllFares($flight, $subfleet)
@@ -200,7 +202,7 @@ class FareService extends Service
     }
 
     /**
-     * Get a fare with the proper prices/costs populated in the pivot
+     * Get a fare with the proper prices/costs populated in the pivot.
      *
      *
      * @return mixed
@@ -211,7 +213,7 @@ class FareService extends Service
     }
 
     /**
-     * Get the correct price of something supplied with the correct pivot
+     * Get the correct price of something supplied with the correct pivot.
      */
     public function getFareWithPivot(Fare $fare, Pivot $pivot): Fare
     {
@@ -263,7 +265,7 @@ class FareService extends Service
     }
 
     /**
-     * Attach a fare to an flight
+     * Attach a fare to an flight.
      *
      * @param array    set the price/cost/capacity
      */
@@ -298,7 +300,7 @@ class FareService extends Service
     }
 
     /**
-     * Attach a fare to a subfleet
+     * Attach a fare to a subfleet.
      *
      * @param array    set the price/cost/capacity
      */
@@ -320,7 +322,7 @@ class FareService extends Service
     }
 
     /**
-     * Delete the fare from a subfleet
+     * Delete the fare from a subfleet.
      *
      *
      * @return Subfleet|null|static
@@ -337,7 +339,7 @@ class FareService extends Service
 
     /**
      * Get the fares for a PIREP, this just returns the PirepFare
-     * model which includes the counts for that particular fare
+     * model which includes the counts for that particular fare.
      *
      *
      * @return Collection

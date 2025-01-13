@@ -65,7 +65,7 @@ final class UtilsTest extends TestCase
     }
 
     /**
-     * Simple test for KVP
+     * Simple test for KVP.
      */
     public function test_kvp(): void
     {

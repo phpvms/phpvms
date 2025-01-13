@@ -45,7 +45,7 @@ class ConfigService extends Service
     ];
 
     /**
-     * Create the .env file. This is called by an initial install
+     * Create the .env file. This is called by an initial install.
      *
      *
      * @throws FileException
@@ -69,7 +69,7 @@ class ConfigService extends Service
     /**
      * Rewrite the config files - this means mapping the values that are currently
      * loaded in the config and rewriting them into the env.php file, and then renaming
-     * the config.php files to config.bak.php
+     * the config.php files to config.bak.php.
      *
      * This is called from the migrations which removes the old config.php file
      */
@@ -122,7 +122,7 @@ class ConfigService extends Service
     }
 
     /**
-     * Update the environment file and update certain keys/values
+     * Update the environment file and update certain keys/values.
      *
      *
      * @return void
@@ -158,7 +158,7 @@ class ConfigService extends Service
     }
 
     /**
-     * Generate a fresh new APP_KEY
+     * Generate a fresh new APP_KEY.
      */
     protected function createAppKey(): string
     {
@@ -167,7 +167,7 @@ class ConfigService extends Service
 
     /**
      * Change a few options within the PDO driver, depending on the version
-     * of mysql/maria, etc used. ATM, only make a change for MariaDB
+     * of mysql/maria, etc used. ATM, only make a change for MariaDB.
      *
      *
      * @return mixed
@@ -197,7 +197,7 @@ class ConfigService extends Service
     }
 
     /**
-     * Determine is APC is installed, if so, then use it as a cache driver
+     * Determine is APC is installed, if so, then use it as a cache driver.
      *
      *
      * @return mixed
@@ -227,7 +227,7 @@ class ConfigService extends Service
 
     /**
      * Setup a queue driver that's not the default "sync"
-     * driver, if a database is being used
+     * driver, if a database is being used.
      *
      *
      * @return mixed
@@ -246,7 +246,7 @@ class ConfigService extends Service
     }
 
     /**
-     * Remove the config files
+     * Remove the config files.
      */
     public function removeConfigFiles()
     {
@@ -271,7 +271,7 @@ class ConfigService extends Service
     }
 
     /**
-     * Get the template file name and write it out
+     * Get the template file name and write it out.
      *
      *
      * @throws FileException

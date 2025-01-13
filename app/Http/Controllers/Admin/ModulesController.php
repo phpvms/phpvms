@@ -15,7 +15,8 @@ class ModulesController extends Controller
 {
     public function __construct(
         private readonly ModuleService $moduleSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Module.
@@ -75,7 +76,7 @@ class ModulesController extends Controller
     }
 
     /**
-     * Enabling Module Present in the Modules Folder
+     * Enabling Module Present in the Modules Folder.
      */
     public function enable(Request $request): RedirectResponse
     {

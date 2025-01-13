@@ -1,7 +1,7 @@
 <?php
 
 /**
- * These are for the cron tasks that run
+ * These are for the cron tasks that run.
  */
 
 return [

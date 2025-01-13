@@ -34,7 +34,7 @@ trait TestData
     }
 
     /**
-     * Create an admin user
+     * Create an admin user.
      */
     public function createAdminUser(array $attrs = []): User
     {
@@ -50,7 +50,7 @@ trait TestData
 
     /**
      * Create a new PIREP with a proper subfleet/rank/user and an
-     * aircraft that the user is allowed to fly
+     * aircraft that the user is allowed to fly.
      *
      * @param array $user_attrs  Additional attributes for the user
      * @param array $pirep_attrs Additional attributes for the PIREP
@@ -75,7 +75,7 @@ trait TestData
     }
 
     /**
-     * Create a rank and associate the given subfleet IDs with it
+     * Create a rank and associate the given subfleet IDs with it.
      *
      *
      * @return mixed
@@ -93,7 +93,7 @@ trait TestData
     }
 
     /**
-     * Add a single flight
+     * Add a single flight.
      *
      *
      * @return mixed
@@ -119,7 +119,7 @@ trait TestData
     }
 
     /**
-     * Add a given number of flights for a subfleet
+     * Add a given number of flights for a subfleet.
      */
     public function addFlightsForSubfleet($subfleet, $num_flights): Collection
     {
@@ -132,7 +132,7 @@ trait TestData
     }
 
     /**
-     * Create a subfleet with a number of aircraft assigned
+     * Create a subfleet with a number of aircraft assigned.
      */
     public function createSubfleetWithAircraft(?int $aircraft_count = null, ?string $airport_id = null): array
     {
@@ -157,7 +157,7 @@ trait TestData
     }
 
     /**
-     * Create a role
+     * Create a role.
      *
      * @param array $attrs Additional role attributes
      */

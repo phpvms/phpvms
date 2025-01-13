@@ -46,7 +46,8 @@ class SubfleetController extends Controller
         private readonly SubfleetRepository $subfleetRepo,
         private readonly TypeRatingRepository $typeratingRepo,
         private readonly FinanceService $financeSvc,
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the Subfleet.
@@ -67,7 +68,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Recycle Bin operations, either restore or permanently delete the object
+     * Recycle Bin operations, either restore or permanently delete the object.
      */
     public function trashbin(Request $request)
     {
@@ -236,7 +237,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Run the subfleet exporter
+     * Run the subfleet exporter.
      */
     public function export(Request $request): BinaryFileResponse
     {
@@ -268,7 +269,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Get all the fares that haven't been assigned to a given subfleet
+     * Get all the fares that haven't been assigned to a given subfleet.
      */
     protected function getAvailFares(Subfleet $subfleet): array
     {
@@ -287,7 +288,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Get the ranks that are available to the subfleet
+     * Get the ranks that are available to the subfleet.
      */
     protected function getAvailRanks(Subfleet $subfleet): array
     {
@@ -302,7 +303,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Get the type ratings that are available to the subfleet
+     * Get the type ratings that are available to the subfleet.
      */
     protected function getAvailTypeRatings(Subfleet $subfleet): array
     {
@@ -362,7 +363,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Operations for associating ranks to the subfleet
+     * Operations for associating ranks to the subfleet.
      *
      *
      * @throws \Exception
@@ -402,7 +403,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Operations on fares to the subfleet
+     * Operations on fares to the subfleet.
      */
     public function fares(int $id, Request $request): View
     {
@@ -437,7 +438,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Operations for associating ranks to the subfleet
+     * Operations for associating ranks to the subfleet.
      */
     public function ranks(int $id, Request $request): View
     {
@@ -475,7 +476,7 @@ class SubfleetController extends Controller
     }
 
     /**
-     * Operations for associating type ratings to the subfleet
+     * Operations for associating type ratings to the subfleet.
      */
     public function typeratings(int $id, Request $request): View
     {

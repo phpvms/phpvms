@@ -10,7 +10,7 @@ use App\Models\Subfleet;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Import expenses
+ * Import expenses.
  */
 class ExpenseImporter extends ImportExport
 {
@@ -18,7 +18,7 @@ class ExpenseImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part
+     * Should match the database fields, for the most part.
      */
     public static $columns = [
         'airline'        => 'nullable',
@@ -34,7 +34,7 @@ class ExpenseImporter extends ImportExport
     ];
 
     /**
-     * Import a flight, parse out the different rows
+     * Import a flight, parse out the different rows.
      *
      * @param int $index
      */
@@ -67,7 +67,7 @@ class ExpenseImporter extends ImportExport
     }
 
     /**
-     * See if this expense refers to a ref_model
+     * See if this expense refers to a ref_model.
      *
      *
      * @return array
