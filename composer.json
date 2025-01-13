@@ -101,7 +101,8 @@
         "nunomaduro/collision": "^v7.5.0",
         "phpunit/phpunit": "^10.5",
         "laravel/sail": "^1.23",
-        "laravel/pint": "^1.19"
+        "laravel/pint": "^1.19",
+        "kitloong/laravel-migrations-generator": "^7.0"
     },
     "autoload": {
         "classmap": [
