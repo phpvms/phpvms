@@ -13,31 +13,20 @@ return new class() extends Migration
     {
         if (!Schema::hasTable('migrations_data')) {
             Schema::create('migrations_data', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('migration');
                 $table->integer('batch');
             });
         }
 
-        if (!Schema::hasTable('settings')) {
-            Schema::create('settings', function (Blueprint $table) {
-                $table->string('id')->primary();
-                $table->unsignedInteger('offset')->default(0);
-                $table->unsignedInteger('order')->default(99);
-                $table->string('key')->index();
-                $table->string('name');
-                $table->string('value');
-                $table->string('default')->nullable();
-                $table->string('group')->nullable();
-                $table->string('type')->nullable();
-                $table->text('options')->nullable();
-                $table->string('description')->nullable();
-                $table->timestamps();
-            });
-        }
-
         if (!Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedBigInteger('pilot_id')->nullable()->unique();
                 $table->string('callsign')->nullable();
@@ -77,65 +66,11 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('pireps')) {
-            Schema::create('pireps', function (Blueprint $table) {
-                $table->string('id', 36)->primary();
-                $table->unsignedInteger('user_id')->index();
-                $table->unsignedInteger('airline_id');
-                $table->unsignedInteger('aircraft_id')->nullable();
-                $table->unsignedInteger('event_id')->nullable();
-                $table->string('flight_id', 36)->nullable();
-                $table->string('flight_number', 10)->nullable()->index();
-                $table->string('route_code', 5)->nullable();
-                $table->string('route_leg', 5)->nullable();
-                $table->char('flight_type', 1)->default('J');
-                $table->string('dpt_airport_id', 5)->index();
-                $table->string('arr_airport_id', 5)->index();
-                $table->string('alt_airport_id', 5)->nullable();
-                $table->unsignedInteger('level')->nullable();
-                $table->decimal('distance')->unsigned()->nullable();
-                $table->decimal('planned_distance')->unsigned()->nullable();
-                $table->unsignedInteger('flight_time')->nullable();
-                $table->unsignedInteger('planned_flight_time')->nullable();
-                $table->decimal('zfw')->unsigned()->nullable();
-                $table->decimal('block_fuel')->unsigned()->nullable();
-                $table->decimal('fuel_used')->unsigned()->nullable();
-                $table->decimal('landing_rate')->nullable();
-                $table->smallInteger('score')->nullable();
-                $table->text('route')->nullable();
-                $table->text('notes')->nullable();
-                $table->unsignedTinyInteger('source')->nullable()->default(0);
-                $table->string('source_name', 50)->nullable();
-                $table->unsignedSmallInteger('state')->default(1);
-                $table->char('status', 3)->default('SCH');
-                $table->dateTime('submitted_at')->nullable();
-                $table->dateTime('block_off_time')->nullable();
-                $table->dateTime('block_on_time')->nullable();
-                $table->timestamps();
-                $table->softDeletes();
-            });
-        }
-
-        if (!Schema::hasTable('ranks')) {
-            Schema::create('ranks', function (Blueprint $table) {
-                $table->increments('id');
-                $table->string('name', 50)->unique();
-                $table->string('image_url')->nullable();
-                $table->unsignedInteger('hours')->default(0);
-                $table->decimal('acars_base_pay_rate')->unsigned()->nullable()->default(0);
-                $table->decimal('manual_base_pay_rate')->unsigned()->nullable()->default(0);
-                $table->boolean('auto_approve_acars')->nullable()->default(false);
-                $table->boolean('auto_approve_manual')->nullable()->default(false);
-                $table->boolean('auto_promote')->nullable()->default(true);
-                $table->boolean('auto_approve_above_score')->nullable()->default(false);
-                $table->smallInteger('auto_approve_score')->nullable();
-                $table->timestamps();
-                $table->softDeletes();
-            });
-        }
-
         if (!Schema::hasTable('acars')) {
             Schema::create('acars', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 36)->primary();
                 $table->string('pirep_id', 36)->index();
                 $table->unsignedTinyInteger('type');
@@ -160,12 +95,15 @@ return new class() extends Migration
                 $table->string('sim_time')->nullable();
                 $table->timestamp('created_at')->nullable()->index();
                 $table->timestamp('updated_at')->nullable();
-                $table->string('source', 5)->nullable();
+                $table->string('source', 5)->collation('latin1_swedish_ci')->nullable();
             });
         }
 
         if (!Schema::hasTable('activity_log')) {
             Schema::create('activity_log', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('log_name')->nullable()->index();
                 $table->text('description');
@@ -174,7 +112,7 @@ return new class() extends Migration
                 $table->char('subject_id', 36)->nullable();
                 $table->string('causer_type')->nullable();
                 $table->unsignedBigInteger('causer_id')->nullable();
-                $table->json('properties')->nullable();
+                $table->json('properties')->collation('utf8mb4_bin')->nullable();
                 $table->char('batch_uuid', 36)->nullable();
                 $table->timestamps();
 
@@ -185,6 +123,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('aircraft')) {
             Schema::create('aircraft', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('subfleet_id');
                 $table->string('icao', 4)->nullable();
@@ -213,6 +154,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('airlines')) {
             Schema::create('airlines', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('icao', 5)->index();
                 $table->string('iata', 5)->nullable()->index();
@@ -232,6 +176,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('airports')) {
             Schema::create('airports', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 4)->primary();
                 $table->string('iata', 5)->nullable()->index();
                 $table->string('icao', 5)->index();
@@ -255,6 +202,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('awards')) {
             Schema::create('awards', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name');
                 $table->text('description')->nullable();
@@ -269,6 +219,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('bids')) {
             Schema::create('bids', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('user_id')->index();
                 $table->string('flight_id', 36);
@@ -281,6 +234,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('events')) {
             Schema::create('events', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->integer('id')->primary();
                 $table->unsignedInteger('type')->default(0);
                 $table->string('name', 250);
@@ -294,6 +250,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('expenses')) {
             Schema::create('expenses', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('airline_id')->nullable();
                 $table->string('name');
@@ -313,6 +272,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('failed_jobs')) {
             Schema::create('failed_jobs', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->text('connection');
                 $table->text('queue');
@@ -324,6 +286,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('fares')) {
             Schema::create('fares', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('code', 50)->unique();
                 $table->string('name', 50);
@@ -340,6 +305,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('files')) {
             Schema::create('files', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 16)->primary();
                 $table->string('name');
                 $table->string('description')->nullable();
@@ -357,6 +325,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('flight_fare')) {
             Schema::create('flight_fare', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('flight_id', 36);
                 $table->unsignedInteger('fare_id');
                 $table->string('price', 10)->nullable();
@@ -370,6 +341,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('flight_field_values')) {
             Schema::create('flight_field_values', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('flight_id', 36)->index();
                 $table->string('name', 50);
@@ -381,6 +355,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('flight_fields')) {
             Schema::create('flight_fields', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name', 50);
                 $table->string('slug', 50)->nullable();
@@ -389,6 +366,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('flight_subfleet')) {
             Schema::create('flight_subfleet', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->unsignedInteger('subfleet_id');
                 $table->string('flight_id', 36);
@@ -400,6 +380,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('flights')) {
             Schema::create('flights', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 36)->primary();
                 $table->unsignedInteger('airline_id');
                 $table->unsignedInteger('flight_number')->index();
@@ -440,6 +423,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('invites')) {
             Schema::create('invites', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('email')->nullable();
                 $table->string('token');
@@ -452,6 +438,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('jobs')) {
             Schema::create('jobs', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('queue')->index();
                 $table->longText('payload');
@@ -462,23 +451,11 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('journals')) {
-            Schema::create('journals', function (Blueprint $table) {
-                $table->increments('id');
-                $table->unsignedInteger('ledger_id')->nullable();
-                $table->unsignedTinyInteger('type')->default(0);
-                $table->bigInteger('balance')->default(0);
-                $table->string('currency', 5);
-                $table->string('morphed_type')->nullable();
-                $table->unsignedBigInteger('morphed_id')->nullable();
-                $table->timestamps();
-
-                $table->index(['morphed_type', 'morphed_id']);
-            });
-        }
-
         if (!Schema::hasTable('journal_transactions')) {
             Schema::create('journal_transactions', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->char('id', 36)->unique();
                 $table->string('transaction_group')->nullable()->index();
                 $table->integer('journal_id')->index();
@@ -497,8 +474,29 @@ return new class() extends Migration
             });
         }
 
+        if (!Schema::hasTable('journals')) {
+            Schema::create('journals', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->increments('id');
+                $table->unsignedInteger('ledger_id')->nullable();
+                $table->unsignedTinyInteger('type')->default(0);
+                $table->bigInteger('balance')->default(0);
+                $table->string('currency', 5);
+                $table->string('morphed_type')->nullable();
+                $table->unsignedBigInteger('morphed_id')->nullable();
+                $table->timestamps();
+
+                $table->index(['morphed_type', 'morphed_id']);
+            });
+        }
+
         if (!Schema::hasTable('kvp')) {
             Schema::create('kvp', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('key')->index();
                 $table->string('value');
             });
@@ -506,6 +504,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('ledgers')) {
             Schema::create('ledgers', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name');
                 $table->enum('type', ['asset', 'liability', 'equity', 'income', 'expense']);
@@ -515,6 +516,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('modules')) {
             Schema::create('modules', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name');
                 $table->boolean('enabled')->default(true);
@@ -524,6 +528,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('navdata')) {
             Schema::create('navdata', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 5)->index();
                 $table->string('name', 24)->index();
                 $table->unsignedInteger('type');
@@ -537,6 +544,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('news')) {
             Schema::create('news', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('user_id');
                 $table->string('subject');
@@ -547,6 +557,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->char('id', 36)->primary();
                 $table->string('type');
                 $table->string('notifiable_type');
@@ -561,6 +574,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('pages')) {
             Schema::create('pages', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('name');
                 $table->string('slug')->index();
@@ -577,6 +593,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('password_resets')) {
             Schema::create('password_resets', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('email')->index();
                 $table->string('token')->index();
                 $table->timestamp('created_at')->nullable();
@@ -585,6 +604,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('permission_role')) {
             Schema::create('permission_role', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->unsignedInteger('permission_id');
                 $table->unsignedInteger('role_id')->index('permission_role_role_id_foreign');
 
@@ -594,6 +616,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('permission_user')) {
             Schema::create('permission_user', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->unsignedInteger('permission_id')->index(
                     'permission_user_permission_id_foreign'
                 );
@@ -606,6 +631,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name')->unique();
                 $table->string('display_name')->nullable();
@@ -616,6 +644,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('pirep_comments')) {
             Schema::create('pirep_comments', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('pirep_id', 36);
                 $table->unsignedInteger('user_id');
@@ -626,6 +657,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('pirep_fares')) {
             Schema::create('pirep_fares', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('pirep_id', 36)->index();
                 $table->unsignedBigInteger('fare_id')->nullable();
@@ -642,6 +676,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('pirep_field_values')) {
             Schema::create('pirep_field_values', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->string('pirep_id', 36)->index();
                 $table->string('name', 50);
@@ -654,6 +691,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('pirep_fields')) {
             Schema::create('pirep_fields', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name', 50);
                 $table->string('slug', 50)->nullable();
@@ -663,8 +703,74 @@ return new class() extends Migration
             });
         }
 
+        if (!Schema::hasTable('pireps')) {
+            Schema::create('pireps', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->string('id', 36)->primary();
+                $table->unsignedInteger('user_id')->index();
+                $table->unsignedInteger('airline_id');
+                $table->unsignedInteger('aircraft_id')->nullable();
+                $table->unsignedInteger('event_id')->nullable();
+                $table->string('flight_id', 36)->nullable();
+                $table->string('flight_number', 10)->nullable()->index();
+                $table->string('route_code', 5)->nullable();
+                $table->string('route_leg', 5)->nullable();
+                $table->char('flight_type', 1)->default('J');
+                $table->string('dpt_airport_id', 5)->index();
+                $table->string('arr_airport_id', 5)->index();
+                $table->string('alt_airport_id', 5)->nullable();
+                $table->unsignedInteger('level')->nullable();
+                $table->decimal('distance')->unsigned()->nullable();
+                $table->decimal('planned_distance')->unsigned()->nullable();
+                $table->unsignedInteger('flight_time')->nullable();
+                $table->unsignedInteger('planned_flight_time')->nullable();
+                $table->decimal('zfw')->unsigned()->nullable();
+                $table->decimal('block_fuel')->unsigned()->nullable();
+                $table->decimal('fuel_used')->unsigned()->nullable();
+                $table->decimal('landing_rate')->nullable();
+                $table->smallInteger('score')->nullable();
+                $table->text('route')->nullable();
+                $table->text('notes')->nullable();
+                $table->unsignedTinyInteger('source')->nullable()->default(0);
+                $table->string('source_name', 50)->nullable();
+                $table->unsignedSmallInteger('state')->default(1);
+                $table->char('status', 3)->default('SCH');
+                $table->dateTime('submitted_at')->nullable();
+                $table->dateTime('block_off_time')->nullable();
+                $table->dateTime('block_on_time')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        if (!Schema::hasTable('ranks')) {
+            Schema::create('ranks', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->increments('id');
+                $table->string('name', 50)->unique();
+                $table->string('image_url')->nullable();
+                $table->unsignedInteger('hours')->default(0);
+                $table->decimal('acars_base_pay_rate')->unsigned()->nullable()->default(0);
+                $table->decimal('manual_base_pay_rate')->unsigned()->nullable()->default(0);
+                $table->boolean('auto_approve_acars')->nullable()->default(false);
+                $table->boolean('auto_approve_manual')->nullable()->default(false);
+                $table->boolean('auto_promote')->nullable()->default(true);
+                $table->boolean('auto_approve_above_score')->nullable()->default(false);
+                $table->smallInteger('auto_approve_score')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
         if (!Schema::hasTable('role_user')) {
             Schema::create('role_user', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->unsignedInteger('role_id')->index('role_user_role_id_foreign');
                 $table->unsignedInteger('user_id');
                 $table->string('user_type');
@@ -675,6 +781,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name')->unique();
                 $table->string('display_name')->nullable();
@@ -687,6 +796,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id')->unique();
                 $table->unsignedInteger('user_id')->nullable()->index();
                 $table->string('ip_address', 45)->nullable();
@@ -696,8 +808,31 @@ return new class() extends Migration
             });
         }
 
+        if (!Schema::hasTable('settings')) {
+            Schema::create('settings', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->string('id')->primary();
+                $table->unsignedInteger('offset')->default(0);
+                $table->unsignedInteger('order')->default(99);
+                $table->string('key')->index();
+                $table->string('name');
+                $table->string('value');
+                $table->string('default')->nullable();
+                $table->string('group')->nullable();
+                $table->string('type')->nullable();
+                $table->text('options')->nullable();
+                $table->string('description')->nullable();
+                $table->timestamps();
+            });
+        }
+
         if (!Schema::hasTable('simbrief')) {
             Schema::create('simbrief', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id', 36)->primary();
                 $table->unsignedInteger('user_id');
                 $table->string('flight_id', 36)->nullable();
@@ -715,6 +850,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('simbrief_aircraft')) {
             Schema::create('simbrief_aircraft', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('icao');
                 $table->string('name');
@@ -725,6 +863,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('simbrief_airframes')) {
             Schema::create('simbrief_airframes', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('icao');
                 $table->string('name');
@@ -738,6 +879,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('simbrief_layouts')) {
             Schema::create('simbrief_layouts', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id');
                 $table->string('name');
                 $table->string('name_long');
@@ -747,6 +891,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('stats')) {
             Schema::create('stats', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->string('id')->primary();
                 $table->string('value');
                 $table->unsignedInteger('order');
@@ -756,8 +903,43 @@ return new class() extends Migration
             });
         }
 
+        if (!Schema::hasTable('subfleet_fare')) {
+            Schema::create('subfleet_fare', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->unsignedInteger('subfleet_id');
+                $table->unsignedInteger('fare_id');
+                $table->string('price')->nullable();
+                $table->string('cost')->nullable();
+                $table->string('capacity')->nullable();
+                $table->timestamps();
+
+                $table->primary(['subfleet_id', 'fare_id']);
+                $table->index(['fare_id', 'subfleet_id']);
+            });
+        }
+
+        if (!Schema::hasTable('subfleet_rank')) {
+            Schema::create('subfleet_rank', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
+                $table->unsignedInteger('rank_id');
+                $table->unsignedInteger('subfleet_id');
+                $table->string('acars_pay')->nullable();
+                $table->string('manual_pay')->nullable();
+
+                $table->primary(['rank_id', 'subfleet_id']);
+                $table->index(['subfleet_id', 'rank_id']);
+            });
+        }
+
         if (!Schema::hasTable('subfleets')) {
             Schema::create('subfleets', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('airline_id')->nullable();
                 $table->string('hub_id', 4)->nullable();
@@ -776,34 +958,11 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('subfleet_fare')) {
-            Schema::create('subfleet_fare', function (Blueprint $table) {
-                $table->unsignedInteger('subfleet_id');
-                $table->unsignedInteger('fare_id');
-                $table->string('price')->nullable();
-                $table->string('cost')->nullable();
-                $table->string('capacity')->nullable();
-                $table->timestamps();
-
-                $table->primary(['subfleet_id', 'fare_id']);
-                $table->index(['fare_id', 'subfleet_id']);
-            });
-        }
-
-        if (!Schema::hasTable('subfleet_rank')) {
-            Schema::create('subfleet_rank', function (Blueprint $table) {
-                $table->unsignedInteger('rank_id');
-                $table->unsignedInteger('subfleet_id');
-                $table->string('acars_pay')->nullable();
-                $table->string('manual_pay')->nullable();
-
-                $table->primary(['rank_id', 'subfleet_id']);
-                $table->index(['subfleet_id', 'rank_id']);
-            });
-        }
-
         if (!Schema::hasTable('typerating_subfleet')) {
             Schema::create('typerating_subfleet', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->unsignedInteger('typerating_id');
                 $table->unsignedInteger('subfleet_id');
 
@@ -814,6 +973,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('typerating_user')) {
             Schema::create('typerating_user', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->unsignedInteger('typerating_id');
                 $table->unsignedInteger('user_id');
 
@@ -824,6 +986,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('typeratings')) {
             Schema::create('typeratings', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name')->unique();
                 $table->string('type');
@@ -838,6 +1003,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('user_awards')) {
             Schema::create('user_awards', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->unsignedInteger('user_id');
                 $table->unsignedInteger('award_id');
@@ -849,6 +1017,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('user_field_values')) {
             Schema::create('user_field_values', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('user_field_id');
                 $table->string('user_id', 16);
@@ -861,6 +1032,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('user_fields')) {
             Schema::create('user_fields', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->increments('id');
                 $table->string('name', 200);
                 $table->text('description')->nullable();
@@ -875,6 +1049,9 @@ return new class() extends Migration
 
         if (!Schema::hasTable('user_oauth_tokens')) {
             Schema::create('user_oauth_tokens', function (Blueprint $table) {
+                $table->collation = 'utf8mb4_unicode_ci';
+                $table->charset = 'utf8mb4';
+
                 $table->bigIncrements('id');
                 $table->unsignedInteger('user_id');
                 $table->string('provider');
@@ -885,7 +1062,7 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('permission_role')) {
+        if (Schema::hasTable('permission_role')) {
             Schema::table('permission_role', function (Blueprint $table) {
                 $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
                     'cascade'
@@ -896,7 +1073,7 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('permission_user')) {
+        if (Schema::hasTable('permission_user')) {
             Schema::table('permission_user', function (Blueprint $table) {
                 $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
                     'cascade'
@@ -904,7 +1081,7 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('role_user')) {
+        if (Schema::hasTable('role_user')) {
             Schema::table('role_user', function (Blueprint $table) {
                 $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
                     'cascade'
