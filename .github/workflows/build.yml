@@ -122,7 +122,7 @@ jobs:
     name: 'Create release package'
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
+    if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     steps:
     - name: Checkout
       uses: actions/checkout@v4

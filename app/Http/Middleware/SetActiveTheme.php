@@ -49,10 +49,10 @@ class SetActiveTheme implements Middleware
         }
 
         try {
-            $theme = setting('general.theme', 'default');
+            $theme = setting('general.theme', 'seven');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-            $theme = 'default';
+            $theme = 'seven';
         }
 
         if (!empty($theme)) {

@@ -16,7 +16,7 @@ else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
 
-  export FILE_NAME="phpvms-${GitVersion_PreReleaseLabel}"
+  export FILE_NAME="phpvms-${BRANCH}"
 fi
 
 export TAR_NAME="$FILE_NAME.tar.gz"

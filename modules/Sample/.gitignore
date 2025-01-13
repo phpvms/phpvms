@@ -1,0 +1,76 @@
+_ide_helper.php
+.php_cs.cache
+.phpstorm.meta.php
+.phpunit.result.cache
+/vendor
+node_modules/
+npm-debug.log
+composer.phar
+yarn-error.log
+*.bak
+
+# Laravel 4 specific
+bootstrap/compiled.php
+app/storage/
+
+# Laravel 5 & Lumen specific
+public/storage
+public/hot
+storage/*.key
+storage/settings.json
+storage/*.sqlite
+.env.*.php
+.env.php
+.env
+.env.bak
+env.php
+.env.generated
+.vagrant
+#Homestead.yaml
+Homestead.json
+LocalValetDriver.php
+
+# Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
+.rocketeer/
+
+tmp/
+
+# intellij files
+.idea/composerJson.xml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+cmake-build-debug/
+.idea/**/mongoSettings.xml
+*.iws
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+.idea/replstate.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+.idea
+phpvms.iml
+phpvms_next.iml
+
+# Gradle:
+public/info.php
+
+# Error Logs
+error_log
+
+.sass-cache
+.DS_Store
+/config.php
+/VERSION

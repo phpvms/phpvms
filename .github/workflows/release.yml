@@ -4,8 +4,12 @@ on:
   release:
     types: [ published ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  build:
+  release:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -20,11 +24,6 @@ jobs:
         uses: gittools/actions/gitversion/setup@v3.1.1
         with:
           versionSpec: '6.0.x'
-
-#       - name: Install GitReleaseManager
-#         uses: ./gitreleasemanager/setup
-#         with:
-#             versionSpec: '0.18.x'
 
       - name: Determine Version
         id: gitversion
@@ -118,13 +117,6 @@ jobs:
 #           repository: actions
 #           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
 
-      - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: ${{ steps.discord.outputs.discord_msg }}
-
       # Push to Docker
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -160,3 +152,10 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: Discord notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.discord.outputs.discord_msg }}
