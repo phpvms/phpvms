@@ -1066,16 +1066,15 @@ return new class() extends Migration
             Schema::table('permission_role', function (Blueprint $table) {
                 // Check if the foreign key already exists
                 // See https://github.com/laravel/framework/discussions/43443
-                dd(Schema::getForeignKeys('permission_role'));
-                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('permission_role');
+                $foreignKeys = collect(Schema::getForeignKeys('permission_role'));
 
-                if (!$doctrineTable->hasForeignKey('permission_role_permission_id_foreign')) {
+                if ($foreignKeys->where('name', 'permission_role_permission_id_foreign')->count() === 0) {
                     $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
                         'cascade'
                     )->onDelete('cascade');
                 }
 
-                if (!$doctrineTable->hasForeignKey('permission_role_role_id_foreign')) {
+                if ($foreignKeys->where('name', 'permission_role_role_id_foreign')->count() === 0) {
                     $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
                         'cascade'
                     )->onDelete('cascade');
@@ -1085,9 +1084,9 @@ return new class() extends Migration
 
         if (Schema::hasTable('permission_user')) {
             Schema::table('permission_user', function (Blueprint $table) {
-                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('permission_user');
+                $foreignKeys = collect(Schema::getForeignKeys('permission_user'));
 
-                if (!$doctrineTable->hasForeignKey('permission_user_permission_id_foreign')) {
+                if ($foreignKeys->where('name', 'permission_user_permission_id_foreign')->count() === 0) {
                     $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
                         'cascade'
                     )->onDelete('cascade');
@@ -1097,9 +1096,9 @@ return new class() extends Migration
 
         if (Schema::hasTable('role_user')) {
             Schema::table('role_user', function (Blueprint $table) {
-                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('role_user');
+                $foreignKeys = collect(Schema::getForeignKeys('role_user'));
 
-                if (!$doctrineTable->hasForeignKey('role_user_role_id_foreign')) {
+                if ($foreignKeys->where('name', 'role_user_role_id_foreign')->count() === 0) {
                     $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
                         'cascade'
                     )->onDelete('cascade');
