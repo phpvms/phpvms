@@ -1065,8 +1065,8 @@ return new class() extends Migration
         if (Schema::hasTable('permission_role')) {
             Schema::table('permission_role', function (Blueprint $table) {
                 // Check if the foreign key already exists
-                // Will have to be changed during Laravel 11 upgrade
                 // See https://github.com/laravel/framework/discussions/43443
+                dd(Schema::getForeignKeys('permission_role'));
                 $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('permission_role');
 
                 if (!$doctrineTable->hasForeignKey('permission_role_permission_id_foreign')) {
