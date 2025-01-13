@@ -18,18 +18,33 @@ return new class() extends Migration
         }
 
         // Check the current charset
-        $query = DB::table('information_schema.SCHEMATA')
-            ->select('default_character_set_name')
-            ->where('schema_name', config('database.connections.mysql.database'))
-            ->first();
+        $query = DB::connection()->getPdo()
+            ->prepare(
+                'SELECT * FROM `information_schema`.`SCHEMATA` WHERE `schema_name` = :schema_name'
+            );
 
-        if ((property_exists($query, 'default_character_set_name') && $query->default_character_set_name === 'utf8mb4') || (property_exists($query, 'DEFAULT_CHARACTER_SET_NAME') && $query->DEFAULT_CHARACTER_SET_NAME === 'utf8mb4')) {
+        $query->bindValue(':schema_name', config('database.connections.mysql.database'));
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_OBJ);
+
+        if ((property_exists(
+            $result,
+            'default_character_set_name'
+        ) && $result->default_character_set_name === 'utf8mb4') || (property_exists(
+            $result,
+            'DEFAULT_CHARACTER_SET_NAME'
+        ) && $result->DEFAULT_CHARACTER_SET_NAME === 'utf8mb4')) {
             return;
         }
 
-        $this->changeDatabaseCharacterSetAndCollation('utf8mb4', 'utf8mb4_unicode_ci', 191, function ($column) {
-            return $this->isStringTypeWithLength($column) && $column['type_brackets'] > 191;
-        });
+        $this->changeDatabaseCharacterSetAndCollation(
+            'utf8mb4',
+            'utf8mb4_unicode_ci',
+            191,
+            function ($column) {
+                return $this->isStringTypeWithLength($column) && $column['type_brackets'] > 191;
+            }
+        );
     }
 
     /**
@@ -39,9 +54,14 @@ return new class() extends Migration
      */
     public function down()
     {
-        $this->changeDatabaseCharacterSetAndCollation('utf8', 'utf8_unicode_ci', 255, function ($column) {
-            return $this->isStringTypeWithLength($column) && $column['type_brackets'] == 191;
-        });
+        $this->changeDatabaseCharacterSetAndCollation(
+            'utf8',
+            'utf8_unicode_ci',
+            255,
+            function ($column) {
+                return $this->isStringTypeWithLength($column) && $column['type_brackets'] == 191;
+            }
+        );
     }
 
     /**
@@ -59,12 +79,24 @@ return new class() extends Migration
      * @param Closure|null $columnLengthCallback
      * @param string|null  $connection
      */
-    protected function changeDatabaseCharacterSetAndCollation($charset, $collation, $newColumnLength = null, $columnLengthCallback = null, $connection = null)
-    {
+    protected function changeDatabaseCharacterSetAndCollation(
+        $charset,
+        $collation,
+        $newColumnLength = null,
+        $columnLengthCallback = null,
+        $connection = null
+    ) {
         $tables = $this->getTables($connection);
 
         foreach ($tables as $table) {
-            $this->updateColumnsInTable($table, $charset, $collation, $newColumnLength, $columnLengthCallback, $connection);
+            $this->updateColumnsInTable(
+                $table,
+                $charset,
+                $collation,
+                $newColumnLength,
+                $columnLengthCallback,
+                $connection
+            );
             $this->convertTableCharacterSetAndCollation($table, $charset, $collation, $connection);
         }
 
@@ -137,8 +169,11 @@ return new class() extends Migration
             'type_end'      => $typeEnd,
             'null'          => strtolower($column->Null) == 'yes',
             'default'       => $column->Default,
-            'charset'       => is_string($column->Collation) && ($pos = strpos($column->Collation, '_')) !== false ? substr($column->Collation, 0, $pos) : null,
-            'collation'     => $column->Collation,
+            'charset'       => is_string($column->Collation) && ($pos = strpos(
+                $column->Collation,
+                '_'
+            )) !== false ? substr($column->Collation, 0, $pos) : null,
+            'collation' => $column->Collation,
         ];
     }
 
@@ -150,7 +185,10 @@ return new class() extends Migration
      */
     protected function isStringType($column)
     {
-        return in_array(strtolower($column['type']), ['char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext', 'enum', 'set']);
+        return in_array(
+            strtolower($column['type']),
+            ['char', 'varchar', 'tinytext', 'text', 'mediumtext', 'longtext', 'enum', 'set']
+        );
     }
 
     /**
@@ -175,8 +213,14 @@ return new class() extends Migration
      * @param int|null    $newLength
      * @param string|null $connection
      */
-    protected function updateColumnsInTable($table, $charset, $collation, $newLength = null, ?Closure $shouldUpdateLength = null, $connection = null)
-    {
+    protected function updateColumnsInTable(
+        $table,
+        $charset,
+        $collation,
+        $newLength = null,
+        ?Closure $shouldUpdateLength = null,
+        $connection = null
+    ) {
         $columnsToChange = [];
 
         foreach ($this->getColumnsFromTable($table, $connection) as $column) {
@@ -184,7 +228,15 @@ return new class() extends Migration
 
             if ($this->isStringType($column)) {
                 $sql = 'CHANGE `%field%` `%field%` %type%%brackets% CHARACTER SET %charset% COLLATE %collation% %null% %default%';
-                $search = ['%field%', '%type%', '%brackets%', '%charset%', '%collation%', '%null%', '%default%'];
+                $search = [
+                    '%field%',
+                    '%type%',
+                    '%brackets%',
+                    '%charset%',
+                    '%collation%',
+                    '%null%',
+                    '%default%',
+                ];
                 $replace = [
                     $column['field'],
                     $column['type'],
@@ -192,10 +244,14 @@ return new class() extends Migration
                     $charset,
                     $collation,
                     $column['null'] ? 'NULL' : 'NOT NULL',
-                    is_null($column['default']) ? ($column['null'] ? 'DEFAULT NULL' : '') : 'DEFAULT \''.$column['default'].'\'',
+                    is_null(
+                        $column['default']
+                    ) ? ($column['null'] ? 'DEFAULT NULL' : '') : 'DEFAULT \''.$column['default'].'\'',
                 ];
 
-                if ($this->isStringTypeWithLength($column) && $shouldUpdateLength($column) && is_int($newLength) && $newLength > 0) {
+                if ($this->isStringTypeWithLength($column) && $shouldUpdateLength(
+                    $column
+                ) && is_int($newLength) && $newLength > 0) {
                     $replace[2] = '('.$newLength.')';
                 }
 
@@ -230,8 +286,12 @@ return new class() extends Migration
      * @param string      $collation
      * @param string|null $connection
      */
-    protected function convertTableCharacterSetAndCollation($table, $charset, $collation, $connection = null)
-    {
+    protected function convertTableCharacterSetAndCollation(
+        $table,
+        $charset,
+        $collation,
+        $connection = null
+    ) {
         $query = "ALTER TABLE {$table} CONVERT TO CHARACTER SET {$charset} COLLATE {$collation}";
         $this->getDatabaseConnection($connection)->update($query);
 
@@ -249,8 +309,11 @@ return new class() extends Migration
      * @param string      $collation
      * @param string|null $connection
      */
-    protected function alterDatabaseCharacterSetAndCollation($charset, $collation, $connection = null)
-    {
+    protected function alterDatabaseCharacterSetAndCollation(
+        $charset,
+        $collation,
+        $connection = null
+    ) {
         $database = $this->getDatabaseConnection($connection)->getDatabaseName();
 
         $query = "ALTER DATABASE {$database} CHARACTER SET {$charset} COLLATE {$collation}";
