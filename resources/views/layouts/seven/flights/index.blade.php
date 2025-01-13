@@ -34,7 +34,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-12 text-center">
+    <div class="col-xl-9 col-lg-12 text-center">
       {{ $flights->withQueryString()->links('pagination.bootstrap-5') }}
     </div>
   </div>
