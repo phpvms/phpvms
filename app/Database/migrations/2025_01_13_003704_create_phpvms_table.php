@@ -95,7 +95,7 @@ return new class() extends Migration
                 $table->string('sim_time')->nullable();
                 $table->timestamp('created_at')->nullable()->index();
                 $table->timestamp('updated_at')->nullable();
-                $table->string('source', 5)->collation('latin1_swedish_ci')->nullable();
+                $table->string('source', 5)->nullable();
             });
         }
 
