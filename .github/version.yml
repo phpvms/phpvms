@@ -1,6 +1,9 @@
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
 tag-prefix: '[vV]?'
+mode: ManualDeployment
+workflow: GitHubFlow/v1
+label: stable
 version-in-branch-pattern: (?<version>[vV]?\d+(\.\d+)?(\.\d+)?).*
 major-version-bump-message: \+semver:\s?(breaking|major)
 minor-version-bump-message: \+semver:\s?(feature|minor)
@@ -20,7 +23,8 @@ strategies:
 - VersionInBranchName
 branches:
   main:
-    label: 'alpha'
+    label: 'dev'
+    mode: ManualDeployment
     increment: Patch
     prevent-increment:
       of-merged-branch: true
@@ -81,25 +85,8 @@ branches:
     - feature
     is-source-branch-for: []
     pre-release-weight: 30000
-  unknown:
-    mode: ManualDeployment
-    label: '{BranchName}'
-    increment: Inherit
-    prevent-increment:
-      when-current-commit-tagged: false
-    track-merge-message: false
-    regex: (?<BranchName>.+)
-    source-branches:
-    - main
-    - release
-    - feature
-    - pull-request
-    is-source-branch-for: []
-    is-main-branch: false
 ignore:
   sha: []
-mode: ManualDeployment
-label: '{BranchName}'
 increment: Inherit
 prevent-increment:
   of-merged-branch: false
