@@ -602,6 +602,8 @@ return new class() extends Migration
             });
         }
 
+        /*
+        This is the old role system, we don't wanna use it on fresh installs
         if (!Schema::hasTable('permission_role')) {
             Schema::create('permission_role', function (Blueprint $table) {
                 $table->collation = 'utf8mb4_unicode_ci';
@@ -640,7 +642,7 @@ return new class() extends Migration
                 $table->string('description')->nullable();
                 $table->timestamps();
             });
-        }
+        }*/
 
         if (!Schema::hasTable('pirep_comments')) {
             Schema::create('pirep_comments', function (Blueprint $table) {
@@ -766,6 +768,7 @@ return new class() extends Migration
             });
         }
 
+        /*
         if (!Schema::hasTable('role_user')) {
             Schema::create('role_user', function (Blueprint $table) {
                 $table->collation = 'utf8mb4_unicode_ci';
@@ -792,7 +795,7 @@ return new class() extends Migration
                 $table->boolean('read_only')->default(false);
                 $table->boolean('disable_activity_checks')->default(false);
             });
-        }
+        }*/
 
         if (!Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
