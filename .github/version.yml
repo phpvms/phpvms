@@ -20,7 +20,7 @@ strategies:
 - VersionInBranchName
 branches:
   main:
-    label: ''
+    label: 'alpha'
     increment: Patch
     prevent-increment:
       of-merged-branch: true
@@ -35,7 +35,7 @@ branches:
     pre-release-weight: 55000
   release:
     mode: ManualDeployment
-    label: beta
+    label: stable
     increment: Patch
     prevent-increment:
       of-merged-branch: true
