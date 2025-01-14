@@ -30,7 +30,7 @@ return new class() extends Migration
         $themes = File::directories(resource_path('views/layouts'));
         foreach ($themes as $theme) {
             $themeJson = json_decode(File::get($theme.'/theme.json'));
-            if ($themeJson->extends === 'default') {
+            if (!property_exists($themeJson, 'extends') || $themeJson->extends === 'default') {
                 $themeJson->extends = 'beta';
                 File::put($theme.'/theme.json', json_encode($themeJson, JSON_PRETTY_PRINT));
             }

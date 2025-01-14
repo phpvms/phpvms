@@ -41,6 +41,9 @@ jobs:
     - name: Determine Version
       id: gitversion
       uses: gittools/actions/gitversion/execute@v3.1.1
+      with:
+        useConfigFile: true
+        configFilePath: .github/version.yml
 
     # Configure Caching
     - name: Setup cache environment
@@ -142,6 +145,9 @@ jobs:
 
     - name: Determine Version
       uses: gittools/actions/gitversion/execute@v3.1.1
+      with:
+        useConfigFile: true
+        configFilePath: .github/version.yml
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -226,6 +232,9 @@ jobs:
 
       - name: Determine Version
         uses: gittools/actions/gitversion/execute@v3.1.1
+        with:
+          useConfigFile: true
+          configFilePath: .github/version.yml
 
       - id: version
         name: Get version
