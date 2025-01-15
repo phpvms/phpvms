@@ -32,18 +32,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/gittools
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.1.1
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.4.2
       with:
-        versionSpec: '6.0.x'
-
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v3.1.1
-      with:
-        useConfigFile: true
-        configFilePath: .github/version.yml
+          setAllVars: true
 
     # Configure Caching
     - name: Setup cache environment
