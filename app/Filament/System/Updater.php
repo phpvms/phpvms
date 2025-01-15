@@ -2,6 +2,7 @@
 
 namespace App\Filament\System;
 
+use App\Http\Middleware\UpdatePending;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
@@ -25,6 +26,8 @@ class Updater extends Page
     public ?string $notes;
 
     public ?string $details;
+
+    protected static string|array $routeMiddleware = ['can:access_admin'];
 
     /**
      * Called whenever the component is loaded
