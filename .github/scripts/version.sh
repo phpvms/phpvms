@@ -5,7 +5,7 @@
 # https://gitversion.net/docs/reference/variables
 # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute.md
 #
-export VERSION=${GitVersion_FullSemVer}
+export VERSION=${$NBGV_SemVer2}
 export FULL_VERSION=${VERSION}
 php artisan phpvms:version --write --write-full-version "${VERSION}"
 
