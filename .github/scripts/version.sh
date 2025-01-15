@@ -15,8 +15,7 @@ if test "$GIT_TAG_NAME"; then
 else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
-
-  export FILE_NAME="phpvms-${BRANCH}"
+  export FILE_NAME="phpvms-${GitVersion_PreReleaseLabel}"
 fi
 
 export TAR_NAME="$FILE_NAME.tar.gz"
@@ -40,4 +39,4 @@ echo "FULL_VERSION=${FULL_VERSION}" >> "$GITHUB_ENV"
 
 echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
-echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](https://phpvms.cdn.vmslabs.net/$ZIP_NAME) | [tar](https://phpvms.cdn.vmslabs.net/$TAR_NAME)" >> "$GITHUB_OUTPUT"
+echo "discord_msg=Version ${FULL_VERSION} is available, download: [zip](https://phpvms.cdn.vmslabs.net/${ZIP_NAME}) | [tar](https://phpvms.cdn.vmslabs.net/${TAR_NAME})" >> "$GITHUB_OUTPUT"
