@@ -137,17 +137,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/gittools
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.1.1
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.4.2
       with:
-        versionSpec: '6.0.x'
-
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v3.1.1
-      with:
-        useConfigFile: true
-        configFilePath: .github/version.yml
+          setAllVars: true
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -224,17 +218,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/gittools
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
         with:
-          versionSpec: '6.0.x'
-
-      - name: Determine Version
-        uses: gittools/actions/gitversion/execute@v3.1.1
-        with:
-          useConfigFile: true
-          configFilePath: .github/version.yml
+            setAllVars: true
 
       - id: version
         name: Get version
