@@ -12,9 +12,10 @@
     "setVersionVariables": true,
     "setAllVariables": true
   },
-    "pathFilters": [
+  "pathFilters": [
     ":!/.github",
     ":!/tests",
+    ":!/.env.example",
     ":!/version.json"
   ],
   "release": {
