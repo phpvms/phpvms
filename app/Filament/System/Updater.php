@@ -2,11 +2,9 @@
 
 namespace App\Filament\System;
 
-use App\Http\Middleware\UpdatePending;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
-use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -49,7 +47,6 @@ class Updater extends Page
         } else { // v8
             abort_if(!Auth::user()?->can('admin_access'), 403);
         }
-
 
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
