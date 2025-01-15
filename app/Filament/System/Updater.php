@@ -6,13 +6,17 @@ use App\Http\Middleware\UpdatePending;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
+use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 
 class Updater extends Page
@@ -27,13 +31,26 @@ class Updater extends Page
 
     public ?string $details;
 
-    protected static string|array $routeMiddleware = ['can:access_admin'];
-
     /**
      * Called whenever the component is loaded
      */
     public function mount(): void
     {
+        // Custom permission check (to support both v7 and v8 db)
+        // v7
+        if (Schema::hasTable('role_user')) {
+            $result = DB::table('role_user')
+                ->where('user_id', Auth::id())
+                ->where('roles.name', 'LIKE', '%admin%')
+                ->join('roles', 'role_user.role_id', '=', 'roles.id')
+                ->count();
+
+            abort_if($result === 0, 403);
+        } else { // v8
+            abort_if(!Auth::user()?->can('admin_access'), 403);
+        }
+
+
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
                 ->title('phpVMS is already up to date')
