@@ -296,7 +296,7 @@ class UserService extends Service
             }
 
             // See if the difference is larger than what the setting calls for
-            if ($date->diffInDays($diff_date) <= $leave_days) {
+            if (abs($date->diffInDays($diff_date)) <= $leave_days) {
                 return false;
             }
 
