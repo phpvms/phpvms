@@ -10,8 +10,11 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 
 class Updater extends Page
@@ -23,15 +26,28 @@ class Updater extends Page
     protected static ?string $slug = 'update';
 
     public ?string $notes;
+
     public ?string $details;
 
     /**
      * Called whenever the component is loaded
-     *
-     * @return void
      */
     public function mount(): void
     {
+        // Custom permission check (to support both v7 and v8 db)
+        // v7
+        if (Schema::hasTable('role_user')) {
+            $result = DB::table('role_user')
+                ->where('user_id', Auth::id())
+                ->where('roles.name', 'LIKE', '%admin%')
+                ->join('roles', 'role_user.role_id', '=', 'roles.id')
+                ->count();
+
+            abort_if($result === 0, 403);
+        } else { // v8
+            abort_if(!Auth::user()?->can('admin_access'), 403);
+        }
+
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
                 ->title('phpVMS is already up to date')
@@ -39,6 +55,7 @@ class Updater extends Page
                 ->send();
 
             $this->redirect(Filament::getDefaultPanel()->getUrl());
+
             return;
         }
 
@@ -47,8 +64,6 @@ class Updater extends Page
 
     /**
      * To fill the form (set default values)
-     *
-     * @return void
      */
     public function fillForm(): void
     {
@@ -61,10 +76,6 @@ class Updater extends Page
 
     /**
      * The filament form
-     *
-     * @param Form $form
-     *
-     * @return Form
      */
     public function form(Form $form): Form
     {
@@ -98,8 +109,6 @@ class Updater extends Page
 
     /**
      * Migrate the database
-     *
-     * @return void
      */
     public function migrate(): void
     {
@@ -120,6 +129,7 @@ class Updater extends Page
                 ->send();
 
             $this->redirect('/admin');
+
             return;
         }
         $output = '';
@@ -137,8 +147,6 @@ class Updater extends Page
 
     /**
      * Called when the form is filed (ie update completed)
-     *
-     * @return void
      */
     public function save(): void
     {

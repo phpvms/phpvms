@@ -5,14 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class() extends Migration {
+return new class() extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         // Exported roles
-        if (DB::table('roles')->where('name', '!=', 'admin')->count() > 0) {
+        if (Schema::hasTable('roles') && DB::table('roles')->where('name', '!=', 'admin')->count() > 0) {
             Schema::create('exported_roles', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('name');
@@ -29,7 +30,7 @@ return new class() extends Migration {
         }
 
         // Exported permission_role
-        if (DB::table('permission_role')->count() > 0) {
+        if (Schema::hasTable('permission_role') && DB::table('permission_role')->count() > 0) {
             Schema::create('exported_permission_role', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('role_name');
@@ -51,7 +52,7 @@ return new class() extends Migration {
         }
 
         // Exported role_user
-        if (DB::table('role_user')->count() > 0) {
+        if (Schema::hasTable('role_user') && DB::table('role_user')->count() > 0) {
             Schema::create('exported_role_user', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('role_name');

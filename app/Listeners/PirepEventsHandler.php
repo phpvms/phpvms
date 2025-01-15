@@ -10,9 +10,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /**
  * Handler for PIREP events
  */
-class PirepEventsHandler extends Listener //implements ShouldQueue
+class PirepEventsHandler extends Listener // implements ShouldQueue
 {
-    //use Queueable;
+    // use Queueable;
 
     /** The events and the callback */
     public static $callbacks = [
@@ -21,10 +21,6 @@ class PirepEventsHandler extends Listener //implements ShouldQueue
 
     /**
      * Called when a PIREP is prefiled
-     *
-     * @param PirepPrefiled $event
      */
-    public function onPirepPrefile(PirepPrefiled $event)
-    {
-    }
+    public function onPirepPrefile(PirepPrefiled $event) {}
 }

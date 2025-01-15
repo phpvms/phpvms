@@ -11,7 +11,9 @@ use App\Contracts\Model;
 class Kvp extends Model
 {
     public $table = 'kvp';
+
     public $timestamps = false;
+
     public $incrementing = false;
 
     protected $keyType = 'string';

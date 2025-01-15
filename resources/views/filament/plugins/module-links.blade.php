@@ -5,7 +5,7 @@
       icon="heroicon-o-home"
       :url="url(\Filament\Facades\Filament::getPanel('admin')->getPath())"
     >
-      Main v7
+      Main v8
     </x-filament-panels::topbar.item>
 
     @foreach($panels as $panel)

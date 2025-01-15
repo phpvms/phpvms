@@ -14,20 +14,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  *
  * @url http://docs.phpvms.net/customizing/awards
  */
-class AwardHandler extends Listener //implements ShouldQueue
+class AwardHandler extends Listener // implements ShouldQueue
 {
-    //use Queueable;
+    // use Queueable;
 
     /** The events and the callback */
     public static $callbacks = [
         ProcessAward::class => 'processAward',
     ];
 
-    /**
-     * @param ProcessAward $event
-     *
-     * @return void
-     */
     public function processAward(ProcessAward $event): void
     {
         $this->checkForAwards($event->user);

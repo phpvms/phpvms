@@ -10,9 +10,9 @@ use App\Services\PirepService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class DiversionHandler extends Listener //implements ShouldQueue
+class DiversionHandler extends Listener // implements ShouldQueue
 {
-    //use Queueable;
+    // use Queueable;
 
     public static $callbacks = [
         PirepFiled::class  => 'onPirepFiled',
@@ -22,13 +22,10 @@ class DiversionHandler extends Listener //implements ShouldQueue
     public function __construct(
         private readonly FlightService $flightSvc,
         private readonly PirepService $pirepSvc
-    ) {
-    }
+    ) {}
 
     /**
      * When a PIREP is filed, check for diversion
-     *
-     * @param PirepFiled $event
      */
     public function onPirepFiled(PirepFiled $event): void
     {
@@ -37,8 +34,6 @@ class DiversionHandler extends Listener //implements ShouldQueue
 
     /**
      * Every night, remove expired re-position flights
-     *
-     * @param CronNightly $event
      */
     public function onCronNightly(CronNightly $event): void
     {

@@ -17,6 +17,7 @@ class ActivityLogResource extends Resource
     protected static ?string $model = Activity::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationLabel = 'Activities';
@@ -36,20 +37,20 @@ class ActivityLogResource extends Resource
         return $infolist
             ->schema([
                 Infolists\Components\Section::make('Causer Information')
-                     ->schema([
-                         Infolists\Components\TextEntry::make('causer_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
-                         Infolists\Components\TextEntry::make('causer_id')
-                             ->formatStateUsing(function (Activity $record): string {
-                                 if (class_basename($record->causer_type) === 'User') {
-                                     return $record->causer_id.' | '.$record->causer->name_private;
-                                 }
+                    ->schema([
+                        Infolists\Components\TextEntry::make('causer_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
+                        Infolists\Components\TextEntry::make('causer_id')
+                            ->formatStateUsing(function (Activity $record): string {
+                                if (class_basename($record->causer_type) === 'User') {
+                                    return $record->causer_id.' | '.$record->causer->name_private;
+                                }
 
-                                 return $record->causer_id.' | '.class_basename($record->causer_type);
-                             })
-                             ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
-                             ->label('Causer'),
-                         Infolists\Components\TextEntry::make('created_at')->formatStateUsing(fn (Carbon $state): string => $state->diffForHumans().' | '.$state->format('d.M'))->label('Caused'),
-                     ])->columns(3),
+                                return $record->causer_id.' | '.class_basename($record->causer_type);
+                            })
+                            ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
+                            ->label('Causer'),
+                        Infolists\Components\TextEntry::make('created_at')->formatStateUsing(fn (Carbon $state): string => $state->diffForHumans().' | '.$state->format('d.M'))->label('Caused'),
+                    ])->columns(3),
 
                 Infolists\Components\Section::make('Subject Information')
                     ->schema([

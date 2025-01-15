@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 class UserImport extends BaseImporter
 {
     protected $table = 'pilots';
+
     protected $idField = 'pilotid';
 
     private UserService $userSvc;
@@ -91,7 +92,6 @@ class UserImport extends BaseImporter
     /**
      * Update a user's roles and add them to the proper ones
      *
-     * @param User   $user
      * @param string $old_pilot_id
      */
     protected function updateUserRoles(User $user, $old_pilot_id)
@@ -116,7 +116,6 @@ class UserImport extends BaseImporter
     /**
      * Get the user's new state from their original state
      *
-     * @param $state
      *
      * @return int
      */

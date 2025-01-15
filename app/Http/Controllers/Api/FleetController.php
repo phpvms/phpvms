@@ -16,15 +16,11 @@ class FleetController extends Controller
 {
     /**
      * FleetController constructor.
-     *
-     * @param AircraftRepository $aircraftRepo
-     * @param SubfleetRepository $subfleetRepo
      */
     public function __construct(
         private readonly AircraftRepository $aircraftRepo,
         private readonly SubfleetRepository $subfleetRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the subfleets and the aircraft and any other associated data
@@ -42,11 +38,6 @@ class FleetController extends Controller
     /**
      * Get a specific aircraft. Query string required to specify the tail
      * /api/aircraft/XYZ?type=registration
-     *
-     * @param string  $id
-     * @param Request $request
-     *
-     * @return AircraftResource
      */
     public function get_aircraft(string $id, Request $request): AircraftResource
     {

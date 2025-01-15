@@ -7,7 +7,7 @@ https://api.checkwx.com/#metar-decoded
 @php
     $randomId = rand();
 @endphp
-
+@if($metar)
 <span class="px-2">
     {{ $metar['raw'] }}
 </span>
@@ -158,3 +158,4 @@ https://api.checkwx.com/#metar-decoded
         </table>
     </div>
 </div>
+@endif

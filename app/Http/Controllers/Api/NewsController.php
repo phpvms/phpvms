@@ -11,18 +11,14 @@ class NewsController extends Controller
 {
     /**
      * AirlineController constructor.
-     *
-     * @param NewsRepository $newsRepo
      */
     public function __construct(
         private readonly NewsRepository $newsRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the airlines, paginated
      *
-     * @param Request $request
      *
      * @return mixed
      */

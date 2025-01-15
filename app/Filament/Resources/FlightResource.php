@@ -27,6 +27,7 @@ class FlightResource extends Resource
     protected static ?string $model = Flight::class;
 
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Flights';

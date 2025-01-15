@@ -120,6 +120,11 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::get('/logout', 'Auth\LoginController@logout')->name('auth.logout');
             Auth::routes(['verify' => true]);
+
+            // Redirect /update
+            Route::get('/update', function () {
+                return redirect('/system/update');
+            });
         });
     }
 

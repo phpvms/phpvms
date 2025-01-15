@@ -24,14 +24,10 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     /**
      * A method to reverse a migration doesn't need to be made
      */
-    public function down()
-    {
-    }
+    public function down() {}
 
     /**
      * Add a module and enable it
-     *
-     * @param array $attrs
      */
     public function addModule(array $attrs)
     {
@@ -69,9 +65,6 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
 
     /**
      * Add rows to a table
-     *
-     * @param $table
-     * @param $rows
      */
     public function addData($table, $rows)
     {

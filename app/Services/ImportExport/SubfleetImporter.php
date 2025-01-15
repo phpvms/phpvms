@@ -35,6 +35,7 @@ class SubfleetImporter extends ImportExport
     ];
 
     private FareService $fareSvc;
+
     private FleetService $fleetSvc;
 
     /**
@@ -49,10 +50,7 @@ class SubfleetImporter extends ImportExport
     /**
      * Import a flight, parse out the different rows
      *
-     * @param array $row
-     * @param int   $index
-     *
-     * @return bool
+     * @param int $index
      */
     public function import(array $row, $index): bool
     {
@@ -65,6 +63,7 @@ class SubfleetImporter extends ImportExport
             ], $row);
         } catch (\Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+
             return false;
         }
 
@@ -72,14 +71,12 @@ class SubfleetImporter extends ImportExport
         $this->processRanks($subfleet, $row['ranks']);
 
         $this->log('Imported '.$row['type']);
+
         return true;
     }
 
     /**
      * Parse all of the fares in the multi-format
-     *
-     * @param Subfleet $subfleet
-     * @param          $col
      */
     protected function processFares(Subfleet &$subfleet, $col): void
     {
@@ -98,9 +95,6 @@ class SubfleetImporter extends ImportExport
 
     /**
      * Parse all of the rakns in the multi-format
-     *
-     * @param Subfleet $subfleet
-     * @param          $col
      */
     protected function processRanks(Subfleet &$subfleet, $col): void
     {

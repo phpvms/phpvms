@@ -43,10 +43,10 @@ return [
 
     'artisan_commands' => [
         'pre_update' => [
-            //'command:signature' => [
+            // 'command:signature' => [
             //    'class' => Command class
             //    'params' => []
-            //]
+            // ]
         ],
         'post_update' => [
 

@@ -6,7 +6,8 @@ use App\Models\PirepFare;
 /**
  * Check if the PIREP fare has an empty capacity and update it from the subfleet
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up()
     {
         $cached = [];

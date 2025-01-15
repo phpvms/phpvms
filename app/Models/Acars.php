@@ -27,8 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Acars extends Model
 {
-    use HashIdTrait;
     use HasFactory;
+    use HashIdTrait;
 
     public $table = 'acars';
 
@@ -91,8 +91,6 @@ class Acars extends Model
     /**
      * This keeps things backwards compatible with previous versions
      * which send in altitude only
-     *
-     * @return Attribute
      */
     public function altitude(): Attribute
     {

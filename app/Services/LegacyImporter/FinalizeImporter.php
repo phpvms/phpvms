@@ -26,8 +26,7 @@ class FinalizeImporter extends BaseImporter
     /**
      * The start method. Takes the offset to start from
      *
-     * @param int $start
-     *
+     * @param  int   $start
      * @return mixed
      */
     public function run($start = 0)

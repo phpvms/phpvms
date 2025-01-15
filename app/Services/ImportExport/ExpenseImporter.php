@@ -36,10 +36,7 @@ class ExpenseImporter extends ImportExport
     /**
      * Import a flight, parse out the different rows
      *
-     * @param array $row
-     * @param int   $index
-     *
-     * @return bool
+     * @param int $index
      */
     public function import(array $row, $index): bool
     {
@@ -60,17 +57,18 @@ class ExpenseImporter extends ImportExport
             ], $row);
         } catch (\Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+
             return false;
         }
 
         $this->log('Imported '.$row['name']);
+
         return true;
     }
 
     /**
      * See if this expense refers to a ref_model
      *
-     * @param array $row
      *
      * @return array
      */
@@ -86,6 +84,7 @@ class ExpenseImporter extends ImportExport
             }
         } else {
             $row['ref_model'] = Expense::class;
+
             return $row;
         }
 
@@ -111,6 +110,7 @@ class ExpenseImporter extends ImportExport
         }
 
         $row['ref_model_id'] = $obj->id;
+
         return $row;
     }
 }

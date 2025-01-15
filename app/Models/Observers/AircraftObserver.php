@@ -8,8 +8,6 @@ use App\Support\ICAO;
 class AircraftObserver
 {
     /**
-     * @param Aircraft $aircraft
-     *
      * @throws \Exception
      */
     public function creating(Aircraft $aircraft): void

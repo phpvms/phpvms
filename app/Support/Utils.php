@@ -17,10 +17,8 @@ class Utils
      * Generate a new ID with a given length
      *
      * @param int [$length]
-     *
-     * @return string
      */
-    public static function generateNewId(int $length = null): string
+    public static function generateNewId(?int $length = null): string
     {
         if (!$length) {
             $length = Model::ID_MAX_LENGTH;
@@ -28,13 +26,12 @@ class Utils
 
         $hashids = new Hashids(uniqid(), $length);
         $mt = str_replace('.', '', microtime(true));
+
         return $hashids->encode($mt);
     }
 
     /**
      * Returns a 40 character API key that a user can use
-     *
-     * @return string
      */
     public static function generateApiKey(): string
     {
@@ -43,10 +40,6 @@ class Utils
 
     /**
      * Simple check on the first character if it's an object or not
-     *
-     * @param $obj
-     *
-     * @return bool
      */
     public static function isObject($obj): bool
     {
@@ -101,10 +94,6 @@ class Utils
 
     /**
      * Get the domain from a URL
-     *
-     * @param string $url
-     *
-     * @return string
      */
     public static function getRootDomain(string $url): string
     {

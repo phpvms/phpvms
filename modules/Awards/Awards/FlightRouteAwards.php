@@ -41,8 +41,6 @@ class FlightRouteAwards extends Award
      * If no parameter is passed in, just default it to XXXX:YYYY.
      *
      * @param null|mixed $dptarr
-     *
-     * @return bool
      */
     public function check($dptarr = null): bool
     {
@@ -53,6 +51,7 @@ class FlightRouteAwards extends Award
         $dptarr = strtoupper(trim($dptarr));
         if (empty($dptarr)) {
             Log::error('FlightRouteAwards: empty departure/arrival string');
+
             return false;
         }
 
@@ -60,6 +59,7 @@ class FlightRouteAwards extends Award
             [$dpt_icao, $arr_icao] = explode(':', $dptarr);
         } catch (ErrorException $e) {
             Log::error('FlightRouteAwards: Invalid departure/arrival, val="'.$dptarr.'\"');
+
             return false;
         }
 

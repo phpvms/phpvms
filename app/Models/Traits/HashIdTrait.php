@@ -8,8 +8,6 @@ trait HashIdTrait
 {
     /**
      * @throws \Hashids\HashidsException
-     *
-     * @return string
      */
     final protected static function createNewHashId(): string
     {

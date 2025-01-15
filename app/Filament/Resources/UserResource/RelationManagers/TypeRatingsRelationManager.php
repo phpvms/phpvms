@@ -16,6 +16,7 @@ class TypeRatingsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         $typeRatingRepo = app(TypeRatingRepository::class);
+
         return $form
             ->schema([
                 Forms\Components\Select::make('typerating_id')->searchable()->options($typeRatingRepo->all()->pluck('name', 'id')->toArray()),

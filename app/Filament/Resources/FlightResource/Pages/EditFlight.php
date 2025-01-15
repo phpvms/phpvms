@@ -31,6 +31,7 @@ class EditFlight extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['flight_time'] = $data['hours'] * 60 + $data['minutes'];
+
         return $data;
     }
 }

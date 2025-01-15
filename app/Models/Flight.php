@@ -62,11 +62,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Flight extends Model
 {
-    use HashIdTrait;
     use HasFactory;
+    use HashIdTrait;
+    use LogsActivity;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'flights';
 
@@ -174,8 +174,7 @@ class Flight extends Model
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
      *
-     * @param Days[] $days List of the enumerated values
-     *
+     * @param  Days[] $days List of the enumerated values
      * @return Flight
      */
     public static function findByDays(array $days)
@@ -232,11 +231,6 @@ class Flight extends Model
         );
     }
 
-    /**
-     * @param $day
-     *
-     * @return bool
-     */
     public function on_day($day): bool
     {
         return ($this->days & $day) === $day;
@@ -244,10 +238,6 @@ class Flight extends Model
 
     /**
      * Return a custom field value
-     *
-     * @param $field_name
-     *
-     * @return string
      */
     public function field($field_name): string
     {
@@ -262,8 +252,6 @@ class Flight extends Model
     /**
      * Set the days parameter. If an array is passed, it's
      * AND'd together to create the mask value
-     *
-     * @return Attribute
      */
     public function days(): Attribute
     {

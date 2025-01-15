@@ -1,0 +1,21 @@
+{
+    "name": "phpvms/sample-module",
+    "type": "phpvms-module",
+    "description": "A sample phpvms module",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Sample\\Providers\\SampleServiceProvider",
+                "Modules\\Sample\\Providers\\EventServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Sample\\": "."
+        }
+    }
+}

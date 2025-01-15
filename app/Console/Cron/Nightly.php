@@ -14,7 +14,9 @@ use App\Events\CronNightly;
 class Nightly extends CronCommand
 {
     protected $signature = 'cron:nightly';
+
     protected $description = 'Run the nightly cron tasks';
+
     protected $schedule;
 
     public function handle(): void

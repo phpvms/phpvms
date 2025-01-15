@@ -21,11 +21,10 @@ class NewsService extends Service
     /**
      * Add a news item
      *
-     * @param array $attrs
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
      *
      * @return mixed
+     *
+     * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function addNews(array $attrs)
     {
@@ -41,11 +40,8 @@ class NewsService extends Service
     /**
      * Update a news
      *
-     * @param array $attrs
      *
      * @throws ValidatorException
-     *
-     * @return ?News
      */
     public function updateNews(array $attrs): ?News
     {

@@ -22,8 +22,6 @@ class AirportFactory extends Factory
      * Generate a fake ICAO
      *
      * @throws \Exception
-     *
-     * @return string
      */
     protected function createFactoryICAO(): string
     {

@@ -8,6 +8,7 @@ use Nwidart\Modules\Facades\Module;
 class ClearCaches extends Command
 {
     protected $signature = 'phpvms:caches';
+
     protected $description = 'Clear all caches';
 
     /**
@@ -27,9 +28,7 @@ class ClearCaches extends Command
     /**
      * Clear the bootstrap/cache dir
      */
-    private static function clearBootstrapCache()
-    {
-    }
+    private static function clearBootstrapCache() {}
 
     /**
      * Rescan for new modules

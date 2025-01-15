@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Based on https://github.com/scottlaurent/accounting
  * With modifications for phpVMS
@@ -76,8 +77,6 @@ class Journal extends Model
     }
 
     /**
-     * @param Ledger $ledger
-     *
      * @return Journal
      */
     public function assignToLedger(Ledger $ledger)
@@ -98,8 +97,7 @@ class Journal extends Model
     }
 
     /**
-     * @param Journal $object
-     *
+     * @param  Journal                                         $object
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function transactionsReferencingObjectQuery($object)
@@ -113,12 +111,11 @@ class Journal extends Model
     /**
      * Get the credit only balance of the journal based on a given date.
      *
-     * @param Carbon $date
+     *
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getCreditBalanceOn(Carbon $date)
     {
@@ -132,12 +129,11 @@ class Journal extends Model
     /**
      * Get the balance of the journal based on a given date.
      *
-     * @param Carbon $date
+     *
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getBalanceOn(Carbon $date)
     {
@@ -148,10 +144,10 @@ class Journal extends Model
     /**
      * Get the balance of the journal as of right now, excluding future transactions.
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getCurrentBalance()
     {
@@ -161,16 +157,16 @@ class Journal extends Model
     /**
      * Get the balance of the journal.  This "could" include future dates.
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getBalance()
     {
         $balance = $this
-                ->transactions()
-                ->sum('credit') - $this->transactions()->sum('debit');
+            ->transactions()
+            ->sum('credit') - $this->transactions()->sum('debit');
 
         return new Money($balance);
     }

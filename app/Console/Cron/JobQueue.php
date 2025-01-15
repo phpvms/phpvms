@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Artisan;
 class JobQueue extends CronCommand
 {
     protected $signature = 'cron:queue';
+
     protected $description = 'Run the cron queue tasks';
+
     protected $schedule;
 
     public function handle(): void

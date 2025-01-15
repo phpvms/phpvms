@@ -30,7 +30,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class PirepResource extends Resource
 {
     protected static ?string $model = Pirep::class;
+
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Pireps';
@@ -178,6 +180,7 @@ class PirepResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
             ->columns([
                 TextColumn::make('ident')
                     ->label('Flight Ident')

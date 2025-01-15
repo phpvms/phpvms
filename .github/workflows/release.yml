@@ -4,9 +4,18 @@ on:
   release:
     types: [ published ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  build:
+  release:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
     strategy:
       matrix:
         os: [ ubuntu-latest ]
@@ -15,20 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/gittools
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
         with:
-          versionSpec: '6.0.x'
-
-      - name: Install GitReleaseManager
-        uses: ./gitreleasemanager/setup
-        with:
-            versionSpec: '0.18.x'
-
-      - name: Determine Version
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v3.1.1
+            setAllVars: true
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -61,16 +61,6 @@ jobs:
 #           isPreRelease: ${{ github.event.release.prerelease }}
 #           targetcommitish: 'main'
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "dist/*.*"
-          allowUpdates: true
-          generateReleaseNotes: true
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
         # Dependencies
       - name: 'Install Release Dependencies'
         run: |
@@ -85,6 +75,21 @@ jobs:
       - name: Build Distro
         run: .github/scripts/build.sh
 
+      # Dependencies
+      - name: 'List files'
+        run: |
+          find . -maxdepth 2  -type f
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.*"
+          allowUpdates: true
+          generateReleaseNotes: true
+          name: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: BetaHuhn/do-spaces-action@v2
         id: spaces
         with:
@@ -96,14 +101,14 @@ jobs:
           cdn_domain: phpvms.cdn.vmslabs.net
           permission: public-read
 
-      - name: Add Assets
-        uses: ./gitreleasemanager/addasset
-        with:
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          owner: ${{ github.repository_owner }}
-          repository: phpvms
-          targetDirectory: dist/
-          assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
+#       - name: Add Assets
+#         uses: ./gitreleasemanager/addasset
+#         with:
+#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#           owner: ${{ github.repository_owner }}
+#           repository: phpvms
+#           targetDirectory: dist/
+#           assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
 
 #       - name: Close Release
 #         uses: ./gitreleasemanager/close
@@ -112,18 +117,6 @@ jobs:
 #           owner: ${{ github.repository_owner }}
 #           repository: actions
 #           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
-
-        # Dependencies
-      - name: 'List files'
-        run: |
-          find . -maxdepth 2  -type f
-
-      - name: Discord notification
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: ${{ steps.discord.outputs.discord_msg }}
 
       # Push to Docker
       - name: Login to GitHub Container Registry
@@ -138,6 +131,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -158,3 +153,10 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: Discord notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.discord.outputs.discord_msg }}

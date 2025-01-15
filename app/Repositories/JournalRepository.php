@@ -30,7 +30,6 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Return a Y-m-d string for the post date
      *
-     * @param Carbon $date
      *
      * @return string
      */
@@ -46,12 +45,11 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Recalculate the balance of the given journal
      *
-     * @param Journal $journal
+     *
+     * @return Journal
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Journal
      */
     public function recalculateBalance(Journal $journal)
     {
@@ -74,18 +72,16 @@ class JournalRepository extends Repository implements CacheableInterface
      * on the transaction itself. A cron will run to reconcile the journal
      * balance nightly, since they're not atomic operations
      *
-     * @param Journal           $journal
-     * @param Money|null        $credit            Amount to credit
-     * @param Money|null        $debit             Amount to debit
-     * @param Model|null        $reference         The object this is a reference to
-     * @param string|null       $memo              Memo for this transaction
-     * @param string|null       $post_date         Date of the posting
-     * @param string|null       $transaction_group Grouping name for the summaries
-     * @param array|string|null $tags              Tag used for grouping/finding items
+     * @param  Money|null        $credit            Amount to credit
+     * @param  Money|null        $debit             Amount to debit
+     * @param  Model|null        $reference         The object this is a reference to
+     * @param  string|null       $memo              Memo for this transaction
+     * @param  string|null       $post_date         Date of the posting
+     * @param  string|null       $transaction_group Grouping name for the summaries
+     * @param  array|string|null $tags              Tag used for grouping/finding items
+     * @return mixed
      *
      * @throws ValidatorException
-     *
-     * @return mixed
      */
     public function post(
         Journal &$journal,
@@ -134,13 +130,10 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @param Journal     $journal
-     * @param Carbon|null $date
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getBalance(?Journal $journal = null, ?Carbon $date = null)
     {
@@ -159,15 +152,10 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Get the credit only balance of the journal based on a given date.
      *
-     * @param Carbon      $date
-     * @param Journal     $journal
-     * @param Carbon|null $start_date
-     * @param null        $transaction_group
+     * @param null $transaction_group
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getCreditBalanceBetween(
         Carbon $date,
@@ -198,15 +186,10 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @param Carbon      $date
-     * @param Journal     $journal
-     * @param Carbon|null $start_date
-     * @param null        $transaction_group
+     * @param null $transaction_group
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getDebitBalanceBetween(
         Carbon $date,
@@ -239,14 +222,11 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Return all transactions for a given object
      *
-     * @param             $object
-     * @param null        $journal
-     * @param Carbon|null $date
+     * @param  null  $journal
+     * @return array
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return array
      */
     public function getAllForObject($object, $journal = null, ?Carbon $date = null)
     {
@@ -279,9 +259,7 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Delete all transactions for a given object
      *
-     * @param      $object
-     * @param null $journal
-     *
+     * @param  null $journal
      * @return void
      */
     public function deleteAllForObject($object, $journal = null)

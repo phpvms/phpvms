@@ -14,10 +14,7 @@ class MaintenanceController extends Controller
     /**
      * Run the cron job from the web
      *
-     * @param Request $request
-     * @param string  $id      The ID passed in for the cron
-     *
-     * @return JsonResponse
+     * @param string $id The ID passed in for the cron
      */
     public function cron(Request $request, string $id): JsonResponse
     {

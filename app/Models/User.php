@@ -72,16 +72,16 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Illuminate\Database\Eloquent\Builder
  * @mixin \Illuminate\Notifications\Notifiable
  */
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasFactory;
     use HasRelationships;
     use HasRoles;
     use JournalTrait;
+    use LogsActivity;
     use Notifiable;
     use SoftDeletes;
     use Sortable;
-    use LogsActivity;
 
     public $table = 'users';
 
@@ -184,8 +184,6 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     /**
      * Format the pilot ID/ident
-     *
-     * @return Attribute
      */
     public function ident(): Attribute
     {
@@ -203,8 +201,6 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     /**
      * Format the pilot atc callsign, either return alphanumeric callsign or ident
-     *
-     * @return Attribute
      */
     public function atc(): Attribute
     {
@@ -220,8 +216,6 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     /**
      * Return a "privatized" version of someones name - First and middle names full, last name initials
-     *
-     * @return Attribute
      */
     public function namePrivate(): Attribute
     {
@@ -251,8 +245,6 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     /**
      * Shortcut for timezone
-     *
-     * @return Attribute
      */
     public function tz(): Attribute
     {
@@ -283,8 +275,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     }
 
     /**
-     * @param mixed $size Size of the gravatar, in pixels
-     *
+     * @param  mixed  $size Size of the gravatar, in pixels
      * @return string
      */
     public function gravatar($size = null)

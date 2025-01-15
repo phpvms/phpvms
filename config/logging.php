@@ -40,7 +40,7 @@ return [
             'driver'   => 'stack',
             'channels' => [
                 'cron_rotating',
-                //'stdout',
+                // 'stdout',
             ],
         ],
         'single' => [

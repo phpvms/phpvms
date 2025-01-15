@@ -37,13 +37,12 @@ class PilotHoursAwards extends Award
      * If the user has over N minutes of flights, then we can give them this award.
      *
      * @param int|null $flight_minutes The parameters passed in from the UI
-     *
-     * @return bool
      */
     public function check($flight_minutes = null): bool
     {
         if (!is_numeric($flight_minutes)) {
             Log::error('PilotHourAwards: Flight time "'.$flight_minutes.'" is not a valid flight time');
+
             return false;
         }
 

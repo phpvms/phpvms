@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class BackupMonitor extends CronCommand
 {
     protected $signature = 'cron:backup-monitor';
+
     protected $description = 'Monitor backups health';
 
     public function handle(): void

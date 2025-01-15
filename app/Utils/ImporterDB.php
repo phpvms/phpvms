@@ -72,7 +72,6 @@ class ImporterDB
     /**
      * Return the table name with the prefix
      *
-     * @param $table
      *
      * @return string
      */
@@ -88,10 +87,6 @@ class ImporterDB
     /**
      * Does a table exist? Try to get the column information on it.
      * The result will be 'false' if that table isn't there
-     *
-     * @param $table
-     *
-     * @return bool
      */
     public function tableExists($table): bool
     {
@@ -109,7 +104,6 @@ class ImporterDB
     /**
      * Get the names of the columns for a particular table
      *
-     * @param $table
      *
      * @return mixed
      */
@@ -129,8 +123,6 @@ class ImporterDB
     }
 
     /**
-     * @param $table
-     *
      * @return mixed
      */
     public function getTotalRows($table)
@@ -148,9 +140,7 @@ class ImporterDB
     /**
      * Read rows from a table with a given assoc array. Simple
      *
-     * @param string $table
-     * @param array  $attrs
-     *
+     * @param  string              $table
      * @return false|\PDOStatement
      */
     public function findBy($table, array $attrs)
@@ -179,11 +169,10 @@ class ImporterDB
     /**
      * Read all the rows in a table, but read them in a batched manner
      *
-     * @param string $table        The name of the table
-     * @param string $order_by     Column to order by
-     * @param int    $start_offset
-     * @param string $fields
-     *
+     * @param  string $table        The name of the table
+     * @param  string $order_by     Column to order by
+     * @param  int    $start_offset
+     * @param  string $fields
      * @return array
      */
     public function readRows($table, $order_by = 'id', $start_offset = 0, $fields = '*')
@@ -211,12 +200,10 @@ class ImporterDB
     }
 
     /**
-     * @param string $table
-     * @param int    $limit    Number of rows to read
-     * @param int    $offset   Where to start from
-     * @param        $order_by
-     * @param string $fields
-     *
+     * @param  string                   $table
+     * @param  int                      $limit  Number of rows to read
+     * @param  int                      $offset Where to start from
+     * @param  string                   $fields
      * @return false|\PDOStatement|void
      */
     public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')

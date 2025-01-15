@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class BackupClean extends CronCommand
 {
     protected $signature = 'cron:backup-clean';
+
     protected $description = 'Clean up old backups';
 
     public function handle(): void

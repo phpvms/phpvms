@@ -32,6 +32,7 @@ class ExportAction extends Action
         $this->action(function (array $arguments): ?BinaryFileResponse {
             if (!isset($arguments['resourceTitle']) || !$arguments['exportType']) {
                 $this->failure();
+
                 return null;
             }
 
@@ -67,6 +68,7 @@ class ExportAction extends Action
             }
 
             $this->sendSuccessNotification();
+
             return response()->download($path, $file_name, ['content-type' => 'text/csv'])->deleteFileAfterSend(true);
         });
 

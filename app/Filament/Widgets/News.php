@@ -42,6 +42,8 @@ class News extends BaseWidget
             ->query(
                 NewsModel::orderBy('created_at', 'desc')
             )
+            ->paginated([2, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(2)
             ->columns([
                 Tables\Columns\Layout\Stack::make([
                     Tables\Columns\TextColumn::make('subject')

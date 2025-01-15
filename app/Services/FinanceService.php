@@ -18,8 +18,7 @@ class FinanceService extends Service
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
         private readonly JournalRepository $journalRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Add an expense, and properly tie it to a model, and know which
@@ -28,8 +27,6 @@ class FinanceService extends Service
      * @param array      $attrs      Array of attributes
      * @param Model|null $model      The model this expense is tied to
      * @param int|null   $airline_id The airline this expense should get charged to
-     *
-     * @return Expense
      */
     public function addExpense(array $attrs, ?Model $model = null, ?int $airline_id = null): Expense
     {
@@ -62,17 +59,14 @@ class FinanceService extends Service
      *
      * creditToJournal($user->journal, new Money(1000), $pirep, 'Payment', 'pirep', 'payment');
      *
-     * @param \App\Models\Journal                 $journal
-     * @param Money                               $amount
-     * @param \Illuminate\Database\Eloquent\Model $reference
-     * @param string                              $memo
-     * @param string                              $transaction_group
-     * @param string|array                        $tag
-     * @param string                              $post_date
+     * @param  \Illuminate\Database\Eloquent\Model $reference
+     * @param  string                              $memo
+     * @param  string                              $transaction_group
+     * @param  string|array                        $tag
+     * @param  string                              $post_date
+     * @return mixed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return mixed
      */
     public function creditToJournal(
         Journal $journal,
@@ -99,17 +93,14 @@ class FinanceService extends Service
      * Charge some expense for a given PIREP to the airline its file against
      * E.g, some amount for expenses or ground handling fees, etc.
      *
-     * @param \App\Models\Journal                 $journal
-     * @param Money                               $amount
-     * @param \Illuminate\Database\Eloquent\Model $reference
-     * @param string                              $memo
-     * @param string                              $transaction_group
-     * @param string|array                        $tag
-     * @param string                              $post_date
+     * @param  \Illuminate\Database\Eloquent\Model $reference
+     * @param  string                              $memo
+     * @param  string                              $transaction_group
+     * @param  string|array                        $tag
+     * @param  string                              $post_date
+     * @return mixed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return mixed
      */
     public function debitFromJournal(
         Journal $journal,
@@ -136,8 +127,6 @@ class FinanceService extends Service
      * Get all of the transactions for every airline in a given month
      *
      * @param string $month In Y-m format
-     *
-     * @return array
      */
     public function getAllAirlineTransactionsBetween($month): array
     {
@@ -163,10 +152,9 @@ class FinanceService extends Service
      * with `credits`, `debits` and `transactions` fields, where transactions contains the
      * grouped transactions (e.g, "Fares" and "Ground Handling", etc)
      *
-     * @param Airline $airline
-     * @param string  $start_date YYYY-MM-DD
-     * @param string  $end_date   YYYY-MM-DD
-     *
+     * @param  Airline $airline
+     * @param  string  $start_date YYYY-MM-DD
+     * @param  string  $end_date   YYYY-MM-DD
      * @return array
      */
     public function getAirlineTransactionsBetween($airline, $start_date, $end_date)

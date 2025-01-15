@@ -8,11 +8,6 @@ use Illuminate\View\View;
 
 class LiveMapController extends Controller
 {
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function index(Request $request): View
     {
         return view('livemap.index');

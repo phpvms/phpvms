@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class AircraftResource extends Resource
 {
     protected static ?string $model = Aircraft::class;
+
     protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
@@ -32,91 +33,91 @@ class AircraftResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('subfleet_and_status')
-                ->heading('Subfleet And Status')
-                ->schema([
-                    Forms\Components\Select::make('subfleet')
-                        ->label('Subfleet')
-                        ->relationship('subfleet', 'name')
-                        ->searchable()
-                        ->required()
-                        ->native(false),
+                    ->heading('Subfleet And Status')
+                    ->schema([
+                        Forms\Components\Select::make('subfleet')
+                            ->label('Subfleet')
+                            ->relationship('subfleet', 'name')
+                            ->searchable()
+                            ->required()
+                            ->native(false),
 
-                    Forms\Components\Select::make('status')
-                        ->label('Status')
-                        ->options(AircraftStatus::labels())
-                        ->required()
-                        ->native(false),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options(AircraftStatus::labels())
+                            ->required()
+                            ->native(false),
 
-                    Forms\Components\Select::make('hub_id')
-                        ->label('Home')
-                        ->relationship('home', 'icao')
-                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                        ->searchable()
-                        ->native(false),
+                        Forms\Components\Select::make('hub_id')
+                            ->label('Home')
+                            ->relationship('home', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                            ->searchable()
+                            ->native(false),
 
-                    Forms\Components\Select::make('airport_id')
-                        ->label('Location')
-                        ->relationship('airport', 'icao')
-                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                        ->searchable()
-                        ->native(false),
-                ])->columns(4),
+                        Forms\Components\Select::make('airport_id')
+                            ->label('Location')
+                            ->relationship('airport', 'icao')
+                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                            ->searchable()
+                            ->native(false),
+                    ])->columns(4),
 
                 Forms\Components\Section::make('aircraft_information')
-                ->heading('Aircraft Information')
-                ->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->string(),
+                    ->heading('Aircraft Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->string(),
 
-                    Forms\Components\TextInput::make('registration')
-                        ->required()
-                        ->string(),
+                        Forms\Components\TextInput::make('registration')
+                            ->required()
+                            ->string(),
 
-                    Forms\Components\TextInput::make('fin')
-                        ->label('FIN')
-                        ->string(),
+                        Forms\Components\TextInput::make('fin')
+                            ->label('FIN')
+                            ->string(),
 
-                    Forms\Components\TextInput::make('selcal')
-                        ->label('SELCAL')
-                        ->string(),
+                        Forms\Components\TextInput::make('selcal')
+                            ->label('SELCAL')
+                            ->string(),
 
-                    Forms\Components\TextInput::make('iata')
-                        ->label('IATA')
-                        ->string(),
+                        Forms\Components\TextInput::make('iata')
+                            ->label('IATA')
+                            ->string(),
 
-                    Forms\Components\TextInput::make('icao')
-                        ->label('ICAO')
-                        ->string(),
+                        Forms\Components\TextInput::make('icao')
+                            ->label('ICAO')
+                            ->string(),
 
-                    Forms\Components\TextInput::make('simbrief_type')
-                        ->label('SimBrief Type')
-                        ->string(),
+                        Forms\Components\TextInput::make('simbrief_type')
+                            ->label('SimBrief Type')
+                            ->string(),
 
-                    Forms\Components\TextInput::make('hex_code')
-                        ->label('Hex Code')
-                        ->string(),
-                ])->columns(4),
+                        Forms\Components\TextInput::make('hex_code')
+                            ->label('Hex Code')
+                            ->string(),
+                    ])->columns(4),
 
                 Forms\Components\Section::make('weights')
-                ->heading('Certified Weights')
-                ->schema([
-                    Forms\Components\TextInput::make('dow')
-                        ->label('Dry Operating Weight (DOW/OEW)')
-                        ->numeric(),
+                    ->heading('Certified Weights')
+                    ->schema([
+                        Forms\Components\TextInput::make('dow')
+                            ->label('Dry Operating Weight (DOW/OEW)')
+                            ->numeric(),
 
-                    Forms\Components\TextInput::make('zfw')
-                        ->label('Max Zero Fuel Weight (MZFW)')
-                        ->numeric(),
+                        Forms\Components\TextInput::make('zfw')
+                            ->label('Max Zero Fuel Weight (MZFW)')
+                            ->numeric(),
 
-                    Forms\Components\TextInput::make('mtow')
-                        ->label('Max Takeoff Weight (MTOW)')
-                        ->numeric(),
+                        Forms\Components\TextInput::make('mtow')
+                            ->label('Max Takeoff Weight (MTOW)')
+                            ->numeric(),
 
-                    Forms\Components\TextInput::make('mlw')
-                        ->label('Max Landing Weight (MLW)')
-                        ->numeric(),
-                ])->columns(4),
+                        Forms\Components\TextInput::make('mlw')
+                            ->label('Max Landing Weight (MLW)')
+                            ->numeric(),
+                    ])->columns(4),
             ]);
     }
 

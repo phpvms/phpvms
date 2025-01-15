@@ -19,20 +19,15 @@ class AirportController extends Controller
 {
     /**
      * AirportController constructor.
-     *
-     * @param AirportRepository $airportRepo
-     * @param AirportService    $airportSvc
      */
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly AirportService $airportSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the airports, paginated
      *
-     * @param Request $request
      *
      * @return mixed
      */
@@ -52,9 +47,6 @@ class AirportController extends Controller
         return AirportResource::collection($airports);
     }
 
-    /**
-     * @return AnonymousResourceCollection
-     */
     public function index_hubs(): AnonymousResourceCollection
     {
         $where = [
@@ -70,10 +62,6 @@ class AirportController extends Controller
 
     /**
      * Return a specific airport
-     *
-     * @param string $id
-     *
-     * @return AirportResource
      */
     public function get(string $id): AirportResource
     {
@@ -84,28 +72,21 @@ class AirportController extends Controller
 
     /**
      * Do a lookup, via vaCentral, for the airport information
-     *
-     * @param string $id
-     *
-     * @return AirportResource
      */
     public function lookup(string $id): AirportResource
     {
         $airport = $this->airportSvc->lookupAirport($id);
+
         return new AirportResource(collect($airport));
     }
 
     /**
      * Do a lookup, via vaCentral, for the airport information
-     *
-     * @param string $fromIcao
-     * @param string $toIcao
-     *
-     * @return AirportDistanceResource
      */
     public function distance(string $fromIcao, string $toIcao): AirportDistanceResource
     {
         $distance = $this->airportSvc->calculateDistance($fromIcao, $toIcao);
+
         return new AirportDistanceResource([
             'fromIcao' => $fromIcao,
             'toIcao'   => $toIcao,
@@ -117,8 +98,6 @@ class AirportController extends Controller
      * Search for airports in the database
      *
      * @param string $searchString
-     *
-     * @return AnonymousResourceCollection
      */
     public function search(Request $request): AnonymousResourceCollection
     {

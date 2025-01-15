@@ -15,15 +15,11 @@ class AcarsReplay extends Command
 
     /**
      * API Key to post as
-     *
-     * @var string
      */
     protected string $apiKey = 'testadminapikey';
 
     /**
      * For automatic updates, how many seconds to sleep between updates
-     *
-     * @var int
      */
     protected int $sleepTime = 10;
 
@@ -33,9 +29,6 @@ class AcarsReplay extends Command
      */
     protected array $pirepList = [];
 
-    /**
-     * @var Client
-     */
     protected Client $httpClient;
 
     /**
@@ -59,8 +52,6 @@ class AcarsReplay extends Command
      * @param \stdClass $flight
      *
      * @throws \RuntimeException
-     *
-     * @return string
      */
     protected function startPirep($flight): string
     {
@@ -93,11 +84,10 @@ class AcarsReplay extends Command
     /**
      * Mark the PIREP as filed
      *
-     * @param $pirep_id
-     *
-     * @throws \RuntimeException
      *
      * @return mixed
+     *
+     * @throws \RuntimeException
      */
     protected function filePirep($pirep_id)
     {
@@ -111,12 +101,9 @@ class AcarsReplay extends Command
     }
 
     /**
-     * @param $pirep_id
-     * @param $data
+     * @return array
      *
      * @throws \RuntimeException
-     *
-     * @return array
      */
     protected function postUpdate($pirep_id, $data)
     {
@@ -166,7 +153,6 @@ class AcarsReplay extends Command
     /**
      * Parse this file and run the updates
      *
-     * @param array $files
      *
      * @throws \RuntimeException
      */
@@ -241,9 +227,9 @@ class AcarsReplay extends Command
     /**
      * Execute the console command.
      *
-     * @throws \RuntimeException
-     *
      * @return mixed
+     *
+     * @throws \RuntimeException
      */
     public function handle(): void
     {

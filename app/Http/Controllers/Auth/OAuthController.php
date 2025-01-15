@@ -18,8 +18,7 @@ class OAuthController extends Controller
 {
     public function __construct(
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     public function redirectToProvider(string $provider): RedirectResponse
     {
@@ -78,6 +77,7 @@ class OAuthController extends Controller
 
         if (!$providerUser) {
             flash()->error('Provider '.$provider.' not found');
+
             return redirect(url('/login'));
         }
 
@@ -162,6 +162,7 @@ class OAuthController extends Controller
         }
 
         flash()->error('No user linked to this account found. Please register first.');
+
         return redirect(url('/login'));
     }
 

@@ -26,10 +26,8 @@ final class AdminControllerTests extends TestCase
     /**
      * Test adding a subfleet, deleting it and seeing that the type
      * can be added again
-     *
-     * @return void
      */
-    public function testAddSubfleet(): void
+    public function test_add_subfleet(): void
     {
         $user = $this->addAdminUser();
         $add = Subfleet::factory()->make(['type' => 'B737'])->toArray();

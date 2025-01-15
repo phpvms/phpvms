@@ -15,6 +15,7 @@ class LatestPirepsChart extends ChartWidget
     protected static ?string $heading = 'Pireps Filed';
 
     protected static ?string $pollingInterval = null;
+
     protected static ?int $sort = 2;
 
     public ?string $filter = 'week';

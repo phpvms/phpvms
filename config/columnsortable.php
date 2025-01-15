@@ -26,7 +26,7 @@ return [
     // icon that shows when generating sortable link while column is not sorted
     'sortable_icon' => 'bi bi-sort-down',
 
-    //generated icon is clickable non-clickable (default)
+    // generated icon is clickable non-clickable (default)
     'clickable_icon' => false,
 
     // icon and text separator (any string), in case of 'clickable_icon' => true; separator creates possibility to style icon and anchor-text properly

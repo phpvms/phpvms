@@ -23,14 +23,13 @@ use Symfony\Component\Yaml\Yaml;
 class DevCommands extends Command
 {
     protected $signature = 'phpvms {cmd} {param?}';
+
     protected $description = 'Developer commands';
 
     protected DatabaseService $dbSvc;
 
     /**
      * DevCommands constructor.
-     *
-     * @param DatabaseService $dbSvc
      */
     public function __construct(DatabaseService $dbSvc)
     {

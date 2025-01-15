@@ -19,6 +19,7 @@ class AirlineFinanceChart extends ChartWidget
     use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Finance';
+
     protected static ?string $pollingInterval = null;
 
     protected function getData(): array

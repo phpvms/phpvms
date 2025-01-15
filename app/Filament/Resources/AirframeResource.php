@@ -18,6 +18,7 @@ class AirframeResource extends Resource
     protected static ?string $model = SimBriefAirframe::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'SimBrief Airframe';

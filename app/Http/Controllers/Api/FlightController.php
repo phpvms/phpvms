@@ -25,37 +25,21 @@ use Prettus\Repository\Exceptions\RepositoryException;
 
 class FlightController extends Controller
 {
-    /**
-     * @param FareService      $fareSvc
-     * @param FlightRepository $flightRepo
-     * @param FlightService    $flightSvc
-     * @param UserService      $userSvc
-     */
     public function __construct(
         private readonly FareService $fareSvc,
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * Return all the flights, paginated
-     *
-     * @param Request $request
-     *
-     * @return AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
         return $this->search($request);
     }
 
-    /**
-     * @param string $id
-     *
-     * @return FlightResource
-     */
     public function get(string $id): FlightResource
     {
         /** @var \App\Models\User $user */
@@ -79,8 +63,6 @@ class FlightController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
      * @return mixed
      */
     public function search(Request $request)
@@ -162,8 +144,7 @@ class FlightController extends Controller
     /**
      * Output the flight briefing from simbrief or whatever other format
      *
-     * @param string $id The flight ID
-     *
+     * @param  string                                                                  $id The flight ID
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
      */
     public function briefing(string $id)
@@ -192,11 +173,6 @@ class FlightController extends Controller
 
     /**
      * Get a flight's route
-     *
-     * @param string  $id
-     * @param Request $request
-     *
-     * @return AnonymousResourceCollection
      */
     public function route(string $id, Request $request): AnonymousResourceCollection
     {
@@ -208,9 +184,6 @@ class FlightController extends Controller
 
     /**
      * Get a flight's aircrafts
-     *
-     * @param string  $id
-     * @param Request $request
      */
     public function aircraft(string $id, Request $request)
     {

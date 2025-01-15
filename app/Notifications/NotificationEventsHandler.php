@@ -52,8 +52,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Send a notification to all of the admins
-     *
-     * @param \App\Contracts\Notification $notification
      */
     protected function notifyAdmins(\App\Contracts\Notification $notification)
     {
@@ -75,10 +73,6 @@ class NotificationEventsHandler extends Listener
         }
     }
 
-    /**
-     * @param User                        $user
-     * @param \App\Contracts\Notification $notification
-     */
     protected function notifyUser(User $user, \App\Contracts\Notification $notification)
     {
         if ($user->state === UserState::DELETED) {
@@ -95,8 +89,6 @@ class NotificationEventsHandler extends Listener
     /**
      * Send a notification to all users. Also can specify if a particular notification
      * requires an opt-in
-     *
-     * @param \App\Contracts\Notification $notification
      */
     protected function notifyAllUsers(\App\Contracts\Notification $notification)
     {
@@ -151,8 +143,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * When a user's state changes, send an email out
-     *
-     * @param UserStateChanged $event
      */
     public function onUserStateChange(UserStateChanged $event): void
     {
@@ -210,8 +200,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify the admins that a new PIREP has been filed
-     *
-     * @param PirepFiled $event
      */
     public function onPirepFile(PirepFiled $event): void
     {
@@ -230,8 +218,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify the user that their PIREP has been accepted
-     *
-     * @param \App\Events\PirepAccepted $event
      */
     public function onPirepAccepted(PirepAccepted $event): void
     {
@@ -243,8 +229,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify the user that their PIREP has been rejected
-     *
-     * @param \App\Events\PirepRejected $event
      */
     public function onPirepRejected(PirepRejected $event): void
     {
@@ -256,8 +240,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify all users of a news event, but only the users which have opted in
-     *
-     * @param \App\Events\NewsAdded $event
      */
     public function onNewsAdded(NewsAdded $event): void
     {
@@ -274,8 +256,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify all users of a news event, but only the users which have opted in
-     *
-     * @param \App\Events\NewsUpdated $event
      */
     public function onNewsUpdated(NewsUpdated $event): void
     {
@@ -292,8 +272,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify all users that user has awarded a new award
-     *
-     * @param \App\Events\AwardAwarded $event
      */
     public function onAwardAwarded(AwardAwarded $event): void
     {
@@ -307,8 +285,6 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Notify all users of a user rank change
-     *
-     * @param \App\Events\UserStatsChanged $event
      */
     public function onUserStatsChanged(UserStatsChanged $event): void
     {

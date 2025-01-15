@@ -41,14 +41,15 @@ class Installer extends Page
     protected static ?string $slug = 'install';
 
     public ?string $requirements;
+
     public ?string $details;
+
     public ?array $env;
+
     public ?array $user;
 
     /**
      * Called whenever the component is loaded
-     *
-     * @return void
      */
     public function mount(): void
     {
@@ -59,6 +60,7 @@ class Installer extends Page
                 ->send();
 
             $this->redirect('/admin');
+
             return;
         }
 
@@ -72,8 +74,6 @@ class Installer extends Page
 
     /**
      * To fill the form (set default values)
-     *
-     * @return void
      */
     public function fillForm(): void
     {
@@ -86,10 +86,6 @@ class Installer extends Page
 
     /**
      * The filament form
-     *
-     * @param Form $form
-     *
-     * @return Form
      */
     public function form(Form $form): Form
     {
@@ -284,8 +280,6 @@ class Installer extends Page
 
     /**
      * Retrieve phpvms' requirements
-     *
-     * @return array
      */
     private function getRequirementsData(): array
     {
@@ -309,10 +303,6 @@ class Installer extends Page
 
     /**
      * Check if all item of an array passed requirements
-     *
-     * @param array $arr
-     *
-     * @return bool
      */
     private function allPassed(array $arr): bool
     {
@@ -329,8 +319,6 @@ class Installer extends Page
      * Set up .env and trigger start migrations
      *
      * @throws Halt
-     *
-     * @return void
      */
     private function envAndDbSetup(): void
     {
@@ -384,8 +372,6 @@ class Installer extends Page
 
     /**
      * Run the migrations
-     *
-     * @return void
      */
     public function migrate(): void
     {
@@ -419,8 +405,6 @@ class Installer extends Page
      * Create first user and airline
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return void
      */
     private function airlineAndUserSetup(): void
     {
@@ -460,8 +444,6 @@ class Installer extends Page
 
     /**
      * Test db connection
-     *
-     * @return bool
      */
     private function testDb(): bool
     {
@@ -486,6 +468,7 @@ class Installer extends Page
                 ->danger()
                 ->persistent()
                 ->send();
+
             return false;
         }
 
@@ -501,8 +484,6 @@ class Installer extends Page
      * Called when the form is filed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return void
      */
     public function save(): void
     {

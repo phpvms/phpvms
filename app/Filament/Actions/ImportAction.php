@@ -34,6 +34,7 @@ class ImportAction extends Action
         $this->action(function (array $data, array $arguments): void {
             if (!isset($arguments['resourceTitle']) || !$arguments['importType']) {
                 $this->failure();
+
                 return;
             }
 

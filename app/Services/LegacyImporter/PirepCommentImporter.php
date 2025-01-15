@@ -7,6 +7,7 @@ use App\Models\PirepComment;
 class PirepCommentImporter extends BaseImporter
 {
     protected $table = 'pirepcomments';
+
     protected $idField = 'id';
 
     public function run($start = 0)

@@ -7,6 +7,4 @@ use App\Contracts\Event;
 /**
  * @deprecated Extend App\Contracts\Event directly
  */
-class BaseEvent extends Event
-{
-}
+class BaseEvent extends Event {}

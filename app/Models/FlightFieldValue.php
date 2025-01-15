@@ -28,8 +28,6 @@ class FlightFieldValue extends Model
 
     /**
      * When setting the name attribute, also set the slug
-     *
-     * @return Attribute
      */
     public function name(): Attribute
     {

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 class FlightField extends Model
 {
     public $table = 'flight_fields';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -33,8 +34,6 @@ class FlightField extends Model
 
     /**
      * When setting the name attribute, also set the slug
-     *
-     * @return Attribute
      */
     public function name(): Attribute
     {

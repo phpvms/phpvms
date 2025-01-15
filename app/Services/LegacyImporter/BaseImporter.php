@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\Log;
 
 abstract class BaseImporter
 {
-    use LoggerTrait;
     use Dispatchable;
     use InteractsWithQueue;
+    use LoggerTrait;
     use Queueable;
+
     /**
      * Holds the connection to the legacy database
      *
@@ -56,8 +57,7 @@ abstract class BaseImporter
     /**
      * The start method. Takes the offset to start from
      *
-     * @param int $start
-     *
+     * @param  int   $start
      * @return mixed
      */
     abstract public function run($start = 0);
@@ -65,8 +65,6 @@ abstract class BaseImporter
     /**
      * Return a manifest of the import tasks to run. Returns an array of objects,
      * which contain a start and end row
-     *
-     * @return array
      */
     public function getManifest(): array
     {
@@ -75,6 +73,7 @@ abstract class BaseImporter
         // Ensure that the table exists; if it doesn't skip it from the manifest
         if (!$this->db->tableExists($this->table)) {
             Log::info('Table '.$this->table.' doesn\'t exist');
+
             return [];
         }
 
@@ -105,8 +104,6 @@ abstract class BaseImporter
 
     /**
      * Determine what columns exist, can be used for feature testing between v2/v5
-     *
-     * @return array
      */
     public function getColumns(): array
     {
@@ -114,8 +111,6 @@ abstract class BaseImporter
     }
 
     /**
-     * @param $date
-     *
      * @return Carbon
      */
     protected function parseDate($date)
@@ -126,7 +121,6 @@ abstract class BaseImporter
     /**
      * Take a decimal duration and convert it to minutes
      *
-     * @param $duration
      *
      * @return float|int
      */

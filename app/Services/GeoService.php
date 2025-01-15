@@ -20,25 +20,20 @@ class GeoService extends Service
 {
     /**
      * GeoService constructor.
-     *
-     * @param AcarsRepository   $acarsRepo
-     * @param NavdataRepository $navRepo
      */
     public function __construct(
         private readonly AcarsRepository $acarsRepo,
         private readonly NavdataRepository $navRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Determine the closest set of coordinates from the starting position
      *
-     * @param array $coordStart
-     * @param array $all_coords
+     * @param  array $coordStart
+     * @param  array $all_coords
+     * @return mixed
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
-     *
-     * @return mixed
      */
     public function getClosestCoords($coordStart, $all_coords)
     {
@@ -67,8 +62,6 @@ class GeoService extends Service
      * @param $arr_icao     string  ICAO to ignore
      * @param $start_coords array   Starting point, [x, y]
      * @param $route        string  Textual route
-     *
-     * @return array
      */
     public function getCoordsFromRoute($dep_icao, $arr_icao, $start_coords, $route): array
     {
@@ -98,6 +91,7 @@ class GeoService extends Service
                 continue;
             } catch (\Exception $e) {
                 Log::error($e);
+
                 continue;
             }
 
@@ -112,6 +106,7 @@ class GeoService extends Service
                 $point = $points[0];
                 Log::debug('name: '.$point->id.' - '.$point->lat.'x'.$point->lon);
                 $coords[] = $point;
+
                 continue;
             }
 
@@ -156,14 +151,10 @@ class GeoService extends Service
     /**
      * Determine the center point between two sets of coordinates
      *
-     * @param $latA
-     * @param $lonA
-     * @param $latB
-     * @param $lonB
-     *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
      *
      * @return array
+     *
+     * @throws \League\Geotools\Exception\InvalidArgumentException
      */
     public function getCenter($latA, $lonA, $latB, $lonB)
     {
@@ -185,7 +176,6 @@ class GeoService extends Service
     /**
      * Read an array/relationship of ACARS model points
      *
-     * @param Pirep $pirep
      *
      * @return array
      */
@@ -212,7 +202,7 @@ class GeoService extends Service
             $route->addPoint($point->lat, $point->lon, [
                 'pirep_id' => $pirep->id,
                 'alt'      => $point->altitude,
-                //'popup'    => 'GS: '.$point->gs.'<br />Alt: '.$point->altitude,
+                // 'popup'    => 'GS: '.$point->gs.'<br />Alt: '.$point->altitude,
             ]);
         }
 
@@ -243,8 +233,7 @@ class GeoService extends Service
     /**
      * Return a single feature point for the
      *
-     * @param mixed $pireps
-     *
+     * @param  mixed                              $pireps
      * @return mixed
      * @return \GeoJson\Feature\FeatureCollection
      */
@@ -276,16 +265,12 @@ class GeoService extends Service
 
     /**
      * Return a FeatureCollection GeoJSON object
-     *
-     * @param Flight $flight
-     *
-     * @return array
      */
     public function flightGeoJson(Flight $flight): array
     {
         $route = new GeoJson();
 
-        //# Departure Airport
+        // # Departure Airport
         $route->addPoint(optional($flight->dpt_airport)->lat, optional($flight->dpt_airport)->lon, [
             'name'  => $flight->dpt_airport_id,
             'popup' => optional($flight->dpt_airport)->full_name ?? $flight->dpt_airport_id,
@@ -325,7 +310,6 @@ class GeoService extends Service
     /**
      * Return a GeoJSON FeatureCollection for a PIREP
      *
-     * @param Pirep $pirep
      *
      * @return array
      */

@@ -17,10 +17,13 @@ class ExpenseResource extends Resource
     protected static ?string $model = Expense::class;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Expenses';
+
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form

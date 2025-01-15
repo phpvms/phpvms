@@ -1,0 +1,16 @@
+{
+  "preset": "laravel",
+  "rules": {
+    "binary_operator_spaces": {
+      "operators": {
+        "=>": "align_single_space_minimal"
+      }
+    },
+    "new_with_parentheses": true,
+    "not_operator_with_successor_space": false,
+    "phpdoc_align": {
+      "align": "vertical"
+    },
+    "spaces_inside_parentheses": false
+  }
+}

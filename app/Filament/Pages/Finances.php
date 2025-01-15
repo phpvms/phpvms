@@ -12,10 +12,11 @@ use Filament\Pages\Page;
 
 class Finances extends Page
 {
-    use HasPageShield;
     use HasFiltersForm;
+    use HasPageShield;
 
     protected static ?string $navigationGroup = 'Operations';
+
     protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Finances';

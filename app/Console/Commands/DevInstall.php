@@ -11,6 +11,7 @@ use App\Services\Installer\ConfigService;
 class DevInstall extends Command
 {
     protected $signature = 'phpvms:dev-install {--reset-db} {--reset-configs}';
+
     protected $description = 'Run a developer install and run the sample migration';
 
     private \DatabaseSeeder $databaseSeeder;

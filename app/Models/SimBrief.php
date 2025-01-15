@@ -30,6 +30,7 @@ class SimBrief extends Model
     use HasFactory;
 
     public $table = 'simbrief';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -54,8 +55,6 @@ class SimBrief extends Model
 
     /**
      * Return a SimpleXML object of the $ofp_xml
-     *
-     * @return \App\Models\SimBriefXML|null
      */
     public function getXmlAttribute(): ?SimBriefXML
     {

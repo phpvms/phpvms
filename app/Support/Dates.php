@@ -11,8 +11,6 @@ class Dates
      *
      * @param int   $datefield initial datefield
      * @param array $day_enums Array of values from config("enum.days")
-     *
-     * @return int
      */
     public static function setDays(int $datefield, array $day_enums): int
     {
@@ -28,8 +26,6 @@ class Dates
      *
      * @param int $datefield datefield from database
      * @param int $day_enum  Value from config("enum.days")
-     *
-     * @return bool
      */
     public static function hasDay(int $datefield, int $day_enum): bool
     {
@@ -38,10 +34,6 @@ class Dates
 
     /**
      * Get the list of months, given a start date
-     *
-     * @param Carbon $start_date
-     *
-     * @return array
      */
     public static function getMonthsList(Carbon $start_date): array
     {
@@ -62,8 +54,6 @@ class Dates
      * Return the start/end dates for a given month/year
      *
      * @param string $month In "YYYY-MM" format
-     *
-     * @return array
      */
     public static function getMonthBoundary(string $month): array
     {
@@ -82,13 +72,12 @@ class Dates
      *
      * @param int $month
      * @param int $year
-     *
-     * @return int
      */
     public static function getDaysInMonth($month, $year): int
     {
         $month = (int) $month;
         $year = (int) $year;
+
         return $month == 2 ? ($year % 4 ? 28 : ($year % 100 ? 29 : ($year % 400 ? 28 : 29))) : (($month - 1) % 7 % 2 ? 30 : 31);
     }
 }

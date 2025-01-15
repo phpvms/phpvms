@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Based on https://github.com/scottlaurent/accounting
  * With modifications for phpVMS

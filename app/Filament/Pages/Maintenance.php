@@ -22,6 +22,7 @@ class Maintenance extends Page
     use HasPageShield;
 
     protected static ?string $navigationGroup = 'Config';
+
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationLabel = 'Maintenance';
@@ -160,7 +161,7 @@ class Maintenance extends Page
     {
         return Action::make('optimizeApp')->icon('heroicon-o-wrench-screwdriver')->label('Optimize App')->action(function () {
             $calls = [
-                //'icons:cache',
+                // 'icons:cache',
                 'filament:cache-components',
                 'optimize',
             ];
@@ -199,6 +200,7 @@ class Maintenance extends Page
                         ->body('See logs for details')
                         ->success()
                         ->send();
+
                     return;
                 }
 

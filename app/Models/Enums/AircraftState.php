@@ -7,7 +7,9 @@ use App\Contracts\Enum;
 class AircraftState extends Enum
 {
     public const PARKED = 0;
+
     public const IN_USE = 1;
+
     public const IN_AIR = 2;
 
     public static array $labels = [

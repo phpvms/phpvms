@@ -11,17 +11,10 @@ use Illuminate\Http\JsonResponse;
  */
 class StatusController extends Controller
 {
-    /**
-     * @param VersionService $versionSvc
-     */
     public function __construct(
         private readonly VersionService $versionSvc
-    ) {
-    }
+    ) {}
 
-    /**
-     * @return JsonResponse
-     */
     public function status(): JsonResponse
     {
         return response()->json([

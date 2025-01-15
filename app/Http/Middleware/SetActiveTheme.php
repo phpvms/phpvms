@@ -29,21 +29,18 @@ class SetActiveTheme implements Middleware
     /**
      * Handle the request
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure                 $next
      *
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
         $this->setTheme($request);
+
         return $next($request);
     }
 
     /**
      * Set the theme for the current middleware
-     *
-     * @param \Illuminate\Http\Request $request
      */
     public function setTheme(Request $request)
     {
@@ -52,10 +49,10 @@ class SetActiveTheme implements Middleware
         }
 
         try {
-            $theme = setting('general.theme', 'default');
+            $theme = setting('general.theme', 'seven');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-            $theme = 'default';
+            $theme = 'seven';
         }
 
         if (!empty($theme)) {

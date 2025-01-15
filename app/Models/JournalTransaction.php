@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Based on https://github.com/scottlaurent/accounting
  * With modifications for phpVMS
@@ -52,9 +53,6 @@ class JournalTransaction extends Model
         'tags'      => 'array',
     ];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class);
