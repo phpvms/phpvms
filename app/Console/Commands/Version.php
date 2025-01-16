@@ -40,22 +40,23 @@ class Version extends Command
                     $cfg['current']['patch'] = $version->getPatch();
                 }
 
-                $prerelease = $version->getPreRelease()?->toString();
-                if (strpos($prerelease, '.') !== false) {
-                    $prerelease = explode('.', $prerelease);
-                    $cfg['current']['prerelease'] = $prerelease[0];
-                    $cfg['current']['buildmetadata'] = $prerelease[1];
+                $prerelease = $version->getPreRelease();
+                if (!empty($prerelease)) {
+                    $cfg['current']['prerelease'] = $prerelease->toString();
                 } else {
-                    $cfg['current']['prerelease'] = $prerelease;
+                    $cfg['current']['prerelease'] = false;
                 }
+
+                $build_meta = $version->getBuild();
+                if (!empty($build_meta)) {
+                    $cfg['current']['buildmetadata'] = $build_meta->toString();
+                } else {
+                    $build_number = $this->versionSvc->generateBuildId($cfg);
+                    $cfg['current']['buildmetadata'] = $build_number;
+                }
+
+                file_put_contents($version_file, Yaml::dump($cfg, 4, 2));
             }
-
-            // Always write out the build ID/build number which is the commit hash
-            $build_number = $this->versionSvc->generateBuildId($cfg);
-            $cfg['current']['commit'] = $build_number;
-            $cfg['build']['number'] = $build_number;
-
-            file_put_contents($version_file, Yaml::dump($cfg, 4, 2));
         }
 
         $incl_build = empty($this->option('base-only')) ? true : false;

@@ -3,22 +3,22 @@ current:
   label: ''
   major: 7
   minor: 0
-  patch: 0
-  prerelease: 'dev'
-  buildmetadata: ''
+  patch: 1
+  prerelease: dev
+  buildmetadata: '250116.807534'
   commit: ''
   git_absorb: git-local
   format: '{$major}.{$minor}.{$patch}'
 build:
   mode: number
   length: 6
-  number:
+  number: null
   git_absorb: git-local
 git:
   git-local: 'git rev-parse --verify HEAD'
   git-remote: 'git ls-remote {$repository}'
   branch: refs/heads/master
-  repository: '{{ env(''VERSION_GIT_REMOTE_REPOSITORY'') }}'
+  repository: "{{ env('VERSION_GIT_REMOTE_REPOSITORY') }}"
   version:
     git-local: 'git describe'
     git-remote: 'git ls-remote {$repository} | grep tags/ | grep -v {} | cut -d / -f 3 | sort --version-sort | tail -1'
@@ -29,5 +29,5 @@ format:
   patch: '{$patch}'
   build: '{$build}'
   version: '{$major}.{$minor}.{$patch} (build {$build})'
-  full: 'version {{''format.version''}}'
+  full: "version {{'format.version'}}"
   compact: '{$major}.{$minor}.{$patch}+{$build}'

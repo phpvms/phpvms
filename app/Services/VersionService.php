@@ -161,16 +161,13 @@ class VersionService extends Service
 
         $c = $cfg['current'];
         $version = "{$c['major']}.{$c['minor']}.{$c['patch']}";
-        if ($c['prerelease'] !== '') {
+        if (!empty($c['prerelease'])) {
             $version .= "-{$c['prerelease']}";
-            if ($c['buildmetadata'] !== '') {
-                $version .= ".{$c['buildmetadata']}";
-            }
         }
 
         if ($include_build) {
             // Get the current build id
-            $build_number = $this->getBuildId($cfg);
+            $build_number = $c['buildmetadata'];
             if (!empty($build_number)) {
                 $version = $version.'+'.$build_number;
             }
