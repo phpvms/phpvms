@@ -161,7 +161,7 @@ class VersionService extends Service
 
         $c = $cfg['current'];
         $version = "{$c['major']}.{$c['minor']}.{$c['patch']}";
-        if ($c['prerelease'] !== '') {
+        if (!empty($c['prerelease'])) {
             $version .= "-{$c['prerelease']}";
             if ($c['buildmetadata'] !== '') {
                 $version .= ".{$c['buildmetadata']}";
