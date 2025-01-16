@@ -24,8 +24,8 @@ return new class() extends Migration
         }
 
         // First let's reimport the roles
-        if (Schema::hasTable('exported_roles')) {
-            $exportedRoles = DB::table('exported_roles')->get();
+        if (Schema::hasTable('v7_exported_roles')) {
+            $exportedRoles = DB::table('v7_exported_roles')->get();
             foreach ($exportedRoles as $role) {
                 DB::table('roles')->insert([
                     'name'                    => $role->name,
@@ -38,8 +38,8 @@ return new class() extends Migration
         }
 
         // Now let's reassign roles to the users
-        if (Schema::hasTable('exported_role_user')) {
-            $exportedRoleUser = DB::table('exported_role_user')->get();
+        if (Schema::hasTable('v7_exported_role_user')) {
+            $exportedRoleUser = DB::table('v7_exported_role_user')->get();
             foreach ($exportedRoleUser as $roleUser) {
                 if ($roleUser->role_name === 'admin') {
                     $roleUser->role_name = config('filament-shield.super_admin.name');
@@ -326,8 +326,8 @@ return new class() extends Migration
         }
 
         // now let's assign the permissions to the roles
-        if (Schema::hasTable('exported_permission_role')) {
-            $exportedPermissionRole = DB::table('exported_permission_role')->get();
+        if (Schema::hasTable('v7_exported_permission_role')) {
+            $exportedPermissionRole = DB::table('v7_exported_permission_role')->get();
             foreach ($exportedPermissionRole as $permission) {
                 if ($permission->role_name === 'admin') {
                     $permission->role_name = config('filament-shield.super_admin.name');
@@ -353,9 +353,9 @@ return new class() extends Migration
             }
         }
 
-        Schema::dropIfExists('exported_roles');
-        Schema::dropIfExists('exported_role_user');
-        Schema::dropIfExists('exported_permission_role');
+        // Schema::dropIfExists('exported_roles');
+        // Schema::dropIfExists('exported_role_user');
+        // Schema::dropIfExists('exported_permission_role');
     }
 
     /**
