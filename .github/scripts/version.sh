@@ -9,6 +9,9 @@ export VERSION=${GitVersion_FullSemVer}
 export FULL_VERSION=${VERSION}
 php artisan phpvms:version --write --write-full-version "${VERSION}"
 
+# Output for debug
+php artisan phpvms:version
+
 if test "$GIT_TAG_NAME"; then
   echo "Tagged with ${GIT_TAG_NAME}"
   export FILE_NAME="phpvms-${GIT_TAG_NAME}"
