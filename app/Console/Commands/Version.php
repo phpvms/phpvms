@@ -49,15 +49,10 @@ class Version extends Command
 
                 $build_meta = $version->getBuild();
                 if (!empty($build_meta)) {
-                    $cfg['build']['number'] = $build_meta->toString();
-                    $cfg['current']['buildmetadata'] = '';
-                    // $cfg['current']['commit'] = '';
-                    // $cfg['build']['number'] = '';
+                    $cfg['current']['buildmetadata'] = $build_meta->toString();
                 } else {
                     $build_number = $this->versionSvc->generateBuildId($cfg);
                     $cfg['current']['buildmetadata'] = $build_number;
-                    // $cfg['current']['commit'] = $build_number;
-                    $cfg['build']['number'] = $build_number;
                 }
 
                 file_put_contents($version_file, Yaml::dump($cfg, 4, 2));
