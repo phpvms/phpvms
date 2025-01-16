@@ -78,8 +78,8 @@ return new class() extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('7_exported_roles');
-        Schema::dropIfExists('7_exported_permission_role');
-        Schema::dropIfExists('7_exported_role_user');
+        Schema::dropIfExists('v7_exported_roles');
+        Schema::dropIfExists('v7_exported_permission_role');
+        Schema::dropIfExists('v7_exported_role_user');
     }
 };
