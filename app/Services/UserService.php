@@ -304,7 +304,7 @@ class UserService extends Service
 
     /**
      * Return the subfleets this user is allowed access to,
-     * based on their current Rank and/or by Type Rating
+     * based on their current Rank and/or by Type Rating and/or aircraft location
      *
      *
      * @return Collection
@@ -313,25 +313,31 @@ class UserService extends Service
     {
         $restrict_rank = setting('pireps.restrict_aircraft_to_rank', true);
         $restrict_type = setting('pireps.restrict_aircraft_to_typerating', false);
+        $restrict_dpt_airport = setting('pireps.only_aircraft_at_dpt_airport', false);
+
         $restricted_to = [];
 
         if ($user) {
             $rank_sf_array = $restrict_rank ? $user->rank->subfleets()->pluck('id')->toArray() : [];
             $type_sf_array = $restrict_type ? $user->rated_subfleets->pluck('id')->toArray() : [];
+            $location_sf_array = $restrict_dpt_airport ? $user->location->aircraft()->pluck('id')->toArray() : [];
 
-            if ($restrict_rank && !$restrict_type) {
+            if ($restrict_rank && !$restrict_type && !$restrict_dpt_airport) {
                 $restricted_to = $rank_sf_array;
-            } elseif (!$restrict_rank && $restrict_type) {
-                $restricted_to = $type_sf_array;
-            } elseif ($restrict_rank && $restrict_type) {
-                $restricted_to = array_intersect($rank_sf_array, $type_sf_array);
+            } elseif (!$restrict_rank && $restrict_type && !$restrict_dpt_airport) {
+                $restricted_to = $type_sf_array; 
+            } elseif (!$restrict_rank && !$restrict_type && $restrict_dpt_airport) {
+                $restricted_to = $location_sf_array;
+            } elseif ($restrict_rank && $restrict_type && $restrict_dpt_airport) {
+                $restricted_to = array_intersect($rank_sf_array, $type_sf_array, $location_sf_array);
             }
         } else {
             $restrict_rank = false;
             $restrict_type = false;
+            $restrict_dpt_airport = false;
         }
 
-        $subfleetsQuery = $this->subfleetRepo->when($restrict_rank || $restrict_type, function ($query) use ($restricted_to) {
+        $subfleetsQuery = $this->subfleetRepo->when($restrict_rank || $restrict_type || $restrict_dpt_airport, function ($query) use ($restricted_to) {
             return $query->whereIn('id', $restricted_to);
         })->with(['aircraft', 'aircraft.bid', 'fares']);
 
