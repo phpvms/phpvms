@@ -101,7 +101,7 @@ class SettingRepository extends Repository implements CacheableInterface
                 $value = $value === true ? 1 : 0;
             }
 
-            if ($value) {
+            if ($value !== null) {
                 $this->update(['value' => $value], $setting->id);
             }
         } catch (ValidatorException $e) {
