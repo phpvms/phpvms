@@ -101,7 +101,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14.10",
-        "filp/whoops": "^2.15.3",
+        "filp/whoops": "^2.16",
         "friendsofphp/php-cs-fixer": "^3.56.0",
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v8.1.0",
