@@ -156,7 +156,7 @@ class Settings extends Page
                         if ($setting->id === 'general_theme') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getThemes()));
                         } elseif ($setting->id === 'units_currency') {
-                            return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getCurrencyList()));
+                            return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options($this->getCurrencyList())->searchable()->native(false);
                         }
 
                         return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
