@@ -76,7 +76,7 @@
         "akaunting/laravel-money": "^5.2.2",
         "staudenmeir/belongs-to-through": "^v2.16.0",
         "staudenmeir/eloquent-has-many-deep": "1.20.0",
-        "spatie/laravel-ignition": "^2.7",
+        "spatie/laravel-ignition": "^2.9",
         "kyslik/column-sortable": "^6.6",
         "jlorente/laravel-data-migrations": "^2.0",
         "filament/filament": "^3.2.132",
@@ -97,10 +97,10 @@
         "socialiteproviders/ivao": "^4.0",
         "mailersend/laravel-driver": "^2.6",
         "arxeiss/sansdaemon": "^1.3",
-      "coolsam/modules": "3.x-dev"
+        "coolsam/modules": "3.x-dev"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.13",
+        "barryvdh/laravel-debugbar": "^3.14.10",
         "filp/whoops": "^2.15.3",
         "friendsofphp/php-cs-fixer": "^3.56.0",
         "mockery/mockery": "^1.5.0",
