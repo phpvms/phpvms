@@ -110,26 +110,6 @@
                 @endif
             </div>
         </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="vatsim_id" class="form-label">VATSIM ID</label>
-                <input type="text" name="vatsim_id" id="vatsim_id"
-                    class="form-control {{ $errors->has('vatsim_id') ? ' is-invalid' : ' ' }}"
-                    value="{{ $user->vatsim_id }}" />
-                @if ($errors->has('vatsim_id'))
-                    <div id="vatsim_idFeedback" class="invalid-feedback">{{ $errors->first('vatsim_id') }}</div>
-                @endif
-            </div>
-            <div class="col-md-6">
-                <label for="ivao_id" class="form-label">IVAO ID</label>
-                <input type="text" name="ivao_id" id="ivao_id"
-                    class="form-control {{ $errors->has('ivao_id') ? ' is-invalid' : ' ' }}"
-                    value="{{ $user->ivao_id }}" />
-                @if ($errors->has('ivao_id'))
-                    <div id="ivao_idFeedback" class="invalid-feedback">{{ $errors->first('ivao_id') }}</div>
-                @endif
-            </div>
-        </div>
         {{-- Custom fields --}}
         <div class="row mb-3">
             @foreach ($userFields as $field)
