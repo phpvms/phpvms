@@ -157,6 +157,6 @@ jobs:
       - name: Discord notification
         uses: Ilshidur/action-discord@0.3.2
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
         with:
           args: ${{ steps.discord.outputs.discord_msg }}
