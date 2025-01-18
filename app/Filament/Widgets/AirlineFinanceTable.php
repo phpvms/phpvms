@@ -51,6 +51,7 @@ class AirlineFinanceTable extends TableWidget
                     ->label('Expense'),
 
                 Tables\Columns\TextColumn::make('sum_credits')
+                    ->label('Credit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_credits, $record->currency))
                     ->summarize(
                         Tables\Columns\Summarizers\Sum::make()
@@ -58,6 +59,7 @@ class AirlineFinanceTable extends TableWidget
                     ),
 
                 Tables\Columns\TextColumn::make('sum_debits')
+                    ->label('Debit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_debits, $record->currency))
                     ->summarize(
                         Tables\Columns\Summarizers\Sum::make()
