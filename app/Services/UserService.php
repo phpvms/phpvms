@@ -316,20 +316,19 @@ class UserService extends Service
         $restrict_dpt_airport = setting('pireps.only_aircraft_at_dpt_airport', false);
 
         $restricted_to = [];
+        $user_loc = [];
 
         if ($user) {
             $rank_sf_array = $restrict_rank ? $user->rank->subfleets()->pluck('id')->toArray() : [];
             $type_sf_array = $restrict_type ? $user->rated_subfleets->pluck('id')->toArray() : [];
-            $location_sf_array = $restrict_dpt_airport ? $user->location->aircraft()->pluck('id')->toArray() : [];
+            $user_loc = $restrict_dpt_airport ? $user->pluck('curr_airport_id')->toArray() : [];
 
-            if ($restrict_rank && !$restrict_type && !$restrict_dpt_airport) {
+            if ($restrict_rank && !$restrict_type) {
                 $restricted_to = $rank_sf_array;
-            } elseif (!$restrict_rank && $restrict_type && !$restrict_dpt_airport) {
+            } elseif (!$restrict_rank && $restrict_type) {
                 $restricted_to = $type_sf_array; 
-            } elseif (!$restrict_rank && !$restrict_type && $restrict_dpt_airport) {
-                $restricted_to = $location_sf_array;
-            } elseif ($restrict_rank && $restrict_type && $restrict_dpt_airport) {
-                $restricted_to = array_intersect($rank_sf_array, $type_sf_array, $location_sf_array);
+            } elseif ($restrict_rank && $restrict_type) {
+                $restricted_to = array_intersect($rank_sf_array, $type_sf_array);
             }
         } else {
             $restrict_rank = false;
@@ -339,7 +338,13 @@ class UserService extends Service
 
         $subfleetsQuery = $this->subfleetRepo->when($restrict_rank || $restrict_type || $restrict_dpt_airport, function ($query) use ($restricted_to) {
             return $query->whereIn('id', $restricted_to);
-        })->with(['aircraft', 'aircraft.bid', 'fares']);
+        })->with([
+            'aircraft' => function ($query) use ($user_loc) {
+                $query->where('airport_id', $user_loc);
+            },
+            'aircraft.bid',
+            'fares'
+        ]);
 
         if ($paginate) {
             /* @var Collection $subfleets */
