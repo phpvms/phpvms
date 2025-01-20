@@ -9,6 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,11 @@ class AirlineFinanceTable extends TableWidget
     use InteractsWithPageFilters;
 
     protected static ?string $pollingInterval = null;
+
+    public function getTableRecordKey(Model $record): string
+    {
+        return $record->transaction_group;
+    }
 
     public function table(Table $table): Table
     {
@@ -29,7 +35,7 @@ class AirlineFinanceTable extends TableWidget
         return $table
             ->query(
                 JournalTransaction::query()
-                    ->selectRaw('id, transaction_group, 
+                    ->selectRaw('transaction_group, 
                      currency, 
                      SUM(credit) as sum_credits, 
                      SUM(debit) as sum_debits')
@@ -45,6 +51,7 @@ class AirlineFinanceTable extends TableWidget
                     ->label('Expense'),
 
                 Tables\Columns\TextColumn::make('sum_credits')
+                    ->label('Credit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_credits, $record->currency))
                     ->summarize(
                         Tables\Columns\Summarizers\Sum::make()
@@ -52,6 +59,7 @@ class AirlineFinanceTable extends TableWidget
                     ),
 
                 Tables\Columns\TextColumn::make('sum_debits')
+                    ->label('Debit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_debits, $record->currency))
                     ->summarize(
                         Tables\Columns\Summarizers\Sum::make()

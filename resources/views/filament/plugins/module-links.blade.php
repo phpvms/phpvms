@@ -15,7 +15,7 @@
         }
 
         $panel_name = ucfirst(str_replace('::admin', '', $panel->getId()));
-        $active = str_contains(url()->current(), strtolower($panel_name));
+        $active = str_contains(request()->path(), strtolower($panel_name));
         $icon = 'heroicon-o-puzzle-piece';
       @endphp
       <x-filament-panels::topbar.item

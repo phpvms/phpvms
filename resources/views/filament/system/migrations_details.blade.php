@@ -7,7 +7,7 @@
 @script
   <script>
     Alpine.data('migrations', () => ({
-      message: '',
+      message: 'Processing please wait...',
       update(event) {
         this.message = event.detail.message;
       }

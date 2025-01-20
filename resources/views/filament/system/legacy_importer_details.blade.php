@@ -16,7 +16,7 @@
   Alpine.data('legacyImporter', () => ({
     completed: 0,
     error: false,
-    message: '',
+    message: 'Processing please wait...',
     nextIndex: 0,
     update(event) {
       this.completed = event.detail.completed;
