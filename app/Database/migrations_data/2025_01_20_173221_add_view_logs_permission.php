@@ -1,14 +1,12 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Exceptions\PermissionAlreadyExists;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {
@@ -22,7 +20,5 @@ return new class extends Migration
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };
