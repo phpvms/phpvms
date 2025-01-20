@@ -97,7 +97,8 @@
         "socialiteproviders/ivao": "^4.0",
         "mailersend/laravel-driver": "^2.6",
         "arxeiss/sansdaemon": "^1.3",
-      "coolsam/modules": "3.x-dev"
+      "coolsam/modules": "3.x-dev",
+        "opcodesio/log-viewer": "^3.14"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
