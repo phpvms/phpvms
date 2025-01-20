@@ -66,6 +66,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationItems([
                 NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
+                NavigationItem::make()
+                    ->visible(fn(): bool => auth()->user()->can('view_logs'))
+                    ->group('Config')
+                    ->sort(10)
+                    ->icon('heroicon-o-document-text')
+                    ->label('View Logs')
+                    ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),

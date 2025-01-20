@@ -33,6 +33,12 @@ class AuthServiceProvider extends ServiceProvider
                 : Response::deny('You do not have permission to access this page.');
         });
 
+        Gate::define('viewLogViewer', function (?User $user): Response {
+            return $user->can('view_logs')
+                ? Response::allow()
+                : Response::deny('You do not have permission to access this page.');
+        });
+
         Gate::policy(Activity::class, ActivityPolicy::class);
     }
 }
