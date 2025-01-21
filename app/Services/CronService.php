@@ -14,10 +14,11 @@ class CronService extends Service
 {
     public function __construct(
         private readonly KvpRepository $kvpRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Get the path for running a cron job
+     * Get the path for running a cron job.
      */
     public function getCronPath(): string
     {
@@ -47,7 +48,7 @@ class CronService extends Service
     }
 
     /**
-     * Show an example cron command that runs every minute
+     * Show an example cron command that runs every minute.
      */
     public function getCronExecString(): string
     {
@@ -59,7 +60,7 @@ class CronService extends Service
     }
 
     /**
-     * Update the last time the cron was run in the kvp repo
+     * Update the last time the cron was run in the kvp repo.
      */
     public function updateLastRunTime()
     {
@@ -69,7 +70,7 @@ class CronService extends Service
 
     /**
      * True/false if there's a problem with the cron. Now this is mainly
-     * if the cron hasn't run in the last 5 minutes at least
+     * if the cron hasn't run in the last 5 minutes at least.
      */
     public function cronProblemExists(): bool
     {

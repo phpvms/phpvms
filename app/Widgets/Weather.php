@@ -6,7 +6,7 @@ use App\Contracts\Widget;
 use App\Services\AirportService;
 
 /**
- * This is a widget for the 3rd party CheckWX service
+ * This is a widget for the 3rd party CheckWX service.
  */
 class Weather extends Widget
 {
@@ -16,7 +16,7 @@ class Weather extends Widget
     ];
 
     /**
-     * Attempt to get the data from the CheckWX API
+     * Attempt to get the data from the CheckWX API.
      */
     public function run()
     {

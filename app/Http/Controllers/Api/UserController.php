@@ -33,7 +33,8 @@ class UserController extends Controller
         private readonly PirepRepository $pirepRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {}
+    ) {
+    }
 
     protected function getUserId(Request $request): mixed
     {
@@ -46,7 +47,7 @@ class UserController extends Controller
     }
 
     /**
-     * Return the profile for the currently auth'd user
+     * Return the profile for the currently auth'd user.
      */
     public function index(Request $request): UserResource
     {
@@ -56,7 +57,7 @@ class UserController extends Controller
     }
 
     /**
-     * Get the profile for the passed-in user
+     * Get the profile for the passed-in user.
      *
      * @param Request $request
      */
@@ -71,13 +72,13 @@ class UserController extends Controller
     }
 
     /**
-     * Return all of the bids for the passed-in user
+     * Return all of the bids for the passed-in user.
      *
-     *
-     * @return mixed
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      * @throws \App\Exceptions\BidExistsForFlight
+     *
+     * @return mixed
      */
     public function bids(Request $request)
     {
@@ -128,7 +129,7 @@ class UserController extends Controller
     }
 
     /**
-     * Get a particular bid for a user
+     * Get a particular bid for a user.
      *
      *
      * @return Bid
@@ -152,7 +153,7 @@ class UserController extends Controller
     }
 
     /**
-     * Return the fleet that this user is allowed to
+     * Return the fleet that this user is allowed to.
      */
     public function fleet(Request $request): AnonymousResourceCollection
     {

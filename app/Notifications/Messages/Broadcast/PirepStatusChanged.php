@@ -11,7 +11,7 @@ use App\Support\Units\Time;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Send the PIREP accepted message to a particular user, can also be sent to Discord
+ * Send the PIREP accepted message to a particular user, can also be sent to Discord.
  */
 class PirepStatusChanged extends Notification implements ShouldQueue
 {
@@ -61,7 +61,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     }
 
     /**
-     * Send a Discord notification
+     * Send a Discord notification.
      *
      * @param Pirep $pirep
      */
@@ -137,7 +137,8 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
+     * @param mixed $notifiable
+     *
      * @return array
      */
     public function toArray($notifiable)

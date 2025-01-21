@@ -199,7 +199,7 @@ class Pirep extends Model
     ];
 
     /**
-     * Auto-dispatch events for lifecycle state changes
+     * Auto-dispatch events for lifecycle state changes.
      */
     protected $dispatchesEvents = [
         'status:*' => PirepStatusChange::class,
@@ -226,7 +226,7 @@ class Pirep extends Model
     ];
 
     /**
-     * Create a new PIREP model from a given flight. Pre-populates the fields
+     * Create a new PIREP model from a given flight. Pre-populates the fields.
      */
     public static function fromFlight(Flight $flight): self
     {
@@ -245,7 +245,7 @@ class Pirep extends Model
     }
 
     /**
-     * Create a new PIREP from a SimBrief instance
+     * Create a new PIREP from a SimBrief instance.
      */
     public static function fromSimBrief(SimBrief $simbrief): self
     {
@@ -264,7 +264,7 @@ class Pirep extends Model
     }
 
     /**
-     * Get the flight ident, e.,g JBU1900/C.nn/L.yy
+     * Get the flight ident, e.,g JBU1900/C.nn/L.yy.
      */
     public function ident(): Attribute
     {
@@ -285,7 +285,7 @@ class Pirep extends Model
     }
 
     /**
-     * Return if this PIREP can be edited or not
+     * Return if this PIREP can be edited or not.
      */
     public function readOnly(): Attribute
     {
@@ -318,7 +318,7 @@ class Pirep extends Model
 
     /**
      * Get the pirep_fields and then the pirep_field_values and
-     * merge them together. If a field value doesn't exist then add in a fake one
+     * merge them together. If a field value doesn't exist then add in a fake one.
      */
     public function fields(): Attribute
     {
@@ -350,7 +350,7 @@ class Pirep extends Model
     }
 
     /**
-     * Do some cleanup on the route
+     * Do some cleanup on the route.
      */
     public function route(): Attribute
     {
@@ -358,7 +358,7 @@ class Pirep extends Model
     }
 
     /**
-     * Return if this is cancelled or not
+     * Return if this is cancelled or not.
      */
     public function cancelled(): Attribute
     {
@@ -366,7 +366,7 @@ class Pirep extends Model
     }
 
     /**
-     * Check if this PIREP is allowed to be updated
+     * Check if this PIREP is allowed to be updated.
      */
     public function allowedUpdates(): bool
     {
@@ -374,7 +374,7 @@ class Pirep extends Model
     }
 
     /**
-     * Return a custom field value
+     * Return a custom field value.
      */
     public function field($field_name): string
     {
@@ -396,7 +396,7 @@ class Pirep extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function acars(): HasMany
     {
@@ -490,7 +490,7 @@ class Pirep extends Model
 
     /**
      * Relationship that holds the current position, but limits the ACARS
-     *  relationship to only one row (the latest), to prevent an N+! problem
+     *  relationship to only one row (the latest), to prevent an N+! problem.
      */
     public function position(): HasOne
     {

@@ -36,19 +36,20 @@ class PirepFinanceService extends Service
         private readonly FareService $fareSvc,
         private readonly FinanceService $financeSvc,
         private readonly JournalRepository $journalRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Process all of the finances for a pilot report. This is called
-     * from a listener (FinanceEvents)
+     * from a listener (FinanceEvents).
      *
-     *
-     * @return mixed
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function processFinancesForPirep(Pirep $pirep)
     {
@@ -93,7 +94,7 @@ class PirepFinanceService extends Service
 
     /**
      * Collect all of the fares and then post each fare class's profit and
-     * the costs for each seat and post it to the journal
+     * the costs for each seat and post it to the journal.
      *
      *
      * @throws \UnexpectedValueException
@@ -130,7 +131,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Collect all of the fares from listeners and apply those to the journal
+     * Collect all of the fares from listeners and apply those to the journal.
      *
      *
      * @throws \UnexpectedValueException
@@ -177,7 +178,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Calculate the fuel used by the PIREP and add those costs in
+     * Calculate the fuel used by the PIREP and add those costs in.
      *
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
@@ -249,7 +250,7 @@ class PirepFinanceService extends Service
 
     /**
      * Calculate what the cost is for the operating an aircraft
-     * in this subfleet, as-per the block time
+     * in this subfleet, as-per the block time.
      *
      *
      * @throws \UnexpectedValueException
@@ -290,7 +291,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Collect all of the expenses and apply those to the journal
+     * Collect all of the expenses and apply those to the journal.
      *
      *
      * @throws \UnexpectedValueException
@@ -387,7 +388,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Pay the airport-specific expenses for a PIREP
+     * Pay the airport-specific expenses for a PIREP.
      */
     public function payAirportExpensesForPirep(Pirep $pirep): void
     {
@@ -423,7 +424,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Collect all of the expenses from the listeners and apply those to the journal
+     * Collect all of the expenses from the listeners and apply those to the journal.
      *
      *
      * @throws \UnexpectedValueException
@@ -433,7 +434,7 @@ class PirepFinanceService extends Service
     public function payExpensesEventsForPirep(Pirep $pirep): void
     {
         /**
-         * Throw an event and collect any expenses returned from it
+         * Throw an event and collect any expenses returned from it.
          */
         $gathered_expenses = event(new ExpensesEvent($pirep));
         if (!\is_array($gathered_expenses)) {
@@ -477,7 +478,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Collect and apply the ground handling cost
+     * Collect and apply the ground handling cost.
      *
      *
      * @throws \UnexpectedValueException
@@ -513,7 +514,7 @@ class PirepFinanceService extends Service
 
     /**
      * Figure out what the pilot pay is. Debit it from the airline journal
-     * But also reference the PIREP
+     * But also reference the PIREP.
      *
      *
      * @throws \UnexpectedValueException
@@ -556,7 +557,7 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Return all of the fares for the PIREP
+     * Return all of the fares for the PIREP.
      *
      *
      * @return \Illuminate\Support\Collection
@@ -569,7 +570,7 @@ class PirepFinanceService extends Service
 
     /**
      * Return the costs for the ground handling, with the multiplier
-     * being applied from the subfleet
+     * being applied from the subfleet.
      */
     public function getGroundHandlingCost(Pirep $pirep, Airport $airport): ?float
     {
@@ -590,12 +591,12 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Return the pilot's hourly pay for the given PIREP
+     * Return the pilot's hourly pay for the given PIREP.
      *
-     *
-     * @return float
      *
      * @throws \InvalidArgumentException
+     *
+     * @return float
      */
     public function getPilotPayRateForPirep(Pirep $pirep)
     {
@@ -637,13 +638,13 @@ class PirepFinanceService extends Service
     }
 
     /**
-     * Get the user's payment amount for a PIREP
+     * Get the user's payment amount for a PIREP.
      *
-     *
-     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
+     *
+     * @return Money
      */
     public function getPilotPay(Pirep $pirep)
     {

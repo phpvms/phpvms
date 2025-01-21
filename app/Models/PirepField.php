@@ -37,7 +37,7 @@ class PirepField extends Model
     ];
 
     /**
-     * When setting the name attribute, also set the slug
+     * When setting the name attribute, also set the slug.
      */
     public function name(): Attribute
     {

@@ -19,7 +19,7 @@ class GenericExceptionAbstract extends AbstractHttpException
     }
 
     /**
-     * Return the RFC 7807 error type (without the URL root)
+     * Return the RFC 7807 error type (without the URL root).
      */
     public function getErrorType(): string
     {
@@ -27,7 +27,7 @@ class GenericExceptionAbstract extends AbstractHttpException
     }
 
     /**
-     * Get the detailed error string
+     * Get the detailed error string.
      */
     public function getErrorDetails(): string
     {
@@ -35,7 +35,7 @@ class GenericExceptionAbstract extends AbstractHttpException
     }
 
     /**
-     * Return an array with the error details, merged with the RFC7807 response
+     * Return an array with the error details, merged with the RFC7807 response.
      */
     public function getErrorMetadata(): array
     {

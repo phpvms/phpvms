@@ -49,7 +49,7 @@ class Installer extends Page
     public ?array $user;
 
     /**
-     * Called whenever the component is loaded
+     * Called whenever the component is loaded.
      */
     public function mount(): void
     {
@@ -73,7 +73,7 @@ class Installer extends Page
     }
 
     /**
-     * To fill the form (set default values)
+     * To fill the form (set default values).
      */
     public function fillForm(): void
     {
@@ -85,7 +85,7 @@ class Installer extends Page
     }
 
     /**
-     * The filament form
+     * The filament form.
      */
     public function form(Form $form): Form
     {
@@ -279,7 +279,7 @@ class Installer extends Page
     }
 
     /**
-     * Retrieve phpvms' requirements
+     * Retrieve phpvms' requirements.
      */
     private function getRequirementsData(): array
     {
@@ -302,7 +302,7 @@ class Installer extends Page
     }
 
     /**
-     * Check if all item of an array passed requirements
+     * Check if all item of an array passed requirements.
      */
     private function allPassed(array $arr): bool
     {
@@ -316,7 +316,7 @@ class Installer extends Page
     }
 
     /**
-     * Set up .env and trigger start migrations
+     * Set up .env and trigger start migrations.
      *
      * @throws Halt
      */
@@ -371,7 +371,7 @@ class Installer extends Page
     }
 
     /**
-     * Run the migrations
+     * Run the migrations.
      */
     public function migrate(): void
     {
@@ -402,7 +402,7 @@ class Installer extends Page
     }
 
     /**
-     * Create first user and airline
+     * Create first user and airline.
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
@@ -443,7 +443,7 @@ class Installer extends Page
     }
 
     /**
-     * Test db connection
+     * Test db connection.
      */
     private function testDb(): bool
     {
@@ -481,7 +481,7 @@ class Installer extends Page
     }
 
     /**
-     * Called when the form is filed
+     * Called when the form is filed.
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */

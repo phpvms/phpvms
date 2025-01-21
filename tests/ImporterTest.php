@@ -45,7 +45,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Add some of the basic data needed to properly import the flights.csv file
+     * Add some of the basic data needed to properly import the flights.csv file.
      *
      * @return mixed
      */
@@ -77,7 +77,7 @@ final class ImporterTest extends TestCase
 
     /**
      * Test the parsing of different field/column which can be used
-     * for specifying different field values
+     * for specifying different field values.
      */
     public function test_convert_stringto_objects(): void
     {
@@ -170,7 +170,7 @@ final class ImporterTest extends TestCase
 
     /**
      * Tests for converting the different object/array key values
-     * into the format that we use in CSV files
+     * into the format that we use in CSV files.
      */
     public function test_convert_object_to_string(): void
     {
@@ -256,7 +256,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test exporting all the flights to a file
+     * Test exporting all the flights to a file.
      *
      * @throws \Illuminate\Validation\ValidationException
      * @throws CannotInsertRecord
@@ -286,7 +286,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test exporting all the flights to a file
+     * Test exporting all the flights to a file.
      *
      * @throws CannotInsertRecord
      */
@@ -315,7 +315,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test exporting all the flights to a file
+     * Test exporting all the flights to a file.
      *
      * @throws CannotInsertRecord
      */
@@ -379,7 +379,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Try importing the aicraft in the airports. Should fail
+     * Try importing the aicraft in the airports. Should fail.
      */
     public function test_invalid_file_import(): void
     {
@@ -391,7 +391,7 @@ final class ImporterTest extends TestCase
 
     /**
      * Try importing the aicraft in the airports. Should fail because of
-     * empty/invalid rows
+     * empty/invalid rows.
      */
     public function test_empty_cols(): void
     {
@@ -414,7 +414,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test the importing of expenses
+     * Test the importing of expenses.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -505,7 +505,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test the flight importer
+     * Test the flight importer.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -588,7 +588,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test the flight importer
+     * Test the flight importer.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -619,7 +619,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test the flight importer with "core" argument
+     * Test the flight importer with "core" argument.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -637,7 +637,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test the flight importer with "all" argument
+     * Test the flight importer with "all" argument.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -765,7 +765,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * Test importing the subfleets
+     * Test importing the subfleets.
      *
      * @throws \Illuminate\Validation\ValidationException
      */

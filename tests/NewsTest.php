@@ -19,7 +19,7 @@ final class NewsTest extends TestCase
     }
 
     /**
-     * Tests that news is added but mainly that notifications are sent out to all users
+     * Tests that news is added but mainly that notifications are sent out to all users.
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */

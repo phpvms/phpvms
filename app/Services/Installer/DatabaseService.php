@@ -10,7 +10,7 @@ use PDO;
 class DatabaseService extends Service
 {
     /**
-     * Check the PHP version that it meets the minimum requirement
+     * Check the PHP version that it meets the minimum requirement.
      *
      *
      * @return bool
@@ -48,7 +48,7 @@ class DatabaseService extends Service
     /**
      * Setup the database by running the migration commands
      * Only run the setup for sqlite, otherwise, we're assuming
-     * that the MySQL database has already been created
+     * that the MySQL database has already been created.
      */
     public function setupDB()
     {

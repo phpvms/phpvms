@@ -8,7 +8,7 @@ use App\Services\SimBriefService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Clear any expired SimBrief flight briefs that aren't attached to a PIREP
+ * Clear any expired SimBrief flight briefs that aren't attached to a PIREP.
  */
 class ClearExpiredSimbrief extends Listener
 {

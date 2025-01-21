@@ -1,7 +1,7 @@
 <?php
 
 /**
- * vaCentral Configurations
+ * vaCentral Configurations.
  */
 
 return [

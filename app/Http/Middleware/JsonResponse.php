@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Set the content type in the API layer
+ * Set the content type in the API layer.
  */
 
 namespace App\Http\Middleware;

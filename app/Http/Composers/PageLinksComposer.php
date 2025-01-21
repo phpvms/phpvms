@@ -17,7 +17,8 @@ class PageLinksComposer extends Composer
      */
     public function __construct(
         private readonly PageRepository $pageRepo
-    ) {}
+    ) {
+    }
 
     public function compose(View $view)
     {

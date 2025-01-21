@@ -6,7 +6,7 @@ use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
 
 /**
- * Command to rewrite the config files
+ * Command to rewrite the config files.
  */
 class RewriteConfigs extends Command
 {
@@ -15,7 +15,7 @@ class RewriteConfigs extends Command
     protected $description = 'Rewrite the config files';
 
     /**
-     * Run dev related commands
+     * Run dev related commands.
      */
     public function handle()
     {

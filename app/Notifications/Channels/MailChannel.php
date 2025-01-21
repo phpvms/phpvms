@@ -13,7 +13,7 @@ trait MailChannel
     protected $mailTemplateArgs;
 
     /**
-     * Set the arguments for the toMail() method
+     * Set the arguments for the toMail() method.
      *
      * @param string $subject  Email subject
      * @param string $template Markdown template to use
@@ -29,7 +29,8 @@ trait MailChannel
     /**
      * Get the mail representation of the notification.
      *
-     * @param  mixed                                          $notifiable
+     * @param mixed $notifiable
+     *
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)

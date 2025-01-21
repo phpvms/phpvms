@@ -35,10 +35,11 @@ class ProfileController extends Controller
         private readonly AirlineRepository $airlineRepo,
         private readonly AirportRepository $airportRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Return whether the vmsACARS module is enabled or not
+     * Return whether the vmsACARS module is enabled or not.
      */
     private function acarsEnabled(): bool
     {
@@ -54,7 +55,7 @@ class ProfileController extends Controller
 
     /**
      * Redirect to show() since only a single page gets shown and the template controls
-     * the other items that are/aren't shown
+     * the other items that are/aren't shown.
      */
     public function index(): View
     {
@@ -92,7 +93,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Show the edit for form the user's profile
+     * Show the edit for form the user's profile.
      *
      *
      * @throws \Exception
@@ -227,7 +228,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Regenerate the user's API key
+     * Regenerate the user's API key.
      */
     public function regen_apikey(Request $request): RedirectResponse
     {
@@ -243,7 +244,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Generate the ACARS config and send it to download
+     * Generate the ACARS config and send it to download.
      */
     public function acars(Request $request): Response
     {

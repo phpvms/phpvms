@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Listen for different events and map them to different notifications
+ * Listen for different events and map them to different notifications.
  */
 class NotificationEventsHandler extends Listener
 {
@@ -51,7 +51,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Send a notification to all of the admins
+     * Send a notification to all of the admins.
      */
     protected function notifyAdmins(\App\Contracts\Notification $notification)
     {
@@ -88,7 +88,7 @@ class NotificationEventsHandler extends Listener
 
     /**
      * Send a notification to all users. Also can specify if a particular notification
-     * requires an opt-in
+     * requires an opt-in.
      */
     protected function notifyAllUsers(\App\Contracts\Notification $notification)
     {
@@ -142,7 +142,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * When a user's state changes, send an email out
+     * When a user's state changes, send an email out.
      */
     public function onUserStateChange(UserStateChanged $event): void
     {
@@ -160,7 +160,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Prefile notification. Disabled intentionally, No need to send it to Discord
+     * Prefile notification. Disabled intentionally, No need to send it to Discord.
      */
     public function onPirepPrefile(PirepPrefiled $event): void
     {
@@ -175,7 +175,7 @@ class NotificationEventsHandler extends Listener
     /**
      * Status Change notification.
      * Reduced the messages (Boarding, Pushback, TakeOff, Landing and non-normals only)
-     * If needed array can be tied to a setting at admin side for further customization
+     * If needed array can be tied to a setting at admin side for further customization.
      */
     public function onPirepStatusChange(PirepStatusChange $event): void
     {
@@ -199,7 +199,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify the admins that a new PIREP has been filed
+     * Notify the admins that a new PIREP has been filed.
      */
     public function onPirepFile(PirepFiled $event): void
     {
@@ -217,7 +217,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify the user that their PIREP has been accepted
+     * Notify the user that their PIREP has been accepted.
      */
     public function onPirepAccepted(PirepAccepted $event): void
     {
@@ -228,7 +228,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify the user that their PIREP has been rejected
+     * Notify the user that their PIREP has been rejected.
      */
     public function onPirepRejected(PirepRejected $event): void
     {
@@ -239,7 +239,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify all users of a news event, but only the users which have opted in
+     * Notify all users of a news event, but only the users which have opted in.
      */
     public function onNewsAdded(NewsAdded $event): void
     {
@@ -255,7 +255,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify all users of a news event, but only the users which have opted in
+     * Notify all users of a news event, but only the users which have opted in.
      */
     public function onNewsUpdated(NewsUpdated $event): void
     {
@@ -271,7 +271,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify all users that user has awarded a new award
+     * Notify all users that user has awarded a new award.
      */
     public function onAwardAwarded(AwardAwarded $event): void
     {
@@ -284,7 +284,7 @@ class NotificationEventsHandler extends Listener
     }
 
     /**
-     * Notify all users of a user rank change
+     * Notify all users of a user rank change.
      */
     public function onUserStatsChanged(UserStatsChanged $event): void
     {

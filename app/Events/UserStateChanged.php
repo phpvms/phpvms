@@ -6,7 +6,7 @@ use App\Contracts\Event;
 use App\Models\User;
 
 /**
- * Event triggered when a user's state changes
+ * Event triggered when a user's state changes.
  */
 class UserStateChanged extends Event
 {

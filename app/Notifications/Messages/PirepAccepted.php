@@ -8,7 +8,7 @@ use App\Notifications\Channels\MailChannel;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Send the PIREP accepted message to a particular user, can also be sent to Discord
+ * Send the PIREP accepted message to a particular user, can also be sent to Discord.
  */
 class PirepAccepted extends Notification implements ShouldQueue
 {
@@ -37,7 +37,8 @@ class PirepAccepted extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
+     * @param mixed $notifiable
+     *
      * @return array
      */
     public function toArray($notifiable)

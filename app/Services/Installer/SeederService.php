@@ -27,10 +27,11 @@ class SeederService extends Service
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
-    ) {}
+    ) {
+    }
 
     /**
-     * See if there are any seeds that are out of sync
+     * See if there are any seeds that are out of sync.
      */
     public function seedsPending(): bool
     {
@@ -57,7 +58,7 @@ class SeederService extends Service
     }
 
     /**
-     * Read all of the YAML files from disk and seed them
+     * Read all of the YAML files from disk and seed them.
      */
     public function syncAllYamlFileSeeds(): void
     {
@@ -152,7 +153,7 @@ class SeederService extends Service
     /**
      * Dynamically figure out the offset and the start number for a group.
      * This way we don't need to mess with how to order things
-     * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on
+     * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on.
      *
      * @param null $offset
      * @param int  $start_offset
@@ -191,7 +192,7 @@ class SeederService extends Service
     }
 
     /**
-     * Get the next increment number from a group
+     * Get the next increment number from a group.
      */
     private function getNextOrderNumber($group): int
     {
@@ -206,7 +207,7 @@ class SeederService extends Service
     }
 
     /**
-     * See if there are seeds pending for the settings
+     * See if there are seeds pending for the settings.
      */
     private function settingsSeedsPending(): bool
     {

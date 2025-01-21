@@ -12,12 +12,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Remove expired live flights
+ * Remove expired live flights.
  */
 class RemoveExpiredLiveFlights extends Listener
 {
     /**
-     * Remove expired live flights that haven't had an update in the live time
+     * Remove expired live flights that haven't had an update in the live time.
      *
      *
      * @throws \Exception

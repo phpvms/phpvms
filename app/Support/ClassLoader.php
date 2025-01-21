@@ -7,7 +7,7 @@ use Log;
 
 /**
  * Class find/load related functionality. Is used to find
- * the award classes right now that might be in a module
+ * the award classes right now that might be in a module.
  */
 class ClassLoader
 {

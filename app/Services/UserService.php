@@ -41,10 +41,11 @@ class UserService extends Service
         private readonly FareService $fareSvc,
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo
-    ) {}
+    ) {
+    }
 
     /**
-     * Find the user and return them with all of the data properly attached
+     * Find the user and return them with all of the data properly attached.
      */
     public function getUser(int $user_id, bool $with_subfleets = true): ?User
     {
@@ -78,7 +79,7 @@ class UserService extends Service
 
     /**
      * Register a pilot. Also attaches the initial roles
-     * required, and then triggers the UserRegistered event
+     * required, and then triggers the UserRegistered event.
      *
      * @param array $attrs Array with the user data
      * @param array $roles List of "display_name" of groups to assign
@@ -116,7 +117,7 @@ class UserService extends Service
 
     /**
      * Remove the user. But don't actually delete them - set the name to deleted, email to
-     * something random
+     * something random.
      *
      *
      * @throws \Exception
@@ -148,7 +149,7 @@ class UserService extends Service
     }
 
     /**
-     * Add a user to a given role
+     * Add a user to a given role.
      */
     public function addUserToRole(User $user, string $roleName): User
     {
@@ -159,7 +160,7 @@ class UserService extends Service
     }
 
     /**
-     * Find and return the next available pilot ID (usually just the max+1)
+     * Find and return the next available pilot ID (usually just the max+1).
      */
     public function getNextAvailablePilotId(): int
     {
@@ -168,7 +169,7 @@ class UserService extends Service
 
     /**
      * Find the next available pilot ID and set the current user's pilot_id to that +1
-     * Called from UserObserver right now after a record is created
+     * Called from UserObserver right now after a record is created.
      */
     public function findAndSetPilotId(User $user): User
     {
@@ -185,7 +186,7 @@ class UserService extends Service
     }
 
     /**
-     * Return true or false if a pilot ID already exists
+     * Return true or false if a pilot ID already exists.
      */
     public function isPilotIdAlreadyUsed(int $pilot_id): bool
     {
@@ -193,7 +194,7 @@ class UserService extends Service
     }
 
     /**
-     * Change a user's pilot ID
+     * Change a user's pilot ID.
      *
      *
      * @throws UserPilotIdExists
@@ -220,7 +221,7 @@ class UserService extends Service
     }
 
     /**
-     * Split a given pilot ID into an airline and ID portions
+     * Split a given pilot ID into an airline and ID portions.
      */
     public function findUserByPilotId(string $pilot_id): User
     {
@@ -265,7 +266,7 @@ class UserService extends Service
     /**
      * Return all of the users that are determined to be on leave. Only goes through the
      * currently active users. If the user doesn't have a PIREP, then the creation date
-     * of the user record is used to determine the difference
+     * of the user record is used to determine the difference.
      */
     public function findUsersOnLeave()
     {
@@ -306,7 +307,7 @@ class UserService extends Service
 
     /**
      * Return the subfleets this user is allowed access to,
-     * based on their current Rank and/or by Type Rating
+     * based on their current Rank and/or by Type Rating.
      *
      *
      * @return Collection
@@ -354,7 +355,7 @@ class UserService extends Service
     }
 
     /**
-     * Return a bool if a user is allowed to fly the current aircraft
+     * Return a bool if a user is allowed to fly the current aircraft.
      *
      *
      * @return bool
@@ -370,7 +371,7 @@ class UserService extends Service
 
     /**
      * Change the user's state. PENDING to ACCEPTED, etc
-     * Send out an email
+     * Send out an email.
      */
     public function changeUserState(User $user, $old_state): User
     {
@@ -387,7 +388,7 @@ class UserService extends Service
 
     /**
      * Adjust the number of flights a user has. Triggers
-     * UserStatsChanged event
+     * UserStatsChanged event.
      */
     public function adjustFlightCount(User $user, int $count): User
     {
@@ -402,7 +403,7 @@ class UserService extends Service
     }
 
     /**
-     * Update a user's flight times
+     * Update a user's flight times.
      */
     public function adjustFlightTime(User $user, int $minutes): User
     {
@@ -414,7 +415,7 @@ class UserService extends Service
     }
 
     /**
-     * See if a pilot's rank has change. Triggers the UserStatsChanged event
+     * See if a pilot's rank has change. Triggers the UserStatsChanged event.
      */
     public function calculatePilotRank(User $user): User
     {
@@ -465,7 +466,7 @@ class UserService extends Service
     }
 
     /**
-     * Set the user's status to being on leave
+     * Set the user's status to being on leave.
      */
     public function setStatusOnLeave(User $user): User
     {
@@ -481,7 +482,7 @@ class UserService extends Service
     }
 
     /**
-     * Recalculate the stats for all active users
+     * Recalculate the stats for all active users.
      */
     public function recalculateAllUserStats(): void
     {
@@ -497,7 +498,7 @@ class UserService extends Service
     }
 
     /**
-     * Recount/update all of the stats for a user
+     * Recount/update all of the stats for a user.
      */
     public function recalculateStats(User $user): User
     {
@@ -526,7 +527,7 @@ class UserService extends Service
     }
 
     /**
-     * Attach a type rating to the user
+     * Attach a type rating to the user.
      */
     public function addUserToTypeRating(User $user, Typerating $typerating)
     {
@@ -538,7 +539,7 @@ class UserService extends Service
     }
 
     /**
-     * Detach a type rating from the user
+     * Detach a type rating from the user.
      */
     public function removeUserFromTypeRating(User $user, Typerating $typerating)
     {

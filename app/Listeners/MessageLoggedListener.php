@@ -6,7 +6,7 @@ use Illuminate\Log\Events\MessageLogged;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
- * Show logs in the console
+ * Show logs in the console.
  *
  * https://stackoverflow.com/questions/48264479/log-laravel-with-artisan-output
  */

@@ -25,7 +25,7 @@ final class AdminControllerTests extends TestCase
 
     /**
      * Test adding a subfleet, deleting it and seeing that the type
-     * can be added again
+     * can be added again.
      */
     public function test_add_subfleet(): void
     {

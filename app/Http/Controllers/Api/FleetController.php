@@ -10,7 +10,7 @@ use App\Repositories\SubfleetRepository;
 use Illuminate\Http\Request;
 
 /**
- * Class FleetController
+ * Class FleetController.
  */
 class FleetController extends Controller
 {
@@ -20,11 +20,12 @@ class FleetController extends Controller
     public function __construct(
         private readonly AircraftRepository $aircraftRepo,
         private readonly SubfleetRepository $subfleetRepo
-    ) {}
+    ) {
+    }
 
     /**
      * Return all the subfleets and the aircraft and any other associated data
-     * Paginated
+     * Paginated.
      */
     public function index()
     {
@@ -37,7 +38,7 @@ class FleetController extends Controller
 
     /**
      * Get a specific aircraft. Query string required to specify the tail
-     * /api/aircraft/XYZ?type=registration
+     * /api/aircraft/XYZ?type=registration.
      */
     public function get_aircraft(string $id, Request $request): AircraftResource
     {

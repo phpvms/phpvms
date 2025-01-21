@@ -14,17 +14,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Process all of the daily expenses and charge them
+ * Process all of the daily expenses and charge them.
  */
 class RecurringFinanceService extends Service
 {
     public function __construct(
         private readonly FinanceService $financeSvc
-    ) {}
+    ) {
+    }
 
     /**
      * Determine the journal to charge to, otherwise, it's charged
-     * to every airline journal
+     * to every airline journal.
      *
      *
      * @return Journal[]
@@ -47,7 +48,7 @@ class RecurringFinanceService extends Service
     }
 
     /**
-     * Get the name of the transaction group from the expense
+     * Get the name of the transaction group from the expense.
      */
     protected function getMemoAndGroup(Expense $expense): array
     {
@@ -80,7 +81,7 @@ class RecurringFinanceService extends Service
     }
 
     /**
-     * Run all of the daily expense/financials
+     * Run all of the daily expense/financials.
      *
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException

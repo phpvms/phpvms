@@ -102,7 +102,7 @@ class Subfleet extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function aircraft(): HasMany
     {

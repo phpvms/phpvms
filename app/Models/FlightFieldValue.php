@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class FlightFieldValue
+ * Class FlightFieldValue.
  *
  * @property string   flight_id
  * @property string   name
@@ -27,7 +27,7 @@ class FlightFieldValue extends Model
     public static $rules = [];
 
     /**
-     * When setting the name attribute, also set the slug
+     * When setting the name attribute, also set the slug.
      */
     public function name(): Attribute
     {
@@ -40,7 +40,7 @@ class FlightFieldValue extends Model
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function flight(): BelongsTo
     {

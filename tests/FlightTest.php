@@ -35,7 +35,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Test adding a flight and also if there are duplicates
+     * Test adding a flight and also if there are duplicates.
      */
     public function test_duplicate_flight(): void
     {
@@ -122,7 +122,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Search based on all different criteria
+     * Search based on all different criteria.
      */
     public function test_search_flight(): void
     {
@@ -169,7 +169,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Get the flight's route
+     * Get the flight's route.
      *
      * @throws Exception
      */
@@ -205,7 +205,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Find all of the flights
+     * Find all of the flights.
      */
     public function test_find_all_flights(): void
     {
@@ -224,7 +224,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Search for flights based on a subfleet. If subfleet is blank
+     * Search for flights based on a subfleet. If subfleet is blank.
      */
     public function test_search_flight_by_subfleet(): void
     {
@@ -258,7 +258,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Search for flights based on a subfleet. If subfleet is blank
+     * Search for flights based on a subfleet. If subfleet is blank.
      */
     public function test_search_flight_by_subfleet_pagination(): void
     {
@@ -302,7 +302,7 @@ final class FlightTest extends TestCase
 
     /**
      * Test the bitmasks that they work for setting the day of week and
-     * then retrieving by searching on those
+     * then retrieving by searching on those.
      */
     public function test_find_days_of_week(): void
     {
@@ -339,7 +339,7 @@ final class FlightTest extends TestCase
     /**
      * Make sure that flights are marked as inactive when they're out of the start/end
      * zones. also make sure that flights with a specific day of the week are only
-     * active on those days
+     * active on those days.
      */
     public function test_day_of_week_active(): void
     {
@@ -565,7 +565,7 @@ final class FlightTest extends TestCase
     }
 
     /**
-     * Delete a flight and make sure all the bids are gone
+     * Delete a flight and make sure all the bids are gone.
      *
      * @throws Exception
      */
