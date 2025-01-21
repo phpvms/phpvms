@@ -5,11 +5,13 @@ namespace App\Filament\Widgets;
 use App\Services\VersionService;
 use Filament\Widgets\Widget;
 
-class DashboardWidget extends Widget
+class VersionWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.dashboard-widget';
+    protected static string $view = 'filament.widgets.version-widget';
 
     protected int|string|array $columnSpan = 'full';
+
+    protected static ?int $sort = 0;
 
     protected string $version;
 
