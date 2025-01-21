@@ -39,8 +39,7 @@ class FlightController extends Controller
         private readonly SubfleetRepository $subfleetRepo,
         private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Prettus\Repository\Exceptions\RepositoryException
@@ -51,7 +50,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Make a search request using the Repository search.
+     * Make a search request using the Repository search
      *
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
@@ -182,7 +181,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Find the user's bids and display them.
+     * Find the user's bids and display them
      */
     public function bids(Request $request): View
     {
@@ -218,7 +217,7 @@ class FlightController extends Controller
     }
 
     /**
-     * Show the flight information page.
+     * Show the flight information page
      *
      *
      * @return mixed

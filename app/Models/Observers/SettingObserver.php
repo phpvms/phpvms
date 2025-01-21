@@ -5,7 +5,7 @@ namespace App\Models\Observers;
 use App\Models\Setting;
 
 /**
- * Class SettingObserver.
+ * Class SettingObserver
  */
 class SettingObserver
 {

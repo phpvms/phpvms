@@ -86,7 +86,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public $table = 'users';
 
     /**
-     * The journal type for when it's being created.
+     * The journal type for when it's being created
      */
     public $journal_type = JournalType::USER;
 
@@ -183,7 +183,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     ];
 
     /**
-     * Format the pilot ID/ident.
+     * Format the pilot ID/ident
      */
     public function ident(): Attribute
     {
@@ -200,7 +200,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * Format the pilot atc callsign, either return alphanumeric callsign or ident.
+     * Format the pilot atc callsign, either return alphanumeric callsign or ident
      */
     public function atc(): Attribute
     {
@@ -215,7 +215,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * Return a "privatized" version of someones name - First and middle names full, last name initials.
+     * Return a "privatized" version of someones name - First and middle names full, last name initials
      */
     public function namePrivate(): Attribute
     {
@@ -244,7 +244,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * Shortcut for timezone.
+     * Shortcut for timezone
      */
     public function tz(): Attribute
     {
@@ -257,7 +257,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * Return a File model.
+     * Return a File model
      */
     public function avatar(): Attribute
     {
@@ -275,8 +275,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * @param mixed $size Size of the gravatar, in pixels
-     *
+     * @param  mixed  $size Size of the gravatar, in pixels
      * @return string
      */
     public function gravatar($size = null)
@@ -313,7 +312,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function airline(): BelongsTo
     {

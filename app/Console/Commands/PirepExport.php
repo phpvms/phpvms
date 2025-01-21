@@ -13,7 +13,7 @@ class PirepExport extends Command
     protected $description = 'PIREP table export';
 
     /**
-     * Run dev related commands.
+     * Run dev related commands
      */
     public function handle()
     {

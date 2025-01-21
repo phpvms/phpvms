@@ -10,7 +10,7 @@ use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
 
 /**
- * Add new measurement units to PhpUnitsOfMeasure.
+ * Add new measurement units to PhpUnitsOfMeasure
  */
 class MeasurementsProvider extends ServiceProvider
 {
@@ -24,7 +24,7 @@ class MeasurementsProvider extends ServiceProvider
     }
 
     /**
-     * Add lowercase temperature units.
+     * Add lowercase temperature units
      *
      * @throws NonStringUnitName
      * @throws UnknownUnitOfMeasure

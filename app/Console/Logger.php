@@ -5,7 +5,7 @@ namespace App\Console;
 use Monolog\Handler\StreamHandler;
 
 /**
- * Just a simple custom logger that dumps to the console.
+ * Just a simple custom logger that dumps to the console
  */
 class Logger
 {

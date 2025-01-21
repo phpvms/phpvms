@@ -12,7 +12,7 @@ class TestApi extends Command
     protected Client $httpClient;
 
     /**
-     * Run dev related commands.
+     * Run dev related commands
      */
     public function handle()
     {

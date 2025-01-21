@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Gravatar configs.
+ * Gravatar configs
  */
 
 return [

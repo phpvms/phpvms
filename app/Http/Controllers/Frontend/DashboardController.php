@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Class DashboardController.
+ * Class DashboardController
  */
 class DashboardController extends Controller
 {
@@ -17,8 +17,7 @@ class DashboardController extends Controller
      */
     public function __construct(
         private readonly PirepRepository $pirepRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Show the application dashboard.

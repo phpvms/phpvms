@@ -16,12 +16,12 @@ use Nwidart\Modules\Facades\Module;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Class DownloadController.
+ * Class DownloadController
  */
 class DownloadController extends Controller
 {
     /**
-     * Show all of the available files.
+     * Show all of the available files
      */
     public function index(): View
     {
@@ -30,14 +30,14 @@ class DownloadController extends Controller
 
         /**
          * Group all the files but compound the model with the ID,
-         * since we can have multiple files for every `ref_model`.
+         * since we can have multiple files for every `ref_model`
          */
         $grouped_files = $files->groupBy(fn ($item, $key) => $item['ref_model'].'_'.$item['ref_model_id']);
 
         /**
          * The $group here looks like: App\Models\Airport_KAUS
          * Split it into the $class and $id, and then change the
-         * name of the group to the object instance "name".
+         * name of the group to the object instance "name"
          */
         $regrouped_files = [];
         foreach ($grouped_files as $group => $files) {
@@ -87,7 +87,7 @@ class DownloadController extends Controller
     }
 
     /**
-     * Download a specific file.
+     * Download a specific file
      */
     public function show(string $id): RedirectResponse|StreamedResponse
     {

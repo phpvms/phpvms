@@ -6,7 +6,7 @@ use Akaunting\Money\Currency;
 use Akaunting\Money\Money as MoneyBase;
 
 /**
- * Compositional wrapper to MoneyPHP with some helpers.
+ * Compositional wrapper to MoneyPHP with some helpers
  */
 class Money
 {
@@ -19,14 +19,13 @@ class Money
     public static $subunit_multiplier;
 
     /**
-     * Create a new Money instance, passing in the amount in the subunit, e.,g, $5, you pass in 500).
+     * Create a new Money instance, passing in the amount in the subunit, e.,g, $5, you pass in 500)
      *
-     * @param mixed $amount The amount, in pennies
+     * @param  mixed     $amount The amount, in pennies
+     * @return MoneyBase
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return MoneyBase
      */
     public static function create($amount)
     {
@@ -34,14 +33,13 @@ class Money
     }
 
     /**
-     * Create from a whole amount (e.g, dollars and cents - 50.05).
+     * Create from a whole amount (e.g, dollars and cents - 50.05)
      *
-     * @param mixed $amount The amount in dollar
+     * @param  mixed $amount The amount in dollar
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public static function createFromAmount($amount)
     {
@@ -51,10 +49,9 @@ class Money
     }
 
     /**
-     * Convert a whole unit into it's subunit, e,g: dollar to cents.
+     * Convert a whole unit into it's subunit, e,g: dollar to cents
      *
-     * @param mixed $amount
-     *
+     * @param  mixed $amount
      * @return int
      */
     public static function convertToSubunit($amount)
@@ -66,11 +63,11 @@ class Money
 
     /**
      * Create a new currency object using the currency setting
-     * Fall back to USD if it's not valid.
-     *
-     * @throws \OutOfBoundsException
+     * Fall back to USD if it's not valid
      *
      * @return Currency
+     *
+     * @throws \OutOfBoundsException
      */
     public static function currency()
     {
@@ -95,7 +92,7 @@ class Money
     }
 
     /**
-     * Return the amount of currency in smallest denomination.
+     * Return the amount of currency in smallest denomination
      *
      * @return string
      */
@@ -105,7 +102,7 @@ class Money
     }
 
     /**
-     * Alias of getAmount().
+     * Alias of getAmount()
      */
     public function toAmount()
     {
@@ -114,7 +111,7 @@ class Money
 
     /**
      * Returns the value in whole amounts, e.g: 100.00
-     * instead of returning in the smallest denomination.
+     * instead of returning in the smallest denomination
      *
      * @return float
      */
@@ -124,7 +121,7 @@ class Money
     }
 
     /**
-     * Alias of getValue().
+     * Alias of getValue()
      */
     public function toValue()
     {
@@ -156,14 +153,13 @@ class Money
     }
 
     /**
-     * Add an amount.
+     * Add an amount
      *
-     * @param mixed $amount
+     * @param  mixed $amount
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function add($amount)
     {
@@ -177,12 +173,11 @@ class Money
     }
 
     /**
-     * @param mixed $percent
+     * @param  mixed $percent
+     * @return $this
      *
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
-     *
-     * @return $this
      */
     public function addPercent($percent)
     {
@@ -197,13 +192,13 @@ class Money
     }
 
     /**
-     * Subtract an amount.
+     * Subtract an amount
      *
+     *
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function subtract($amount)
     {
@@ -217,14 +212,14 @@ class Money
     }
 
     /**
-     * Multiply by an amount.
+     * Multiply by an amount
      *
+     *
+     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function multiply($amount)
     {
@@ -238,13 +233,13 @@ class Money
     }
 
     /**
-     * Divide by an amount.
+     * Divide by an amount
      *
+     *
+     * @return Money
      *
      * @throws \OutOfBoundsException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function divide($amount)
     {
@@ -254,10 +249,10 @@ class Money
     }
 
     /**
+     * @return bool
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return bool
      */
     public function equals($money)
     {

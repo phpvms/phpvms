@@ -33,7 +33,7 @@ class Bid extends Model
     ];
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function aircraft(): BelongsTo
     {

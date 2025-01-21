@@ -33,17 +33,15 @@ class FlightService extends Service
         private readonly NavdataRepository $navDataRepo,
         private readonly PirepRepository $pirepRepo,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
-     * Create a new flight.
+     * Create a new flight
      *
-     * @param array $fields
+     * @param  array                             $fields
+     * @return \Illuminate\Http\RedirectResponse
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function createFlight($fields)
     {
@@ -65,14 +63,13 @@ class FlightService extends Service
     }
 
     /**
-     * Update a flight with values from the given fields.
+     * Update a flight with values from the given fields
      *
-     * @param Flight $flight
-     * @param array  $fields
+     * @param  Flight                   $flight
+     * @param  array                    $fields
+     * @return \App\Models\Flight|mixed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
-     *
-     * @return \App\Models\Flight|mixed
      */
     public function updateFlight($flight, $fields)
     {
@@ -91,10 +88,9 @@ class FlightService extends Service
     }
 
     /**
-     * Check the fields for a flight and transform them.
+     * Check the fields for a flight and transform them
      *
-     * @param array $fields
-     *
+     * @param  array $fields
      * @return array
      */
     protected function transformFlightFields($fields)
@@ -118,7 +114,7 @@ class FlightService extends Service
     }
 
     /**
-     * Return the proper subfleets for the given bid.
+     * Return the proper subfleets for the given bid
      *
      *
      * @return mixed
@@ -137,7 +133,7 @@ class FlightService extends Service
     }
 
     /**
-     * Filter out subfleets to only include aircraft that a user has access to.
+     * Filter out subfleets to only include aircraft that a user has access to
      *
      *
      * @return mixed
@@ -211,7 +207,7 @@ class FlightService extends Service
     }
 
     /**
-     * Check if this flight has a duplicate already.
+     * Check if this flight has a duplicate already
      *
      *
      * @return bool
@@ -244,7 +240,7 @@ class FlightService extends Service
     }
 
     /**
-     * Delete a flight, and all the user bids, etc associated with it.
+     * Delete a flight, and all the user bids, etc associated with it
      *
      *
      * @throws \Exception
@@ -257,7 +253,7 @@ class FlightService extends Service
     }
 
     /**
-     * Update any custom PIREP fields.
+     * Update any custom PIREP fields
      */
     public function updateCustomFields(Flight $flight, array $field_values): void
     {
@@ -275,7 +271,7 @@ class FlightService extends Service
     }
 
     /**
-     * Return all of the navaid points as a collection.
+     * Return all of the navaid points as a collection
      *
      *
      * @return \Illuminate\Support\Collection

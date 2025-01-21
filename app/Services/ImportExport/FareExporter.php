@@ -6,14 +6,14 @@ use App\Contracts\ImportExport;
 use App\Models\Fare;
 
 /**
- * The flight importer can be imported or export. Operates on rows.
+ * The flight importer can be imported or export. Operates on rows
  */
 class FareExporter extends ImportExport
 {
     public $assetType = 'fare';
 
     /**
-     * Set the current columns and other setup.
+     * Set the current columns and other setup
      */
     public function __construct()
     {
@@ -21,7 +21,7 @@ class FareExporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows.
+     * Import a flight, parse out the different rows
      *
      * @param Fare $fare
      */

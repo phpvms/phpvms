@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Yaml;
 final class DatabaseTest extends TestCase
 {
     /**
-     * Make sure the seeder works correctly.
+     * Make sure the seeder works correctly
      */
     public function test_seeder(): void
     {

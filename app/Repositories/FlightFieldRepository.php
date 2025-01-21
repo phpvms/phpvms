@@ -6,7 +6,7 @@ use App\Contracts\Repository;
 use App\Models\FlightField;
 
 /**
- * Class FlightFieldRepository.
+ * Class FlightFieldRepository
  */
 class FlightFieldRepository extends Repository
 {

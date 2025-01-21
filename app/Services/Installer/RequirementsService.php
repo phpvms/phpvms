@@ -7,7 +7,7 @@ use App\Contracts\Service;
 class RequirementsService extends Service
 {
     /**
-     * Check the PHP version that it meets the minimum requirement.
+     * Check the PHP version that it meets the minimum requirement
      */
     public function checkPHPVersion(): array
     {
@@ -20,7 +20,7 @@ class RequirementsService extends Service
     }
 
     /**
-     * Make sure the minimal extensions required are loaded.
+     * Make sure the minimal extensions required are loaded
      */
     public function checkExtensions(): array
     {
@@ -42,7 +42,7 @@ class RequirementsService extends Service
 
     /**
      * Check the permissions for the directories specified
-     * Make sure they exist and are writable.
+     * Make sure they exist and are writable
      */
     public function checkPermissions(): array
     {

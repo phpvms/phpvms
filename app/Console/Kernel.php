@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
 {
     /**
      * Define the application's command schedule. How this works... according to the command
-     * time, an event gets send out with the appropriate time (e.g, hourly sends an hourly event).
+     * time, an event gets send out with the appropriate time (e.g, hourly sends an hourly event)
      *
      * Then the CronServiceProvider has the list of cronjobs which then run according to the events
      * and then calls those at the proper times.

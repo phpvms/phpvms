@@ -6,7 +6,7 @@ use App\Contracts\Event;
 use App\Models\User;
 
 /**
- * See if this user has won any awards.
+ * See if this user has won any awards
  */
 class ProcessAward extends Event
 {

@@ -15,7 +15,7 @@ trait HashIdTrait
     }
 
     /**
-     * Register callbacks.
+     * Register callbacks
      *
      * @throws \Hashids\HashidsException
      */

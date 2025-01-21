@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 
 /**
  * This just calls the CronHourly event, so all of the
- * listeners, etc can just be called to run those tasks.
+ * listeners, etc can just be called to run those tasks
  */
 class JobQueue extends CronCommand
 {

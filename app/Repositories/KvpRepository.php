@@ -14,8 +14,7 @@ class KvpRepository
     }
 
     /**
-     * @param null $default
-     *
+     * @param  null              $default
      * @return array|string|null
      */
     public function retrieve($key, $default = null)
@@ -24,11 +23,10 @@ class KvpRepository
     }
 
     /**
-     * Get a value from the KVP store.
+     * Get a value from the KVP store
      *
-     * @param string $key
-     * @param mixed  $default default value to return
-     *
+     * @param  string            $key
+     * @param  mixed             $default default value to return
      * @return array|string|null
      */
     public function get($key, $default = null)
@@ -43,9 +41,8 @@ class KvpRepository
     /**
      * @alias store($key,$value)
      *
-     * @param string $key
-     * @param mixed  $value
-     *
+     * @param  string $key
+     * @param  mixed  $value
      * @return null
      */
     public function save($key, $value)
@@ -54,7 +51,7 @@ class KvpRepository
     }
 
     /**
-     * Save a value to the KVP store.
+     * Save a value to the KVP store
      *
      *
      * @return null

@@ -6,7 +6,7 @@ use App\Contracts\Unit;
 use PhpUnitsOfMeasure\PhysicalQuantity\Pressure as PressureUnit;
 
 /**
- * Composition for the converter.
+ * Composition for the converter
  */
 class Pressure extends Unit
 {

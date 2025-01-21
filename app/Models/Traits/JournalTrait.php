@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 trait JournalTrait
 {
     /**
-     * Initialize a new journal when a new record is created.
+     * Initialize a new journal when a new record is created
      */
     public static function bootJournalTrait(): void
     {
@@ -28,12 +28,12 @@ trait JournalTrait
     }
 
     /**
-     * Initialize a journal for a given model object.
+     * Initialize a journal for a given model object
      *
-     *
-     * @throws \Exception
      *
      * @return Journal
+     *
+     * @throws \Exception
      */
     public function initJournal(string $currency_code = 'USD')
     {

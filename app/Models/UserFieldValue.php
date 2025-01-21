@@ -25,7 +25,7 @@ class UserFieldValue extends Model
     public static $rules = [];
 
     /**
-     * Return related field's name along with field values.
+     * Return related field's name along with field values
      */
     public function name(): Attribute
     {
@@ -35,7 +35,7 @@ class UserFieldValue extends Model
     }
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function field(): BelongsTo
     {

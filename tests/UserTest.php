@@ -57,7 +57,7 @@ final class UserTest extends TestCase
         $this->assertEquals($added_aircraft, $all_aircraft);
 
         /**
-         * Check via API.
+         * Check via API
          */
         $resp = $this->get('/api/user/fleet', [], $user)->assertStatus(200);
         $body = $resp->json()['data'];
@@ -71,7 +71,7 @@ final class UserTest extends TestCase
         $this->assertEquals($added_aircraft, $aircraft_from_api);
 
         /**
-         * Check the user ID call.
+         * Check the user ID call
          */
         $resp = $this->get('/api/users/'.$user->id.'/fleet', [], $user)->assertStatus(200);
         $body = $resp->json()['data'];
@@ -87,7 +87,7 @@ final class UserTest extends TestCase
 
     /**
      * Flip the setting for getting all of the user's aircraft restricted
-     * by rank. Make sure that they're all returned.
+     * by rank. Make sure that they're all returned
      *
      * @throws \Exception
      */
@@ -140,7 +140,7 @@ final class UserTest extends TestCase
         $this->assertEquals($subfleetACalled->fares[0]['capacity'], $overrides['capacity']);
 
         /**
-         * Check via API, but should only show the single subfleet being returned.
+         * Check via API, but should only show the single subfleet being returned
          */
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', true);
 
@@ -157,7 +157,7 @@ final class UserTest extends TestCase
      * Flip the setting for getting all of the user's aircraft restricted
      * by rank. Make sure that they're all returned. Create two subfleets,
      * assign only one of them to the user's rank. When calling the api
-     * to retrieve the flight, only subfleetA should be showing.
+     * to retrieve the flight, only subfleetA should be showing
      */
     public function test_get_aircraft_allowed_from_flight()
     {
@@ -199,14 +199,14 @@ final class UserTest extends TestCase
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', true);
 
         /**
-         * Make sure it's filtered out from the single flight call.
+         * Make sure it's filtered out from the single flight call
          */
         $response = $this->get('/api/flights/'.$flight->id, [], $user);
         $response->assertStatus(200);
         $this->assertCount(1, $response->json()['data']['subfleets']);
 
         /**
-         * Make sure it's filtered out from the flight list.
+         * Make sure it's filtered out from the flight list
          */
         $response = $this->get('/api/flights', [], $user);
         $body = $response->json()['data'];
@@ -223,7 +223,7 @@ final class UserTest extends TestCase
     }
 
     /**
-     * Test the pilot ID being added when a new user is created.
+     * Test the pilot ID being added when a new user is created
      */
     public function test_user_pilot_id_change_already_exists()
     {
@@ -236,7 +236,7 @@ final class UserTest extends TestCase
     }
 
     /**
-     * Make sure that the splitting of the user ID works.
+     * Make sure that the splitting of the user ID works
      */
     public function test_user_pilot_id_split(): void
     {
@@ -251,7 +251,7 @@ final class UserTest extends TestCase
     }
 
     /**
-     * Pilot ID not found.
+     * Pilot ID not found
      */
     public function test_user_pilot_id_split_invalid_id(): void
     {
@@ -275,7 +275,7 @@ final class UserTest extends TestCase
     }
 
     /**
-     * Test the pilot ID being added when a new user is created.
+     * Test the pilot ID being added when a new user is created
      */
     public function test_user_pilot_id_added()
     {
@@ -350,7 +350,7 @@ final class UserTest extends TestCase
     }
 
     /**
-     * Test that a user's name is private.
+     * Test that a user's name is private
      */
     public function test_user_name_private()
     {

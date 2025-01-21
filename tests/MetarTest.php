@@ -7,7 +7,7 @@ use App\Services\AirportService;
 use App\Support\Metar;
 
 /**
- * Test the parsing/support class of the metar.
+ * Test the parsing/support class of the metar
  */
 final class MetarTest extends TestCase
 {
@@ -20,7 +20,7 @@ final class MetarTest extends TestCase
     }
 
     /**
-     * Make sure a blank metar doesn't give problems.
+     * Make sure a blank metar doesn't give problems
      */
     public function test_blank_metar(): void
     {
@@ -30,7 +30,7 @@ final class MetarTest extends TestCase
     }
 
     /**
-     * Test adding/subtracting a percentage.
+     * Test adding/subtracting a percentage
      */
     public function test_metar1(): void
     {
@@ -113,7 +113,7 @@ final class MetarTest extends TestCase
          * John F.Kennedy International, New York, NY (KJFK). Apr 7, 0151Z. Wind from 200° at 5 knots,
          * 10 statute miles visibility, Ceiling is Broken at 10,000 feet, Temperature 8°C, Dewpoint 7°C,
          * Altimeter is 29.70. Remarks: automated station with precipitation discriminator sea level
-         * pressure 1005.6 hectopascals hourly temp 7.8°C dewpoint 6.7°C.
+         * pressure 1005.6 hectopascals hourly temp 7.8°C dewpoint 6.7°C
          */
         $parsed = Metar::parse($metar);
     }
@@ -151,7 +151,7 @@ final class MetarTest extends TestCase
     }
 
     /**
-     * https://github.com/nabeelio/phpvms/issues/1071.
+     * https://github.com/nabeelio/phpvms/issues/1071
      */
     public function test_metar_wind_speed_chill(): void
     {
@@ -164,7 +164,7 @@ final class MetarTest extends TestCase
     }
 
     /**
-     * Visibility in KM not parsed.
+     * Visibility in KM not parsed
      *
      * https://github.com/nabeelio/phpvms/issues/680
      */
@@ -206,7 +206,7 @@ final class MetarTest extends TestCase
 
     /**
      * TEMPO and trend causing issue with values being overwritten
-     * https://github.com/nabeelio/phpvms/issues/861.
+     * https://github.com/nabeelio/phpvms/issues/861
      */
     public function test_lfrs_call(): void
     {

@@ -26,7 +26,7 @@ class PirepDiverted extends Notification
     }
 
     /**
-     * Send a Discord notification.
+     * Send a Discord notification
      *
      * @param Pirep $pirep
      */
@@ -77,8 +77,7 @@ class PirepDiverted extends Notification
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

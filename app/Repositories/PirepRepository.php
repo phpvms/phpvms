@@ -8,7 +8,7 @@ use App\Models\Pirep;
 use App\Models\User;
 
 /**
- * Class PirepRepository.
+ * Class PirepRepository
  */
 class PirepRepository extends Repository
 {
@@ -28,7 +28,7 @@ class PirepRepository extends Repository
 
     /**
      * Get all the pending reports in order. Returns the Pirep
-     * model but you still need to call ->all() or ->paginate().
+     * model but you still need to call ->all() or ->paginate()
      *
      *
      * @return Pirep
@@ -46,7 +46,7 @@ class PirepRepository extends Repository
     }
 
     /**
-     * Number of PIREPs that are pending.
+     * Number of PIREPs that are pending
      *
      *
      * @return mixed

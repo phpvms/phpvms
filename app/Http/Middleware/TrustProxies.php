@@ -28,7 +28,7 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_AWS_ELB;
 
     /**
-     * Set the client as trusted.
+     * Set the client as trusted
      *
      *
      * @return mixed

@@ -7,7 +7,7 @@ use App\Contracts\Enum;
 /**
  * Class NavaidType
  * Types based on/compatible with OpenFMC
- * https://github.com/skiselkov/openfmc/blob/master/airac.h.
+ * https://github.com/skiselkov/openfmc/blob/master/airac.h
  */
 class NavaidType extends Enum
 {
@@ -38,7 +38,7 @@ class NavaidType extends Enum
     public const ANY = (self::UNKNOWN << 1) - 1;
 
     /**
-     * Names and titles.
+     * Names and titles
      */
     public static array $labels = [
         self::VOR     => 'VOR',

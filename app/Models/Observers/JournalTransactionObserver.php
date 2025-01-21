@@ -5,12 +5,12 @@ namespace App\Models\Observers;
 use App\Models\JournalTransaction;
 
 /**
- * Class JournalTransactionObserver.
+ * Class JournalTransactionObserver
  */
 class JournalTransactionObserver
 {
     /**
-     * Set the ID to a UUID.
+     * Set the ID to a UUID
      */
     public function creating(JournalTransaction $transaction): void
     {
@@ -20,7 +20,7 @@ class JournalTransactionObserver
     }
 
     /**
-     * After transaction is saved, adjust the journal balance.
+     * After transaction is saved, adjust the journal balance
      */
     public function saved(JournalTransaction $transaction): void
     {
@@ -39,7 +39,7 @@ class JournalTransactionObserver
     }
 
     /**
-     * After transaction is deleted, adjust the balance on the journal.
+     * After transaction is deleted, adjust the balance on the journal
      */
     public function deleted(JournalTransaction $transaction): void
     {

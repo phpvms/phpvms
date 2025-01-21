@@ -39,7 +39,7 @@ class Airline extends Model
     public $table = 'airlines';
 
     /**
-     * The journal type for the callback.
+     * The journal type for the callback
      */
     public $journal_type = JournalType::AIRLINE;
 
@@ -67,7 +67,7 @@ class Airline extends Model
     ];
 
     /**
-     * Validation rules.
+     * Validation rules
      *
      * @var array
      */
@@ -90,7 +90,7 @@ class Airline extends Model
     ];
 
     /**
-     * For backwards compatibility.
+     * For backwards compatibility
      */
     public function code(): Attribute
     {
@@ -106,7 +106,7 @@ class Airline extends Model
     }
 
     /**
-     * Capitalize the IATA code when set.
+     * Capitalize the IATA code when set
      */
     public function iata(): Attribute
     {
@@ -116,7 +116,7 @@ class Airline extends Model
     }
 
     /**
-     * Capitalize the ICAO when set.
+     * Capitalize the ICAO when set
      */
     public function icao(): Attribute
     {

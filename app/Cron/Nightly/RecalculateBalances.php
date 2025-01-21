@@ -9,7 +9,7 @@ use App\Repositories\JournalRepository;
 use Illuminate\Support\Facades\Log;
 
 /**
- * This recalculates the balances on all of the journals.
+ * This recalculates the balances on all of the journals
  */
 class RecalculateBalances extends Listener
 {
@@ -24,7 +24,7 @@ class RecalculateBalances extends Listener
     }
 
     /**
-     * Recalculate all the balances for the different ledgers.
+     * Recalculate all the balances for the different ledgers
      *
      *
      * @throws \UnexpectedValueException

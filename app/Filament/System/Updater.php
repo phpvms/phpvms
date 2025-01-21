@@ -30,7 +30,7 @@ class Updater extends Page
     public ?string $details;
 
     /**
-     * Called whenever the component is loaded.
+     * Called whenever the component is loaded
      */
     public function mount(): void
     {
@@ -63,7 +63,7 @@ class Updater extends Page
     }
 
     /**
-     * To fill the form (set default values).
+     * To fill the form (set default values)
      */
     public function fillForm(): void
     {
@@ -75,7 +75,7 @@ class Updater extends Page
     }
 
     /**
-     * The filament form.
+     * The filament form
      */
     public function form(Form $form): Form
     {
@@ -108,7 +108,7 @@ class Updater extends Page
     }
 
     /**
-     * Migrate the database.
+     * Migrate the database
      */
     public function migrate(): void
     {
@@ -146,7 +146,7 @@ class Updater extends Page
     }
 
     /**
-     * Called when the form is filed (ie update completed).
+     * Called when the form is filed (ie update completed)
      */
     public function save(): void
     {

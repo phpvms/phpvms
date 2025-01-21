@@ -5,7 +5,7 @@ namespace App\Models\Observers;
 use App\Models\Journal;
 
 /**
- * Class JournalObserver.
+ * Class JournalObserver
  */
 class JournalObserver
 {

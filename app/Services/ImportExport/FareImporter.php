@@ -6,7 +6,7 @@ use App\Contracts\ImportExport;
 use App\Models\Fare;
 
 /**
- * Import aircraft.
+ * Import aircraft
  */
 class FareImporter extends ImportExport
 {
@@ -14,7 +14,7 @@ class FareImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part.
+     * Should match the database fields, for the most part
      */
     public static $columns = [
         'code'     => 'required',
@@ -28,7 +28,7 @@ class FareImporter extends ImportExport
     ];
 
     /**
-     * Import a flight, parse out the different rows.
+     * Import a flight, parse out the different rows
      *
      * @param int $index
      */

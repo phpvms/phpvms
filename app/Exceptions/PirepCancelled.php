@@ -16,7 +16,7 @@ class PirepCancelled extends AbstractHttpException
     }
 
     /**
-     * Return the RFC 7807 error type (without the URL root).
+     * Return the RFC 7807 error type (without the URL root)
      */
     public function getErrorType(): string
     {

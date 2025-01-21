@@ -74,12 +74,11 @@ class AircraftImporter extends BaseImporter
     }
 
     /**
-     * Return the subfleet.
+     * Return the subfleet
      *
-     * @param string $name
-     * @param string $icao       ICAO of the subfleet
-     * @param int    $airline_id
-     *
+     * @param  string $name
+     * @param  string $icao       ICAO of the subfleet
+     * @param  int    $airline_id
      * @return mixed
      */
     protected function getSubfleet($name, $icao, $airline_id = null)

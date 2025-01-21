@@ -9,7 +9,7 @@ use App\Services\UserService;
 class FinalizeImporter extends BaseImporter
 {
     /**
-     * Returns a default manifest just so this step gets run.
+     * Returns a default manifest just so this step gets run
      */
     public function getManifest(): array
     {
@@ -24,10 +24,9 @@ class FinalizeImporter extends BaseImporter
     }
 
     /**
-     * The start method. Takes the offset to start from.
+     * The start method. Takes the offset to start from
      *
-     * @param int $start
-     *
+     * @param  int   $start
      * @return mixed
      */
     public function run($start = 0)
@@ -38,7 +37,7 @@ class FinalizeImporter extends BaseImporter
     }
 
     /**
-     * Go through and set the last PIREP ID for the users.
+     * Go through and set the last PIREP ID for the users
      */
     protected function findLastPireps()
     {
@@ -46,7 +45,7 @@ class FinalizeImporter extends BaseImporter
     }
 
     /**
-     * Recalculate all of the user stats.
+     * Recalculate all of the user stats
      */
     protected function recalculateUserStats()
     {
@@ -61,7 +60,7 @@ class FinalizeImporter extends BaseImporter
     }
 
     /**
-     * Update the aircraft stats with the newest/latest PIREPs.
+     * Update the aircraft stats with the newest/latest PIREPs
      */
     protected function recalculateAircraftStats()
     {
@@ -73,7 +72,7 @@ class FinalizeImporter extends BaseImporter
     }
 
     /**
-     * Clear the value store of any old value mappings.
+     * Clear the value store of any old value mappings
      */
     protected function clearValueStore()
     {

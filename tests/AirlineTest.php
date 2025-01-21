@@ -50,7 +50,7 @@ final class AirlineTest extends TestCase
     }
 
     /**
-     * Try deleting an airline which has flights/other assets that exist.
+     * Try deleting an airline which has flights/other assets that exist
      */
     public function test_delete_airline_with_flight(): void
     {
@@ -63,7 +63,7 @@ final class AirlineTest extends TestCase
     }
 
     /**
-     * Try deleting an airline with existing PIREPs.
+     * Try deleting an airline with existing PIREPs
      */
     public function test_delete_airline_with_pirep(): void
     {

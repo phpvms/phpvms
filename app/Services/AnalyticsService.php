@@ -13,7 +13,7 @@ use VaCentral\VaCentral;
 class AnalyticsService extends Service
 {
     /**
-     * Send out some stats about the install, like the PHP and DB versions.
+     * Send out some stats about the install, like the PHP and DB versions
      */
     public function sendInstall()
     {

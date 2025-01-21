@@ -26,7 +26,7 @@ use function count;
 use function random_int;
 
 /**
- * Test API calls and authentication, etc.
+ * Test API calls and authentication, etc
  */
 final class AcarsTest extends TestCase
 {
@@ -81,7 +81,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Test some prefile error conditions.
+     * Test some prefile error conditions
      */
     public function test_prefile_errors(): void
     {
@@ -92,7 +92,7 @@ final class AcarsTest extends TestCase
         $aircraft = Aircraft::factory()->create();
 
         /**
-         * INVALID AIRLINE_ID FIELD.
+         * INVALID AIRLINE_ID FIELD
          */
         $uri = '/api/pireps/prefile';
         $pirep = [
@@ -131,7 +131,7 @@ final class AcarsTest extends TestCase
         $aircraft = Aircraft::factory()->create(['airport_id' => $aircraft_airport->id]);
 
         /**
-         * INVALID AIRLINE_ID FIELD.
+         * INVALID AIRLINE_ID FIELD
          */
         $uri = '/api/pireps/prefile';
         $pirep = [
@@ -162,7 +162,7 @@ final class AcarsTest extends TestCase
         $aircraft = Aircraft::factory()->create();
 
         /**
-         * INVALID AIRLINE_ID FIELD.
+         * INVALID AIRLINE_ID FIELD
          */
         $uri = '/api/pireps/prefile';
         $pirep = [
@@ -187,7 +187,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Make sure an error is thrown if the pilot is not at the current airport.
+     * Make sure an error is thrown if the pilot is not at the current airport
      */
     public function test_pilot_not_at_airport(): void
     {
@@ -203,7 +203,7 @@ final class AcarsTest extends TestCase
         $aircraft = Aircraft::factory()->create();
 
         /**
-         * INVALID AIRLINE_ID FIELD.
+         * INVALID AIRLINE_ID FIELD
          */
         $uri = '/api/pireps/prefile';
         $pirep = [
@@ -225,7 +225,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Make sure an error is thrown if the pilot is not at the current airport.
+     * Make sure an error is thrown if the pilot is not at the current airport
      */
     public function test_aircraft_not_at_airport(): void
     {
@@ -250,7 +250,7 @@ final class AcarsTest extends TestCase
         ]);
 
         /**
-         * INVALID AIRLINE_ID FIELD.
+         * INVALID AIRLINE_ID FIELD
          */
         $uri = '/api/pireps/prefile';
         $pirep = [
@@ -272,7 +272,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Post a PIREP into a PREFILE state and post ACARS.
+     * Post a PIREP into a PREFILE state and post ACARS
      *
      * @throws \Exception
      */
@@ -354,7 +354,7 @@ final class AcarsTest extends TestCase
         $this->assertEquals('custom_value', $field['value']);
 
         /**
-         * Try to update fields.
+         * Try to update fields
          */
         $uri = '/api/pireps/'.$pirep['id'].'/update';
         $update = [
@@ -428,7 +428,7 @@ final class AcarsTest extends TestCase
         $pirep = $response->json('data');
 
         /**
-         * Try to update fields.
+         * Try to update fields
          */
         $uri = '/api/pireps/'.$pirep['id'].'/update';
         $update = [
@@ -443,7 +443,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Post a PIREP into a PREFILE state and post ACARS.
+     * Post a PIREP into a PREFILE state and post ACARS
      *
      * @throws \Exception
      */
@@ -509,7 +509,7 @@ final class AcarsTest extends TestCase
         $this->assertHasKeys($pirep['planned_distance'], ['mi', 'nmi', 'km']);
 
         /**
-         * Update the custom field.
+         * Update the custom field
          */
         $uri = '/api/pireps/'.$pirep_id.'/update';
         $this->post($uri, [
@@ -525,7 +525,7 @@ final class AcarsTest extends TestCase
         $this->assertEquals('custom_value_changed', $pirep['fields']['custom_field']);
 
         /**
-         * Add some position updates.
+         * Add some position updates
          */
         $uri = '/api/pireps/'.$pirep_id.'/acars/position';
 
@@ -622,7 +622,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Post a PIREP into a PREFILE state and post ACARS.
+     * Post a PIREP into a PREFILE state and post ACARS
      *
      * @throws \Exception
      */
@@ -697,7 +697,7 @@ final class AcarsTest extends TestCase
         $this->assertEquals($acars['altitude'], $acars_data['altitude_msl']);
 
         /**
-         * Now push the new fields without the old one.
+         * Now push the new fields without the old one
          */
         $acars2 = Acars::factory()->make(['pirep_id' => $pirep_id])->toArray();
         $acars2['sim_time'] = $dt
@@ -738,7 +738,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Post a PIREP into a PREFILE state and post ACARS.
+     * Post a PIREP into a PREFILE state and post ACARS
      *
      * @throws \Exception
      */
@@ -806,7 +806,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Test aircraft is allowed.
+     * Test aircraft is allowed
      *
      * @throws \Exception
      */
@@ -854,7 +854,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Test aircraft permissions being ignored.
+     * Test aircraft permissions being ignored
      *
      * @throws \Exception
      */
@@ -897,7 +897,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Test publishing multiple, batched updates.
+     * Test publishing multiple, batched updates
      *
      * @throws \Exception
      */
@@ -977,7 +977,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Test the validation.
+     * Test the validation
      *
      * @throws \Exception
      */
@@ -1087,7 +1087,7 @@ final class AcarsTest extends TestCase
         $response->assertStatus(200)->assertJson(['count' => $route_count]);
 
         /**
-         * Get.
+         * Get
          */
         $uri = '/api/pireps/'.$pirep_id.'/route';
         $response = $this->get($uri);
@@ -1097,7 +1097,7 @@ final class AcarsTest extends TestCase
         $this->allPointsInRoute($post_route, $body);
 
         /**
-         * Delete and then recheck.
+         * Delete and then recheck
          */
         $uri = '/api/pireps/'.$pirep_id.'/route';
         $response = $this->delete($uri);
@@ -1109,7 +1109,7 @@ final class AcarsTest extends TestCase
     }
 
     /**
-     * Try to refile the same PIREP.
+     * Try to refile the same PIREP
      *
      * @throws \Exception
      */

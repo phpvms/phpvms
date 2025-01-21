@@ -44,7 +44,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Load SimBrief.
+     * Load SimBrief
      */
     protected function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string $flight_id = null): SimBrief
     {
@@ -63,7 +63,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Download an OFP file.
+     * Download an OFP file
      */
     protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {
@@ -79,7 +79,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Read from the SimBrief URL.
+     * Read from the SimBrief URL
      *
      * @throws \Exception
      */
@@ -121,7 +121,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Check that the API calls are working (simbrief in the response, can retrieve the briefing).
+     * Check that the API calls are working (simbrief in the response, can retrieve the briefing)
      *
      * @throws \Exception
      */
@@ -168,7 +168,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Make sure the user's bids have the Simbrief data show up.
+     * Make sure the user's bids have the Simbrief data show up
      *
      * @throws \Exception
      */
@@ -215,7 +215,7 @@ final class SimBriefTest extends TestCase
 
     /**
      * Make sure that the bids/simbrief created for the same flight by two different
-     * users doesn't leak across users.
+     * users doesn't leak across users
      *
      * @throws \Exception
      */
@@ -318,7 +318,7 @@ final class SimBriefTest extends TestCase
     }
 
     /**
-     * Test clearing expired briefs.
+     * Test clearing expired briefs
      *
      * @throws \Exception
      */

@@ -27,7 +27,7 @@ final class AwardsTest extends TestCase
     }
 
     /**
-     * Make sure the awards classes are returned.
+     * Make sure the awards classes are returned
      */
     public function test_get_awards_classes(): void
     {
@@ -36,7 +36,7 @@ final class AwardsTest extends TestCase
     }
 
     /**
-     * Test to make sure that the award is actually given out.
+     * Test to make sure that the award is actually given out
      *
      * @throws \Exception
      */
@@ -73,7 +73,7 @@ final class AwardsTest extends TestCase
     }
 
     /**
-     * Test the flight route.
+     * Test the flight route
      */
     public function test_flight_route_award(): void
     {

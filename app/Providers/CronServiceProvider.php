@@ -23,7 +23,7 @@ use App\Events\CronWeekly;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 /**
- * All of the hooks for the cron jobs.
+ * All of the hooks for the cron jobs
  */
 class CronServiceProvider extends ServiceProvider
 {

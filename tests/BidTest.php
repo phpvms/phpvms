@@ -33,7 +33,7 @@ final class BidTest extends TestCase
     }
 
     /**
-     * Add/remove a bid, test the API, etc.
+     * Add/remove a bid, test the API, etc
      *
      * @throws \Exception
      */
@@ -162,7 +162,7 @@ final class BidTest extends TestCase
     }
 
     /**
-     * Add a flight bid VIA the API.
+     * Add a flight bid VIA the API
      */
     public function test_add_bid_api(): void
     {
@@ -200,7 +200,7 @@ final class BidTest extends TestCase
     }
 
     /**
-     * Delete a flight and make sure all the bids are gone.
+     * Delete a flight and make sure all the bids are gone
      *
      * @throws \Exception
      */
@@ -242,7 +242,7 @@ final class BidTest extends TestCase
     }
 
     /**
-     * Create a bid with an aircraft and check the aircraft booking.
+     * Create a bid with an aircraft and check the aircraft booking
      *
      * @throws \Exception
      */

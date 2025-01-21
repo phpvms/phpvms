@@ -7,7 +7,7 @@ use Carbon\Carbon;
 class Dates
 {
     /**
-     * Bitwise operator for setting days of week to integer field.
+     * Bitwise operator for setting days of week to integer field
      *
      * @param int   $datefield initial datefield
      * @param array $day_enums Array of values from config("enum.days")
@@ -22,7 +22,7 @@ class Dates
     }
 
     /**
-     * Bit check if a day exists within a integer bitfield.
+     * Bit check if a day exists within a integer bitfield
      *
      * @param int $datefield datefield from database
      * @param int $day_enum  Value from config("enum.days")
@@ -33,7 +33,7 @@ class Dates
     }
 
     /**
-     * Get the list of months, given a start date.
+     * Get the list of months, given a start date
      */
     public static function getMonthsList(Carbon $start_date): array
     {
@@ -51,7 +51,7 @@ class Dates
     }
 
     /**
-     * Return the start/end dates for a given month/year.
+     * Return the start/end dates for a given month/year
      *
      * @param string $month In "YYYY-MM" format
      */
@@ -68,7 +68,7 @@ class Dates
 
     /**
      * Get the number of days in a month
-     * https://www.php.net/manual/en/function.cal-days-in-month.php#38666.
+     * https://www.php.net/manual/en/function.cal-days-in-month.php#38666
      *
      * @param int $month
      * @param int $year

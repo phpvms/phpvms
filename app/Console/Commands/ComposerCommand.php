@@ -12,7 +12,7 @@ class ComposerCommand extends Command
     protected $description = 'Composer related tasks';
 
     /**
-     * Run composer update related commands.
+     * Run composer update related commands
      */
     public function handle()
     {
@@ -26,7 +26,7 @@ class ComposerCommand extends Command
     }
 
     /**
-     * Any composer post update tasks.
+     * Any composer post update tasks
      */
     protected function postUpdate(): void
     {

@@ -3,7 +3,7 @@
 namespace App\Models\Traits;
 
 /**
- * Trait ReferenceTrait.
+ * Trait ReferenceTrait
  *
  * @property \App\Contracts\Model $ref_model
  * @property mixed                $ref_model_id
@@ -11,8 +11,7 @@ namespace App\Models\Traits;
 trait ReferenceTrait
 {
     /**
-     * @param \App\Contracts\Model $object
-     *
+     * @param  \App\Contracts\Model $object
      * @return self
      */
     public function referencesObject($object)
@@ -25,7 +24,7 @@ trait ReferenceTrait
     }
 
     /**
-     * Return an instance of the object or null.
+     * Return an instance of the object or null
      *
      * @return \App\Contracts\Model|$this|null
      */

@@ -97,7 +97,7 @@ final class PIREPTest extends TestCase
         $this->assertEquals(PirepState::PENDING, $pirep->state);
 
         /**
-         * Now set the PIREP state to ACCEPTED.
+         * Now set the PIREP state to ACCEPTED
          */
         $new_pirep_count = $pirep->user->flights + 1;
         $new_flight_time = $pirep->user->flight_time + $pirep->flight_time;
@@ -131,7 +131,7 @@ final class PIREPTest extends TestCase
         $response->assertStatus(400);
 
         /**
-         * Now go from ACCEPTED to REJECTED.
+         * Now go from ACCEPTED to REJECTED
          */
         $new_pirep_count = $pirep->pilot->flights - 1;
         $new_flight_time = $pirep->pilot->flight_time - $pirep->flight_time;
@@ -141,14 +141,14 @@ final class PIREPTest extends TestCase
         $this->assertEquals($pirep->arr_airport_id, $pirep->pilot->curr_airport_id);
 
         /**
-         * Check the ACARS table.
+         * Check the ACARS table
          */
         $saved_route = $this->getAcarsRoute($pirep);
         $this->assertEquals($route, $saved_route);
 
         /**
          * Recreate the route with new options points. Make sure that the
-         * old route is erased from the ACARS table and then recreated.
+         * old route is erased from the ACARS table and then recreated
          */
         $route = $this->createNewRoute();
         $pirep->route = implode(' ', $route);
@@ -162,7 +162,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * Make sure the unit conversions look to be proper.
+     * Make sure the unit conversions look to be proper
      *
      * @throws \Exception
      */
@@ -274,7 +274,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * Make sure that a notification has been sent out to admins when a PIREP is submitted.
+     * Make sure that a notification has been sent out to admins when a PIREP is submitted
      *
      * @throws \Exception
      */
@@ -304,7 +304,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * check the stats/ranks, etc have incremented properly.
+     * check the stats/ranks, etc have incremented properly
      *
      * @throws \Exception
      */
@@ -380,7 +380,7 @@ final class PIREPTest extends TestCase
 
     /**
      * Assign a rank to a user which is not set to auto-promote; make that that the flight
-     * hours and submitted PIREP doesn't change the rank.
+     * hours and submitted PIREP doesn't change the rank
      *
      * @throws \Exception
      */
@@ -419,7 +419,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * check the stats/ranks, etc have incremented properly.
+     * check the stats/ranks, etc have incremented properly
      *
      * @throws \Exception
      */
@@ -474,7 +474,7 @@ final class PIREPTest extends TestCase
 
     /**
      * When a PIREP is filed by a user on leave, make sure they flip from leave to active
-     * It doesn't matter if the PIREP is accepted or rejected.
+     * It doesn't matter if the PIREP is accepted or rejected
      */
     public function test_pilot_status_change(): void
     {
@@ -500,7 +500,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * Find and check for any duplicate PIREPs by a user.
+     * Find and check for any duplicate PIREPs by a user
      */
     public function test_duplicate_pireps(): void
     {
@@ -515,7 +515,7 @@ final class PIREPTest extends TestCase
         $this->assertEquals($pirep->id, $dupe_pirep->id);
 
         /**
-         * Create a PIREP outside of the check time interval.
+         * Create a PIREP outside of the check time interval
          */
         $minutes = setting('pireps.duplicate_check_time') + 1;
         $pirep = Pirep::factory()->create([
@@ -560,7 +560,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * When a PIREP is accepted, ensure that the bid is removed.
+     * When a PIREP is accepted, ensure that the bid is removed
      *
      * @throws \Exception
      */
@@ -627,7 +627,7 @@ final class PIREPTest extends TestCase
     }
 
     /**
-     * See that the notifications are properly formatted.
+     * See that the notifications are properly formatted
      */
     public function test_notification_formatting(): void
     {

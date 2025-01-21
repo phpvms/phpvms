@@ -9,7 +9,7 @@ use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * This recalculates the balances on all of the journals.
+ * This recalculates the balances on all of the journals
  */
 class RecalculateStats extends Listener
 {
@@ -24,7 +24,7 @@ class RecalculateStats extends Listener
     }
 
     /**
-     * Recalculate the stats for active users.
+     * Recalculate the stats for active users
      *
      *
      * @throws \UnexpectedValueException

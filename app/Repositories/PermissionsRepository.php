@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class RoleRepository.
+ * Class RoleRepository
  */
 class PermissionsRepository extends Repository implements CacheableInterface
 {
@@ -24,7 +24,7 @@ class PermissionsRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Return the list of roles formatted for a select box.
+     * Return the list of roles formatted for a select box
      *
      * @param bool $add_blank
      */

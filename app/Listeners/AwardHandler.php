@@ -29,7 +29,7 @@ class AwardHandler extends Listener // implements ShouldQueue
     }
 
     /**
-     * Check for any awards to be run and test them against the user.
+     * Check for any awards to be run and test them against the user
      *
      * @param \App\Models\User $user
      */

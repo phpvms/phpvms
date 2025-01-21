@@ -13,7 +13,7 @@ use Carbon\Carbon;
 final class CronTest extends TestCase
 {
     /**
-     * Create a new sample PIREP.
+     * Create a new sample PIREP
      */
     protected static function getPirep($subtractTime): Pirep
     {
@@ -45,7 +45,7 @@ final class CronTest extends TestCase
     }
 
     /**
-     * Delete flights that are more than X hours old and still in progress (no updates).
+     * Delete flights that are more than X hours old and still in progress (no updates)
      *
      * @throws \Exception
      */
@@ -63,7 +63,7 @@ final class CronTest extends TestCase
     }
 
     /**
-     * Delete flights that are more than X hours old and still in progress (no updates).
+     * Delete flights that are more than X hours old and still in progress (no updates)
      *
      * @throws \Exception
      */
@@ -81,7 +81,7 @@ final class CronTest extends TestCase
     }
 
     /**
-     * Delete flights that are more than X hours old and still in progress (no updates).
+     * Delete flights that are more than X hours old and still in progress (no updates)
      *
      * @throws \Exception
      */
@@ -103,7 +103,7 @@ final class CronTest extends TestCase
     }
 
     /**
-     * Delete flights that are more than X hours old and have been rejected.
+     * Delete flights that are more than X hours old and have been rejected
      *
      * @throws \Exception
      */
@@ -125,7 +125,7 @@ final class CronTest extends TestCase
     }
 
     /**
-     * Delete flights that are more than X hours old and have been cancelled.
+     * Delete flights that are more than X hours old and have been cancelled
      *
      * @throws \Exception
      */

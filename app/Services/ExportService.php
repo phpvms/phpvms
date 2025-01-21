@@ -30,7 +30,7 @@ class ExportService extends Service
     }
 
     /**
-     * Run the actual importer.
+     * Run the actual importer
      *
      *
      * @throws \League\Csv\CannotInsertRecord
@@ -60,13 +60,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the aircraft.
+     * Export all of the aircraft
      *
-     * @param Collection $aircraft
+     * @param  Collection $aircraft
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportAircraft($aircraft)
     {
@@ -74,13 +73,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the airports.
+     * Export all of the airports
      *
-     * @param Collection $airports
+     * @param  Collection $airports
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportAirports($airports)
     {
@@ -88,13 +86,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the airports.
+     * Export all of the airports
      *
-     * @param Collection $expenses
+     * @param  Collection $expenses
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportExpenses($expenses)
     {
@@ -102,13 +99,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the fares.
+     * Export all of the fares
      *
-     * @param Collection $fares
+     * @param  Collection $fares
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportFares($fares)
     {
@@ -116,13 +112,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the flights.
+     * Export all of the flights
      *
-     * @param Collection $flights
+     * @param  Collection $flights
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportFlights($flights)
     {
@@ -130,13 +125,12 @@ class ExportService extends Service
     }
 
     /**
-     * Export all of the flights.
+     * Export all of the flights
      *
-     * @param Collection $subfleets
+     * @param  Collection $subfleets
+     * @return mixed
      *
      * @throws \League\Csv\CannotInsertRecord
-     *
-     * @return mixed
      */
     public function exportSubfleets($subfleets)
     {

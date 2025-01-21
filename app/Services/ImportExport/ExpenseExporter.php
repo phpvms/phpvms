@@ -9,14 +9,14 @@ use App\Models\Expense;
 use App\Models\Subfleet;
 
 /**
- * Import expenses.
+ * Import expenses
  */
 class ExpenseExporter extends ImportExport
 {
     public $assetType = 'expense';
 
     /**
-     * Set the current columns and other setup.
+     * Set the current columns and other setup
      */
     public function __construct()
     {
@@ -24,7 +24,7 @@ class ExpenseExporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows.
+     * Import a flight, parse out the different rows
      *
      * @param Expense $expense
      */

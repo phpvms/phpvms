@@ -6,7 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\RequestOptions;
 
 /**
- * Helper for HTTP stuff.
+ * Helper for HTTP stuff
  */
 class HttpClient
 {
@@ -19,12 +19,12 @@ class HttpClient
 
     /**
      * Download a URI. If a file is given, it will save the downloaded
-     * content into that file.
+     * content into that file
      *
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
      *
      * @return string
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function get($uri, array $opts = [])
     {
@@ -86,7 +86,7 @@ class HttpClient
     }
 
     /**
-     * Download a file to a given path.
+     * Download a file to a given path
      *
      *
      * @return string

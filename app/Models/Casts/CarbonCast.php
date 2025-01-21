@@ -6,16 +6,15 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
 /**
- * Cast into a Carbon DateTime instance.
+ * Cast into a Carbon DateTime instance
  */
 class CarbonCast implements CastsAttributes
 {
     /**
      * Transform the attribute from the underlying model values.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param mixed                               $value
-     *
+     * @param  \Illuminate\Database\Eloquent\Model $model
+     * @param  mixed                               $value
      * @return mixed
      */
     public function get($model, string $key, $value, array $attributes)
@@ -30,9 +29,8 @@ class CarbonCast implements CastsAttributes
     /**
      * Transform the attribute to its underlying model values.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param mixed                               $value
-     *
+     * @param  \Illuminate\Database\Eloquent\Model $model
+     * @param  mixed                               $value
      * @return mixed
      */
     public function set($model, string $key, $value, array $attributes)

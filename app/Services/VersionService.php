@@ -15,11 +15,10 @@ class VersionService extends Service
     public function __construct(
         private readonly HttpClient $httpClient,
         private readonly KvpRepository $kvpRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * Clean the version string (e.,g strip the v in front).
+     * Clean the version string (e.,g strip the v in front)
      *
      * @param string $version
      */
@@ -33,7 +32,7 @@ class VersionService extends Service
     }
 
     /**
-     * Set the latest release version/tag into the KVP repo and return the tag.
+     * Set the latest release version/tag into the KVP repo and return the tag
      *
      *
      * @return string The version string
@@ -49,7 +48,7 @@ class VersionService extends Service
     }
 
     /**
-     * Find and return the Github asset line.
+     * Find and return the Github asset line
      */
     private function getGithubAsset($release): string
     {
@@ -63,7 +62,7 @@ class VersionService extends Service
     }
 
     /**
-     * Download the latest version from github and return the version number.
+     * Download the latest version from github and return the version number
      */
     private function getLatestVersionGithub()
     {
@@ -107,7 +106,7 @@ class VersionService extends Service
     }
 
     /**
-     * Downloads the latest version and saves it into the KVP store.
+     * Downloads the latest version and saves it into the KVP store
      */
     public function getLatestVersion()
     {
@@ -117,10 +116,9 @@ class VersionService extends Service
     }
 
     /**
-     * Get the build ID, which is the date and the git log version.
+     * Get the build ID, which is the date and the git log version
      *
-     * @param array $cfg
-     *
+     * @param  array  $cfg
      * @return string
      */
     public function getBuildId($cfg)
@@ -129,10 +127,9 @@ class VersionService extends Service
     }
 
     /**
-     * Generate a build ID.
+     * Generate a build ID
      *
-     * @param array $cfg The version config
-     *
+     * @param  array        $cfg The version config
      * @return false|string
      */
     public function generateBuildId($cfg)
@@ -152,10 +149,9 @@ class VersionService extends Service
     }
 
     /**
-     * Get the current version.
+     * Get the current version
      *
-     * @param bool $include_build True will include the build ID
-     *
+     * @param  bool   $include_build True will include the build ID
      * @return string
      */
     public function getCurrentVersion($include_build = true)
@@ -181,10 +177,9 @@ class VersionService extends Service
     }
 
     /**
-     * See if a new version is available. Saves a flag into the KVP store if there is.
+     * See if a new version is available. Saves a flag into the KVP store if there is
      *
      * @param null [$current_version]
-     *
      * @return bool
      */
     public function isNewVersionAvailable($current_version = null)
@@ -219,10 +214,9 @@ class VersionService extends Service
     }
 
     /**
-     * @param string $version1
-     * @param string $version2
-     *
-     * @return bool If $version1 is greater than $version2
+     * @param  string $version1
+     * @param  string $version2
+     * @return bool   If $version1 is greater than $version2
      */
     public function isGreaterThan($version1, $version2): bool
     {

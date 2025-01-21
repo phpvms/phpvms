@@ -4,9 +4,10 @@ use App\Contracts\Migration;
 use App\Models\Expense;
 
 /**
- * Update the expenses to add the airline ID.
+ * Update the expenses to add the airline ID
  */
-return new class() extends Migration {
+return new class() extends Migration
+{
     public function up(): void
     {
         /** @var Expense[] $all_expenses */
@@ -17,7 +18,7 @@ return new class() extends Migration {
     }
 
     /**
-     * Figure out the airline ID.
+     * Figure out the airline ID
      */
     public function getAirlineId(Expense $expense): void
     {

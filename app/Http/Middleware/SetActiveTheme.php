@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Read the current theme from the settings (set in admin), and set it.
+ * Read the current theme from the settings (set in admin), and set it
  */
 class SetActiveTheme implements Middleware
 {
@@ -27,7 +27,7 @@ class SetActiveTheme implements Middleware
     ];
 
     /**
-     * Handle the request.
+     * Handle the request
      *
      *
      * @return mixed
@@ -40,7 +40,7 @@ class SetActiveTheme implements Middleware
     }
 
     /**
-     * Set the theme for the current middleware.
+     * Set the theme for the current middleware
      */
     public function setTheme(Request $request)
     {

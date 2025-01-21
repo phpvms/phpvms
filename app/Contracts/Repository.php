@@ -40,14 +40,13 @@ abstract class Repository extends BaseRepository
     }
 
     /**
-     * Return N most recent items, sorted by created_at.
+     * Return N most recent items, sorted by created_at
      *
-     * @param int    $count
-     * @param string $sort_by created_at (default) or updated_at
+     * @param  int    $count
+     * @param  string $sort_by created_at (default) or updated_at
+     * @return mixed
      *
      * @throws RepositoryException
-     *
-     * @return mixed
      */
     public function recent($count = null, $sort_by = 'created_at')
     {
@@ -55,7 +54,7 @@ abstract class Repository extends BaseRepository
     }
 
     /**
-     * Find records with a WHERE clause but also sort them.
+     * Find records with a WHERE clause but also sort them
      *
      *
      * @return $this
@@ -78,13 +77,12 @@ abstract class Repository extends BaseRepository
     }
 
     /**
-     * Find records where values don't match a list but sort the rest.
+     * Find records where values don't match a list but sort the rest
      *
-     * @param string $col
-     * @param array  $values
-     * @param string $sort_by
-     * @param string $order_by
-     *
+     * @param  string $col
+     * @param  array  $values
+     * @param  string $sort_by
+     * @param  string $order_by
      * @return $this
      */
     public function whereNotInOrder($col, $values, $sort_by, $order_by = 'asc')
@@ -106,15 +104,14 @@ abstract class Repository extends BaseRepository
 
     /**
      * Retrieve all data of repository, paginated. Added in extra parameter to read from the
-     * request which page it should be on.
+     * request which page it should be on
      *
-     * @param null   $limit
-     * @param array  $columns
-     * @param string $method
+     * @param  null   $limit
+     * @param  array  $columns
+     * @param  string $method
+     * @return mixed
      *
      * @throws RepositoryException
-     *
-     * @return mixed
      */
     public function paginate($limit = null, $columns = ['*'], $method = 'paginate')
     {

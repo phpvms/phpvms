@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * Class AircraftRepository.
+ * Class AircraftRepository
  */
 class AircraftRepository extends Repository implements CacheableInterface
 {
@@ -26,7 +26,7 @@ class AircraftRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * Return the list of aircraft formatted for a select box.
+     * Return the list of aircraft formatted for a select box
      */
     public function selectBoxList(): array
     {

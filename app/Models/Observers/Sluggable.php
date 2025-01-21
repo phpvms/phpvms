@@ -3,7 +3,7 @@
 namespace App\Models\Observers;
 
 /**
- * Create a slug from a name.
+ * Create a slug from a name
  *
  * @property object attributes
  */

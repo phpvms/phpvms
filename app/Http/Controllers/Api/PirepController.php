@@ -47,11 +47,10 @@ class PirepController extends Controller
         private readonly PirepRepository $pirepRepo,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
-     * Parse any PIREP added in.
+     * Parse any PIREP added in
      */
     protected function parsePirep(Request $request): ?array
     {
@@ -73,7 +72,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Check if a PIREP is cancelled.
+     * Check if a PIREP is cancelled
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -86,7 +85,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Check if a PIREP is cancelled.
+     * Check if a PIREP is cancelled
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -120,12 +119,12 @@ class PirepController extends Controller
     }
 
     /**
-     * Save the fares.
+     * Save the fares
      *
-     *
-     * @throws \Exception
      *
      * @return ?PirepFare[]
+     *
+     * @throws \Exception
      */
     protected function getFares(Request $request): ?array
     {
@@ -170,7 +169,7 @@ class PirepController extends Controller
     /**
      * Create a new PIREP and place it in a "inprogress" and "prefile" state
      * Once ACARS updates are being processed, then it can go into an 'ENROUTE'
-     * status, and whatever other statuses may be defined.
+     * status, and whatever other statuses may be defined
      *
      *
      * @throws \App\Exceptions\AircraftNotAtAirport
@@ -201,7 +200,7 @@ class PirepController extends Controller
     /**
      * Create a new PIREP and place it in a "inprogress" and "prefile" state
      * Once ACARS updates are being processed, then it can go into an 'ENROUTE'
-     * status, and whatever other statuses may be defined.
+     * status, and whatever other statuses may be defined
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -244,7 +243,7 @@ class PirepController extends Controller
     }
 
     /**
-     * File the PIREP.
+     * File the PIREP
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -301,12 +300,12 @@ class PirepController extends Controller
     }
 
     /**
-     * Cancel the PIREP.
+     * Cancel the PIREP
      *
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
      *
      * @return mixed
+     *
+     * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function cancel(string $pirep_id, Request $request)
     {
@@ -321,7 +320,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Add a new comment.
+     * Add a new comment
      */
     public function comments_get(string $id): AnonymousResourceCollection
     {
@@ -331,7 +330,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Add a new comment.
+     * Add a new comment
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -353,7 +352,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Get all of the fields for a PIREP.
+     * Get all of the fields for a PIREP
      */
     public function fields_get(string $pirep_id): PirepFieldCollection
     {
@@ -363,7 +362,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Set any fields for a PIREP.
+     * Set any fields for a PIREP
      */
     public function fields_post(string $pirep_id, FieldsRequest $request): PirepFieldCollection
     {
@@ -417,7 +416,7 @@ class PirepController extends Controller
     }
 
     /**
-     * Post the ROUTE for a PIREP, can be done from the ACARS log.
+     * Post the ROUTE for a PIREP, can be done from the ACARS log
      *
      *
      * @throws \App\Exceptions\PirepCancelled

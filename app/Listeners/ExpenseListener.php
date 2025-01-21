@@ -14,7 +14,7 @@ class ExpenseListener extends Listener // implements ShouldQueue
     // use Queueable;
 
     /**
-     * Return a list of additional expenses.
+     * Return a list of additional expenses
      *
      *
      * @return mixed

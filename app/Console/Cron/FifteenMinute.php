@@ -6,7 +6,7 @@ use App\Contracts\CronCommand;
 use App\Events\CronFifteenMinute;
 
 /**
- * The actual cron tasks are in app/Cron.
+ * The actual cron tasks are in app/Cron
  */
 class FifteenMinute extends CronCommand
 {

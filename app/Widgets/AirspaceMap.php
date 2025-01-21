@@ -5,7 +5,7 @@ namespace App\Widgets;
 use App\Contracts\Widget;
 
 /**
- * Show the live map in a view.
+ * Show the live map in a view
  */
 class AirspaceMap extends Widget
 {

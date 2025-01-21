@@ -90,7 +90,7 @@ class Acars extends Model
 
     /**
      * This keeps things backwards compatible with previous versions
-     * which send in altitude only.
+     * which send in altitude only
      */
     public function altitude(): Attribute
     {
@@ -112,7 +112,7 @@ class Acars extends Model
     }
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function pirep(): BelongsTo
     {

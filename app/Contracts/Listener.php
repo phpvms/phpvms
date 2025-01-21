@@ -9,7 +9,7 @@ abstract class Listener
     public static $callbacks = [];
 
     /**
-     * Sets up any callbacks that are defined in the child class.
+     * Sets up any callbacks that are defined in the child class
      */
     public function subscribe(Dispatcher $events): void
     {

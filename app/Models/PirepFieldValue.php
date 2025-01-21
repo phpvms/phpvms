@@ -38,7 +38,7 @@ class PirepFieldValue extends Model
     ];
 
     /**
-     * When setting the name attribute, also set the slug.
+     * When setting the name attribute, also set the slug
      */
     public function name(): Attribute
     {
@@ -51,7 +51,7 @@ class PirepFieldValue extends Model
     }
 
     /**
-     * If it was filled in from ACARS, then it's read only.
+     * If it was filled in from ACARS, then it's read only
      *
      * @return bool
      */
@@ -63,7 +63,7 @@ class PirepFieldValue extends Model
     }
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function pirep(): BelongsTo
     {

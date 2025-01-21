@@ -16,11 +16,10 @@ class AirlineService extends Service
         private readonly FlightRepository $flightRepo,
         private readonly PirepRepository $pirepRepo,
         private readonly SubfleetRepository $subfleetRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * Create a new airline, and initialize the journal.
+     * Create a new airline, and initialize the journal
      *
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
@@ -35,7 +34,7 @@ class AirlineService extends Service
     }
 
     /**
-     * Can the airline be deleted? Check if there are flights, etc associated with it.
+     * Can the airline be deleted? Check if there are flights, etc associated with it
      */
     public function canDeleteAirline(Airline $airline): bool
     {

@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 class FormRequest extends \Illuminate\Foundation\Http\FormRequest
 {
     /**
-     * Authorized by default.
+     * Authorized by default
      */
     public function authorize(): bool
     {
@@ -20,7 +20,7 @@ class FormRequest extends \Illuminate\Foundation\Http\FormRequest
     }
 
     /**
-     * Set a given column as being unique.
+     * Set a given column as being unique
      *
      *
      * @return array

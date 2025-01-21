@@ -5,7 +5,7 @@ namespace App\Notifications\Channels\Discord;
 use Carbon\Carbon;
 
 /**
- * Original is from https://gist.github.com/freekmurze/e4415090f650e070d3de8b905875cf78.
+ * Original is from https://gist.github.com/freekmurze/e4415090f650e070d3de8b905875cf78
  *
  * Markdown guide: https://birdie0.github.io/discord-webhooks-guide/other/discord_markdown.html
  */

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Figure out what flights need to be active for today.
+ * Figure out what flights need to be active for today
  */
 class SetActiveFlights extends Listener
 {
@@ -23,7 +23,7 @@ class SetActiveFlights extends Listener
 
     /**
      * Look through every single flight, check the start/end dates,
-     * as well of the days of week if this flight is active on this day.
+     * as well of the days of week if this flight is active on this day
      *
      * TODO: Option to check the flight active/inactive against departure TZ
      * TODO: Move to FlightService

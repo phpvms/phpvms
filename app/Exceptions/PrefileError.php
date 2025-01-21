@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 /**
- * Prefile Error.
+ * Prefile Error
  *
  * If listening to the prefile event message, use `throw new PrefileError("message message");`
  * to abort the prefile process and send the message up to ACARS
@@ -16,7 +16,7 @@ class PrefileError extends AbstractHttpException
     }
 
     /**
-     * Return the RFC 7807 error type (without the URL root).
+     * Return the RFC 7807 error type (without the URL root)
      */
     public function getErrorType(): string
     {
@@ -24,7 +24,7 @@ class PrefileError extends AbstractHttpException
     }
 
     /**
-     * Get the detailed error string.
+     * Get the detailed error string
      */
     public function getErrorDetails(): string
     {
@@ -32,7 +32,7 @@ class PrefileError extends AbstractHttpException
     }
 
     /**
-     * Return an array with the error details, merged with the RFC7807 response.
+     * Return an array with the error details, merged with the RFC7807 response
      */
     public function getErrorMetadata(): array
     {

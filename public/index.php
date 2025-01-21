@@ -3,7 +3,7 @@
 /**
  * phpVMS Entry Point
  * https://phpvms.net
- * https://docs.phpvms.net.
+ * https://docs.phpvms.net
  */
 
 use Illuminate\Contracts\Http\Kernel;

@@ -8,12 +8,12 @@ use App\Models\Bid;
 use Carbon\Carbon;
 
 /**
- * Remove expired bids.
+ * Remove expired bids
  */
 class RemoveExpiredBids extends Listener
 {
     /**
-     * Remove expired bids.
+     * Remove expired bids
      *
      *
      * @throws \Exception

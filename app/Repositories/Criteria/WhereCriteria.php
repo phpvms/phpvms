@@ -9,7 +9,7 @@ use Prettus\Repository\Contracts\CriteriaInterface;
 use Prettus\Repository\Contracts\RepositoryInterface;
 
 /**
- * Class RequestCriteria.
+ * Class RequestCriteria
  */
 class WhereCriteria implements CriteriaInterface
 {
@@ -36,13 +36,12 @@ class WhereCriteria implements CriteriaInterface
     }
 
     /**
-     * Apply criteria in query repository.
+     * Apply criteria in query repository
      *
-     * @param Builder|Model $model
+     * @param  Builder|Model $model
+     * @return mixed
      *
      * @throws \Exception
-     *
-     * @return mixed
      */
     public function apply($model, RepositoryInterface $repository)
     {

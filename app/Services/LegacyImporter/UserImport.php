@@ -90,7 +90,7 @@ class UserImport extends BaseImporter
     }
 
     /**
-     * Update a user's roles and add them to the proper ones.
+     * Update a user's roles and add them to the proper ones
      *
      * @param string $old_pilot_id
      */
@@ -114,7 +114,7 @@ class UserImport extends BaseImporter
     }
 
     /**
-     * Get the user's new state from their original state.
+     * Get the user's new state from their original state
      *
      *
      * @return int

@@ -6,7 +6,7 @@ use App\Contracts\Widget;
 use App\Repositories\NewsRepository;
 
 /**
- * Show the latest news in a view.
+ * Show the latest news in a view
  */
 class LatestNews extends Widget
 {

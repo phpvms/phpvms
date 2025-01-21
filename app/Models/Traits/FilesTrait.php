@@ -7,7 +7,7 @@ use App\Models\File;
 trait FilesTrait
 {
     /**
-     * Morph to type of File.
+     * Morph to type of File
      *
      * @return mixed
      */

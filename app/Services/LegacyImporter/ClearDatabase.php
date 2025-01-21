@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 class ClearDatabase extends BaseImporter
 {
     /**
-     * Returns a default manifest just so this step gets run.
+     * Returns a default manifest just so this step gets run
      */
     public function getManifest(): array
     {
@@ -46,7 +46,7 @@ class ClearDatabase extends BaseImporter
 
     /**
      * Cleanup the local database of any users and other data that might conflict
-     * before running the importer.
+     * before running the importer
      */
     protected function cleanupDb()
     {

@@ -22,20 +22,18 @@ class SimBriefService extends Service
 {
     public function __construct(
         private readonly GuzzleClient $httpClient
-    ) {
-    }
+    ) {}
 
     /**
      * Check to see if the OFP exists server-side. If it does, download it and
-     * cache it immediately.
+     * cache it immediately
      *
-     * @param string      $user_id      User who generated this
-     * @param string      $ofp_id       The SimBrief OFP ID
-     * @param string      $flight_id    The flight ID
-     * @param string      $ac_id        The aircraft ID
-     * @param array       $fares        Full list of fares for the flight
-     * @param string|null $sb_static_id Static ID for the generated OFP (Used for Update)
-     *
+     * @param  string        $user_id      User who generated this
+     * @param  string        $ofp_id       The SimBrief OFP ID
+     * @param  string        $flight_id    The flight ID
+     * @param  string        $ac_id        The aircraft ID
+     * @param  array         $fares        Full list of fares for the flight
+     * @param  string|null   $sb_static_id Static ID for the generated OFP (Used for Update)
      * @return SimBrief|null
      */
     public function downloadOfp(
@@ -165,7 +163,7 @@ class SimBriefService extends Service
     }
 
     /**
-     * Add the route from a SimBrief flight plan to a PIREP.
+     * Add the route from a SimBrief flight plan to a PIREP
      *
      * @param Pirep $pirep
      */
@@ -196,7 +194,7 @@ class SimBriefService extends Service
     /**
      * Remove any expired entries from the SimBrief table.
      * Expired means there's a flight_id attached to it, but no pirep_id
-     * (meaning it was never used for an actual flight).
+     * (meaning it was never used for an actual flight)
      */
     public function removeExpiredEntries(): void
     {
@@ -217,7 +215,7 @@ class SimBriefService extends Service
 
     /**
      * Get Aircraft and Airframe Data from SimBrief
-     * Insert or Update relevant models, for proper and detailed flight planning.
+     * Insert or Update relevant models, for proper and detailed flight planning
      */
     public function getAircraftAndAirframes()
     {
@@ -264,7 +262,7 @@ class SimBriefService extends Service
 
     /**
      * Get OFP Layouts from SimBrief
-     * Insert or Update relevant model for proper flight planning.
+     * Insert or Update relevant model for proper flight planning
      */
     public function GetBriefingLayouts()
     {

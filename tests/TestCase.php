@@ -28,7 +28,7 @@ use Nwidart\Modules\Facades\Module;
 use ReflectionClass;
 
 /**
- * Test cases should extend this class.
+ * Test cases should extend this class
  */
 abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
@@ -93,15 +93,14 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     /**
      * https://stackoverflow.com/a/41945739
-     * https://gist.github.com/adamwathan/c9752f61102dc056d157.
+     * https://gist.github.com/adamwathan/c9752f61102dc056d157
      */
     protected function disableExceptionHandling(): void
     {
-        $this->app->instance(ExceptionHandler::class, new class() extends Handler {
+        $this->app->instance(ExceptionHandler::class, new class() extends Handler
+        {
             /** @noinspection PhpMissingParentConstructorInspection */
-            public function __construct()
-            {
-            }
+            public function __construct() {}
 
             public function report(\Throwable $e)
             {
@@ -138,7 +137,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Import data from a YML file.
+     * Import data from a YML file
      */
     public function addData(string $file): void
     {
@@ -152,7 +151,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Make sure an object has the list of keys.
+     * Make sure an object has the list of keys
      */
     public function assertHasKeys(array $obj, array $keys = []): void
     {
@@ -162,7 +161,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Read a file from the data directory.
+     * Read a file from the data directory
      *
      *
      * @return false|string
@@ -184,7 +183,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Return a mock Guzzle Client with a response loaded from $mockFile.
+     * Return a mock Guzzle Client with a response loaded from $mockFile
      */
     public function mockGuzzleClient(array|string $files): void
     {
@@ -253,7 +252,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Update a setting.
+     * Update a setting
      */
     public function updateSetting(string $key, string $value): void
     {
@@ -263,7 +262,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     /**
      * So we can test private/protected methods
-     * http://bit.ly/1mr5hMq.
+     * http://bit.ly/1mr5hMq
      *
      *
      * @throws \ReflectionException
@@ -279,7 +278,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     /**
      * Transform any data that's passed in. E.g, make sure that any mutator
-     * classes (e.g, units) are not passed in as the mutator class.
+     * classes (e.g, units) are not passed in as the mutator class
      */
     protected function transformData(array &$data): array
     {
@@ -305,7 +304,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Override the GET call to inject the user API key.
+     * Override the GET call to inject the user API key
      *
      * @param string $uri
      * @param null   $user
@@ -321,7 +320,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Override the POST calls to inject the user API key.
+     * Override the POST calls to inject the user API key
      *
      * @param string $uri
      * @param null   $user
@@ -338,7 +337,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Override the PUT calls to inject the user API key.
+     * Override the PUT calls to inject the user API key
      *
      * @param string $uri
      * @param null   $user
@@ -354,7 +353,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     }
 
     /**
-     * Override the DELETE calls to inject the user API key.
+     * Override the DELETE calls to inject the user API key
      *
      * @param string $uri
      * @param null   $user

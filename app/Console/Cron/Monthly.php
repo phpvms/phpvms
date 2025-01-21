@@ -7,7 +7,7 @@ use App\Events\CronMonthly;
 
 /**
  * This just calls the CronMonthly event, so all of the
- * listeners, etc can just be called to run those tasks.
+ * listeners, etc can just be called to run those tasks
  *
  * The actual cron tasks are in app/Cron
  */

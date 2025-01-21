@@ -64,7 +64,7 @@ class Rank extends Model
     ];
 
     /**
-     * Return image_url always as full uri.
+     * Return image_url always as full uri
      */
     public function imageUrl(): Attribute
     {

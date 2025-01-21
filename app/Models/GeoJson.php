@@ -9,7 +9,7 @@ use GeoJson\Geometry\Point;
 
 /**
  * Return different points/features in GeoJSON format
- * https://tools.ietf.org/html/rfc7946.
+ * https://tools.ietf.org/html/rfc7946
  */
 class GeoJson
 {
@@ -45,7 +45,7 @@ class GeoJson
     }
 
     /**
-     * Get the FeatureCollection for the line.
+     * Get the FeatureCollection for the line
      */
     public function getLine(): FeatureCollection
     {
@@ -59,7 +59,7 @@ class GeoJson
     }
 
     /**
-     * Get the feature collection of all the points.
+     * Get the feature collection of all the points
      */
     public function getPoints(): FeatureCollection
     {

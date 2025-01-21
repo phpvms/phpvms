@@ -11,7 +11,7 @@ use App\Models\Pirep;
 class AircraftService extends Service
 {
     /**
-     * Recalculate all aircraft stats and hours.
+     * Recalculate all aircraft stats and hours
      */
     public function recalculateStats()
     {

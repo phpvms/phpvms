@@ -28,7 +28,7 @@ class Role extends SpatieRole
     ];
 
     /**
-     * Validation rules.
+     * Validation rules
      *
      * @var array
      */

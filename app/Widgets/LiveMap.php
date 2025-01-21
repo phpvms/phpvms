@@ -7,7 +7,7 @@ use App\Repositories\AcarsRepository;
 use App\Services\GeoService;
 
 /**
- * Show the live map in a view.
+ * Show the live map in a view
  */
 class LiveMap extends Widget
 {

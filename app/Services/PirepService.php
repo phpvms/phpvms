@@ -58,11 +58,10 @@ class PirepService extends Service
         private readonly PirepRepository $pirepRepo,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
-     * Create a prefiled PIREP.
+     * Create a prefiled PIREP
      *
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
@@ -181,7 +180,7 @@ class PirepService extends Service
     }
 
     /**
-     * Create a new PIREP with some given fields.
+     * Create a new PIREP with some given fields
      *
      * @param array PirepFieldValue[] $field_values
      */
@@ -246,7 +245,7 @@ class PirepService extends Service
     }
 
     /**
-     * Finalize a PIREP (meaning it's been filed).
+     * Finalize a PIREP (meaning it's been filed)
      *
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
@@ -321,7 +320,7 @@ class PirepService extends Service
 
     /**
      * Find if there are duplicates to a given PIREP. Ideally, the passed
-     * in PIREP hasn't been saved or gone through the create() method.
+     * in PIREP hasn't been saved or gone through the create() method
      *
      *
      * @return bool|Pirep
@@ -366,7 +365,7 @@ class PirepService extends Service
     /**
      * Save the route into the ACARS table with AcarsType::ROUTE
      * This attempts to create the route from the navdata and the route
-     * entered into the PIREP's route field.
+     * entered into the PIREP's route field
      *
      *
      * @throws \Exception
@@ -419,7 +418,7 @@ class PirepService extends Service
     }
 
     /**
-     * Submit the PIREP. Figure out its default state.
+     * Submit the PIREP. Figure out its default state
      *
      *
      * @throws \Exception
@@ -473,7 +472,7 @@ class PirepService extends Service
     }
 
     /**
-     * Cancel a PIREP.
+     * Cancel a PIREP
      *
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
@@ -529,7 +528,7 @@ class PirepService extends Service
     }
 
     /**
-     * Update any custom PIREP fields.
+     * Update any custom PIREP fields
      *
      * @param PirepFieldValue[] $field_values
      */

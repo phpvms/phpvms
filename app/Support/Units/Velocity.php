@@ -6,7 +6,7 @@ use App\Contracts\Unit;
 use PhpUnitsOfMeasure\PhysicalQuantity\Velocity as VelocityUnit;
 
 /**
- * Class Velocity.
+ * Class Velocity
  */
 class Velocity extends Unit
 {

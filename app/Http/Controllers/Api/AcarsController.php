@@ -32,11 +32,10 @@ class AcarsController extends Controller
         private readonly AcarsRepository $acarsRepo,
         private readonly GeoService $geoSvc,
         private readonly PirepRepository $pirepRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * Check if a PIREP is cancelled.
+     * Check if a PIREP is cancelled
      *
      *
      * @throws \App\Exceptions\PirepCancelled
@@ -49,7 +48,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Get all the active PIREPs.
+     * Get all the active PIREPs
      *
      * @return mixed
      */
@@ -65,7 +64,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Return all of the flights (as points) in GeoJSON format.
+     * Return all of the flights (as points) in GeoJSON format
      */
     public function pireps_geojson(Request $request): JsonResponse
     {
@@ -78,7 +77,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Return the GeoJSON for the ACARS line.
+     * Return the GeoJSON for the ACARS line
      */
     public function acars_geojson(string $pirep_id, Request $request): JsonResponse
     {
@@ -95,7 +94,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Return the routes for the ACARS line.
+     * Return the routes for the ACARS line
      */
     public function acars_get(string $id, Request $request): AcarsRouteResource
     {
@@ -116,7 +115,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Post ACARS updates for a PIREP.
+     * Post ACARS updates for a PIREP
      *
      *
      * @throws \App\Exceptions\PirepCancelled

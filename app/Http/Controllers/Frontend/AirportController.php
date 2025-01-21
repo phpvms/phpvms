@@ -15,11 +15,10 @@ class AirportController extends Controller
     public function __construct(
         private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * Show the airport.
+     * Show the airport
      */
     public function show(string $id, Request $request): RedirectResponse|View
     {

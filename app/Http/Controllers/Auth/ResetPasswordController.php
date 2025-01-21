@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Class ResetPasswordController.
+ * Class ResetPasswordController
  */
 class ResetPasswordController extends Controller
 {

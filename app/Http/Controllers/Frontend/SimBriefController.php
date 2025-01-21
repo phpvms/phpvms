@@ -36,11 +36,10 @@ class SimBriefController
         private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
-    ) {
-    }
+    ) {}
 
     /**
-     * Show the main OFP form.
+     * Show the main OFP form
      *
      *
      * @throws \Exception
@@ -292,7 +291,7 @@ class SimBriefController
     }
 
     /**
-     * Show the briefing.
+     * Show the briefing
      *
      * @param string $id The OFP ID
      */
@@ -333,7 +332,7 @@ class SimBriefController
 
     /**
      * Remove the flight_id from the SimBrief Briefing (to a create a new one)
-     * or if no pirep_id is attached to the briefing delete it completely.
+     * or if no pirep_id is attached to the briefing delete it completely
      *
      *
      * @throws \Exception
@@ -362,7 +361,7 @@ class SimBriefController
 
     /**
      * Create a prefile of this PIREP with a given OFP. Then redirect the
-     * user to the newly prefiled PIREP.
+     * user to the newly prefiled PIREP
      */
     public function prefile(Request $request): RedirectResponse
     {
@@ -378,7 +377,7 @@ class SimBriefController
     }
 
     /**
-     * Cancel the SimBrief request.
+     * Cancel the SimBrief request
      */
     public function cancel(Request $request): RedirectResponse
     {
@@ -392,7 +391,7 @@ class SimBriefController
 
     /**
      * Check whether the OFP was generated. Pass in two items, the flight_id and ofp_id
-     * This does the actual "attachment" of the Simbrief to the flight.
+     * This does the actual "attachment" of the Simbrief to the flight
      */
     public function check_ofp(Request $request): JsonResponse
     {
@@ -418,7 +417,7 @@ class SimBriefController
     /**
      * Get the latest generated OFP. Pass in two additional items, the Simbrief userid and static_id
      * This will get the latest edited/regenerated of from Simbrief and update our records
-     * We do not need to send the fares again, so used an empty array.
+     * We do not need to send the fares again, so used an empty array
      */
     public function update_ofp(Request $request): RedirectResponse|JsonResponse
     {
@@ -442,7 +441,7 @@ class SimBriefController
     }
 
     /**
-     * Generate the API code.
+     * Generate the API code
      *
      *
      * @throws \Exception

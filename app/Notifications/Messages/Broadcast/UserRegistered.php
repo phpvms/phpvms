@@ -9,7 +9,7 @@ use App\Notifications\Channels\MailChannel;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Send a message to a Discord channel that a user was registered.
+ * Send a message to a Discord channel that a user was registered
  */
 class UserRegistered extends Notification implements ShouldQueue
 {
@@ -36,7 +36,7 @@ class UserRegistered extends Notification implements ShouldQueue
     }
 
     /**
-     * Send a Discord notification.
+     * Send a Discord notification
      */
     public function toDiscordChannel($notifiable): ?DiscordMessage
     {

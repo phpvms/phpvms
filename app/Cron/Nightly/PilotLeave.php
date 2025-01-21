@@ -8,7 +8,7 @@ use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Determine if any pilots should be set to ON LEAVE status.
+ * Determine if any pilots should be set to ON LEAVE status
  */
 class PilotLeave extends Listener
 {
@@ -23,7 +23,7 @@ class PilotLeave extends Listener
     }
 
     /**
-     * Set any users to being on leave after X days.
+     * Set any users to being on leave after X days
      *
      *
      * @throws \UnexpectedValueException

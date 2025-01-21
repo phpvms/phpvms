@@ -14,7 +14,7 @@ class FareListener extends Listener // implements ShouldQueue
     // use Queueable;
 
     /**
-     * Return a list of additional fares/income items.
+     * Return a list of additional fares/income items
      *
      *
      * @return mixed

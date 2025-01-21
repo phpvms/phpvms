@@ -19,7 +19,7 @@ class AirportFactory extends Factory
     protected array $usedIcaos = [];
 
     /**
-     * Generate a fake ICAO.
+     * Generate a fake ICAO
      *
      * @throws \Exception
      */

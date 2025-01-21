@@ -10,7 +10,7 @@ use App\Services\FareService;
 use App\Services\FleetService;
 
 /**
- * Import subfleets.
+ * Import subfleets
  */
 class SubfleetImporter extends ImportExport
 {
@@ -18,7 +18,7 @@ class SubfleetImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part.
+     * Should match the database fields, for the most part
      */
     public static $columns = [
         'airline'                    => 'required',
@@ -48,7 +48,7 @@ class SubfleetImporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows.
+     * Import a flight, parse out the different rows
      *
      * @param int $index
      */
@@ -76,7 +76,7 @@ class SubfleetImporter extends ImportExport
     }
 
     /**
-     * Parse all of the fares in the multi-format.
+     * Parse all of the fares in the multi-format
      */
     protected function processFares(Subfleet &$subfleet, $col): void
     {
@@ -94,7 +94,7 @@ class SubfleetImporter extends ImportExport
     }
 
     /**
-     * Parse all of the rakns in the multi-format.
+     * Parse all of the rakns in the multi-format
      */
     protected function processRanks(Subfleet &$subfleet, $col): void
     {

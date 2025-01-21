@@ -15,7 +15,7 @@ use App\Services\FlightService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * The flight importer can be imported or export. Operates on rows.
+ * The flight importer can be imported or export. Operates on rows
  */
 class FlightImporter extends ImportExport
 {
@@ -23,7 +23,7 @@ class FlightImporter extends ImportExport
 
     /**
      * All of the columns that are in the CSV import
-     * Should match the database fields, for the most part.
+     * Should match the database fields, for the most part
      */
     public static $columns = [
         'airline'              => 'required',
@@ -73,7 +73,7 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Import a flight, parse out the different rows.
+     * Import a flight, parse out the different rows
      *
      * @param int $index
      */
@@ -199,7 +199,7 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Return the mask of the days.
+     * Return the mask of the days
      *
      *
      * @return int|mixed
@@ -243,7 +243,7 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Process the airport.
+     * Process the airport
      */
     protected function processAirport($airport): Airport
     {
@@ -252,7 +252,7 @@ class FlightImporter extends ImportExport
 
     /**
      * Parse out all of the subfleets and associate them to the flight
-     * The subfleet is created if it doesn't exist.
+     * The subfleet is created if it doesn't exist
      */
     protected function processSubfleets(Flight &$flight, $col): void
     {
@@ -283,7 +283,7 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Parse all of the fares in the multi-format.
+     * Parse all of the fares in the multi-format
      */
     protected function processFares(Flight &$flight, $col): void
     {
@@ -301,7 +301,7 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Parse all of the subfields.
+     * Parse all of the subfields
      */
     protected function processFields(Flight &$flight, $col): void
     {

@@ -21,7 +21,7 @@ final class GeoTest extends TestCase
          * [2017-12-21 00:54:10] dev.INFO: found 3 for SIE
          * [2017-12-21 00:54:10] dev.INFO: name: SIE - 39.0955x-74.800344
          * [2017-12-21 00:54:10] dev.INFO: name: SIE - 41.15169x-3.604667
-         * [2017-12-21 00:54:10] dev.INFO: name: SIE - 52.15527x22.200833.
+         * [2017-12-21 00:54:10] dev.INFO: name: SIE - 52.15527x22.200833
          */
         // Start at ATL
         $start_point = [36.58106, 26.375603];
@@ -38,7 +38,7 @@ final class GeoTest extends TestCase
     }
 
     /**
-     * Make sure the departure airports/sid/star are all filtered out.
+     * Make sure the departure airports/sid/star are all filtered out
      *
      * @throws Exception
      */

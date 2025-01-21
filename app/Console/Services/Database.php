@@ -5,15 +5,14 @@ namespace App\Console\Services;
 use PDO;
 
 /**
- * Class Database.
+ * Class Database
  */
 class Database
 {
     /**
-     * Create the base connection DSN, optionally include the DB name.
+     * Create the base connection DSN, optionally include the DB name
      *
-     * @param null $name
-     *
+     * @param  null   $name
      * @return string
      */
     public function createDsn($host, $port, $name = null)
@@ -28,9 +27,9 @@ class Database
     }
 
     /**
-     * @throws \PDOException
-     *
      * @return PDO
+     *
+     * @throws \PDOException
      */
     public function createPDO($dsn, $user, $pass)
     {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration for mapping URLs and stuff.
+ * Configuration for mapping URLs and stuff
  */
 
 return [

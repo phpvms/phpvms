@@ -18,7 +18,7 @@ class UserFieldRepository extends Repository
     }
 
     /**
-     * Return whether or not this field is in use by a value.
+     * Return whether or not this field is in use by a value
      */
     public function isInUse($id): bool
     {

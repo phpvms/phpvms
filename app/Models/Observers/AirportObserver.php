@@ -5,7 +5,7 @@ namespace App\Models\Observers;
 use App\Models\Airport;
 
 /**
- * Make sure that the fields are properly capitalized.
+ * Make sure that the fields are properly capitalized
  */
 class AirportObserver
 {

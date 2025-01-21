@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class MaintenanceController extends Controller
 {
     /**
-     * Run the cron job from the web.
+     * Run the cron job from the web
      *
      * @param string $id The ID passed in for the cron
      */

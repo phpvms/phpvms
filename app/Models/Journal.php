@@ -2,7 +2,7 @@
 
 /**
  * Based on https://github.com/scottlaurent/accounting
- * With modifications for phpVMS.
+ * With modifications for phpVMS
  */
 
 namespace App\Models;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Holds various journals, depending on the morphed_type and morphed_id columns.
+ * Holds various journals, depending on the morphed_type and morphed_id columns
  *
  * @property mixed                         id
  * @property Money  $balance
@@ -50,7 +50,7 @@ class Journal extends Model
     ];
 
     /**
-     * Relationships.
+     * Relationships
      */
     public function morphed(): MorphTo
     {
@@ -97,8 +97,7 @@ class Journal extends Model
     }
 
     /**
-     * @param Journal $object
-     *
+     * @param  Journal                                         $object
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function transactionsReferencingObjectQuery($object)
@@ -113,10 +112,10 @@ class Journal extends Model
      * Get the credit only balance of the journal based on a given date.
      *
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getCreditBalanceOn(Carbon $date)
     {
@@ -131,10 +130,10 @@ class Journal extends Model
      * Get the balance of the journal based on a given date.
      *
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getBalanceOn(Carbon $date)
     {
@@ -145,10 +144,10 @@ class Journal extends Model
     /**
      * Get the balance of the journal as of right now, excluding future transactions.
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getCurrentBalance()
     {
@@ -158,10 +157,10 @@ class Journal extends Model
     /**
      * Get the balance of the journal.  This "could" include future dates.
      *
+     * @return Money
+     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
-     *
-     * @return Money
      */
     public function getBalance()
     {

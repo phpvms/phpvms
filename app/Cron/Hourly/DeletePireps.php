@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Remove cancelled/deleted PIREPs. Look for PIREPs that were created before the setting time
- * (e.g, 12 hours ago) and are marked with the.
+ * (e.g, 12 hours ago) and are marked with the
  */
 class DeletePireps extends Listener
 {
     /**
-     * Delete old rejected PIREPs.
+     * Delete old rejected PIREPs
      *
      *
      * @throws \Exception
@@ -30,7 +30,7 @@ class DeletePireps extends Listener
     }
 
     /**
-     * Look for and delete PIREPs which match the criteria.
+     * Look for and delete PIREPs which match the criteria
      *
      * @param int $expire_time_hours The time in hours to look for PIREPs
      * @param int $state             The PirepState enum value

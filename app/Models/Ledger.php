@@ -2,7 +2,7 @@
 
 /**
  * Based on https://github.com/scottlaurent/accounting
- * With modifications for phpVMS.
+ * With modifications for phpVMS
  */
 
 namespace App\Models;
@@ -12,7 +12,7 @@ use App\Support\Money;
 use Carbon\Carbon;
 
 /**
- * Class Ledger.
+ * Class Ledger
  *
  * @property Money  $balance
  * @property string $currency

@@ -31,7 +31,7 @@ class AwardAwarded extends Notification implements ShouldQueue
     }
 
     /**
-     * Send a Discord notification.
+     * Send a Discord notification
      *
      * @param Pirep $pirep
      * @param mixed $userAward
@@ -72,8 +72,7 @@ class AwardAwarded extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
-     *
+     * @param  mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

@@ -9,12 +9,12 @@ use Nwidart\Modules\Facades\Module;
 use Pdp\Rules;
 
 /**
- * Global utilities.
+ * Global utilities
  */
 class Utils
 {
     /**
-     * Generate a new ID with a given length.
+     * Generate a new ID with a given length
      *
      * @param int [$length]
      */
@@ -31,7 +31,7 @@ class Utils
     }
 
     /**
-     * Returns a 40 character API key that a user can use.
+     * Returns a 40 character API key that a user can use
      */
     public static function generateApiKey(): string
     {
@@ -39,7 +39,7 @@ class Utils
     }
 
     /**
-     * Simple check on the first character if it's an object or not.
+     * Simple check on the first character if it's an object or not
      */
     public static function isObject($obj): bool
     {
@@ -55,7 +55,7 @@ class Utils
     }
 
     /**
-     * Enable the debug toolbar.
+     * Enable the debug toolbar
      */
     public static function enableDebugToolbar()
     {
@@ -66,7 +66,7 @@ class Utils
     }
 
     /**
-     * Disable the debug toolbar.
+     * Disable the debug toolbar
      */
     public static function disableDebugToolbar()
     {
@@ -93,7 +93,7 @@ class Utils
     }
 
     /**
-     * Get the domain from a URL.
+     * Get the domain from a URL
      */
     public static function getRootDomain(string $url): string
     {

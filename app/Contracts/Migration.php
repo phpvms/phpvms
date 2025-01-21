@@ -10,26 +10,24 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Class Migration.
+ * Class Migration
  */
 abstract class Migration extends \Illuminate\Database\Migrations\Migration
 {
     /**
-     * At a minimum, this function needs to be implemented.
+     * At a minimum, this function needs to be implemented
      *
      * @return mixed
      */
     abstract public function up();
 
     /**
-     * A method to reverse a migration doesn't need to be made.
+     * A method to reverse a migration doesn't need to be made
      */
-    public function down()
-    {
-    }
+    public function down() {}
 
     /**
-     * Add a module and enable it.
+     * Add a module and enable it
      */
     public function addModule(array $attrs)
     {
@@ -50,7 +48,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     }
 
     /**
-     * Seed a YAML file into the database.
+     * Seed a YAML file into the database
      *
      * @param string $file Full path to yml file to seed
      */
@@ -66,7 +64,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     }
 
     /**
-     * Add rows to a table.
+     * Add rows to a table
      */
     public function addData($table, $rows)
     {
@@ -83,7 +81,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     }
 
     /**
-     * Add an award from the migrations (for example, if you're adding an award module).
+     * Add an award from the migrations (for example, if you're adding an award module)
      *
      * @param array $award See \App\Models\Awardv
      *

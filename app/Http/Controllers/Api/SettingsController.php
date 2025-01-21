@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * Class SettingsController.
+ * Class SettingsController
  */
 class SettingsController extends Controller
 {
@@ -18,11 +18,10 @@ class SettingsController extends Controller
      */
     public function __construct(
         private readonly SettingRepository $settingRepo
-    ) {
-    }
+    ) {}
 
     /**
-     * Return all the airlines, paginated.
+     * Return all the airlines, paginated
      */
     public function index(Request $request): AnonymousResourceCollection
     {

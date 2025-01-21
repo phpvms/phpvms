@@ -32,7 +32,7 @@ class LegacyImporterService extends Service
     private mixed $kvpRepo;
 
     /**
-     * The list of importers, in proper order.
+     * The list of importers, in proper order
      */
     private array $importList = [
         ClearDatabase::class,
@@ -56,7 +56,7 @@ class LegacyImporterService extends Service
     }
 
     /**
-     * Save the credentials from a request.
+     * Save the credentials from a request
      */
     public function saveCredentialsFromRequest(Request $request)
     {
@@ -73,7 +73,7 @@ class LegacyImporterService extends Service
     }
 
     /**
-     * Save the given credentials.
+     * Save the given credentials
      */
     public function saveCredentials(array $creds)
     {
@@ -91,7 +91,7 @@ class LegacyImporterService extends Service
     }
 
     /**
-     * Get the saved credentials.
+     * Get the saved credentials
      */
     public function getCredentials()
     {
@@ -100,7 +100,7 @@ class LegacyImporterService extends Service
 
     /**
      * Create a manifest of the import. Creates an array with the importer name,
-     * which then has a subarray of all of the different steps/stages it needs to run.
+     * which then has a subarray of all of the different steps/stages it needs to run
      */
     public function generateImportManifest()
     {
@@ -116,13 +116,12 @@ class LegacyImporterService extends Service
     }
 
     /**
-     * Run a given stage.
+     * Run a given stage
      *
-     * @param int $start
+     * @param  int      $start
+     * @return int|void
      *
      * @throws \Exception
-     *
-     * @return int|void
      */
     public function run($importer, $start = 0)
     {

@@ -39,7 +39,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Run dev related commands.
+     * Run dev related commands
      */
     public function handle()
     {
@@ -74,7 +74,7 @@ class DevCommands extends Command
     }
 
     /**
-     * List all award classes.
+     * List all award classes
      */
     protected function listAwardClasses()
     {
@@ -91,7 +91,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Delete all the data from the ACARS and PIREP tables.
+     * Delete all the data from the ACARS and PIREP tables
      */
     protected function clearAcars()
     {
@@ -110,7 +110,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Delete all the data from the ACARS and PIREP tables.
+     * Delete all the data from the ACARS and PIREP tables
      */
     protected function clearUsers()
     {
@@ -131,7 +131,7 @@ class DevCommands extends Command
 
     /**
      * Compile all the CSS/JS assets into their respective files
-     * Calling the webpack compiler.
+     * Calling the webpack compiler
      */
     protected function compileAssets()
     {
@@ -140,7 +140,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Output DB prepares versions.
+     * Output DB prepares versions
      */
     protected function dbAttrs()
     {
@@ -156,7 +156,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Convert the sequelpro xml export to yaml.
+     * Convert the sequelpro xml export to yaml
      */
     protected function xmlToYaml()
     {
@@ -207,7 +207,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Insert the rows from the file, manually advancing each row.
+     * Insert the rows from the file, manually advancing each row
      */
     protected function manualInsert(): void
     {
@@ -237,7 +237,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Recalculate the stats for all users.
+     * Recalculate the stats for all users
      */
     protected function recalculateStats(): void
     {
@@ -246,7 +246,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Delete all of the tables, etc from the database, for a clean install.
+     * Delete all of the tables, etc from the database, for a clean install
      */
     protected function resetInstall(): void
     {
@@ -293,7 +293,7 @@ class DevCommands extends Command
     }
 
     /**
-     * Test sending a user a registered email.
+     * Test sending a user a registered email
      */
     protected function newUserEmail()
     {
