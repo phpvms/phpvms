@@ -44,7 +44,7 @@ class SampleServiceProvider extends ServiceProvider
         // $this->moduleSvc->addFrontendLink('Sample', '/sample', '', $logged_in=true);
 
         // Admin links:
-        $this->moduleSvc->addAdminLink('Sample', '/admin/sample');
+        $this->moduleSvc->addAdminLink('Sample', '/admin/sample', 'pe-7s-tools');
     }
 
     /**
