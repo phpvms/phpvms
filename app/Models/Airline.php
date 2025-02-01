@@ -56,17 +56,6 @@ class Airline extends Model
     ];
 
     /**
-     * The attributes that should be casted to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'total_flights' => 'int',
-        'total_time'    => 'int',
-        'active'        => 'boolean',
-    ];
-
-    /**
      * Validation rules
      *
      * @var array
@@ -159,5 +148,18 @@ class Airline extends Model
             ->logOnly($this->fillable)
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+    /**
+     * The attributes that should be casted to native types.
+     *
+     * @return array
+     */
+    protected function casts(): array
+    {
+        return [
+            'total_flights' => 'int',
+            'total_time'    => 'int',
+            'active'        => 'boolean',
+        ];
     }
 }

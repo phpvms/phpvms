@@ -74,16 +74,6 @@ class Airport extends Model
         'notes',
     ];
 
-    protected $casts = [
-        'lat'                  => 'float',
-        'lon'                  => 'float',
-        'hub'                  => 'boolean',
-        'ground_handling_cost' => 'float',
-        'fuel_100ll_cost'      => 'float',
-        'fuel_jeta_cost'       => 'float',
-        'fuel_mogas_cost'      => 'float',
-    ];
-
     /**
      * Validation rules
      */
@@ -160,7 +150,7 @@ class Airport extends Model
     {
         return Attribute::make(
             get: fn ($_, $attrs) => $attrs['icao']
-                .(!empty($attrs['iata']) ? '/'.$attrs['iata'] : '')
+                .(empty($attrs['iata']) ? '' : '/'.$attrs['iata'])
                 .' - '.$attrs['name']
                 .($attrs['hub'] ? ' (hub)' : '')
         );
@@ -215,5 +205,17 @@ class Airport extends Model
     {
         // Users based at this airport
         return $this->hasMany(User::class, 'home_airport_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'lat'                  => 'float',
+            'lon'                  => 'float',
+            'hub'                  => 'boolean',
+            'ground_handling_cost' => 'float',
+            'fuel_100ll_cost'      => 'float',
+            'fuel_jeta_cost'       => 'float',
+            'fuel_mogas_cost'      => 'float',
+        ];
     }
 }

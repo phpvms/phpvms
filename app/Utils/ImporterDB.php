@@ -94,11 +94,7 @@ class ImporterDB
 
         $sql = 'SHOW COLUMNS FROM '.$this->tableName($table);
         $result = $this->conn->query($sql);
-        if (!$result) {
-            return false;
-        }
-
-        return true;
+        return (bool) $result;
     }
 
     /**
@@ -204,7 +200,7 @@ class ImporterDB
      * @param  int                      $limit  Number of rows to read
      * @param  int                      $offset Where to start from
      * @param  string                   $fields
-     * @return false|\PDOStatement|void
+     * @return false|\PDOStatement|null
      */
     public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')
     {
@@ -225,7 +221,7 @@ class ImporterDB
         try {
             $result = $this->conn->query($sql);
             if (!$result || $result->rowCount() === 0) {
-                return;
+                return null;
             }
 
             return $result;
@@ -239,5 +235,6 @@ class ImporterDB
         } catch (\Exception $e) {
             Log::error('Error readRowsOffset: '.$e->getMessage());
         }
+        return null;
     }
 }

@@ -86,20 +86,6 @@ class Aircraft extends Model
     ];
 
     /**
-     * The attributes that should be casted to native types.
-     */
-    protected $casts = [
-        'flight_time'  => 'float',
-        'fuel_onboard' => FuelCast::class,
-        'dow'          => MassCast::class,
-        'mlw'          => MassCast::class,
-        'mtow'         => MassCast::class,
-        'state'        => 'integer',
-        'subfleet_id'  => 'integer',
-        'zfw'          => MassCast::class,
-    ];
-
-    /**
      * Validation rules
      */
     public static $rules = [
@@ -240,5 +226,21 @@ class Aircraft extends Model
     public function sbairframes(): HasMany
     {
         return $this->hasMany(SimBriefAirframe::class, 'icao', 'icao');
+    }
+    /**
+     * The attributes that should be casted to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'flight_time'  => 'float',
+            'fuel_onboard' => FuelCast::class,
+            'dow'          => MassCast::class,
+            'mlw'          => MassCast::class,
+            'mtow'         => MassCast::class,
+            'state'        => 'integer',
+            'subfleet_id'  => 'integer',
+            'zfw'          => MassCast::class,
+        ];
     }
 }

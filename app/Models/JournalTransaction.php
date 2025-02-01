@@ -46,13 +46,6 @@ class JournalTransaction extends Model
         'post_date',
     ];
 
-    protected $casts = [
-        'credits'   => 'integer',
-        'debit'     => 'integer',
-        'post_date' => 'datetime',
-        'tags'      => 'array',
-    ];
-
     public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class);
@@ -64,5 +57,14 @@ class JournalTransaction extends Model
     public function setCurrency($currency)
     {
         $this->currency = $currency;
+    }
+    protected function casts(): array
+    {
+        return [
+            'credits'   => 'integer',
+            'debit'     => 'integer',
+            'post_date' => 'datetime',
+            'tags'      => 'array',
+        ];
     }
 }

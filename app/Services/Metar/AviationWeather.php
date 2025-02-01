@@ -33,7 +33,7 @@ class AviationWeather extends Metar
             return '';
         }
 
-        $url = static::METAR_URL.$icao;
+        $url = self::METAR_URL.$icao;
 
         try {
             $raw_metar = $this->httpClient->get($url);
@@ -58,7 +58,7 @@ class AviationWeather extends Metar
             return '';
         }
 
-        $url = static::TAF_URL.$icao;
+        $url = self::TAF_URL.$icao;
 
         try {
             $raw_taf = $this->httpClient->get($url);

@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Airport;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Airport>
+ */
 class AirportFactory extends Factory
 {
     /**
@@ -55,17 +58,17 @@ class AirportFactory extends Factory
             },
             'icao'                 => fn (array $apt) => $apt['id'],
             'iata'                 => fn (array $apt) => $apt['id'],
-            'name'                 => $this->faker->sentence(3),
-            'country'              => $this->faker->country,
-            'timezone'             => $this->faker->timezone,
-            'lat'                  => $this->faker->latitude,
-            'lon'                  => $this->faker->longitude,
+            'name'                 => fake()->sentence(3),
+            'country'              => fake()->country,
+            'timezone'             => fake()->timezone,
+            'lat'                  => fake()->latitude,
+            'lon'                  => fake()->longitude,
             'hub'                  => false,
             'notes'                => null,
-            'ground_handling_cost' => $this->faker->randomFloat(2, 0, 500),
-            'fuel_100ll_cost'      => $this->faker->randomFloat(2, 1, 10),
-            'fuel_jeta_cost'       => $this->faker->randomFloat(2, 1, 10),
-            'fuel_mogas_cost'      => $this->faker->randomFloat(2, 1, 10),
+            'ground_handling_cost' => fake()->randomFloat(2, 0, 500),
+            'fuel_100ll_cost'      => fake()->randomFloat(2, 1, 10),
+            'fuel_jeta_cost'       => fake()->randomFloat(2, 1, 10),
+            'fuel_mogas_cost'      => fake()->randomFloat(2, 1, 10),
         ];
     }
 }

@@ -45,7 +45,7 @@ class DevCommands extends Command
     {
         $command = trim($this->argument('cmd'));
 
-        if (!$command) {
+        if ($command === '' || $command === '0') {
             $this->error('No command specified!');
             exit;
         }

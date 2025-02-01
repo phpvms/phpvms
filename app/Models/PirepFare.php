@@ -38,14 +38,6 @@ class PirepFare extends Model
         'type',
     ];
 
-    protected $casts = [
-        'count'    => 'integer',
-        'price'    => 'float',
-        'cost'     => 'float',
-        'capacity' => 'integer',
-        'type'     => 'integer',
-    ];
-
     public static $rules = [
         'count' => 'required',
     ];
@@ -61,5 +53,15 @@ class PirepFare extends Model
     public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'count'    => 'integer',
+            'price'    => 'float',
+            'cost'     => 'float',
+            'capacity' => 'integer',
+            'type'     => 'integer',
+        ];
     }
 }

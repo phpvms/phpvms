@@ -112,25 +112,6 @@ class Flight extends Model
         'owner_id',
     ];
 
-    protected $casts = [
-        'flight_number'        => 'integer',
-        'days'                 => 'integer',
-        'level'                => 'integer',
-        'distance'             => DistanceCast::class,
-        'flight_time'          => 'integer',
-        'start_date'           => 'date',
-        'end_date'             => 'date',
-        'load_factor'          => 'double',
-        'load_factor_variance' => 'double',
-        'pilot_pay'            => 'float',
-        'has_bid'              => 'boolean',
-        'route_leg'            => 'integer',
-        'active'               => 'boolean',
-        'visible'              => 'boolean',
-        'event_id'             => 'integer',
-        'user_id'              => 'integer',
-    ];
-
     public static array $rules = [
         'airline_id'           => 'required|exists:airlines,id',
         'flight_number'        => 'required',
@@ -331,5 +312,26 @@ class Flight extends Model
     public function owner(): MorphTo
     {
         return $this->morphTo('owner', 'owner_type', 'owner_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'flight_number'        => 'integer',
+            'days'                 => 'integer',
+            'level'                => 'integer',
+            'distance'             => DistanceCast::class,
+            'flight_time'          => 'integer',
+            'start_date'           => 'date',
+            'end_date'             => 'date',
+            'load_factor'          => 'double',
+            'load_factor_variance' => 'double',
+            'pilot_pay'            => 'float',
+            'has_bid'              => 'boolean',
+            'route_leg'            => 'integer',
+            'active'               => 'boolean',
+            'visible'              => 'boolean',
+            'event_id'             => 'integer',
+            'user_id'              => 'integer',
+        ];
     }
 }

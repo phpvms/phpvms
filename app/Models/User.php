@@ -139,22 +139,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'notes',
     ];
 
-    protected $casts = [
-        'id'                => 'integer',
-        'pilot_id'          => 'integer',
-        'flights'           => 'integer',
-        'flight_time'       => 'integer',
-        'transfer_time'     => 'integer',
-        'balance'           => 'double',
-        'state'             => 'integer',
-        'status'            => 'integer',
-        'toc_accepted'      => 'boolean',
-        'opt_in'            => 'boolean',
-        'lastlogin_at'      => 'datetime',
-        'deleted_at'        => 'datetime',
-        'email_verified_at' => 'datetime',
-    ];
-
     public static $rules = [
         'name'     => 'required',
         'email'    => 'required|email',
@@ -398,5 +382,23 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar?->url;
+    }
+    protected function casts(): array
+    {
+        return [
+            'id'                => 'integer',
+            'pilot_id'          => 'integer',
+            'flights'           => 'integer',
+            'flight_time'       => 'integer',
+            'transfer_time'     => 'integer',
+            'balance'           => 'double',
+            'state'             => 'integer',
+            'status'            => 'integer',
+            'toc_accepted'      => 'boolean',
+            'opt_in'            => 'boolean',
+            'lastlogin_at'      => 'datetime',
+            'deleted_at'        => 'datetime',
+            'email_verified_at' => 'datetime',
+        ];
     }
 }

@@ -34,11 +34,7 @@ class SeederService extends Service
      */
     public function seedsPending(): bool
     {
-        if ($this->settingsSeedsPending()) {
-            return true;
-        }
-
-        return false;
+        return $this->settingsSeedsPending();
     }
 
     /**
@@ -240,12 +236,9 @@ class SeederService extends Service
             }
 
             // See if any of the options have changed
-            if ($row->type === 'select') {
-                if (!empty($row->options) && $row->options !== $setting['options']) {
-                    Log::info('Options for '.$id.' changed, update available');
-
-                    return true;
-                }
+            if ($row->type === 'select' && (!empty($row->options) && $row->options !== $setting['options'])) {
+                Log::info('Options for '.$id.' changed, update available');
+                return true;
             }
         }
 

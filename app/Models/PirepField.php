@@ -27,10 +27,6 @@ class PirepField extends Model
         'pirep_source',
     ];
 
-    protected $casts = [
-        'required' => 'boolean',
-    ];
-
     public static $rules = [
         'name'        => 'required',
         'description' => 'nullable',
@@ -44,7 +40,7 @@ class PirepField extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => str_slug($name),
+                'slug' => \Illuminate\Support\Str::slug($name),
             ]
         );
     }
@@ -55,5 +51,11 @@ class PirepField extends Model
             ->logOnly($this->fillable)
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+    protected function casts(): array
+    {
+        return [
+            'required' => 'boolean',
+        ];
     }
 }

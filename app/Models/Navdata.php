@@ -27,13 +27,6 @@ class Navdata extends Model
         'freq',
     ];
 
-    protected $casts = [
-        'type' => 'integer',
-        'lat'  => 'float',
-        'lon'  => 'float',
-        'freq' => 'float',
-    ];
-
     /**
      * Make sure the ID is in all caps
      */
@@ -42,5 +35,14 @@ class Navdata extends Model
         return Attribute::make(
             set: fn ($id) => strtoupper($id)
         );
+    }
+    protected function casts(): array
+    {
+        return [
+            'type' => 'integer',
+            'lat'  => 'float',
+            'lon'  => 'float',
+            'freq' => 'float',
+        ];
     }
 }

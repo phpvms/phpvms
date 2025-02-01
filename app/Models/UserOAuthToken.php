@@ -25,14 +25,6 @@ class UserOAuthToken extends Model
         'last_refreshed_at',
     ];
 
-    protected $casts = [
-        'user_id'           => 'integer',
-        'provider'          => 'string',
-        'token'             => 'string',
-        'refresh_token'     => 'string',
-        'last_refreshed_at' => 'datetime',
-    ];
-
     public static $rules = [
         'user_id'           => 'required|integer',
         'provider'          => 'required|string',
@@ -44,5 +36,15 @@ class UserOAuthToken extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'user_id'           => 'integer',
+            'provider'          => 'string',
+            'token'             => 'string',
+            'refresh_token'     => 'string',
+            'last_refreshed_at' => 'datetime',
+        ];
     }
 }

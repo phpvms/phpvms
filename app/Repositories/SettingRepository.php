@@ -93,12 +93,12 @@ class SettingRepository extends Repository implements CacheableInterface
         )->first();
 
         if (!$setting) {
-            return;
+            return null;
         }
 
         try {
             if (\is_bool($value)) {
-                $value = $value === true ? 1 : 0;
+                $value = $value ? 1 : 0;
             }
 
             if ($value !== null) {

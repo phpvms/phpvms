@@ -62,13 +62,13 @@ class Award extends Model
     public function getReference(?self $award = null, ?User $user = null)
     {
         if (!$this->ref_model) {
-            return;
+            return null;
         }
 
         try {
             return new $this->ref_model($award, $user);
         } catch (\Exception $e) {
-            return;
+            return null;
         }
     }
 

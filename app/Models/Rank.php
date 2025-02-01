@@ -41,13 +41,6 @@ class Rank extends Model
         'auto_promote',
     ];
 
-    protected $casts = [
-        'hours'               => 'integer',
-        'auto_approve_acars'  => 'bool',
-        'auto_approve_manual' => 'bool',
-        'auto_promote'        => 'bool',
-    ];
-
     public static $rules = [
         'name'                 => 'required',
         'hours'                => 'required|integer',
@@ -102,5 +95,14 @@ class Rank extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'rank_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'hours'               => 'integer',
+            'auto_approve_acars'  => 'bool',
+            'auto_approve_manual' => 'bool',
+            'auto_promote'        => 'bool',
+        ];
     }
 }

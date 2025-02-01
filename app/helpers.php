@@ -15,9 +15,10 @@ use Nwidart\Modules\Facades\Module;
 if (!function_exists('array_key_first')) {
     function array_key_first(array $arr)
     {
-        foreach ($arr as $key => $unused) {
+        foreach (array_keys($arr) as $key) {
             return $key;
         }
+        return null;
     }
 }
 
@@ -82,7 +83,7 @@ if (!function_exists('list_to_assoc')) {
     {
         $ret = [];
         foreach ($list as $item) {
-            if (substr_count($item, '=')) {
+            if (substr_count($item, '=') !== 0) {
                 [$item, $title] = explode('=', $item);
             } else {
                 $title = $item;
@@ -295,7 +296,7 @@ if (!function_exists('show_datetime')) {
      */
     function show_datetime(?Carbon $date = null)
     {
-        if ($date === null) {
+        if (!$date instanceof \Carbon\Carbon) {
             return '-';
         }
 
@@ -375,7 +376,7 @@ if (!function_exists('_fmt')) {
      */
     function _fmt($line, array $replace)
     {
-        if (empty($replace)) {
+        if ($replace === []) {
             return $line;
         }
 

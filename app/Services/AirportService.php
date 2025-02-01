@@ -123,7 +123,7 @@ class AirportService extends Service
 
         $lookup = $this->lookupAirport($icao);
         if (empty($lookup)) {
-            return;
+            return null;
         }
 
         $airport = new Airport($lookup);
@@ -164,9 +164,9 @@ class AirportService extends Service
 
             return $distance;
         } catch (NonNumericValue $e) {
-            return;
+            return null;
         } catch (NonStringUnitName $e) {
-            return;
+            return null;
         }
     }
 }

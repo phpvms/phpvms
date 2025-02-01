@@ -8,6 +8,9 @@ use App\Contracts\Factory;
 use App\Models\Airline;
 use Hashids\Hashids;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Airline>
+ */
 class AirlineFactory extends Factory
 {
     /**
@@ -33,8 +36,8 @@ class AirlineFactory extends Factory
                 return $hashids->encode($mt);
             },
             'iata'    => fn (array $apt) => $apt['icao'],
-            'name'    => $this->faker->sentence(3),
-            'country' => $this->faker->country,
+            'name'    => fake()->sentence(3),
+            'country' => fake()->country,
             'active'  => 1,
         ];
     }

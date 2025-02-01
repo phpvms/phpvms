@@ -27,14 +27,6 @@ class UserField extends Model
         'active',
     ];
 
-    protected $casts = [
-        'show_on_registration' => 'boolean',
-        'required'             => 'boolean',
-        'private'              => 'boolean',
-        'internal'             => 'boolean',
-        'active'               => 'boolean',
-    ];
-
     public static $rules = [
         'name'        => 'required',
         'description' => 'nullable',
@@ -46,7 +38,17 @@ class UserField extends Model
     public function slug(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => str_slug($attrs['name'], '_')
+            get: fn ($_, $attrs) => \Illuminate\Support\Str::slug($attrs['name'], '_')
         );
+    }
+    protected function casts(): array
+    {
+        return [
+            'show_on_registration' => 'boolean',
+            'required'             => 'boolean',
+            'private'              => 'boolean',
+            'internal'             => 'boolean',
+            'active'               => 'boolean',
+        ];
     }
 }

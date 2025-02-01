@@ -41,10 +41,6 @@ class File extends Model
         'ref_model_id',
     ];
 
-    protected $casts = [
-        'public' => 'boolean',
-    ];
-
     public static $rules = [
         'name' => 'required',
     ];
@@ -114,5 +110,11 @@ class File extends Model
         return Attribute::make(
             get: fn ($value, array $attrs): bool => is_null($attrs['disk']) && !str_contains($this->url, config('app.url')),
         );
+    }
+    protected function casts(): array
+    {
+        return [
+            'public' => 'boolean',
+        ];
     }
 }

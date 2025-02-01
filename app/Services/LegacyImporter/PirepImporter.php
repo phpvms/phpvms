@@ -107,11 +107,7 @@ class PirepImporter extends BaseImporter
             }
 
             // Set the flight level of the PIREP is set
-            if (property_exists($row, 'flightlevel')) {
-                $attrs['level'] = $row->flightlevel;
-            } else {
-                $attrs['level'] = 0;
-            }
+            $attrs['level'] = property_exists($row, 'flightlevel') ? $row->flightlevel : 0;
 
             $w = ['id' => $pirep_id];
 

@@ -26,10 +26,6 @@ class Module extends Model
         'updated_at',
     ];
 
-    protected $casts = [
-        'enabled' => 'boolean',
-    ];
-
     public static $rules = [
         'name' => 'required',
     ];
@@ -41,5 +37,11 @@ class Module extends Model
             ->logExcept(['created_at', 'updated_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+    protected function casts(): array
+    {
+        return [
+            'enabled' => 'boolean',
+        ];
     }
 }

@@ -46,9 +46,9 @@ class AwardAwarded extends Notification implements ShouldQueue
         // $fields = $this->createFields($user);
 
         // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = !empty($user->avatar)
-            ? $user->avatar->url
-            : $user->gravatar(256);
+        $user_avatar = empty($user->avatar)
+            ? $user->gravatar(256)
+            : $user->avatar->url;
 
         $dm = new DiscordMessage();
 

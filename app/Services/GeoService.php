@@ -69,13 +69,13 @@ class GeoService extends Service
         $filter_points = [$dep_icao, $arr_icao, 'SID', 'STAR'];
 
         $split_route = collect(explode(' ', $route))->transform(function ($point) {
-            if (empty($point)) {
+            if ($point === '' || $point === '0') {
                 return false;
             }
 
             return strtoupper(trim($point));
         })->filter(function ($point) use ($filter_points) {
-            return !(empty($point) || \in_array($point, $filter_points, true));
+            return $point !== '' && $point !== '0' && !\in_array($point, $filter_points, true);
         });
 
         /**
@@ -116,7 +116,7 @@ class GeoService extends Service
             // Get the start point and then reverse the lat/lon reference
             // If the first point happens to have multiple possibilities, use
             // the starting point that was passed in
-            if (\count($coords) > 0) {
+            if ($coords !== []) {
                 $start_point = $coords[\count($coords) - 1];
                 $start_point = [$start_point->lat, $start_point->lon];
             } else {

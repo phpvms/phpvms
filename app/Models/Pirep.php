@@ -136,29 +136,6 @@ class Pirep extends Model
         'updated_at',
     ];
 
-    protected $casts = [
-        'user_id'             => 'integer',
-        'airline_id'          => 'integer',
-        'aircraft_id'         => 'integer',
-        'event_id'            => 'integer',
-        'level'               => 'integer',
-        'distance'            => DistanceCast::class,
-        'planned_distance'    => DistanceCast::class,
-        'block_time'          => 'integer',
-        'block_off_time'      => CarbonCast::class,
-        'block_on_time'       => CarbonCast::class,
-        'flight_time'         => 'integer',
-        'planned_flight_time' => 'integer',
-        'zfw'                 => 'float',
-        'block_fuel'          => FuelCast::class,
-        'fuel_used'           => FuelCast::class,
-        'landing_rate'        => 'float',
-        'score'               => 'integer',
-        'source'              => 'integer',
-        'state'               => 'integer',
-        'submitted_at'        => CarbonCast::class,
-    ];
-
     public static $rules = [
         'airline_id'     => 'required|exists:airlines,id',
         'aircraft_id'    => 'required|exists:aircraft,id',
@@ -516,5 +493,30 @@ class Pirep extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'user_id'             => 'integer',
+            'airline_id'          => 'integer',
+            'aircraft_id'         => 'integer',
+            'event_id'            => 'integer',
+            'level'               => 'integer',
+            'distance'            => DistanceCast::class,
+            'planned_distance'    => DistanceCast::class,
+            'block_time'          => 'integer',
+            'block_off_time'      => CarbonCast::class,
+            'block_on_time'       => CarbonCast::class,
+            'flight_time'         => 'integer',
+            'planned_flight_time' => 'integer',
+            'zfw'                 => 'float',
+            'block_fuel'          => FuelCast::class,
+            'fuel_used'           => FuelCast::class,
+            'landing_rate'        => 'float',
+            'score'               => 'integer',
+            'source'              => 'integer',
+            'state'               => 'integer',
+            'submitted_at'        => CarbonCast::class,
+        ];
     }
 }

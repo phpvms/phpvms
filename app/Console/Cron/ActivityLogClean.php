@@ -22,7 +22,7 @@ class ActivityLogClean extends CronCommand
         Artisan::call('activitylog:clean --force');
 
         $output = trim(Artisan::output());
-        if (!empty($output)) {
+        if ($output !== '' && $output !== '0') {
             Log::info($output);
         }
     }

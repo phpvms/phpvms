@@ -33,10 +33,6 @@ class PirepFieldValue extends Model
         'name' => 'required',
     ];
 
-    protected $casts = [
-        'source' => 'integer',
-    ];
-
     /**
      * When setting the name attribute, also set the slug
      */
@@ -45,7 +41,7 @@ class PirepFieldValue extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => str_slug($name),
+                'slug' => \Illuminate\Support\Str::slug($name),
             ]
         );
     }
@@ -68,5 +64,11 @@ class PirepFieldValue extends Model
     public function pirep(): BelongsTo
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'source' => 'integer',
+        ];
     }
 }

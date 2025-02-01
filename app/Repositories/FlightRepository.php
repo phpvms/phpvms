@@ -76,7 +76,7 @@ class FlightRepository extends Repository implements CacheableInterface
         $where = [];
         $relations = [];
 
-        if ($only_active === true) {
+        if ($only_active) {
             $where['active'] = $only_active;
             $where['visible'] = $only_active;
         }

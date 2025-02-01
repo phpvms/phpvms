@@ -190,18 +190,14 @@ class PirepFinanceService extends Service
         // Get Aircraft Fuel Type from Subfleet
         // And set $fuel_cost according to type (Failsafe is Jet A)
         $sf = $pirep->aircraft->subfleet;
-        if ($sf) {
-            $fuel_type = $sf->fuel_type;
-        } else {
-            $fuel_type = FuelType::JET_A;
-        }
+        $fuel_type = $sf ? $sf->fuel_type : FuelType::JET_A;
 
         if ($fuel_type === FuelType::LOW_LEAD) {
-            $fuel_cost = !empty($ap->fuel_100ll_cost) ? $ap->fuel_100ll_cost : setting('airports.default_100ll_fuel_cost');
+            $fuel_cost = empty($ap->fuel_100ll_cost) ? setting('airports.default_100ll_fuel_cost') : $ap->fuel_100ll_cost;
         } elseif ($fuel_type === FuelType::MOGAS) {
-            $fuel_cost = !empty($ap->fuel_mogas_cost) ? $ap->fuel_mogas_cost : setting('airports.default_mogas_fuel_cost');
+            $fuel_cost = empty($ap->fuel_mogas_cost) ? setting('airports.default_mogas_fuel_cost') : $ap->fuel_mogas_cost;
         } else { // Default to JetA
-            $fuel_cost = !empty($ap->fuel_jeta_cost) ? $ap->fuel_jeta_cost : setting('airports.default_jet_a_fuel_cost');
+            $fuel_cost = empty($ap->fuel_jeta_cost) ? setting('airports.default_jet_a_fuel_cost') : $ap->fuel_jeta_cost;
         }
 
         if (setting('pireps.advanced_fuel', false)) {
@@ -316,12 +312,8 @@ class PirepFinanceService extends Service
 
             // Check to see if there is a certain fleet or flight type set on this expense
             // if there is and it doesn't match up the flight type for the PIREP, skip it
-            if ($expense->ref_model === Expense::class) {
-                if (is_array($expense->flight_type) && count($expense->flight_type) > 0) {
-                    if (!in_array($pirep->flight_type, $expense->flight_type, true)) {
-                        return;
-                    }
-                }
+            if ($expense->ref_model === Expense::class && (is_array($expense->flight_type) && count($expense->flight_type) > 0) && !in_array($pirep->flight_type, $expense->flight_type, true)) {
+                return;
             }
 
             // Get the transaction group name from the ref_model name

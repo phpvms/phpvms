@@ -9,19 +9,23 @@ namespace App\Models\Observers;
  */
 class Sluggable
 {
+    /**
+     * @var array<string, mixed>
+     */
+    public $attributes;
     public function creating($model): void
     {
-        $model->slug = str_slug($model->name);
+        $model->slug = \Illuminate\Support\Str::slug($model->name);
     }
 
     public function updating($model): void
     {
-        $model->slug = str_slug($model->name);
+        $model->slug = \Illuminate\Support\Str::slug($model->name);
     }
 
     public function setNameAttribute($name): void
     {
         $this->attributes['name'] = $name;
-        $this->attributes['slug'] = str_slug($name);
+        $this->attributes['slug'] = \Illuminate\Support\Str::slug($name);
     }
 }

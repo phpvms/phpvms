@@ -21,7 +21,7 @@ trait ApiTestTrait
 
     public function assertModelData(array $actualData, array $expectedData): void
     {
-        foreach ($actualData as $key => $value) {
+        foreach (array_keys($actualData) as $key) {
             $this->assertEquals($actualData[$key], $expectedData[$key]);
         }
     }

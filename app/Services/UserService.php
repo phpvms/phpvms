@@ -99,7 +99,7 @@ class UserService extends Service
         $user->save();
 
         // Attach any additional roles
-        if (!empty($roles) && is_array($roles)) {
+        if ($roles !== [] && is_array($roles)) {
             foreach ($roles as $role) {
                 $this->addUserToRole($user, $role);
             }
@@ -225,7 +225,7 @@ class UserService extends Service
     public function findUserByPilotId(string $pilot_id): User
     {
         $pilot_id = trim($pilot_id);
-        if (empty($pilot_id)) {
+        if ($pilot_id === '' || $pilot_id === '0') {
             throw new PilotIdNotFound('');
         }
 
@@ -241,11 +241,9 @@ class UserService extends Service
                 break;
             }
 
-            if (!empty($airline->iata)) {
-                if (strpos($pilot_id, $airline->iata) !== false) {
-                    $ident_str = $airline->iata;
-                    break;
-                }
+            if (!empty($airline->iata) && strpos($pilot_id, $airline->iata) !== false) {
+                $ident_str = $airline->iata;
+                break;
             }
         }
 
@@ -289,18 +287,9 @@ class UserService extends Service
 
             // If they haven't submitted a PIREP, use the date that the user was created
             $last_pirep = Pirep::where(['user_id' => $user->id])->latest('submitted_at')->first();
-            if (!$last_pirep) {
-                $diff_date = $user->created_at;
-            } else {
-                $diff_date = $last_pirep->created_at;
-            }
-
+            $diff_date = $last_pirep ? $last_pirep->created_at : $user->created_at;
             // See if the difference is larger than what the setting calls for
-            if (abs($date->diffInDays($diff_date)) <= $leave_days) {
-                return false;
-            }
-
-            return true;
+            return abs($date->diffInDays($diff_date)) > $leave_days;
         });
     }
 
@@ -337,13 +326,7 @@ class UserService extends Service
             return $query->whereIn('id', $restricted_to);
         })->with(['aircraft', 'aircraft.bid', 'fares']);
 
-        if ($paginate) {
-            /* @var Collection $subfleets */
-            $subfleets = $subfleetsQuery->paginate();
-        } else {
-            /* @var Collection $subfleets */
-            $subfleets = $subfleetsQuery->get();
-        }
+        $subfleets = $paginate ? $subfleetsQuery->paginate() : $subfleetsQuery->get();
 
         // Map the subfleets with the proper fare information
         return $subfleets->transform(function ($sf, $key) {
