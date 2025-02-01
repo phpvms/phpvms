@@ -91,7 +91,7 @@ class FlightImporter extends ImportExport
             'arr_airport_id' => strtoupper($row['arr_airport']),
             'route_code'     => filled($row['route_code']) ? $row['route_code'] : null,
             'route_leg'      => filled($row['route_leg']) ? $row['route_leg'] : null,
-            'days'           => filled($row['days']) ? $this->setDays($row['days']) : null,
+            'days'           => filled($row['days']) ? $this->setDays($row['days']) : 0,
         ], $row);
 
         $row['dpt_airport'] = strtoupper($row['dpt_airport']);
