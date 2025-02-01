@@ -27,6 +27,12 @@ class AuthServiceProvider extends ServiceProvider
     {
         Gate::define('access_admin', function (?User $user): Response {
             return $user?->ability('admin', 'admin-access')
+            ? Response::allow()
+            : Response::deny('You do not have permission to access this page.');
+        });
+
+        Gate::define('viewLogViewer', function (?User $user): Response {
+            return $user?->ability('admin', 'logs')
                 ? Response::allow()
                 : Response::deny('You do not have permission to access this page.');
         });

@@ -57,3 +57,6 @@
 - name: modules
   display_name: Modules
   description: Add/Edit Modules
+- name: logs
+  display_name: Logs
+  description: View logs

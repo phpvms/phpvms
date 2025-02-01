@@ -96,6 +96,10 @@
         @endability
       @endif
 
+      @ability('admin', 'logs')
+      <li><a href="{{ url('/admin/log-viewer') }}"><i class="pe-7s-note2"></i>logs</a></li>
+      @endability
+
       @ability('admin', 'settings')
       <li><a href="{{ url('/admin/settings') }}"><i class="pe-7s-config"></i>settings</a></li>
       @endability
