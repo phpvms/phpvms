@@ -69,6 +69,7 @@ class ImportService extends Service
         } catch (Exception $e) {
             $this->throwError('Error opening CSV: '.$e->getMessage(), $e);
         }
+
         return null;
     }
 

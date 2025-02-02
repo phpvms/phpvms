@@ -64,6 +64,7 @@ class SimBrief extends Model
                     SimBriefXML::class
                 );
             }
+
             return $this->xml_instance;
         });
     }
@@ -110,6 +111,7 @@ class SimBrief extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
     protected function casts(): array
     {
         return [

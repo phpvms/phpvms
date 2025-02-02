@@ -40,6 +40,7 @@ class FlightField extends Model
             ]
         );
     }
+
     protected function casts(): array
     {
         return [

@@ -206,6 +206,7 @@ class Airport extends Model
         // Users based at this airport
         return $this->hasMany(User::class, 'home_airport_id');
     }
+
     protected function casts(): array
     {
         return [

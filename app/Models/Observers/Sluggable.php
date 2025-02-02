@@ -13,6 +13,7 @@ class Sluggable
      * @var array<string, mixed>
      */
     public $attributes;
+
     public function creating($model): void
     {
         $model->slug = \Illuminate\Support\Str::slug($model->name);

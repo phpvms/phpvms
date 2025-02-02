@@ -41,6 +41,7 @@ class UserField extends Model
             get: fn ($_, $attrs) => \Illuminate\Support\Str::slug($attrs['name'], '_')
         );
     }
+
     protected function casts(): array
     {
         return [

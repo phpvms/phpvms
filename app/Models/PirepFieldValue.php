@@ -65,6 +65,7 @@ class PirepFieldValue extends Model
     {
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
+
     protected function casts(): array
     {
         return [

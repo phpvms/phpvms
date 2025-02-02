@@ -44,6 +44,7 @@ class Bid extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
     protected function casts(): array
     {
         return [

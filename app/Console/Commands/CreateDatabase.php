@@ -72,6 +72,7 @@ class CreateDatabase extends Command
 
             return false;
         }
+
         return null;
     }
 

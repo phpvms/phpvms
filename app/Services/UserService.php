@@ -288,6 +288,7 @@ class UserService extends Service
             // If they haven't submitted a PIREP, use the date that the user was created
             $last_pirep = Pirep::where(['user_id' => $user->id])->latest('submitted_at')->first();
             $diff_date = $last_pirep ? $last_pirep->created_at : $user->created_at;
+
             // See if the difference is larger than what the setting calls for
             return abs($date->diffInDays($diff_date)) > $leave_days;
         });

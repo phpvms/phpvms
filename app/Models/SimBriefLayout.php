@@ -19,6 +19,7 @@ class SimBriefLayout extends Model
         'name'      => 'required|string',
         'name_long' => 'required|string',
     ];
+
     protected function casts(): array
     {
         return [

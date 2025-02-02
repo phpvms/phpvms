@@ -62,6 +62,7 @@ class Page extends Model
             }
         );
     }
+
     protected function casts(): array
     {
         return [

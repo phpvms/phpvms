@@ -27,6 +27,7 @@ class SimBriefAircraft extends Model
     {
         return $this->hasMany(SimBriefAirframe::class, 'icao', 'icao');
     }
+
     protected function casts(): array
     {
         return [

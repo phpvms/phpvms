@@ -392,6 +392,7 @@ class Metar implements \ArrayAccess
         if (isset($this->result[$parameter])) {
             return $this->result[$parameter];
         }
+
         return null;
     }
 
@@ -1454,6 +1455,7 @@ class Metar implements \ArrayAccess
             .'([\d]{2}))/'    // 8
             .'(([\d]{2})'     // 9
             .'([\d]{2})))$@';
+
         // 10
         // Ignore trends
         return (bool) preg_match($r, $part, $found);

@@ -149,10 +149,9 @@ class Airline extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     /**
      * The attributes that should be casted to native types.
-     *
-     * @return array
      */
     protected function casts(): array
     {

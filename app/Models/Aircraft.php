@@ -227,6 +227,7 @@ class Aircraft extends Model
     {
         return $this->hasMany(SimBriefAirframe::class, 'icao', 'icao');
     }
+
     /**
      * The attributes that should be casted to native types.
      */

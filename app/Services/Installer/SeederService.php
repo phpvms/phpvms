@@ -238,6 +238,7 @@ class SeederService extends Service
             // See if any of the options have changed
             if ($row->type === 'select' && (!empty($row->options) && $row->options !== $setting['options'])) {
                 Log::info('Options for '.$id.' changed, update available');
+
                 return true;
             }
         }

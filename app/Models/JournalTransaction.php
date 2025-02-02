@@ -58,6 +58,7 @@ class JournalTransaction extends Model
     {
         $this->currency = $currency;
     }
+
     protected function casts(): array
     {
         return [

@@ -111,6 +111,7 @@ class File extends Model
             get: fn ($value, array $attrs): bool => is_null($attrs['disk']) && !str_contains($this->url, config('app.url')),
         );
     }
+
     protected function casts(): array
     {
         return [

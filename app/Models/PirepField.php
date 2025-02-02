@@ -52,6 +52,7 @@ class PirepField extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     protected function casts(): array
     {
         return [

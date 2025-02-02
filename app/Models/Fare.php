@@ -67,6 +67,7 @@ class Fare extends Model
     {
         return $this->belongsToMany(Flight::class, 'flight_fare')->withPivot('price', 'cost', 'capacity');
     }
+
     protected function casts(): array
     {
         return [

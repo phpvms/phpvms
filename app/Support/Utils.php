@@ -46,6 +46,7 @@ class Utils
         if (!$obj) {
             return false;
         }
+
         return $obj[0] === '{' || $obj[0] === '[';
     }
 

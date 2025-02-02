@@ -313,6 +313,7 @@ class Flight extends Model
     {
         return $this->morphTo('owner', 'owner_type', 'owner_id');
     }
+
     protected function casts(): array
     {
         return [

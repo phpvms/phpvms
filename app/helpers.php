@@ -18,6 +18,7 @@ if (!function_exists('array_key_first')) {
         foreach (array_keys($arr) as $key) {
             return $key;
         }
+
         return null;
     }
 }

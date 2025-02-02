@@ -36,6 +36,7 @@ class Navdata extends Model
             set: fn ($id) => strtoupper($id)
         );
     }
+
     protected function casts(): array
     {
         return [

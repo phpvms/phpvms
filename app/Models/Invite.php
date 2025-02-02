@@ -38,6 +38,7 @@ class Invite extends Model
             get: fn ($value, $attrs) => url('/register?invite='.$attrs['id'].'&token='.$attrs['token'])
         );
     }
+
     protected function casts(): array
     {
         return [

@@ -94,6 +94,7 @@ class ImporterDB
 
         $sql = 'SHOW COLUMNS FROM '.$this->tableName($table);
         $result = $this->conn->query($sql);
+
         return (bool) $result;
     }
 
@@ -235,6 +236,7 @@ class ImporterDB
         } catch (\Exception $e) {
             Log::error('Error readRowsOffset: '.$e->getMessage());
         }
+
         return null;
     }
 }

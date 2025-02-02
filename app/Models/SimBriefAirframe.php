@@ -33,6 +33,7 @@ class SimBriefAirframe extends Model
     {
         return $this->belongsTo(SimBriefAircraft::class, 'icao', 'icao');
     }
+
     protected function casts(): array
     {
         return [

@@ -383,6 +383,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->avatar?->url;
     }
+
     protected function casts(): array
     {
         return [
