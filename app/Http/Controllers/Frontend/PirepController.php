@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
+use App\Filament\Resources\PirepResource;
 use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\UpdatePirepRequest;
 use App\Models\Enums\PirepFieldSource;
@@ -446,7 +447,7 @@ class PirepController extends Controller
         if ($pirep->user_id !== Auth::id()) {
             Flash::error('Cannot edit someone else\'s PIREP!');
 
-            return redirect(route('admin.pireps.index'));
+            return redirect(PirepResource::getUrl());
         }
 
         // Eager load the subfleet and fares under it
@@ -514,13 +515,13 @@ class PirepController extends Controller
         if (empty($pirep)) {
             Flash::error('Pirep not found');
 
-            return redirect(route('admin.pireps.index'));
+            return redirect(PirepResource::getUrl());
         }
 
         if ($user->id !== $pirep->user_id) {
             Flash::error('Cannot edit someone else\'s PIREP!');
 
-            return redirect(route('admin.pireps.index'));
+            return redirect(PirepResource::getUrl());
         }
 
         $orig_route = $pirep->route;
@@ -571,13 +572,13 @@ class PirepController extends Controller
         if (empty($pirep)) {
             Flash::error('PIREP not found');
 
-            return redirect(route('admin.pireps.index'));
+            return redirect(PirepResource::getUrl());
         }
 
         if ($pirep->user_id !== Auth::id()) {
             Flash::error('Cannot edit someone else\'s PIREP!');
 
-            return redirect(route('admin.pireps.index'));
+            return redirect(PirepResource::getUrl());
         }
 
         $this->pirepSvc->submit($pirep);

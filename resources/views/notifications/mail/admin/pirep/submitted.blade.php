@@ -3,7 +3,7 @@
 
   A new PIREP has been submitted by {{ $pirep->user->ident }} {{ $pirep->user->name }}
 
-  @component('mail::button', ['url' => route('admin.pireps.edit', [$pirep->id])])
+  @component('mail::button', ['url' => \App\Filament\Resources\PirepResource::getUrl('edit', ['record' => $pirep])])
     View PIREP
   @endcomponent
 
