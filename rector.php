@@ -23,10 +23,6 @@ return static function (RectorConfig $rectorConfig): void {
         CompactToVariablesRector::class,
     ]);
 
-    // Enable caching for Rector
-    $rectorConfig->cacheDirectory(__DIR__.'/storage/rector');
-    $rectorConfig->cacheClass(FileCacheStorage::class);
-
     // Apply sets for Laravel and general code quality
     $rectorConfig->sets([
         LaravelLevelSetList::UP_TO_LARAVEL_110,
