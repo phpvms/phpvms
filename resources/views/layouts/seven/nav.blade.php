@@ -114,11 +114,11 @@
                                 <i class="bi bi-bookmark-check"></i>&nbsp;&nbsp;{{ trans_choice('flights.mybid', 2) }}
                             </a>
                             <div class="dropdown-divider"></div>
-                            @ability('admin', 'admin-access')
+                            @can('access_admin')
                                 <a class="dropdown-item" href="{{ url('/admin') }}">
                                     <i class="bi bi-gear"></i>&nbsp;&nbsp;@lang('common.administration')
                                 </a>
-                            @endability
+                            @endcan
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{{ url('/logout') }}">
                                 <i class="bi bi-box-arrow-right"></i>&nbsp;&nbsp;@lang('common.logout')

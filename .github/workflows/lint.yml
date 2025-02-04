@@ -6,7 +6,13 @@
 name: Fix Code Style
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
 
 jobs:
   lint:
