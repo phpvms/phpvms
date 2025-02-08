@@ -3,9 +3,10 @@
 # Run Laravel Pint
 # https://laravel.com/docs/11.x/pint#running-tests-on-github-actions
 #
-name: Fix Code Style
+name: Check Code Style
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -37,7 +38,4 @@ jobs:
         run: composer global require laravel/pint
 
       - name: Run Pint
-        run: pint -v
-
-      - name: Commit linted files
-        uses: stefanzweifel/git-auto-commit-action@v5
+        run: pint --test
