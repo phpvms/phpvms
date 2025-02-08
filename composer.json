@@ -146,7 +146,8 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@php artisan phpvms:caches"
+            "@php artisan phpvms:caches",
+            "@sh .hooks/setup-git-hooks.sh"
         ],
         "pint": "pint --dirty",
         "test": "phpunit"
