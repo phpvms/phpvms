@@ -95,7 +95,7 @@ class OAuthController extends Controller
             ], [
                 'token'             => $providerUser->token,
                 'refresh_token'     => $providerUser->refreshToken,
-                'last_refreshed_at' => now(),
+                'expires_at'        => now()->addSeconds($providerUser->expiresIn),
             ]);
 
             if ($provider === 'discord') {
@@ -149,7 +149,7 @@ class OAuthController extends Controller
             ], [
                 'token'             => $providerUser->token,
                 'refresh_token'     => $providerUser->refreshToken,
-                'last_refreshed_at' => now(),
+                'expires_at'        => now()->addSeconds($providerUser->expiresIn),
             ]);
 
             Auth::login($user, true);
