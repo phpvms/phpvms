@@ -33,7 +33,7 @@ class OAuthService extends Service
                     'refresh_token' => $updatedToken->refreshToken,
                     'expires_at' => now()->addSeconds($updatedToken->expiresIn),
                 ]);
-                Log::debug('OAuth token refresh for user id ' . $token->user_id . ' and provider ' . $token->provider);
+                Log::debug('OAuth token refresh for user_id ' . $token->user_id . ' and provider ' . $token->provider);
             } catch (ClientException $e) {
                 Log::error("Error updating OAuth tokens: {$e->getMessage()}", ["exception" => $e, "token" => $token]);
             }
