@@ -26,19 +26,19 @@ class UserOAuthToken extends Model
     ];
 
     protected $casts = [
-        'user_id'           => 'integer',
-        'provider'          => 'string',
-        'token'             => 'string',
-        'refresh_token'     => 'string',
-        'expires_at'        => 'datetime',
+        'user_id'       => 'integer',
+        'provider'      => 'string',
+        'token'         => 'string',
+        'refresh_token' => 'string',
+        'expires_at'    => 'datetime',
     ];
 
     public static $rules = [
-        'user_id'           => 'required|integer',
-        'provider'          => 'required|string',
-        'token'             => 'required|string',
-        'refresh_token'     => 'required|string',
-        'expires_at'        => 'nullable|datetime',
+        'user_id'       => 'required|integer',
+        'provider'      => 'required|string',
+        'token'         => 'required|string',
+        'refresh_token' => 'required|string',
+        'expires_at'    => 'nullable|datetime',
     ];
 
     public function user(): BelongsTo

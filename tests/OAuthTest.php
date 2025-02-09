@@ -26,7 +26,7 @@ final class OAuthTest extends TestCase
         User::factory()->create();
 
         foreach ($this->drivers as $driver) {
-            Config::set('services.' . $driver . '.enabled', true);
+            Config::set('services.'.$driver.'.enabled', true);
         }
     }
 
@@ -37,9 +37,9 @@ final class OAuthTest extends TestCase
     {
         $abstractUser = \Mockery::mock('Laravel\Socialite\Two\User')
             ->allows([
-                'getId' => 123456789,
-                'getName' => 'OAuth user',
-                'getEmail' => 'oauth.user@phpvms.net',
+                'getId'     => 123456789,
+                'getName'   => 'OAuth user',
+                'getEmail'  => 'oauth.user@phpvms.net',
                 'getAvatar' => 'https://en.gravatar.com/userimage/12856995/aa6c0527a723abfd5fb9e246f0ff8af4.png',
             ]);
 
@@ -50,7 +50,7 @@ final class OAuthTest extends TestCase
         return \Mockery::mock('Laravel\Socialite\Contracts\Provider')
             ->allows([
                 'refreshToken' => $abstractUser,
-                'user' => $abstractUser,
+                'user'         => $abstractUser,
             ]);
     }
 
@@ -60,7 +60,7 @@ final class OAuthTest extends TestCase
     public function test_link_account_from_profile(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
         ]);
         Auth::login($user);
@@ -72,7 +72,7 @@ final class OAuthTest extends TestCase
                 ->assertRedirect(route('frontend.profile.index'));
 
             $user->refresh();
-            $this->assertEquals(123456789, $user->{$driver . '_id'});
+            $this->assertEquals(123456789, $user->{$driver.'_id'});
 
             $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
 
@@ -89,7 +89,7 @@ final class OAuthTest extends TestCase
     public function test_link_account_from_login(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
         ]);
 
@@ -100,7 +100,7 @@ final class OAuthTest extends TestCase
                 ->assertRedirect(route('frontend.dashboard.index'));
 
             $user->refresh();
-            $this->assertEquals(123456789, $user->{$driver . '_id'});
+            $this->assertEquals(123456789, $user->{$driver.'_id'});
             $this->assertTrue($user->lastlogin_at->diffInSeconds(now()) <= 2);
 
             $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
@@ -120,19 +120,19 @@ final class OAuthTest extends TestCase
     public function test_login_with_linked_account(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
         ]);
 
         foreach ($this->drivers as $driver) {
             $user->update([
-                $driver . '_id' => 123456789,
+                $driver.'_id' => 123456789,
             ]);
 
             UserOAuthToken::create([
-                'user_id' => $user->id,
-                'provider' => $driver,
-                'token' => 'token',
+                'user_id'       => $user->id,
+                'provider'      => $driver,
+                'token'         => 'token',
                 'refresh_token' => 'refresh_token',
             ]);
 
@@ -142,7 +142,7 @@ final class OAuthTest extends TestCase
                 ->assertRedirect(route('frontend.dashboard.index'));
 
             $user->refresh();
-            $this->assertEquals(123456789, $user->{$driver . '_id'});
+            $this->assertEquals(123456789, $user->{$driver.'_id'});
             $this->assertTrue($user->lastlogin_at->diffInSeconds(now()) <= 2);
 
             $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
@@ -161,7 +161,7 @@ final class OAuthTest extends TestCase
     public function test_login_with_pending_account(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
             'state' => UserState::PENDING,
         ]);
@@ -195,13 +195,13 @@ final class OAuthTest extends TestCase
     public function test_unlink_account(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
         ]);
 
         foreach ($this->drivers as $driver) {
             $user->update([
-                $driver . '_id' => 123456789,
+                $driver.'_id' => 123456789,
             ]);
 
             Auth::login($user);
@@ -210,7 +210,7 @@ final class OAuthTest extends TestCase
                 ->assertRedirect(route('frontend.profile.index'));
 
             $user->refresh();
-            $this->assertEmpty($user->{$driver . '_id'});
+            $this->assertEmpty($user->{$driver.'_id'});
         }
     }
 
@@ -252,24 +252,24 @@ final class OAuthTest extends TestCase
     public function test_refresh_expired_oauth_token(): void
     {
         $user = User::factory()->create([
-            'name' => 'OAuth user',
+            'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
         ]);
 
         foreach ($this->drivers as $driver) {
             $user->update([
-                $driver . '_id' => 123456789,
+                $driver.'_id' => 123456789,
             ]);
 
             UserOAuthToken::updateOrCreate(
                 [
-                    'user_id' => $user->id,
+                    'user_id'  => $user->id,
                     'provider' => $driver,
                 ],
                 [
-                    'token' => 'expired_token',
+                    'token'         => 'expired_token',
                     'refresh_token' => 'old_refresh_token',
-                    'expires_at' => now()->addHour(),
+                    'expires_at'    => now()->addHour(),
                 ]);
 
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());

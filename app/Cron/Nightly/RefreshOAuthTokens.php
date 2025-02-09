@@ -10,8 +10,7 @@ class RefreshOAuthTokens extends Listener
 {
     public function __construct(
         private readonly OAuthService $oAuthSvc
-    ) {
-    }
+    ) {}
 
     public function handle(CronNightly $event): void
     {

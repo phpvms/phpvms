@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\UserOAuthToken;
-use Carbon\Carbon;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
@@ -29,13 +28,13 @@ class OAuthService extends Service
                 $updatedToken = Socialite::driver($token->provider)->refreshToken($token->refresh_token);
 
                 $token->update([
-                    'token' => $updatedToken->token,
+                    'token'         => $updatedToken->token,
                     'refresh_token' => $updatedToken->refreshToken,
-                    'expires_at' => now()->addSeconds($updatedToken->expiresIn),
+                    'expires_at'    => now()->addSeconds($updatedToken->expiresIn),
                 ]);
-                Log::debug('OAuth token refresh for user_id ' . $token->user_id . ' and provider ' . $token->provider);
+                Log::debug('OAuth token refresh for user_id '.$token->user_id.' and provider '.$token->provider);
             } catch (ClientException $e) {
-                Log::error("Error updating OAuth tokens: {$e->getMessage()}", ["exception" => $e, "token" => $token]);
+                Log::error("Error updating OAuth tokens: {$e->getMessage()}", ['exception' => $e, 'token' => $token]);
             }
         }
     }
