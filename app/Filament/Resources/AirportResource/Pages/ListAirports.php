@@ -16,8 +16,8 @@ class ListAirports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            ExportAction::make('export')->arguments(['resourceTitle' => 'airport', 'exportType' => ImportExportType::AIRPORT]),
-            ImportAction::make('import')->arguments(['resourceTitle' => 'airport', 'importType' => ImportExportType::AIRPORT]),
+            ExportAction::make('export')->arguments(['resourceTitle' => 'airports', 'exportType' => ImportExportType::AIRPORT]),
+            ImportAction::make('import')->arguments(['resourceTitle' => 'airports', 'importType' => ImportExportType::AIRPORT]),
             Actions\CreateAction::make()->label('Add Airport')->icon('heroicon-o-plus-circle'),
         ];
     }
