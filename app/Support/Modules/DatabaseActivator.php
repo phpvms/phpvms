@@ -132,9 +132,10 @@ class DatabaseActivator implements ActivatorInterface
      * \Nwidart\Modules\Module instance passed
      * {@inheritdoc}
      */
-    public function hasStatus(Module $module, bool $status): bool
+    public function hasStatus(Module|string $module, bool $status): bool
     {
-        $module = $this->getModuleByName($module->getName());
+        $name = $module instanceof Module ? $module->getName() : $module;
+        $module = $this->getModuleByName($name);
         if (!$module) {
             return false;
         }

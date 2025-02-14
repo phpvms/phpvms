@@ -2,22 +2,21 @@
 
 namespace $NAMESPACE$;
 
-use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+// use $MODULE_NAMESPACE$\$MODULE$\Database\Factories\$NAME$Factory;
 
-/**
- * Class $CLASS$
- * @package $NAMESPACE$
- */
 class $CLASS$ extends Model
 {
-    public $table = '';
+    use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = $FILLABLE$;
 
-    protected $casts = [
-
-    ];
-
-    public static $rules = [
-
-    ];
+    // protected static function newFactory(): $NAME$Factory
+    // {
+    //     // return $NAME$Factory::new();
+    // }
 }

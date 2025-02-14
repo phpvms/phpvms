@@ -2,43 +2,52 @@
 
 use App\Support\Modules\DatabaseActivator;
 use Nwidart\Modules\Activators\FileActivator;
+use Nwidart\Modules\Providers\ConsoleServiceProvider;
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Module Namespace
+    |--------------------------------------------------------------------------
+    |
+    | Default module namespace.
+    |
+    */
     'namespace' => 'Modules',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Module Stubs
+    |--------------------------------------------------------------------------
+    |
+    | Default module stubs.
+    |
+    */
     'stubs'     => [
-        'enabled' => true,
+        'enabled' => false,
         'path'    => resource_path().'/stubs/modules',
-        'files'   => [
-            'routes'                 => 'Http/Routes/web.php',
-            'routes-api'             => 'Http/Routes/api.php',
-            'provider'               => 'Providers/AppServiceProvider.php',
-            'route-provider'         => 'Providers/RouteServiceProvider.php',
-            'event-service-provider' => 'Providers/EventServiceProvider.php',
-            'admin-panel-provider'   => 'Providers/Filament/AdminPanelProvider.php',
-            'views/index'            => 'Resources/views/index.blade.php',
-            'views/frontend'         => 'Resources/views/layouts/frontend.blade.php',
-            'listener-test'          => 'Listeners/TestEventListener.php',
-            'controller-index'       => 'Http/Controllers/Frontend/IndexController.php',
-            'controller-api'         => 'Http/Controllers/Api/ApiController.php',
-            'config'                 => 'Config/config.php',
-            'composer'               => 'composer.json',
+        'files' => [
+            'routes/web' => 'routes/web.php',
+            'routes/api' => 'routes/api.php',
+            'views/index' => 'resources/views/index.blade.php',
+            //'views/master' => 'resources/views/layouts/master.blade.php',
+            'scaffold/config' => 'config/config.php',
+            'composer' => 'composer.json',
+            'assets/js/app' => 'resources/assets/js/app.js',
+            'assets/sass/app' => 'resources/assets/sass/app.scss',
+            'vite' => 'vite.config.js',
+            'package' => 'package.json',
+            'admin-panel-provider' => 'Providers/Filament/AdminPanelProvider.php',
         ],
         'replacements' => [
-            'start'                  => ['LOWER_NAME', 'ROUTES_LOCATION'],
-            'routes'                 => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'routes-api'             => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'json'                   => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'provider'               => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'admin-panel-provider'   => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'route-provider'         => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'event-service-provider' => ['STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'listener-test'          => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'views/index'            => ['LOWER_NAME', 'STUDLY_NAME'],
-            'views/frontend'         => ['STUDLY_NAME'],
-            'controller-index'       => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'controller-api'         => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
-            'config'                 => ['STUDLY_NAME'],
-            'composer'               => [
+            'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'vite' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME'],
+            'json' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
+            'views/index' => ['LOWER_NAME'],
+            'views/master' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME',],
+            'scaffold/config' => ['STUDLY_NAME'],
+            'composer' => [
                 'LOWER_NAME',
                 'STUDLY_NAME',
                 'VENDOR',
@@ -46,45 +55,168 @@ return [
                 'AUTHOR_EMAIL',
                 'MODULE_NAMESPACE',
                 'PROVIDER_NAMESPACE',
+                'APP_FOLDER_NAME',
             ],
+            'admin-panel-provider'   => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE'],
         ],
         'gitkeep' => false,
     ],
     'paths' => [
-        'modules'   => base_path('modules'),
-        'assets'    => public_path('modules'),
+        /*
+        |--------------------------------------------------------------------------
+        | Modules path
+        |--------------------------------------------------------------------------
+        |
+        | This path is used to save the generated module.
+        | This path will also be added automatically to the list of scanned folders.
+        |
+        */
+        'modules' => base_path('modules'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Modules assets path
+        |--------------------------------------------------------------------------
+        |
+        | Here you may update the modules' assets path.
+        |
+        */
+        'assets' => public_path('modules'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | The migrations' path
+        |--------------------------------------------------------------------------
+        |
+        | Where you run the 'module:publish-migration' command, where do you publish the
+        | the migration files?
+        |
+        */
         'migration' => base_path('database/migrations'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | The app path
+        |--------------------------------------------------------------------------
+        |
+        | app folder name
+        | for example can change it to 'src' or 'App'
+        */
+        'app_folder' => '/',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generator path
+        |--------------------------------------------------------------------------
+        | Customise the paths where the folders will be generated.
+        | Setting the generate key to false will not generate that folder
+        */
         'generator' => [
-            'config'    => ['path' => 'Config', 'generate' => true],
-            'command'   => ['path' => 'Console', 'generate' => true],
-            'migration' => ['path' => 'Database/migrations', 'generate' => true],
-            'seeds'     => ['path' => 'Database/seeds', 'generate' => true],
-            'factory'   => ['path' => 'Database/factories', 'generate' => true],
-            'model'     => ['path' => 'Models', 'generate' => true],
-            // 'controller'       => ['path' => 'Http/Controllers', 'generate' => true],
-            'controller-api'    => ['path' => 'Http/Controllers/Api', 'generate' => true],
-            'controller-index'  => ['path' => 'Http/Controllers/Frontend', 'generate' => true],
-            'filter'            => ['path' => 'Http/Middleware', 'generate' => true],
-            'request'           => ['path' => 'Http/Requests', 'generate' => true],
-            'routes'            => ['path' => 'Http/Routes', 'generate' => true],
-            'provider'          => ['path' => 'Providers', 'generate' => false],
-            'assets'            => ['path' => 'Resources/assets', 'generate' => true],
-            'lang'              => ['path' => 'Resources/lang', 'generate' => true],
-            'views'             => ['path' => 'Resources/views', 'generate' => true],
-            'test'              => ['path' => 'tests', 'generate' => true],
-            'repository'        => ['path' => 'Repositories', 'generate' => false],
-            'event'             => ['path' => 'Events', 'generate' => false],
-            'listener'          => ['path' => 'Listeners', 'generate' => true],
-            'policies'          => ['path' => 'Policies', 'generate' => false],
-            'rules'             => ['path' => 'Rules', 'generate' => false],
-            'jobs'              => ['path' => 'Jobs', 'generate' => false],
-            'emails'            => ['path' => 'Resources/Emails', 'generate' => false],
-            'notifications'     => ['path' => 'Notifications', 'generate' => false],
-            'resource'          => ['path' => 'Models/Transformers', 'generate' => false],
-            'filament'          => ['path' => 'Filament', 'generate' => true],
-            'provider-filament' => ['path' => 'Providers/Filament', 'generate' => true],
+            // /
+            'actions' => ['path' => 'Actions', 'generate' => false],
+            'casts' => ['path' => 'Casts', 'generate' => false],
+            'channels' => ['path' => 'Broadcasting', 'generate' => false],
+            'class' => ['path' => 'Classes', 'generate' => false],
+            'command' => ['path' => 'Console', 'generate' => false],
+            'component-class' => ['path' => 'View/Components', 'generate' => false],
+            'emails' => ['path' => 'Emails', 'generate' => false],
+            'event' => ['path' => 'Events', 'generate' => false],
+            'enums' => ['path' => 'Enums', 'generate' => false],
+            'exceptions' => ['path' => 'Exceptions', 'generate' => false],
+            'jobs' => ['path' => 'Jobs', 'generate' => false],
+            'helpers' => ['path' => 'Helpers', 'generate' => false],
+            'interfaces' => ['path' => 'Interfaces', 'generate' => false],
+            'listener' => ['path' => 'Listeners', 'generate' => false],
+            'model' => ['path' => 'Models', 'generate' => false],
+            'notifications' => ['path' => 'Notifications', 'generate' => false],
+            'observer' => ['path' => 'Observers', 'generate' => false],
+            'policies' => ['path' => 'Policies', 'generate' => false],
+            'provider' => ['path' => 'Providers', 'generate' => true],
+            'repository' => ['path' => 'Repositories', 'generate' => false],
+            'resource' => ['path' => 'Transformers', 'generate' => false],
+            'route-provider' => ['path' => 'Providers', 'generate' => true],
+            'rules' => ['path' => 'Rules', 'generate' => false],
+            'services' => ['path' => 'Services', 'generate' => false],
+            'scopes' => ['path' => 'Models/Scopes', 'generate' => false],
+            'traits' => ['path' => 'Traits', 'generate' => false],
+
+            // Http/
+            'controller' => ['path' => 'Http/Controllers', 'generate' => true],
+            'filter' => ['path' => 'Http/Middleware', 'generate' => false],
+            'request' => ['path' => 'Http/Requests', 'generate' => false],
+
+            // Filament/
+            'filament' => ['path' => 'Filament', 'generate' => false],
+
+            // config/
+            'config' => ['path' => 'config', 'generate' => true],
+
+            // database/
+            'factory' => ['path' => 'database/factories', 'generate' => true],
+            'migration' => ['path' => 'database/migrations', 'generate' => true],
+            'seeder' => ['path' => 'database/seeders', 'generate' => true],
+
+            // resource/
+            'assets' => ['path' => 'resources/assets', 'generate' => true],
+            'component-view' => ['path' => 'resources/views/components', 'generate' => false],
+            'views' => ['path' => 'resources/views', 'generate' => true],
+            'lang' => ['path' => 'resources/lang', 'generate' => false],
+
+            // routes/
+            'routes' => ['path' => 'routes', 'generate' => true],
+
+            // tests/
+            'test-feature' => ['path' => 'tests/Feature', 'generate' => true],
+            'test-unit' => ['path' => 'tests/Unit', 'generate' => true],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto Discover of Modules
+    |--------------------------------------------------------------------------
+    |
+    | Here you configure auto discover of module
+    | This is useful for simplify module providers.
+    |
+    */
+    'auto-discover' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Migrations
+        |--------------------------------------------------------------------------
+        |
+        | This option for register migration automatically.
+        |
+        */
+        'migrations' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Translations
+        |--------------------------------------------------------------------------
+        |
+        | This option for register lang file automatically.
+        |
+        */
+        'translations' => false,
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Package commands
+    |--------------------------------------------------------------------------
+    |
+    | Here you can define which commands will be visible and used in your
+    | application. You can add your own commands to merge section.
+    |
+    */
+    'commands' => ConsoleServiceProvider::defaultCommands()
+        ->merge([
+            // New commands go here
+        ])->toArray(),
+
     /*
     |--------------------------------------------------------------------------
     | Scan Path
@@ -94,44 +226,30 @@ return [
     | directory. This is useful if you host the package in packagist website.
     |
     */
-
     'scan' => [
         'enabled' => false,
-        'paths'   => [
+        'paths' => [
             base_path('vendor/*/*'),
-            base_path('modules/*'),
         ],
     ],
+
     /*
     |--------------------------------------------------------------------------
     | Composer File Template
     |--------------------------------------------------------------------------
     |
-    | Here is the config for composer.json file, generated by this package
+    | Here is the config for the composer.json file, generated by this package
     |
     */
-
     'composer' => [
-        'vendor' => '',
+        'vendor' => env('MODULE_VENDOR', 'nwidart'),
         'author' => [
-            'name'  => '',
-            'email' => '',
+            'name' => env('MODULE_AUTHOR_NAME', 'Nicolas Widart'),
+            'email' => env('MODULE_AUTHOR_EMAIL', 'n.widart@gmail.com'),
         ],
+        'composer-output' => false,
     ],
-    /*
-    |--------------------------------------------------------------------------
-    | Caching
-    |--------------------------------------------------------------------------
-    |
-    | Here is the config for setting up caching feature.
-    |
-    */
-    'cache' => [
-        'enabled'  => true,
-        'driver'   => env('CACHE_DRIVER', 'file'),
-        'key'      => 'phpvms-modules',
-        'lifetime' => 60 * 60 * 6, // 6 hours
-    ],
+
     /*
     |--------------------------------------------------------------------------
     | Choose what laravel-modules will register as custom namespaces.
@@ -141,21 +259,31 @@ return [
     */
     'register' => [
         'translations' => true,
+        /**
+         * load files on boot or register method
+         */
+        'files' => 'register',
     ],
 
-    'activator'  => 'database',
+    /*
+    |--------------------------------------------------------------------------
+    | Activators
+    |--------------------------------------------------------------------------
+    |
+    | You can define new types of activators here, file, database, etc. The only
+    | required parameter is 'class'.
+    | The file activator will store the activation status in storage/installed_modules
+    */
     'activators' => [
         'file' => [
-            'class'          => FileActivator::class,
-            'statuses-file'  => config_path('modules_statuses.json'),
-            'cache-key'      => 'activator.installed',
-            'cache-lifetime' => 60 * 60 * 24 * 7, // 1 week
+            'class' => FileActivator::class,
+            'statuses-file' => base_path('modules_statuses.json'),
         ],
         'database' => [
             'class'          => DatabaseActivator::class,
             'statuses-file'  => config_path('modules_statuses.json'),
-            'cache-key'      => 'activator.installed',
-            'cache-lifetime' => 60 * 60 * 24 * 7, // 1 week
         ],
     ],
+
+    'activator' => 'database',
 ];
