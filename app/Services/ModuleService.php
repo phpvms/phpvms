@@ -287,6 +287,10 @@ class ModuleService extends Service
 
             try {
                 File::deleteDirectory($moduleDir);
+
+                if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+                    unlink(base_path('bootstrap/cache/modules.php'));
+                }
             } catch (Exception $e) {
                 Log::info('Folder Deleted Manually for Module : '.$module->name);
 
