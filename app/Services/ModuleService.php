@@ -264,6 +264,10 @@ class ModuleService extends Service
             Artisan::call('module:migrate', ['module' => $module->name, '--force' => true]);
         }
 
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
+        }
+
         return true;
     }
 
