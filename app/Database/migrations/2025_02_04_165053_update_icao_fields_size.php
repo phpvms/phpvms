@@ -4,13 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {
         Schema::table('aircraft', function (Blueprint $table) {
-           $table->string('airport_id', 8)->nullable()->change();
-           $table->string('hub_id', 8)->nullable()->change();
+            $table->string('airport_id', 8)->nullable()->change();
+            $table->string('hub_id', 8)->nullable()->change();
         });
 
         Schema::table('airports', function (Blueprint $table) {
