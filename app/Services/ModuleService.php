@@ -254,7 +254,7 @@ class ModuleService extends Service
         $module = Module::find($id);
 
         $cache = config('cache.keys.MODULES');
-        Cache::forget($cache['key'].'.'.$module->name);
+        Cache::forget($cache['key']);
 
         $module->update([
             'enabled' => $status,
