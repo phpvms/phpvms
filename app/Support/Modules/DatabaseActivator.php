@@ -132,6 +132,10 @@ class DatabaseActivator implements ActivatorInterface
             });
         }
 
+        // Delete the cache file here as well (just in case)
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
+        }
     }
 
     /**
