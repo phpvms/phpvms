@@ -16,22 +16,16 @@ class DatabaseActivator implements ActivatorInterface
 {
     /**
      * Laravel Filesystem instance
-     *
-     * @var Filesystem
      */
     private Filesystem $files;
 
     /**
      * Laravel config instance
-     *
-     * @var Config
      */
     private Config $config;
 
     /**
      * Array of modules activation statuses
-     *
-     * @var array
      */
     private array $modulesStatuses;
 
@@ -99,7 +93,7 @@ class DatabaseActivator implements ActivatorInterface
     {
         $name = $module instanceof Module ? $module->getName() : $module;
 
-        if (! isset($this->modulesStatuses[$name])) {
+        if (!isset($this->modulesStatuses[$name])) {
             return $status === false;
         }
 
@@ -147,7 +141,7 @@ class DatabaseActivator implements ActivatorInterface
     {
         $name = $module->getName();
 
-        if (! isset($this->modulesStatuses[$module->getName()])) {
+        if (!isset($this->modulesStatuses[$module->getName()])) {
             return;
         }
         unset($this->modulesStatuses[$module->getName()]);
