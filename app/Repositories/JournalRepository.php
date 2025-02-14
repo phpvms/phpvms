@@ -57,8 +57,8 @@ class JournalRepository extends Repository implements CacheableInterface
             'journal_id' => $journal->id,
         ];
 
-        $credits = Money::create($this->findWhere($where)->sum('credit') ?: 0);
-        $debits = Money::create($this->findWhere($where)->sum('debit') ?: 0);
+        $credits = Money::create($this->where($where)->sum('credit') ?: 0);
+        $debits = Money::create($this->where($where)->sum('debit') ?: 0);
         $balance = $credits->subtract($debits);
 
         $journal->balance = $balance->getAmount();
