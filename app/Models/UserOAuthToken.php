@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -40,6 +41,13 @@ class UserOAuthToken extends Model
         'refresh_token' => 'required|string',
         'expires_at'    => 'nullable|datetime',
     ];
+
+    public function isExpired(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => now()->isAfter($this->expires_at),
+        );
+    }
 
     public function user(): BelongsTo
     {

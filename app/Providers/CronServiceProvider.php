@@ -50,7 +50,7 @@ class CronServiceProvider extends ServiceProvider
             RefreshOAuthTokens::class,
         ],
         CronWeekly::class => [
-            UpdateSimbriefData::class
+            UpdateSimbriefData::class,
         ],
         CronMonthly::class => [
             \App\Cron\Monthly\ApplyExpenses::class,
