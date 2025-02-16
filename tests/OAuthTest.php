@@ -269,7 +269,7 @@ final class OAuthTest extends TestCase
                 [
                     'token'         => 'expired_token',
                     'refresh_token' => 'old_refresh_token',
-                    'expires_at'    => now()->addHour(),
+                    'expires_at'    => ($driver === 'ivao') ? now()->subWeek() : now()->addHour(),
                 ]);
 
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
