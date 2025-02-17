@@ -69,6 +69,12 @@ jobs:
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
 
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Compile assets
+        run: npm run build
+
       - name: Get version
         run: .github/scripts/version.sh
 
