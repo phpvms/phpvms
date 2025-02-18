@@ -54,7 +54,6 @@ class ModuleLinksPlugin implements Plugin
                 continue;
             }
 
-
             $panel_name = ucfirst(str_replace('::admin', '', $panel->getId()));
             $items[] = NavigationItem::make($panel_name)
                 ->icon('heroicon-o-puzzle-piece')
@@ -62,8 +61,7 @@ class ModuleLinksPlugin implements Plugin
         }
 
         $old_links = array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains($link['title'], 'Sample'));
-        foreach ($old_links as $link)
-        {
+        foreach ($old_links as $link) {
             $items[] = NavigationItem::make($link['title'])
                 ->url($link['url'])
                 ->icon('heroicon-o-folder');
