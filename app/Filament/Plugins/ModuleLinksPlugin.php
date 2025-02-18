@@ -2,8 +2,11 @@
 
 namespace App\Filament\Plugins;
 
+use App\Services\ModuleService;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 
 class ModuleLinksPlugin implements Plugin
@@ -22,8 +25,6 @@ class ModuleLinksPlugin implements Plugin
     {
         // Render in the topbar (wide screen)
         $panel->renderHook('panels::topbar.start', function () {
-            $group = $this->getGroup();
-
             return view('filament.plugins.module-links-topbar', [
                 'current_panel' => Filament::getCurrentPanel(),
                 'group'         => $this->getGroup(),
@@ -41,5 +42,34 @@ class ModuleLinksPlugin implements Plugin
     public function boot(Panel $panel): void
     {
         //
+    }
+
+    private function getGroup(): NavigationGroup
+    {
+        $items = [];
+
+        $panels = Filament::getPanels();
+        foreach ($panels as $panel) {
+            if ($panel->getId() === 'admin' || $panel->getId() === 'system') {
+                continue;
+            }
+
+
+            $panel_name = ucfirst(str_replace('::admin', '', $panel->getId()));
+            $items[] = NavigationItem::make($panel_name)
+                ->icon('heroicon-o-puzzle-piece')
+                ->url($panel->getPath());
+        }
+
+        $old_links = array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains($link['title'], 'Sample'));
+        foreach ($old_links as $link)
+        {
+            $items[] = NavigationItem::make($link['title'])
+                ->url($link['url'])
+                ->icon('heroicon-o-folder');
+        }
+
+        return NavigationGroup::make('Modules')
+            ->items($items);
     }
 }
