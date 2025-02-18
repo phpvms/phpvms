@@ -2,11 +2,8 @@
 
 namespace App\Filament\Plugins;
 
-use App\Services\ModuleService;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
-use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 
 class ModuleLinksPlugin implements Plugin
