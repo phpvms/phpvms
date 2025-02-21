@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Invite;
+use App\Models\Module;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class InvitePolicy
+class ModulePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class InvitePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_invite');
+        return $user->can('view_any_module');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Invite $invite): bool
+    public function view(User $user, Module $module): bool
     {
-        return $user->can('view_invite');
+        return $user->can('view_module');
     }
 
     /**
@@ -31,23 +31,23 @@ class InvitePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_invite');
+        return $user->can('create_module');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Invite $invite): bool
+    public function update(User $user, Module $module): bool
     {
-        return $user->can('update_invite');
+        return $user->can('update_module');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Invite $invite): bool
+    public function delete(User $user, Module $module): bool
     {
-        return $user->can('delete_invite');
+        return $user->can('delete_module');
     }
 
     /**
@@ -55,15 +55,15 @@ class InvitePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_invite');
+        return $user->can('delete_any_module');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Invite $invite): bool
+    public function forceDelete(User $user, Module $module): bool
     {
-        return $user->can('force_delete_invite');
+        return $user->can('force_delete_module');
     }
 
     /**
@@ -71,15 +71,15 @@ class InvitePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_invite');
+        return $user->can('force_delete_any_module');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Invite $invite): bool
+    public function restore(User $user, Module $module): bool
     {
-        return $user->can('restore_invite');
+        return $user->can('restore_module');
     }
 
     /**
@@ -87,15 +87,15 @@ class InvitePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_invite');
+        return $user->can('restore_any_module');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Invite $invite): bool
+    public function replicate(User $user, Module $module): bool
     {
-        return $user->can('replicate_invite');
+        return $user->can('replicate_module');
     }
 
     /**
@@ -103,6 +103,6 @@ class InvitePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_invite');
+        return $user->can('reorder_module');
     }
 }

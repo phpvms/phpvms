@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Expense;
+use App\Models\Typerating;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ExpensePolicy
+class TyperatingPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ExpensePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_expense');
+        return $user->can('view_any_typerating');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Expense $expense): bool
+    public function view(User $user, Typerating $typerating): bool
     {
-        return $user->can('view_expense');
+        return $user->can('view_typerating');
     }
 
     /**
@@ -31,23 +31,23 @@ class ExpensePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_expense');
+        return $user->can('create_typerating');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Expense $expense): bool
+    public function update(User $user, Typerating $typerating): bool
     {
-        return $user->can('update_expense');
+        return $user->can('update_typerating');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Expense $expense): bool
+    public function delete(User $user, Typerating $typerating): bool
     {
-        return $user->can('delete_expense');
+        return $user->can('delete_typerating');
     }
 
     /**
@@ -55,15 +55,15 @@ class ExpensePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_expense');
+        return $user->can('delete_any_typerating');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Expense $expense): bool
+    public function forceDelete(User $user, Typerating $typerating): bool
     {
-        return $user->can('force_delete_expense');
+        return $user->can('force_delete_typerating');
     }
 
     /**
@@ -71,15 +71,15 @@ class ExpensePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_expense');
+        return $user->can('force_delete_any_typerating');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Expense $expense): bool
+    public function restore(User $user, Typerating $typerating): bool
     {
-        return $user->can('restore_expense');
+        return $user->can('restore_typerating');
     }
 
     /**
@@ -87,15 +87,15 @@ class ExpensePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_expense');
+        return $user->can('restore_any_typerating');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Expense $expense): bool
+    public function replicate(User $user, Typerating $typerating): bool
     {
-        return $user->can('replicate_expense');
+        return $user->can('replicate_typerating');
     }
 
     /**
@@ -103,6 +103,6 @@ class ExpensePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_expense');
+        return $user->can('reorder_typerating');
     }
 }

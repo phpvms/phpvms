@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Airport;
+use App\Models\Aircraft;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class AirportPolicy
+class AircraftPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class AirportPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_airport');
+        return $user->can('view_any_aircraft');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Airport $airport): bool
+    public function view(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('view_airport');
+        return $user->can('view_aircraft');
     }
 
     /**
@@ -31,23 +31,23 @@ class AirportPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_airport');
+        return $user->can('create_aircraft');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Airport $airport): bool
+    public function update(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('update_airport');
+        return $user->can('update_aircraft');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Airport $airport): bool
+    public function delete(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('delete_airport');
+        return $user->can('delete_aircraft');
     }
 
     /**
@@ -55,15 +55,15 @@ class AirportPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_airport');
+        return $user->can('delete_any_aircraft');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Airport $airport): bool
+    public function forceDelete(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('force_delete_airport');
+        return $user->can('force_delete_aircraft');
     }
 
     /**
@@ -71,15 +71,15 @@ class AirportPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_airport');
+        return $user->can('force_delete_any_aircraft');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Airport $airport): bool
+    public function restore(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('restore_airport');
+        return $user->can('restore_aircraft');
     }
 
     /**
@@ -87,15 +87,15 @@ class AirportPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_airport');
+        return $user->can('restore_any_aircraft');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Airport $airport): bool
+    public function replicate(User $user, Aircraft $aircraft): bool
     {
-        return $user->can('replicate_airport');
+        return $user->can('replicate_aircraft');
     }
 
     /**
@@ -103,6 +103,6 @@ class AirportPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_airport');
+        return $user->can('reorder_aircraft');
     }
 }

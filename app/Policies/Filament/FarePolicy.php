@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Module;
+use App\Models\Fare;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ModulePolicy
+class FarePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ModulePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_module');
+        return $user->can('view_any_fare');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Module $module): bool
+    public function view(User $user, Fare $fare): bool
     {
-        return $user->can('view_module');
+        return $user->can('view_fare');
     }
 
     /**
@@ -31,23 +31,23 @@ class ModulePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_module');
+        return $user->can('create_fare');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Module $module): bool
+    public function update(User $user, Fare $fare): bool
     {
-        return $user->can('update_module');
+        return $user->can('update_fare');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Module $module): bool
+    public function delete(User $user, Fare $fare): bool
     {
-        return $user->can('delete_module');
+        return $user->can('delete_fare');
     }
 
     /**
@@ -55,15 +55,15 @@ class ModulePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_module');
+        return $user->can('delete_any_fare');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Module $module): bool
+    public function forceDelete(User $user, Fare $fare): bool
     {
-        return $user->can('force_delete_module');
+        return $user->can('force_delete_fare');
     }
 
     /**
@@ -71,15 +71,15 @@ class ModulePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_module');
+        return $user->can('force_delete_any_fare');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Module $module): bool
+    public function restore(User $user, Fare $fare): bool
     {
-        return $user->can('restore_module');
+        return $user->can('restore_fare');
     }
 
     /**
@@ -87,15 +87,15 @@ class ModulePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_module');
+        return $user->can('restore_any_fare');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Module $module): bool
+    public function replicate(User $user, Fare $fare): bool
     {
-        return $user->can('replicate_module');
+        return $user->can('replicate_fare');
     }
 
     /**
@@ -103,6 +103,6 @@ class ModulePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_module');
+        return $user->can('reorder_fare');
     }
 }
