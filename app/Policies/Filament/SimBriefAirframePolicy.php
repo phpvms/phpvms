@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Fare;
+use App\Models\SimBriefAirframe;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class FarePolicy
+class SimBriefAirframePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class FarePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_fare');
+        return $user->can('view_any_airframe');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Fare $fare): bool
+    public function view(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('view_fare');
+        return $user->can('view_airframe');
     }
 
     /**
@@ -31,23 +31,23 @@ class FarePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_fare');
+        return $user->can('create_airframe');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Fare $fare): bool
+    public function update(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('update_fare');
+        return $user->can('update_airframe');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Fare $fare): bool
+    public function delete(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('delete_fare');
+        return $user->can('delete_airframe');
     }
 
     /**
@@ -55,15 +55,15 @@ class FarePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_fare');
+        return $user->can('delete_any_airframe');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Fare $fare): bool
+    public function forceDelete(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('force_delete_fare');
+        return $user->can('force_delete_airframe');
     }
 
     /**
@@ -71,15 +71,15 @@ class FarePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_fare');
+        return $user->can('force_delete_any_airframe');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Fare $fare): bool
+    public function restore(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('restore_fare');
+        return $user->can('restore_airframe');
     }
 
     /**
@@ -87,15 +87,15 @@ class FarePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_fare');
+        return $user->can('restore_any_airframe');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Fare $fare): bool
+    public function replicate(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('replicate_fare');
+        return $user->can('replicate_airframe');
     }
 
     /**
@@ -103,6 +103,6 @@ class FarePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_fare');
+        return $user->can('reorder_airframe');
     }
 }

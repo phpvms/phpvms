@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Rank;
+use App\Models\Module;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class RankPolicy
+class ModulePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class RankPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_rank');
+        return $user->can('view_any_module');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Rank $rank): bool
+    public function view(User $user, Module $module): bool
     {
-        return $user->can('view_rank');
+        return $user->can('view_module');
     }
 
     /**
@@ -31,23 +31,23 @@ class RankPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_rank');
+        return $user->can('create_module');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Rank $rank): bool
+    public function update(User $user, Module $module): bool
     {
-        return $user->can('update_rank');
+        return $user->can('update_module');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Rank $rank): bool
+    public function delete(User $user, Module $module): bool
     {
-        return $user->can('delete_rank');
+        return $user->can('delete_module');
     }
 
     /**
@@ -55,15 +55,15 @@ class RankPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_rank');
+        return $user->can('delete_any_module');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Rank $rank): bool
+    public function forceDelete(User $user, Module $module): bool
     {
-        return $user->can('force_delete_rank');
+        return $user->can('force_delete_module');
     }
 
     /**
@@ -71,15 +71,15 @@ class RankPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_rank');
+        return $user->can('force_delete_any_module');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Rank $rank): bool
+    public function restore(User $user, Module $module): bool
     {
-        return $user->can('restore_rank');
+        return $user->can('restore_module');
     }
 
     /**
@@ -87,15 +87,15 @@ class RankPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_rank');
+        return $user->can('restore_any_module');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Rank $rank): bool
+    public function replicate(User $user, Module $module): bool
     {
-        return $user->can('replicate_rank');
+        return $user->can('replicate_module');
     }
 
     /**
@@ -103,6 +103,6 @@ class RankPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_rank');
+        return $user->can('reorder_module');
     }
 }

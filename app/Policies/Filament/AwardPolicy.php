@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
+use App\Models\Award;
 use App\Models\User;
-use App\Models\UserField;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class UserFieldPolicy
+class AwardPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class UserFieldPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_user::field');
+        return $user->can('view_any_award');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, UserField $userField): bool
+    public function view(User $user, Award $award): bool
     {
-        return $user->can('view_user::field');
+        return $user->can('view_award');
     }
 
     /**
@@ -31,23 +31,23 @@ class UserFieldPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_user::field');
+        return $user->can('create_award');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, UserField $userField): bool
+    public function update(User $user, Award $award): bool
     {
-        return $user->can('update_user::field');
+        return $user->can('update_award');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, UserField $userField): bool
+    public function delete(User $user, Award $award): bool
     {
-        return $user->can('delete_user::field');
+        return $user->can('delete_award');
     }
 
     /**
@@ -55,15 +55,15 @@ class UserFieldPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_user::field');
+        return $user->can('delete_any_award');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, UserField $userField): bool
+    public function forceDelete(User $user, Award $award): bool
     {
-        return $user->can('force_delete_user::field');
+        return $user->can('force_delete_award');
     }
 
     /**
@@ -71,15 +71,15 @@ class UserFieldPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_user::field');
+        return $user->can('force_delete_any_award');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, UserField $userField): bool
+    public function restore(User $user, Award $award): bool
     {
-        return $user->can('restore_user::field');
+        return $user->can('restore_award');
     }
 
     /**
@@ -87,15 +87,15 @@ class UserFieldPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_user::field');
+        return $user->can('restore_any_award');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, UserField $userField): bool
+    public function replicate(User $user, Award $award): bool
     {
-        return $user->can('replicate_user::field');
+        return $user->can('replicate_award');
     }
 
     /**
@@ -103,6 +103,6 @@ class UserFieldPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_user::field');
+        return $user->can('reorder_award');
     }
 }

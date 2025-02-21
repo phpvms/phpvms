@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Airline;
 use App\Models\User;
+use App\Models\UserField;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class AirlinePolicy
+class UserFieldPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class AirlinePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_airline');
+        return $user->can('view_any_user::field');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Airline $airline): bool
+    public function view(User $user, UserField $userField): bool
     {
-        return $user->can('view_airline');
+        return $user->can('view_user::field');
     }
 
     /**
@@ -31,23 +31,23 @@ class AirlinePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_airline');
+        return $user->can('create_user::field');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Airline $airline): bool
+    public function update(User $user, UserField $userField): bool
     {
-        return $user->can('update_airline');
+        return $user->can('update_user::field');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Airline $airline): bool
+    public function delete(User $user, UserField $userField): bool
     {
-        return $user->can('delete_airline');
+        return $user->can('delete_user::field');
     }
 
     /**
@@ -55,15 +55,15 @@ class AirlinePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_airline');
+        return $user->can('delete_any_user::field');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Airline $airline): bool
+    public function forceDelete(User $user, UserField $userField): bool
     {
-        return $user->can('force_delete_airline');
+        return $user->can('force_delete_user::field');
     }
 
     /**
@@ -71,15 +71,15 @@ class AirlinePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_airline');
+        return $user->can('force_delete_any_user::field');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Airline $airline): bool
+    public function restore(User $user, UserField $userField): bool
     {
-        return $user->can('restore_airline');
+        return $user->can('restore_user::field');
     }
 
     /**
@@ -87,15 +87,15 @@ class AirlinePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_airline');
+        return $user->can('restore_any_user::field');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Airline $airline): bool
+    public function replicate(User $user, UserField $userField): bool
     {
-        return $user->can('replicate_airline');
+        return $user->can('replicate_user::field');
     }
 
     /**
@@ -103,6 +103,6 @@ class AirlinePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_airline');
+        return $user->can('reorder_user::field');
     }
 }
