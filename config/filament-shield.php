@@ -57,6 +57,8 @@ return [
 
     'generator' => [
         'option' => 'policies_and_permissions',
+        'policy_namespace' => 'Policies\\Filament',
+        'policy_directory' => 'Policies\\Filament',
     ],
 
     'exclude' => [

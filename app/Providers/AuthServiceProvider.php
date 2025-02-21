@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
+use Filament\FilamentManager;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +47,11 @@ class AuthServiceProvider extends ServiceProvider
                 // try to resolve policies under Filament
                 $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass) . 'Policy';
 
-                return class_exists($targetPolicy) ? $targetPolicy : null;
+                // Return the policy if there is no, otherwise fallback on the default
+                if (class_exists($targetPolicy))
+                {
+                    return $targetPolicy;
+                }
             }
             // follow the same namespace as the model
             $targetPolicy = str_replace('Models', 'Policies', $modelClass) . 'Policy';
