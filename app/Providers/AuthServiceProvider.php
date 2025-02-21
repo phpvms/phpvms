@@ -45,16 +45,16 @@ class AuthServiceProvider extends ServiceProvider
         Gate::guessPolicyNamesUsing(function (string $modelClass) {
             if (filament() instanceof FilamentManager && filament()->isServing()) {
                 // try to resolve policies under Filament
-                $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass) . 'Policy';
+                $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass).'Policy';
 
                 // Return the policy if there is no, otherwise fallback on the default
-                if (class_exists($targetPolicy))
-                {
+                if (class_exists($targetPolicy)) {
                     return $targetPolicy;
                 }
             }
             // follow the same namespace as the model
-            $targetPolicy = str_replace('Models', 'Policies', $modelClass) . 'Policy';
+            $targetPolicy = str_replace('Models', 'Policies', $modelClass).'Policy';
+
             return class_exists($targetPolicy) ? $targetPolicy : null;
         });
     }
