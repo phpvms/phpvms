@@ -105,7 +105,7 @@ class Aircraft extends Model
     public static $rules = [
         'name'          => 'required',
         'registration'  => 'required',
-        'fin'           => 'nullable',
+        'fin'           => 'nullable|unique:aircraft',
         'selcal'        => 'nullable',
         'status'        => 'required',
         'subfleet_id'   => 'required',
