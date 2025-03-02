@@ -51,7 +51,7 @@ class AwardResource extends Resource
                         Forms\Components\TextInput::make('image_url')
                             ->label('Image URL')
                             ->url()
-                            ->requiredWithout('file'),
+                            ->requiredWithout('image_file'),
 
                         Forms\Components\FileUpload::make('image_file')
                             ->label('Image')
