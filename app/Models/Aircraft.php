@@ -167,7 +167,11 @@ class Aircraft extends Model
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if (array_key_exists('landing_time', $attrs) && filled($attrs['landing_time'])) {
+                if (!array_key_exists('landing_time', $attrs)) {
+                    return null;
+                }
+
+                if (filled($attrs['landing_time'])) {
                     return new Carbon($attrs['landing_time']);
                 }
 
