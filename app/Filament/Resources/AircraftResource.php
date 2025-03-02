@@ -39,7 +39,7 @@ class AircraftResource extends Resource
                         Forms\Components\Select::make('subfleet_id')
                             ->label('Subfleet')
                             ->relationship('subfleet')
-                            ->getOptionLabelFromRecordUsing(fn (Subfleet $record) => $record->airline->name .' - '.$record->name)
+                            ->getOptionLabelFromRecordUsing(fn (Subfleet $record) => $record->airline->name.' - '.$record->name)
                             ->preload()
                             ->searchable()
                             ->required()
