@@ -80,7 +80,7 @@ class Award extends Model
             get: function ($_, $attrs) {
                 if (array_key_exists('image_url', $attrs)) {
                     if (str_starts_with($attrs['image_url'], 'awards/')) {
-                        return Storage::disk('public')->url($attrs['image_url']);
+                        return Storage::disk(config('filesystems.public_files'))->url($attrs['image_url']);
                     }
 
                     return $attrs['image_url'];
