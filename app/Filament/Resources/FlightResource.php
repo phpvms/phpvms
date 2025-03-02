@@ -223,12 +223,14 @@ class FlightResource extends Resource
                     ->preload(),
 
                 Tables\Filters\SelectFilter::make('dpt_airport')
+                    ->label('Departure Airport')
                     ->relationship('dpt_airport', 'icao')
                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                     ->searchable()
                     ->preload(),
 
                 Tables\Filters\SelectFilter::make('arr_airport')
+                    ->label('Arrival Airport')
                     ->relationship('arr_airport', 'icao')
                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                     ->searchable()
