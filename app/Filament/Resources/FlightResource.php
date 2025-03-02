@@ -182,7 +182,7 @@ class FlightResource extends Resource
                 TextColumn::make('ident')
                     ->label('Flight #')
                     ->searchable(['flight_number'])
-                    ->sortable(),
+                    ->sortable(['airline_id', 'flight_number']),
 
                 TextColumn::make('dpt_airport_id')
                     ->label('Dep')
