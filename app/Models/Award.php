@@ -74,7 +74,7 @@ class Award extends Model
         }
     }
 
-    public function imageUrl(): Attribute
+    public function image(): Attribute
     {
         return Attribute::make(
             get: function ($_, $attrs) {
