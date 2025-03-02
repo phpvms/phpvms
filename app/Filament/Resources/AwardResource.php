@@ -46,10 +46,18 @@ class AwardResource extends Resource
                             ->required()
                             ->string(),
 
-                        Forms\Components\TextInput::make('image_url')
-                            ->string(),
-
                         Forms\Components\RichEditor::make('description'),
+
+                        Forms\Components\TextInput::make('image_url')
+                            ->label('Image URL')
+                            ->url(),
+
+                        Forms\Components\FileUpload::make('image_file')
+                            ->label('Image')
+                            ->image()
+                            ->imageEditor()
+                            ->disk(config('filesystems.public_files'))
+                            ->directory('awards'),
 
                         Forms\Components\Grid::make('')
                             ->schema([
