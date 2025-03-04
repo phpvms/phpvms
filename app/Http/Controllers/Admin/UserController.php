@@ -21,6 +21,7 @@ use App\Support\Utils;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -219,11 +220,13 @@ class UserController extends Controller
             event(new UserStatsChanged($user, 'rank', $user->rank_id));
         }
 
-        // Delete all of the roles and then re-attach the valid ones
-        if (!empty($request->input('roles'))) {
-            DB::table('role_user')->where('user_id', $id)->delete();
-            foreach ($request->input('roles') as $key => $value) {
-                $user->addRole($value);
+        // Check if the user is an admin. If so, they can modify roles.
+        if (Auth::user()->hasRole('admin')) {
+            DB::table('role_user')->where('user_id', $user->id)->delete();
+            if (!empty($request->input('roles'))) {
+                foreach ($request->input('roles') as $key => $value) {
+                    $user->addRole($value);
+                }
             }
         }
 
