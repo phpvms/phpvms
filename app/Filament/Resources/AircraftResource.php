@@ -10,6 +10,7 @@ use App\Models\Airport;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
 use App\Models\File;
+use App\Models\Subfleet;
 use App\Services\FileService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -35,9 +36,11 @@ class AircraftResource extends Resource
                 Forms\Components\Section::make('subfleet_and_status')
                     ->heading('Subfleet And Status')
                     ->schema([
-                        Forms\Components\Select::make('subfleet')
+                        Forms\Components\Select::make('subfleet_id')
                             ->label('Subfleet')
-                            ->relationship('subfleet', 'name')
+                            ->relationship('subfleet')
+                            ->getOptionLabelFromRecordUsing(fn (Subfleet $record) => $record->airline->name.' - '.$record->name)
+                            ->preload()
                             ->searchable()
                             ->required()
                             ->native(false),
