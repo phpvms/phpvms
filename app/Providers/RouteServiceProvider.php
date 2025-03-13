@@ -226,6 +226,7 @@ class RouteServiceProvider extends ServiceProvider
 
                 // This is the info of the user whose token is in use
                 Route::get('user', 'UserController@index');
+                Route::get('user/stats', 'StatsController@index');
                 Route::get('user/fleet', 'UserController@fleet');
                 Route::get('user/pireps', 'UserController@pireps');
 
