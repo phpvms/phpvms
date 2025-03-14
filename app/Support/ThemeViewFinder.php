@@ -8,7 +8,7 @@ use Illuminate\Support\Arr;
 
 class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
 {
-    protected $themeEngine;
+    public $themeEngine;
 
     public function __construct(Filesystem $files, array $paths, ?array $extensions = null)
     {
