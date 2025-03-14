@@ -1,7 +1,7 @@
 version_source: config
 current:
   label: ''
-  major: 7
+  major: 8
   minor: 0
   patch: 0
   prerelease: false
