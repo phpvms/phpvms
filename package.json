@@ -13,7 +13,7 @@
     "@turf/center": "^6.0.1",
     "acorn": "^7.4.1",
     "animate.css": "~3.6",
-    "axios": "^1.6.8",
+    "axios": "^1.8.2",
     "bootstrap": "~4.3",
     "bootstrap-sass": "^3.4.1",
     "bootstrap3": "npm:bootstrap@~3.4",
