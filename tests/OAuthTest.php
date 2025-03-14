@@ -79,7 +79,7 @@ final class OAuthTest extends TestCase
             $this->assertNotNull($tokens);
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->expires_at->greaterThan(now()->addDay(6)));
+            $this->assertTrue($tokens->expires_at->greaterThan(now()->addDays(6)));
         }
     }
 
