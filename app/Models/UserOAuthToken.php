@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string         provider
  * @property string         token
  * @property string         refresh_token
- * @property \Carbon\Carbon last_refreshed_at
+ * @property \Carbon\Carbon expires_at
  */
 class UserOAuthToken extends Model
 {
@@ -22,16 +23,23 @@ class UserOAuthToken extends Model
         'provider',
         'token',
         'refresh_token',
-        'last_refreshed_at',
+        'expires_at',
     ];
 
     public static $rules = [
-        'user_id'           => 'required|integer',
-        'provider'          => 'required|string',
-        'token'             => 'required|string',
-        'refresh_token'     => 'required|string',
-        'last_refreshed_at' => 'nullable|datetime',
+        'user_id'       => 'required|integer',
+        'provider'      => 'required|string',
+        'token'         => 'required|string',
+        'refresh_token' => 'required|string',
+        'expires_at'    => 'nullable|datetime',
     ];
+
+    public function isExpired(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => now()->isAfter($this->expires_at),
+        );
+    }
 
     public function user(): BelongsTo
     {
@@ -45,7 +53,7 @@ class UserOAuthToken extends Model
             'provider'          => 'string',
             'token'             => 'string',
             'refresh_token'     => 'string',
-            'last_refreshed_at' => 'datetime',
+            'expires_at'        => 'datetime',
         ];
     }
 }

@@ -92,6 +92,10 @@
 
       <li><a href="{{ \App\Filament\Resources\ActivityLogResource::getUrl() }}"><i class="pe-7s-news-paper"></i>activities</a></li>
 
+      @can('view_logs')
+      <li><a href="{{ url('/admin/log-viewer') }}"><i class="pe-7s-note2"></i>logs</a></li>
+      @endcan
+
       @can('page_Settings')
       <li><a href="{{ \App\Filament\Pages\Settings::getUrl() }}"><i class="pe-7s-config"></i>settings</a></li>
       @endcan
