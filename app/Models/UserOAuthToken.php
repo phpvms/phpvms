@@ -49,11 +49,11 @@ class UserOAuthToken extends Model
     protected function casts(): array
     {
         return [
-            'user_id'           => 'integer',
-            'provider'          => 'string',
-            'token'             => 'string',
-            'refresh_token'     => 'string',
-            'expires_at'        => 'datetime',
+            'user_id'       => 'integer',
+            'provider'      => 'string',
+            'token'         => 'string',
+            'refresh_token' => 'string',
+            'expires_at'    => 'datetime',
         ];
     }
 }
