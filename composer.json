@@ -58,7 +58,7 @@
         "league/geotools": "~1.2.0",
         "league/iso3166": "~4.2.0",
         "markrogoyski/math-php": "~2.5.0",
-        "myclabs/deep-copy": "~1.10.0",
+        "myclabs/deep-copy": "^1.12.0",
         "nabeel/vacentral": "~2.1.0",
         "nwidart/laravel-modules": "~11.0.0",
         "php-units-of-measure/php-units-of-measure": "~2.1.0",
@@ -106,12 +106,13 @@
         "friendsofphp/php-cs-fixer": "^3.56.0",
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v8.1.0",
-        "phpunit/phpunit": "^10.5",
+        "phpunit/phpunit": "^11.5",
         "laravel/sail": "^1.39",
         "laravel/pint": "^1.19",
         "kitloong/laravel-migrations-generator": "^7.0",
         "rector/rector": "^2.0",
-        "driftingly/rector-laravel": "^2.0"
+        "driftingly/rector-laravel": "^2.0",
+        "laravel/pail": "^1.2"
     },
     "autoload": {
         "classmap": [
@@ -159,7 +160,11 @@
             ".hooks/setup-git-hooks.sh"
         ],
         "pint": "pint --dirty",
-        "test": "phpunit"
+        "test": "phpunit",
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ]
     },
     "config": {
         "bin-dir": "vendor/bin/",
