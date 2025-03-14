@@ -100,7 +100,7 @@ jobs:
         composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh ${{ env.NBGV_SemVer2 }}
+        .github/scripts/version.sh
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 

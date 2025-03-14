@@ -5,6 +5,7 @@ namespace Tests;
 use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Models\UserOAuthToken;
+use App\Services\OAuthService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Laravel\Socialite\Facades\Socialite;
@@ -44,10 +45,12 @@ final class OAuthTest extends TestCase
 
         $abstractUser->token = 'token';
         $abstractUser->refreshToken = 'refresh_token';
+        $abstractUser->expiresIn = 3600 * 24 * 7;
 
         return \Mockery::mock('Laravel\Socialite\Contracts\Provider')
             ->allows([
-                'user' => $abstractUser,
+                'refreshToken' => $abstractUser,
+                'user'         => $abstractUser,
             ]);
     }
 
@@ -76,7 +79,7 @@ final class OAuthTest extends TestCase
             $this->assertNotNull($tokens);
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
+            $this->assertTrue($tokens->expires_at->greaterThan(now()->addDays(6)));
         }
     }
 
@@ -105,7 +108,7 @@ final class OAuthTest extends TestCase
             $this->assertNotNull($tokens);
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
+            $this->assertTrue($tokens->expires_at->greaterThan(now()->addDays(6)));
 
             Auth::logout();
         }
@@ -127,11 +130,10 @@ final class OAuthTest extends TestCase
             ]);
 
             UserOAuthToken::create([
-                'user_id'           => $user->id,
-                'provider'          => $driver,
-                'token'             => 'token',
-                'refresh_token'     => 'refresh_token',
-                'last_refreshed_at' => now(),
+                'user_id'       => $user->id,
+                'provider'      => $driver,
+                'token'         => 'token',
+                'refresh_token' => 'refresh_token',
             ]);
 
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
@@ -148,7 +150,6 @@ final class OAuthTest extends TestCase
             $this->assertNotNull($tokens);
             $this->assertEquals('token', $tokens->token);
             $this->assertEquals('refresh_token', $tokens->refresh_token);
-            $this->assertTrue($tokens->last_refreshed_at->diffInSeconds(now()) <= 2);
 
             Auth::logout();
         }
@@ -243,5 +244,45 @@ final class OAuthTest extends TestCase
             ->assertStatus(404);
 
         Config::set('services.discord.enabled', $originalConfigValue);
+    }
+
+    /**
+     * Try to refresh an expired OAuth token
+     */
+    public function test_refresh_expired_oauth_token(): void
+    {
+        $user = User::factory()->create([
+            'name'  => 'OAuth user',
+            'email' => 'oauth.user@phpvms.net',
+        ]);
+
+        foreach ($this->drivers as $driver) {
+            $user->update([
+                $driver.'_id' => 123456789,
+            ]);
+
+            UserOAuthToken::updateOrCreate(
+                [
+                    'user_id'  => $user->id,
+                    'provider' => $driver,
+                ],
+                [
+                    'token'         => 'expired_token',
+                    'refresh_token' => 'old_refresh_token',
+                    'expires_at'    => ($driver === 'ivao') ? now()->subWeek() : now()->addHour(),
+                ]);
+
+            Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());
+
+            app(OAuthService::class)->refreshTokensBeforeTheyExpire();
+
+            $user->refresh();
+            $tokens = $user->oauth_tokens()->where('provider', $driver)->first();
+
+            $this->assertNotNull($tokens);
+            $this->assertEquals('token', $tokens->token);
+            $this->assertEquals('refresh_token', $tokens->refresh_token);
+            $this->assertTrue($tokens->expires_at->greaterThan(now()->addDays(6)));
+        }
     }
 }
