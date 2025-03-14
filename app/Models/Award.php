@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Kyslik\ColumnSortable\Sortable;
 
 /**
@@ -70,6 +72,23 @@ class Award extends Model
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    public function image(): Attribute
+    {
+        return Attribute::make(
+            get: function ($_, $attrs) {
+                if (array_key_exists('image_url', $attrs)) {
+                    if (str_starts_with($attrs['image_url'], 'awards/')) {
+                        return Storage::disk(config('filesystems.public_files'))->url($attrs['image_url']);
+                    }
+
+                    return $attrs['image_url'];
+                }
+
+                return null;
+            }
+        );
     }
 
     public function users(): BelongsToMany

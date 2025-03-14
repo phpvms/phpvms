@@ -182,7 +182,7 @@ class FlightResource extends Resource
                 TextColumn::make('ident')
                     ->label('Flight #')
                     ->searchable(['flight_number'])
-                    ->sortable(),
+                    ->sortable(['airline_id', 'flight_number']),
 
                 TextColumn::make('dpt_airport_id')
                     ->label('Dep')
@@ -216,6 +216,25 @@ class FlightResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+
+                Tables\Filters\SelectFilter::make('airline')
+                    ->relationship('airline', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                Tables\Filters\SelectFilter::make('dpt_airport')
+                    ->label('Departure Airport')
+                    ->relationship('dpt_airport', 'icao')
+                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                    ->searchable()
+                    ->preload(),
+
+                Tables\Filters\SelectFilter::make('arr_airport')
+                    ->label('Arrival Airport')
+                    ->relationship('arr_airport', 'icao')
+                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
