@@ -48,5 +48,7 @@ trait JournalTrait
 
             return $journal;
         }
+
+        return null;
     }
 }

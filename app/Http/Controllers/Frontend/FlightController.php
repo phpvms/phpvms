@@ -89,7 +89,7 @@ class FlightController extends Controller
         }
 
         // Filter flights according to user capabilities (by rank or by type rating etc)
-        $filter_by_user = (setting('pireps.restrict_aircraft_to_rank', true) || setting('pireps.restrict_aircraft_to_typerating', false)) ? true : false;
+        $filter_by_user = setting('pireps.restrict_aircraft_to_rank', true) || setting('pireps.restrict_aircraft_to_typerating', false);
 
         if ($filter_by_user) {
             // Get allowed subfleets for the user
@@ -125,7 +125,7 @@ class FlightController extends Controller
             ->get();
 
         // Build collection with type codes and labels
-        $flight_types = collect('', '');
+        $flight_types = collect('');
         foreach ($usedtypes as $ftype) {
             $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
         }

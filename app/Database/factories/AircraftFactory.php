@@ -13,6 +13,9 @@ use App\Models\Subfleet;
 use App\Support\ICAO;
 use DateTime;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Aircraft>
+ */
 class AircraftFactory extends Factory
 {
     /**
@@ -35,16 +38,16 @@ class AircraftFactory extends Factory
             'id'           => null,
             'subfleet_id'  => fn () => Subfleet::factory()->create()->id,
             'airport_id'   => fn () => Airport::factory()->create()->id,
-            'iata'         => $this->faker->unique()->text(5),
-            'icao'         => $this->faker->unique()->text(5),
-            'name'         => $this->faker->text(50),
-            'registration' => $this->faker->unique()->text(10),
+            'iata'         => fake()->unique()->text(5),
+            'icao'         => fake()->unique()->text(5),
+            'name'         => fake()->text(50),
+            'registration' => fake()->unique()->text(10),
             'hex_code'     => ICAO::createHexCode(),
-            'mtow'         => $this->faker->randomFloat(2, 0, 50000),
-            'zfw'          => $this->faker->randomFloat(2, 0, 50000),
+            'mtow'         => fake()->randomFloat(2, 0, 50000),
+            'zfw'          => fake()->randomFloat(2, 0, 50000),
             'status'       => AircraftStatus::ACTIVE,
             'state'        => AircraftState::PARKED,
-            'created_at'   => $this->faker->dateTimeBetween('-1 week')->format(DateTime::ATOM),
+            'created_at'   => fake()->dateTimeBetween('-1 week')->format(DateTime::ATOM),
             'updated_at'   => fn (array $pirep) => $pirep['created_at'],
         ];
     }

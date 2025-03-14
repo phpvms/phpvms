@@ -125,11 +125,7 @@ class PirepController extends Controller
 
         foreach ($pirep->aircraft->subfleet->fares as $fare) {
             $field_name = 'fare_'.$fare->id;
-            if (!$request->filled($field_name)) {
-                $count = 0;
-            } else {
-                $count = $request->input($field_name);
-            }
+            $count = $request->filled($field_name) ? $request->input($field_name) : 0;
 
             $fares[] = new PirepFare([
                 'fare_id' => $fare->id,
@@ -471,7 +467,7 @@ class PirepController extends Controller
         // set the custom fields
         foreach ($pirep->fields as $field) {
             if ($field->slug === null) {
-                $field->slug = str_slug($field->name);
+                $field->slug = \Illuminate\Support\Str::slug($field->name);
             }
 
             $field_name = 'field_'.$field->slug;

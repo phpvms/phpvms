@@ -33,7 +33,7 @@ class FareService extends Service
      */
     public function saveToPirep(Pirep $pirep, array $fares)
     {
-        if (empty($fares)) {
+        if ($fares === []) {
             return;
         }
 
@@ -186,11 +186,7 @@ class FareService extends Service
      */
     public function getAllFares($flight, $subfleet)
     {
-        if (!$flight) {
-            $flight_fares = collect();
-        } else {
-            $flight_fares = $flight->fares;
-        }
+        $flight_fares = $flight ? $flight->fares : collect();
 
         if (empty($subfleet)) {
             throw new InvalidArgumentException('Subfleet argument missing');
@@ -274,7 +270,7 @@ class FareService extends Service
         $flight->fares()->syncWithoutDetaching([$fare->id]);
 
         // modify any pivot values?
-        if (count($override) > 0) {
+        if ($override !== []) {
             $flight->fares()->updateExistingPivot($fare->id, $override);
         }
 
@@ -309,7 +305,7 @@ class FareService extends Service
         $subfleet->fares()->syncWithoutDetaching([$fare->id]);
 
         // modify any pivot values?
-        if (count($override) > 0) {
+        if ($override !== []) {
             $subfleet->fares()->updateExistingPivot($fare->id, $override);
         }
 

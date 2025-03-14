@@ -41,7 +41,7 @@
         "symfony/yaml": "^7.2",
         "psr/container": "1.1.1",
         "composer/composer": "^2.7.7",
-        "composer/installers": "~1.12.0",
+        "composer/installers": "^2.3.0",
         "laravel/framework": "^v11.38",
         "arrilot/laravel-widgets": "~3.13.0",
         "guzzlehttp/guzzle": "^7.9.0",
@@ -73,7 +73,7 @@
         "elcobvg/laravel-opcache": "^0.4.1",
         "fakerphp/faker": "^v1.19.0",
         "jpkleemans/attribute-events": "^1.4.0",
-        "akaunting/laravel-money": "^5.2.2",
+        "akaunting/laravel-money": "^6.0",
         "staudenmeir/belongs-to-through": "^v2.16.0",
         "staudenmeir/eloquent-has-many-deep": "1.20.0",
         "spatie/laravel-ignition": "^2.9",
@@ -109,7 +109,10 @@
         "phpunit/phpunit": "^11.5",
         "laravel/sail": "^1.39",
         "laravel/pint": "^1.19",
-        "kitloong/laravel-migrations-generator": "^7.0"
+        "kitloong/laravel-migrations-generator": "^7.0",
+        "rector/rector": "^2.0",
+        "driftingly/rector-laravel": "^2.0",
+        "laravel/pail": "^1.2"
     },
     "autoload": {
         "classmap": [
@@ -156,7 +159,11 @@
             "@php artisan filament:upgrade"
         ],
         "pint": "pint --dirty",
-        "test": "phpunit"
+        "test": "phpunit",
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ]
     },
     "config": {
         "bin-dir": "vendor/bin/",

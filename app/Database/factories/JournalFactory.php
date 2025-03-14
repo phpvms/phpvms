@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Journal;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Journal>
+ */
 class JournalFactory extends Factory
 {
     /**

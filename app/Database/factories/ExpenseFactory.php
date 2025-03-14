@@ -8,6 +8,9 @@ use App\Contracts\Factory;
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Expense>
+ */
 class ExpenseFactory extends Factory
 {
     /**
@@ -27,8 +30,8 @@ class ExpenseFactory extends Factory
         return [
             'id'           => null,
             'airline_id'   => null,
-            'name'         => $this->faker->text(20),
-            'amount'       => $this->faker->randomFloat(2, 100, 1000),
+            'name'         => fake()->text(20),
+            'amount'       => fake()->randomFloat(2, 100, 1000),
             'type'         => ExpenseType::FLIGHT,
             'multiplier'   => false,
             'ref_model'    => \App\Models\Expense::class,

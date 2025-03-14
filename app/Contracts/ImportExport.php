@@ -79,7 +79,7 @@ class ImportExport
     protected function throwError($error, ?\Exception $e = null): void
     {
         Log::error($error);
-        if ($e) {
+        if ($e instanceof \Exception) {
             Log::error($e->getMessage());
         }
 
@@ -152,7 +152,7 @@ class ImportExport
                 $children = [];
                 $kvp = explode('&', trim($query_str[1]));
                 foreach ($kvp as $items) {
-                    if (!$items) {
+                    if ($items === '' || $items === '0') {
                         continue;
                     }
 
@@ -191,7 +191,7 @@ class ImportExport
             $children = [];
             $kvp = explode('&', trim($query_str[1]));
             foreach ($kvp as $items) {
-                if (!$items) {
+                if ($items === '' || $items === '0') {
                     continue;
                 }
 
@@ -229,19 +229,11 @@ class ImportExport
             } else {
                 $q = [];
                 foreach ($val as $subkey => $subval) {
-                    if (is_numeric($subkey)) {
-                        $q[] = $subval;
-                    } else {
-                        $q[] = "{$subkey}={$subval}";
-                    }
+                    $q[] = is_numeric($subkey) ? $subval : "{$subkey}={$subval}";
                 }
 
                 $q = implode('&', $q);
-                if (!empty($q)) {
-                    $ret_list[] = "{$key}?{$q}";
-                } else {
-                    $ret_list[] = $key;
-                }
+                $ret_list[] = $q === '' || $q === '0' ? $key : "{$key}?{$q}";
             }
         }
 

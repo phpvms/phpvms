@@ -186,7 +186,7 @@ class PirepService extends Service
      */
     public function create(Pirep $pirep, array $fields = []): Pirep
     {
-        if (empty($fields)) {
+        if ($fields === []) {
             $fields = [];
         }
 
@@ -194,11 +194,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            if ($pirep->submitted_at) {
-                $pirep->block_on_time = $pirep->submitted_at;
-            } else {
-                $pirep->block_on_time = Carbon::now('UTC');
-            }
+            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
         }
 
         // If the depart time isn't set, then try to calculate it by
@@ -254,7 +250,7 @@ class PirepService extends Service
      */
     public function file(Pirep $pirep, array $attrs = [], array $fields = [], array $fares = []): Pirep
     {
-        if (empty($fields)) {
+        if ($fields === []) {
             $fields = [];
         }
 
@@ -291,11 +287,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            if ($pirep->submitted_at) {
-                $pirep->block_on_time = $pirep->submitted_at;
-            } else {
-                $pirep->block_on_time = Carbon::now('UTC');
-            }
+            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
         }
 
         // Check that there's a submit time
@@ -305,7 +297,7 @@ class PirepService extends Service
 
         // Copy some fields over from Flight/SimBrief if we have it
         if ($pirep->flight) {
-            $pirep->planned_distance = isset($pirep->simbrief) ? $pirep->simbrief->xml->general->air_distance : $pirep->flight->distance;
+            $pirep->planned_distance = $pirep->simbrief !== null ? $pirep->simbrief->xml->general->air_distance : $pirep->flight->distance;
             $pirep->planned_flight_time = $pirep->flight->flight_time;
         }
 
@@ -523,7 +515,7 @@ class PirepService extends Service
             ->first();
 
         $user = User::find($user_id);
-        $user->last_pirep_id = !empty($last_pirep) ? $last_pirep->id : null;
+        $user->last_pirep_id = empty($last_pirep) ? null : $last_pirep->id;
         $user->save();
     }
 
@@ -534,7 +526,7 @@ class PirepService extends Service
      */
     public function updateCustomFields(string $pirep_id, array $field_values): void
     {
-        if (!$field_values || empty($field_values)) {
+        if (!$field_values || $field_values === []) {
             return;
         }
 
@@ -622,7 +614,7 @@ class PirepService extends Service
         $fuel_on_board = Fuel::make($fuel_remain, config('phpvms.internal_units.fuel'));
 
         // Update the aircraft
-        $pirep->aircraft->flight_time = $pirep->aircraft->flight_time + $pirep->flight_time;
+        $pirep->aircraft->flight_time += $pirep->flight_time;
         $pirep->aircraft->airport_id = $pirep->arr_airport_id;
         $pirep->aircraft->landing_time = $pirep->updated_at;
         $pirep->aircraft->fuel_onboard = $fuel_on_board;

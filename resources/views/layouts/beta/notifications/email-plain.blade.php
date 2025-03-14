@@ -18,5 +18,5 @@ if(!empty($outroLines)) {
   echo implode("\n", $outroLines), "\n\n";
 }
 
-echo __('common.regards).', ', "\n";
+echo __('common.regards').', ', "\n";
 echo config('app.name'), "\n";

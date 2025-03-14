@@ -44,7 +44,7 @@ class FieldValuesRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()->label('Add Pirep Field Value')->hidden($this->getOwnerRecord()->read_only)
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['pirep_id'] = $this->getOwnerRecord()->id;
-                        $data['slug'] = str_slug($data['name']);
+                        $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
 
                         return $data;
                     }),
