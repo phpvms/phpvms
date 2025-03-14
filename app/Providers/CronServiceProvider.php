@@ -12,6 +12,7 @@ use App\Cron\Nightly\NewVersionCheck;
 use App\Cron\Nightly\PilotLeave;
 use App\Cron\Nightly\RecalculateBalances;
 use App\Cron\Nightly\RecalculateStats;
+use App\Cron\Nightly\RefreshOAuthTokens;
 use App\Cron\Nightly\SetActiveFlights;
 use App\Cron\Weekly\UpdateSimbriefData;
 use App\Events\CronFifteenMinute;
@@ -46,9 +47,10 @@ class CronServiceProvider extends ServiceProvider
             SetActiveFlights::class,
             RecalculateStats::class,
             NewVersionCheck::class,
+            RefreshOAuthTokens::class,
         ],
         CronWeekly::class => [
-            UpdateSimbriefData::class
+            UpdateSimbriefData::class,
         ],
         CronMonthly::class => [
             \App\Cron\Monthly\ApplyExpenses::class,
