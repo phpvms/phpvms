@@ -47,11 +47,7 @@ class Utils
             return false;
         }
 
-        if ($obj[0] === '{' || $obj[0] === '[') {
-            return true;
-        }
-
-        return false;
+        return $obj[0] === '{' || $obj[0] === '[';
     }
 
     /**
@@ -118,7 +114,7 @@ class Utils
         $domain = $rules->resolve($parsed_url);
 
         $val = $domain->registrableDomain()->toString();
-        if (!empty($val)) {
+        if ($val !== '' && $val !== '0') {
             return $val;
         }
 

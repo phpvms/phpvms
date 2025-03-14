@@ -22,7 +22,7 @@ class BackupMonitor extends CronCommand
         Artisan::call('backup:monitor');
 
         $output = trim(Artisan::output());
-        if (!empty($output)) {
+        if ($output !== '' && $output !== '0') {
             Log::info($output);
         }
     }

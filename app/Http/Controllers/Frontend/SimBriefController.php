@@ -195,7 +195,7 @@ class SimBriefController
                 continue;
             }
 
-            $acd_maxpax = $acd_maxpax + $fare->capacity;
+            $acd_maxpax += $fare->capacity;
             $count = floor(($fare->capacity * rand($loadmin, $loadmax)) / 100);
             $tpaxfig += $count;
             $pax_load_sheet[] = [

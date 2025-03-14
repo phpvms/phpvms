@@ -17,7 +17,7 @@ class FleetService extends Service
     {
         $subfleet->ranks()->syncWithoutDetaching([$rank->id]);
 
-        if ($overrides) {
+        if ($overrides !== []) {
             $subfleet->ranks()->updateExistingPivot($rank->id, $overrides);
         }
 

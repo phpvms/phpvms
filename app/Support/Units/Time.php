@@ -26,11 +26,7 @@ class Time implements Arrayable
     {
         $minutes = (int) $minutes;
 
-        if (!empty($hours)) {
-            $this->hours = (int) $hours;
-        } else {
-            $this->hours = floor($minutes / 60);
-        }
+        $this->hours = empty($hours) ? floor($minutes / 60) : (int) $hours;
 
         $this->minutes = $minutes % 60;
     }

@@ -24,7 +24,7 @@ class ManageInvites extends ManageRecords
                         $data['usage_limit'] = 1;
                     }
 
-                    $data['token'] = sha1(hrtime(true).str_random());
+                    $data['token'] = sha1(hrtime(true).\Illuminate\Support\Str::random());
 
                     return $data;
                 })

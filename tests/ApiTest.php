@@ -273,11 +273,7 @@ final class ApiTest extends TestCase
         $body = $response->json()['data'];
 
         foreach ($body as $subfleet) {
-            if ($subfleet['id'] === $subfleetA->id) {
-                $size = $subfleetA_size;
-            } else {
-                $size = $subfleetB_size;
-            }
+            $size = $subfleet['id'] === $subfleetA->id ? $subfleetA_size : $subfleetB_size;
 
             $this->assertCount($size, $subfleet['aircraft']);
             foreach ($subfleet['aircraft'] as $aircraft) {

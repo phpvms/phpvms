@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Award;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Award>
+ */
 class AwardFactory extends Factory
 {
     /**
@@ -25,8 +28,8 @@ class AwardFactory extends Factory
     {
         return [
             'id'               => null,
-            'name'             => $this->faker->name,
-            'description'      => $this->faker->text(10),
+            'name'             => fake()->name,
+            'description'      => fake()->text(10),
             'ref_model'        => null,
             'ref_model_params' => null,
         ];

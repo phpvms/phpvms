@@ -35,13 +35,6 @@ class Page extends Model
         'new_window',
     ];
 
-    protected $casts = [
-        'type'       => 'integer',
-        'public'     => 'boolean',
-        'enabled'    => 'boolean',
-        'new_window' => 'boolean',
-    ];
-
     public static $rules = [
         'name' => 'required|unique:pages,name',
         'body' => 'nullable',
@@ -68,5 +61,15 @@ class Page extends Model
                 throw new UnknownPageType($this);
             }
         );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'type'       => 'integer',
+            'public'     => 'boolean',
+            'enabled'    => 'boolean',
+            'new_window' => 'boolean',
+        ];
     }
 }

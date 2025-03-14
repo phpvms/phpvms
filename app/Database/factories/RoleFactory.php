@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Role;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
+ */
 class RoleFactory extends Factory
 {
     /**
@@ -25,7 +28,7 @@ class RoleFactory extends Factory
     {
         return [
             'id'         => null,
-            'name'       => $this->faker->name,
+            'name'       => fake()->name,
             'guard_name' => 'web',
         ];
     }

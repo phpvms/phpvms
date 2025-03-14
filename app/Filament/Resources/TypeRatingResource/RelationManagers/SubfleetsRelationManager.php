@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TypeRatingResource\RelationManagers;
 
+use App\Models\Subfleet;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -31,7 +32,11 @@ class SubfleetsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make(),
+                Tables\Actions\AttachAction::make()
+                    ->icon('heroicon-o-plus-circle')
+                    ->multiple()
+                    ->preloadRecordSelect()
+                    ->recordTitle(fn (Subfleet $record): string => $record->airline->name.' - '.$record->name),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make(),

@@ -19,11 +19,6 @@ class SimBriefAirframe extends Model
         'options',
     ];
 
-    protected $casts = [
-        'icao' => 'string',
-        'name' => 'string',
-    ];
-
     public static array $rules = [
         'icao'        => 'required|string',
         'name'        => 'required|string',
@@ -37,5 +32,13 @@ class SimBriefAirframe extends Model
     public function sbaircraft(): BelongsTo
     {
         return $this->belongsTo(SimBriefAircraft::class, 'icao', 'icao');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'icao' => 'string',
+            'name' => 'string',
+        ];
     }
 }

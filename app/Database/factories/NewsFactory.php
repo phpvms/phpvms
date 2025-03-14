@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\News;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\News>
+ */
 class NewsFactory extends Factory
 {
     /**
@@ -26,8 +29,8 @@ class NewsFactory extends Factory
         return [
             'id'      => null,
             'user_id' => fn () => \App\Models\User::factory()->create()->id,
-            'subject' => $this->faker->text(),
-            'body'    => $this->faker->sentence,
+            'subject' => fake()->text(),
+            'body'    => fake()->sentence,
         ];
     }
 }

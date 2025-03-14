@@ -46,46 +46,47 @@ class SimBrief extends Model
         'updated_at',
     ];
 
-    protected $casts = [
-        'user_id' => 'integer',
-    ];
-
     /** @var \App\Models\SimBriefXML Store a cached version of the XML object */
     private $xml_instance;
 
     /**
      * Return a SimpleXML object of the $ofp_xml
      */
-    public function getXmlAttribute(): ?SimBriefXML
+    protected function xml(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if (empty($this->attributes['ofp_xml'])) {
-            return null;
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+            if (empty($this->attributes['ofp_xml'])) {
+                return null;
+            }
+            if (!$this->xml_instance) {
+                $this->xml_instance = simplexml_load_string(
+                    $this->attributes['ofp_xml'],
+                    SimBriefXML::class
+                );
+            }
 
-        if (!$this->xml_instance) {
-            $this->xml_instance = simplexml_load_string(
-                $this->attributes['ofp_xml'],
-                SimBriefXML::class
-            );
-        }
-
-        return $this->xml_instance;
+            return $this->xml_instance;
+        });
     }
 
     /**
      * Returns a list of images
      */
-    public function getImagesAttribute(): Collection
+    protected function images(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return $this->xml->getImages();
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+            return $this->xml->getImages();
+        });
     }
 
     /**
      * Return all of the flight plans
      */
-    public function getFilesAttribute(): Collection
+    protected function files(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return $this->xml->getFlightPlans();
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+            return $this->xml->getFlightPlans();
+        });
     }
 
     /*
@@ -109,5 +110,12 @@ class SimBrief extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+        ];
     }
 }
