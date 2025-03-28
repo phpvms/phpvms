@@ -25,6 +25,7 @@ use App\Services\AircraftService;
 use App\Services\BidService;
 use App\Services\FlightService;
 use App\Services\PirepService;
+use App\Services\SimBriefService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
@@ -32,7 +33,6 @@ use Illuminate\Support\Facades\Notification;
 final class PIREPTest extends TestCase
 {
     protected PirepService $pirepSvc;
-
     protected SettingRepository $settingsRepo;
 
     protected function setUp(): void
@@ -59,9 +59,10 @@ final class PIREPTest extends TestCase
     protected function getAcarsRoute(Pirep $pirep): array
     {
         $saved_route = [];
-        $route_points = Acars::where(
-            ['pirep_id' => $pirep->id, 'type' => AcarsType::ROUTE]
-        )->orderBy('order', 'asc')->get();
+        $route_points = Acars::where([
+                'pirep_id' => $pirep->id,
+                'type'     => AcarsType::ROUTE,
+            ])->orderBy('order', 'asc')->get();
 
         foreach ($route_points as $point) {
             $saved_route[] = $point->name;
@@ -111,8 +112,7 @@ final class PIREPTest extends TestCase
         $this->assertEquals($pirep->aircraft->airport_id, $pirep->arr_airport_id);
 
         // Also check via API:
-        $this->get('/api/fleet/aircraft/'.$pirep->aircraft_id, [], $user)
-            ->assertJson(['data' => ['airport_id' => $pirep->arr_airport_id]]);
+        $this->get('/api/fleet/aircraft/'.$pirep->aircraft_id, [], $user)->assertJson(['data' => ['airport_id' => $pirep->arr_airport_id]]);
 
         // Make sure a notification was sent out to both the user and the admin(s)
         Notification::assertSentTo([$user], PirepAccepted::class);
@@ -179,30 +179,18 @@ final class PIREPTest extends TestCase
 
         // Check that it has the fuel units
         $this->assertHasKeys($body['block_fuel'], ['lbs', 'kg']);
-        $this->assertEquals(
-            round($pirep->block_fuel->toUnit('lbs')),
-            round($body['block_fuel']['lbs'])
-        );
+        $this->assertEquals(round($pirep->block_fuel->toUnit('lbs')), round($body['block_fuel']['lbs']));
 
         $this->assertHasKeys($body['fuel_used'], ['lbs', 'kg']);
-        $this->assertEquals(
-            round($pirep->fuel_used->toUnit('lbs')),
-            round($body['fuel_used']['lbs'])
-        );
+        $this->assertEquals(round($pirep->fuel_used->toUnit('lbs')), round($body['fuel_used']['lbs']));
 
         // Check that it has the distance units
         $this->assertHasKeys($body['distance'], ['km', 'nmi', 'mi']);
-        $this->assertEquals(
-            round($pirep->distance->toUnit('nmi')),
-            round($body['distance']['nmi'])
-        );
+        $this->assertEquals(round($pirep->distance->toUnit('nmi')), round($body['distance']['nmi']));
 
         // Check the planned_distance field
         $this->assertHasKeys($body['planned_distance'], ['km', 'nmi', 'mi']);
-        $this->assertEquals(
-            round($pirep->planned_distance->toUnit('nmi')),
-            round($body['planned_distance']['nmi'])
-        );
+        $this->assertEquals(round($pirep->planned_distance->toUnit('nmi')), round($body['planned_distance']['nmi']));
 
         // Check conversion on save
         $val = random_int(1000, 9999999);
@@ -222,16 +210,10 @@ final class PIREPTest extends TestCase
 
         // conversion of kg to lbs
         $pirep->block_fuel = new Fuel($val, 'kg');
-        $this->assertEquals(
-            $pirep->block_fuel->internal(2),
-            Fuel::make($val, 'kg')->toUnit('lbs', 2)
-        );
+        $this->assertEquals($pirep->block_fuel->internal(2), Fuel::make($val, 'kg')->toUnit('lbs', 2));
 
         $pirep->fuel_used = new Fuel($val, 'kg');
-        $this->assertEquals(
-            $pirep->fuel_used->internal(2),
-            Fuel::make($val, 'kg')->toUnit('lbs', 2)
-        );
+        $this->assertEquals($pirep->fuel_used->internal(2), Fuel::make($val, 'kg')->toUnit('lbs', 2));
     }
 
     public function test_get_user_pireps(): void
@@ -252,9 +234,7 @@ final class PIREPTest extends TestCase
             'state'   => PirepState::CANCELLED,
         ]);
 
-        $pireps = $this->get('/api/user/pireps')
-            ->assertStatus(200)
-            ->json();
+        $pireps = $this->get('/api/user/pireps')->assertStatus(200)->json();
 
         $pirep_ids = collect($pireps['data'])->pluck('id');
 
@@ -263,9 +243,7 @@ final class PIREPTest extends TestCase
         $this->assertFalse($pirep_ids->contains($pirep_cancelled->id));
 
         // Get only status
-        $pireps = $this->get('/api/user/pireps?state='.PirepState::IN_PROGRESS)
-            ->assertStatus(200)
-            ->json();
+        $pireps = $this->get('/api/user/pireps?state='.PirepState::IN_PROGRESS)->assertStatus(200)->json();
 
         $pirep_ids = collect($pireps['data'])->pluck('id');
         $this->assertTrue($pirep_ids->contains($pirep_in_progress->id));
@@ -354,8 +332,8 @@ final class PIREPTest extends TestCase
         // it should automatically be accepted
         //
         $pirep = Pirep::factory()->create([
-            'airline_id' => 1,
-            'user_id'    => $user->id,
+            'airline_id'  => 1,
+            'user_id'     => $user->id,
             // 120min == 2 hours, currently at 9 hours
             // Rank bumps up at 10 hours
             'flight_time' => 120,
@@ -659,6 +637,62 @@ final class PIREPTest extends TestCase
         $fields = $discordNotif->createFields($pirep);
         $this->assertEquals('1h 0m', $fields['Flight Time']);
         $this->assertEquals('185.2 km', $fields['Distance']);
+    }
+
+    /**
+     * SimBrief Error
+     * https://github.com/phpvms/phpvms/issues/1882
+     */
+    public function test_admin_notification_error(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        /** @var Pirep $pirep */
+        $pirep = Pirep::factory()->create([
+            'user_id'             => $user->id,
+            'distance'            => 100,
+            'planned_distance'    => 200,
+            'flight_time'         => 60,
+            'planned_flight_time' => 90,
+        ]);
+
+        // Set the Simbrief
+        $briefing = $this->loadSimBrief($user, $pirep->aircraft, [
+            [
+                'id'       => 100,
+                'code'     => 'F',
+                'name'     => 'Test Fare',
+                'type'     => 'P',
+                'capacity' => 100,
+                'count'    => 99,
+            ],
+        ]);
+
+        /** @var SimBriefService $sb */
+        $sb = app(SimBriefService::class);
+        $pirep = $sb->attachSimbriefToPirep($pirep, $briefing);
+
+        // force it to load
+        $_ = $pirep->simbrief->xml;
+
+        /** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
+        $adminNotification = new \App\Notifications\Messages\PirepFiled($pirep);
+
+        Notification::send([$user], $adminNotification);
+        Notification::assertSentTo($user, PirepFiled::class, function (
+            PirepFiled $notification,
+            $channels,
+            User $notifiable
+        ) use ($user) {
+
+            $email = $notification->toMail($user);
+            $email->assertHasSubject('New PIREP Submitted');
+            $email->assertSeeInHtml('A new PIREP has been submitted');
+            $email->assertSeeInText('A new PIREP has been submitted');
+
+            return $notifiable->email === $user->email;
+        });
     }
 
     /**
