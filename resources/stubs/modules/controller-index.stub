@@ -6,8 +6,8 @@ use App\Contracts\Controller;
 use Illuminate\Http\Request;
 
 /**
- * Class $CLASS$
- * @package $CLASS_NAMESPACE$
+ * class IndexController
+ * @package $MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers\Frontend
  */
 class IndexController extends Controller
 {

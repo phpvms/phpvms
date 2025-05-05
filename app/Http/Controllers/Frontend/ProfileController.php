@@ -108,11 +108,7 @@ class ProfileController extends Controller
             return redirect(route('frontend.dashboard.index'));
         }
 
-        if ($user->home_airport) {
-            $airports = [$user->home_airport->id => $user->home_airport->description];
-        } else {
-            $airports = ['' => ''];
-        }
+        $airports = $user->home_airport ? [$user->home_airport->id => $user->home_airport->description] : ['' => ''];
 
         $airlines = $this->airlineRepo->selectBoxList();
         $userFields = $this->userRepo->getUserFields($user);

@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Subfleet;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Subfleet>
+ */
 class SubfleetFactory extends Factory
 {
     /**
@@ -26,9 +29,9 @@ class SubfleetFactory extends Factory
         return [
             'id'                         => null,
             'airline_id'                 => fn () => \App\Models\Airline::factory()->create()->id,
-            'name'                       => $this->faker->unique()->text(50),
-            'type'                       => $this->faker->unique()->text(7),
-            'ground_handling_multiplier' => $this->faker->numberBetween(50, 200),
+            'name'                       => fake()->unique()->text(50),
+            'type'                       => fake()->unique()->text(7),
+            'ground_handling_multiplier' => fake()->numberBetween(50, 200),
         ];
     }
 }

@@ -43,7 +43,7 @@ trait TestData
 
         /** @var UserService $userSvc */
         $userSvc = app(UserService::class);
-        $userSvc->addUserToRole($admin, 'admin');
+        $userSvc->addUserToRole($admin, 'super_admin');
 
         return $admin;
     }
@@ -85,7 +85,7 @@ trait TestData
         $attrs = [];
 
         $rank = Rank::factory()->create($attrs);
-        if (!empty($subfleet_ids)) {
+        if ($subfleet_ids !== []) {
             $rank->subfleets()->syncWithoutDetaching($subfleet_ids);
         }
 

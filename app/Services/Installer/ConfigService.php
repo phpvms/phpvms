@@ -137,7 +137,7 @@ class ConfigService extends Service
 
             // cast for any boolean values
             if (is_bool($value)) {
-                $value = $value === true ? 'true' : 'false';
+                $value = $value ? 'true' : 'false';
             }
 
             // surround by quotes if there are any spaces in the value
@@ -205,7 +205,7 @@ class ConfigService extends Service
     protected function configCacheDriver($opts)
     {
         // Set the cache prefix
-        $prefix = substr(str_slug($opts['SITE_NAME'], '_'), 0, 8);
+        $prefix = substr(\Illuminate\Support\Str::slug($opts['SITE_NAME'], '_'), 0, 8);
         $opts['CACHE_PREFIX'] = strtolower(uniqid($prefix.'_'));
 
         // Figure out what cache driver to initially use, depending on

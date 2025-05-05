@@ -136,7 +136,7 @@ class VersionService extends Service
     {
         $date = date('ymd');
         exec($cfg['git']['git-local'], $version);
-        if (empty($version)) {
+        if ($version === []) {
             return $date;
         }
 
@@ -184,11 +184,7 @@ class VersionService extends Service
      */
     public function isNewVersionAvailable($current_version = null)
     {
-        if (!$current_version) {
-            $current_version = $this->getCurrentVersion(false);
-        } else {
-            $current_version = $this->cleanVersionString($current_version);
-        }
+        $current_version = $current_version ? $this->cleanVersionString($current_version) : $this->getCurrentVersion(false);
 
         $latest_version = $this->getLatestVersion();
         Log::info('Current version='.$current_version.'; latest detected='.$latest_version);

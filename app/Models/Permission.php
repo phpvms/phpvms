@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Laratrust\Models\Permission as LaratrustPermission;
+use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
  * @method static firstOrCreate(array $array, array $array1)
  */
-class Permission extends LaratrustPermission {}
+class Permission extends SpatiePermission {}

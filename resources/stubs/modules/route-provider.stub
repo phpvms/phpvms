@@ -41,7 +41,6 @@ class RouteServiceProvider extends ServiceProvider
     public function map(Router $router)
     {
         $this->registerWebRoutes();
-        $this->registerAdminRoutes();
         $this->registerApiRoutes();
     }
 
@@ -59,20 +58,6 @@ class RouteServiceProvider extends ServiceProvider
 
         Route::group($config, function() {
             $this->loadRoutesFrom(__DIR__.'/../Http/Routes/web.php');
-        });
-    }
-
-    protected function registerAdminRoutes(): void
-    {
-        $config = [
-            'as'         => 'admin.$LOWER_NAME$.',
-            'prefix'     => 'admin/$LOWER_NAME$',
-            'namespace'  => $this->namespace.'\Admin',
-            'middleware' => ['web', 'role:admin'],
-        ];
-
-        Route::group($config, function() {
-            $this->loadRoutesFrom(__DIR__.'/../Http/Routes/admin.php');
         });
     }
 

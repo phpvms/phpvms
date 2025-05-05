@@ -135,7 +135,7 @@ class DatabaseActivator implements ActivatorInterface
     public function hasStatus(Module $module, bool $status): bool
     {
         $module = $this->getModuleByName($module->getName());
-        if (!$module) {
+        if (!$module instanceof \App\Models\Module) {
             return false;
         }
 
@@ -148,7 +148,7 @@ class DatabaseActivator implements ActivatorInterface
     public function setActive(Module $module, bool $active): void
     {
         $module = $this->getModuleByName($module->getName());
-        if (!$module) {
+        if (!$module instanceof \App\Models\Module) {
             $module = \App\Models\Module::create([
                 'name' => $module->name,
             ]);
@@ -164,7 +164,7 @@ class DatabaseActivator implements ActivatorInterface
     public function setActiveByName(string $name, bool $status): void
     {
         $module = $this->getModuleByName($name);
-        if (!$module) {
+        if (!$module instanceof \App\Models\Module) {
             return;
         }
 

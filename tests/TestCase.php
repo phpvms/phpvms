@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Contracts\Factory;
 use App\Contracts\Unit;
+use App\Database\seeds\ShieldSeeder;
 use App\Exceptions\Handler;
 use App\Models\User;
 use App\Repositories\SettingRepository;
@@ -68,6 +69,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         Artisan::call('database:create', ['--reset' => true]);
         Artisan::call('migrate', ['--env' => 'testing', '--force' => true]);
+        $this->seed(ShieldSeeder::class);
 
         app(SeederService::class)->syncAllSeeds();
 
@@ -121,7 +123,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     public function headers(?User $user = null, array $headers = []): array
     {
-        if ($user !== null) {
+        if ($user instanceof \App\Models\User) {
             $headers['x-api-key'] = $user->api_key;
 
             return $headers;

@@ -63,7 +63,7 @@ class UserController extends Controller
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
         $user = $this->userSvc->getUser($id, $with_subfleets);
-        if ($user === null) {
+        if (!$user instanceof \App\Models\User) {
             throw new UserNotFound();
         }
 
@@ -83,7 +83,7 @@ class UserController extends Controller
     {
         $user_id = $this->getUserId($request);
         $user = $this->userSvc->getUser($user_id, false);
-        if ($user === null) {
+        if (!$user instanceof \App\Models\User) {
             throw new UserNotFound();
         }
 
@@ -140,7 +140,7 @@ class UserController extends Controller
 
         // Return the current bid
         $bid = $this->bidSvc->getBid($user, $bid_id);
-        if ($bid === null) {
+        if (!$bid instanceof \App\Models\Bid) {
             throw new BidNotFound($bid_id);
         }
 

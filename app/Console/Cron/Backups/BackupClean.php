@@ -22,7 +22,7 @@ class BackupClean extends CronCommand
         Artisan::call('backup:clean');
 
         $output = trim(Artisan::output());
-        if (!empty($output)) {
+        if ($output !== '' && $output !== '0') {
             Log::info($output);
         }
     }

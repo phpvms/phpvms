@@ -27,12 +27,14 @@ class Event extends Model
         'active'      => 'nullable',
     ];
 
-    protected $casts = [
-        'start_date' => 'datetime',
-        'end_date'   => 'datetime',
-    ];
-
     // Attributes may be defined later if necessary
 
     // Relationships may be defined later if necessary
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'datetime',
+            'end_date'   => 'datetime',
+        ];
+    }
 }

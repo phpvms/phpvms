@@ -10,6 +10,9 @@ use App\Models\JournalTransaction;
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\JournalTransaction>
+ */
 class JournalTransactionsFactory extends Factory
 {
     /**
@@ -29,10 +32,10 @@ class JournalTransactionsFactory extends Factory
         return [
             'transaction_group' => Uuid::uuid4()->toString(),
             'journal_id'        => fn () => Journal::factory()->create()->id,
-            'credit'            => $this->faker->numberBetween(100, 10000),
-            'debit'             => $this->faker->numberBetween(100, 10000),
+            'credit'            => fake()->numberBetween(100, 10000),
+            'debit'             => fake()->numberBetween(100, 10000),
             'currency'          => 'USD',
-            'memo'              => $this->faker->sentence(6),
+            'memo'              => fake()->sentence(6),
             'post_date'         => Carbon::now('UTC')->toDateTimeString(),
         ];
     }

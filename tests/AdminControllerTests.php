@@ -17,8 +17,8 @@ final class AdminControllerTests extends TestCase
     private function addAdminUser(): User
     {
         $user = User::factory()->create();
-        $role = Role::where(['name' => 'admin'])->first();
-        $user->addRole($role);
+        $role = Role::where(['name' => 'super_admin'])->first();
+        $user->assignRole($role);
 
         return $user;
     }

@@ -54,13 +54,7 @@ class PirepDiverted extends Notification
     public function createFields(Pirep $pirep): array
     {
         $diversion_apt = $pirep->fields->firstWhere('slug', 'diversion-airport')->value;
-        if (abs($pirep->landing_rate) > 1500) {
-            // Possible crash due to the high landing rate
-            $diversion_reason = 'Crashed Near '.$diversion_apt;
-        } else {
-            // Diverted but not crashed and airport is found with lookup
-            $diversion_reason = 'Operational';
-        }
+        $diversion_reason = abs($pirep->landing_rate) > 1500 ? 'Crashed Near '.$diversion_apt : 'Operational';
 
         $fields = [
             '__Flight #__'  => $pirep->ident,

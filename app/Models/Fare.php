@@ -41,15 +41,6 @@ class Fare extends Model
         'active',
     ];
 
-    protected $casts = [
-        'price'    => 'float',
-        'cost'     => 'float',
-        'capacity' => 'integer',
-        'count'    => 'integer',
-        'type'     => 'integer',
-        'active'   => 'boolean',
-    ];
-
     public static $rules = [
         'code' => 'required',
         'name' => 'required',
@@ -70,5 +61,22 @@ class Fare extends Model
     public function subfleets(): BelongsToMany
     {
         return $this->belongsToMany(Subfleet::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity');
+    }
+
+    public function flights(): BelongsToMany
+    {
+        return $this->belongsToMany(Flight::class, 'flight_fare')->withPivot('price', 'cost', 'capacity');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'price'    => 'float',
+            'cost'     => 'float',
+            'capacity' => 'integer',
+            'count'    => 'integer',
+            'type'     => 'integer',
+            'active'   => 'boolean',
+        ];
     }
 }

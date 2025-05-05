@@ -42,6 +42,7 @@ declare -a remove_files=(
   Procfile
   swagger.yml
   composer.phar
+  version.json
 )
 
 for file in "${remove_files[@]}"; do

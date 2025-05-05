@@ -1,35 +1,11 @@
 <?php
 
-use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration
 {
-    /**
-     * @return ForeignKeyConstraint[]
-     */
-    public function getForeignKeyList(string $tableName): array
-    {
-        $fkList = Schema::getConnection()
-            ->getDoctrineSchemaManager()
-            ->listTableForeignKeys(DB::getTablePrefix().$tableName);
-
-        return array_map(function ($f) {
-            return $f->getName();
-        }, $fkList);
-    }
-
-    /**
-     * Check if the FK exists with and without the table prefix
-     */
-    public function hasForeignKey(string $fkName, array $fks): bool
-    {
-        return in_array(DB::getTablePrefix().$fkName, $fks) || in_array($fkName, $fks);
-    }
-
     /**
      * Run the migrations.
      */
@@ -109,7 +85,7 @@ return new class() extends Migration
                 $table->unsignedInteger('heading')->nullable();
                 $table->decimal('altitude_agl')->nullable()->default(0);
                 $table->decimal('altitude_msl')->nullable()->default(0);
-                $table->double('vs', null, 0)->nullable()->default(0);
+                $table->double('vs')->nullable()->default(0);
                 $table->integer('gs')->nullable();
                 $table->integer('ias')->nullable();
                 $table->unsignedInteger('transponder')->nullable();
@@ -558,8 +534,8 @@ return new class() extends Migration
                 $table->string('id', 5)->index();
                 $table->string('name', 24)->index();
                 $table->unsignedInteger('type');
-                $table->double('lat', 7, 4)->nullable()->default(0);
-                $table->double('lon', 7, 4)->nullable()->default(0);
+                $table->double('lat')->nullable()->default(0);
+                $table->double('lon')->nullable()->default(0);
                 $table->string('freq', 7)->nullable();
 
                 $table->primary(['id', 'name']);
@@ -626,6 +602,8 @@ return new class() extends Migration
             });
         }
 
+        /*
+        This is the old role system, we don't wanna use it on fresh installs
         if (!Schema::hasTable('permission_role')) {
             Schema::create('permission_role', function (Blueprint $table) {
                 $table->collation = 'utf8mb4_unicode_ci';
@@ -664,7 +642,7 @@ return new class() extends Migration
                 $table->string('description')->nullable();
                 $table->timestamps();
             });
-        }
+        }*/
 
         if (!Schema::hasTable('pirep_comments')) {
             Schema::create('pirep_comments', function (Blueprint $table) {
@@ -790,6 +768,7 @@ return new class() extends Migration
             });
         }
 
+        /*
         if (!Schema::hasTable('role_user')) {
             Schema::create('role_user', function (Blueprint $table) {
                 $table->collation = 'utf8mb4_unicode_ci';
@@ -816,7 +795,7 @@ return new class() extends Migration
                 $table->boolean('read_only')->default(false);
                 $table->boolean('disable_activity_checks')->default(false);
             });
-        }
+        }*/
 
         if (!Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
@@ -1086,50 +1065,43 @@ return new class() extends Migration
             });
         }
 
-        Schema::table('permission_role', function (Blueprint $table) {
-            // Check if the foreign key already exists
-            // Will have to be changed during Laravel 11 upgrade
-            // See https://github.com/laravel/framework/discussions/43443
-            $fks = $this->getForeignKeyList($table->getTable());
+        if (Schema::hasTable('permission_role')) {
+            Schema::table('permission_role', function (Blueprint $table) {
+                // Check if the foreign key already exists
+                // See https://github.com/laravel/framework/discussions/43443
+                $foreignKeys = collect(Schema::getForeignKeys('permission_role'));
 
-            if (!$this->hasForeignKey('permission_role_permission_id_foreign', $fks)) {
-                $table
-                    ->foreign(['permission_id'])
-                    ->references(['id'])
-                    ->on('permissions')
-                    ->onUpdate('cascade')
-                    ->onDelete('cascade');
-            }
+                if ($foreignKeys->where('name', 'permission_role_permission_id_foreign')->count() === 0) {
+                    $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
 
-            if (!$this->hasForeignKey('permission_role_role_id_foreign', $fks)) {
-                $table
-                    ->foreign(['role_id'])
-                    ->references(['id'])
-                    ->on('roles')
-                    ->onUpdate('cascade')
-                    ->onDelete('cascade');
-            }
-        });
+                if ($foreignKeys->where('name', 'permission_role_role_id_foreign')->count() === 0) {
+                    $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
+                }
+            });
+        }
 
         if (Schema::hasTable('permission_user')) {
             Schema::table('permission_user', function (Blueprint $table) {
-                $fks = $this->getForeignKeyList($table->getTable());
-                if (!$this->hasForeignKey('permission_user_permission_id_foreign', $fks)) {
-                    $table
-                        ->foreign(['permission_id'])
-                        ->references(['id'])
-                        ->on('permissions')
-                        ->onUpdate('cascade')
-                        ->onDelete('cascade');
+                $foreignKeys = collect(Schema::getForeignKeys('permission_user'));
+
+                if ($foreignKeys->where('name', 'permission_user_permission_id_foreign')->count() === 0) {
+                    $table->foreign(['permission_id'])->references(['id'])->on('permissions')->onUpdate(
+                        'cascade'
+                    )->onDelete('cascade');
                 }
             });
         }
 
         if (Schema::hasTable('role_user')) {
             Schema::table('role_user', function (Blueprint $table) {
-                $fks = $this->getForeignKeyList($table->getTable());
+                $foreignKeys = collect(Schema::getForeignKeys('role_user'));
 
-                if (!$this->hasForeignKey('role_user_role_id_foreign', $fks)) {
+                if ($foreignKeys->where('name', 'role_user_role_id_foreign')->count() === 0) {
                     $table->foreign(['role_id'])->references(['id'])->on('roles')->onUpdate(
                         'cascade'
                     )->onDelete('cascade');

@@ -35,16 +35,10 @@ class ExpenseRepository extends Repository implements CacheableInterface
         ];
 
         if ($ref_model) {
-            if (\is_object($ref_model)) {
-                $ref_model_type = \get_class($ref_model);
-            } else {
-                $ref_model_type = $ref_model;
-            }
-
+            $ref_model_type = \is_object($ref_model) ? \get_class($ref_model) : $ref_model;
             if ($ref_model) {
                 $where['ref_model'] = $ref_model_type;
             }
-
             if ($ref_model_id) {
                 $where['ref_model_id'] = $ref_model_id;
             }

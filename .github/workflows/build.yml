@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['8.1', '8.2', '8.3']
+        php-versions: ['8.2', '8.3', '8.4']
     name: PHP ${{ matrix.php-versions }}
     env:
       extensions: intl, pcov, mbstring
@@ -32,18 +32,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/gittools
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.1.1
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.4.2
       with:
-        versionSpec: '6.0.x'
-
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v3.1.1
-      with:
-        useConfigFile: true
-        configFilePath: .github/version.yml
+          setAllVars: true
 
     # Configure Caching
     - name: Setup cache environment
@@ -119,6 +112,10 @@ jobs:
         export PHP_CS_FIXER_IGNORE_ENV=1
         vendor/bin/phpunit
 
+    - name: Run Rector
+      run: |
+        vendor/bin/rector --dry-run
+
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
   artifacts:
@@ -137,17 +134,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    # https://github.com/marketplace/actions/gittools
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.1.1
+    # https://github.com/marketplace/actions/nerdbank-gitversioning
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.4.2
       with:
-        versionSpec: '6.0.x'
-
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v3.1.1
-      with:
-        useConfigFile: true
-        configFilePath: .github/version.yml
+          setAllVars: true
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -177,6 +168,12 @@ jobs:
         composer dump-autoload
         sudo chmod +x ./.github/scripts/*
 
+    - name: Install NPM dependencies
+      run: npm install
+
+    - name: Compile assets
+      run: npm run build
+
     - id: version
       name: Get version
       run: .github/scripts/version.sh
@@ -198,7 +195,7 @@ jobs:
     - name: Discord notification
       uses: Ilshidur/action-discord@0.3.2
       env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
       with:
         args: ${{ steps.version.outputs.discord_msg }}
 
@@ -224,17 +221,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/gittools
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
         with:
-          versionSpec: '6.0.x'
-
-      - name: Determine Version
-        uses: gittools/actions/gitversion/execute@v3.1.1
-        with:
-          useConfigFile: true
-          configFilePath: .github/version.yml
+            setAllVars: true
 
       - id: version
         name: Get version

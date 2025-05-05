@@ -35,7 +35,7 @@ class FileService extends Service
 
         // Create the file, add the ID to the front of the file to account
         // for any duplicate filenames, but still can be found in an `ls`
-        $filename = $id.'_'.str_slug(trim($path_info['filename'])).'.'.$path_info['extension'];
+        $filename = $id.'_'.\Illuminate\Support\Str::slug(trim($path_info['filename'])).'.'.$path_info['extension'];
         $file_path = $file->storeAs($folder, $filename, $attrs['disk']);
 
         Log::info('File saved to '.$file_path);

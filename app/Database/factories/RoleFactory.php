@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Role;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
+ */
 class RoleFactory extends Factory
 {
     /**
@@ -24,11 +27,9 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'                      => null,
-            'name'                    => $this->faker->name,
-            'display_name'            => $this->faker->name,
-            'read_only'               => false,
-            'disable_activity_checks' => $this->faker->boolean(),
+            'id'         => null,
+            'name'       => fake()->name,
+            'guard_name' => 'web',
         ];
     }
 }

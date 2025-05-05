@@ -19,11 +19,7 @@ class Resource extends JsonResource
     public function checkUnitFields(&$response, array $fields): void
     {
         foreach ($fields as $f) {
-            if ($this->{$f} instanceof Unit) {
-                $response[$f] = $this->{$f}->getResponseUnits();
-            } else {
-                $response[$f] = $this->{$f};
-            }
+            $response[$f] = $this->{$f} instanceof Unit ? $this->{$f}->getResponseUnits() : $this->{$f};
         }
     }
 
