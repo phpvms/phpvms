@@ -41,7 +41,7 @@ class Version extends Command
                 }
 
                 $prerelease = $version->getPreRelease();
-                $cfg['current']['prerelease'] = !$prerelease instanceof \Version\Extension\PreRelease ? false : $prerelease->toString();
+                $cfg['current']['prerelease'] = $prerelease instanceof \Version\Extension\PreRelease ? $prerelease->toString() : false;
 
                 $build_meta = $version->getBuild();
                 if ($build_meta instanceof \Version\Extension\Build) {
