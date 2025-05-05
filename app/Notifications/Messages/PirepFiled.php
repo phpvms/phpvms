@@ -22,7 +22,7 @@ class PirepFiled extends Notification implements ShouldQueue
         $this->setMailable(
             'New PIREP Submitted',
             'notifications.mail.admin.pirep.submitted',
-            ['pirep' => $this->pirep]
+            ['pirep' => $this->pirep->withoutRelations()]
         );
     }
 
