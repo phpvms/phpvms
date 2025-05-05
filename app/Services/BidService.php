@@ -54,7 +54,7 @@ class BidService extends Service
         if (!empty($bid->aircraft)) {
             $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
         } else {
-            $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight, $bid);
+            $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
         }
 
         $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
@@ -105,7 +105,7 @@ class BidService extends Service
                 if ($bid->aircraft) {
                     $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
                 } else {
-                    $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight, $bid);
+                    $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
                 }
 
                 $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
@@ -147,7 +147,6 @@ class BidService extends Service
                 $flight->has_bid = true;
                 $flight->save();
             }
-
             // Check all the bids for one of this user
             foreach ($bids as $bid) {
                 if ($bid->user_id === $user->id) {
@@ -156,22 +155,18 @@ class BidService extends Service
                     return $bid;
                 }
             }
-
             // Check if the flight should be blocked off
             if (setting('bids.disable_flight_on_bid') === true) {
                 throw new BidExistsForFlight($flight);
             }
-
             // This is already controlled above at line 114 with user bid count,
             // To prevent or allow multiple bids. Should not be here at all
             if (setting('bids.allow_multiple_bids') === false) {
                 // throw new BidExistsForFlight($flight);
             }
-        } else {
+        } elseif ($flight->has_bid === true) {
             /* @noinspection NestedPositiveIfStatementsInspection */
-            if ($flight->has_bid === true) {
-                Log::info('Bid exists, flight='.$flight->id.'; no entry in bids table, cleaning up');
-            }
+            Log::info('Bid exists, flight='.$flight->id.'; no entry in bids table, cleaning up');
         }
 
         if (setting('bids.block_aircraft') && $aircraft) {

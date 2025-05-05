@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Models\Enums\JournalType;
 use App\Models\Traits\JournalTrait;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,10 +18,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Kyslik\ColumnSortable\Sortable;
-use Laratrust\Contracts\LaratrustUser;
-use Laratrust\Traits\HasRolesAndPermissions;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -68,13 +71,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Illuminate\Database\Eloquent\Builder
  * @mixin \Illuminate\Notifications\Notifiable
- * @mixin \Laratrust\Traits\HasRolesAndPermissions
  */
-class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasFactory;
     use HasRelationships;
-    use HasRolesAndPermissions;
+    use HasRoles;
     use JournalTrait;
     use LogsActivity;
     use Notifiable;
@@ -135,22 +137,6 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
         'last_ip',
         'remember_token',
         'notes',
-    ];
-
-    protected $casts = [
-        'id'                => 'integer',
-        'pilot_id'          => 'integer',
-        'flights'           => 'integer',
-        'flight_time'       => 'integer',
-        'transfer_time'     => 'integer',
-        'balance'           => 'double',
-        'state'             => 'integer',
-        'status'            => 'integer',
-        'toc_accepted'      => 'boolean',
-        'opt_in'            => 'boolean',
-        'lastlogin_at'      => 'datetime',
-        'deleted_at'        => 'datetime',
-        'email_verified_at' => 'datetime',
     ];
 
     public static $rules = [
@@ -375,5 +361,45 @@ class User extends Authenticatable implements LaratrustUser, MustVerifyEmail
     public function rated_subfleets()
     {
         return $this->hasManyDeep(Subfleet::class, ['typerating_user', Typerating::class, 'typerating_subfleet']);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // For the admin panel
+        if ($panel->getId() === 'admin') {
+            return $this->hasAdminAccess();
+        }
+
+        // For modules panels
+        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('view_module');
+    }
+
+    public function hasAdminAccess(): bool
+    {
+        return $this->hasRole(Utils::getSuperAdminName().'|admin') || $this->can('page_Dashboard');
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar?->url;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'id'                => 'integer',
+            'pilot_id'          => 'integer',
+            'flights'           => 'integer',
+            'flight_time'       => 'integer',
+            'transfer_time'     => 'integer',
+            'balance'           => 'double',
+            'state'             => 'integer',
+            'status'            => 'integer',
+            'toc_accepted'      => 'boolean',
+            'opt_in'            => 'boolean',
+            'lastlogin_at'      => 'datetime',
+            'deleted_at'        => 'datetime',
+            'email_verified_at' => 'datetime',
+        ];
     }
 }

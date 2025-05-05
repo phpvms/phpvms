@@ -108,7 +108,7 @@ class UserImport extends BaseImporter
             }
 
             if ($newRoleId !== false) {
-                $user->addRole($newRoleId);
+                $user->assignRole($newRoleId);
             }
         }
     }

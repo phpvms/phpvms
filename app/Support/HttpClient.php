@@ -57,7 +57,7 @@ class HttpClient
         $content_type = $response->getHeaderLine('content-type');
         $content = $response->getBody()->getContents();
 
-        if (str_contains($content_type, 'application/json') !== false) {
+        if (str_contains($content_type, 'application/json')) {
             $content = \GuzzleHttp\json_decode($content, true);
         }
 
@@ -78,7 +78,7 @@ class HttpClient
         $content_type = $response->getHeaderLine('content-type');
         $content = $response->getBody()->getContents();
 
-        if (str_contains($content_type, 'application/json') !== false) {
+        if (str_contains($content_type, 'application/json')) {
             $content = \GuzzleHttp\json_decode($content, true);
         }
 

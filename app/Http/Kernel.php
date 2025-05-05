@@ -25,6 +25,9 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 class Kernel extends HttpKernel
 {
@@ -54,7 +57,7 @@ class Kernel extends HttpKernel
         ],
     ];
 
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'api.auth'       => ApiAuth::class,
         'auth'           => Authenticate::class,
         'bindings'       => SubstituteBindings::class,
@@ -66,5 +69,9 @@ class Kernel extends HttpKernel
         'update_pending' => UpdatePending::class,
         'verified'       => EnsureEmailIsVerified::class,
         'signed'         => ValidateSignature::class,
+
+        'role'               => RoleMiddleware::class,
+        'permission'         => PermissionMiddleware::class,
+        'role_or_permission' => RoleOrPermissionMiddleware::class,
     ];
 }

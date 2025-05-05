@@ -182,12 +182,15 @@
   @endif
 
   <script>
+    window.addEventListener("load", function () {
+    
     $('#toc_accepted').click(function () {
-      if ($(this).is(':checked')) {
-        $('#register_button').removeAttr('disabled');
-      } else {
-        $('#register_button').attr('disabled', 'true');
-      }
+        if ($(this).is(':checked')) {
+          $('#register_button').removeAttr('disabled');
+        } else {
+          $('#register_button').attr('disabled', 'true');
+        }
+      });
     });
   </script>
 @include('scripts.airport_search')

@@ -118,8 +118,9 @@
                                 <a class="dropdown-item" href="{{ url('/admin') }}">
                                     <i class="bi bi-gear"></i>&nbsp;&nbsp;@lang('common.administration')
                                 </a>
+                                <div class="dropdown-divider"></div>
                             @endcan
-                            <div class="dropdown-divider"></div>
+                          <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{{ url('/logout') }}">
                                 <i class="bi bi-box-arrow-right"></i>&nbsp;&nbsp;@lang('common.logout')
                             </a>

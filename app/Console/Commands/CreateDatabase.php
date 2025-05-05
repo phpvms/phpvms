@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Console\Services\Database;
 use App\Contracts\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tivie\OS\Detector;
 
@@ -30,7 +31,7 @@ class CreateDatabase extends Command
      *
      * @return bool
      */
-    protected function create_mysql($dbkey)
+    protected function create_mysql_or_mariadb($dbkey)
     {
         $host = config($dbkey.'host');
         $port = config($dbkey.'port');
@@ -43,7 +44,7 @@ class CreateDatabase extends Command
         Log::info('Connection string: '.$dsn);
 
         try {
-            $conn = $dbSvc->createPDO($dsn, $user, $pass);
+            $conn = DB::connection(config('database.default'))->getPdo();
         } catch (\PDOException $e) {
             Log::error($e);
 
@@ -71,6 +72,8 @@ class CreateDatabase extends Command
 
             return false;
         }
+
+        return null;
     }
 
     /**
@@ -90,10 +93,8 @@ class CreateDatabase extends Command
             $exec = 'sqlite3.exe';
         }
 
-        if ($this->option('reset') === true) {
-            if (file_exists($dbPath)) {
-                unlink(config($dbkey.'database'));
-            }
+        if ($this->option('reset') === true && file_exists($dbPath)) {
+            unlink(config($dbkey.'database'));
         }
 
         if (!file_exists($dbPath)) {
@@ -130,8 +131,8 @@ class CreateDatabase extends Command
         $conn = config('database.default');
         $dbkey = 'database.connections.'.$conn.'.';
 
-        if (config($dbkey.'driver') === 'mysql') {
-            $this->create_mysql($dbkey);
+        if (config($dbkey.'driver') === 'mysql' || config($dbkey.'driver') === 'mariadb') {
+            $this->create_mysql_or_mariadb($dbkey);
         } elseif (config($dbkey.'driver') === 'sqlite') {
             $this->create_sqlite($dbkey);
         } // TODO: Eventually

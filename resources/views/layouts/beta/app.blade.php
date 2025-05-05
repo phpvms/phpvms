@@ -15,13 +15,13 @@
   {{-- End the required lines block --}}
 
   <link rel="shortcut icon" type="image/png" href="{{ public_asset('/assets/img/favicon.png') }}"/>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/bootstrap.min.css') }}" rel="stylesheet"/>
+  {{-- <link href="{{ public_asset('/assets/frontend/css/bootstrap.min.css') }}" rel="stylesheet"/>
   <link href="{{ public_mix('/assets/frontend/css/now-ui-kit.css') }}" rel="stylesheet"/>
-  <link href="{{ public_asset('/assets/frontend/css/styles.css') }}" rel="stylesheet"/>
+  <link href="{{ public_asset('/assets/frontend/css/styles.css') }}" rel="stylesheet"/> --}}
+  @vite(['resources/sass/app.scss', 'resources/sass/now-ui/now-ui-kit.scss', 'resources/sass/frontend/styles.scss'])
 
   {{-- Start of the required files in the head block --}}
-  <link href="{{ public_mix('/assets/global/css/vendor.css') }}" rel="stylesheet"/>
+  {{-- <link href="{{ public_mix('/assets/global/css/vendor.css') }}" rel="stylesheet"/> --}}
   @yield('css')
   @yield('scripts_head')
   {{-- End of the required stuff in the head block --}}
@@ -75,9 +75,7 @@
 <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 
 {{-- Start of the required tags block. Don't remove these or things will break!! --}}
-<script src="{{ public_mix('/assets/global/js/vendor.js') }}"></script>
-<script src="{{ public_mix('/assets/frontend/js/vendor.js') }}"></script>
-<script src="{{ public_mix('/assets/frontend/js/app.js') }}"></script>
+@vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
 @yield('scripts')
 
 {{--
@@ -103,7 +101,7 @@ with the EU Cookie Law https://privacypolicies.com/blog/eu-cookie-law
 {{-- End the required tags block --}}
 
 <script>
-  $(document).ready(function () {
+  window.addEventListener("load", function () {
     $("select.select2").select2({width: 'resolve'});
   });
 </script>

@@ -58,7 +58,7 @@ class Money
     {
         $currency = setting('units.currency', 'USD');
 
-        return (int) ($amount * config('money.'.$currency.'.subunit'));
+        return (int) ($amount * config('money.currencies.'.$currency.'.subunit'));
     }
 
     /**

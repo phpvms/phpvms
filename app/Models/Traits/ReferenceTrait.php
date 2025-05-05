@@ -31,7 +31,7 @@ trait ReferenceTrait
     public function getReferencedObject()
     {
         if (!$this->ref_model || !$this->ref_model_id) {
-            return;
+            return null;
         }
 
         if ($this->ref_model === __CLASS__) {
@@ -44,7 +44,7 @@ trait ReferenceTrait
 
             return $obj;
         } catch (\Exception $e) {
-            return;
+            return null;
         }
     }
 }

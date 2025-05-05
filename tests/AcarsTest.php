@@ -45,7 +45,7 @@ final class AcarsTest extends TestCase
 
     protected function allPointsInRoute(array $route, array $points, array $addtl_fields = []): void
     {
-        if (empty($addtl_fields)) {
+        if ($addtl_fields === []) {
             $addtl_fields = [];
         }
 

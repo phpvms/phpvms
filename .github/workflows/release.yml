@@ -24,18 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/gittools
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.1
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
         with:
-          versionSpec: '6.0.x'
-
-      - name: Determine Version
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v3.1.1
-        with:
-          useConfigFile: true
-          configFilePath: .github/version.yml
+            setAllVars: true
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -75,6 +68,12 @@ jobs:
           composer install --no-dev --prefer-dist --no-interaction --verbose
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Compile assets
+        run: npm run build
 
       - name: Get version
         run: .github/scripts/version.sh
@@ -164,6 +163,6 @@ jobs:
       - name: Discord notification
         uses: Ilshidur/action-discord@0.3.2
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
         with:
           args: ${{ steps.discord.outputs.discord_msg }}
