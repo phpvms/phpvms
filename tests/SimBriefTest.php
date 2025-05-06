@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Models\Acars;
+use App\Models\Aircraft;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\FareType;
 use App\Models\Enums\UserState;
@@ -11,11 +12,12 @@ use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Services\SimBriefService;
+use App\Support\Utils;
 use Carbon\Carbon;
 
 final class SimBriefTest extends TestCase
 {
-    public static string $simbrief_flight_id = 'simbriefflightid';
+    private static string $simbrief_flight_id = 'simbriefflightid';
 
     /**
      * @param array $attrs Additional user attributes
@@ -42,6 +44,41 @@ final class SimBriefTest extends TestCase
     }
 
     /**
+     * Load SimBrief
+     */
+    protected function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string $flight_id = null): SimBrief
+    {
+        if ($flight_id === null || $flight_id === '' || $flight_id === '0') {
+            $flight_id = self::$simbrief_flight_id;
+        }
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create([
+            'id'             => $flight_id,
+            'dpt_airport_id' => 'OMAA',
+            'arr_airport_id' => 'OMDB',
+        ]);
+
+        return $this->downloadOfp($user, $flight, $aircraft, $fares);
+    }
+
+    /**
+     * Download an OFP file
+     */
+    protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
+    {
+        $this->mockXmlResponse([
+            'simbrief/briefing.xml',
+            'simbrief/acars_briefing.xml',
+        ]);
+
+        /** @var SimBriefService $sb */
+        $sb = app(SimBriefService::class);
+
+        return $sb->downloadOfp($user->id, Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
+    }
+
+    /**
      * Read from the SimBrief URL
      *
      * @throws \Exception
@@ -58,19 +95,29 @@ final class SimBriefTest extends TestCase
         // Spot check reading of the files
         $files = $briefing->files;
         $this->assertEquals(47, $files->count());
-        $this->assertEquals('http://www.simbrief.com/ofp/flightplans/OMAAOMDB_PDF_1584226092.pdf', $files->firstWhere('name', 'PDF Document')['url']);
+        $this->assertEquals(
+            'http://www.simbrief.com/ofp/flightplans/OMAAOMDB_PDF_1584226092.pdf',
+            $files->firstWhere('name', 'PDF Document')['url']
+        );
 
         // Spot check reading of images
         $images = $briefing->images;
         $this->assertEquals(5, $images->count());
-        $this->assertEquals('http://www.simbrief.com/ofp/uads/OMAAOMDB_1584226092_ROUTE.gif', $images->firstWhere('name', 'Route')['url']);
+        $this->assertEquals(
+            'http://www.simbrief.com/ofp/uads/OMAAOMDB_1584226092_ROUTE.gif',
+            $images->firstWhere('name', 'Route')['url']
+        );
 
         $level = $briefing->xml->getFlightLevel();
         $this->assertEquals('380', $level);
 
         // Read the flight route
         $routeStr = $briefing->xml->getRouteString();
-        $this->assertEquals('DCT BOMUP DCT LOVIM DCT RESIG DCT NODVI DCT OBMUK DCT LORID DCT '.'ORGUR DCT PEBUS DCT EMOPO DCT LOTUK DCT LAGTA DCT LOVOL DCT', $routeStr);
+        $this->assertEquals(
+            'DCT BOMUP DCT LOVIM DCT RESIG DCT NODVI DCT OBMUK DCT LORID DCT '.
+            'ORGUR DCT PEBUS DCT EMOPO DCT LOTUK DCT LAGTA DCT LOVOL DCT',
+            $routeStr
+        );
     }
 
     /**

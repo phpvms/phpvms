@@ -55,7 +55,9 @@ class NotificationEventsHandler extends Listener
      */
     protected function notifyAdmins(\App\Contracts\Notification $notification)
     {
-        $admin_users = User::whereHasRole('admin')->get();
+        $admin_users = User::whereHas('roles', function ($query) {
+            $query->where('name', 'super_admin');
+        })->get();
 
         foreach ($admin_users as $user) {
             if (empty($user->email)) {
@@ -203,7 +205,7 @@ class NotificationEventsHandler extends Listener
     {
         Log::info('NotificationEvents::onPirepFile: '.$event->pirep->id.' filed');
         if (setting('notifications.mail_pirep_admin', true)) {
-            $this->notifyAdmins(new Messages\PirepFiled($event->pirep));
+            $this->notifyAdmins(new Messages\PirepFiled($event->pirep->withoutRelations()));
         }
 
         /*
@@ -221,7 +223,7 @@ class NotificationEventsHandler extends Listener
     {
         if (setting('notifications.mail_pirep_user_ack', true)) {
             Log::info('NotificationEvents::onPirepAccepted: '.$event->pirep->id.' accepted');
-            $this->notifyUser($event->pirep->user, new Messages\PirepAccepted($event->pirep));
+            $this->notifyUser($event->pirep->user, new Messages\PirepAccepted($event->pirep->withoutRelations()));
         }
     }
 
@@ -232,7 +234,7 @@ class NotificationEventsHandler extends Listener
     {
         if (setting('notifications.mail_pirep_user_rej', true)) {
             Log::info('NotificationEvents::onPirepRejected: '.$event->pirep->id.' rejected');
-            $this->notifyUser($event->pirep->user, new Messages\PirepRejected($event->pirep));
+            $this->notifyUser($event->pirep->user, new Messages\PirepRejected($event->pirep->withoutRelations()));
         }
     }
 

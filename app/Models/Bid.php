@@ -27,11 +27,6 @@ class Bid extends Model
         'aircraft_id',
     ];
 
-    protected $casts = [
-        'user_id'     => 'integer',
-        'aircraft_id' => 'integer',
-    ];
-
     /**
      * Relationships
      */
@@ -48,5 +43,13 @@ class Bid extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'user_id'     => 'integer',
+            'aircraft_id' => 'integer',
+        ];
     }
 }

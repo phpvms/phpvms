@@ -25,12 +25,12 @@ class HomeController extends Controller
                 'error' => $e->getMessage(),
             ]);
         } catch (QueryException $e) {
-            return view('system/errors/not_installed');
+            return redirect('system/install');
         }
 
         // No users
         if (!$users) {
-            return view('system/errors/not_installed');
+            return redirect('system/install');
         }
 
         return view('home', [

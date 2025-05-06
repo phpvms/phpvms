@@ -16,7 +16,7 @@
         <div class="input-group form-group-no-border{{ $errors->has('email') ? ' has-error' : '' }} input-lg">
           <div class="input-group-prepend">
             <span class="input-group-text">
-              <i class="now-ui-icons users_circle-08"></i>
+              <i class="fa fa-user"></i>
             </span>
           </div>
           <input
@@ -38,7 +38,7 @@
         <div class="input-group form-group-no-border{{ $errors->has('password') ? ' has-error' : '' }} input-lg">
           <div class="input-group-prepend">
             <span class="input-group-text">
-              <i class="now-ui-icons text_caps-small"></i>
+              <i class="fa fa-lock"></i>
             </span>
           </div>
           <input

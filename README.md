@@ -11,7 +11,7 @@ A full distribution, with all of the composer dependencies, is available at this
 
 ### Requirements
 
-- PHP 8.1+, extensions:
+- PHP 8.2+, extensions:
   - cURL
   - JSON
   - fileinfo
@@ -21,6 +21,9 @@ A full distribution, with all of the composer dependencies, is available at this
   - tokenizer
   - bcmath
   - intl
+  - zip
+  - pdo_sqlite
+  - sqlite3
 - Database:
   - MySQL 5.7+ (or MySQL variant, including MariaDB and Percona)
 
@@ -46,7 +49,7 @@ docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
     -w /var/www/html \
-    laravelsail/php83-composer:latest \
+    laravelsail/php84-composer:latest \
     composer install --ignore-platform-reqs
     
 # Then you can start sail

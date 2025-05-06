@@ -22,7 +22,7 @@ class UpdatePending implements Middleware
     public function handle(Request $request, Closure $next)
     {
         if ($this->installerSvc->isUpgradePending()) {
-            return redirect('/update');
+            return redirect('/system/update');
         }
 
         return $next($request);

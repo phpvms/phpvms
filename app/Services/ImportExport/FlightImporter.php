@@ -260,7 +260,7 @@ class FlightImporter extends ImportExport
         $subfleets = $this->parseMultiColumnValues($col);
         foreach ($subfleets as $subfleet_type) {
             $subfleet_type = trim($subfleet_type);
-            if (empty($subfleet_type)) {
+            if ($subfleet_type === '' || $subfleet_type === '0') {
                 continue;
             }
 

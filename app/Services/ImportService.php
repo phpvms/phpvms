@@ -41,7 +41,7 @@ class ImportService extends Service
     protected function throwError($error, ?\Exception $e = null): void
     {
         Log::error($error);
-        if ($e) {
+        if ($e instanceof \Exception) {
             Log::error($e->getMessage());
         }
 
@@ -69,6 +69,8 @@ class ImportService extends Service
         } catch (Exception $e) {
             $this->throwError('Error opening CSV: '.$e->getMessage(), $e);
         }
+
+        return null;
     }
 
     /**
@@ -198,7 +200,7 @@ class ImportService extends Service
      */
     public function importFlights($csv_file, ?string $delete_previous = null)
     {
-        if (!empty($delete_previous)) {
+        if ($delete_previous !== null && $delete_previous !== '' && $delete_previous !== '0') {
             // If delete_previous contains all, then delete everything
             if ($delete_previous === 'all') {
                 Flight::truncate();

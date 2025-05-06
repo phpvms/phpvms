@@ -5,16 +5,21 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
-import draw_base_map from './base_map';
+import { LatLng } from "leaflet/dist/leaflet-src.esm";
+import leaflet from "leaflet";
+import rivets from "rivets";
+import jQuery from "jquery";
 
-import { ACTUAL_ROUTE_COLOR } from './config';
+import draw_base_map from "./base_map";
 
-import request from '../request';
-import {LatLng} from "leaflet/dist/leaflet-src.esm";
+import { ACTUAL_ROUTE_COLOR } from "./config";
+
+import request from "../request";
+
+window.$ = jQuery;
+window.jquery = jQuery;
 
 // const geolib = require('geolib');
-const leaflet = require('leaflet');
-const rivets = require('rivets');
 
 /**
  * Render the live map
@@ -22,20 +27,23 @@ const rivets = require('rivets');
  * @private
  */
 export default (_opts) => {
-  const opts = Object.assign({
-    center: [29.98139, -95.33374],
-    refresh_interval: 10, // seconds
-    zoom: 5,
-    acars_uri: '/api/acars',
-    update_uri: '/api/acars/geojson',
-    pirep_uri: '/api/pireps/{id}',
-    pirep_link_uri: '/pireps/{id}',
-    positions: null,
-    render_elem: 'map',
-    aircraft_icon: '/assets/img/acars/aircraft.png',
-    flown_route_color: ACTUAL_ROUTE_COLOR,
-    units: 'nmi',
-  }, _opts);
+  const opts = Object.assign(
+    {
+      center: [29.98139, -95.33374],
+      refresh_interval: 10, // seconds
+      zoom: 5,
+      acars_uri: "/api/acars",
+      update_uri: "/api/acars/geojson",
+      pirep_uri: "/api/pireps/{id}",
+      pirep_link_uri: "/pireps/{id}",
+      positions: null,
+      render_elem: "map",
+      aircraft_icon: "/assets/img/acars/aircraft.png",
+      flown_route_color: ACTUAL_ROUTE_COLOR,
+      units: "nmi",
+    },
+    _opts
+  );
 
   const map = draw_base_map(opts);
   const aircraftIcon = leaflet.icon({
@@ -66,8 +74,8 @@ export default (_opts) => {
     },
   };
 
-  rivets.bind($('#map-info-box'), liveMapController);
-  rivets.bind($('#live_flights'), liveMapController);
+  rivets.bind($("#map-info-box"), liveMapController);
+  rivets.bind($("#live_flights"), liveMapController);
 
   function drawRoute(feature, layer, route) {
     if (layerSelFlight !== null) {
@@ -102,8 +110,14 @@ export default (_opts) => {
    * @param layer
    */
   function onFlightClick(feature, layer) {
-    const pirep_uri = opts.pirep_uri.replace('{id}', feature.properties.pirep_id);
-    const geojson_uri = `${opts.pirep_uri.replace('{id}', feature.properties.pirep_id)}/acars/geojson`;
+    const pirep_uri = opts.pirep_uri.replace(
+      "{id}",
+      feature.properties.pirep_id
+    );
+    const geojson_uri = `${opts.pirep_uri.replace(
+      "{id}",
+      feature.properties.pirep_id
+    )}/acars/geojson`;
 
     /*
      * Run these in parallel:
@@ -132,7 +146,7 @@ export default (_opts) => {
    */
   function focusMarker(e, model) {
     if (!(model.pirep.id in markers_list)) {
-      console.log('marker not found in list');
+      console.log("marker not found in list");
       return;
     }
 
@@ -171,8 +185,12 @@ export default (_opts) => {
             },
           });
 
-          let popup_html = '';
-          if (feature.properties && (feature.properties.popup !== '' && feature.properties.popup !== undefined)) {
+          let popup_html = "";
+          if (
+            feature.properties &&
+            feature.properties.popup !== "" &&
+            feature.properties.popup !== undefined
+          ) {
             popup_html += feature.properties.popup;
             layer.bindPopup(popup_html);
           }
@@ -192,7 +210,10 @@ export default (_opts) => {
 
       // Reload the clicked-flight information
       if (layerSelFlight !== null) {
-        liveMapController.controller.onFlightClick(layerSelFlightFeature, layerSelFlightLayer);
+        liveMapController.controller.onFlightClick(
+          layerSelFlightFeature,
+          layerSelFlightLayer
+        );
       } else {
         // Center on active flights
         // eslint-disable-next-line no-lonely-if

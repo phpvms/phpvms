@@ -24,7 +24,7 @@ class ProcessQueue extends Command
         ]);
 
         $jobOutput = trim(Artisan::output());
-        if (!empty($jobOutput)) {
+        if ($jobOutput !== '' && $jobOutput !== '0') {
             Log::info($jobOutput);
         }
 

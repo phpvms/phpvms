@@ -110,9 +110,7 @@
     </script>
 
     {{-- Start of the required tags block. Don't remove these or things will break!! --}}
-    <script src="{{ public_mix('/assets/global/js/vendor.js') }}"></script>
-    <script src="{{ public_mix('/assets/frontend/js/vendor.js') }}"></script>
-    <script src="{{ public_mix('/assets/frontend/js/app.js') }}"></script>
+    @vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
     @yield('scripts')
 
     {{-- This is the color theme switcher --}}

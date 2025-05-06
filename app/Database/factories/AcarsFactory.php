@@ -8,6 +8,9 @@ use App\Contracts\Factory;
 use App\Models\Acars;
 use DateTime;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Acars>
+ */
 class AcarsFactory extends Factory
 {
     /**
@@ -25,20 +28,20 @@ class AcarsFactory extends Factory
         return [
             'id'           => null,
             'pirep_id'     => null,
-            'log'          => $this->faker->text(100),
-            'lat'          => $this->faker->latitude,
-            'lon'          => $this->faker->longitude,
-            'distance'     => $this->faker->randomFloat(2, 0, 6000),
-            'heading'      => $this->faker->numberBetween(0, 359),
-            'altitude_agl' => $this->faker->numberBetween(20, 400),
-            'altitude_msl' => $this->faker->numberBetween(20, 400),
-            'vs'           => $this->faker->numberBetween(-5000, 5000),
-            'gs'           => $this->faker->numberBetween(300, 500),
-            'transponder'  => $this->faker->numberBetween(200, 9999),
-            'autopilot'    => $this->faker->text(10),
-            'fuel'         => $this->faker->randomFloat(2, 100, 1000),
-            'fuel_flow'    => $this->faker->randomFloat(2, 100, 1000),
-            'sim_time'     => $this->faker->dateTime('now', 'UTC')->format(DateTime::ATOM),
+            'log'          => fake()->text(100),
+            'lat'          => fake()->latitude,
+            'lon'          => fake()->longitude,
+            'distance'     => fake()->randomFloat(2, 0, 6000),
+            'heading'      => fake()->numberBetween(0, 359),
+            'altitude_agl' => fake()->numberBetween(20, 400),
+            'altitude_msl' => fake()->numberBetween(20, 400),
+            'vs'           => fake()->numberBetween(-5000, 5000),
+            'gs'           => fake()->numberBetween(300, 500),
+            'transponder'  => fake()->numberBetween(200, 9999),
+            'autopilot'    => fake()->text(10),
+            'fuel'         => fake()->randomFloat(2, 100, 1000),
+            'fuel_flow'    => fake()->randomFloat(2, 100, 1000),
+            'sim_time'     => fake()->dateTime('now', 'UTC')->format(DateTime::ATOM),
         ];
     }
 }

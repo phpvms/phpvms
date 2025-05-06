@@ -78,6 +78,6 @@ class Dates
         $month = (int) $month;
         $year = (int) $year;
 
-        return $month == 2 ? ($year % 4 ? 28 : ($year % 100 ? 29 : ($year % 400 ? 28 : 29))) : (($month - 1) % 7 % 2 ? 30 : 31);
+        return $month == 2 ? ($year % 4 !== 0 ? 28 : ($year % 100 !== 0 ? 29 : ($year % 400 !== 0 ? 28 : 29))) : (($month - 1) % 7 % 2 !== 0 ? 30 : 31);
     }
 }
