@@ -3,27 +3,17 @@
 namespace App\Notifications\Messages;
 
 use App\Contracts\Notification;
+use App\Mail\AdminPirepSubmitted;
 use App\Models\Pirep;
-use App\Notifications\Channels\MailChannel;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
 
 class PirepFiled extends Notification implements ShouldQueue
 {
-    use MailChannel;
-
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(
         private readonly Pirep $pirep
     ) {
         parent::__construct();
-
-        $this->setMailable(
-            'New PIREP Submitted',
-            'notifications.mail.admin.pirep.submitted',
-            ['pirep' => $this->pirep->withoutRelations()]
-        );
     }
 
     public function via($notifiable)
@@ -31,13 +21,20 @@ class PirepFiled extends Notification implements ShouldQueue
         return ['mail'];
     }
 
+    public function toMail($notifiable): Mailable
+    {
+        $email = new AdminPirepSubmitted($this->pirep);
+        $email->to($notifiable->email);
+
+        return $email;
+    }
+
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'pirep_id' => $this->pirep->id,

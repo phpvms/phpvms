@@ -49,7 +49,7 @@ class AdminPirepSubmitted extends Mailable
         return new Content(
             markdown: 'notifications.mail.admin.pirep.submitted',
             with: [
-                'pirep' => $this->pirep,
+                'pirep' => $this->pirep->unsetRelations(),
             ]
         );
     }
