@@ -85,7 +85,7 @@ return new class() extends Migration
                 $table->unsignedInteger('heading')->nullable();
                 $table->decimal('altitude_agl')->nullable()->default(0);
                 $table->decimal('altitude_msl')->nullable()->default(0);
-                $table->double('vs', null, 0)->nullable()->default(0);
+                $table->double('vs')->nullable()->default(0);
                 $table->integer('gs')->nullable();
                 $table->integer('ias')->nullable();
                 $table->unsignedInteger('transponder')->nullable();
@@ -534,8 +534,8 @@ return new class() extends Migration
                 $table->string('id', 5)->index();
                 $table->string('name', 24)->index();
                 $table->unsignedInteger('type');
-                $table->double('lat', 7, 4)->nullable()->default(0);
-                $table->double('lon', 7, 4)->nullable()->default(0);
+                $table->double('lat')->nullable()->default(0);
+                $table->double('lon')->nullable()->default(0);
                 $table->string('freq', 7)->nullable();
 
                 $table->primary(['id', 'name']);

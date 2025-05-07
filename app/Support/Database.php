@@ -52,11 +52,7 @@ class Database
                 $ignore_if_exists = $data['ignore_if_exists'];
             }
 
-            if (array_key_exists('data', $data)) {
-                $rows = $data['data'];
-            } else {
-                $rows = $data;
-            }
+            $rows = array_key_exists('data', $data) ? $data['data'] : $data;
 
             foreach ($rows as $row) {
                 try {
@@ -100,7 +96,7 @@ class Database
             $row['password'] = bcrypt($row['password']);
         }
 
-        if (empty($row)) {
+        if ($row === []) {
             return $row;
         }
 

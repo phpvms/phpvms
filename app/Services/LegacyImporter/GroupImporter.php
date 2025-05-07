@@ -93,7 +93,7 @@ class GroupImporter extends BaseImporter
                 continue;
             }
 
-            $name = str_slug($row->name);
+            $name = \Illuminate\Support\Str::slug($row->name);
             $role = Role::firstOrCreate(
                 ['name' => $name],
                 ['display_name' => $row->name]
@@ -135,7 +135,7 @@ class GroupImporter extends BaseImporter
                 }
             }
 
-            if (count($permissions) > 0) {
+            if ($permissions !== []) {
                 $roleSvc->setPermissionsForRole($role, $permissions);
                 $permCount += count($permissions);
             }

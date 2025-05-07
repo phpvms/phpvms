@@ -165,11 +165,7 @@ class FlightService extends Service
         if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
             $subfleets = $subfleets->filter(function ($subfleet, $i) use ($allowed_subfleets) {
-                if ($allowed_subfleets->contains($subfleet->id)) {
-                    return true;
-                }
-
-                return false;
+                return $allowed_subfleets->contains($subfleet->id);
             });
         }
 
@@ -236,7 +232,7 @@ class FlightService extends Service
                 && $flight->days === $value->days;
         });
 
-        return !($found_flights->count() === 0);
+        return $found_flights->count() !== 0;
     }
 
     /**

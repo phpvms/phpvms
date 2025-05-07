@@ -49,7 +49,7 @@ class GeoJson
      */
     public function getLine(): FeatureCollection
     {
-        if (empty($this->line_coords) || \count($this->line_coords) < 2) {
+        if ($this->line_coords === [] || \count($this->line_coords) < 2) {
             return new FeatureCollection([]);
         }
 

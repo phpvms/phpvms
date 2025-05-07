@@ -24,14 +24,6 @@ class Invite extends Model
         'expires_at',
     ];
 
-    protected $casts = [
-        'email'       => 'string',
-        'token'       => 'string',
-        'usage_count' => 'integer',
-        'usage_limit' => 'integer',
-        'expires_at'  => 'datetime',
-    ];
-
     public static array $rules = [
         'email'       => 'nullable|string',
         'token'       => 'required|string',
@@ -45,5 +37,16 @@ class Invite extends Model
         return Attribute::make(
             get: fn ($value, $attrs) => url('/register?invite='.$attrs['id'].'&token='.$attrs['token'])
         );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'email'       => 'string',
+            'token'       => 'string',
+            'usage_count' => 'integer',
+            'usage_limit' => 'integer',
+            'expires_at'  => 'datetime',
+        ];
     }
 }

@@ -317,13 +317,15 @@ class ModuleService extends Service
 
         $manifests = (new Filesystem())->glob("{$path}/module.json");
 
-        is_array($manifests) || $manifests = [];
+        if (!is_array($manifests)) {
+            $manifests = [];
+        }
 
         foreach ($manifests as $manifest) {
             $name = Json::make($manifest)->get('name');
             $module = Module::where('name', $name);
             if (!$module->exists()) {
-                array_push($modules, $name);
+                $modules[] = $name;
             }
         }
 

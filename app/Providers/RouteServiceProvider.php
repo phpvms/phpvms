@@ -118,7 +118,7 @@ class RouteServiceProvider extends ServiceProvider
                 Route::get('{provider}/logout', 'OAuthController@logoutProvider')->name('logout')->middleware('auth');
             });
 
-            Route::get('/logout', 'Auth\LoginController@logout')->name('auth.logout');
+            Route::get('/logout', 'Auth\LoginController@logout')->name(\Illuminate\Auth\Events\Logout::class);
             Auth::routes(['verify' => true]);
 
             // Redirect /update

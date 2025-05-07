@@ -72,6 +72,8 @@ class CreateDatabase extends Command
 
             return false;
         }
+
+        return null;
     }
 
     /**
@@ -91,10 +93,8 @@ class CreateDatabase extends Command
             $exec = 'sqlite3.exe';
         }
 
-        if ($this->option('reset') === true) {
-            if (file_exists($dbPath)) {
-                unlink(config($dbkey.'database'));
-            }
+        if ($this->option('reset') === true && file_exists($dbPath)) {
+            unlink(config($dbkey.'database'));
         }
 
         if (!file_exists($dbPath)) {

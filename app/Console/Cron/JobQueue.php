@@ -22,7 +22,7 @@ class JobQueue extends CronCommand
         $this->callEvent();
 
         $queueOutput = trim(Artisan::output());
-        if (!empty($queueOutput)) {
+        if ($queueOutput !== '' && $queueOutput !== '0') {
             $this->info($queueOutput);
         }
     }

@@ -101,7 +101,7 @@ class MigrationService extends Service
         $migrator = $this->getMigrator();
         $availMigrations = $this->migrationsAvailable();
 
-        if (count($availMigrations) > 0) {
+        if ($availMigrations !== []) {
             Log::info('Running '.count($availMigrations).' available migrations');
             $ret = $migrator->run($availMigrations);
             Log::info('Ran '.count($ret).' migrations');
@@ -159,7 +159,7 @@ class MigrationService extends Service
         $migrator = $this->getDataMigrator();
         $availMigrations = $this->dataMigrationsAvailable();
 
-        if (count($availMigrations) > 0) {
+        if ($availMigrations !== []) {
             Log::info('Running '.count($availMigrations).' available migrations');
             $ret = $migrator->run($availMigrations);
             Log::info('Ran '.count($ret).' migrations');

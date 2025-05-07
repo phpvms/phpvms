@@ -95,7 +95,7 @@ final class FinanceTest extends TestCase
             'rank_id' => $rank->id,
         ];
 
-        if (!empty($airline)) {
+        if ($airline instanceof \App\Models\Airline) {
             $u['airline_id'] = $airline->id;
         }
 

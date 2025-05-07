@@ -34,7 +34,7 @@ class FlightFieldValue extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => str_slug($name),
+                'slug' => \Illuminate\Support\Str::slug($name),
             ]
         );
     }

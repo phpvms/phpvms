@@ -8,6 +8,9 @@ use App\Contracts\Factory;
 use App\Models\SimBrief;
 use Carbon\Carbon;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SimBrief>
+ */
 class SimBriefFactory extends Factory
 {
     /**
@@ -25,7 +28,7 @@ class SimBriefFactory extends Factory
     public function definition()
     {
         return [
-            'id'         => $this->faker->unique()->numberBetween(10, 10000000),
+            'id'         => fake()->unique()->numberBetween(10, 10000000),
             'user_id'    => null,
             'flight_id'  => null,
             'pirep_id'   => null,

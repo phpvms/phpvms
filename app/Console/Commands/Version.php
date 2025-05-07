@@ -41,14 +41,10 @@ class Version extends Command
                 }
 
                 $prerelease = $version->getPreRelease();
-                if (!empty($prerelease)) {
-                    $cfg['current']['prerelease'] = $prerelease->toString();
-                } else {
-                    $cfg['current']['prerelease'] = false;
-                }
+                $cfg['current']['prerelease'] = $prerelease instanceof \Version\Extension\PreRelease ? $prerelease->toString() : false;
 
                 $build_meta = $version->getBuild();
-                if (!empty($build_meta)) {
+                if ($build_meta instanceof \Version\Extension\Build) {
                     $cfg['current']['buildmetadata'] = $build_meta->toString();
                 } else {
                     $build_number = $this->versionSvc->generateBuildId($cfg);
@@ -59,7 +55,7 @@ class Version extends Command
             }
         }
 
-        $incl_build = empty($this->option('base-only')) ? true : false;
+        $incl_build = empty($this->option('base-only'));
         $version = $this->versionSvc->getCurrentVersion($incl_build);
         echo $version."\n";
     }

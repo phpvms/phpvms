@@ -100,7 +100,7 @@ jobs:
         composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh ${{ env.NBGV_SemVer2 }}
+        .github/scripts/version.sh
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 
@@ -111,6 +111,10 @@ jobs:
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
         vendor/bin/phpunit
+
+    - name: Run Rector
+      run: |
+        vendor/bin/rector --dry-run
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
@@ -163,6 +167,12 @@ jobs:
         composer install --no-dev --prefer-dist --no-interaction --verbose
         composer dump-autoload
         sudo chmod +x ./.github/scripts/*
+
+    - name: Install NPM dependencies
+      run: npm install
+
+    - name: Compile assets
+      run: npm run build
 
     - id: version
       name: Get version

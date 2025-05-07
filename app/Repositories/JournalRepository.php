@@ -35,8 +35,8 @@ class JournalRepository extends Repository implements CacheableInterface
      */
     public function formatPostDate(?Carbon $date = null)
     {
-        if (!$date) {
-            return;
+        if (!$date instanceof \Carbon\Carbon) {
+            return null;
         }
 
         return $date->setTimezone('UTC')->toDateString();
@@ -57,8 +57,8 @@ class JournalRepository extends Repository implements CacheableInterface
             'journal_id' => $journal->id,
         ];
 
-        $credits = Money::create($this->findWhere($where)->sum('credit') ?: 0);
-        $debits = Money::create($this->findWhere($where)->sum('debit') ?: 0);
+        $credits = Money::create($this->where($where)->sum('credit') ?: 0);
+        $debits = Money::create($this->where($where)->sum('debit') ?: 0);
         $balance = $credits->subtract($debits);
 
         $journal->balance = $balance->getAmount();
@@ -104,8 +104,8 @@ class JournalRepository extends Repository implements CacheableInterface
 
         $attrs = [
             'journal_id'        => $journal->id,
-            'credit'            => $credit ? $credit->getAmount() : null,
-            'debit'             => $debit ? $debit->getAmount() : null,
+            'credit'            => $credit instanceof \App\Support\Money ? $credit->getAmount() : null,
+            'debit'             => $debit instanceof \App\Support\Money ? $debit->getAmount() : null,
             'currency'          => setting('units.currency', 'USD'),
             'memo'              => $memo,
             'post_date'         => $post_date,
@@ -139,7 +139,7 @@ class JournalRepository extends Repository implements CacheableInterface
     {
         $journal->refresh();
 
-        if (!$date) {
+        if (!$date instanceof \Carbon\Carbon) {
             $date = Carbon::now('UTC');
         }
 
@@ -165,7 +165,7 @@ class JournalRepository extends Repository implements CacheableInterface
     ): Money {
         $where = [];
 
-        if ($journal) {
+        if ($journal instanceof \App\Models\Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -176,7 +176,7 @@ class JournalRepository extends Repository implements CacheableInterface
         $query = JournalTransaction::where($where);
         $query = $query->whereDate('post_date', '<=', $date->toDateString());
 
-        if ($start_date) {
+        if ($start_date instanceof \Carbon\Carbon) {
             $query = $query->whereDate('post_date', '>=', $start_date->toDateString());
         }
 
@@ -199,7 +199,7 @@ class JournalRepository extends Repository implements CacheableInterface
     ): Money {
         $where = [];
 
-        if ($journal) {
+        if ($journal instanceof \App\Models\Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -210,7 +210,7 @@ class JournalRepository extends Repository implements CacheableInterface
         $query = JournalTransaction::where($where);
         $query = $query->whereDate('post_date', '<=', $date->toDateString());
 
-        if ($start_date) {
+        if ($start_date instanceof \Carbon\Carbon) {
             $query = $query->whereDate('post_date', '>=', $start_date->toDateString());
         }
 
@@ -239,7 +239,7 @@ class JournalRepository extends Repository implements CacheableInterface
             $where['journal_id'] = $journal->id;
         }
 
-        if ($date) {
+        if ($date instanceof \Carbon\Carbon) {
             $date = $this->formatPostDate($date);
             $where[] = ['post_date', '=', $date];
         }
