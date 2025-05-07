@@ -1,90 +1,65 @@
 <?php
 
-namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers\Frontend;
+namespace $CLASS_NAMESPACE$;
 
-use App\Contracts\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-/**
- * Class $CLASS$
- * @package $CLASS_NAMESPACE$
- */
 class $CLASS$ extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @param Request $request
-     *
-     * @return mixed
      */
-    public function index(Request $request)
+    public function index()
     {
         return view('$LOWER_NAME$::index');
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @param Request $request
-     *
-     * @return mixed
      */
-    public function create(Request $request)
+    public function create()
     {
         return view('$LOWER_NAME$::create');
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     *
-     * @return mixed
      */
     public function store(Request $request)
     {
+        //
     }
 
     /**
      * Show the specified resource.
-     *
-     * @param Request $request
-     *
-     * @return mixed
      */
-    public function show(Request $request)
+    public function show($id)
     {
         return view('$LOWER_NAME$::show');
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param Request $request
-     *
-     * @return mixed
      */
-    public function edit(Request $request)
+    public function edit($id)
     {
         return view('$LOWER_NAME$::edit');
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param Request $request
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
+        //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param Request $request
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
+        //
     }
 }

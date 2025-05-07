@@ -2,21 +2,17 @@
 
 namespace $NAMESPACE$;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-/**
- * Class $CLASS$
- * @package $NAMESPACE$
- */
 class $CLASS$ extends Mailable
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -25,11 +21,9 @@ class $CLASS$ extends Mailable
 
     /**
      * Build the message.
-     *
-     * @return $this
      */
-    public function build()
+    public function build(): self
     {
-        return view('view.name');
+        return $this->view('view.name');
     }
 }

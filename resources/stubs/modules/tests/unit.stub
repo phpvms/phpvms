@@ -3,16 +3,13 @@
 namespace $NAMESPACE$;
 
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class $CLASS$ extends TestCase
 {
     /**
      * A basic test example.
-     *
-     * @return void
      */
-    public function testExample()
+    public function test_that_true_is_true(): void
     {
         $this->assertTrue(true);
     }

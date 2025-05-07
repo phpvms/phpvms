@@ -1,80 +1,50 @@
 <?php
 
-namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Providers;
+namespace $NAMESPACE$;
 
-use Illuminate\Routing\Router;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
-/**
- * Register the routes required for your module here
- */
-class RouteServiceProvider extends ServiceProvider
+class $CLASS$ extends ServiceProvider
 {
-    /**
-     * The root namespace to assume when generating URLs to actions.
-     *
-     * @var string
-     */
-    protected $namespace = '$MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers';
+    protected string $name = '$MODULE$';
 
     /**
      * Called before routes are registered.
      *
      * Register any model bindings or pattern based filters.
-     *
-     * @param  Router $router
-     * @return void
      */
-    public function before(Router $router)
+    public function boot(): void
     {
-        //
+        parent::boot();
     }
 
     /**
      * Define the routes for the application.
-     *
-     * @param \Illuminate\Routing\Router $router
-     *
-     * @return void
      */
-    public function map(Router $router)
+    public function map(): void
     {
-        $this->registerWebRoutes();
-        $this->registerApiRoutes();
+        $this->mapApiRoutes();
+        $this->mapWebRoutes();
     }
 
     /**
+     * Define the "web" routes for the application.
      *
+     * These routes all receive session state, CSRF protection, etc.
      */
-    protected function registerWebRoutes(): void
+    protected function mapWebRoutes(): void
     {
-        $config = [
-            'as'         => '$LOWER_NAME$.',
-            'prefix'     => '$LOWER_NAME$',
-            'namespace'  => $this->namespace.'\Frontend',
-            'middleware' => ['web'],
-        ];
-
-        Route::group($config, function() {
-            $this->loadRoutesFrom(__DIR__.'/../Http/Routes/web.php');
-        });
+        Route::middleware('web')->group(module_path($this->name, '$WEB_ROUTES_PATH$'));
     }
 
     /**
-     * Register any API routes your module has. Remove this if you aren't using any
+     * Define the "api" routes for the application.
+     *
+     * These routes are typically stateless.
      */
-    protected function registerApiRoutes(): void
+    protected function mapApiRoutes(): void
     {
-        $config = [
-            'as'         => 'api.$LOWER_NAME$.',
-            'prefix'     => 'api/$LOWER_NAME$',
-            'namespace'  => $this->namespace.'\Api',
-            'middleware' => ['api'],
-        ];
-
-        Route::group($config, function() {
-            $this->loadRoutesFrom(__DIR__.'/../Http/Routes/api.php');
-        });
+        Route::middleware('api')->prefix('api')->name('api.')->group(module_path($this->name, '$API_ROUTES_PATH$'));
     }
 }
