@@ -18,7 +18,7 @@ RedirectMatch 403 ^/node_modules/.*?$
 RedirectMatch 403 ^/resources/.*?$
 RedirectMatch 403 ^/storage/.*?$
 RedirectMatch 403 ^/tests/.*?$
-RedirectMatch 403 ^/vendor/.*?$
+#RedirectMatch 403 ^/vendor/.*?$
 RedirectMatch 403 ^/.bowerrc$
 RedirectMatch 403 ^/.env
 RedirectMatch 403 ^/artisan$

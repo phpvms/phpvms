@@ -36,6 +36,6 @@ class MoneyCast implements CastsAttributes
             ? $value
             : new Money($value);
 
-        return $value ? (int) $value->getAmount() : null;
+        return $value ? $value->getAmount() : null;
     }
 }

@@ -205,7 +205,7 @@ class NotificationEventsHandler extends Listener
     {
         Log::info('NotificationEvents::onPirepFile: '.$event->pirep->id.' filed');
         if (setting('notifications.mail_pirep_admin', true)) {
-            $this->notifyAdmins(new Messages\PirepFiled($event->pirep));
+            $this->notifyAdmins(new Messages\PirepFiled($event->pirep->withoutRelations()));
         }
 
         /*
@@ -223,7 +223,7 @@ class NotificationEventsHandler extends Listener
     {
         if (setting('notifications.mail_pirep_user_ack', true)) {
             Log::info('NotificationEvents::onPirepAccepted: '.$event->pirep->id.' accepted');
-            $this->notifyUser($event->pirep->user, new Messages\PirepAccepted($event->pirep));
+            $this->notifyUser($event->pirep->user, new Messages\PirepAccepted($event->pirep->withoutRelations()));
         }
     }
 
@@ -234,7 +234,7 @@ class NotificationEventsHandler extends Listener
     {
         if (setting('notifications.mail_pirep_user_rej', true)) {
             Log::info('NotificationEvents::onPirepRejected: '.$event->pirep->id.' rejected');
-            $this->notifyUser($event->pirep->user, new Messages\PirepRejected($event->pirep));
+            $this->notifyUser($event->pirep->user, new Messages\PirepRejected($event->pirep->withoutRelations()));
         }
     }
 

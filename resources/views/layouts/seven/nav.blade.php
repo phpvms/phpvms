@@ -120,6 +120,7 @@
                                 </a>
                                 <div class="dropdown-divider"></div>
                             @endcan
+                          <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{{ url('/logout') }}">
                                 <i class="bi bi-box-arrow-right"></i>&nbsp;&nbsp;@lang('common.logout')
                             </a>

@@ -3,9 +3,9 @@ current:
   label: ''
   major: 7
   minor: 0
-  patch: 1
-  prerelease: dev
-  buildmetadata: '250116.807534'
+  patch: 0
+  prerelease: false
+  buildmetadata:
   commit: ''
   git_absorb: git-local
   format: '{$major}.{$minor}.{$patch}'

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Filament;
 
-use App\Models\Flight;
+use App\Models\Award;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class FlightPolicy
+class AwardPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class FlightPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_flight');
+        return $user->can('view_any_award');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Flight $flight): bool
+    public function view(User $user, Award $award): bool
     {
-        return $user->can('view_flight');
+        return $user->can('view_award');
     }
 
     /**
@@ -31,23 +31,23 @@ class FlightPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_flight');
+        return $user->can('create_award');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Flight $flight): bool
+    public function update(User $user, Award $award): bool
     {
-        return $user->can('update_flight');
+        return $user->can('update_award');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Flight $flight): bool
+    public function delete(User $user, Award $award): bool
     {
-        return $user->can('delete_flight');
+        return $user->can('delete_award');
     }
 
     /**
@@ -55,15 +55,15 @@ class FlightPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_flight');
+        return $user->can('delete_any_award');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Flight $flight): bool
+    public function forceDelete(User $user, Award $award): bool
     {
-        return $user->can('force_delete_flight');
+        return $user->can('force_delete_award');
     }
 
     /**
@@ -71,15 +71,15 @@ class FlightPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_flight');
+        return $user->can('force_delete_any_award');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Flight $flight): bool
+    public function restore(User $user, Award $award): bool
     {
-        return $user->can('restore_flight');
+        return $user->can('restore_award');
     }
 
     /**
@@ -87,15 +87,15 @@ class FlightPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_flight');
+        return $user->can('restore_any_award');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Flight $flight): bool
+    public function replicate(User $user, Award $award): bool
     {
-        return $user->can('replicate_flight');
+        return $user->can('replicate_award');
     }
 
     /**
@@ -103,6 +103,6 @@ class FlightPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_flight');
+        return $user->can('reorder_award');
     }
 }

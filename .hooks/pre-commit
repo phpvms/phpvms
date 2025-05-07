@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# This script will run Laravel Pint and Rector on newly staged PHP Files.
+
+files=$(git diff --cached --name-only --diff-filter=AMCR | grep "\.php$")
+if echo "$files" | grep --quiet "\.php$"; then
+    # Detect PHP binary
+    PHP_BINARY=$(command -v php)
+
+    if [ -x "$PHP_BINARY" ]; then
+        echo "Running pre-commit hooks on host..."
+        ./vendor/bin/pint $files
+        #./vendor/bin/rector process $files
+        git add $files
+    else
+        # Detect Docker binary
+        DOCKER_BINARY=$(command -v docker)
+
+        # Check if Sail is running (only if Docker is available)
+        SAIL_RUNNING=""
+        if [ -x "$DOCKER_BINARY" ]; then
+            SAIL_RUNNING=$(docker ps --filter "name=laravel.test" --format "{{.Names}}" | grep -w "laravel.test")
+        fi
+
+        if [ -n "$SAIL_RUNNING" ]; then
+            echo "Running pre-commit hooks in laravel sail..."
+            ./vendor/bin/sail pint $files
+            #./vendor/bin/sail bin rector process $files
+            git add $files
+        else
+            echo "Skipping pre-commit hooks (no PHP or running Sail detected)."
+        fi
+    fi
+fi
