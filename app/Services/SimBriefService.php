@@ -82,7 +82,7 @@ class SimBriefService extends Service
         ];
 
         // encode the fares data to JSONß
-        if (!empty($fares)) {
+        if ($fares !== []) {
             $attrs['fare_data'] = json_encode($fares);
         }
 
@@ -156,7 +156,7 @@ class SimBriefService extends Service
         $this->addRouteToPirep($pirep, $simBrief);
 
         $simBrief->pirep_id = $pirep->id;
-        $simBrief->flight_id = !empty($keep_flight) ? $pirep->flight_id : null;
+        $simBrief->flight_id = empty($keep_flight) ? null : $pirep->flight_id;
         $simBrief->save();
 
         return $pirep;

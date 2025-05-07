@@ -392,6 +392,8 @@ class Metar implements \ArrayAccess
         if (isset($this->result[$parameter])) {
             return $this->result[$parameter];
         }
+
+        return null;
     }
 
     /**
@@ -515,15 +517,13 @@ class Metar implements \ArrayAccess
 
         if (array_key_exists('cavok', $this->result) && $this->result['cavok']) {
             $this->result['category'] = 'VFR';
-        } else {
+        } elseif (array_key_exists('cloud_height', $this->result) && $this->result['cloud_height'] !== null) {
             /* @noinspection NestedPositiveIfStatementsInspection */
-            if (array_key_exists('cloud_height', $this->result) && $this->result['cloud_height'] !== null) {
-                if ($this->result['cloud_height']['ft'] > 3000
-                    && (empty($this->result['visibility']) || $this->result['visibility']['km'] > 5)) {
-                    $this->result['category'] = 'VFR';
-                } else {
-                    $this->result['category'] = 'IFR';
-                }
+            if ($this->result['cloud_height']['ft'] > 3000
+                && (empty($this->result['visibility']) || $this->result['visibility']['km'] > 5)) {
+                $this->result['category'] = 'VFR';
+            } else {
+                $this->result['category'] = 'IFR';
             }
         }
 
@@ -670,7 +670,7 @@ class Metar implements \ArrayAccess
      */
     private function get_station($part)
     {
-        $r = '@^([A-Z]{1}'.'[A-Z0-9]{3})$@';  // 1
+        $r = '@^([A-Z]{1}[A-Z0-9]{3})$@';  // 1
         if (!preg_match($r, $part, $found)) {
             return false;
         }
@@ -704,15 +704,9 @@ class Metar implements \ArrayAccess
 
         if ($this->result['observed_date'] === null) {
             // Take one month, if the observed day is greater than the current day
-            if ($day > date('j')) {
-                $month = date('n') - 1;
-            } else {
-                $month = date('n');
-            }
-
+            $month = $day > date('j') ? date('n') - 1 : date('n');
             // Get observed time from a METAR/TAF part
             $observed_time = mktime($hour, $minute, 0, $month, $day, date('Y'));
-
             $this->set_observed_date($observed_time);
         }
 
@@ -783,7 +777,7 @@ class Metar implements \ArrayAccess
             }
 
             // Speed variations (gust speed)
-            if (isset($found[4]) && !empty($found[4])) {
+            if (isset($found[4]) && (isset($found[4]) && ($found[4] !== '' && $found[4] !== '0'))) {
                 $this->set_result_value('wind_gust_speed', $this->convert_speed($found[4], $unit));
             }
         }
@@ -868,25 +862,25 @@ class Metar implements \ArrayAccess
             $prefix = '';
 
             // ICAO visibility (in meters)
-            if (isset($found[2]) && !empty($found[2])) {
+            if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
                 $visibility = $this->createDistance((int) $found[2], 'm');
             } else {
-                if (isset($found[3]) && !empty($found[3])) {
+                if (isset($found[3]) && (isset($found[3]) && ($found[3] !== '' && $found[3] !== '0'))) {
                     $prefix = 'Less than ';
                 }
 
-                if (isset($found[7]) && !empty($found[7])) {
+                if (isset($found[7]) && (isset($found[7]) && ($found[7] !== '' && $found[7] !== '0'))) {
                     $visibility = (int) $found[4] + (int) $found[6] / (int) $found[7];
                 } else {
                     $visibility = (int) $found[4];
                 }
 
                 $units = strtoupper($found[8]);
-                if ($units == 'MI' || $units == 'SM') {
+                if ($units === 'MI' || $units === 'SM') {
                     $unit = 'mi';
-                } elseif ($units == 'M') {
+                } elseif ($units === 'M') {
                     $unit = 'm';
-                } elseif ($units == 'KM') {
+                } elseif ($units === 'KM') {
                     $unit = 'km';
                 } else {
                     $unit = $units;
@@ -937,7 +931,7 @@ class Metar implements \ArrayAccess
         $meters = $this->createDistance((int) $found[1], 'm');
         $this->set_result_value('visibility_min', $meters);
 
-        if (isset($found[2]) && !empty($found[2])) {
+        if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
             $this->set_result_value('visibility_min_direction', $found[2]);
         }
 
@@ -998,10 +992,10 @@ class Metar implements \ArrayAccess
 
         // Runway visual range
         if (isset($found[6])) {
-            if (!empty($found[4])) {
+            if (isset($found[4]) && ($found[4] !== '' && $found[4] !== '0')) {
                 $observed['interval_min'] = $this->createDistance($found[4], $unit);
                 $observed['interval_max'] = $this->createDistance($found[6], $unit);
-                if (!empty($found[5])) {
+                if (isset($found[5]) && ($found[5] !== '' && $found[5] !== '0')) {
                     $observed['variable_prefix'] = $found[5];
                 }
             } else {
@@ -1010,11 +1004,11 @@ class Metar implements \ArrayAccess
         }
 
         // Runway visual range report
-        if (!empty($observed['runway'])) {
+        if (isset($observed['runway']) && ($observed['runway'] !== '' && $observed['runway'] !== '0')) {
             $report = [];
-            if ($observed['variable'] !== null) {
+            if ($observed['variable'] instanceof \App\Support\Units\Distance) {
                 $report[] = $observed['variable'][$report_unit].$report_unit;
-            } elseif ($observed['interval_min'] !== null && $observed['interval_max'] !== null) {
+            } elseif ($observed['interval_min'] instanceof \App\Support\Units\Distance && $observed['interval_max'] instanceof \App\Support\Units\Distance) {
                 if (isset(static::$rvr_prefix_codes[$observed['variable_prefix']])) {
                     $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
                         static::$rvr_prefix_codes[$observed['variable_prefix']].' that '.
@@ -1083,12 +1077,12 @@ class Metar implements \ArrayAccess
         ];
 
         // Clear skies or no observation
-        if (isset($found[2]) && !empty($found[2])) {
+        if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
             if (isset(static::$cloud_codes[$found[2]])) {
                 $observed['amount'] = $found[2];
             }
         } // Cloud cover observed
-        elseif (isset($found[5]) && !empty($found[5]) && is_numeric($found[5])) {
+        elseif (isset($found[5]) && (isset($found[5]) && ($found[5] !== '' && $found[5] !== '0')) && is_numeric($found[5])) {
             $observed['height'] = $this->createAltitude($found[5] * 100, 'feet');
 
             // Cloud height
@@ -1101,7 +1095,7 @@ class Metar implements \ArrayAccess
             }
         }
         // Type
-        if (isset($found[6], static::$cloud_type_codes[$found[6]]) && !empty($found[6]) && $found[4] !== 'VV') {
+        if (isset($found[6], static::$cloud_type_codes[$found[6]]) && (isset($found[6]) && ($found[6] !== '' && $found[6] !== '0')) && $found[4] !== 'VV') {
             $observed['type'] = $found[6];
         }
 
@@ -1113,7 +1107,7 @@ class Metar implements \ArrayAccess
             $report[] = static::$cloud_codes[$observed['amount']];
             $report_ft[] = static::$cloud_codes[$observed['amount']];
 
-            if ($observed['height']) {
+            if ($observed['height'] instanceof \App\Support\Units\Altitude) {
                 if ($observed['type'] !== null) {
                     $report[] = 'at '.round($observed['height']['m'], 0).' meters, '.static::$cloud_type_codes[$observed['type']];
                     $report_ft[] = 'at '.round($observed['height']['ft'], 0).' feet, '.static::$cloud_type_codes[$observed['type']];
@@ -1425,7 +1419,7 @@ class Metar implements \ArrayAccess
             'time'  => null,
         ];
 
-        if (!empty($found[3])) {
+        if (isset($found[3]) && ($found[3] !== '' && $found[3] !== '0')) {
             $forecast['day'] = (int) $found[3];
         }
 
@@ -1460,14 +1454,11 @@ class Metar implements \ArrayAccess
             .'(([\d]{2})'     // 7
             .'([\d]{2}))/'    // 8
             .'(([\d]{2})'     // 9
-            .'([\d]{2})))$@'; // 10
+            .'([\d]{2})))$@';
 
-        if (!preg_match($r, $part, $found)) {
-            return false;
-        }
-
+        // 10
         // Ignore trends
-        return true;
+        return (bool) preg_match($r, $part, $found);
         // Detects TAF on report
         if ($this->part <= 4) {
             $this->set_result_value('taf', true);
@@ -1509,7 +1500,7 @@ class Metar implements \ArrayAccess
 
                 elseif (isset($found[8], static::$trends_time_codes[$found[5]])) {
                     $trend['period']['flag'] = $found[5];
-                    if (!empty($found[6])) {
+                    if (isset($found[6]) && ($found[6] !== '' && $found[6] !== '0')) {
                         $trend['period']['day'] = (int) $found[6];
                     }
                     $trend['period']['time'] = $found[7].':'.$found[8].' UTC';
@@ -1524,7 +1515,7 @@ class Metar implements \ArrayAccess
             } // If RMK observed -- the trend is ended
 
             elseif ($this->raw_parts[$this->part] === 'RMK') {
-                if (!empty($raw_parts)) {
+                if ($raw_parts !== []) {
                     $this->part--; // return pointer to RMK part
                 }
 
@@ -1538,14 +1529,14 @@ class Metar implements \ArrayAccess
             $this->part++; // go to next part
 
             // Detect ends of this trend, if the METAR raw data observed
-            if (!empty($raw_parts) && (!isset($this->raw_parts[$this->part]) || preg_match($r, $this->raw_parts[$this->part]))) {
+            if ($raw_parts !== [] && (!isset($this->raw_parts[$this->part]) || preg_match($r, $this->raw_parts[$this->part]))) {
                 $this->part--; // return pointer to finded part
                 break;
             }
         }
 
         // Empty trend is a bad trend, except for flags CNL and NIL
-        if (empty($raw_parts)) {
+        if ($raw_parts === []) {
             if ($trend['flag'] !== 'CNL' && $trend['flag'] !== 'NIL') {
                 $this->part--; // return pointer to previous part
 
@@ -1558,7 +1549,7 @@ class Metar implements \ArrayAccess
             if ($parsed = $parser->parse_all()) {
                 unset($parsed['taf']);
                 // Add parsed data to trend
-                if (!empty($parsed)) {
+                if ($parsed !== []) {
                     $trend = array_merge($trend, $parsed);
                 }
             }
@@ -1601,7 +1592,7 @@ class Metar implements \ArrayAccess
             $report[] = 'probability '.$trend['probability'].'% of the conditions existing';
         }
 
-        if (!empty($report)) {
+        if ($report !== []) {
             $trend['period_report'] = ucfirst(implode(', ', $report));
         }
 
@@ -1633,7 +1624,7 @@ class Metar implements \ArrayAccess
             $this->part++; // go to next part
         }
 
-        if (!empty($remarks)) {
+        if ($remarks !== []) {
             $this->set_result_value('remarks', implode(' ', $remarks));
         }
 

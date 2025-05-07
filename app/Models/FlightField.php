@@ -24,10 +24,6 @@ class FlightField extends Model
         'required',
     ];
 
-    protected $casts = [
-        'required' => 'boolean',
-    ];
-
     public static $rules = [
         'name' => 'required',
     ];
@@ -40,8 +36,15 @@ class FlightField extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => str_slug($name),
+                'slug' => \Illuminate\Support\Str::slug($name),
             ]
         );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'required' => 'boolean',
+        ];
     }
 }

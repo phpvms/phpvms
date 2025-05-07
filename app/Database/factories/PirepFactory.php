@@ -13,6 +13,9 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use Carbon\Carbon;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pirep>
+ */
 class PirepFactory extends Factory
 {
     /**
@@ -36,7 +39,7 @@ class PirepFactory extends Factory
         $flight = Flight::factory()->create(['airline_id' => $airline->id]);
 
         return [
-            'id'                  => $this->faker->unique()->numberBetween(10, 10000000),
+            'id'                  => fake()->unique()->numberBetween(10, 10000000),
             'airline_id'          => fn () => $airline->id,
             'user_id'             => fn () => \App\Models\User::factory()->create()->id,
             'aircraft_id'         => fn () => \App\Models\Aircraft::factory()->create()->id,
@@ -46,21 +49,21 @@ class PirepFactory extends Factory
             'route_leg'           => null,
             'dpt_airport_id'      => fn () => $flight->dpt_airport_id,
             'arr_airport_id'      => fn () => $flight->arr_airport_id,
-            'level'               => $this->faker->numberBetween(20, 400),
-            'distance'            => $this->faker->randomFloat(2, 0, 6000),
-            'planned_distance'    => $this->faker->randomFloat(2, 0, 6000),
-            'flight_time'         => $this->faker->numberBetween(60, 360),
-            'planned_flight_time' => $this->faker->numberBetween(60, 360),
-            'zfw'                 => $this->faker->randomFloat(2),
-            'block_fuel'          => $this->faker->randomFloat(2, 0, 1000),
+            'level'               => fake()->numberBetween(20, 400),
+            'distance'            => fake()->randomFloat(2, 0, 6000),
+            'planned_distance'    => fake()->randomFloat(2, 0, 6000),
+            'flight_time'         => fake()->numberBetween(60, 360),
+            'planned_flight_time' => fake()->numberBetween(60, 360),
+            'zfw'                 => fake()->randomFloat(2),
+            'block_fuel'          => fake()->randomFloat(2, 0, 1000),
             'fuel_used'           => fn (array $pirep) => round($pirep['block_fuel'] * .9, 2),
             'block_on_time'       => Carbon::now('UTC'),
             'block_off_time'      => fn (array $pirep) => $pirep['block_on_time']->subMinutes(
                 $pirep['flight_time']
             ),
-            'route'  => $this->faker->text(200),
-            'notes'  => $this->faker->text(200),
-            'source' => $this->faker->randomElement(
+            'route'  => fake()->text(200),
+            'notes'  => fake()->text(200),
+            'source' => fake()->randomElement(
                 [PirepSource::MANUAL, PirepSource::ACARS]
             ),
             'source_name'  => 'TestFactory',

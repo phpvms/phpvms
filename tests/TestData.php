@@ -85,7 +85,7 @@ trait TestData
         $attrs = [];
 
         $rank = Rank::factory()->create($attrs);
-        if (!empty($subfleet_ids)) {
+        if ($subfleet_ids !== []) {
             $rank->subfleets()->syncWithoutDetaching($subfleet_ids);
         }
 

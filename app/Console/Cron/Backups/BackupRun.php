@@ -22,7 +22,7 @@ class BackupRun extends CronCommand
         Artisan::call('backup:run');
 
         $output = trim(Artisan::output());
-        if (!empty($output)) {
+        if ($output !== '' && $output !== '0') {
             Log::info($output);
         }
     }

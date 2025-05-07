@@ -8,6 +8,9 @@ use App\Contracts\Factory;
 use App\Models\Enums\NavaidType;
 use App\Models\Navdata;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Navdata>
+ */
 class NavdataFactory extends Factory
 {
     /**
@@ -25,12 +28,12 @@ class NavdataFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'   => str_replace(' ', '', str_replace('.', '', $this->faker->unique()->text(5))),
-            'name' => str_replace('.', '', $this->faker->unique()->word),
-            'type' => $this->faker->randomElement([NavaidType::VOR, NavaidType::NDB]),
-            'lat'  => $this->faker->latitude,
-            'lon'  => $this->faker->longitude,
-            'freq' => $this->faker->randomFloat(2, 100, 1000),
+            'id'   => str_replace(' ', '', str_replace('.', '', fake()->unique()->text(5))),
+            'name' => str_replace('.', '', fake()->unique()->word),
+            'type' => fake()->randomElement([NavaidType::VOR, NavaidType::NDB]),
+            'lat'  => fake()->latitude,
+            'lon'  => fake()->longitude,
+            'freq' => fake()->randomFloat(2, 100, 1000),
         ];
     }
 }

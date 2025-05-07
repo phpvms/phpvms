@@ -123,7 +123,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     public function headers(?User $user = null, array $headers = []): array
     {
-        if ($user !== null) {
+        if ($user instanceof \App\Models\User) {
             $headers['x-api-key'] = $user->api_key;
 
             return $headers;

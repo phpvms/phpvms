@@ -14,15 +14,18 @@ class SimBriefLayout extends Model
         'name_long',
     ];
 
-    protected $casts = [
-        'id'        => 'string',
-        'name'      => 'string',
-        'name_long' => 'string',
-    ];
-
     public static array $rules = [
         'id'        => 'required|string',
         'name'      => 'required|string',
         'name_long' => 'required|string',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'id'        => 'string',
+            'name'      => 'string',
+            'name_long' => 'string',
+        ];
+    }
 }

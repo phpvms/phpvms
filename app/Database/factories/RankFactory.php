@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Rank;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Rank>
+ */
 class RankFactory extends Factory
 {
     /**
@@ -25,10 +28,10 @@ class RankFactory extends Factory
     {
         return [
             'id'                   => null,
-            'name'                 => $this->faker->unique()->text(50),
-            'hours'                => $this->faker->numberBetween(10, 50),
-            'acars_base_pay_rate'  => $this->faker->numberBetween(10, 100),
-            'manual_base_pay_rate' => $this->faker->numberBetween(10, 100),
+            'name'                 => fake()->unique()->text(50),
+            'hours'                => fake()->numberBetween(10, 50),
+            'acars_base_pay_rate'  => fake()->numberBetween(10, 100),
+            'manual_base_pay_rate' => fake()->numberBetween(10, 100),
             'auto_approve_acars'   => 0,
             'auto_approve_manual'  => 0,
             'auto_promote'         => 0,

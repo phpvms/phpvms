@@ -7,6 +7,9 @@ namespace App\Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Fare;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Fare>
+ */
 class FareFactory extends Factory
 {
     /**
@@ -25,11 +28,11 @@ class FareFactory extends Factory
     {
         return [
             'id'       => null,
-            'code'     => $this->faker->unique()->text(50),
-            'name'     => $this->faker->text(50),
-            'price'    => $this->faker->randomFloat(2, 100, 1000),
+            'code'     => fake()->unique()->text(50),
+            'name'     => fake()->text(50),
+            'price'    => fake()->randomFloat(2, 100, 1000),
             'cost'     => fn (array $fare) => round($fare['price'] / 2),
-            'capacity' => $this->faker->randomFloat(0, 20, 500),
+            'capacity' => fake()->randomFloat(0, 20, 500),
         ];
     }
 }
