@@ -81,7 +81,7 @@
         "jlorente/laravel-data-migrations": "^2.0",
         "filament/filament": "^3.2.133",
         "flowframe/laravel-trend": "^0.2.0",
-        "bezhansalleh/filament-shield": "^3.3.3",
+        "bezhansalleh/filament-shield": "^3.3.6",
         "guava/filament-clusters": "^1.2.0",
         "spatie/laravel-backup": "^9.2",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2.3",
