@@ -8,9 +8,12 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Role;
+use App\Models\SimBrief;
 use App\Models\Subfleet;
 use App\Models\User;
+use App\Services\SimBriefService;
 use App\Services\UserService;
+use App\Support\Utils;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -164,5 +167,44 @@ trait TestData
     public function createRole(array $attrs = []): Role
     {
         return Role::factory()->create($attrs);
+    }
+
+    /**
+     * Download an OFP file
+     */
+    protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
+    {
+        $this->mockXmlResponse([
+            'simbrief/briefing.xml',
+            'simbrief/acars_briefing.xml',
+        ]);
+
+        /** @var SimBriefService $sb */
+        $sb = app(SimBriefService::class);
+
+        return $sb->downloadOfp($user->id, Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
+    }
+
+    /**
+     * Load SimBrief
+     */
+    protected function loadSimBrief(
+        User $user,
+        Aircraft $aircraft,
+        array $fares = [],
+        ?string $flight_id = null
+    ): SimBrief {
+        if (empty($flight_id)) {
+            $flight_id = 'simbriefflightid';
+        }
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create([
+            'id'             => $flight_id,
+            'dpt_airport_id' => 'OMAA',
+            'arr_airport_id' => 'OMDB',
+        ]);
+
+        return $this->downloadOfp($user, $flight, $aircraft, $fares);
     }
 }
