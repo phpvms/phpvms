@@ -50,13 +50,13 @@ class AirlineFinanceChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => 'Debit',
-                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getValue()),
+                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
                     'backgroundColor' => 'rgba('.Color::Red[400].', 0.1)',
                     'borderColor'     => 'rgb('.Color::Red[400].')',
                 ],
                 [
                     'label'           => 'Credit',
-                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate, setting('units.currency'))->getValue()),
+                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
                     'backgroundColor' => 'rgba('.Color::Green[400].', 0.1)',
                     'borderColor'     => 'rgb('.Color::Green[400].')',
                 ],
