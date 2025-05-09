@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Events\UserStateChanged;
+use App\Events\UserStatsChanged;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Actions;
@@ -12,6 +14,10 @@ use Illuminate\Support\Facades\Hash;
 
 class EditUser extends EditRecord
 {
+    private ?int $oldState = null;
+
+    private ?int $oldRankId = null;
+
     protected static string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
@@ -62,5 +68,24 @@ class EditUser extends EditRecord
         }
 
         return $data;
+    }
+
+    protected function beforeSave(): void
+    {
+        if ($this->record instanceof User) {
+            $this->oldState = $this->record->state;
+            $this->oldRankId = $this->record->rank_id;
+        }
+    }
+
+    protected function afterSave(): void
+    {
+        if ($this->record instanceof User && $this->oldState !== $this->record->state) {
+            event(new UserStateChanged($this->record, $this->oldState));
+        }
+
+        if ($this->record instanceof User && $this->oldRankId !== $this->record->rank_id) {
+            event(new UserStatsChanged($this->record, 'rank', $this->oldRankId));
+        }
     }
 }
