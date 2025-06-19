@@ -42,7 +42,7 @@
         "psr/container": "1.1.1",
         "composer/composer": "^2.7.7",
         "composer/installers": "^2.3.0",
-        "laravel/framework": "^v12.0",
+        "laravel/framework": "^v12.19",
         "arrilot/laravel-widgets": "~3.13.0",
         "guzzlehttp/guzzle": "^7.9.0",
         "hashids/hashids": "~4.1.0",
@@ -114,7 +114,11 @@
         "laravel/pail": "^1.2",
         "pestphp/pest": "^3.8",
         "pestphp/pest-plugin-drift": "^3.0",
-        "pestphp/pest-plugin-type-coverage": "^3.5"
+        "pestphp/pest-plugin-type-coverage": "^3.5",
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "pestphp/pest-plugin-livewire": "^3.0",
+        "pestphp/pest-plugin-watch": "^3.0",
+        "pestphp/pest-plugin-arch": "^3.1"
     },
     "autoload": {
         "classmap": [
