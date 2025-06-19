@@ -113,7 +113,8 @@
         "driftingly/rector-laravel": "^2.0",
         "laravel/pail": "^1.2",
         "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-drift": "^3.8"
+        "pestphp/pest-plugin-drift": "^3.0",
+        "pestphp/pest-plugin-type-coverage": "^3.5"
     },
     "autoload": {
         "classmap": [
