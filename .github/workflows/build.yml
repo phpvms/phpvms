@@ -110,7 +110,7 @@ jobs:
     - name: Run Tests
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
-        vendor/bin/phpunit
+        vendor/bin/pest --parallel --ci
 
     - name: Run Rector
       run: |
