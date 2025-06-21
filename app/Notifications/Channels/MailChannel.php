@@ -6,11 +6,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 trait MailChannel
 {
-    protected $mailSubject;
+    protected string $mailSubject;
 
-    protected $mailTemplate;
+    protected string $mailTemplate;
 
-    protected $mailTemplateArgs;
+    protected array $mailTemplateArgs;
 
     /**
      * Set the arguments for the toMail() method
