@@ -66,14 +66,14 @@ class LoginController extends Controller
          * If not, run a validation rule which attempts to split the user by their VA and ID
          * Then inject that user's email into the request
          */
-        if (strpos($id_field, '@') !== false) {
+        if (str_contains((string) $id_field, '@')) {
             $validations[] = 'email';
             $this->loginFieldValue = $request->input('email');
         } else {
-            $validations[] = function ($attr, $value, $fail) use ($request) {
+            $validations[] = function ($attr, string $value, $fail) use ($request): void {
                 try {
                     $user = $this->userSvc->findUserByPilotId($value);
-                } catch (PilotIdNotFound $ex) {
+                } catch (PilotIdNotFound) {
                     Log::warning('Error logging in, pilot_id not found, id='.$value);
                     $fail(__('auth.failed'));
 

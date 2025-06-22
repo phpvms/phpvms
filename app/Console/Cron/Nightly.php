@@ -24,7 +24,7 @@ class Nightly extends CronCommand
         $this->callEvent();
     }
 
-    public function callEvent()
+    public function callEvent(): void
     {
         event(new CronNightly());
     }

@@ -89,7 +89,7 @@ class ExpenseResource extends Resource
 
                 Tables\Columns\TextColumn::make('type')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => ExpenseType::label($state)),
+                    ->formatStateUsing(fn ($state): string => ExpenseType::label($state)),
 
                 Tables\Columns\TextColumn::make('amount')
                     ->sortable()

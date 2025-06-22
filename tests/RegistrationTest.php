@@ -122,7 +122,7 @@ final class RegistrationTest extends TestCase
 
         $userData = array_merge($this->getUserData(), [
             'invite'       => $invite->id,
-            'invite_token' => base64_encode($invite->token),
+            'invite_token' => base64_encode((string) $invite->token),
         ]);
 
         $this->post('/register', $userData)
@@ -144,7 +144,7 @@ final class RegistrationTest extends TestCase
 
         $expiredUserData = array_merge($this->getUserData(), [
             'invite'       => $expiredInvite->id,
-            'invite_token' => base64_encode($expiredInvite->token),
+            'invite_token' => base64_encode((string) $expiredInvite->token),
         ]);
 
         $this->get($expiredInvite->link)
@@ -174,7 +174,7 @@ final class RegistrationTest extends TestCase
 
         $tooUsedUserData = array_merge($this->getUserData(), [
             'invite'       => $tooUsedInvite->id,
-            'invite_token' => base64_encode($tooUsedInvite->token),
+            'invite_token' => base64_encode((string) $tooUsedInvite->token),
         ]);
 
         $this->get($tooUsedInvite->link)
@@ -197,7 +197,7 @@ final class RegistrationTest extends TestCase
 
         $userData = array_merge($this->getUserData(), [
             'invite'       => $invite->id,
-            'invite_token' => base64_encode($invite->token),
+            'invite_token' => base64_encode((string) $invite->token),
         ]);
 
         $this->get($invite->link)

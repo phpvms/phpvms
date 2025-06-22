@@ -44,7 +44,7 @@ class AirframeResource extends Resource
 
                 Forms\Components\Hidden::make('source')
                     ->visibleOn('create')
-                    ->formatStateUsing(fn () => AirframeSource::INTERNAL),
+                    ->formatStateUsing(fn (): int => AirframeSource::INTERNAL),
             ])
             ->columns(3);
     }

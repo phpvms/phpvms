@@ -104,20 +104,20 @@ class RankResource extends Resource
 
                 Tables\Columns\IconColumn::make('auto_approve_acars')
                     ->label('Auto Approve Acars')
-                    ->color(fn ($state) => $state ? 'success' : 'danger')
-                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->color(fn ($state): string => $state ? 'success' : 'danger')
+                    ->icon(fn ($state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('auto_approve_manual')
                     ->label('Auto Approve Manual')
-                    ->color(fn ($state) => $state ? 'success' : 'danger')
-                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->color(fn ($state): string => $state ? 'success' : 'danger')
+                    ->icon(fn ($state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('auto_promote')
                     ->label('Auto Promote')
-                    ->color(fn ($state) => $state ? 'success' : 'danger')
-                    ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->color(fn ($state): string => $state ? 'success' : 'danger')
+                    ->icon(fn ($state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
             ])
             ->defaultSort('hours')

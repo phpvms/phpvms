@@ -39,7 +39,7 @@ class ClearDatabase extends BaseImporter
         ];
     }
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->cleanupDb();
     }

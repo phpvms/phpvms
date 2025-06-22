@@ -31,7 +31,7 @@ class FareService extends Service
      *
      * @throws \Exception
      */
-    public function saveToPirep(Pirep $pirep, array $fares)
+    public function saveToPirep(Pirep $pirep, array $fares): void
     {
         if ($fares === []) {
             return;
@@ -45,7 +45,7 @@ class FareService extends Service
 
         // Read the original fare and get this information from it
         $all_fares = $this->getAllFares($pirep->flight, $pirep->aircraft->subfleet);
-        $all_fares->map(function ($fare, $_) use ($fares, $pirep) {
+        $all_fares->map(function ($fare, $_) use ($fares, $pirep): void {
             /**
              * See if there's match with the provided fares, so we can copy the information over
              *
@@ -117,12 +117,10 @@ class FareService extends Service
          * flight, no matter how rare that might be
          */
         if ($subfleet_fares === null || count($subfleet_fares) === 0) {
-            return $flight_fares->map(function ($fare, $_) {
-                return $this->getFareWithPivot($fare, $fare->pivot);
-            });
+            return $flight_fares->map(fn ($fare, $_): \App\Models\Fare => $this->getFareWithPivot($fare, $fare->pivot));
         }
 
-        return $subfleet_fares->map(function ($sf_fare, $_) use ($flight_fares) {
+        return $subfleet_fares->map(function ($sf_fare, $_) use ($flight_fares): \App\Models\Fare {
             /**
              * Get the fare, using the subfleet's pivot values. This will return
              * the fares with all the costs, etc, that are overridden for the given subfleet
@@ -165,10 +163,9 @@ class FareService extends Service
         $flight_fares = $flight->fares;
 
         /**
-         * @var int      $key
          * @var Subfleet $subfleet
          */
-        foreach ($subfleets as $key => $subfleet) {
+        foreach ($subfleets as $subfleet) {
             $subfleet->fares = $this->getFareWithOverrides($subfleet->fares, $flight_fares);
         }
 
@@ -180,28 +177,22 @@ class FareService extends Service
     /**
      * Get the fares for a particular flight, with the subfleet that is in use being passed in
      *
-     * @param  Flight|null   $flight
-     * @param  Subfleet|null $subfleet
-     * @return Collection
+     * @param Flight|null   $flight
+     * @param Subfleet|null $subfleet
      */
-    public function getAllFares($flight, $subfleet)
+    public function getAllFares($flight, $subfleet): \Illuminate\Support\Collection
     {
         $flight_fares = $flight ? $flight->fares : collect();
 
-        if (empty($subfleet)) {
-            throw new InvalidArgumentException('Subfleet argument missing');
-        }
+        throw_if(empty($subfleet), new InvalidArgumentException('Subfleet argument missing'));
 
         return $this->getFareWithOverrides($subfleet->fares, $flight_fares);
     }
 
     /**
      * Get a fare with the proper prices/costs populated in the pivot
-     *
-     *
-     * @return mixed
      */
-    public function getFares($fare)
+    public function getFares(\App\Models\Fare $fare): \App\Models\Fare
     {
         return $this->getFareWithPivot($fare, $fare->pivot);
     }
@@ -212,7 +203,7 @@ class FareService extends Service
     public function getFareWithPivot(Fare $fare, Pivot $pivot): Fare
     {
         if (filled($pivot->price)) {
-            if (strpos($pivot->price, '%', -1) !== false) {
+            if (str_contains(substr($pivot->price, -1), '%')) {
                 $fare->price = Math::getPercent($fare->price, $pivot->price);
             } else {
                 $fare->price = $pivot->price;
@@ -220,7 +211,7 @@ class FareService extends Service
         }
 
         if (filled($pivot->cost)) {
-            if (strpos($pivot->cost, '%', -1) !== false) {
+            if (str_contains(substr($pivot->cost, -1), '%')) {
                 $fare->cost = Math::getPercent($fare->cost, $pivot->cost);
             } else {
                 $fare->cost = $pivot->cost;
@@ -228,7 +219,7 @@ class FareService extends Service
         }
 
         if (filled($pivot->capacity)) {
-            if (strpos($pivot->capacity, '%', -1) !== false) {
+            if (str_contains(substr($pivot->capacity, -1), '%')) {
                 $fare->capacity = floor(Math::getPercent($fare->capacity, $pivot->capacity));
             } else {
                 $fare->capacity = floor($pivot->capacity);
@@ -251,11 +242,7 @@ class FareService extends Service
      */
     public function getForSubfleet(Subfleet $subfleet)
     {
-        $fares = $subfleet->fares->map(function ($fare) {
-            return $this->getFares($fare);
-        });
-
-        return $fares;
+        return $subfleet->fares->map(fn ($fare): \App\Models\Fare => $this->getFares($fare));
     }
 
     /**
@@ -280,10 +267,7 @@ class FareService extends Service
         return $flight;
     }
 
-    /**
-     * @return Flight
-     */
-    public function delFareFromFlight(Flight $flight, Fare $fare)
+    public function delFareFromFlight(Flight $flight, Fare $fare): Flight
     {
         Log::info('Removing fare "'.$fare->name.'" to flight "'.$flight->ident.'"');
 
@@ -321,7 +305,7 @@ class FareService extends Service
      *
      * @return Subfleet|null|static
      */
-    public function delFareFromSubfleet(Subfleet &$subfleet, Fare &$fare)
+    public function delFareFromSubfleet(Subfleet &$subfleet, Fare &$fare): Subfleet
     {
         Log::info('Removing fare "'.$fare->name.'" from subfleet "'.$subfleet->name.'"');
 

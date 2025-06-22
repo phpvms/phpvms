@@ -245,7 +245,7 @@ class Pirep extends Model
      */
     public function ident(): Attribute
     {
-        return Attribute::make(get: function ($value, $attrs) {
+        return Attribute::make(get: function ($value, $attrs): string {
             $flight_id = optional($this->airline)->code;
             $flight_id .= $this->flight_number;
 
@@ -266,7 +266,7 @@ class Pirep extends Model
      */
     public function readOnly(): Attribute
     {
-        return Attribute::make(get: fn ($_, $attrs) => \in_array(
+        return Attribute::make(get: fn ($_, $attrs): bool => \in_array(
             $this->state,
             static::$read_only_states,
             true
@@ -278,7 +278,7 @@ class Pirep extends Model
      */
     public function progressPercent(): Attribute
     {
-        return Attribute::make(get: function ($_, $attrs) {
+        return Attribute::make(get: function ($_, $attrs): float {
             $distance = $attrs['distance'];
 
             $upper_bound = $distance;
@@ -331,7 +331,7 @@ class Pirep extends Model
      */
     public function route(): Attribute
     {
-        return Attribute::make(set: fn ($route) => strtoupper(trim($route)));
+        return Attribute::make(set: fn ($route) => strtoupper(trim((string) $route)));
     }
 
     /**
@@ -339,7 +339,7 @@ class Pirep extends Model
      */
     public function cancelled(): Attribute
     {
-        return Attribute::make(get: fn ($_, $attrs) => $this->state === PirepState::CANCELLED);
+        return Attribute::make(get: fn ($_, $attrs): bool => $this->state === PirepState::CANCELLED);
     }
 
     /**
@@ -460,7 +460,7 @@ class Pirep extends Model
         return $this->hasMany(PirepFieldValue::class, 'pirep_id');
     }
 
-    public function pilot()
+    public function pilot(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->user();
     }
@@ -486,7 +486,7 @@ class Pirep extends Model
     {
         return $this->hasMany(JournalTransaction::class, 'ref_model_id')->where(
             'ref_model',
-            __CLASS__
+            self::class
         )->orderBy('credit', 'desc')->orderBy('debit', 'desc');
     }
 

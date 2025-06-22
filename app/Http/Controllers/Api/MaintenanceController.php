@@ -19,15 +19,13 @@ class MaintenanceController extends Controller
     public function cron(Request $request, string $id): JsonResponse
     {
         $cron_id = setting('cron.random_id');
-        if (empty($cron_id) || $id !== $cron_id) {
-            throw new CronInvalid();
-        }
+        throw_if(empty($cron_id) || $id !== $cron_id, new CronInvalid());
 
         // Create a console kernel instance
         $consoleKernel = app()->make(Kernel::class);
 
         // Run a null artisan thing just so Laravel internals can be setup properly
-        $status = $consoleKernel->handle(
+        $consoleKernel->handle(
             new \Symfony\Component\Console\Input\ArgvInput(),
             new \Symfony\Component\Console\Output\NullOutput()
         );

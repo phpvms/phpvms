@@ -92,42 +92,30 @@ class PirepService extends Service
             $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
         } else {
             $dptApt = $this->airportRepo->findWithoutFail($pirep->dpt_airport_id);
-            if (!$dptApt) {
-                throw new AirportNotFound($pirep->dpt_airport_id);
-            }
+            throw_unless($dptApt, new AirportNotFound($pirep->dpt_airport_id));
 
             $arrApt = $this->airportRepo->findWithoutFail($pirep->arr_airport_id);
-            if (!$arrApt) {
-                throw new AirportNotFound($pirep->arr_airport_id);
-            }
+            throw_unless($arrApt, new AirportNotFound($pirep->arr_airport_id));
         }
 
         // See if this user is at the current airport
         /* @noinspection NotOptimalIfConditionsInspection */
-        if (setting('pilots.only_flights_from_current', false)
-            && $user->curr_airport_id !== $pirep->dpt_airport_id) {
-            throw new UserNotAtAirport($user, $pirep->dpt_airport);
-        }
+        throw_if(setting('pilots.only_flights_from_current', false)
+            && $user->curr_airport_id !== $pirep->dpt_airport_id, new UserNotAtAirport($user, $pirep->dpt_airport));
 
         // See if this user is allowed to fly this aircraft
-        if (setting('pireps.restrict_aircraft_to_rank', false)
-            && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id)) {
-            throw new AircraftPermissionDenied($user, $pirep->aircraft);
-        }
+        throw_if(setting('pireps.restrict_aircraft_to_rank', false)
+            && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id), new AircraftPermissionDenied($user, $pirep->aircraft));
 
         // See if this aircraft is valid
         /** @var Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
-        if ($aircraft === null) {
-            throw new AircraftInvalid($aircraft);
-        }
+        throw_if($aircraft === null, new AircraftInvalid($aircraft));
 
         // See if this aircraft is available for flight
         /** @var Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->where('id', $pirep->aircraft_id)->where('state', AircraftState::PARKED)->first();
-        if ($aircraft === null) {
-            throw new AircraftNotAvailable($pirep->aircraft);
-        }
+        throw_if($aircraft === null, new AircraftNotAvailable($pirep->aircraft));
 
         // See if this aircraft is being used by another user's active simbrief ofp
         if (setting('simbrief.block_aircraft', false)) {
@@ -136,25 +124,19 @@ class PirepService extends Service
                 ->where('user_id', '!=', $pirep->user_id)
                 ->whereNotNull('flight_id')
                 ->count();
-            if ($sb_aircraft > 0) {
-                throw new AircraftNotAvailable($pirep->aircraft);
-            }
+            throw_if($sb_aircraft > 0, new AircraftNotAvailable($pirep->aircraft));
         }
 
         // See if this aircraft is at the departure airport
         /* @noinspection NotOptimalIfConditionsInspection */
-        if (setting('pireps.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id) {
-            throw new AircraftNotAtAirport($pirep->aircraft);
-        }
+        throw_if(setting('pireps.only_aircraft_at_dpt_airport') && $aircraft->airport_id !== $pirep->dpt_airport_id, new AircraftNotAtAirport($pirep->aircraft));
 
         // Find if there's a duplicate, if so, let's work on that
         $dupe_pirep = $this->findDuplicate($pirep);
         if ($dupe_pirep !== false) {
             $pirep = $dupe_pirep;
             Log::info('Found duplicate PIREP, id='.$dupe_pirep->id);
-            if ($pirep->cancelled) {
-                throw new \App\Exceptions\PirepCancelled($pirep);
-            }
+            throw_if($pirep->cancelled, new \App\Exceptions\PirepCancelled($pirep));
         }
 
         $pirep->status = PirepStatus::INITIATED;
@@ -194,7 +176,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
+            $pirep->block_on_time = $pirep->submitted_at ?: Carbon::now('UTC');
         }
 
         // If the depart time isn't set, then try to calculate it by
@@ -262,9 +244,7 @@ class PirepService extends Service
             PirepState::REJECTED,
         ], true);
 
-        if ($is_already_submitted) {
-            throw new PirepError($pirep, 'PIREP has already been submitted');
-        }
+        throw_if($is_already_submitted, new PirepError($pirep, 'PIREP has already been submitted'));
 
         $attrs['state'] = PirepState::PENDING;
         $attrs['status'] = PirepStatus::ARRIVED;
@@ -287,7 +267,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
+            $pirep->block_on_time = $pirep->submitted_at ?: Carbon::now('UTC');
         }
 
         // Check that there's a submit time
@@ -349,7 +329,7 @@ class PirepService extends Service
             }
 
             return $found_pireps[0];
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return false;
         }
     }
@@ -415,7 +395,7 @@ class PirepService extends Service
      *
      * @throws \Exception
      */
-    public function submit(Pirep $pirep)
+    public function submit(Pirep $pirep): void
     {
         // Check if there is a simbrief_id, change it to be set to the PIREP
         // at the end of the flight when it's been submitted finally.
@@ -526,7 +506,7 @@ class PirepService extends Service
      */
     public function updateCustomFields(string $pirep_id, array $field_values): void
     {
-        if (!$field_values || $field_values === []) {
+        if ($field_values === [] || $field_values === []) {
             return;
         }
 
@@ -658,7 +638,7 @@ class PirepService extends Service
         return $pirep;
     }
 
-    public function setPilotState(User $pilot, Pirep $pirep)
+    public function setPilotState(User $pilot, Pirep $pirep): void
     {
         $pilot->refresh();
 
@@ -721,7 +701,7 @@ class PirepService extends Service
                     'dpt_airport_id' => $diversion_airport->id,
                     'arr_airport_id' => $pirep->arr_airport_id,
                     'airline_id'     => $pirep->airline_id,
-                ])->whereHas('subfleets', function ($query) use ($aircraft) {
+                ])->whereHas('subfleets', function ($query) use ($aircraft): void {
                     $query->where('subfleet_id', $aircraft->subfleet_id);
                 })->count();
 

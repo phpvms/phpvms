@@ -27,10 +27,5 @@ use App\Models\Pirep;
  */
 class Fares extends Event
 {
-    public ?Pirep $pirep;
-
-    public function __construct(?Pirep $pirep = null)
-    {
-        $this->pirep = $pirep;
-    }
+    public function __construct(public ?Pirep $pirep = null) {}
 }

@@ -3,21 +3,15 @@
 namespace App\Notifications\Channels\Discord;
 
 use App\Contracts\Notification;
-use App\Support\HttpClient;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
 use Illuminate\Support\Facades\Log;
 
 class DiscordWebhook
 {
-    private $httpClient;
+    public function __construct(private readonly \App\Support\HttpClient $httpClient) {}
 
-    public function __construct(HttpClient $httpClient)
-    {
-        $this->httpClient = $httpClient;
-    }
-
-    public function send($notifiable, Notification $notification)
+    public function send($notifiable, Notification $notification): void
     {
         $message = $notification->toDiscordChannel($notifiable);
         if ($message === null) {

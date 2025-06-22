@@ -95,8 +95,8 @@ class Acars extends Model
     public function altitude(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $_, array $attrs) => (float) $attrs['altitude_msl'],
-            set: function (mixed $value) {
+            get: fn (mixed $_, array $attrs): float => (float) $attrs['altitude_msl'],
+            set: function (mixed $value): array {
                 $ret = [];
                 if (!array_key_exists('altitude_agl', $this->attributes)) {
                     $ret['altitude_agl'] = (float) $value;

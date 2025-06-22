@@ -21,7 +21,7 @@ abstract class Repository extends BaseRepository
     {
         try {
             return $this->find($id, $columns);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return null;
         }
     }
@@ -106,7 +106,6 @@ abstract class Repository extends BaseRepository
      * Retrieve all data of repository, paginated. Added in extra parameter to read from the
      * request which page it should be on
      *
-     * @param  null   $limit
      * @param  array  $columns
      * @param  string $method
      * @return mixed

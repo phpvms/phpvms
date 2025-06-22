@@ -3,9 +3,7 @@
 namespace App\Support\Modules;
 
 use Exception;
-use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Nwidart\Modules\Contracts\ActivatorInterface;
@@ -14,25 +12,6 @@ use Nwidart\Modules\Module;
 class DatabaseActivator implements ActivatorInterface
 {
     /**
-     * Laravel config instance
-     *
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var Filesystem
-     */
-    private $files;
-
-    /**
-     * The module path.
-     *
-     * @var string|null
-     */
-    protected $path;
-
-    /**
      * The scanned paths.
      *
      * @var array
@@ -40,19 +19,15 @@ class DatabaseActivator implements ActivatorInterface
     protected $paths = [];
 
     /**
-     * Array of modules activation statuses
-     *
-     * @var array
+     * @param string|null $path
      */
-    private $modulesStatuses;
-
-    public function __construct(Container $app, $path = null)
-    {
-        $this->config = $app['config'];
-        $this->files = $app['files'];
-        $this->modulesStatuses = $this->getModulesStatuses();
-        $this->path = $path;
-    }
+    public function __construct(
+        Container $app,
+        /**
+         * The module path.
+         */
+        protected $path = null
+    ) {}
 
     public function getModuleByName(string $name): ?\App\Models\Module
     {
@@ -60,47 +35,12 @@ class DatabaseActivator implements ActivatorInterface
             if (app()->environment('production')) {
                 $cache = config('cache.keys.MODULES');
 
-                return Cache::remember($cache['key'].'.'.$name, $cache['time'], function () use ($name) {
-                    return \App\Models\Module::where(['name' => $name])->first();
-                });
-            } else {
-                return \App\Models\Module::where(['name' => $name])->first();
+                return Cache::remember($cache['key'].'.'.$name, $cache['time'], fn () => \App\Models\Module::where(['name' => $name])->first());
             }
-        } catch (Exception $e) { // Catch any database/connection errors
+
+            return \App\Models\Module::where(['name' => $name])->first();
+        } catch (Exception) { // Catch any database/connection errors
             return null;
-        }
-    }
-
-    /**
-     * Get modules statuses, from the database
-     */
-    private function getModulesStatuses(): array
-    {
-        try {
-            if (app()->environment('production')) {
-                $cache = config('cache.keys.MODULES');
-                $retVal = Cache::remember($cache['key'], $cache['time'], function () {
-                    $modules = \App\Models\Module::select('name', 'enabled')->get();
-
-                    $retValCache = [];
-                    foreach ($modules as $i) {
-                        $retValCache[$i->name] = $i->enabled;
-                    }
-
-                    return $retValCache;
-                });
-            } else {
-                $modules = \App\Models\Module::select('name', 'enabled')->get();
-
-                $retVal = [];
-                foreach ($modules as $i) {
-                    $retVal[$i->name] = $i->enabled;
-                }
-            }
-
-            return $retVal;
-        } catch (Exception $e) {
-            return [];
         }
     }
 

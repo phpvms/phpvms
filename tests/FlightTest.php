@@ -126,7 +126,6 @@ final class FlightTest extends TestCase
      */
     public function test_search_flight(): void
     {
-        /** @var \App\Models\User user */
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
 
@@ -248,10 +247,10 @@ final class FlightTest extends TestCase
         $res->assertStatus(200);
         $res->assertJsonCount(10, 'data');
 
-        $meta = $res->json('meta');
+        $res->json('meta');
 
         $body = $res->json('data');
-        collect($body)->each(function ($flight) use ($subfleetB) {
+        collect($body)->each(function (array $flight) use ($subfleetB): void {
             self::assertNotEmpty($flight['subfleets']);
             self::assertEquals($subfleetB->id, $flight['subfleets'][0]['id']);
         });
@@ -294,7 +293,7 @@ final class FlightTest extends TestCase
         $this->assertEquals(10, $meta['total']);
 
         $body = $res->json('data');
-        collect($body)->each(function ($flight) use ($subfleetB) {
+        collect($body)->each(function (array $flight) use ($subfleetB): void {
             self::assertNotEmpty($flight['subfleets']);
             self::assertEquals($subfleetB->id, $flight['subfleets'][0]['id']);
         });
@@ -306,7 +305,6 @@ final class FlightTest extends TestCase
      */
     public function test_find_days_of_week(): void
     {
-        /** @var User user */
         $this->user = User::factory()->create();
 
         Flight::factory()->count(20)->create([
@@ -343,7 +341,6 @@ final class FlightTest extends TestCase
      */
     public function test_day_of_week_active(): void
     {
-        /** @var User user */
         $this->user = User::factory()->create();
 
         // Set it to Monday or Tuesday, depending on what today is
@@ -506,7 +503,6 @@ final class FlightTest extends TestCase
     {
         $total_flights = 10;
 
-        /** @var \App\Models\User user */
         $this->user = User::factory()->create();
 
         /** @var \App\Models\Flight $flights */

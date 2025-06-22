@@ -3,18 +3,14 @@
 namespace App\Exceptions\Converters;
 
 use App\Exceptions\AbstractHttpException;
-use Throwable;
 
 class GenericExceptionAbstract extends AbstractHttpException
 {
-    private $exception;
-
-    public function __construct(Throwable $exception)
+    public function __construct(private readonly \Throwable $exception)
     {
-        $this->exception = $exception;
         parent::__construct(
             503,
-            $exception->getMessage()
+            $this->exception->getMessage()
         );
     }
 
@@ -40,7 +36,7 @@ class GenericExceptionAbstract extends AbstractHttpException
     public function getErrorMetadata(): array
     {
         $metadata = [];
-        $metadata['original_exception'] = get_class($this->exception);
+        $metadata['original_exception'] = $this->exception::class;
 
         // Only add trace if in dev
         if (config('app.env') === 'dev') {

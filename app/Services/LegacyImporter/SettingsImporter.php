@@ -8,7 +8,7 @@ class SettingsImporter extends BaseImporter
 {
     protected $table = 'settings';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- SETTINGS IMPORT ---');
 

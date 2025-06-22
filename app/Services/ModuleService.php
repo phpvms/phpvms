@@ -36,7 +36,7 @@ class ModuleService extends Service
     /**
      * Add a module link in the frontend
      */
-    public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true)
+    public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true): void
     {
         self::$frontendLinks[$logged_in][] = [
             'title' => $title,
@@ -56,7 +56,7 @@ class ModuleService extends Service
     /**
      * Add a module link in the admin panel
      */
-    public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people')
+    public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people'): void
     {
         self::$adminLinks[] = [
             'title' => $title,
@@ -133,7 +133,7 @@ class ModuleService extends Service
     /**
      * Adding installed module to the database
      */
-    public function addModule($module_name): bool
+    public function addModule(string $module_name): bool
     {
         /* Check if module already exists */
         $module = Module::where('name', $module_name);
@@ -164,11 +164,9 @@ class ModuleService extends Service
         $file_ext = strtolower($file->getClientOriginalExtension());
         $allowed_extensions = ['zip', 'tar', 'gz'];
 
-        if (!in_array($file_ext, $allowed_extensions, true)) {
-            throw new ModuleInvalidFileType();
-        }
+        throw_unless(in_array($file_ext, $allowed_extensions, true), new ModuleInvalidFileType());
 
-        $new_dir = rand();
+        $new_dir = random_int(0, mt_getrandmax());
         File::makeDirectory(
             storage_path('app/tmp/modules/'.$new_dir),
             0777,
@@ -190,14 +188,14 @@ class ModuleService extends Service
 
             try {
                 $zipper = $madZipper->make($file);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 throw new ModuleInstallationError();
             }
         }
 
         try {
             $zipper->extractTo($temp);
-        } catch (Exception $e) {
+        } catch (Exception) {
             throw new ModuleInstallationError();
         }
 
@@ -236,7 +234,7 @@ class ModuleService extends Service
 
         try {
             $this->addModule($module);
-        } catch (Exception $e) {
+        } catch (Exception) {
             throw new ModuleExistsException($module);
         }
 
@@ -270,20 +268,20 @@ class ModuleService extends Service
     /**
      * Delete Module from the Storage & Database.
      */
-    public function deleteModule($id, $data): bool
+    public function deleteModule($id, array $data): bool
     {
         $module = Module::find($id);
-        if ($data['verify'] === strtoupper($module->name)) {
+        if ($data['verify'] === strtoupper((string) $module->name)) {
             try {
                 $module->delete();
-            } catch (Exception $e) {
+            } catch (Exception) {
                 Log::emergency('Cannot Delete Module!');
             }
             $moduleDir = base_path().'/modules/'.$module->name;
 
             try {
                 File::deleteDirectory($moduleDir);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 Log::info('Folder Deleted Manually for Module : '.$module->name);
 
                 return true;
@@ -297,10 +295,8 @@ class ModuleService extends Service
 
     /**
      * Get & scan all modules.
-     *
-     * @return array
      */
-    public function scan()
+    public function scan(): array
     {
         $modules_path = base_path('modules/*');
         $path = Str::endsWith($modules_path, '/*') ? $modules_path : Str::finish($modules_path, '/*');

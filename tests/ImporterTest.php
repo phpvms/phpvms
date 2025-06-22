@@ -46,8 +46,6 @@ final class ImporterTest extends TestCase
 
     /**
      * Add some of the basic data needed to properly import the flights.csv file
-     *
-     * @return mixed
      */
     protected function insertFlightsScaffoldData(): array
     {
@@ -834,7 +832,7 @@ final class ImporterTest extends TestCase
     public function test_airport_special_chars_importer(): void
     {
         $file_path = base_path('tests/data/airports_special_chars.csv');
-        $status = $this->importSvc->importAirports($file_path);
+        $this->importSvc->importAirports($file_path);
 
         // See if it imported
         $airport = Airport::where([

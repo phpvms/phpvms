@@ -16,15 +16,13 @@ class application extends Illuminate\Foundation\Application
 
     private $publicUrlPath = '/';
 
-    public function __construct(?string $basePath = null)
+    public function __construct()
     {
         $rootPath = dirname(__DIR__).'/';
         parent::__construct($rootPath);
-
         if (is_file($rootPath.'/env.php')) {
             exit('Please rename env.php to .env');
         }
-
         $this->useDatabasePath($this->basePath.'/app/Database');
         $this->useStoragePath($this->basePath.'/storage');
     }
@@ -34,7 +32,7 @@ class application extends Illuminate\Foundation\Application
      * class, which looks for any configurations that have been overridden
      * in the root's config.php file
      */
-    public function bootstrapWith(array $bootstrappers)
+    public function bootstrapWith(array $bootstrappers): void
     {
         $find = \Illuminate\Foundation\Bootstrap\LoadConfiguration::class;
         $replace = LoadConfiguration::class;
@@ -50,7 +48,7 @@ class application extends Illuminate\Foundation\Application
         parent::bootstrapWith($bootstrappers);
     }
 
-    public function bindInterfaces()
+    public function bindInterfaces(): void
     {
         $this->singleton(
             Illuminate\Contracts\Http\Kernel::class,
@@ -73,7 +71,7 @@ class application extends Illuminate\Foundation\Application
      *
      * @param mixed $publicDirPath
      */
-    public function setPublicPath($publicDirPath)
+    public function setPublicPath($publicDirPath): void
     {
         $this->publicDirPath = $publicDirPath;
         app()->usePublicPath($publicDirPath);
@@ -84,7 +82,7 @@ class application extends Illuminate\Foundation\Application
      * in the root of the install to set it to point to /public,
      * instead of just /
      */
-    public function setPublicUrlPath($publicUrlPath)
+    public function setPublicUrlPath($publicUrlPath): void
     {
         $this->publicUrlPath = $publicUrlPath;
     }

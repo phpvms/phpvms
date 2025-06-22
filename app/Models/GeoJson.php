@@ -31,7 +31,7 @@ class GeoJson
     /**
      * @param array $attrs Attributes of the Feature
      */
-    public function addPoint($lat, $lon, array $attrs)
+    public function addPoint($lat, $lon, array $attrs): void
     {
         $point = [$lon, $lat];
         $this->line_coords[] = [$lon, $lat];

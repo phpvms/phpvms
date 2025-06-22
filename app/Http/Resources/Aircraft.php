@@ -11,7 +11,7 @@ use App\Support\Units\Mass;
  */
 class Aircraft extends Resource
 {
-    public function toArray($request)
+    public function toArray(\Illuminate\Http\Request $request)
     {
         $res = parent::toArray($request);
         $res['ident'] = $this->ident;

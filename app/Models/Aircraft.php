@@ -128,21 +128,21 @@ class Aircraft extends Model
     public function active(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attr) => $attr['status'] === AircraftStatus::ACTIVE
+            get: fn ($_, $attr): bool => $attr['status'] === AircraftStatus::ACTIVE
         );
     }
 
     public function icao(): Attribute
     {
         return Attribute::make(
-            set: fn ($value) => strtoupper($value)
+            set: fn ($value) => strtoupper((string) $value)
         );
     }
 
     public function ident(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => $attrs['registration'].' ('.$attrs['icao'].')'
+            get: fn ($_, $attrs): string => $attrs['registration'].' ('.$attrs['icao'].')'
         );
     }
 
@@ -152,7 +152,7 @@ class Aircraft extends Model
     public function landingTime(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, array $attrs) {
                 if (!array_key_exists('landing_time', $attrs)) {
                     return null;
                 }

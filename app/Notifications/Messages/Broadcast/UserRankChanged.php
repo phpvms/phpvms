@@ -9,21 +9,17 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UserRankChanged extends Notification implements ShouldQueue
 {
-    private $user;
-
     /**
      * Create a new notification instance.
      *
      * @param \App\Models\Pirep $pirep
      */
-    public function __construct(User $user)
+    public function __construct(private readonly \App\Models\User $user)
     {
         parent::__construct();
-
-        $this->user = $user;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['discord_webhook'];
     }
@@ -66,10 +62,9 @@ class UserRankChanged extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->user->id,

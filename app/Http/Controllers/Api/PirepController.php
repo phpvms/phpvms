@@ -79,9 +79,7 @@ class PirepController extends Controller
      */
     protected function checkCancelled(Pirep $pirep): void
     {
-        if ($pirep->cancelled) {
-            throw new PirepCancelled($pirep);
-        }
+        throw_if($pirep->cancelled, new PirepCancelled($pirep));
     }
 
     /**
@@ -92,9 +90,7 @@ class PirepController extends Controller
      */
     protected function checkReadOnly(Pirep $pirep): void
     {
-        if ($pirep->read_only) {
-            throw new PirepError($pirep, 'PIREP is read-only');
-        }
+        throw_if($pirep->read_only, new PirepError($pirep, 'PIREP is read-only'));
     }
 
     /**
@@ -225,12 +221,9 @@ class PirepController extends Controller
 
         // If aircraft is being changed, see if this user is allowed to fly this aircraft
         if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
+            && setting('pireps.restrict_aircraft_to_rank', false)) {
             $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
+            throw_unless($can_use_ac, new AircraftPermissionDenied($user, $pirep->aircraft));
         }
 
         $fields = $this->getFields($request);
@@ -267,12 +260,9 @@ class PirepController extends Controller
 
         // If aircraft is being changed, see if this user is allowed to fly this aircraft
         if (array_key_exists('aircraft_id', $attrs)
-            && setting('pireps.restrict_aircraft_to_rank', false)
-        ) {
+            && setting('pireps.restrict_aircraft_to_rank', false)) {
             $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
-            if (!$can_use_ac) {
-                throw new AircraftPermissionDenied($user, $pirep->aircraft);
-            }
+            throw_unless($can_use_ac, new AircraftPermissionDenied($user, $pirep->aircraft));
         }
 
         try {
@@ -407,7 +397,7 @@ class PirepController extends Controller
 
     public function route_get(string $id, Request $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        Pirep::find($id);
 
         return AcarsRouteResource::collection(Acars::with('pirep')->where([
             'pirep_id' => $id,
@@ -465,7 +455,7 @@ class PirepController extends Controller
      */
     public function route_delete(string $id, Request $request): JsonResponse
     {
-        $pirep = Pirep::find($id);
+        Pirep::find($id);
 
         Acars::where([
             'pirep_id' => $id,

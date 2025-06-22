@@ -80,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),
             ])
-            ->bootUsing(function () {
+            ->bootUsing(function (): void {
                 activity()->enableLogging();
             })
             ->brandName('phpVMS')

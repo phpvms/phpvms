@@ -27,7 +27,7 @@ class JobQueue extends CronCommand
         }
     }
 
-    public function callEvent()
+    public function callEvent(): void
     {
         Artisan::call('queue:cron');
     }

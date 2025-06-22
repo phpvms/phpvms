@@ -107,7 +107,7 @@ abstract class Command extends \Illuminate\Console\Command
 
         $val = '';
         $process = Process::fromShellCommandline($cmd);
-        $process->run(function ($type, $buffer) use ($return, &$val) {
+        $process->run(function ($type, string $buffer) use ($return, &$val): void {
             if ($return) {
                 $val .= $buffer;
             } else {

@@ -15,7 +15,7 @@ class ImportFromClassicCommand extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $creds = [
             'host'         => $this->argument('db_host'),

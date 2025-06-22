@@ -13,15 +13,7 @@ use Illuminate\Support\Facades\Log;
  */
 class RecalculateStats extends Listener
 {
-    private AircraftService $aircraftSvc;
-
-    private UserService $userSvc;
-
-    public function __construct(AircraftService $aircraftSvc, UserService $userSvc)
-    {
-        $this->aircraftSvc = $aircraftSvc;
-        $this->userSvc = $userSvc;
-    }
+    public function __construct(private readonly AircraftService $aircraftSvc, private readonly UserService $userSvc) {}
 
     /**
      * Recalculate the stats for active users

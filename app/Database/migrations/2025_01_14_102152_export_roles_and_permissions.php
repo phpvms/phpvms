@@ -14,7 +14,7 @@ return new class() extends Migration
     {
         // Exported roles
         if (Schema::hasTable('roles') && DB::table('roles')->where('name', '!=', 'admin')->count() > 0) {
-            Schema::create('v7_exported_roles', function (Blueprint $table) {
+            Schema::create('v7_exported_roles', function (Blueprint $table): void {
                 $table->increments('id');
                 $table->string('name');
                 $table->boolean('disable_activity_checks');
@@ -31,7 +31,7 @@ return new class() extends Migration
 
         // Exported permission_role
         if (Schema::hasTable('permission_role') && DB::table('permission_role')->count() > 0) {
-            Schema::create('v7_exported_permission_role', function (Blueprint $table) {
+            Schema::create('v7_exported_permission_role', function (Blueprint $table): void {
                 $table->increments('id');
                 $table->string('role_name');
                 $table->string('permission_name');
@@ -53,7 +53,7 @@ return new class() extends Migration
 
         // Exported role_user
         if (Schema::hasTable('role_user') && DB::table('role_user')->count() > 0) {
-            Schema::create('v7_exported_role_user', function (Blueprint $table) {
+            Schema::create('v7_exported_role_user', function (Blueprint $table): void {
                 $table->increments('id');
                 $table->string('role_name');
                 $table->integer('user_id');

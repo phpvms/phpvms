@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class PageLinksComposer extends Composer
 {
-    private static $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
+    private static array $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
 
     /**
      * PageLinksComposer constructor.
@@ -19,7 +19,7 @@ class PageLinksComposer extends Composer
         private readonly PageRepository $pageRepo
     ) {}
 
-    public function compose(View $view)
+    public function compose(View $view): void
     {
         try {
             $w = [
@@ -32,7 +32,7 @@ class PageLinksComposer extends Composer
             }
 
             $pages = $this->pageRepo->findWhere($w, static::$fields);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $pages = [];
         }
 

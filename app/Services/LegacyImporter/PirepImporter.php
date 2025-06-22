@@ -16,7 +16,7 @@ class PirepImporter extends BaseImporter
 
     protected $idField = 'pirepid';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- PIREP IMPORT ---');
 
@@ -90,14 +90,14 @@ class PirepImporter extends BaseImporter
             $attrs['planned_flight_time'] = $duration;
 
             // Set how it was filed
-            if (strtoupper($row->source) === 'MANUAL') {
+            if (strtoupper((string) $row->source) === 'MANUAL') {
                 $attrs['source'] = PirepSource::MANUAL;
             } else {
                 $attrs['source'] = PirepSource::ACARS;
             }
 
             // Set the flight type
-            $row->flighttype = strtoupper($row->flighttype);
+            $row->flighttype = strtoupper((string) $row->flighttype);
             if ($row->flighttype === 'P') {
                 $attrs['flight_type'] = FlightType::SCHED_PAX;
             } elseif ($row->flighttype === 'C') {
@@ -117,7 +117,7 @@ class PirepImporter extends BaseImporter
             // Log::debug('pirep oldid='.$pirep_id.', olduserid='.$row->pilotid
             //    .'; new id='.$pirep->id.', user id='.$user_id);
 
-            $source = strtoupper($row->source);
+            $source = strtoupper((string) $row->source);
             if ($source === 'SMARTCARS') {
                 // TODO: Parse smartcars log into the acars table
             } elseif ($source === 'KACARS') {
@@ -138,8 +138,10 @@ class PirepImporter extends BaseImporter
                     'last_pirep_id' => $pirep->id,
                 ]);
             }
-
-            if (!$pirep->airline || !$pirep->airline->journal) {
+            if (!$pirep->airline) {
+                continue;
+            }
+            if (!$pirep->airline->journal) {
                 continue;
             }
 
@@ -209,10 +211,9 @@ class PirepImporter extends BaseImporter
      * Map the old state to the current
      * https://github.com/nabeelio/phpvms_v2/blob/master/core/app.config.php#L450
      *
-     * @param  int $old_state
-     * @return int
+     * @param int $old_state
      */
-    private function mapState($old_state)
+    private function mapState($old_state): int
     {
         $map = [
             0 => PirepState::PENDING,

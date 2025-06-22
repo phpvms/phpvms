@@ -6,7 +6,7 @@ use Spatie\Valuestore\Valuestore;
 
 class KvpRepository
 {
-    private $valueStore;
+    private readonly \Spatie\Valuestore\Valuestore $valueStore;
 
     public function __construct()
     {
@@ -14,7 +14,6 @@ class KvpRepository
     }
 
     /**
-     * @param  null              $default
      * @return array|string|null
      */
     public function retrieve($key, $default = null)
@@ -41,22 +40,18 @@ class KvpRepository
     /**
      * @alias store($key,$value)
      *
-     * @param  string $key
-     * @param  mixed  $value
-     * @return null
+     * @param string $key
+     * @param mixed  $value
      */
-    public function save($key, $value)
+    public function save(array|string $key, $value): \Spatie\Valuestore\Valuestore
     {
         return $this->store($key, $value);
     }
 
     /**
      * Save a value to the KVP store
-     *
-     *
-     * @return null
      */
-    public function store($key, $value)
+    public function store(array|string $key, $value): \Spatie\Valuestore\Valuestore
     {
         return $this->valueStore->put($key, $value);
     }

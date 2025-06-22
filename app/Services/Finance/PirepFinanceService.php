@@ -43,14 +43,13 @@ class PirepFinanceService extends Service
      * from a listener (FinanceEvents)
      *
      *
-     * @return mixed
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      * @throws \Exception
      */
-    public function processFinancesForPirep(Pirep $pirep)
+    public function processFinancesForPirep(Pirep $pirep): Pirep
     {
         if (!$pirep->airline->journal) {
             $pirep->airline->journal = $pirep->airline->initJournal(setting('units.currency', 'USD'));
@@ -302,7 +301,7 @@ class PirepFinanceService extends Service
         /*
          * Go through the expenses and apply a mulitplier if present
          */
-        $expenses->map(function (Expense $expense, $i) use ($pirep) {
+        $expenses->map(function (Expense $expense, $i) use ($pirep): void {
             // Airport expenses are paid out separately
             if ($expense->ref_model === Airport::class) {
                 return;
@@ -393,7 +392,7 @@ class PirepFinanceService extends Service
         /*
          * Go through the expenses and apply a mulitplier if present
          */
-        $expenses->map(function (Expense $expense, $i) use ($pirep) {
+        $expenses->map(function (Expense $expense, $i) use ($pirep): void {
             Log::info('Finance: PIREP: '.$pirep->id.', airport expense:', $expense->toArray());
 
             $memo = "Airport Expense: $expense->name ($expense->ref_model_id)";
@@ -553,7 +552,7 @@ class PirepFinanceService extends Service
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getFaresForPirep($pirep)
+    public function getFaresForPirep(\App\Models\Pirep $pirep)
     {
         // Collect all of the fares and prices
         return $this->fareSvc->getForPirep($pirep);
@@ -585,11 +584,10 @@ class PirepFinanceService extends Service
      * Return the pilot's hourly pay for the given PIREP
      *
      *
-     * @return float
      *
      * @throws \InvalidArgumentException
      */
-    public function getPilotPayRateForPirep(Pirep $pirep)
+    public function getPilotPayRateForPirep(Pirep $pirep): ?float
     {
         // Get the base rate for the rank
         $rank = $pirep->user->rank;
@@ -632,12 +630,11 @@ class PirepFinanceService extends Service
      * Get the user's payment amount for a PIREP
      *
      *
-     * @return Money
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function getPilotPay(Pirep $pirep)
+    public function getPilotPay(Pirep $pirep): \App\Support\Money
     {
         // If there is a fixed price for this flight, return that amount
         $flight = $pirep->flight;

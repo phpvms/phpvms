@@ -13,15 +13,10 @@ abstract class Enum
 
     protected static array $labels = [];
 
-    protected int $value;
-
     /**
      * Create an instance of this Enum
      */
-    public function __construct($val)
-    {
-        $this->value = $val;
-    }
+    public function __construct(protected int $value) {}
 
     /**
      * Return the value that's been set if this is an instance
@@ -38,7 +33,7 @@ abstract class Enum
     {
         if (isset(static::$labels[$value])) {
             $val = static::$labels[$value];
-            if (strpos($val, '.') !== false) {
+            if (str_contains($val, '.')) {
                 return trans($val);
             }
 
@@ -127,7 +122,7 @@ abstract class Enum
 
     final public function equals(self $enum): bool
     {
-        return $this->getValue() === $enum->getValue() && static::class === \get_class($enum);
+        return $this->getValue() === $enum->getValue() && static::class === $enum::class;
     }
 
     /**

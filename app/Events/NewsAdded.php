@@ -7,10 +7,5 @@ use App\Models\News;
 
 class NewsAdded extends Event
 {
-    public News $news;
-
-    public function __construct(News $news)
-    {
-        $this->news = $news;
-    }
+    public function __construct(public News $news) {}
 }

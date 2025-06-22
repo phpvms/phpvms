@@ -20,7 +20,7 @@ class Utils
      */
     public static function generateNewId(?int $length = null): string
     {
-        if (!$length) {
+        if ($length === null || $length === 0) {
             $length = Model::ID_MAX_LENGTH;
         }
 
@@ -53,22 +53,22 @@ class Utils
     /**
      * Enable the debug toolbar
      */
-    public static function enableDebugToolbar()
+    public static function enableDebugToolbar(): void
     {
         try {
             app('debugbar')->enable();
-        } catch (BindingResolutionException $e) {
+        } catch (BindingResolutionException) {
         }
     }
 
     /**
      * Disable the debug toolbar
      */
-    public static function disableDebugToolbar()
+    public static function disableDebugToolbar(): void
     {
         try {
             app('debugbar')->disable();
-        } catch (BindingResolutionException $e) {
+        } catch (BindingResolutionException) {
         }
     }
 

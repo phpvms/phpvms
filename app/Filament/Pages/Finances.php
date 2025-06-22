@@ -37,7 +37,7 @@ class Finances extends Page
 
                 Forms\Components\DatePicker::make('end_date')
                     ->native(false)
-                    ->minDate(fn (Get $get) => $get('start_date'))
+                    ->minDate(fn (Get $get): mixed => $get('start_date'))
                     ->maxDate(now()),
 
                 Forms\Components\Select::make('airline_id')

@@ -10,12 +10,7 @@ use GuzzleHttp\RequestOptions;
  */
 class HttpClient
 {
-    private GuzzleClient $httpClient;
-
-    public function __construct(GuzzleClient $httpClient)
-    {
-        $this->httpClient = $httpClient;
-    }
+    public function __construct(private readonly GuzzleClient $httpClient) {}
 
     /**
      * Download a URI. If a file is given, it will save the downloaded
@@ -36,8 +31,8 @@ class HttpClient
 
         $body = $response->getBody()->getContents();
         $content_type = $response->getHeaderLine('content-type');
-        if (strpos($content_type, 'application/json') !== false) {
-            $body = \GuzzleHttp\json_decode($body, true);
+        if (str_contains($content_type, 'application/json')) {
+            return \GuzzleHttp\json_decode($body, true);
         }
 
         return $body;
@@ -58,7 +53,7 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = \GuzzleHttp\json_decode($content, true);
+            return \GuzzleHttp\json_decode($content, true);
         }
 
         return $content;
@@ -79,7 +74,7 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = \GuzzleHttp\json_decode($content, true);
+            return \GuzzleHttp\json_decode($content, true);
         }
 
         return $content;
@@ -87,11 +82,8 @@ class HttpClient
 
     /**
      * Download a file to a given path
-     *
-     *
-     * @return string
      */
-    public function download($uri, $local_path)
+    public function download($uri, $local_path): string
     {
         $opts = [];
         if ($local_path !== null) {
@@ -102,7 +94,7 @@ class HttpClient
 
         $body = $response->getBody()->getContents();
         if ($response->getHeader('content-type') === 'application/json') {
-            $body = \GuzzleHttp\json_decode($body);
+            return \GuzzleHttp\json_decode($body);
         }
 
         return $body;

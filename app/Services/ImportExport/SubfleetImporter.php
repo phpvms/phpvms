@@ -34,9 +34,9 @@ class SubfleetImporter extends ImportExport
         'ranks'                      => 'nullable',
     ];
 
-    private FareService $fareSvc;
+    private readonly FareService $fareSvc;
 
-    private FleetService $fleetSvc;
+    private readonly FleetService $fleetSvc;
 
     /**
      * FlightImportExporter constructor.

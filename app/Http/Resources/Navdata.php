@@ -7,7 +7,7 @@ use App\Models\Enums\NavaidType;
 
 class Navdata extends Resource
 {
-    public function toArray($request)
+    public function toArray(\Illuminate\Http\Request $request)
     {
         $res = parent::toArray($request);
 

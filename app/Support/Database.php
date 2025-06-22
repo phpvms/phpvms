@@ -102,7 +102,7 @@ class Database
 
         // if any time fields are == to "now", then insert the right time
         foreach ($row as $column => $value) {
-            if (!empty($value) && strtolower($value) === 'now') {
+            if (!empty($value) && strtolower((string) $value) === 'now') {
                 $row[$column] = static::time();
             }
         }
@@ -137,9 +137,7 @@ class Database
             }
         } catch (QueryException $e) {
             Log::error($e);
-            if (!$ignore_errors) {
-                throw $e;
-            }
+            throw_unless($ignore_errors, $e);
         }
 
         return $row;

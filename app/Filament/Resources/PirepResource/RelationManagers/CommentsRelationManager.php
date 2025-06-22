@@ -28,13 +28,13 @@ class CommentsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('user.name'),
                 Tables\Columns\TextColumn::make('comment'),
-                Tables\Columns\TextColumn::make('updated_at')->label('Comment date')->formatStateUsing(fn (string $state) => show_datetime(Carbon::createFromTimeString($state))),
+                Tables\Columns\TextColumn::make('updated_at')->label('Comment date')->formatStateUsing(fn (string $state): string => show_datetime(Carbon::createFromTimeString($state))),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->mutateFormDataUsing(function ($data) {
+                Tables\Actions\CreateAction::make()->mutateFormDataUsing(function (array $data) {
                     $data['user_id'] = auth()->id();
 
                     return $data;

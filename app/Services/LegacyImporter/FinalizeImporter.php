@@ -26,10 +26,9 @@ class FinalizeImporter extends BaseImporter
     /**
      * The start method. Takes the offset to start from
      *
-     * @param  int   $start
-     * @return mixed
+     * @param int $start
      */
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->findLastPireps();
         $this->recalculateUserStats();
@@ -54,7 +53,7 @@ class FinalizeImporter extends BaseImporter
         /** @var UserService $userSvc */
         $userSvc = app(UserService::class);
 
-        User::all()->each(function ($user) use ($userSvc) {
+        User::all()->each(function ($user) use ($userSvc): void {
             $userSvc->recalculateStats($user);
         });
     }

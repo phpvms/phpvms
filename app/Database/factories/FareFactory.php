@@ -31,7 +31,7 @@ class FareFactory extends Factory
             'code'     => fake()->unique()->text(50),
             'name'     => fake()->text(50),
             'price'    => fake()->randomFloat(2, 100, 1000),
-            'cost'     => fn (array $fare) => round($fare['price'] / 2),
+            'cost'     => fn (array $fare): float => round($fare['price'] / 2),
             'capacity' => fake()->randomFloat(0, 20, 500),
         ];
     }

@@ -30,12 +30,11 @@ class GeoService extends Service
      * Determine the closest set of coordinates from the starting position
      *
      * @param  array $coordStart
-     * @param  array $all_coords
      * @return mixed
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
      */
-    public function getClosestCoords($coordStart, $all_coords)
+    public function getClosestCoords($coordStart, array $all_coords)
     {
         $distance = [];
         $geotools = new Geotools();
@@ -68,15 +67,13 @@ class GeoService extends Service
         $coords = [];
         $filter_points = [$dep_icao, $arr_icao, 'SID', 'STAR'];
 
-        $split_route = collect(explode(' ', $route))->transform(function ($point) {
+        $split_route = collect(explode(' ', (string) $route))->transform(function ($point) {
             if ($point === '' || $point === '0') {
                 return false;
             }
 
             return strtoupper(trim($point));
-        })->filter(function ($point) use ($filter_points) {
-            return $point !== '' && $point !== '0' && !\in_array($point, $filter_points, true);
-        });
+        })->filter(fn ($point): bool => $point !== '' && $point !== '0' && !\in_array($point, $filter_points, true));
 
         /**
          * @var $split_route Collection
@@ -87,7 +84,7 @@ class GeoService extends Service
 
             try {
                 $points = $this->navRepo->findWhere(['id' => $route_point]);
-            } catch (ModelNotFoundException $e) {
+            } catch (ModelNotFoundException) {
                 continue;
             } catch (\Exception $e) {
                 Log::error($e);
@@ -152,11 +149,10 @@ class GeoService extends Service
      * Determine the center point between two sets of coordinates
      *
      *
-     * @return array
      *
      * @throws \League\Geotools\Exception\InvalidArgumentException
      */
-    public function getCenter($latA, $lonA, $latB, $lonB)
+    public function getCenter($latA, $lonA, $latB, $lonB): array
     {
         $geotools = new Geotools();
         $coordA = new Coordinate([$latA, $lonA]);
@@ -165,21 +161,16 @@ class GeoService extends Service
         $vertex = $geotools->vertex()->setFrom($coordA)->setTo($coordB);
         $middlePoint = $vertex->middle();
 
-        $center = [
+        return [
             $middlePoint->getLatitude(),
             $middlePoint->getLongitude(),
         ];
-
-        return $center;
     }
 
     /**
      * Read an array/relationship of ACARS model points
-     *
-     *
-     * @return array
      */
-    public function getFeatureFromAcars(Pirep $pirep)
+    public function getFeatureFromAcars(Pirep $pirep): array
     {
         // Get the two airports
         $airports = new GeoJson();
@@ -233,11 +224,9 @@ class GeoService extends Service
     /**
      * Return a single feature point for the
      *
-     * @param  mixed                              $pireps
-     * @return mixed
-     * @return \GeoJson\Feature\FeatureCollection
+     * @param mixed $pireps
      */
-    public function getFeatureForLiveFlights($pireps)
+    public function getFeatureForLiveFlights($pireps): \GeoJson\Feature\FeatureCollection
     {
         $flight = new GeoJson();
 
@@ -309,11 +298,8 @@ class GeoService extends Service
 
     /**
      * Return a GeoJSON FeatureCollection for a PIREP
-     *
-     *
-     * @return array
      */
-    public function pirepGeoJson(Pirep $pirep)
+    public function pirepGeoJson(Pirep $pirep): array
     {
         $planned = new GeoJson();
         $actual = new GeoJson();

@@ -13,7 +13,7 @@ class AircraftObserver
     public function creating(Aircraft $aircraft): void
     {
         if (!empty($aircraft->airport_id)) {
-            $aircraft->airport_id = strtoupper($aircraft->airport_id);
+            $aircraft->airport_id = strtoupper((string) $aircraft->airport_id);
         }
 
         if (empty($aircraft->hex_code)) {

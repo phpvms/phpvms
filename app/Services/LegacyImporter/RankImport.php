@@ -10,7 +10,7 @@ class RankImport extends BaseImporter
 
     protected $idField = 'rankid';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- RANK IMPORT ---');
 

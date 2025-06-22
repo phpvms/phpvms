@@ -20,7 +20,6 @@ final class CronTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        /** @var Pirep $pirep */
         return Pirep::factory()->create([
             'user_id'    => $user->id,
             'state'      => PirepState::IN_PROGRESS,

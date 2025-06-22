@@ -12,7 +12,7 @@ final class GeoTest extends TestCase
 
     public function test_closest_point(): void
     {
-        $geoSvc = app('\App\Services\GeoService');
+        $geoSvc = app(\App\Services\GeoService::class);
 
         /**
          * [2017-12-21 00:54:10] dev.INFO: Looking for ATL
@@ -44,7 +44,7 @@ final class GeoTest extends TestCase
      */
     public function test_get_coords(): void
     {
-        $geoSvc = app('\App\Services\GeoService');
+        $geoSvc = app(\App\Services\GeoService::class);
 
         $route = [];
         $nav_count = random_int(5, 20);

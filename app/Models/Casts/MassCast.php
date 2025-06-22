@@ -24,8 +24,8 @@ class MassCast implements CastsAttributes
 
         try {
             return Mass::make($value, config('phpvms.internal_units.mass'));
-        } catch (NonNumericValue $e) {
-        } catch (NonStringUnitName $e) {
+        } catch (NonNumericValue) {
+        } catch (NonStringUnitName) {
             return $value;
         }
 

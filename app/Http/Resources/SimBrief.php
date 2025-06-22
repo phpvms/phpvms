@@ -29,7 +29,7 @@ class SimBrief extends Resource
 
                 $fares = collect($fares);
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Invalid fare data
         }
 

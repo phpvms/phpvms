@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
  */
 class SetActiveTheme implements Middleware
 {
-    private static $skip = [
+    private static array $skip = [
         'admin',
         'admin/*',
         'api',
@@ -42,7 +42,7 @@ class SetActiveTheme implements Middleware
     /**
      * Set the theme for the current middleware
      */
-    public function setTheme(Request $request)
+    public function setTheme(Request $request): void
     {
         if ($request->is(self::$skip)) {
             return;

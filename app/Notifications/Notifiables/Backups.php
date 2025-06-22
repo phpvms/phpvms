@@ -18,7 +18,7 @@ class Backups
         return config('backup.notifications.slack.webhook_url');
     }
 
-    public function getKey()
+    public function getKey(): int
     {
         return 1;
     }

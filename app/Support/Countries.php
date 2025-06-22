@@ -17,8 +17,6 @@ class Countries
     public static function getSelectList()
     {
         return collect((new ISO3166())->all())
-            ->mapWithKeys(static function ($item, $key) {
-                return [strtolower($item['alpha2']) => $item['name']];
-            });
+            ->mapWithKeys(static fn (array $item, $key) => [strtolower($item['alpha2']) => $item['name']]);
     }
 }

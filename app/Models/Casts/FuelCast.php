@@ -24,8 +24,8 @@ class FuelCast implements CastsAttributes
 
         try {
             return Fuel::make($value, config('phpvms.internal_units.fuel'));
-        } catch (NonNumericValue $e) {
-        } catch (NonStringUnitName $e) {
+        } catch (NonNumericValue) {
+        } catch (NonStringUnitName) {
             return $value;
         }
 

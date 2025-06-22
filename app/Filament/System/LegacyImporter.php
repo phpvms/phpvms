@@ -24,11 +24,11 @@ class LegacyImporter extends Page
 
     protected static ?string $slug = 'legacy-import';
 
-    public ?string $notes;
+    public ?string $notes = null;
 
-    public ?array $db;
+    public ?array $db = null;
 
-    public ?string $details;
+    public ?string $details = null;
 
     /**
      * Called whenever the component is loaded
@@ -97,7 +97,7 @@ class LegacyImporter extends Page
                                         ->hintAction(
                                             Forms\Components\Actions\Action::make('testDb')
                                                 ->label('Test Database Credentials')
-                                                ->action(fn () => $this->testDb())
+                                                ->action(fn (): bool => $this->testDb())
                                         )
                                         ->default('localhost'),
 
@@ -129,7 +129,7 @@ class LegacyImporter extends Page
                                     ->columnSpanFull(),
                             ]),
                     ])->afterValidation(
-                        function () {
+                        function (): void {
                             $this->dbSetup();
                         }
                     ),
@@ -200,9 +200,7 @@ class LegacyImporter extends Page
     {
         $data = $this->db ?? [];
 
-        if (!$this->testDb()) {
-            throw new Halt();
-        }
+        throw_unless($this->testDb(), new Halt());
 
         $creds = [
             'host'         => $data['db_host'],
@@ -269,10 +267,8 @@ class LegacyImporter extends Page
 
     /**
      * When the form is filed (ie import completed)
-     *
-     * @return void
      */
-    public function save()
+    public function save(): void
     {
         $this->redirect('/admin');
     }

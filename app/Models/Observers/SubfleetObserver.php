@@ -9,7 +9,7 @@ use App\Models\Subfleet;
  */
 class SubfleetObserver
 {
-    public function creating(Subfleet $model)
+    public function creating(Subfleet $model): void
     {
         if (!filled($model->ground_handling_multiplier)) {
             $model->ground_handling_multiplier = 100;

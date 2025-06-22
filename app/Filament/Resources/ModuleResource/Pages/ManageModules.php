@@ -32,7 +32,7 @@ class ManageModules extends ManageRecords
 
                         ]),
                 ])
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     $moduleSvc = app(ModuleService::class);
                     if ($data['method'] == 'autodiscover') {
                         $moduleName = $moduleSvc->scan()[(int) $data['moduleId']];
@@ -40,7 +40,7 @@ class ManageModules extends ManageRecords
                     } else {
                         $moduleSvc->installModule(new UploadedFile(
                             storage_path('app/'.$data['moduleZip']),
-                            explode('/', $data['moduleZip'])[array_key_last(explode('/', $data['moduleZip']))]
+                            explode('/', (string) $data['moduleZip'])[array_key_last(explode('/', (string) $data['moduleZip']))]
                         ));
 
                         Storage::delete(storage_path('app/'.$data['moduleZip']));

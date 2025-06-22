@@ -64,7 +64,7 @@ class GroupImporter extends BaseImporter
         'MODERATE_REGISTRATIONS' => 'users',
     ];
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- ROLES/GROUPS IMPORT ---');
 
@@ -77,7 +77,7 @@ class GroupImporter extends BaseImporter
         $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
             // Legacy "administrator" role is now "admin", just map that 1:1
-            if (strtolower($row->name) === 'administrators') {
+            if (strtolower((string) $row->name) === 'administrators') {
                 $role = Role::where('name', 'super_admin')->first();
                 $this->idMapper->addMapping('group', $row->groupid, $role->id);
 
@@ -116,7 +116,7 @@ class GroupImporter extends BaseImporter
                     try {
                         $permName = $this->legacy_to_permission[$legacy_name];
                         if ($permName === 'admin') {
-                            foreach ($permMappings as $name => $value) {
+                            foreach ($permMappings as $value) {
                                 if (!in_array($value, $permissions, true)) {
                                     $permissions[] = $value;
                                 }

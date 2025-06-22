@@ -93,10 +93,10 @@ class Settings extends Page
 
             $this->getSavedNotification()?->send();
 
-            if ($redirectUrl = $this->getRedirectUrl()) {
+            if (($redirectUrl = $this->getRedirectUrl()) !== null && ($redirectUrl = $this->getRedirectUrl()) !== '' && ($redirectUrl = $this->getRedirectUrl()) !== '0') {
                 $this->redirect($redirectUrl);
             }
-        } catch (Halt $exception) {
+        } catch (Halt) {
             return;
         }
     }
@@ -111,7 +111,7 @@ class Settings extends Page
         return Notification::make()->success()->title('Settings saved successfully');
     }
 
-    public function getFormActions()
+    public function getFormActions(): array
     {
         return [
             Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s']),
@@ -143,23 +143,28 @@ class Settings extends Page
         $grouped_settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
             $tabs[] = Tabs\Tab::make(Str::ucfirst($group))->schema(
-                $settings->map(function ($setting) {
+                $settings->map(function ($setting): \Filament\Forms\Components\DatePicker|\Filament\Forms\Components\Toggle|\Filament\Forms\Components\TextInput|\Filament\Forms\Components\Select {
                     if ($setting->type === 'date') {
                         return DatePicker::make($setting->key)->label($setting->name)->helperText($setting->description)->format('Y-m-d');
-                    } elseif ($setting->type === 'boolean' || $setting->type === 'bool') {
+                    }
+                    if ($setting->type === 'boolean' || $setting->type === 'bool') {
                         return Toggle::make($setting->key)->label($setting->name)->helperText($setting->description)->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success');
-                    } elseif ($setting->type === 'int') {
+                    }
+                    if ($setting->type === 'int') {
                         return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->integer();
-                    } elseif ($setting->type === 'number') {
+                    }
+                    if ($setting->type === 'number') {
                         return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->numeric()->step(0.01);
-                    } elseif ($setting->type === 'select') {
+                    }
+                    if ($setting->type === 'select') {
                         if ($setting->id === 'general_theme') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getThemes()));
-                        } elseif ($setting->id === 'units_currency') {
+                        }
+                        if ($setting->id === 'units_currency') {
                             return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options($this->getCurrencyList())->searchable()->native(false);
                         }
 
-                        return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
+                        return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', (string) $setting->options)));
                     }
 
                     return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->string();
@@ -183,7 +188,13 @@ class Settings extends Page
         $themes = Theme::all();
         $theme_list = [];
         foreach ($themes as $t) {
-            if (!$t || !$t->name || $t->name === 'false') {
+            if (!$t) {
+                continue;
+            }
+            if (!$t->name) {
+                continue;
+            }
+            if ($t->name === 'false') {
                 continue;
             }
             $theme_list[] = $t->name;

@@ -47,7 +47,7 @@ class ActivityLogResource extends Resource
 
                                 return $record->causer_id.' | '.class_basename($record->causer_type);
                             })
-                            ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
+                            ->url(fn (Activity $record): ?string => $record->causer_type === \App\Models\User::class ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
                             ->label('Causer'),
                         Infolists\Components\TextEntry::make('created_at')->formatStateUsing(fn (Carbon $state): string => $state->diffForHumans().' | '.$state->format('d.M'))->label('Caused'),
                     ])->columns(3),
@@ -86,7 +86,7 @@ class ActivityLogResource extends Resource
 
                         return $record->causer_id.' | '.class_basename($record->causer_type);
                     })
-                    ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
+                    ->url(fn (Activity $record): ?string => $record->causer_type === \App\Models\User::class ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
                     ->sortable()
                     ->searchable()
                     ->label('Causer'),

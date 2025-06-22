@@ -63,10 +63,12 @@ final class AcarsTest extends TestCase
         foreach ($route as $idx => $point) {
             $this->assertHasKeys($points[$idx], $fields);
             foreach ($fields as $f) {
-                if ($f === 'lat' || $f === 'lon') {
+                if ($f === 'lat') {
                     continue;
                 }
-
+                if ($f === 'lon') {
+                    continue;
+                }
                 $this->assertEquals($point[$f], $points[$idx][$f]);
             }
         }
@@ -233,7 +235,6 @@ final class AcarsTest extends TestCase
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
         $this->settingsRepo->store('pireps.restrict_aircraft_to_rank', false);
 
-        /** @var User user */
         $this->user = User::factory()->create([
             'curr_airport_id' => 'KJFK',
         ]);
@@ -333,7 +334,7 @@ final class AcarsTest extends TestCase
         $this->assertEquals(740800, $pirep['planned_distance']['m']);
 
         // Are date times in UTC?
-        $this->assertTrue(str_ends_with($pirep['submitted_at'], 'Z'));
+        $this->assertTrue(str_ends_with((string) $pirep['submitted_at'], 'Z'));
 
         // See that the fields and fares were set
         $fares = PirepFare::where('pirep_id', $pirep['id'])->get();
@@ -452,7 +453,6 @@ final class AcarsTest extends TestCase
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
 
-        /** @var User user */
         $this->user = User::factory()->create([
             'rank_id' => $rank->id,
         ]);
@@ -607,7 +607,7 @@ final class AcarsTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $body = $response->json();
+        $response->json();
 
         // Add a comment
         $uri = '/api/pireps/'.$pirep_id.'/comments';
@@ -631,7 +631,6 @@ final class AcarsTest extends TestCase
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
 
-        /** @var User user */
         $this->user = User::factory()->create([
             'rank_id' => $rank->id,
         ]);
@@ -716,7 +715,7 @@ final class AcarsTest extends TestCase
         $this->assertEqualsWithDelta($acars2['altitude_msl'], $acars_data['altitude_msl'], 0.1);
     }
 
-    public function test_acars_data_instantitaion()
+    public function test_acars_data_instantitaion(): void
     {
         $acars = Acars::factory()->make(['pirep_id' => 'abc'])->toArray();
         $acars['altitude'] = 5000;
@@ -916,7 +915,7 @@ final class AcarsTest extends TestCase
         // Post an ACARS update
         $acars_count = random_int(5, 10);
         $acars = Acars::factory()->count($acars_count)->make(['id' => ''])
-            ->map(function ($point) {
+            ->map(function (array $point): \Illuminate\Database\Eloquent\Model {
                 $point['id'] = Utils::generateNewId();
 
                 return $point;

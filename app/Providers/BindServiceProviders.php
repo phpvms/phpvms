@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Contracts\AirportLookup;
 use App\Contracts\Metar;
 use Illuminate\Support\ServiceProvider;
-use VaCentral\Contracts\IVaCentral;
 use VaCentral\VaCentral;
 
 class BindServiceProviders extends ServiceProvider
@@ -29,8 +28,7 @@ class BindServiceProviders extends ServiceProvider
         );
 
         $this->app->bind(
-            IVaCentral::class,
-            function ($app) {
+            function ($app): \VaCentral\Contracts\IVaCentral {
                 $client = new VaCentral();
 
                 // Set API if exists

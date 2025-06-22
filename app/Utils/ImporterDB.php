@@ -16,24 +16,15 @@ class ImporterDB
      */
     public $batchSize;
 
-    /**
-     * @var PDO
-     */
-    private $conn;
+    private ?\PDO $conn = null;
+
+    private readonly string $dsn;
 
     /**
-     * @var string
+     * @param mixed[] $creds
      */
-    private $dsn;
-
-    /**
-     * @var array
-     */
-    private $creds;
-
-    public function __construct($creds)
+    public function __construct(private $creds)
     {
-        $this->creds = $creds;
         $this->dsn = 'mysql:'.implode(';', [
             'host='.$this->creds['host'],
             'port='.$this->creds['port'],
@@ -50,7 +41,7 @@ class ImporterDB
         $this->close();
     }
 
-    public function connect()
+    public function connect(): void
     {
         try {
             $this->conn = new PDO($this->dsn, $this->creds['user'], $this->creds['pass']);
@@ -62,20 +53,17 @@ class ImporterDB
         }
     }
 
-    public function close()
+    public function close(): void
     {
-        if ($this->conn) {
+        if ($this->conn instanceof \PDO) {
             $this->conn = null;
         }
     }
 
     /**
      * Return the table name with the prefix
-     *
-     *
-     * @return string
      */
-    public function tableName($table)
+    public function tableName(string $table): string
     {
         if ($this->creds['table_prefix'] !== false) {
             return $this->creds['table_prefix'].$table;
@@ -88,7 +76,7 @@ class ImporterDB
      * Does a table exist? Try to get the column information on it.
      * The result will be 'false' if that table isn't there
      */
-    public function tableExists($table): bool
+    public function tableExists(string $table): bool
     {
         $this->connect();
 
@@ -102,9 +90,9 @@ class ImporterDB
      * Get the names of the columns for a particular table
      *
      *
-     * @return mixed
+     * @return list
      */
-    public function getColumns($table)
+    public function getColumns(string $table): array
     {
         $this->connect();
 
@@ -119,10 +107,7 @@ class ImporterDB
         return $rows;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getTotalRows($table)
+    public function getTotalRows(string $table): int
     {
         $this->connect();
 
@@ -136,11 +121,8 @@ class ImporterDB
 
     /**
      * Read rows from a table with a given assoc array. Simple
-     *
-     * @param  string              $table
-     * @return false|\PDOStatement
      */
-    public function findBy($table, array $attrs)
+    public function findBy(string $table, array $attrs): \PDOStatement|false
     {
         $this->connect();
 
@@ -166,13 +148,12 @@ class ImporterDB
     /**
      * Read all the rows in a table, but read them in a batched manner
      *
-     * @param  string $table        The name of the table
-     * @param  string $order_by     Column to order by
-     * @param  int    $start_offset
-     * @param  string $fields
-     * @return array
+     * @param string $table        The name of the table
+     * @param string $order_by     Column to order by
+     * @param int    $start_offset
+     * @param string $fields
      */
-    public function readRows($table, $order_by = 'id', $start_offset = 0, $fields = '*')
+    public function readRows($table, string $order_by = 'id', $start_offset = 0, $fields = '*'): array
     {
         $this->connect();
 
@@ -197,13 +178,12 @@ class ImporterDB
     }
 
     /**
-     * @param  string                   $table
      * @param  int                      $limit  Number of rows to read
      * @param  int                      $offset Where to start from
      * @param  string                   $fields
      * @return false|\PDOStatement|null
      */
-    public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')
+    public function readRowsOffset(string $table, $limit, $offset, string $order_by, $fields = '*')
     {
         if (is_array($fields)) {
             $fields = implode(',', $fields);
@@ -230,7 +210,7 @@ class ImporterDB
             // Without incrementing the offset, it should re-run the same query
             Log::error('Error readRowsOffset: '.$e->getMessage());
 
-            if (strpos($e->getMessage(), 'server has gone away') !== false) {
+            if (str_contains($e->getMessage(), 'server has gone away')) {
                 $this->connect();
             }
         } catch (\Exception $e) {

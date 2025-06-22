@@ -113,7 +113,7 @@ class RecurringFinanceService extends Service
                     'ref_model_id' => $expense->id,
                 ];
 
-                $ref = explode('\\', $expense->ref_model);
+                $ref = explode('\\', (string) $expense->ref_model);
                 $type = end($ref);
 
                 $found = JournalTransaction::where($w)
@@ -127,7 +127,10 @@ class RecurringFinanceService extends Service
                 }
 
                 [$memo, $ta_group] = $this->getMemoAndGroup($expense);
-                if (empty($memo) || empty($ta_group)) {
+                if (empty($memo)) {
+                    continue;
+                }
+                if (empty($ta_group)) {
                     continue;
                 }
 

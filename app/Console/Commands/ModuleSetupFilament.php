@@ -34,7 +34,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
 
     private string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
 
-    public function handle()
+    public function handle(): void
     {
         $moduleName = $this->argument('module');
         $this->module = app('modules')->find($moduleName);
@@ -68,7 +68,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
         $moduleJson = json_decode($this->readFile(module_path($this->module->getName(), 'module.json')), true);
         $providers = collect($moduleJson['providers']);
 
-        if (!$providers->contains($provider)) {
+        if ($providers->doesntContain($provider)) {
             $moduleJson['providers'][] = $provider;
             $this->writeFile(module_path($this->module->getName(), 'module.json'), json_encode($moduleJson, JSON_PRETTY_PRINT));
         }
@@ -76,7 +76,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
         $composerJson = json_decode($this->readFile(module_path($this->module->getName(), 'composer.json')), true);
         $providers = collect($composerJson['extra']['laravel']['providers']);
 
-        if (!$providers->contains($provider)) {
+        if ($providers->doesntContain($provider)) {
             $composerJson['extra']['laravel']['providers'][] = $provider;
             $this->writeFile(module_path($this->module->getName(), 'composer.json'), json_encode($composerJson, JSON_PRETTY_PRINT));
         }

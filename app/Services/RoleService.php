@@ -4,21 +4,15 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\Role;
-use App\Repositories\RoleRepository;
 
 class RoleService extends Service
 {
-    public function __construct(
-        private readonly RoleRepository $roleRepo
-    ) {}
+    public function __construct() {}
 
     /**
      * Update a role with the given attributes
-     *
-     *
-     * @return Role
      */
-    public function updateRole(Role $role, array $attrs)
+    public function updateRole(Role $role, array $attrs): Role
     {
         $role->update($attrs);
         $role->save();
@@ -26,12 +20,10 @@ class RoleService extends Service
         return $role;
     }
 
-    public function setPermissionsForRole(Role $role, array $permissions)
+    public function setPermissionsForRole(Role $role, array $permissions): void
     {
         // Update the permissions, filter out null/invalid values
-        $perms = collect($permissions)->filter(static function ($v, $k) {
-            return !empty($v);
-        });
+        $perms = collect($permissions)->reject(static fn ($v, $k): bool => empty($v));
 
         $role->permissions()->sync($perms);
     }

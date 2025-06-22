@@ -65,7 +65,7 @@ final class SimBriefTest extends TestCase
     /**
      * Download an OFP file
      */
-    protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
+    protected function downloadOfp($user, $flight, $aircraft, array $fares): ?SimBrief
     {
         $this->mockXmlResponse([
             'simbrief/briefing.xml',

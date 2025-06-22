@@ -13,8 +13,14 @@ class ProfileUpdated
     use InteractsWithSockets;
     use SerializesModels;
 
+    /**
+     * @var \App\Models\User
+     */
     public $user;
 
+    /**
+     * @var bool
+     */
     public $avatarUpdated;
 
     /**

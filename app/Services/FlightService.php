@@ -28,7 +28,6 @@ class FlightService extends Service
      */
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly FareService $fareSvc,
         private readonly FlightRepository $flightRepo,
         private readonly NavdataRepository $navDataRepo,
         private readonly PirepRepository $pirepRepo,
@@ -45,46 +44,39 @@ class FlightService extends Service
      */
     public function createFlight($fields)
     {
-        $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
-        $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        $fields['dpt_airport_id'] = strtoupper((string) $fields['dpt_airport_id']);
+        $fields['arr_airport_id'] = strtoupper((string) $fields['arr_airport_id']);
 
         $flightTmp = new Flight($fields);
-        if ($this->isFlightDuplicate($flightTmp)) {
-            throw new DuplicateFlight($flightTmp);
-        }
+        throw_if($this->isFlightDuplicate($flightTmp), new DuplicateFlight($flightTmp));
 
         $this->airportSvc->lookupAirportIfNotFound($fields['dpt_airport_id']);
         $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->create($fields);
 
-        return $flight;
+        return $this->flightRepo->create($fields);
     }
 
     /**
      * Update a flight with values from the given fields
      *
-     * @param  Flight                   $flight
      * @param  array                    $fields
      * @return \App\Models\Flight|mixed
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function updateFlight($flight, $fields)
+    public function updateFlight(\App\Models\Flight $flight, $fields)
     {
         // apply the updates here temporarily, don't save
         // the repo->update() call will actually do it
         $flight->fill($fields);
 
-        if ($this->isFlightDuplicate($flight)) {
-            throw new DuplicateFlight($flight);
-        }
+        throw_if($this->isFlightDuplicate($flight), new DuplicateFlight($flight));
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->update($fields, $flight->id);
 
-        return $flight;
+        return $this->flightRepo->update($fields, $flight->id);
     }
 
     /**
@@ -121,24 +113,19 @@ class FlightService extends Service
      */
     public function getSubfleetsForBid(Bid $bid)
     {
-        $sf = Subfleet::with([
+        return Subfleet::with([
             'fares',
-            'aircraft' => function ($query) use ($bid) {
+            'aircraft' => function ($query) use ($bid): void {
                 $query->where('id', $bid->aircraft_id);
             }])
             ->where('id', $bid->aircraft->subfleet_id)
             ->get();
-
-        return $sf;
     }
 
     /**
      * Filter out subfleets to only include aircraft that a user has access to
-     *
-     *
-     * @return mixed
      */
-    public function filterSubfleets(User $user, Flight $flight)
+    public function filterSubfleets(User $user, Flight $flight): Flight
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
@@ -164,9 +151,7 @@ class FlightService extends Service
         // Only allow aircraft that the user has access to by their rank or type rating
         if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
-            $subfleets = $subfleets->filter(function ($subfleet, $i) use ($allowed_subfleets) {
-                return $allowed_subfleets->contains($subfleet->id);
-            });
+            $subfleets = $subfleets->filter(fn ($subfleet, $i) => $allowed_subfleets->contains($subfleet->id));
         }
 
         /*
@@ -180,7 +165,7 @@ class FlightService extends Service
 
             foreach ($subfleets as $subfleet) {
                 $subfleet->aircraft = $subfleet->aircraft->filter(
-                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
+                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked): bool {
                         if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
                             return false;
                         }
@@ -191,9 +176,7 @@ class FlightService extends Service
 
                         return true;
                     }
-                )->sortBy(function (Aircraft $ac, int $_) {
-                    return !empty($ac->bid);
-                });
+                )->sortBy(fn (Aircraft $ac, int $_): bool => !empty($ac->bid));
             }
         }
 
@@ -224,13 +207,11 @@ class FlightService extends Service
         // Find within all the flights with the same flight number
         // Return any flights that have the same route code and leg
         // If this list is > 0, then this has a duplicate
-        $found_flights = $found_flights->filter(function ($value, $key) use ($flight) {
-            return $flight->route_code === $value->route_code
-                && $flight->route_leg === $value->route_leg
-                && $flight->dpt_airport_id === $value->dpt_airport_id
-                && $flight->arr_airport_id === $value->arr_airport_id
-                && $flight->days === $value->days;
-        });
+        $found_flights = $found_flights->filter(fn ($value, $key): bool => $flight->route_code === $value->route_code
+            && $flight->route_leg === $value->route_leg
+            && $flight->dpt_airport_id === $value->dpt_airport_id
+            && $flight->arr_airport_id === $value->arr_airport_id
+            && $flight->days === $value->days);
 
         return $found_flights->count() !== 0;
     }

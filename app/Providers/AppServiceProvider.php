@@ -23,9 +23,7 @@ class AppServiceProvider extends ServiceProvider
 
         activity()->disableLogging();
 
-        Notification::extend('discord_webhook', function ($app) {
-            return app(DiscordWebhook::class);
-        });
+        Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
     }
 
     /**
@@ -33,13 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('view.finder', function ($app) {
-            return new ThemeViewFinder(
-                $app['files'],
-                $app['config']['view.paths'],
-                null
-            );
-        });
+        $this->app->singleton('view.finder', fn (array $app): \App\Support\ThemeViewFinder => new ThemeViewFinder(
+            $app['files'],
+            $app['config']['view.paths'],
+            null
+        ));
 
         // Only load the IDE helper if it's included and enabled
         if (config('app.debug') === true) {

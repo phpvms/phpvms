@@ -85,11 +85,7 @@ final class PIREPTest extends TestCase
 
         $pirep = $this->pirepSvc->create($pirep, []);
 
-        try {
-            $this->pirepSvc->saveRoute($pirep);
-        } catch (\Exception $e) {
-            throw $e;
-        }
+        $this->pirepSvc->saveRoute($pirep);
 
         /*
          * Check the initial state info
@@ -567,7 +563,7 @@ final class PIREPTest extends TestCase
     public function test_pirep_bid_removed(): void
     {
         $bidSvc = app(BidService::class);
-        $flightSvc = app(FlightService::class);
+        app(FlightService::class);
 
         $user = User::factory()->create([
             'flight_time' => 0,

@@ -27,17 +27,14 @@ class CreateDatabase extends Command
 
     /**
      * Create the mysql database
-     *
-     *
-     * @return bool
      */
-    protected function create_mysql_or_mariadb($dbkey)
+    protected function create_mysql_or_mariadb(string $dbkey): ?bool
     {
         $host = config($dbkey.'host');
         $port = config($dbkey.'port');
         $name = config($dbkey.'database');
-        $user = config($dbkey.'username');
-        $pass = config($dbkey.'password');
+        config($dbkey.'username');
+        config($dbkey.'password');
 
         $dbSvc = new Database();
         $dsn = $dbSvc->createDsn($host, $port);
@@ -79,7 +76,7 @@ class CreateDatabase extends Command
     /**
      * Create the sqlite database
      */
-    protected function create_sqlite($dbkey)
+    protected function create_sqlite(string $dbkey)
     {
         $dbPath = config($dbkey.'database');
 
@@ -115,10 +112,8 @@ class CreateDatabase extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         /*if ($this->option('reset')) {
             if(!$this->confirm('The "reset" option will destroy the database, are you sure?')) {

@@ -17,7 +17,7 @@ class RewriteConfigs extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         /** @var ConfigService $configSvc */
         $configSvc = app(ConfigService::class);

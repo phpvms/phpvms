@@ -51,9 +51,7 @@ class FlightController extends Controller
             'fares',
             'subfleets' => ['aircraft.bid', 'fares'],
             'field_values',
-            'simbrief' => function ($query) use ($user) {
-                return $query->with('aircraft')->where('user_id', $user->id);
-            },
+            'simbrief' => fn ($query) => $query->with('aircraft')->where('user_id', $user->id),
         ])->find($id);
 
         $flight = $this->flightSvc->filterSubfleets($user, $flight);
@@ -99,9 +97,7 @@ class FlightController extends Controller
                 'airline',
                 'fares',
                 'field_values',
-                'simbrief' => function ($query) use ($user) {
-                    return $query->with('aircraft')->where('user_id', $user->id);
-                },
+                'simbrief' => fn ($query) => $query->with('aircraft')->where('user_id', $user->id),
             ];
 
             $relations = [
@@ -109,7 +105,7 @@ class FlightController extends Controller
             ];
 
             if ($request->has('with')) {
-                $relations = explode(',', $request->input('with', ''));
+                $relations = explode(',', (string) $request->input('with', ''));
             }
 
             foreach ($relations as $relation) {
@@ -149,8 +145,7 @@ class FlightController extends Controller
      */
     public function briefing(string $id)
     {
-        /** @var User $user */
-        $user = Auth::user();
+        Auth::user();
         $w = [
             'id' => $id,
         ];
@@ -158,9 +153,7 @@ class FlightController extends Controller
         /** @var SimBrief $simbrief */
         $simbrief = SimBrief::where($w)->first();
 
-        if ($simbrief === null) {
-            throw new AssetNotFound(new Exception('Flight briefing not found'));
-        }
+        throw_if($simbrief === null, new AssetNotFound(new Exception('Flight briefing not found')));
 
         /*if ($simbrief->user_id !== $user->id) {
             throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
@@ -203,18 +196,14 @@ class FlightController extends Controller
             $where['airport_id'] = $flight->dpt_airport_id;
         }
 
-        $withCount = ['bid', 'simbriefs' => function ($query) {
+        $withCount = ['bid', 'simbriefs' => function ($query): void {
             $query->whereNull('pirep_id');
         }];
 
         // Build proper aircraft collection considering all possible settings
         // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
         $aircraft = Aircraft::withCount($withCount)->where($where)
-            ->when(setting('simbrief.block_aircraft'), function ($query) {
-                return $query->having('simbriefs_count', 0);
-            })->when(setting('bids.block_aircraft'), function ($query) {
-                return $query->having('bid_count', 0);
-            })->whereIn('subfleet_id', $subfleet_ids)
+            ->when(setting('simbrief.block_aircraft'), fn ($query) => $query->having('simbriefs_count', 0))->when(setting('bids.block_aircraft'), fn ($query) => $query->having('bid_count', 0))->whereIn('subfleet_id', $subfleet_ids)
             ->orderby('icao')->orderby('registration')
             ->get();
 

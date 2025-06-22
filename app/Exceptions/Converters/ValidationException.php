@@ -3,19 +3,15 @@
 namespace App\Exceptions\Converters;
 
 use App\Exceptions\AbstractHttpException;
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
 
 class ValidationException extends AbstractHttpException
 {
-    private $validationException;
-
-    private $errorDetail;
+    private string $errorDetail;
 
     private $errors;
 
-    public function __construct(IlluminateValidationException $validationException)
+    public function __construct(private readonly \Illuminate\Validation\ValidationException $validationException)
     {
-        $this->validationException = $validationException;
         $this->processValidationErrors();
 
         parent::__construct(
@@ -24,11 +20,11 @@ class ValidationException extends AbstractHttpException
         );
     }
 
-    private function processValidationErrors()
+    private function processValidationErrors(): void
     {
         $error_messages = [];
         $this->errors = $this->validationException->errors();
-        foreach ($this->errors as $field => $error) {
+        foreach ($this->errors as $error) {
             $error_messages[] = implode(', ', $error);
         }
 

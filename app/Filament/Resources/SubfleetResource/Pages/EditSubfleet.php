@@ -23,8 +23,8 @@ class EditSubfleet extends EditRecord
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success'),
             Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make()->before(function (Subfleet $record) {
-                $record->files()->each(function (File $file) {
+            Actions\ForceDeleteAction::make()->before(function (Subfleet $record): void {
+                $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),

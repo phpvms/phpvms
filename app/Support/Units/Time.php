@@ -4,16 +4,22 @@ namespace App\Support\Units;
 
 use Illuminate\Contracts\Support\Arrayable;
 
-class Time implements Arrayable
+class Time implements \Stringable, Arrayable
 {
+    /**
+     * @var float|int
+     */
     public $hours;
 
+    /**
+     * @var int
+     */
     public $minutes;
 
     /**
      * @return static
      */
-    public static function init($minutes, $hours)
+    public static function init($minutes, $hours): self
     {
         return new self($minutes, $hours);
     }
@@ -33,10 +39,8 @@ class Time implements Arrayable
 
     /**
      * Get the total number minutes, adding up the hours
-     *
-     * @return float|int
      */
-    public function getMinutes()
+    public function getMinutes(): int|float
     {
         return ($this->hours * 60) + $this->minutes;
     }
@@ -45,28 +49,21 @@ class Time implements Arrayable
      * Alias to getMinutes()
      *
      * @alias getMinutes()
-     *
-     * @return float|int
      */
-    public function asInt()
+    public function asInt(): int|float
     {
         return $this->getMinutes();
     }
 
     /**
      * Return a time string
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->hours.'h '.$this->minutes.'m';
     }
 
-    /**
-     * @return float|int
-     */
-    public function toObject()
+    public function toObject(): int|float
     {
         return $this->getMinutes();
     }
@@ -139,41 +136,28 @@ class Time implements Arrayable
         return $format;
     }
 
-    /**
-     * @return float|int
-     */
-    public static function minutesToSeconds($minutes)
+    public static function minutesToSeconds($minutes): int|float
     {
         return $minutes * 60;
     }
 
     /**
      * Convert the seconds to minutes and then round it up
-     *
-     *
-     * @return float|int
      */
-    public static function secondsToMinutes($seconds)
+    public static function secondsToMinutes($seconds): float
     {
         return ceil($seconds / 60);
     }
 
     /**
      * Convert hours to minutes. Pretty complex
-     *
-     *
-     * @return float|int
      */
-    public static function minutesToHours($minutes)
+    public static function minutesToHours($minutes): int|float
     {
         return $minutes / 60;
     }
 
-    /**
-     * @param  null      $minutes
-     * @return float|int
-     */
-    public static function hoursToMinutes($hours, $minutes = null)
+    public static function hoursToMinutes($hours, $minutes = null): int
     {
         $total = (int) $hours * 60;
         if ($minutes) {

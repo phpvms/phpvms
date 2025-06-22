@@ -40,8 +40,6 @@ class FlightRepository extends Repository implements CacheableInterface
     /**
      * Find a flight based on the given criterea
      *
-     * @param  null  $route_code
-     * @param  null  $route_leg
      * @return mixed
      */
     public function findFlight($airline_id, $flight_num, $route_code = null, $route_leg = null)
@@ -106,19 +104,19 @@ class FlightRepository extends Repository implements CacheableInterface
         }
 
         if ($request->filled('dpt_airport_id')) {
-            $where['dpt_airport_id'] = strtoupper($request->input('dpt_airport_id'));
+            $where['dpt_airport_id'] = strtoupper((string) $request->input('dpt_airport_id'));
         }
 
         if ($request->filled('dep_icao')) {
-            $where['dpt_airport_id'] = strtoupper($request->input('dep_icao'));
+            $where['dpt_airport_id'] = strtoupper((string) $request->input('dep_icao'));
         }
 
         if ($request->filled('arr_airport_id')) {
-            $where['arr_airport_id'] = strtoupper($request->input('arr_airport_id'));
+            $where['arr_airport_id'] = strtoupper((string) $request->input('arr_airport_id'));
         }
 
         if ($request->filled('arr_icao')) {
-            $where['arr_airport_id'] = strtoupper($request->input('arr_icao'));
+            $where['arr_airport_id'] = strtoupper((string) $request->input('arr_icao'));
         }
 
         // Distance, greater than

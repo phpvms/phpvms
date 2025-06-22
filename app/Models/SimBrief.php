@@ -47,20 +47,20 @@ class SimBrief extends Model
     ];
 
     /** @var \App\Models\SimBriefXML Store a cached version of the XML object */
-    private $xml_instance;
+    private \SimpleXMLElement|bool|null $xml_instance = null;
 
     /**
      * Return a SimpleXML object of the $ofp_xml
      */
     protected function xml(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): null|\SimpleXMLElement|bool {
             if (empty($this->attributes['ofp_xml'])) {
                 return null;
             }
             if (!$this->xml_instance) {
                 $this->xml_instance = simplexml_load_string(
-                    $this->attributes['ofp_xml'],
+                    (string) $this->attributes['ofp_xml'],
                     SimBriefXML::class
                 );
             }
@@ -74,9 +74,7 @@ class SimBrief extends Model
      */
     protected function images(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
-            return $this->xml->getImages();
-        });
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn () => $this->xml->getImages());
     }
 
     /**
@@ -84,9 +82,7 @@ class SimBrief extends Model
      */
     protected function files(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
-            return $this->xml->getFlightPlans();
-        });
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn () => $this->xml->getFlightPlans());
     }
 
     /*

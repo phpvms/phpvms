@@ -26,12 +26,12 @@ class UserRegistered extends Notification implements ShouldQueue
         );
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
 
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->user->id,

@@ -78,7 +78,7 @@ class AirlineResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('Code')
-                    ->formatStateUsing(function (Airline $record) {
+                    ->formatStateUsing(function (Airline $record): string {
                         $html = '';
                         if (filled($record->country)) {
                             $html .= '<span class="flag-icon flag-icon-'.$record->country.'"></span> &nbsp;';
@@ -107,8 +107,8 @@ class AirlineResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Airline $record) {
-                    $record->files()->each(function (File $file) {
+                Tables\Actions\ForceDeleteAction::make()->before(function (Airline $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -117,8 +117,8 @@ class AirlineResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(fn (Airline $record) => $record->files()->each(function (File $file) {
+                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(fn (Airline $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

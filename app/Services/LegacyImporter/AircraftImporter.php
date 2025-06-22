@@ -10,7 +10,7 @@ class AircraftImporter extends BaseImporter
 {
     protected $table = 'aircraft';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- AIRCRAFT IMPORT ---');
 

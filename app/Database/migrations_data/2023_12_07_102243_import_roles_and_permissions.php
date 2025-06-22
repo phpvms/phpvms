@@ -49,7 +49,7 @@ return new class() extends Migration
 
                 DB::table('model_has_roles')->insert([
                     'role_id'    => $roleId,
-                    'model_type' => 'App\Models\User',
+                    'model_type' => \App\Models\User::class,
                     'model_id'   => $roleUser->user_id,
                 ]);
             }
@@ -336,7 +336,7 @@ return new class() extends Migration
                 $roleId = DB::table('roles')->where('name', $permission->role_name)->value('id');
 
                 foreach ($permissions as $oldPermissionName => $newPermissionList) {
-                    if (str_contains($permission->permission_name, $oldPermissionName)) {
+                    if (str_contains((string) $permission->permission_name, $oldPermissionName)) {
                         foreach ($newPermissionList as $newPermission) {
                             $permissionId = DB::table('permissions')->where('name', $newPermission)->value('id');
                             if (DB::table('role_has_permissions')->where(['role_id' => $roleId, 'permission_id' => $permissionId])->exists()) {

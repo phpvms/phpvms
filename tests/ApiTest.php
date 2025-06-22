@@ -50,7 +50,7 @@ final class ApiTest extends TestCase
 
         // Test upper/lower case of Authorization header, etc
         $response = $this->get($uri, $this->headers($user));
-        $body = $response->json();
+        $response->json();
         $response->assertStatus(200)->assertJson(['data' => ['id' => $user->id]]);
 
         $this->withHeaders(['x-api-key' => $user->api_key])->get($uri)
@@ -358,7 +358,7 @@ final class ApiTest extends TestCase
         $res = $this->get('/api/user')->assertStatus(200);
         $user = $res->json('data');
         $this->assertNotNull($user);
-        $this->assertNotSame(-1, strpos($user['avatar'], 'http'));
+        $this->assertNotSame(-1, strpos((string) $user['avatar'], 'http'));
 
         // Should go to gravatar
 
@@ -367,7 +367,7 @@ final class ApiTest extends TestCase
         $res = $this->get('/api/user')->assertStatus(200);
         $user = $res->json('data');
         $this->assertNotNull($user);
-        $this->assertNotSame(-1, strpos($user['avatar'], 'gravatar'));
+        $this->assertNotSame(-1, strpos((string) $user['avatar'], 'gravatar'));
     }
 
     /**

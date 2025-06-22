@@ -22,16 +22,12 @@ class OAuthController extends Controller
 
     public function redirectToProvider(string $provider): RedirectResponse
     {
-        if (!config('services.'.$provider.'.enabled', false)) {
-            abort(404);
-        }
+        abort_unless(config('services.'.$provider.'.enabled', false), 404);
 
         // Using a switch statement since we might need different scopes according to the provider
         switch ($provider) {
             case 'discord':
-                if (!config('services.discord.enabled')) {
-                    abort(404);
-                }
+                abort_unless(config('services.discord.enabled'), 404);
 
                 $requiredScopes = ['identify'];
                 $envScopes = config('services.discord.scopes', []);
@@ -57,9 +53,7 @@ class OAuthController extends Controller
     {
         $providerUser = null;
 
-        if (!config('services.'.$provider.'.enabled', false)) {
-            abort(404);
-        }
+        abort_unless(config('services.'.$provider.'.enabled', false), 404);
 
         switch ($provider) {
             case 'discord':
@@ -168,12 +162,10 @@ class OAuthController extends Controller
 
     public function logoutProvider(string $provider): RedirectResponse
     {
-        if (!config('services.'.$provider.'.enabled', false)) {
-            abort(404);
-        }
+        abort_unless(config('services.'.$provider.'.enabled', false), 404);
 
         $user = Auth::user();
-        $otherProviders = UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
+        UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
 
         $user->update([
             $provider.'_id' => '',

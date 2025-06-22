@@ -12,15 +12,10 @@ use Illuminate\Support\Facades\Log;
  */
 class PilotLeave extends Listener
 {
-    private UserService $userSvc;
-
     /**
      * PilotLeave constructor.
      */
-    public function __construct(UserService $userSvc)
-    {
-        $this->userSvc = $userSvc;
-    }
+    public function __construct(private readonly UserService $userSvc) {}
 
     /**
      * Set any users to being on leave after X days

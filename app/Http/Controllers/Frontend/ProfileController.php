@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\UserRepository;
 use App\Support\Countries;
 use App\Support\Timezonelist;
@@ -33,7 +32,6 @@ class ProfileController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly UserRepository $userRepo
     ) {}
 
@@ -46,7 +44,7 @@ class ProfileController extends Controller
         $acars_enabled = false;
         $acars = Module::find('VMSAcars');
         if ($acars) {
-            $acars_enabled = $acars->isEnabled();
+            return $acars->isEnabled();
         }
 
         return $acars_enabled;
@@ -180,7 +178,7 @@ class ProfileController extends Controller
             $h = config('phpvms.avatar.height');
 
             $canvas = Image::canvas($w, $h);
-            $image = Image::make($avatar)->resize($w, $h, static function ($constraint) {
+            $image = Image::make($avatar)->resize($w, $h, static function ($constraint): void {
                 $constraint->aspectRatio();
             });
 

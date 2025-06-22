@@ -11,24 +11,18 @@ class ImportCsv extends Command
 
     protected $description = 'Import from a CSV file';
 
-    private ImportService $importer;
-
     /**
      * Import constructor.
      */
-    public function __construct(ImportService $importer)
+    public function __construct(private readonly ImportService $importer)
     {
         parent::__construct();
-
-        $this->importer = $importer;
     }
 
     /**
-     * @return mixed|void
-     *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function handle()
+    public function handle(): void
     {
         $type = $this->argument('type');
         $file = $this->argument('file');

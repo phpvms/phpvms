@@ -19,17 +19,13 @@ use App\Console\Cron\Nightly;
 use App\Console\Cron\ThirtyMinute;
 use App\Console\Cron\Weekly;
 use App\Contracts\Command;
-use Illuminate\Console\Scheduling\Schedule;
 
 class Cron
 {
-    /** @var Schedule */
-    private $scheduler;
-
     /**
      * @var string[] The cron tasks which get called/run
      */
-    private $cronTasks = [
+    private array $cronTasks = [
         JobQueue::class,
         FiveMinute::class,
         FifteenMinute::class,
@@ -49,9 +45,8 @@ class Cron
      */
     private $cronRunners = [];
 
-    public function __construct(Schedule $scheduler)
+    public function __construct(private readonly \Illuminate\Console\Scheduling\Schedule $scheduler)
     {
-        $this->scheduler = $scheduler;
         foreach ($this->cronTasks as $task) {
             /** @var Command $cronTask */
             $cronTask = app($task);
@@ -82,7 +77,7 @@ class Cron
         /** @var \Illuminate\Console\Scheduling\Event $event */
         foreach ($events as $event) {
             foreach ($this->cronRunners as $signature => $task) {
-                if (!str_contains($event->command, $signature)) {
+                if (!str_contains((string) $event->command, $signature)) {
                     continue;
                 }
 

@@ -13,7 +13,7 @@ class AircraftService extends Service
     /**
      * Recalculate all aircraft stats and hours
      */
-    public function recalculateStats()
+    public function recalculateStats(): void
     {
         $allAircraft = Aircraft::where('status', AircraftStatus::ACTIVE)->get(); // TODO: Soft delete
         foreach ($allAircraft as $aircraft) {

@@ -55,7 +55,7 @@ class NotificationEventsHandler extends Listener
      */
     protected function notifyAdmins(\App\Contracts\Notification $notification)
     {
-        $admin_users = User::whereHas('roles', function ($query) {
+        $admin_users = User::whereHas('roles', function ($query): void {
             $query->where('name', 'super_admin');
         })->get();
 

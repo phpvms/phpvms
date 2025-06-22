@@ -285,7 +285,7 @@ final class FinanceTest extends TestCase
         // set an override now (but on the flight)
         //
         $this->fareSvc->setForFlight($flight, $fare, ['price' => 50]);
-        $bid = $bidSvc->addBid($flight, $this->user);
+        $bidSvc->addBid($flight, $this->user);
 
         $req = $this->get('/api/user/bids');
         $req->assertStatus(200);
@@ -791,7 +791,7 @@ final class FinanceTest extends TestCase
         $all_fares = $this->financeSvc->getFaresForPirep($pirep);
 
         $this->assertCount(3, $all_fares);
-        $fare_counts = collect($fare_counts);
+        collect($fare_counts);
         foreach ($all_fares as $fare) {
             // $set_fare = $fare_counts->where('fare_id', $fare->id)->first();
             $this->assertEquals($fare['count'], $fare->count);
@@ -1179,7 +1179,7 @@ final class FinanceTest extends TestCase
     /**
      * Test that all expenses are pulled properly
      */
-    public function test_pirep_expenses_nightly()
+    public function test_pirep_expenses_nightly(): void
     {
         /** @var JournalRepository $journalRepo */
         $journalRepo = app(JournalRepository::class);
@@ -1215,7 +1215,7 @@ final class FinanceTest extends TestCase
          */
 
         $subfleet = Subfleet::factory()->create();
-        $subfleet2 = Subfleet::factory()->create();
+        Subfleet::factory()->create();
 
         /** @var FinanceService $financeSvc */
         $financeSvc = app(FinanceService::class);
@@ -1228,18 +1228,18 @@ final class FinanceTest extends TestCase
         $financeSvc->addExpense($exp->toArray(), $subfleet);
 
         [$user, $pirep, $fares] = $this->createFullPirep();
-        $pirep = $this->pirepSvc->accept($pirep);
+        $this->pirepSvc->accept($pirep);
 
         // $transactions = $journalRepo->getAllForObject($pirep);
-        $txn_airline1 = $journalRepo->getAllForObject($airline);
-        $txn_airline2 = $journalRepo->getAllForObject($airline2);
+        $journalRepo->getAllForObject($airline);
+        $journalRepo->getAllForObject($airline2);
 
         /** @var RecurringFinanceService $recurringFService */
         $recurringFService = app(RecurringFinanceService::class);
         $recurringFService->processExpenses(ExpenseType::DAILY);
 
-        $txn_airline1 = $journalRepo->getAllForObject($airline);
-        $txn_airline2 = $journalRepo->getAllForObject($airline2);
+        $journalRepo->getAllForObject($airline);
+        $journalRepo->getAllForObject($airline2);
         // dd($txn_airline1);
     }
 }

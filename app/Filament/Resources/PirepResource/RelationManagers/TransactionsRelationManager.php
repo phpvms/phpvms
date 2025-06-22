@@ -38,7 +38,7 @@ class TransactionsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\Action::make('recalculate_finances')->action(function () {
+                Tables\Actions\Action::make('recalculate_finances')->action(function (): void {
                     app(PirepFinanceService::class)->processFinancesForPirep($this->getOwnerRecord());
 
                     Notification::make('')

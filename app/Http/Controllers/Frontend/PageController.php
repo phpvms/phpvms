@@ -23,13 +23,9 @@ class PageController extends Controller
     {
         /** @var \App\Models\Page $page */
         $page = $this->pageRepo->findWhere(['slug' => $slug])->first();
-        if (!$page) {
-            throw new PageNotFound(new Exception('Page not found'));
-        }
+        throw_unless($page, new PageNotFound(new Exception('Page not found')));
 
-        if (!$page->public && !Auth::check()) {
-            throw new Unauthorized(new Exception('You must be logged in to view this page'));
-        }
+        throw_if(!$page->public && !Auth::check(), new Unauthorized(new Exception('You must be logged in to view this page')));
 
         return view('pages.index', ['page' => $page]);
     }

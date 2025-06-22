@@ -32,13 +32,12 @@ class Flight extends Resource
     }
 
     /**
-     * @param  \Illuminate\Http\Request $request
      * @return array
      *
      * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
      * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
      */
-    public function toArray($request)
+    public function toArray(\Illuminate\Http\Request $request)
     {
         $res = parent::toArray($request);
 

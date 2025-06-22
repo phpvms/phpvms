@@ -148,7 +148,7 @@ return [
             /*
              * The disk names on which the backups will be stored.
              */
-            'disks' => explode(',', env('BACKUP_DISKS', 'local')),
+            'disks' => explode(',', (string) env('BACKUP_DISKS', 'local')),
         ],
 
         /*
@@ -195,28 +195,28 @@ return [
         'notifications' => [
             \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => explode(
                 ',',
-                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+                (string) env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
             ),
             \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => explode(
                 ',',
-                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+                (string) env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
             ),
             \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => explode(
                 ',',
-                env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
+                (string) env('BACKUP_FAILED_NOTIFICATIONS_CHANNELS', 'mail')
             ),
 
             \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => explode(
                 ',',
-                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+                (string) env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
             ),
             \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => explode(
                 ',',
-                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+                (string) env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
             ),
             \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => explode(
                 ',',
-                env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
+                (string) env('BACKUP_SUCCEED_NOTIFICATIONS_CHANNELS', '')
             ),
         ],
 
@@ -275,7 +275,7 @@ return [
     'monitor_backups' => [
         [
             'name'          => env('APP_NAME', 'laravel-backup'),
-            'disks'         => explode(',', env('BACKUP_DISKS', 'local')),
+            'disks'         => explode(',', (string) env('BACKUP_DISKS', 'local')),
             'health_checks' => [
                 \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class          => 1,
                 \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,

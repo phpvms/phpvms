@@ -13,7 +13,7 @@ use Nwidart\Modules\Facades\Module;
  * array_key_first only exists in PHP 7.3+
  */
 if (!function_exists('array_key_first')) {
-    function array_key_first(array $arr)
+    function array_key_first(array $arr): int|string|null
     {
         foreach (array_keys($arr) as $key) {
             return $key;
@@ -26,11 +26,8 @@ if (!function_exists('array_key_first')) {
 if (!function_exists('in_mask')) {
     /**
      * Return true/false if a value exists in a mask
-     *
-     *
-     * @return bool
      */
-    function in_mask($mask, $value)
+    function in_mask($mask, $value): bool
     {
         if (empty($mask)) {
             $mask = 0;
@@ -44,11 +41,8 @@ if (!function_exists('get_truth_state')) {
     /**
      * Check if the passed state matches any of the states that
      * we regard as being true or false
-     *
-     *
-     * @return bool
      */
-    function get_truth_state($state)
+    function get_truth_state($state): bool
     {
         $enabledStates = [
             'yes',
@@ -76,22 +70,19 @@ if (!function_exists('list_to_assoc')) {
      *    [ 0 => 'item1', 1 => 'item2']
      * to:
      *    ['item1' => 'item1', 'item2' => 'item2']
-     *
-     *
-     * @return array
      */
-    function list_to_assoc(array $list)
+    function list_to_assoc(array $list): array
     {
         $ret = [];
         foreach ($list as $item) {
-            if (substr_count($item, '=') !== 0) {
-                [$item, $title] = explode('=', $item);
+            if (substr_count((string) $item, '=') !== 0) {
+                [$item, $title] = explode('=', (string) $item);
             } else {
                 $title = $item;
             }
 
-            $item = trim($item);
-            $title = trim($title);
+            $item = trim((string) $item);
+            $title = trim((string) $title);
 
             $ret[$item] = $title;
         }
@@ -108,11 +99,8 @@ if (!function_exists('list_to_editable')) {
      *    [value => text, valueN => textN, ...]
      * Return:
      *    [{value: 1, text: "text1"}, {value: 2, text: "text2"}, ...]
-     *
-     *
-     * @return array
      */
-    function list_to_editable(array $list)
+    function list_to_editable(array $list): array
     {
         $editable = [];
         foreach ($list as $value => $key) {
@@ -133,7 +121,7 @@ if (!function_exists('skin_view')) {
      *
      * @return Factory|\Illuminate\View\View
      */
-    function skin_view($template, array $vars = [], array $merge_data = [])
+    function skin_view(string $template, array $vars = [], array $merge_data = [])
     {
         // Add the current skin name so we don't need to hardcode it in the templates
         // Makes it a bit easier to create a new skin by modifying an existing one
@@ -157,7 +145,7 @@ if (!function_exists('setting')) {
      * @param  mixed      $default
      * @return mixed|null
      */
-    function setting($key, $default = null)
+    function setting(string $key, $default = null)
     {
         /** @var \App\Repositories\SettingRepository $settingRepo */
         $settingRepo = app(SettingRepository::class);
@@ -166,15 +154,11 @@ if (!function_exists('setting')) {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.SETTINGS');
 
-                $value = Cache::remember($cache['key'].$key, $cache['time'], function () use ($key, $settingRepo) {
-                    return $settingRepo->retrieve($key);
-                });
+                $value = Cache::remember($cache['key'].$key, $cache['time'], fn () => $settingRepo->retrieve($key));
             } else {
                 $value = $settingRepo->retrieve($key);
             }
-        } catch (SettingNotFound $e) {
-            return $default;
-        } catch (Exception $e) {
+        } catch (SettingNotFound|Exception) {
             return $default;
         }
 
@@ -213,7 +197,7 @@ if (!function_exists('kvp')) {
 
         try {
             $value = $kvpRepo->get($key, $default);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $default;
         }
 
@@ -227,11 +211,8 @@ if (!function_exists('kvp')) {
 if (!function_exists('kvp_save')) {
     /**
      * Read a setting from the KVP repository
-     *
-     *
-     * @return mixed|null
      */
-    function kvp_save(string $key, string $value)
+    function kvp_save(string $key, string $value): void
     {
         /** @var KvpRepository $kvpRepo */
         $kvpRepo = app(KvpRepository::class);
@@ -262,7 +243,7 @@ if (!function_exists('public_mix')) {
     {
         try {
             $path = mix($path);
-        } catch (Exception $e) {
+        } catch (Exception) {
         }
 
         return public_asset($path, $parameters);
@@ -291,11 +272,8 @@ if (!function_exists('show_datetime')) {
     /**
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
-     *
-     *
-     * @return string
      */
-    function show_datetime(?Carbon $date = null)
+    function show_datetime(?Carbon $date = null): string
     {
         if (!$date instanceof \Carbon\Carbon) {
             return '-';
@@ -318,10 +296,9 @@ if (!function_exists('show_date')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param  string $default_timezone Default timezone to use, defaults to UTC
-     * @return string
+     * @param string $default_timezone Default timezone to use, defaults to UTC
      */
-    function show_date(Carbon $date, $default_timezone = 'UTC')
+    function show_date(Carbon $date, $default_timezone = 'UTC'): string
     {
         $timezone = $default_timezone;
         if (Auth::check()) {
@@ -340,11 +317,10 @@ if (!function_exists('show_datetime_format')) {
      * Format the a Carbon date into the datetime string
      * but convert it into the user's timezone
      *
-     * @param  string $format
-     * @param  string $default_timezone A default timezone to use (UTC by default)
-     * @return string
+     * @param string $format
+     * @param string $default_timezone A default timezone to use (UTC by default)
      */
-    function show_datetime_format(Carbon $date, $format, $default_timezone = 'UTC')
+    function show_datetime_format(Carbon $date, $format, $default_timezone = 'UTC'): string
     {
         $timezone = $default_timezone;
         if (Auth::check()) {
@@ -359,7 +335,7 @@ if (!function_exists('secstohhmm')) {
     /**
      * Convert seconds to hhmm format
      */
-    function secstohhmm($seconds)
+    function secstohhmm($seconds): void
     {
         $seconds = round((float) $seconds);
         $hhmm = sprintf('%02d%02d', $seconds / 3600, $seconds / 60 % 60);
@@ -398,10 +374,9 @@ if (!function_exists('docs_link')) {
     /**
      * Return a link to the docs
      *
-     * @param  string $key Key from phpvms.config.docs
-     * @return string
+     * @param string $key Key from phpvms.config.docs
      */
-    function docs_link($key)
+    function docs_link(string $key): string
     {
         return config('phpvms.docs.root').config('phpvms.docs.'.$key);
     }
@@ -411,14 +386,13 @@ if (!function_exists('check_module')) {
     /**
      * Check if a module is installed and active
      *
-     * @param  string $module_name
-     * @return bool
+     * @param string $module_name
      */
-    function check_module($module_name)
+    function check_module($module_name): bool
     {
         $phpvms_module = Module::find($module_name);
 
-        return filled($phpvms_module) ? $phpvms_module->isEnabled() : false;
+        return filled($phpvms_module) && $phpvms_module->isEnabled();
     }
 }
 
@@ -429,12 +403,12 @@ if (!function_exists('decode_days')) {
      * @param  int    $flight_days
      * @return string Monday, Tuesday, Friday, Sunday
      */
-    function decode_days($flight_days)
+    function decode_days($flight_days): string
     {
         $days = [];
 
         for ($i = 0; $i < 7; $i++) {
-            if ($flight_days & pow(2, $i)) {
+            if (($flight_days & 2 ** $i) !== 0) {
                 $days[] = jddayofweek($i, 1);
             }
         }

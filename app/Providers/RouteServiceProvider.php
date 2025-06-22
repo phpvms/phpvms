@@ -19,10 +19,8 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define the routes for the application.
-     *
-     * @return void
      */
-    public function map()
+    public function map(): void
     {
         $this->mapWebRoutes();
         $this->mapApiRoutes();
@@ -32,21 +30,19 @@ class RouteServiceProvider extends ServiceProvider
      * Define the "web" routes for the application.
      *
      * These routes all receive session state, CSRF protection, etc.
-     *
-     * @return void
      */
-    private function mapWebRoutes()
+    private function mapWebRoutes(): void
     {
         Route::group([
             'middleware' => ['web'],
             'namespace'  => $this->namespace,
-        ], function () {
+        ], function (): void {
             Route::group([
                 'namespace'  => 'Frontend',
                 'prefix'     => '',
                 'as'         => 'frontend.',
                 'middleware' => (config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth']),
-            ], function () {
+            ], function (): void {
                 Route::resource('dashboard', 'DashboardController');
 
                 Route::get('airports/{id}', 'AirportController@show')->name('airports.show');
@@ -86,7 +82,7 @@ class RouteServiceProvider extends ServiceProvider
                 'namespace' => 'Frontend',
                 'prefix'    => '',
                 'as'        => 'frontend.',
-            ], function () {
+            ], function (): void {
                 Route::get('/', 'HomeController@index')->name('home');
                 Route::get('r/{id}', 'PirepController@show')->name('pirep.show.public');
                 Route::get('pireps/{id}', 'PirepController@show')->name('pireps.show');
@@ -112,7 +108,7 @@ class RouteServiceProvider extends ServiceProvider
                 'namespace' => 'Auth',
                 'prefix'    => 'oauth',
                 'as'        => 'oauth.',
-            ], function () {
+            ], function (): void {
                 Route::get('{provider}/redirect', 'OAuthController@redirectToProvider')->name('redirect');
                 Route::get('{provider}/callback', 'OAuthController@handleProviderCallback')->name('callback');
                 Route::get('{provider}/logout', 'OAuthController@logoutProvider')->name('logout')->middleware('auth');
@@ -122,9 +118,7 @@ class RouteServiceProvider extends ServiceProvider
             Auth::routes(['verify' => true]);
 
             // Redirect /update
-            Route::get('/update', function () {
-                return redirect('/system/update');
-            });
+            Route::get('/update', fn () => redirect('/system/update'));
         });
     }
 
@@ -132,18 +126,16 @@ class RouteServiceProvider extends ServiceProvider
      * Define the "api" routes for the application.
      *
      * These routes are typically stateless.
-     *
-     * @return void
      */
-    private function mapApiRoutes()
+    private function mapApiRoutes(): void
     {
         Route::group([
             'middleware' => ['api'],
             'namespace'  => $this->namespace.'\\Api',
             'prefix'     => 'api',
             'as'         => 'api.',
-        ], function () {
-            Route::group([], function () {
+        ], function (): void {
+            Route::group([], function (): void {
                 Route::get('/', 'StatusController@status');
 
                 Route::get('acars', 'AcarsController@live_flights');
@@ -165,7 +157,7 @@ class RouteServiceProvider extends ServiceProvider
             /*
              * These need to be authenticated with a user's API key
              */
-            Route::group(['middleware' => ['api.auth']], function () {
+            Route::group(['middleware' => ['api.auth']], function (): void {
                 Route::get('airlines', 'AirlineController@index');
                 Route::get('airlines/{id}', 'AirlineController@get');
 

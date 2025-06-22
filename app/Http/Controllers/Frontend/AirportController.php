@@ -25,15 +25,9 @@ class AirportController extends Controller
         $id = strtoupper($id);
         // Support retrieval of deleted relationships
         $with_flights = [
-            'airline' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'airline'     => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
         ];
 
         $airport = $this->airportRepo->with('files')->where('id', $id)->first();

@@ -40,7 +40,7 @@ abstract class Controller extends \Illuminate\Routing\Controller
      *
      * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
      */
-    public function getFromReq($request, $attrs_or_validations, $addtl_fields = null)
+    public function getFromReq(array $request, $attrs_or_validations, $addtl_fields = null)
     {
         // See if a list of values is passed in, or if a validation list is passed in
         $is_validation = false;
@@ -69,7 +69,7 @@ abstract class Controller extends \Illuminate\Routing\Controller
         }
 
         if (!empty($addtl_fields) && \is_array($addtl_fields)) {
-            $fields = array_merge($fields, $addtl_fields);
+            return array_merge($fields, $addtl_fields);
         }
 
         return $fields;

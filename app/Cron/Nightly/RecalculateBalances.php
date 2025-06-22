@@ -13,15 +13,10 @@ use Illuminate\Support\Facades\Log;
  */
 class RecalculateBalances extends Listener
 {
-    private JournalRepository $journalRepo;
-
     /**
      * Nightly constructor.
      */
-    public function __construct(JournalRepository $journalRepo)
-    {
-        $this->journalRepo = $journalRepo;
-    }
+    public function __construct(private readonly JournalRepository $journalRepo) {}
 
     /**
      * Recalculate all the balances for the different ledgers

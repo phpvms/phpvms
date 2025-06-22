@@ -16,10 +16,9 @@ class VaCentralLookup extends AirportLookup
     /**
      * Lookup the information for an airport
      *
-     * @param  string $icao
-     * @return mixed
+     * @param string $icao
      */
-    public function getAirport($icao)
+    public function getAirport($icao): \VaCentral\Models\Airport|array
     {
         try {
             $airport = $this->client->getAirport($icao);

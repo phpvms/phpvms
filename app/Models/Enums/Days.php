@@ -62,7 +62,7 @@ class Days extends Enum
      *
      * @return int|mixed
      */
-    public static function getDaysMask(array $days)
+    public static function getDaysMask(array $days): int
     {
         $mask = 0;
         foreach ($days as $day) {

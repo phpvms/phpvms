@@ -42,9 +42,7 @@ class AcarsController extends Controller
      */
     protected function checkCancelled(Pirep $pirep): void
     {
-        if ($pirep->cancelled) {
-            throw new PirepCancelled($pirep);
-        }
+        throw_if($pirep->cancelled, new PirepCancelled($pirep));
     }
 
     /**
@@ -55,9 +53,7 @@ class AcarsController extends Controller
     public function live_flights()
     {
         $pireps = $this->acarsRepo->getPositions(setting('acars.live_time'))->filter(
-            function ($pirep) {
-                return $pirep->position !== null;
-            }
+            fn ($pirep): bool => $pirep->position !== null
         );
 
         return PirepResource::collection($pireps);
@@ -82,9 +78,7 @@ class AcarsController extends Controller
     public function acars_geojson(string $pirep_id, Request $request): JsonResponse
     {
         $pirep = Pirep::find($pirep_id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($pirep_id);
-        }
+        throw_if(empty($pirep), new PirepNotFound($pirep_id));
 
         $geodata = $this->geoSvc->getFeatureFromAcars($pirep);
 
@@ -99,9 +93,7 @@ class AcarsController extends Controller
     public function acars_get(string $id, Request $request): AcarsRouteResource
     {
         $pirep = $this->pirepRepo->find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        throw_if(empty($pirep), new PirepNotFound($id));
 
         $acars = Acars::with(['pirep'])
             ->where([
@@ -125,9 +117,7 @@ class AcarsController extends Controller
     {
         // Check if the status is cancelled...
         $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        throw_if(empty($pirep), new PirepNotFound($id));
 
         $this->checkCancelled($pirep);
 
@@ -192,7 +182,7 @@ class AcarsController extends Controller
             $pirep->status = PirepStatus::AIRBORNE;
         }*/
 
-        $saved = $pirep->save();
+        $pirep->save();
 
         // Post a new update for this ACARS position
         event(new AcarsUpdate($pirep, $pirep->position));
@@ -212,9 +202,7 @@ class AcarsController extends Controller
     {
         // Check if the status is cancelled...
         $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        throw_if(empty($pirep), new PirepNotFound($id));
 
         $this->checkCancelled($pirep);
 
@@ -266,9 +254,7 @@ class AcarsController extends Controller
     {
         // Check if the status is cancelled...
         $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        throw_if(empty($pirep), new PirepNotFound($id));
 
         $this->checkCancelled($pirep);
 

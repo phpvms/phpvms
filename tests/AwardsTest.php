@@ -108,7 +108,7 @@ final class AwardsTest extends TestCase
             $pirep->dpt_airport_id.':'.$pirep->arr_airport_id,
             $pirep->dpt_airport_id.':'.$pirep->arr_airport_id.' ',
             $pirep->dpt_airport_id.':'.$pirep->arr_airport_id.':',
-            strtolower($pirep->dpt_airport_id).':'.strtolower($pirep->arr_airport_id),
+            strtolower((string) $pirep->dpt_airport_id).':'.strtolower((string) $pirep->arr_airport_id),
         ];
 
         foreach ($validStrs as $str) {

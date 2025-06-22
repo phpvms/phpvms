@@ -9,7 +9,6 @@ use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
-use App\Repositories\FlightRepository;
 use App\Services\ImportExport\AircraftImporter;
 use App\Services\ImportExport\AirportImporter;
 use App\Services\ImportExport\ExpenseImporter;
@@ -27,9 +26,7 @@ class ImportService extends Service
     /**
      * ImporterService constructor.
      */
-    public function __construct(
-        private readonly FlightRepository $flightRepo
-    ) {}
+    public function __construct() {}
 
     /**
      * Throw a validation error back up because it will automatically show
@@ -52,11 +49,9 @@ class ImportService extends Service
     }
 
     /**
-     * @return Reader
-     *
      * @throws ValidationException
      */
-    public function openCsv($csv_file)
+    public function openCsv(string $csv_file): ?\League\Csv\Reader
     {
         try {
             $reader = Reader::createFromPath($csv_file, 'r');
@@ -80,19 +75,16 @@ class ImportService extends Service
      *
      * @throws ValidationException
      */
-    protected function runImport($file_path, ImportExport $importer): array
+    protected function runImport(string $file_path, ImportExport $importer): array
     {
         $reader = $this->openCsv($file_path);
 
-        $cols = array_keys($importer->getColumns());
-        $first_header = $cols[0];
-
-        $first = true;
+        array_keys($importer->getColumns());
         $header_rows = $reader->getHeader();
         $records = $reader->getRecords($header_rows);
         foreach ($records as $offset => $row) {
             // turn it into a collection and run some filtering
-            $row = collect($row)->map(function ($val, $index) {
+            $row = collect($row)->map(function ($val, $index): string {
                 $val = trim($val);
 
                 return str_ireplace(['\\n', '\\r'], '', $val);
@@ -116,12 +108,11 @@ class ImportService extends Service
     /**
      * Import aircraft
      *
-     * @param  string $csv_file
-     * @return mixed
+     * @param string $csv_file
      *
      * @throws ValidationException
      */
-    public function importAircraft($csv_file, bool $delete_previous = true)
+    public function importAircraft($csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
             // TODO: delete airports
@@ -135,12 +126,11 @@ class ImportService extends Service
     /**
      * Import airports
      *
-     * @param  string $csv_file
-     * @return mixed
+     * @param string $csv_file
      *
      * @throws ValidationException
      */
-    public function importAirports($csv_file, bool $delete_previous = true)
+    public function importAirports($csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
             Airport::truncate();
@@ -154,12 +144,11 @@ class ImportService extends Service
     /**
      * Import expenses
      *
-     * @param  string $csv_file
-     * @return mixed
+     * @param string $csv_file
      *
      * @throws ValidationException
      */
-    public function importExpenses($csv_file, bool $delete_previous = true)
+    public function importExpenses($csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
             Expense::truncate();
@@ -173,12 +162,11 @@ class ImportService extends Service
     /**
      * Import fares
      *
-     * @param  string $csv_file
-     * @return mixed
+     * @param string $csv_file
      *
      * @throws ValidationException
      */
-    public function importFares($csv_file, bool $delete_previous = true)
+    public function importFares($csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
             Fare::truncate();
@@ -192,13 +180,12 @@ class ImportService extends Service
     /**
      * Import flights
      *
-     * @param  string $csv_file
-     * @param  bool   $delete_previous
-     * @return mixed
+     * @param string $csv_file
+     * @param bool   $delete_previous
      *
      * @throws ValidationException
      */
-    public function importFlights($csv_file, ?string $delete_previous = null)
+    public function importFlights($csv_file, ?string $delete_previous = null): array
     {
         if ($delete_previous !== null && $delete_previous !== '' && $delete_previous !== '0') {
             // If delete_previous contains all, then delete everything
@@ -219,12 +206,11 @@ class ImportService extends Service
     /**
      * Import subfleets
      *
-     * @param  string $csv_file
-     * @return mixed
+     * @param string $csv_file
      *
      * @throws ValidationException
      */
-    public function importSubfleets($csv_file, bool $delete_previous = true)
+    public function importSubfleets($csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
             // TODO: Cleanup subfleet data

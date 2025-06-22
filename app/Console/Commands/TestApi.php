@@ -14,7 +14,7 @@ class TestApi extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $this->httpClient = new Client([
             'headers' => [
