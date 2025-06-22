@@ -11,12 +11,7 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class NewsService extends Service
 {
-    private NewsRepository $newsRepo;
-
-    public function __construct(NewsRepository $newsRepo)
-    {
-        $this->newsRepo = $newsRepo;
-    }
+    public function __construct(private readonly NewsRepository $newsRepo) {}
 
     /**
      * Add a news item
@@ -65,7 +60,7 @@ class NewsService extends Service
      *
      * @param int $id ID of the news row to delete
      */
-    public function deleteNews($id)
+    public function deleteNews($id): void
     {
         $this->newsRepo->delete($id);
     }

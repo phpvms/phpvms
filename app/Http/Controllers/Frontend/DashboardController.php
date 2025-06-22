@@ -27,16 +27,10 @@ class DashboardController extends Controller
         $last_pirep = null;
         // Support retrieval of deleted relationships
         $with_pirep = [
-            'aircraft' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'aircraft'    => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
             'comments',
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
         ];
 
         /** @var \App\Models\User $user */
@@ -45,7 +39,7 @@ class DashboardController extends Controller
 
         try {
             $last_pirep = $this->pirepRepo->with($with_pirep)->find($user->last_pirep_id);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
 
         // Get the current airport for the weather

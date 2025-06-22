@@ -50,7 +50,7 @@ class AirportResource extends Resource
                             ->hintAction(
                                 Forms\Components\Actions\Action::make('lookup')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->action(function (Forms\Get $get, Forms\Set $set) {
+                                    ->action(function (Forms\Get $get, Forms\Set $set): void {
                                         $airport = app(AirportService::class)->lookupAirport($get('icao'));
 
                                         foreach ($airport as $key => $value) {
@@ -200,8 +200,8 @@ class AirportResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Airport $record) {
-                    $record->files()->each(function (File $file) {
+                Tables\Actions\ForceDeleteAction::make()->before(function (Airport $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -210,8 +210,8 @@ class AirportResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(fn (Airport $record) => $record->files()->each(function (File $file) {
+                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(fn (Airport $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

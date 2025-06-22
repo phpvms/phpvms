@@ -11,11 +11,11 @@ use Illuminate\Support\ServiceProvider;
 
 class ViewComposerServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         View::composer('nav', PageLinksComposer::class);
         View::composer('admin.sidebar', VersionComposer::class);
-        View::composer('nav', function ($view) {
+        View::composer('nav', function ($view): void {
             $view->with('languages', Config::get('languages'));
             $view->with('locale', App::getLocale());
         });

@@ -237,17 +237,15 @@ class PirepResource extends Resource
                         DatePicker::make('filed_from'),
                         DatePicker::make('filed_until'),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                isset($data['filed_from']) && $data['filed_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '>=', $date),
-                            )
-                            ->when(
-                                isset($data['filed_until']) && $data['filed_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
-                            );
-                    }),
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when(
+                            isset($data['filed_from']) && $data['filed_from'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '>=', $date),
+                        )
+                        ->when(
+                            isset($data['filed_until']) && $data['filed_until'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
+                        )),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->recordUrl(fn (Pirep $record): string => self::getUrl('edit', ['record' => $record]))

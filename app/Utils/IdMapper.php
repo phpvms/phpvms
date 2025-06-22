@@ -7,7 +7,7 @@ use Spatie\Valuestore\Valuestore;
 
 class IdMapper extends Service
 {
-    private Valuestore $valueStore;
+    private readonly Valuestore $valueStore;
 
     public function __construct()
     {
@@ -19,7 +19,7 @@ class IdMapper extends Service
      *
      * @param string $entity Name of the entity (e,g table)
      */
-    public function addMapping(string $entity, string $old_id, string $new_id)
+    public function addMapping(string $entity, string $old_id, string $new_id): void
     {
         $key_name = $entity.'_'.$old_id;
         if (!$this->valueStore->has($key_name)) {
@@ -33,7 +33,7 @@ class IdMapper extends Service
      *
      * @return bool
      */
-    public function getMapping($entity, $old_id): bool|int
+    public function getMapping(string $entity, string $old_id): bool|int
     {
         $key_name = $entity.'_'.$old_id;
         if (!$this->valueStore->has($key_name)) {
@@ -46,7 +46,7 @@ class IdMapper extends Service
     /**
      * Clear the value store
      */
-    public function clear()
+    public function clear(): void
     {
         $this->valueStore->flush();
     }

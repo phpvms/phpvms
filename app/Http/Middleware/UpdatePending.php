@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
-use App\Services\Installer\InstallerService;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -12,12 +11,7 @@ use Illuminate\Http\Request;
  */
 class UpdatePending implements Middleware
 {
-    private $installerSvc;
-
-    public function __construct(InstallerService $installerSvc)
-    {
-        $this->installerSvc = $installerSvc;
-    }
+    public function __construct(private readonly \App\Services\Installer\InstallerService $installerSvc) {}
 
     public function handle(Request $request, Closure $next)
     {

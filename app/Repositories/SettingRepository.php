@@ -41,9 +41,7 @@ class SettingRepository extends Repository implements CacheableInterface
         $key = Setting::formatKey($key);
         $setting = $this->findWhere(['id' => $key], ['type', 'value'])->first();
 
-        if (!$setting) {
-            throw new SettingNotFound($key.' not found');
-        }
+        throw_unless($setting, new SettingNotFound($key.' not found'));
 
         // cast some types
         switch ($setting->type) {
@@ -68,9 +66,8 @@ class SettingRepository extends Repository implements CacheableInterface
     /**
      * @alias store($key,$value)
      *
-     * @param  mixed $key
-     * @param  mixed $value
-     * @return null
+     * @param mixed $key
+     * @param mixed $value
      */
     public function save($key, $value)
     {
@@ -80,9 +77,6 @@ class SettingRepository extends Repository implements CacheableInterface
     /**
      * Update an existing setting with a new value. Doesn't create
      * a new setting
-     *
-     *
-     * @return null
      */
     public function store($key, $value)
     {

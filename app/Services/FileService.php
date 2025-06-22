@@ -13,13 +13,12 @@ class FileService extends Service
     /**
      * Save a file to disk and return a File asset
      *
-     * @param  \Illuminate\Http\UploadedFile $file
-     * @param  string                        $folder
-     * @return File
+     * @param \Illuminate\Http\UploadedFile $file
+     * @param string                        $folder
      *
      * @throws \Hashids\HashidsException
      */
-    public function saveFile($file, $folder, array $attrs)
+    public function saveFile($file, $folder, array $attrs): \App\Models\File
     {
         $attrs = array_merge([
             'name'         => '',
@@ -55,7 +54,7 @@ class FileService extends Service
      *
      * @throws \Exception
      */
-    public function removeFile($file)
+    public function removeFile($file): void
     {
         if (!Str::startsWith($file->path, 'http')) {
             Storage::disk(config('filesystems.public_files'))

@@ -12,16 +12,10 @@ class DirectiveServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Blade::directive('minutestotime', function ($expr) {
-            return "<?php echo \App\Support\Units\Time::minutesToTimeString($expr); ?>";
-        });
+        Blade::directive('minutestotime', fn ($expr): string => "<?php echo \App\Support\Units\Time::minutesToTimeString($expr); ?>");
 
-        Blade::directive('minutestohours', function ($expr) {
-            return "<?php echo \App\Support\Units\Time::minutesToHours($expr); ?>";
-        });
+        Blade::directive('minutestohours', fn ($expr): string => "<?php echo \App\Support\Units\Time::minutesToHours($expr); ?>");
 
-        Blade::directive('secstohhmm', function ($expr) {
-            return "<?php echo secstohhmm($expr); ?>";
-        });
+        Blade::directive('secstohhmm', fn ($expr): string => "<?php echo secstohhmm($expr); ?>");
     }
 }

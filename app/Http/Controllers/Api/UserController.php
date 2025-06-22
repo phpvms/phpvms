@@ -50,7 +50,7 @@ class UserController extends Controller
      */
     public function index(Request $request): UserResource
     {
-        $with_subfleets = (!$request->has('with') || str_contains($request->input('with', ''), 'subfleets'));
+        $with_subfleets = (!$request->has('with') || str_contains((string) $request->input('with', ''), 'subfleets'));
 
         return $this->get(Auth::user()->id, $with_subfleets);
     }
@@ -63,9 +63,7 @@ class UserController extends Controller
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
         $user = $this->userSvc->getUser($id, $with_subfleets);
-        if (!$user instanceof \App\Models\User) {
-            throw new UserNotFound();
-        }
+        throw_unless($user instanceof \App\Models\User, new UserNotFound());
 
         return new UserResource($user);
     }
@@ -83,9 +81,7 @@ class UserController extends Controller
     {
         $user_id = $this->getUserId($request);
         $user = $this->userSvc->getUser($user_id, false);
-        if (!$user instanceof \App\Models\User) {
-            throw new UserNotFound();
-        }
+        throw_unless($user instanceof \App\Models\User, new UserNotFound());
 
         // Add a bid
         if ($request->isMethod('PUT') || $request->isMethod('POST')) {
@@ -118,7 +114,7 @@ class UserController extends Controller
         ];
 
         if ($request->has('with')) {
-            $relations = explode(',', $request->input('with', ''));
+            $relations = explode(',', (string) $request->input('with', ''));
         }
 
         // Return the flights they currently have bids on
@@ -140,13 +136,9 @@ class UserController extends Controller
 
         // Return the current bid
         $bid = $this->bidSvc->getBid($user, $bid_id);
-        if (!$bid instanceof \App\Models\Bid) {
-            throw new BidNotFound($bid_id);
-        }
+        throw_unless($bid instanceof \App\Models\Bid, new BidNotFound($bid_id));
 
-        if ($bid->user_id !== $user->id) {
-            throw new Unauthorized(new \Exception('Bid not not belong to authenticated user'));
-        }
+        throw_if($bid->user_id !== $user->id, new Unauthorized(new \Exception('Bid not not belong to authenticated user')));
 
         return new BidResource($bid);
     }
@@ -157,9 +149,7 @@ class UserController extends Controller
     public function fleet(Request $request): AnonymousResourceCollection
     {
         $user = $this->userRepo->find($this->getUserId($request));
-        if ($user === null) {
-            throw new UserNotFound();
-        }
+        throw_if($user === null, new UserNotFound());
 
         $subfleets = $this->userSvc->getAllowableSubfleets($user, true);
 

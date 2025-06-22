@@ -14,12 +14,12 @@ class ClearCaches extends Command
     /**
      * {@inheritdoc}
      */
-    public function handle()
+    public function handle(): void
     {
         self::clearCaches();
     }
 
-    public static function clearCaches()
+    public static function clearCaches(): void
     {
         self::clearBootstrapCache();
         self::clearModuleCache();
@@ -33,7 +33,7 @@ class ClearCaches extends Command
     /**
      * Rescan for new modules
      */
-    private static function clearModuleCache()
+    private static function clearModuleCache(): void
     {
         Module::scan();
     }

@@ -135,8 +135,8 @@ class SubfleetResource extends Resource
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Subfleet $record) {
-                    $record->files()->each(function (File $file) {
+                Tables\Actions\ForceDeleteAction::make()->before(function (Subfleet $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -145,8 +145,8 @@ class SubfleetResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(fn (Subfleet $record) => $record->files()->each(function (File $file) {
+                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(fn (Subfleet $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

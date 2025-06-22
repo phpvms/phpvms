@@ -15,11 +15,11 @@ class CommaDelimitedCast implements CastsAttributes
      */
     public function get($model, string $key, $value, array $attributes)
     {
-        if (empty($value) || in_array(trim($value), ['', '0'], true)) {
+        if (empty($value) || in_array(trim((string) $value), ['', '0'], true)) {
             return [];
         }
 
-        return explode(',', $value);
+        return explode(',', (string) $value);
     }
 
     /**
@@ -35,6 +35,6 @@ class CommaDelimitedCast implements CastsAttributes
             return implode(',', $value);
         }
 
-        return trim($value);
+        return trim((string) $value);
     }
 }

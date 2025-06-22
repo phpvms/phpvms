@@ -31,19 +31,7 @@ abstract class Award
      */
     abstract public function check($parameter = null): bool;
 
-    /*
-     * You don't really need to mess with anything below here
-     */
-
-    protected ?AwardModel $award;
-
-    protected ?User $user;
-
-    public function __construct(?AwardModel $award = null, ?User $user = null)
-    {
-        $this->award = $award;
-        $this->user = $user;
-    }
+    public function __construct(protected ?AwardModel $award = null, protected ?User $user = null) {}
 
     /**
      * Run the main handler for this award class to determine if

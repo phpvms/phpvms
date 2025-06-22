@@ -24,7 +24,7 @@ class Monthly extends CronCommand
         $this->callEvent();
     }
 
-    public function callEvent()
+    public function callEvent(): void
     {
         event(new CronMonthly());
     }

@@ -12,7 +12,7 @@ class VersionComposer extends Composer
         private readonly VersionService $versionSvc
     ) {}
 
-    public function compose(View $view)
+    public function compose(View $view): void
     {
         $view->with('version', $this->versionSvc->getCurrentVersion(false));
         $view->with('version_full', $this->versionSvc->getCurrentVersion(true));

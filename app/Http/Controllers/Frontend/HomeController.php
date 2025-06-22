@@ -24,7 +24,7 @@ class HomeController extends Controller
             return view('system/errors/database_error', [
                 'error' => $e->getMessage(),
             ]);
-        } catch (QueryException $e) {
+        } catch (QueryException) {
             return redirect('system/install');
         }
 

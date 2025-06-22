@@ -15,8 +15,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  */
 class PirepStatusChanged extends Notification implements ShouldQueue
 {
-    private $pirep;
-
     // TODO: Int'l languages for these
     protected static $verbs = [
         PirepStatus::INITIATED     => 'is initialized',
@@ -49,13 +47,12 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Pirep $pirep)
+    public function __construct(private readonly \App\Models\Pirep $pirep)
     {
         parent::__construct();
-        $this->pirep = $pirep;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return [DiscordWebhook::class];
     }
@@ -137,10 +134,9 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'pirep_id' => $this->pirep->id,

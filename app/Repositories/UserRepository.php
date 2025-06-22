@@ -37,9 +37,7 @@ class UserRepository extends Repository
      */
     public function getUserFields(User $user, $only_public_fields = null, $with_internal_fields = false): Collection
     {
-        $fields = UserField::when(!$with_internal_fields, function ($query) {
-            return $query->where('internal', false);
-        });
+        $fields = UserField::when(!$with_internal_fields, fn ($query) => $query->where('internal', false));
 
         if (is_bool($only_public_fields)) {
             $fields = $fields->where(['private' => !$only_public_fields]);
@@ -47,7 +45,7 @@ class UserRepository extends Repository
 
         $fields = $fields->get();
 
-        return $fields->map(function ($field, $_) use ($user) {
+        return $fields->map(function ($field, $_) use ($user): \Illuminate\Database\Eloquent\Model {
             foreach ($user->fields as $userFieldValue) {
                 if ($userFieldValue->field->slug === $field->slug) {
                     $field->value = $userFieldValue->value;
@@ -82,7 +80,7 @@ class UserRepository extends Repository
      *
      * @throws \Prettus\Repository\Exceptions\RepositoryException
      */
-    public function searchCriteria(Request $request, bool $only_active = true)
+    public function searchCriteria(Request $request, bool $only_active = true): static
     {
         $where = [];
 

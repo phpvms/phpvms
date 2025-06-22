@@ -16,7 +16,7 @@ class Resource extends JsonResource
      * Iterate through the list of $fields and check if they're a "Unit"
      * If they are, then add the response
      */
-    public function checkUnitFields(&$response, array $fields): void
+    public function checkUnitFields(array &$response, array $fields): void
     {
         foreach ($fields as $f) {
             $response[$f] = $this->{$f} instanceof Unit ? $this->{$f}->getResponseUnits() : $this->{$f};
@@ -39,7 +39,7 @@ class Resource extends JsonResource
 
     public static function collection($resource)
     {
-        return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection) {
+        return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection): void {
             if (property_exists(static::class, 'preserveKeys')) {
                 $collection->preserveKeys = (new static([]))->preserveKeys === true;
             }

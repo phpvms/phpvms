@@ -16,7 +16,7 @@ class EmailTest extends Command
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */
-    public function handle()
+    public function handle(): void
     {
         /** @var App\Notifications\NotificationEventsHandler $eventHandler */
         $eventHandler = app(App\Notifications\NotificationEventsHandler::class);

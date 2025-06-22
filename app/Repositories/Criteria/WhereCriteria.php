@@ -4,7 +4,6 @@ namespace App\Repositories\Criteria;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Prettus\Repository\Contracts\CriteriaInterface;
 use Prettus\Repository\Contracts\RepositoryInterface;
 
@@ -14,26 +13,12 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 class WhereCriteria implements CriteriaInterface
 {
     /**
-     * @var \Illuminate\Http\Request
-     */
-    protected $request;
-
-    protected $where;
-
-    protected $relations;
-
-    /**
      * Create a new Where search.
      *
      * @param array $where
      * @param array   [$relations] Any whereHas (key = table name, value = array of criterea
      */
-    public function __construct(Request $request, $where, $relations = [])
-    {
-        $this->request = $request;
-        $this->where = $where;
-        $this->relations = $relations;
-    }
+    public function __construct(protected \Illuminate\Http\Request $request, protected $where, protected $relations = []) {}
 
     /**
      * Apply criteria in query repository
@@ -54,7 +39,7 @@ class WhereCriteria implements CriteriaInterface
             foreach ($this->relations as $relation => $criterea) {
                 $model = $model
                     ->with($relation)
-                    ->whereHas($relation, function (Builder $query) use ($criterea) {
+                    ->whereHas($relation, function (Builder $query) use ($criterea): void {
                         // By Taylor Broad
                         if (!isset($criterea['method'])) {
                             $query->where($criterea);

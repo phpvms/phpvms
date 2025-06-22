@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  */
 class MessageLoggedListener
 {
-    public function handle(MessageLogged $event)
+    public function handle(MessageLogged $event): void
     {
         if (app()->runningInConsole() && app()->environment() !== 'testing') {
             $output = new ConsoleOutput();

@@ -18,7 +18,7 @@ class Math
         }
 
         // Not a percentage override
-        if (substr_count($override_rate, '%') === 0) {
+        if (substr_count((string) $override_rate, '%') === 0) {
             return $override_rate;
         }
 
@@ -39,8 +39,6 @@ class Math
             $percent = (float) $percent;
         }
 
-        $val = $number * ($percent / 100);
-
-        return $val;
+        return $number * ($percent / 100);
     }
 }

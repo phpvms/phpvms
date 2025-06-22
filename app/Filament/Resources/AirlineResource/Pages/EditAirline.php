@@ -17,8 +17,8 @@ class EditAirline extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make()->before(function (Airline $record) {
-                $record->files()->each(function (File $file) {
+            Actions\ForceDeleteAction::make()->before(function (Airline $record): void {
+                $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),

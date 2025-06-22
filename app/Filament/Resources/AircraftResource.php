@@ -39,7 +39,7 @@ class AircraftResource extends Resource
                         Forms\Components\Select::make('subfleet_id')
                             ->label('Subfleet')
                             ->relationship('subfleet')
-                            ->getOptionLabelFromRecordUsing(fn (Subfleet $record) => $record->airline->name.' - '.$record->name)
+                            ->getOptionLabelFromRecordUsing(fn (Subfleet $record): string => $record->airline->name.' - '.$record->name)
                             ->preload()
                             ->searchable()
                             ->required()
@@ -189,8 +189,8 @@ class AircraftResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Aircraft $record) {
-                    $record->files()->each(function (File $file) {
+                Tables\Actions\ForceDeleteAction::make()->before(function (Aircraft $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -199,8 +199,8 @@ class AircraftResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(fn (Aircraft $record) => $record->files()->each(function (File $file) {
+                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(fn (Aircraft $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

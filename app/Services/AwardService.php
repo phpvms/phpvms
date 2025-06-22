@@ -6,8 +6,6 @@ use App\Contracts\Service;
 use App\Support\ClassLoader;
 use Nwidart\Modules\Facades\Module;
 
-use function get_class;
-
 class AwardService extends Service
 {
     /**
@@ -35,7 +33,7 @@ class AwardService extends Service
         }
 
         foreach ($awards as $award) {
-            $formatted_awards[get_class($award)] = $award;
+            $formatted_awards[$award::class] = $award;
         }
 
         return $formatted_awards;

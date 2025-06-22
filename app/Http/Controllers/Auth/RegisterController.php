@@ -48,29 +48,16 @@ class RegisterController extends Controller
         $this->redirectTo = config('phpvms.registration_redirect');
     }
 
-    public function showRegistrationForm(Request $request): View
+    public function showRegistrationForm(?Request $request = null): View
     {
-        if (setting('general.disable_registrations', false)) {
-            abort(403, 'Registrations are disabled');
-        }
+        abort_if(setting('general.disable_registrations', false), 403, 'Registrations are disabled');
 
         if (setting('general.invite_only_registrations', false)) {
-            if (!$request->has('invite') && !$request->has('token')) {
-                abort(403, 'Registrations are invite only');
-            }
-
+            abort_if(!$request->has('invite') && !$request->has('token'), 403, 'Registrations are invite only');
             $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== $request->get('token')) {
-                abort(403, 'Invalid invite');
-            }
-
-            if ($invite->usage_limit && $invite->usage_count >= $invite->usage_limit) {
-                abort(403, 'Invite has been used too many times');
-            }
-
-            if ($invite->expires_at && $invite->expires_at->isPast()) {
-                abort(403, 'Invite has expired');
-            }
+            abort_if(!$invite || $invite->token !== $request->get('token'), 403, 'Invalid invite');
+            abort_if($invite->usage_limit && $invite->usage_count >= $invite->usage_limit, 403, 'Invite has been used too many times');
+            abort_if($invite->expires_at && $invite->expires_at->isPast(), 403, 'Invite has expired');
         }
 
         $airlines = $this->airlineRepo->selectBoxList();
@@ -125,7 +112,7 @@ class RegisterController extends Controller
         if ($captcha_enabled === true) {
             $rules['h-captcha-response'] = [
                 'required',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $response = $this->httpClient->form_post('https://hcaptcha.com/siteverify', [
                         'secret'   => setting('captcha.secret_key', env('CAPTCHA_SECRET_KEY')),
                         'response' => $value,
@@ -152,31 +139,19 @@ class RegisterController extends Controller
      */
     protected function create(Request $request): User
     {
-        if (setting('general.disable_registrations', false)) {
-            abort(403, 'Registrations are disabled');
-        }
+        abort_if(setting('general.disable_registrations', false), 403, 'Registrations are disabled');
 
         if (setting('general.invite_only_registrations', false)) {
-            if (!$request->has('invite') && !$request->has('invite_token')) {
-                abort(403, 'Registrations are invite only');
-            }
+            abort_if(!$request->has('invite') && !$request->has('invite_token'), 403, 'Registrations are invite only');
 
             $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== base64_decode($request->get('invite_token'))) {
-                abort(403, 'Invalid invite');
-            }
+            abort_if(!$invite || $invite->token !== base64_decode((string) $request->get('invite_token')), 403, 'Invalid invite');
 
-            if ($invite->usage_limit && $invite->usage_count >= $invite->usage_limit) {
-                abort(403, 'Invite has been used too many times');
-            }
+            abort_if($invite->usage_limit && $invite->usage_count >= $invite->usage_limit, 403, 'Invite has been used too many times');
 
-            if ($invite->expires_at && $invite->expires_at->isPast()) {
-                abort(403, 'Invite has expired');
-            }
+            abort_if($invite->expires_at && $invite->expires_at->isPast(), 403, 'Invite has expired');
 
-            if ($invite->email && $invite->email !== $request->get('email')) {
-                abort(403, 'Invite is for a different email address');
-            }
+            abort_if($invite->email && $invite->email !== $request->get('email'), 403, 'Invite is for a different email address');
 
             $invite->update([
                 'usage_count' => $invite->usage_count + 1,

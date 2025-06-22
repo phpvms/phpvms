@@ -21,8 +21,6 @@ class ExpenseRepository extends Repository implements CacheableInterface
      * Get all of the expenses for a given type, and also
      * include expenses for a given airline ID
      *
-     * @param  null       $airline_id
-     * @param  null       $ref_model
      * @param  mixed      $ref_model_id
      * @return Collection
      */
@@ -35,7 +33,7 @@ class ExpenseRepository extends Repository implements CacheableInterface
         ];
 
         if ($ref_model) {
-            $ref_model_type = \is_object($ref_model) ? \get_class($ref_model) : $ref_model;
+            $ref_model_type = \is_object($ref_model) ? $ref_model::class : $ref_model;
             if ($ref_model) {
                 $where['ref_model'] = $ref_model_type;
             }

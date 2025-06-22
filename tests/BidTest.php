@@ -254,7 +254,7 @@ final class BidTest extends TestCase
         $this->settingsRepo->store('bids.block_aircraft', true);
 
         $user = User::factory()->create();
-        $headers = $this->headers($user);
+        $this->headers($user);
 
         $subfleet_unused = $this->createSubfleetWithAircraft(10);
         $subfleet = $this->createSubfleetWithAircraft(10);

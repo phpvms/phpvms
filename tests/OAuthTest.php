@@ -35,7 +35,7 @@ final class OAuthTest extends TestCase
      */
     protected function getMockedProvider(): LegacyMockInterface|MockInterface
     {
-        $abstractUser = \Mockery::mock('Laravel\Socialite\Two\User')
+        $abstractUser = \Mockery::mock(\Laravel\Socialite\Two\User::class)
             ->allows([
                 'getId'     => 123456789,
                 'getName'   => 'OAuth user',
@@ -47,7 +47,7 @@ final class OAuthTest extends TestCase
         $abstractUser->refreshToken = 'refresh_token';
         $abstractUser->expiresIn = 3600 * 24 * 7;
 
-        return \Mockery::mock('Laravel\Socialite\Contracts\Provider')
+        return \Mockery::mock(\Laravel\Socialite\Contracts\Provider::class)
             ->allows([
                 'refreshToken' => $abstractUser,
                 'user'         => $abstractUser,
@@ -160,7 +160,7 @@ final class OAuthTest extends TestCase
      */
     public function test_login_with_pending_account(): void
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'name'  => 'OAuth user',
             'email' => 'oauth.user@phpvms.net',
             'state' => UserState::PENDING,
@@ -176,10 +176,8 @@ final class OAuthTest extends TestCase
 
     /**
      * Try to log in someone not in DB
-     *
-     * @return void
      */
-    public function test_no_account_found()
+    public function test_no_account_found(): void
     {
         foreach ($this->drivers as $driver) {
             Socialite::shouldReceive('driver')->with($driver)->andReturn($this->getMockedProvider());

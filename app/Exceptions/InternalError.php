@@ -19,8 +19,6 @@ class InternalError extends ValidationException
 
     /**
      * InternalError constructor.
-     *
-     * @param null $field
      */
     public function __construct(?string $message = null, $field = null)
     {

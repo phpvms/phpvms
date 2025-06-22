@@ -40,9 +40,7 @@ class PirepRepository extends Repository
             $where['user_id'] = $user->id;
         }
 
-        $pireps = $this->orderBy('created_at', 'desc')->findWhere($where)->all();
-
-        return $pireps;
+        return $this->orderBy('created_at', 'desc')->findWhere($where)->all();
     }
 
     /**
@@ -61,10 +59,8 @@ class PirepRepository extends Repository
             $where['user_id'] = $user->id;
         }
 
-        $pireps = $this->orderBy('created_at', 'desc')
+        return $this->orderBy('created_at', 'desc')
             ->findWhere($where, ['id'])
             ->count();
-
-        return $pireps;
     }
 }

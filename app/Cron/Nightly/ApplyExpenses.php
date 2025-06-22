@@ -13,15 +13,10 @@ use Illuminate\Support\Facades\Log;
  */
 class ApplyExpenses extends Listener
 {
-    private RecurringFinanceService $financeSvc;
-
     /**
      * ApplyExpenses constructor.
      */
-    public function __construct(RecurringFinanceService $financeSvc)
-    {
-        $this->financeSvc = $financeSvc;
-    }
+    public function __construct(private readonly RecurringFinanceService $financeSvc) {}
 
     /**
      * Apply all of the expenses for a day

@@ -57,13 +57,13 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
         // replace with the value of $pathsMap array
         $themeSubPaths = [];
         foreach ($paths as $path) {
-            $pathRelativeToApp = substr($path, strlen(base_path()) + 1);
+            $pathRelativeToApp = substr((string) $path, strlen(base_path()) + 1);
             $pathRelativeToApp = str_replace('\\', '/', $pathRelativeToApp);
             // Ignore paths in composer installed packages (paths inside vendor folder)
-            if (strpos($pathRelativeToApp, 'vendor') !== 0) {
+            if (!str_starts_with($pathRelativeToApp, 'vendor')) {
                 // Remap paths definded int $pathsMap array
                 foreach ($pathsMap as $key => $value) {
-                    if (strpos($pathRelativeToApp, $key) === 0) {
+                    if (str_starts_with($pathRelativeToApp, $key)) {
                         $pathRelativeToApp = str_replace($key, $value, $pathRelativeToApp);
                         break;
                     }

@@ -14,13 +14,9 @@ class DevInstall extends Command
 
     protected $description = 'Run a developer install and run the sample migration';
 
-    private \DatabaseSeeder $databaseSeeder;
-
-    public function __construct(\DatabaseSeeder $databaseSeeder)
+    public function __construct()
     {
         parent::__construct();
-
-        $this->databaseSeeder = $databaseSeeder;
     }
 
     /**
@@ -28,7 +24,7 @@ class DevInstall extends Command
      *
      * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->option('reset-configs')) {
             $this->rewriteConfigs();

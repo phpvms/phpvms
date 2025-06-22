@@ -2,32 +2,31 @@
 
 declare(strict_types=1);
 
-use Rector\CodeQuality\Rector\FuncCall\CompactToVariablesRector;
 use Rector\Config\RectorConfig;
-use Rector\Set\ValueObject\SetList;
-use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Set\LaravelLevelSetList;
+use RectorLaravel\Set\LaravelSetList;
 
-return static function (RectorConfig $rectorConfig): void {
-    // Paths to analyze
-    $rectorConfig->paths([
+return RectorConfig::configure()
+    ->withPaths([
         __DIR__.'/app',
+        __DIR__.'/bootstrap/application.php',
         __DIR__.'/config',
         __DIR__.'/resources',
         __DIR__.'/tests',
-    ]);
-
-    // Skip specific rules
-    $rectorConfig->skip([
-        CompactToVariablesRector::class,
-    ]);
-
-    // Apply sets for Laravel and general code quality
-    $rectorConfig->sets([
-        LaravelLevelSetList::UP_TO_LARAVEL_110,
-        SetList::CODE_QUALITY,
-    ]);
-
-    // Define PHP version for Rector
-    $rectorConfig->phpVersion(PhpVersion::PHP_84);
-};
+    ])
+    ->withSets([
+        LaravelLevelSetList::UP_TO_LARAVEL_120,
+        LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
+        LaravelSetList::LARAVEL_CODE_QUALITY,
+        LaravelSetList::LARAVEL_COLLECTION,
+        LaravelSetList::LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME,
+        LaravelSetList::LARAVEL_IF_HELPERS,
+    ])
+    ->withPreparedSets(
+        deadCode: true,
+        codeQuality: true,
+        typeDeclarations: true,
+        earlyReturn: true,
+        strictBooleans: true,
+    )
+    ->withPhpSets();

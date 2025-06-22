@@ -16,7 +16,7 @@ trait ReferenceTrait
      */
     public function referencesObject($object)
     {
-        $this->ref_model = \get_class($object);
+        $this->ref_model = $object::class;
         $this->ref_model_id = $object->id;
         $this->save();
 
@@ -34,16 +34,15 @@ trait ReferenceTrait
             return null;
         }
 
-        if ($this->ref_model === __CLASS__) {
+        if ($this->ref_model === self::class) {
             return $this;
         }
 
         try {
             $klass = new $this->ref_model();
-            $obj = $klass->find($this->ref_model_id);
 
-            return $obj;
-        } catch (\Exception $e) {
+            return $klass->find($this->ref_model_id);
+        } catch (\Exception) {
             return null;
         }
     }

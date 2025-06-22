@@ -25,9 +25,9 @@ class Updater extends Page
 
     protected static ?string $slug = 'update';
 
-    public ?string $notes;
+    public ?string $notes = null;
 
-    public ?string $details;
+    public ?string $details = null;
 
     /**
      * Called whenever the component is loaded
@@ -84,7 +84,7 @@ class Updater extends Page
                 Forms\Components\Wizard\Step::make('Before Update')->schema([
 
                 ])->afterValidation(
-                    function () {
+                    function (): void {
                         $this->dispatch('start-migrations');
                     }
                 ),

@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
-use Filament\FilamentManager;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -23,27 +22,21 @@ class AuthServiceProvider extends ServiceProvider
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Gate::define('access_admin', function (?User $user): Response {
-            return $user?->hasAdminAccess()
-                ? Response::allow()
-                : Response::deny('You do not have permission to access this page.');
-        });
+        Gate::define('access_admin', fn (?User $user): Response => $user?->hasAdminAccess() === true
+            ? Response::allow()
+            : Response::deny('You do not have permission to access this page.'));
 
-        Gate::define('viewLogViewer', function (?User $user): Response {
-            return $user?->can('view_logs')
-                ? Response::allow()
-                : Response::deny('You do not have permission to access this page.');
-        });
+        Gate::define('viewLogViewer', fn (?User $user): Response => $user?->can('view_logs')
+            ? Response::allow()
+            : Response::deny('You do not have permission to access this page.'));
 
         Gate::policy(Activity::class, ActivityPolicy::class);
 
-        Gate::guessPolicyNamesUsing(function (string $modelClass) {
-            if (filament() instanceof FilamentManager && filament()->isServing()) {
+        Gate::guessPolicyNamesUsing(function (string $modelClass): ?string {
+            if (filament()->isServing()) {
                 // try to resolve policies under Filament
                 $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass).'Policy';
 

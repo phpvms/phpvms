@@ -8,14 +8,14 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::table('user_oauth_tokens', function (Blueprint $table) {
+        Schema::table('user_oauth_tokens', function (Blueprint $table): void {
             $table->renameColumn('last_refreshed_at', 'expires_at');
         });
     }
 
     public function down(): void
     {
-        Schema::table('user_oauth_tokens', function (Blueprint $table) {
+        Schema::table('user_oauth_tokens', function (Blueprint $table): void {
             $table->renameColumn('last_refreshed_at', 'last_refreshed_at');
         });
     }

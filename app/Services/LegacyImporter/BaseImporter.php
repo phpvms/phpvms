@@ -21,10 +21,8 @@ abstract class BaseImporter
 
     /**
      * Holds the connection to the legacy database
-     *
-     * @var ImporterDB
      */
-    protected $db;
+    protected \App\Utils\ImporterDB $db;
 
     /**
      * The mapper class used for old IDs to new IDs
@@ -113,7 +111,7 @@ abstract class BaseImporter
     /**
      * @return Carbon
      */
-    protected function parseDate($date)
+    protected function parseDate(\DateTimeInterface|\Carbon\WeekDay|\Carbon\Month|string|int|float|null $date)
     {
         return Carbon::parse($date);
     }
@@ -126,16 +124,16 @@ abstract class BaseImporter
      */
     protected function convertDuration($duration)
     {
-        if (strpos($duration, '.') !== false) {
+        if (str_contains((string) $duration, '.')) {
             $delim = '.';
-        } elseif (strpos($duration, ':')) {
+        } elseif (strpos((string) $duration, ':')) {
             $delim = ':';
         } else {
             // no delimiter, assume it's just a straight hour
             return (int) $duration * 60;
         }
 
-        $hm = explode($delim, $duration);
+        $hm = explode($delim, (string) $duration);
         $hours = (int) $hm[0] * 60;
         $mins = (int) $hm[1];
 

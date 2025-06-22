@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
      *
      * @throws Exception
      */
-    public function run()
+    public function run(): void
     {
         // Make sure any migrations that need to be run are run/cleared out
         if ($this->migrationSvc->migrationsAvailable()) {

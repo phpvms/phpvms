@@ -62,24 +62,24 @@ class ModuleResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->before(function (array $data) {
+                Tables\Actions\EditAction::make()->before(function (array $data): void {
                     app(ModuleService::class)->updateModule($data['id'], $data['enabled']);
                 }),
-                Tables\Actions\DeleteAction::make()->before(function (Module $record) {
+                Tables\Actions\DeleteAction::make()->before(function (Module $record): void {
                     try {
                         File::deleteDirectory(base_path().'/modules/'.$record->name);
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         Log::error('Folder Deleted Manually for Module : '.$record->name);
                     }
                 }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(function (Module $record) {
+                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(function (Module $record): void {
                             try {
                                 File::deleteDirectory(base_path().'/modules/'.$record->name);
-                            } catch (\Exception $e) {
+                            } catch (\Exception) {
                                 Log::error('Folder Deleted Manually for Module : '.$record->name);
                             }
                         });

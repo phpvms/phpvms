@@ -44,12 +44,12 @@ class CreditsController extends Controller
         $contents = json_decode(file_get_contents($file));
 
         $details = collect();
-        $details->name = isset($contents->name) ? $contents->name : $module_name;
-        $details->description = isset($contents->description) ? $contents->description : null;
-        $details->version = isset($contents->version) ? $contents->version : null;
-        $details->readme_url = isset($contents->readme_url) ? $contents->readme_url : null;
-        $details->license_url = isset($contents->license_url) ? $contents->license_url : null;
-        $details->attribution = isset($contents->attribution) ? $contents->attribution : null;
+        $details->name = $contents->name ?? $module_name;
+        $details->description = $contents->description ?? null;
+        $details->version = $contents->version ?? null;
+        $details->readme_url = $contents->readme_url ?? null;
+        $details->license_url = $contents->license_url ?? null;
+        $details->attribution = $contents->attribution ?? null;
         $details->active = Module::isEnabled($contents->name);
 
         return $details;

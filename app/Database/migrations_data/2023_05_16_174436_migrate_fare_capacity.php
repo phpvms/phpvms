@@ -8,7 +8,7 @@ use App\Models\PirepFare;
  */
 return new class() extends Migration
 {
-    public function up()
+    public function up(): void
     {
         $cached = [];
         $fareSvc = app(App\Services\FareService::class);
@@ -16,10 +16,14 @@ return new class() extends Migration
 
         /** @var PirepFare $fare */
         foreach ($all_fares as $fare) {
-            if (empty($fare->pirep) || !empty($fare->capacity)) { // has capacity, skip
+            if (empty($fare->pirep)) {
+                // has capacity, skip
                 continue;
             }
-
+            if (!empty($fare->capacity)) {
+                // has capacity, skip
+                continue;
+            }
             // look up the subfleet
             $subfleet = $fare->pirep->aircraft?->subfleet;
             if (empty($subfleet)) {

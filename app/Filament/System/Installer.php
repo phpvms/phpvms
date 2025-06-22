@@ -40,13 +40,13 @@ class Installer extends Page
 
     protected static ?string $slug = 'install';
 
-    public ?string $requirements;
+    public ?string $requirements = null;
 
-    public ?string $details;
+    public ?string $details = null;
 
-    public ?array $env;
+    public ?array $env = null;
 
-    public ?array $user;
+    public ?array $user = null;
 
     /**
      * Called whenever the component is loaded
@@ -99,7 +99,7 @@ class Installer extends Page
                             ->view('filament.system.installer_requirements')
                             ->viewData($requirementsData),
                     ])
-                    ->beforeValidation(function () use ($requirementsData) {
+                    ->beforeValidation(function () use ($requirementsData): void {
                         if (!$requirementsData['php']['passed'] || !$requirementsData['extensionsPassed'] || !$requirementsData['directoriesPassed']) {
                             Notification::make()
                                 ->title('Requirements are not met')
@@ -152,7 +152,7 @@ class Installer extends Page
                                     ->hintAction(
                                         Action::make('testDb')
                                             ->label('Test Database Credentials')
-                                            ->action(fn () => $this->testDb())
+                                            ->action(fn (): bool => $this->testDb())
                                     )
                                     ->default('localhost'),
 
@@ -182,7 +182,7 @@ class Installer extends Page
                                 ->columnSpanFull(),
                         ]),
                 ])->afterValidation(
-                    function () {
+                    function (): void {
                         $this->envAndDBSetup();
                     }
                 ),
@@ -190,7 +190,7 @@ class Installer extends Page
                 Wizard\Step::make('Migrations')->schema([
                     ViewField::make('details')
                         ->view('filament.system.migrations_details'),
-                ])->afterValidation(function () {
+                ])->afterValidation(function (): void {
                     if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
                         Notification::make()
                             ->title('You still have '.count(app(MigrationService::class)->migrationsAvailable()).' migrations to run. Trying again...')
@@ -329,9 +329,7 @@ class Installer extends Page
 
         Log::info('ENV Setup', $log_str);
 
-        if (!$this->testDb()) {
-            throw new Halt();
-        }
+        throw_unless($this->testDb(), new Halt());
 
         // Now write out the env file
         $attrs = [

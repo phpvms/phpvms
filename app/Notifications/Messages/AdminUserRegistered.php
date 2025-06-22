@@ -29,15 +29,12 @@ class AdminUserRegistered extends Notification implements ShouldQueue
     /**
      * @return string[]
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
 
-    /**
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->user->id,

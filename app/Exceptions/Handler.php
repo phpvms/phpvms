@@ -46,7 +46,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         if ($request->is('api/*')) {
-            return $this->handleApiError($request, $exception);
+            return $this->handleApiError($exception);
         }
 
         (new SetActiveTheme())->setTheme($request);
@@ -63,7 +63,7 @@ class Handler extends ExceptionHandler
      *
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    private function handleApiError($request, Throwable $exception)
+    private function handleApiError(Throwable $exception)
     {
         Log::error('API Error: '.$exception->getMessage(), $exception->getTrace());
 
@@ -124,7 +124,7 @@ class Handler extends ExceptionHandler
     {
         try {
             return app(HandlerInterface::class);
-        } catch (BindingResolutionException $e) {
+        } catch (BindingResolutionException) {
             return parent::whoopsHandler();
         }
     }

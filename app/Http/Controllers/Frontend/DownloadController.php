@@ -32,7 +32,7 @@ class DownloadController extends Controller
          * Group all the files but compound the model with the ID,
          * since we can have multiple files for every `ref_model`
          */
-        $grouped_files = $files->groupBy(fn ($item, $key) => $item['ref_model'].'_'.$item['ref_model_id']);
+        $grouped_files = $files->groupBy(fn ($item, $key): string => $item['ref_model'].'_'.$item['ref_model_id']);
 
         /**
          * The $group here looks like: App\Models\Airport_KAUS

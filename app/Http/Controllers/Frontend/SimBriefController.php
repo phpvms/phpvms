@@ -101,16 +101,14 @@ class SimBriefController
                 $where['airport_id'] = $flight->dpt_airport_id;
             }
 
-            $withCount = ['simbriefs' => function ($query) {
+            $withCount = ['simbriefs' => function ($query): void {
                 $query->whereNull('pirep_id');
             }];
 
             // Build proper aircraft collection considering all possible settings
             // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
             $aircraft = Aircraft::withCount($withCount)->with(['sbaircraft', 'sbairframes'])->where($where)
-                ->when(setting('simbrief.block_aircraft'), function ($query) {
-                    return $query->having('simbriefs_count', 0);
-                })->whereIn('subfleet_id', $subfleet_ids)
+                ->when(setting('simbrief.block_aircraft'), fn ($query) => $query->having('simbriefs_count', 0))->whereIn('subfleet_id', $subfleet_ids)
                 ->orderby('icao')->orderby('registration')
                 ->get();
 
@@ -191,12 +189,14 @@ class SimBriefController
 
         /** @var Fare $fare */
         foreach ($all_fares as $fare) {
-            if ($fare->type !== FareType::PASSENGER || empty($fare->capacity)) {
+            if ($fare->type !== FareType::PASSENGER) {
                 continue;
             }
-
+            if (empty($fare->capacity)) {
+                continue;
+            }
             $acd_maxpax += $fare->capacity;
-            $count = floor(($fare->capacity * rand($loadmin, $loadmax)) / 100);
+            $count = floor(($fare->capacity * random_int($loadmin, $loadmax)) / 100);
             $tpaxfig += $count;
             $pax_load_sheet[] = [
                 'id'       => $fare->id,
@@ -223,11 +223,13 @@ class SimBriefController
         $tcargoload = 0;
         $cargo_load_sheet = [];
         foreach ($all_fares as $fare) {
-            if ($fare->type !== FareType::CARGO || empty($fare->capacity)) {
+            if ($fare->type !== FareType::CARGO) {
                 continue;
             }
-
-            $count = ceil((($fare->capacity - $tbagload) * rand($cgoloadmin, $cgoloadmax)) / 100);
+            if (empty($fare->capacity)) {
+                continue;
+            }
+            $count = ceil((($fare->capacity - $tbagload) * random_int($cgoloadmin, $cgoloadmax)) / 100);
             $tcargoload += $count;
             $cargo_load_sheet[] = [
                 'id'       => $fare->id,
@@ -261,7 +263,7 @@ class SimBriefController
         ];
 
         $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
-        $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null;
+        $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode((string) $aircraft->sbaircraft->details)) : null;
         $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', AirframeSource::INTERNAL) : $aircraft->sbairframes;
 
         // Show the main simbrief form

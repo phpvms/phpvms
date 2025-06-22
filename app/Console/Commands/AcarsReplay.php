@@ -61,7 +61,7 @@ class AcarsReplay extends Command
             $flight->planned_minenroute
         );
 
-        $flight_number = substr($flight->callsign, 3);
+        $flight_number = substr((string) $flight->callsign, 3);
 
         $response = $this->httpClient->post('/api/pireps/prefile', [
             'json' => [
@@ -85,27 +85,22 @@ class AcarsReplay extends Command
      * Mark the PIREP as filed
      *
      *
-     * @return mixed
      *
      * @throws \RuntimeException
      */
-    protected function filePirep($pirep_id)
+    protected function filePirep(string $pirep_id): mixed
     {
         $response = $this->httpClient->post('/api/pireps/'.$pirep_id.'/file', [
             'json' => [],
         ]);
 
-        $body = \json_decode($response->getBody()->getContents());
-
-        return $body;
+        return \json_decode($response->getBody()->getContents());
     }
 
     /**
-     * @return array
-     *
      * @throws \RuntimeException
      */
-    protected function postUpdate($pirep_id, $data)
+    protected function postUpdate(string $pirep_id, $data): array
     {
         $uri = '/api/pireps/'.$pirep_id.'/acars/position';
 
@@ -136,7 +131,7 @@ class AcarsReplay extends Command
             'json' => $upd,
         ]);
 
-        $body = \json_decode($response->getBody()->getContents());
+        \json_decode($response->getBody()->getContents());
 
         return [
             $data->callsign,
@@ -175,16 +170,14 @@ class AcarsReplay extends Command
             return false;
         })
             // remove any of errored file entries
-            ->filter(function ($value, $key) {
-                return $value !== false;
-            });
+            ->filter(fn ($value, $key): bool => $value !== false);
 
         $this->info('Starting playback');
 
         /*
          * File the initial pirep to get a "preflight" status
          */
-        $flights->each(function ($updates, $idx) {
+        $flights->each(function ($updates, $idx): void {
             $update = $updates->first();
             $pirep_id = $this->startPirep($update);
             $this->pirepList[$update->callsign] = $pirep_id;
@@ -200,7 +193,7 @@ class AcarsReplay extends Command
          * Continue until we have no more flights and updates left
          */
         while ($flights->count() > 0) {
-            $flights = $flights->each(function ($updates, $idx) {
+            $flights = $flights->each(function ($updates, $idx): void {
                 $update = $updates->shift();
                 $pirep_id = $this->pirepList[$update->callsign];
 
@@ -210,9 +203,7 @@ class AcarsReplay extends Command
                 if ($updates->count() === 0 && !$this->option('no-submit')) {
                     $this->filePirep($pirep_id);
                 }
-            })->filter(function ($updates, $idx) {
-                return $updates->count() > 0;
-            });
+            })->filter(fn ($updates, $idx): bool => $updates->count() > 0);
 
             if (!$this->option('write-all')) {
                 if (!$this->option('manual')) {
@@ -227,7 +218,6 @@ class AcarsReplay extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
      *
      * @throws \RuntimeException
      */

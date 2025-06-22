@@ -109,10 +109,10 @@ class SimBriefService extends Service
     /**
      * @return \SimpleXMLElement|null
      */
-    public function getAcarsOFP(SimBriefXML $ofp)
+    public function getAcarsOFP(SimBriefXML $ofp): null|\SimpleXMLElement|false
     {
         $url = $ofp->getAcarsXmlUrl();
-        if (empty($url)) {
+        if ($url === null || $url === '' || $url === '0') {
             return null;
         }
 
@@ -217,7 +217,7 @@ class SimBriefService extends Service
      * Get Aircraft and Airframe Data from SimBrief
      * Insert or Update relevant models, for proper and detailed flight planning
      */
-    public function getAircraftAndAirframes()
+    public function getAircraftAndAirframes(): void
     {
         $url = config('phpvms.simbrief_airframes_url');
         $sbdata = Http::get($url);
@@ -264,7 +264,7 @@ class SimBriefService extends Service
      * Get OFP Layouts from SimBrief
      * Insert or Update relevant model for proper flight planning
      */
-    public function GetBriefingLayouts()
+    public function GetBriefingLayouts(): void
     {
         $url = config('phpvms.simbrief_layouts_url');
         $sbdata = Http::get($url);

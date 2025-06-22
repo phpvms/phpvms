@@ -15,7 +15,7 @@ class AnalyticsService extends Service
     /**
      * Send out some stats about the install, like the PHP and DB versions
      */
-    public function sendInstall()
+    public function sendInstall(): void
     {
         if (setting('general.telemetry') === false) {
             return;
@@ -26,7 +26,7 @@ class AnalyticsService extends Service
 
         $props = [
             'php'     => PHP_VERSION,
-            'db'      => strtolower($pdo->getAttribute(PDO::ATTR_SERVER_VERSION)),
+            'db'      => strtolower((string) $pdo->getAttribute(PDO::ATTR_SERVER_VERSION)),
             'version' => $versionSvc->getCurrentVersion(false),
         ];
 
@@ -39,7 +39,7 @@ class AnalyticsService extends Service
         }
     }
 
-    public function sendUpdate()
+    public function sendUpdate(): void
     {
         if (setting('general.telemetry') === false) {
             return;

@@ -73,7 +73,7 @@ class ConfigService extends Service
      *
      * This is called from the migrations which removes the old config.php file
      */
-    public function rewriteConfigFiles()
+    public function rewriteConfigFiles(): void
     {
         /*$cfg_file = App::environmentPath().'/config.php';
         if (!file_exists($cfg_file)) {
@@ -123,11 +123,8 @@ class ConfigService extends Service
 
     /**
      * Update the environment file and update certain keys/values
-     *
-     *
-     * @return void
      */
-    public function updateKeysInEnv(array $kvp)
+    public function updateKeysInEnv(array $kvp): void
     {
         $app = app();
 
@@ -141,7 +138,7 @@ class ConfigService extends Service
             }
 
             // surround by quotes if there are any spaces in the value
-            if (strpos($value, ' ') !== false) {
+            if (str_contains((string) $value, ' ')) {
                 $value = '"'.$value.'"';
             }
 
@@ -168,11 +165,8 @@ class ConfigService extends Service
     /**
      * Change a few options within the PDO driver, depending on the version
      * of mysql/maria, etc used. ATM, only make a change for MariaDB
-     *
-     *
-     * @return mixed
      */
-    protected function determinePdoOptions($opts)
+    protected function determinePdoOptions(array $opts): array
     {
         if ($opts['DB_CONNECTION'] !== 'mysql') {
             return $opts;
@@ -182,7 +176,7 @@ class ConfigService extends Service
         Log::info('Connection string: '.$dsn);
 
         $conn = new PDO($dsn, $opts['DB_USERNAME'], $opts['DB_PASSWORD']);
-        $version = strtolower($conn->getAttribute(PDO::ATTR_SERVER_VERSION));
+        $version = strtolower((string) $conn->getAttribute(PDO::ATTR_SERVER_VERSION));
         Log::info('Detected DB Version: '.$version);
 
         // If it's mariadb, enable the emulation for prepared statements
@@ -198,11 +192,8 @@ class ConfigService extends Service
 
     /**
      * Determine is APC is installed, if so, then use it as a cache driver
-     *
-     *
-     * @return mixed
      */
-    protected function configCacheDriver($opts)
+    protected function configCacheDriver(array $opts): array
     {
         // Set the cache prefix
         $prefix = substr(\Illuminate\Support\Str::slug($opts['SITE_NAME'], '_'), 0, 8);
@@ -228,11 +219,8 @@ class ConfigService extends Service
     /**
      * Setup a queue driver that's not the default "sync"
      * driver, if a database is being used
-     *
-     *
-     * @return mixed
      */
-    protected function configQueueDriver($opts)
+    protected function configQueueDriver(array $opts): array
     {
         // If we're setting up a database, then also setup
         // the default queue driver to use the database
@@ -248,7 +236,7 @@ class ConfigService extends Service
     /**
      * Remove the config files
      */
-    public function removeConfigFiles()
+    public function removeConfigFiles(): void
     {
         $env_file = App::environmentFilePath();
         $config_file = App::environmentPath().'/config.php';

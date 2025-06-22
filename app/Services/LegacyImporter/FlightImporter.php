@@ -8,7 +8,7 @@ class FlightImporter extends BaseImporter
 {
     protected $table = 'schedules';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- FLIGHT SCHEDULE IMPORT ---');
 
@@ -33,7 +33,7 @@ class FlightImporter extends BaseImporter
         foreach ($rows as $row) {
             $airline_id = $this->idMapper->getMapping('airlines', $row->code);
 
-            $flight_num = trim($row->flightnum);
+            $flight_num = trim((string) $row->flightnum);
 
             $attrs = [
                 'dpt_airport_id' => $row->depicao,

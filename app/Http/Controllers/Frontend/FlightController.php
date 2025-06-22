@@ -9,7 +9,6 @@ use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Typerating;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
@@ -31,7 +30,6 @@ class FlightController extends Controller
 {
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
@@ -137,13 +135,11 @@ class FlightController extends Controller
                 'arr_airport',
                 'dpt_airport',
                 'subfleets.airline',
-                'simbrief' => function ($query) use ($user) {
+                'simbrief' => function ($query) use ($user): void {
                     $query->where('user_id', $user->id);
                 },
             ])
-            ->when($filter_by_user, function ($query) use ($allowed_flights) {
-                return $query->whereIn('id', $allowed_flights);
-            })
+            ->when($filter_by_user, fn ($query) => $query->whereIn('id', $allowed_flights))
             ->sortable('flight_number')->orderBy('route_code')->orderBy('route_leg')
             ->paginate();
 
@@ -218,29 +214,18 @@ class FlightController extends Controller
 
     /**
      * Show the flight information page
-     *
-     *
-     * @return mixed
      */
     public function show(string $id): View
     {
         $user = Auth::user();
         // Support retrieval of deleted relationships
         $with_flight = [
-            'airline' => function ($query) {
-                return $query->withTrashed();
-            },
-            'alt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'airline'     => fn ($query) => $query->withTrashed(),
+            'alt_airport' => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
             'subfleets.airline',
-            'simbrief' => function ($query) use ($user) {
+            'simbrief' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             },
         ];
