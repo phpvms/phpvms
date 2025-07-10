@@ -214,6 +214,7 @@ class FlightService extends Service
             ['id', '<>', $flight->id],
             'airline_id'    => $flight->airline_id,
             'flight_number' => $flight->flight_number,
+            'owner_type'    => null,
         ];
 
         $found_flights = $this->flightRepo->findWhere($where);
