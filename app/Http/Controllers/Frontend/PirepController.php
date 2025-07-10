@@ -529,10 +529,11 @@ class PirepController extends Controller
         $attrs['submit'] = strtolower($attrs['submit']);
 
         // Fix the time
-        $attrs['flight_time'] = Time::init(
-            $attrs['minutes'],
-            $attrs['hours']
-        )->getMinutes();
+        $attrs['flight_time'] = Time::init($attrs['minutes'], $attrs['hours'])->getMinutes();
+
+        // Fix the fuel
+        $attrs['block_fuel'] = Fuel::make((float) $attrs['block_fuel'], setting('units.fuel'));
+        $attrs['fuel_used'] = Fuel::make((float) $attrs['fuel_used'], setting('units.fuel'));
 
         $pirep = $this->pirepRepo->update($attrs, $id);
 
