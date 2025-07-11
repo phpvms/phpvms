@@ -33,7 +33,7 @@ class PirepStats extends BaseWidget
             ->count();
 
         return [
-            Stat::make('Pireps', $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value) => $value->aggregate)->toArray()),
+            Stat::make('Pireps', $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value): mixed => $value->aggregate)->toArray()),
             Stat::make('Accepted Pireps', $this->getPageTableQuery()->where('state', PirepState::ACCEPTED)->count())->color('danger'),
             Stat::make('Pending Pireps', $this->getPageTableQuery()->where('state', PirepState::PENDING)->count()),
         ];

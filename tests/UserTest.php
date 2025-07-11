@@ -159,7 +159,7 @@ final class UserTest extends TestCase
      * assign only one of them to the user's rank. When calling the api
      * to retrieve the flight, only subfleetA should be showing
      */
-    public function test_get_aircraft_allowed_from_flight()
+    public function test_get_aircraft_allowed_from_flight(): void
     {
         // Add subfleets and aircraft, but also add another
         // set of subfleets
@@ -225,11 +225,11 @@ final class UserTest extends TestCase
     /**
      * Test the pilot ID being added when a new user is created
      */
-    public function test_user_pilot_id_change_already_exists()
+    public function test_user_pilot_id_change_already_exists(): void
     {
         $this->expectException(UserPilotIdExists::class);
         $user1 = User::factory()->create(['id' => 1]);
-        $user2 = User::factory()->create(['id' => 2]);
+        User::factory()->create(['id' => 2]);
 
         // Now try to change the original user's pilot_id to 2 (should conflict)
         $this->userSvc->changePilotId($user1, 2);
@@ -267,8 +267,7 @@ final class UserTest extends TestCase
         /** @var Airline $airline */
         $airline = Airline::factory()->create(['icao' => 'ABC', 'iata' => null]);
 
-        /** @var User $user */
-        $user = User::factory()->create(['airline_id' => $airline->id]);
+        User::factory()->create(['airline_id' => $airline->id]);
 
         $this->expectException(PilotIdNotFound::class);
         $this->userSvc->findUserByPilotId('123');
@@ -277,7 +276,7 @@ final class UserTest extends TestCase
     /**
      * Test the pilot ID being added when a new user is created
      */
-    public function test_user_pilot_id_added()
+    public function test_user_pilot_id_added(): void
     {
         $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
         $new_user['password'] = Hash::make('secret');
@@ -299,7 +298,7 @@ final class UserTest extends TestCase
         $this->assertEquals(4, $user3->pilot_id);
     }
 
-    public function test_user_pilot_deleted()
+    public function test_user_pilot_deleted(): void
     {
         $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
         $new_user['password'] = Hash::make('secret');
@@ -321,7 +320,7 @@ final class UserTest extends TestCase
         $this->assertNull($user);
     }
 
-    public function test_user_pilot_deleted_with_pireps()
+    public function test_user_pilot_deleted_with_pireps(): void
     {
         $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
         $new_user['password'] = Hash::make('secret');
@@ -332,7 +331,6 @@ final class UserTest extends TestCase
         $user = $this->userSvc->createUser($new_user);
         $this->assertEquals($user->id, $user->pilot_id);
 
-        /** @var Pirep $pirep */
         Pirep::factory()->create([
             'user_id' => $user->id,
         ]);
@@ -352,7 +350,7 @@ final class UserTest extends TestCase
     /**
      * Test that a user's name is private
      */
-    public function test_user_name_private()
+    public function test_user_name_private(): void
     {
         $vals = [
             'Firstname'                     => 'Firstname',
@@ -436,7 +434,7 @@ final class UserTest extends TestCase
         $this->assertCount(0, $users_on_leave);
     }
 
-    public function test_event_called_when_profile_updated()
+    public function test_event_called_when_profile_updated(): void
     {
         Event::fake();
         $user = User::factory()->create();
@@ -447,7 +445,7 @@ final class UserTest extends TestCase
             'airline_id' => 1,
         ];
 
-        $resp = $this->actingAs($user)->put('/profile/'.$user->id, $body);
+        $this->actingAs($user)->put('/profile/'.$user->id, $body);
 
         Event::assertDispatched(ProfileUpdated::class);
     }

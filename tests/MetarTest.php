@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use App\Repositories\SettingRepository;
 use App\Services\AirportService;
 use App\Support\Metar;
 
@@ -11,12 +10,9 @@ use App\Support\Metar;
  */
 final class MetarTest extends TestCase
 {
-    private SettingRepository $settingsRepo;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->settingsRepo = app(SettingRepository::class);
     }
 
     /**
@@ -101,7 +97,7 @@ final class MetarTest extends TestCase
                 .'R25R/P2000 R07L/1900N R07R/1700D R25L/1900N '
                 .'+TSRA SCT006 BKN015 SCT030CB 22/21 Q1018 NOSIG';
 
-        $parsed = Metar::parse($metar);
+        Metar::parse($metar);
     }
 
     public function test_metar_trends(): void
@@ -115,7 +111,7 @@ final class MetarTest extends TestCase
          * Altimeter is 29.70. Remarks: automated station with precipitation discriminator sea level
          * pressure 1005.6 hectopascals hourly temp 7.8°C dewpoint 6.7°C
          */
-        $parsed = Metar::parse($metar);
+        Metar::parse($metar);
     }
 
     public function test_metar_trends2(): void

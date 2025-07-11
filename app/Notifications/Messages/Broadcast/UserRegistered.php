@@ -15,22 +15,18 @@ class UserRegistered extends Notification implements ShouldQueue
 {
     use MailChannel;
 
-    private $user;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user)
+    public function __construct(private \App\Models\User $user)
     {
         parent::__construct();
-
-        $this->user = $user;
     }
 
     /**
      * @return string[]
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['discord_webhook'];
     }
@@ -53,10 +49,7 @@ class UserRegistered extends Notification implements ShouldQueue
             ->fields([]);
     }
 
-    /**
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->user->id,

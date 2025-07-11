@@ -24,7 +24,7 @@ return new class() extends Migration
         }
     }
 
-    public function PoundsConversion($value)
+    public function PoundsConversion($value): ?float
     {
         if ($value > 0) {
             return round($value / 0.45359237, 2);

@@ -33,7 +33,7 @@ class Maintenance extends Page
 
     public function forceUpdateCheckAction(): Action
     {
-        return Action::make('forceUpdateCheck')->label('Force Update Check')->icon('heroicon-o-arrow-path')->action(function () {
+        return Action::make('forceUpdateCheck')->label('Force Update Check')->icon('heroicon-o-arrow-path')->action(function (): void {
             app(VersionService::class)->isNewVersionAvailable();
 
             $kvpRepo = app(KvpRepository::class);
@@ -59,7 +59,7 @@ class Maintenance extends Page
 
     public function webCronEnable(): Action
     {
-        return Action::make('webCronEnable')->label('Enable/Change ID')->action(function () {
+        return Action::make('webCronEnable')->label('Enable/Change ID')->action(function (): void {
             $id = Utils::generateNewId(24);
             setting_save('cron.random_id', $id);
 
@@ -76,7 +76,7 @@ class Maintenance extends Page
 
     public function webCronDisable(): Action
     {
-        return Action::make('webCronDisable')->label('Disable')->color('warning')->action(function () {
+        return Action::make('webCronDisable')->label('Disable')->color('warning')->action(function (): void {
             setting_save('cron.random_id', '');
 
             // Remove the webcron id from cache
@@ -92,7 +92,7 @@ class Maintenance extends Page
 
     public function clearCaches(): Action
     {
-        return Action::make('clearCaches')->icon('heroicon-o-trash')->label('Clear Cache')->action(function (array $arguments) {
+        return Action::make('clearCaches')->icon('heroicon-o-trash')->label('Clear Cache')->action(function (array $arguments): void {
             $calls = [];
             $type = $arguments['type'];
 
@@ -135,7 +135,7 @@ class Maintenance extends Page
 
     public function flushQueue(): Action
     {
-        return Action::make('flushQueue')->icon('heroicon-o-trash')->label('Flush Failed Jobs')->action(function () {
+        return Action::make('flushQueue')->icon('heroicon-o-trash')->label('Flush Failed Jobs')->action(function (): void {
             Artisan::call('queue:flush');
 
             Notification::make()
@@ -147,7 +147,7 @@ class Maintenance extends Page
 
     public function reseed(): Action
     {
-        return Action::make('reseed')->icon('heroicon-o-circle-stack')->label('Rerun seeding')->action(function () {
+        return Action::make('reseed')->icon('heroicon-o-circle-stack')->label('Rerun seeding')->action(function (): void {
             app(SeederService::class)->syncAllSeeds();
 
             Notification::make()
@@ -159,7 +159,7 @@ class Maintenance extends Page
 
     public function optimizeApp(): Action
     {
-        return Action::make('optimizeApp')->icon('heroicon-o-wrench-screwdriver')->label('Optimize App')->action(function () {
+        return Action::make('optimizeApp')->icon('heroicon-o-wrench-screwdriver')->label('Optimize App')->action(function (): void {
             $calls = [
                 // 'icons:cache',
                 'filament:cache-components',
@@ -184,7 +184,7 @@ class Maintenance extends Page
             ->color('success')
             ->label('Update App')
             ->visible(fn (): bool => app(InstallerService::class)->isUpgradePending())
-            ->action(function () {
+            ->action(function (): void {
                 Log::info('Update: run_migrations');
 
                 $migrationSvc = app(MigrationService::class);

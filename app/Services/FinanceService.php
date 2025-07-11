@@ -33,7 +33,7 @@ class FinanceService extends Service
         $expense = new Expense($attrs);
 
         if ($model instanceof \App\Contracts\Model) {
-            $expense->ref_model = get_class($model);
+            $expense->ref_model = $model::class;
 
             // In case it's a generic expense not tied to a specific instance
             if (!empty($model->id)) {
@@ -128,7 +128,7 @@ class FinanceService extends Service
      *
      * @param string $month In Y-m format
      */
-    public function getAllAirlineTransactionsBetween($month): array
+    public function getAllAirlineTransactionsBetween(string $month): array
     {
         $between = Dates::getMonthBoundary($month);
 
@@ -152,12 +152,11 @@ class FinanceService extends Service
      * with `credits`, `debits` and `transactions` fields, where transactions contains the
      * grouped transactions (e.g, "Fares" and "Ground Handling", etc)
      *
-     * @param  Airline $airline
-     * @param  string  $start_date YYYY-MM-DD
-     * @param  string  $end_date   YYYY-MM-DD
-     * @return array
+     * @param Airline $airline
+     * @param string  $start_date YYYY-MM-DD
+     * @param string  $end_date   YYYY-MM-DD
      */
-    public function getAirlineTransactionsBetween($airline, $start_date, $end_date)
+    public function getAirlineTransactionsBetween($airline, $start_date, $end_date): array
     {
         // Return all the transactions, grouped by the transaction group
         $transactions = JournalTransaction::groupBy('transaction_group', 'currency')

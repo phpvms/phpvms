@@ -47,11 +47,9 @@ class ImportExport
      */
     public function getAirline($code): Airline
     {
-        $airline = Airline::firstOrCreate([
+        return Airline::firstOrCreate([
             'icao' => $code,
         ], ['name' => $code]);
-
-        return $airline;
     }
 
     /**
@@ -112,7 +110,7 @@ class ImportExport
      */
     protected function kvpToArray($kvp_str, array &$arr)
     {
-        $item = explode('=', $kvp_str);
+        $item = explode('=', (string) $kvp_str);
         if (\count($item) === 1) {  // just a list?
             $arr[] = trim($item[0]);
         } else {  // actually a key-value pair
@@ -133,10 +131,10 @@ class ImportExport
      *
      * @return array|string
      */
-    public function parseMultiColumnValues($field)
+    public function parseMultiColumnValues($field): array
     {
         $ret = [];
-        $split_values = explode(';', $field);
+        $split_values = explode(';', (string) $field);
 
         // No multiple values in here, just a straight value
         if (\count($split_values) === 1) {
@@ -144,7 +142,7 @@ class ImportExport
                 return [];
             }
 
-            if (strpos($split_values[0], '?') !== false) {
+            if (str_contains($split_values[0], '?')) {
                 // This contains the query string, which turns it into a multi-level array
                 $query_str = explode('?', $split_values[0]);
                 $parent = trim($query_str[0]);
@@ -152,10 +150,12 @@ class ImportExport
                 $children = [];
                 $kvp = explode('&', trim($query_str[1]));
                 foreach ($kvp as $items) {
-                    if ($items === '' || $items === '0') {
+                    if ($items === '') {
                         continue;
                     }
-
+                    if ($items === '0') {
+                        continue;
+                    }
                     $this->kvpToArray($items, $children);
                 }
 
@@ -176,7 +176,7 @@ class ImportExport
 
             // This isn't in the query string format, so it's
             // just a straight key-value pair set
-            if (strpos($value, '?') === false) {
+            if (in_array(str_contains($value, '?'), [0, false], true)) {
                 $this->kvpToArray($value, $ret);
 
                 continue;
@@ -191,10 +191,12 @@ class ImportExport
             $children = [];
             $kvp = explode('&', trim($query_str[1]));
             foreach ($kvp as $items) {
-                if ($items === '' || $items === '0') {
+                if ($items === '') {
                     continue;
                 }
-
+                if ($items === '0') {
+                    continue;
+                }
                 $this->kvpToArray($items, $children);
             }
 
@@ -224,7 +226,7 @@ class ImportExport
             $key = trim($key);
 
             if (!\is_array($val)) {
-                $val = trim($val);
+                $val = trim((string) $val);
                 $ret_list[] = "{$key}={$val}";
             } else {
                 $q = [];

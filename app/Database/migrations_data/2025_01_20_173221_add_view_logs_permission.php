@@ -13,7 +13,7 @@ return new class() extends Migration
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         try {
             Permission::create(['name' => 'view_logs']);
-        } catch (PermissionAlreadyExists $e) {
+        } catch (PermissionAlreadyExists) {
             Log::info('Permission already exists: view_logs');
         }
 

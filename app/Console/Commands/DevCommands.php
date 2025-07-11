@@ -26,22 +26,18 @@ class DevCommands extends Command
 
     protected $description = 'Developer commands';
 
-    protected DatabaseService $dbSvc;
-
     /**
      * DevCommands constructor.
      */
-    public function __construct(DatabaseService $dbSvc)
+    public function __construct(protected DatabaseService $dbSvc)
     {
         parent::__construct();
-
-        $this->dbSvc = $dbSvc;
     }
 
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $command = trim($this->argument('cmd'));
 
@@ -84,7 +80,7 @@ class DevCommands extends Command
         $headers = ['Award Name', 'Class'];
         $formatted_awards = [];
         foreach ($awards as $award) {
-            $formatted_awards[] = [$award->name, \get_class($award)];
+            $formatted_awards[] = [$award->name, $award::class];
         }
 
         $this->table($headers, $formatted_awards);
@@ -251,7 +247,7 @@ class DevCommands extends Command
     protected function resetInstall(): void
     {
         $confirm = $this->ask('This will erase your entire install and database, are you sure? y/n ');
-        if (strtolower($confirm) !== 'y') {
+        if (strtolower((string) $confirm) !== 'y') {
             exit(0);
         }
 
@@ -273,14 +269,14 @@ class DevCommands extends Command
 
         try {
             unlink('config.php');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
 
         $this->info('Deleting env file');
 
         try {
             unlink('env.php');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
 
         $this->info('Clearing caches');

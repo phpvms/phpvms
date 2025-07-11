@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use App\Services\DatabaseService;
 use App\Support\Database;
 use Symfony\Component\Yaml\Yaml;
 
@@ -13,7 +12,6 @@ final class DatabaseTest extends TestCase
      */
     public function test_seeder(): void
     {
-        /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
         $yml = Yaml::parse($file);
 
@@ -38,7 +36,6 @@ final class DatabaseTest extends TestCase
 
     public function test_seeder_value_ignore_value(): void
     {
-        /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
         $yml = Yaml::parse($file);
 
@@ -57,7 +54,6 @@ final class DatabaseTest extends TestCase
 
     public function test_seeder_dont_ignore_value(): void
     {
-        /** @var DatabaseService $dbSvc */
         $file = file_get_contents(base_path('tests/data/seed.yml'));
         $yml = Yaml::parse($file);
 

@@ -40,8 +40,6 @@ final class AdminControllerTests extends TestCase
         $sf = Subfleet::where(['type' => $add['type']])->first();
         $this->assertNotNull($sf);
 
-        $original_sf_id = $sf->id;
-
         // delete it
         $resp = $this->actingAs($user, 'web')->delete('/admin/subfleets/'.$sf->id);
         $sf = Subfleet::where(['type' => $add['type']])->first();

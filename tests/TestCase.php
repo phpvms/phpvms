@@ -86,9 +86,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
         Notification::fake();
         // $this->disableExceptionHandling();
 
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'App\\Database\\Factories\\'.class_basename($modelName).'Factory';
-        });
+        Factory::guessFactoryNamesUsing(fn (string $modelName): string => 'App\\Database\\Factories\\'.class_basename($modelName).'Factory');
     }
 
     /**
@@ -102,12 +100,12 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
             /** @noinspection PhpMissingParentConstructorInspection */
             public function __construct() {}
 
-            public function report(\Throwable $e)
+            public function report(\Throwable $e): void
             {
                 // no-op
             }
 
-            public function render($request, \Throwable $e)
+            public function render($request, \Throwable $e): never
             {
                 throw $e;
             }
@@ -146,7 +144,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         try {
             $svc->seed_from_yaml_file($file_path);
-        } catch (Exception $e) {
+        } catch (Exception) {
         }
     }
 
@@ -269,7 +267,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      */
     public function invokeMethod(&$object, string $methodName, array $parameters = []): mixed
     {
-        $reflection = new ReflectionClass(get_class($object));
+        $reflection = new ReflectionClass($object::class);
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
 
@@ -307,7 +305,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * Override the GET call to inject the user API key
      *
      * @param string $uri
-     * @param null   $user
      */
     public function get($uri, array $headers = [], $user = null): TestResponse
     {
@@ -323,7 +320,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * Override the POST calls to inject the user API key
      *
      * @param string $uri
-     * @param null   $user
      */
     public function post($uri, array $data = [], array $headers = [], $user = null): TestResponse
     {
@@ -340,7 +336,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * Override the PUT calls to inject the user API key
      *
      * @param string $uri
-     * @param null   $user
      */
     public function put($uri, array $data = [], array $headers = [], $user = null): TestResponse
     {
@@ -356,7 +351,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
      * Override the DELETE calls to inject the user API key
      *
      * @param string $uri
-     * @param null   $user
      */
     public function delete($uri, array $data = [], array $headers = [], $user = null): TestResponse
     {

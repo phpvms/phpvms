@@ -19,7 +19,7 @@ class UserImport extends BaseImporter
 
     private UserService $userSvc;
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- USER IMPORT ---');
 
@@ -115,11 +115,8 @@ class UserImport extends BaseImporter
 
     /**
      * Get the user's new state from their original state
-     *
-     *
-     * @return int
      */
-    protected function getUserState($state)
+    protected function getUserState($state): int
     {
         // Return active for now, let the stats/cron determine the status later
         return UserState::ACTIVE;

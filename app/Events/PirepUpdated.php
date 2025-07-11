@@ -7,10 +7,5 @@ use App\Models\Pirep;
 
 class PirepUpdated extends Event
 {
-    public Pirep $pirep;
-
-    public function __construct(Pirep $pirep)
-    {
-        $this->pirep = $pirep;
-    }
+    public function __construct(public Pirep $pirep) {}
 }

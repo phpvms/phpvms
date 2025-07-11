@@ -76,7 +76,7 @@ class AircraftImporter extends ImportExport
         }
 
         // Set a default status
-        $row['status'] = trim($row['status']);
+        $row['status'] = trim((string) $row['status']);
         if (empty($row['status'])) {
             $row['status'] = AircraftStatus::ACTIVE;
         }
@@ -111,7 +111,7 @@ class AircraftImporter extends ImportExport
         return true;
     }
 
-    public function CorrectMassUnit($value)
+    public function CorrectMassUnit($value): ?\App\Contracts\Unit
     {
         if ($value > 0) {
             return Mass::make((float) $value, setting('units.weight'));

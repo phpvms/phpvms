@@ -8,29 +8,23 @@ use App\Notifications\Channels\Discord\DiscordMessage;
 
 class PirepDiverted extends Notification
 {
-    private Pirep $pirep;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Pirep $pirep)
+    public function __construct(private readonly Pirep $pirep)
     {
         parent::__construct();
-
-        $this->pirep = $pirep;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['discord_webhook'];
     }
 
     /**
      * Send a Discord notification
-     *
-     * @param Pirep $pirep
      */
-    public function toDiscordChannel($pirep): ?DiscordMessage
+    public function toDiscordChannel(\App\Models\Pirep $pirep): ?DiscordMessage
     {
         $title = 'Flight '.$pirep->ident.' Diverted';
         $fields = $this->createFields($pirep);
@@ -56,7 +50,7 @@ class PirepDiverted extends Notification
         $diversion_apt = $pirep->fields->firstWhere('slug', 'diversion-airport')->value;
         $diversion_reason = abs($pirep->landing_rate) > 1500 ? 'Crashed Near '.$diversion_apt : 'Operational';
 
-        $fields = [
+        return [
             '__Flight #__'  => $pirep->ident,
             '__Orig__'      => $pirep->dpt_airport_id,
             '__Dest__'      => $pirep->arr_airport_id,
@@ -64,17 +58,14 @@ class PirepDiverted extends Notification
             '__Diverted__'  => $diversion_apt,
             '__Reason__'    => $diversion_reason,
         ];
-
-        return $fields;
     }
 
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'pirep_id' => $this->pirep->id,

@@ -34,7 +34,7 @@ class MigrationService extends Service
      *
      * @param mixed $dir
      */
-    public function getMigrationPaths($dir = 'migrations'): array
+    public function getMigrationPaths(string $dir = 'migrations'): array
     {
         $paths = [
             'core' => App::databasePath().'/'.$dir,
@@ -64,7 +64,7 @@ class MigrationService extends Service
 
         try {
             $runFiles = $migrator->getRepository()->getRan();
-        } catch (Exception $e) {
+        } catch (Exception) {
         } // Skip database run initialized
 
         $files = $migrator->getMigrationFiles(array_values($migration_dirs));
@@ -125,7 +125,7 @@ class MigrationService extends Service
 
         try {
             $runFiles = $migrator->getRepository()->getRan();
-        } catch (Exception $e) {
+        } catch (Exception) {
         } // Skip database run initialized
 
         $files = $migrator->getMigrationFiles(array_values($migration_dirs));

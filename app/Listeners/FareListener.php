@@ -12,17 +12,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class FareListener extends Listener // implements ShouldQueue
 {
     // use Queueable;
-
     /**
      * Return a list of additional fares/income items
-     *
-     *
-     * @return mixed
      */
-    public function handle(Fares $event)
+    public function handle(Fares $event): array
     {
-        $fares = [];
-
         // This is an example of a fare to return
         // You have the pirep on $event->pirep and any associated data
         // Cost may be skipped at all if not needed
@@ -37,6 +31,6 @@ class FareListener extends Listener // implements ShouldQueue
           ]);
         */
 
-        return $fares;
+        return [];
     }
 }

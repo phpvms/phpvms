@@ -53,11 +53,8 @@ class FlightExporter extends ImportExport
 
     /**
      * Return the days string
-     *
-     *
-     * @return string
      */
-    protected function getDays(Flight &$flight)
+    protected function getDays(Flight &$flight): string
     {
         $days_str = '';
 

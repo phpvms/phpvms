@@ -10,7 +10,7 @@ class PirepCommentImporter extends BaseImporter
 
     protected $idField = 'id';
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- PIREPCOMMENT IMPORT ---');
 

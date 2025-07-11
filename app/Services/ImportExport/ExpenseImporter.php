@@ -68,13 +68,10 @@ class ExpenseImporter extends ImportExport
 
     /**
      * See if this expense refers to a ref_model
-     *
-     *
-     * @return array
      */
-    protected function getRefClassInfo(array $row)
+    protected function getRefClassInfo(array $row): array
     {
-        $row['ref_model'] = trim($row['ref_model']);
+        $row['ref_model'] = trim((string) $row['ref_model']);
 
         // class from import is being saved as the name of the model only
         // prepend the full class path so we can search it out

@@ -9,7 +9,7 @@ use App\Contracts\Resource;
  */
 class Subfleet extends Resource
 {
-    public function toArray($request)
+    public function toArray(\Illuminate\Http\Request $request)
     {
         $res = parent::toArray($request);
         $res['fares'] = Fare::collection($this->fares);

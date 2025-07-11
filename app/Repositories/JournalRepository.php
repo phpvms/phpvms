@@ -29,11 +29,8 @@ class JournalRepository extends Repository implements CacheableInterface
 
     /**
      * Return a Y-m-d string for the post date
-     *
-     *
-     * @return string
      */
-    public function formatPostDate(?Carbon $date = null)
+    public function formatPostDate(?Carbon $date = null): ?string
     {
         if (!$date instanceof \Carbon\Carbon) {
             return null;
@@ -46,12 +43,11 @@ class JournalRepository extends Repository implements CacheableInterface
      * Recalculate the balance of the given journal
      *
      *
-     * @return Journal
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function recalculateBalance(Journal $journal)
+    public function recalculateBalance(Journal $journal): Journal
     {
         $where = [
             'journal_id' => $journal->id,
@@ -114,15 +110,11 @@ class JournalRepository extends Repository implements CacheableInterface
         ];
 
         if ($reference !== null) {
-            $attrs['ref_model'] = \get_class($reference);
+            $attrs['ref_model'] = $reference::class;
             $attrs['ref_model_id'] = $reference->id;
         }
 
-        try {
-            $transaction = $this->create($attrs);
-        } catch (ValidatorException $e) {
-            throw $e;
-        }
+        $transaction = $this->create($attrs);
 
         $journal->refresh();
 
@@ -130,12 +122,10 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @return Money
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function getBalance(?Journal $journal = null, ?Carbon $date = null)
+    public function getBalance(?Journal $journal = null, ?Carbon $date = null): \App\Support\Money
     {
         $journal->refresh();
 
@@ -152,7 +142,6 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Get the credit only balance of the journal based on a given date.
      *
-     * @param null $transaction_group
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
@@ -186,8 +175,6 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @param null $transaction_group
-     *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
@@ -222,16 +209,14 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Return all transactions for a given object
      *
-     * @param  null  $journal
-     * @return array
      *
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      */
-    public function getAllForObject($object, $journal = null, ?Carbon $date = null)
+    public function getAllForObject($object, $journal = null, ?Carbon $date = null): array
     {
         $where = [
-            'ref_model'    => \get_class($object),
+            'ref_model'    => $object::class,
             'ref_model_id' => $object->id,
         ];
 
@@ -258,14 +243,11 @@ class JournalRepository extends Repository implements CacheableInterface
 
     /**
      * Delete all transactions for a given object
-     *
-     * @param  null $journal
-     * @return void
      */
-    public function deleteAllForObject($object, $journal = null)
+    public function deleteAllForObject($object, $journal = null): void
     {
         $where = [
-            'ref_model'    => \get_class($object),
+            'ref_model'    => $object::class,
             'ref_model_id' => $object->id,
         ];
 

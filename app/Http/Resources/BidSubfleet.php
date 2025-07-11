@@ -7,19 +7,12 @@ namespace App\Http\Resources;
  */
 class BidSubfleet extends Subfleet
 {
-    protected $aircraft;
-
-    protected $fares;
-
-    public function __construct($resource, $aircraft, $fares)
+    public function __construct($resource, protected $aircraft, protected $fares)
     {
         parent::__construct($resource);
-
-        $this->aircraft = $aircraft;
-        $this->fares = $fares;
     }
 
-    public function toArray($request)
+    public function toArray($request): array
     {
         return [
             'airline_id'                 => $this->airline_id,

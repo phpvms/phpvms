@@ -34,7 +34,7 @@ class FlightField extends Model
     public function name(): Attribute
     {
         return Attribute::make(
-            set: fn ($name) => [
+            set: fn ($name): array => [
                 'name' => $name,
                 'slug' => \Illuminate\Support\Str::slug($name),
             ]

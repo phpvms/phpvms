@@ -12,17 +12,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class ExpenseListener extends Listener // implements ShouldQueue
 {
     // use Queueable;
-
     /**
      * Return a list of additional expenses
-     *
-     *
-     * @return mixed
      */
-    public function handle(Expenses $event)
+    public function handle(Expenses $event): array
     {
-        $expenses = [];
-
         // This is an example of an expense to return
         // You have the pirep on $event->pirep, and any associated data
         // The transaction group is how it will show as a line item
@@ -33,6 +27,6 @@ class ExpenseListener extends Listener // implements ShouldQueue
             'charge_to_user' => true|false
         ]);*/
 
-        return $expenses;
+        return [];
     }
 }

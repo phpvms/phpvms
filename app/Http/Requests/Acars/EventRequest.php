@@ -17,14 +17,12 @@ class EventRequest extends FormRequest
 
     public function rules(): array
     {
-        $rules = [
+        return [
             'events'              => 'required|array',
             'events.*.event'      => 'required',
             'events.*.lat'        => 'sometimes|numeric',
             'events.*.lon'        => 'sometimes|numeric',
             'events.*.created_at' => 'sometimes|date',
         ];
-
-        return $rules;
     }
 }

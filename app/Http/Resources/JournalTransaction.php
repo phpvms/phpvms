@@ -6,10 +6,8 @@ use App\Contracts\Resource;
 
 class JournalTransaction extends Resource
 {
-    public function toArray($request)
+    public function toArray(\Illuminate\Http\Request $request)
     {
-        $transaction = parent::toArray($request);
-
-        return $transaction;
+        return parent::toArray($request);
     }
 }

@@ -45,9 +45,7 @@ class ApiAuth implements Middleware
         // Set the user to the request
         Auth::setUser($user);
         $request->merge(['user' => $user]);
-        $request->setUserResolver(function () use ($user) {
-            return $user;
-        });
+        $request->setUserResolver(fn () => $user);
 
         // Force english locale for API
         app()->setLocale('en');
@@ -61,7 +59,7 @@ class ApiAuth implements Middleware
      * @param  mixed                                                                                    $details
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
-    private function unauthorized($details = '')
+    private function unauthorized(string $details = '')
     {
         return response([
             'error' => [

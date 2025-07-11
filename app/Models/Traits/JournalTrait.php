@@ -12,15 +12,13 @@ trait JournalTrait
      */
     public static function bootJournalTrait(): void
     {
-        static::created(function ($model) {
+        static::created(function ($model): void {
             $model->initJournal(setting('units.currency'));
         });
     }
 
     /**
      * Morph to Journal.
-     *
-     * @return mixed
      */
     public function journal(): MorphOne
     {
@@ -31,11 +29,10 @@ trait JournalTrait
      * Initialize a journal for a given model object
      *
      *
-     * @return Journal
      *
      * @throws \Exception
      */
-    public function initJournal(string $currency_code = 'USD')
+    public function initJournal(string $currency_code = 'USD'): ?\App\Models\Journal
     {
         if (!$this->journal) {
             $journal = new Journal();

@@ -65,7 +65,7 @@ class UserResource extends Resource
                                     ->email(),
 
                                 Forms\Components\TextInput::make('password')
-                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->required(fn (string $operation): bool => $operation === 'create')
                                     ->password()
                                     ->autocomplete('new-password')
                                     ->columnSpanFull(),
@@ -83,7 +83,7 @@ class UserResource extends Resource
                                     ->options(Timezonelist::toArray())
                                     ->searchable()
                                     ->allowHtml()
-                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->required(fn (string $operation): bool => $operation === 'create')
                                     ->native(false),
 
                                 Forms\Components\Select::make('home_airport_id')
@@ -91,7 +91,7 @@ class UserResource extends Resource
                                     ->relationship('home_airport', 'icao')
                                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                                     ->searchable()
-                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->required(fn (string $operation): bool => $operation === 'create')
                                     ->native(false),
 
                                 Forms\Components\Select::make('current_airport_id')
@@ -115,7 +115,7 @@ class UserResource extends Resource
                                 Forms\Components\Select::make('airline_id')
                                     ->relationship('airline', 'name')
                                     ->searchable()
-                                    ->required(fn (string $operation) => $operation === 'create')
+                                    ->required(fn (string $operation): bool => $operation === 'create')
                                     ->native(false),
 
                                 Forms\Components\Select::make('rank_id')

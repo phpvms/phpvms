@@ -121,7 +121,7 @@ class UserService extends Service
      *
      * @throws \Exception
      */
-    public function removeUser(User $user)
+    public function removeUser(User $user): void
     {
         // Detach all roles from this user
         foreach ($user->roles as $role) {
@@ -225,9 +225,7 @@ class UserService extends Service
     public function findUserByPilotId(string $pilot_id): User
     {
         $pilot_id = trim($pilot_id);
-        if ($pilot_id === '' || $pilot_id === '0') {
-            throw new PilotIdNotFound('');
-        }
+        throw_if($pilot_id === '' || $pilot_id === '0', new PilotIdNotFound(''));
 
         $airlines = $this->airlineRepo->all(['id', 'icao', 'iata']);
 
@@ -236,26 +234,22 @@ class UserService extends Service
 
         /** @var Airline $airline */
         foreach ($airlines as $airline) {
-            if (strpos($pilot_id, $airline->icao) !== false) {
+            if (str_contains($pilot_id, (string) $airline->icao)) {
                 $ident_str = $airline->icao;
                 break;
             }
 
-            if (!empty($airline->iata) && strpos($pilot_id, $airline->iata) !== false) {
+            if (!empty($airline->iata) && str_contains($pilot_id, (string) $airline->iata)) {
                 $ident_str = $airline->iata;
                 break;
             }
         }
 
-        if (empty($ident_str)) {
-            throw new PilotIdNotFound($pilot_id);
-        }
+        throw_if(empty($ident_str), new PilotIdNotFound($pilot_id));
 
         $parsed_pilot_id = str_replace($ident_str, '', $pilot_id);
         $user = User::where(['airline_id' => $airline->id, 'pilot_id' => $parsed_pilot_id])->first();
-        if (empty($user)) {
-            throw new PilotIdNotFound($pilot_id);
-        }
+        throw_if(empty($user), new PilotIdNotFound($pilot_id));
 
         return $user;
     }
@@ -276,7 +270,7 @@ class UserService extends Service
         $users = User::where('state', UserState::ACTIVE)->get();
 
         /** @var User $user */
-        return $users->filter(function ($user, $i) use ($date, $leave_days) {
+        return $users->filter(function ($user, $i) use ($date, $leave_days): bool {
             // If any role for this user has the "disable_activity_check" feature activated, skip this user
             foreach ($user->roles()->get() as $role) {
                 /** @var Role $role */
@@ -323,9 +317,7 @@ class UserService extends Service
             $restrict_type = false;
         }
 
-        $subfleetsQuery = $this->subfleetRepo->when($restrict_rank || $restrict_type, function ($query) use ($restricted_to) {
-            return $query->whereIn('id', $restricted_to);
-        })->with(['aircraft', 'aircraft.bid', 'fares']);
+        $subfleetsQuery = $this->subfleetRepo->when($restrict_rank || $restrict_type, fn ($query) => $query->whereIn('id', $restricted_to))->with(['aircraft', 'aircraft.bid', 'fares']);
 
         $subfleets = $paginate ? $subfleetsQuery->paginate() : $subfleetsQuery->get();
 
@@ -339,11 +331,8 @@ class UserService extends Service
 
     /**
      * Return a bool if a user is allowed to fly the current aircraft
-     *
-     *
-     * @return bool
      */
-    public function aircraftAllowed($user, $aircraft_id)
+    public function aircraftAllowed($user, $aircraft_id): bool
     {
         $aircraft = $this->aircraftRepo->find($aircraft_id, ['subfleet_id']);
         $subfleets = $this->getAllowableSubfleets($user);
@@ -475,9 +464,7 @@ class UserService extends Service
 
         $this->userRepo
             ->findWhere($w, ['id', 'name', 'airline_id'])
-            ->each(function ($user, $_) {
-                return $this->recalculateStats($user);
-            });
+            ->each(fn ($user, $_): \App\Models\User => $this->recalculateStats($user));
     }
 
     /**
@@ -512,7 +499,7 @@ class UserService extends Service
     /**
      * Attach a type rating to the user
      */
-    public function addUserToTypeRating(User $user, Typerating $typerating)
+    public function addUserToTypeRating(User $user, Typerating $typerating): User
     {
         $user->typeratings()->syncWithoutDetaching([$typerating->id]);
         $user->save();
@@ -524,7 +511,7 @@ class UserService extends Service
     /**
      * Detach a type rating from the user
      */
-    public function removeUserFromTypeRating(User $user, Typerating $typerating)
+    public function removeUserFromTypeRating(User $user, Typerating $typerating): User
     {
         $user->typeratings()->detach($typerating->id);
         $user->save();
@@ -555,9 +542,7 @@ class UserService extends Service
             $user->update([
                 'discord_private_channel_id' => $privateChannel,
             ]);
-        } catch (\Exception $e) {
-            Log::error('Discord OAuth Error: '.$e->getMessage());
-        } catch (GuzzleException $e) {
+        } catch (\Exception|GuzzleException $e) {
             Log::error('Discord OAuth Error: '.$e->getMessage());
         }
     }

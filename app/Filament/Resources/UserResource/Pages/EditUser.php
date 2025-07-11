@@ -23,7 +23,7 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('verify_email')->label('Verify Email')->action(function (User $record) {
+            Actions\Action::make('verify_email')->label('Verify Email')->action(function (User $record): void {
                 if ($record->markEmailAsVerified()) {
                     event(new Verified($record));
                 }
@@ -33,7 +33,7 @@ class EditUser extends EditRecord
                     ->success()
                     ->send();
             })->visible(fn (User $record): bool => !$record->hasVerifiedEmail()),
-            Actions\Action::make('request_email_verification')->label('Request new email verification')->action(function (User $record) {
+            Actions\Action::make('request_email_verification')->label('Request new email verification')->action(function (User $record): void {
                 $record->update([
                     'email_verified_at' => null,
                 ]);

@@ -29,7 +29,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     /**
      * Add a module and enable it
      */
-    public function addModule(array $attrs)
+    public function addModule(array $attrs): void
     {
         $module = array_merge([
             'enabled'    => true,
@@ -52,7 +52,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
      *
      * @param string $file Full path to yml file to seed
      */
-    public function seedFile($file): void
+    public function seedFile(string $file): void
     {
         try {
             $path = base_path($file);
@@ -66,7 +66,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     /**
      * Add rows to a table
      */
-    public function addData($table, $rows)
+    public function addData($table, $rows): void
     {
         foreach ($rows as $row) {
             try {
@@ -87,12 +87,10 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function addAward(array $award)
+    public function addAward(array $award): void
     {
         $validator = Validator::make($award, \App\Models\Award::$rules);
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
+        throw_if($validator->fails(), new ValidationException($validator));
 
         $awardModel = new \App\Models\Award($award);
         $awardModel->save();

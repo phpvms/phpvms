@@ -45,7 +45,7 @@ class File extends Model
         'name' => 'required',
     ];
 
-    private $pathinfo;
+    private ?array $pathinfo = null;
 
     /**
      * Return the file extension
@@ -54,7 +54,7 @@ class File extends Model
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if (!$this->pathinfo) {
+                if ($this->pathinfo === null || $this->pathinfo === []) {
                     $this->pathinfo = pathinfo($this->path);
                 }
 
@@ -69,8 +69,8 @@ class File extends Model
     public function filename(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
-                if (!$this->pathinfo) {
+            get: function ($_, $attrs): string {
+                if ($this->pathinfo === null || $this->pathinfo === []) {
                     $this->pathinfo = pathinfo($this->path);
                 }
 
@@ -108,7 +108,7 @@ class File extends Model
     public function isExternalFile(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, array $attrs): bool => is_null($attrs['disk']) && !str_contains($this->url, config('app.url')),
+            get: fn ($value, array $attrs): bool => is_null($attrs['disk']) && !str_contains($this->url, (string) config('app.url')),
         );
     }
 

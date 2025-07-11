@@ -98,19 +98,17 @@ class Timezonelist
     /**
      * Create a GMT timezone select element for form
      *
-     * @param  string $name
-     * @param  string $selected
-     * @param  mixed  $attr
-     * @param  bool   $htmlencode
-     * @return string
+     * @param string $selected
+     * @param mixed  $attr
+     * @param bool   $htmlencode
      *
      * @throws \Exception
      */
-    public static function create($name, $selected = '', $attr = '', $htmlencode = true)
+    public static function create(string $name, $selected = '', ?string $attr = '', $htmlencode = true): string
     {
         // Attributes for select element
         $attrSet = '';
-        if (!empty($attr)) {
+        if ($attr !== null && $attr !== '' && $attr !== '0') {
             if (\is_array($attr)) {
                 foreach ($attr as $attr_name => $attr_value) {
                     $attrSet .= ' '.$attr_name.'="'.$attr_value.'"';
@@ -152,10 +150,10 @@ class Timezonelist
     /**
      * Create a timezone array
      *
-     * @param  bool  $htmlencode
-     * @return mixed
+     * @param  bool              $htmlencode
+     * @return non-empty-array[]
      */
-    public static function toArray($htmlencode = false)
+    public static function toArray($htmlencode = false): array
     {
         $list = [];
         // Add popular timezones to list

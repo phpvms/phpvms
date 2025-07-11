@@ -62,7 +62,6 @@ trait TestData
         $subfleet = $this->createSubfleetWithAircraft(2);
         $rank = $this->createRank(10, [$subfleet['subfleet']->id]);
 
-        /** @var User user */
         $this->user = User::factory()->create(array_merge([
             'rank_id' => $rank->id,
         ], $user_attrs));
@@ -76,9 +75,6 @@ trait TestData
 
     /**
      * Create a rank and associate the given subfleet IDs with it
-     *
-     *
-     * @return mixed
      */
     public function createRank(int $hours, array $subfleet_ids): Rank
     {
@@ -94,9 +90,6 @@ trait TestData
 
     /**
      * Add a single flight
-     *
-     *
-     * @return mixed
      */
     public function addFlight(User $user, array $flight_properties = [], ?int $subfleet_id = null): Flight
     {
@@ -107,7 +100,6 @@ trait TestData
         $flight = Flight::factory()->create($opts);
 
         if ($subfleet_id === null) {
-            /** @var Subfleet $subfleet */
             $subfleet_id = Subfleet::factory()->create([
                 'airline_id' => $user->airline_id,
             ])->id;
@@ -125,7 +117,7 @@ trait TestData
     {
         return Flight::factory()->count($num_flights)->create([
             'airline_id' => $subfleet->airline->id,
-        ])->each(function (Flight $f) use ($subfleet) {
+        ])->each(function (Flight $f) use ($subfleet): void {
             $f->subfleets()->syncWithoutDetaching([$subfleet->id]);
             $f->refresh();
         });

@@ -13,11 +13,9 @@ class NavdataImport extends Command
     protected $description = '';
 
     /**
-     * @return void
-     *
      * @throws \League\Geotools\Exception\InvalidArgumentException
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('Emptying the current navdata...');
         Navdata::query()->truncate();
@@ -77,39 +75,24 @@ class NavdataImport extends Command
 
         foreach ($generator as $line) {
             $navaid = [
-                'id'    => trim(substr($line, 24, 4)), // ident column
-                'name'  => trim(substr($line, 0, 24)),
-                'type'  => trim(substr($line, 29, 4)),
-                'lat'   => trim(substr($line, 33, 9)),
-                'lon'   => trim(substr($line, 43, 11)),
-                'freq'  => trim(substr($line, 54, 6)),
-                'class' => trim($line[60]),
+                'id'    => trim(substr((string) $line, 24, 4)), // ident column
+                'name'  => trim(substr((string) $line, 0, 24)),
+                'type'  => trim(substr((string) $line, 29, 4)),
+                'lat'   => trim(substr((string) $line, 33, 9)),
+                'lon'   => trim(substr((string) $line, 43, 11)),
+                'freq'  => trim(substr((string) $line, 54, 6)),
+                'class' => trim((string) $line[60]),
             ];
 
             // Map to the Navaid enum
-            switch ($navaid['type']) {
-                case 'ILS':
-                    $navaid['type'] = NavaidType::LOC;
-                    break;
-                case 'ILSDME':
-                    $navaid['type'] = NavaidType::LOC_DME;
-                    break;
-                case 'NDB':
-                case 'NDBM':
-                case 'NDBO':
-                case 'MARI':
-                    $navaid['type'] = NavaidType::NDB;
-                    break;
-                case 'VOR':
-                    $navaid['type'] = NavaidType::VOR;
-                    break;
-                case 'VORD':
-                    $navaid['type'] = NavaidType::VOR_DME;
-                    break;
-                default:
-                    $navaid['type'] = NavaidType::UNKNOWN;
-                    break;
-            }
+            $navaid['type'] = match ($navaid['type']) {
+                'ILS'    => NavaidType::LOC,
+                'ILSDME' => NavaidType::LOC_DME,
+                'NDB', 'NDBM', 'NDBO', 'MARI' => NavaidType::NDB,
+                'VOR'   => NavaidType::VOR,
+                'VORD'  => NavaidType::VOR_DME,
+                default => NavaidType::UNKNOWN,
+            };
 
             /*if($navaid['id'] === 'LCH' || $navaid['id'] === 'RSG') {
                 print_r($navaid);
@@ -162,11 +145,11 @@ class NavdataImport extends Command
         $imported = 0;
         foreach ($generator as $line) {
             $navfix = [
-                'id'   => trim(substr($line, 0, 4)), // ident column
-                'name' => trim(substr($line, 24, 6)),
+                'id'   => trim(substr((string) $line, 0, 4)), // ident column
+                'name' => trim(substr((string) $line, 24, 6)),
                 'type' => NavaidType::FIX,
-                'lat'  => trim(substr($line, 30, 10)),
-                'lon'  => trim(substr($line, 40, 11)),
+                'lat'  => trim(substr((string) $line, 30, 10)),
+                'lon'  => trim(substr((string) $line, 40, 11)),
             ];
 
             Navdata::updateOrCreate([

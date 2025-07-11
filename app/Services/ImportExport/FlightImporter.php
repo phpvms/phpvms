@@ -87,28 +87,28 @@ class FlightImporter extends ImportExport
         $flight = Flight::withTrashed()->firstOrNew([
             'airline_id'     => $airline->id,
             'flight_number'  => $row['flight_number'],
-            'dpt_airport_id' => strtoupper($row['dpt_airport']),
-            'arr_airport_id' => strtoupper($row['arr_airport']),
+            'dpt_airport_id' => strtoupper((string) $row['dpt_airport']),
+            'arr_airport_id' => strtoupper((string) $row['arr_airport']),
             'route_code'     => filled($row['route_code']) ? $row['route_code'] : null,
             'route_leg'      => filled($row['route_leg']) ? $row['route_leg'] : null,
             'days'           => filled($row['days']) ? $this->setDays($row['days']) : 0,
         ], $row);
 
-        $row['dpt_airport'] = strtoupper($row['dpt_airport']);
-        $row['arr_airport'] = strtoupper($row['arr_airport']);
+        $row['dpt_airport'] = strtoupper((string) $row['dpt_airport']);
+        $row['arr_airport'] = strtoupper((string) $row['arr_airport']);
 
         // Airport attributes
         $flight->setAttribute('dpt_airport_id', $row['dpt_airport']);
         $flight->setAttribute('arr_airport_id', $row['arr_airport']);
         if (filled($row['alt_airport'])) {
-            $flight->setAttribute('alt_airport_id', strtoupper($row['alt_airport']));
+            $flight->setAttribute('alt_airport_id', strtoupper((string) $row['alt_airport']));
         }
 
         // Handle schedule details (days)
         $flight->setAttribute('days', $this->setDays($row['days']));
 
         // Handle route and Level fields
-        $flight->setAttribute('route', strtoupper($row['route']));
+        $flight->setAttribute('route', strtoupper((string) $row['route']));
         $flight->setAttribute('level', $row['level']);
 
         // Check row for empty/blank values and set them null
@@ -204,38 +204,38 @@ class FlightImporter extends ImportExport
      *
      * @return int|mixed
      */
-    protected function setDays($day_str)
+    protected function setDays($day_str): int
     {
         if (!$day_str) {
             return 0;
         }
 
         $days = [];
-        if (str_contains($day_str, '1')) {
+        if (str_contains((string) $day_str, '1')) {
             $days[] = Days::MONDAY;
         }
 
-        if (str_contains($day_str, '2')) {
+        if (str_contains((string) $day_str, '2')) {
             $days[] = Days::TUESDAY;
         }
 
-        if (str_contains($day_str, '3')) {
+        if (str_contains((string) $day_str, '3')) {
             $days[] = Days::WEDNESDAY;
         }
 
-        if (str_contains($day_str, '4')) {
+        if (str_contains((string) $day_str, '4')) {
             $days[] = Days::THURSDAY;
         }
 
-        if (str_contains($day_str, '5')) {
+        if (str_contains((string) $day_str, '5')) {
             $days[] = Days::FRIDAY;
         }
 
-        if (str_contains($day_str, '6')) {
+        if (str_contains((string) $day_str, '6')) {
             $days[] = Days::SATURDAY;
         }
 
-        if (str_contains($day_str, '7')) {
+        if (str_contains((string) $day_str, '7')) {
             $days[] = Days::SUNDAY;
         }
 
@@ -259,8 +259,11 @@ class FlightImporter extends ImportExport
         $count = 0;
         $subfleets = $this->parseMultiColumnValues($col);
         foreach ($subfleets as $subfleet_type) {
-            $subfleet_type = trim($subfleet_type);
-            if ($subfleet_type === '' || $subfleet_type === '0') {
+            $subfleet_type = trim((string) $subfleet_type);
+            if ($subfleet_type === '') {
+                continue;
+            }
+            if ($subfleet_type === '0') {
                 continue;
             }
 

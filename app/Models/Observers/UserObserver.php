@@ -3,16 +3,10 @@
 namespace App\Models\Observers;
 
 use App\Models\User;
-use App\Services\UserService;
 
 class UserObserver
 {
-    private $userSvc;
-
-    public function __construct(UserService $userSvc)
-    {
-        $this->userSvc = $userSvc;
-    }
+    public function __construct(private readonly \App\Services\UserService $userSvc) {}
 
     /**
      * After a user has been created, do some stuff

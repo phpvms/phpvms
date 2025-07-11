@@ -29,19 +29,19 @@ class FaresRelationManager extends RelationManager
                 Tables\Columns\TextInputColumn::make('pivot.capacity')
                     ->placeholder('Inherited')
                     ->label('Capacity')
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['capacity' => $state]);
                     }),
                 Tables\Columns\TextInputColumn::make('pivot.price')
                     ->label('Price')
                     ->placeholder('Inherited')
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['price' => $state]);
                     }),
                 Tables\Columns\TextInputColumn::make('pivot.cost')
                     ->label('Cost')
                     ->placeholder('Inherited')
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['cost' => $state]);
                     }),
             ])

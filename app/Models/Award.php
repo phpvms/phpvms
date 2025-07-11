@@ -57,11 +57,8 @@ class Award extends Model
 
     /**
      * Get the referring object
-     *
-     *
-     * @return null
      */
-    public function getReference(?self $award = null, ?User $user = null)
+    public function getReference(?self $award = null, ?User $user = null): ?object
     {
         if (!$this->ref_model) {
             return null;
@@ -69,7 +66,7 @@ class Award extends Model
 
         try {
             return new $this->ref_model($award, $user);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }
@@ -77,9 +74,9 @@ class Award extends Model
     public function image(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, array $attrs) {
                 if (array_key_exists('image_url', $attrs)) {
-                    if (str_starts_with($attrs['image_url'], 'awards/')) {
+                    if (str_starts_with((string) $attrs['image_url'], 'awards/')) {
                         return Storage::disk(config('filesystems.public_files'))->url($attrs['image_url']);
                     }
 

@@ -25,7 +25,7 @@ class VersionService extends Service
     private function cleanVersionString($version): string
     {
         if ($version[0] === 'v') {
-            $version = substr($version, 1);
+            return substr($version, 1);
         }
 
         return $version;
@@ -37,7 +37,7 @@ class VersionService extends Service
      *
      * @return string The version string
      */
-    private function setLatestRelease($version_tag, $download_url): string
+    private function setLatestRelease($version_tag, string $download_url): string
     {
         $version_tag = $this->cleanVersionString($version_tag);
 
@@ -50,7 +50,7 @@ class VersionService extends Service
     /**
      * Find and return the Github asset line
      */
-    private function getGithubAsset($release): string
+    private function getGithubAsset(array $release): string
     {
         foreach ($release['assets'] as $asset) {
             if ($asset['content_type'] === 'application/gzip') {
@@ -64,7 +64,7 @@ class VersionService extends Service
     /**
      * Download the latest version from github and return the version number
      */
-    private function getLatestVersionGithub()
+    private function getLatestVersionGithub(): ?string
     {
         $releases = [];
 
@@ -108,20 +108,17 @@ class VersionService extends Service
     /**
      * Downloads the latest version and saves it into the KVP store
      */
-    public function getLatestVersion()
+    public function getLatestVersion(): ?string
     {
-        $latest_version = $this->getLatestVersionGithub();
-
-        return $latest_version;
+        return $this->getLatestVersionGithub();
     }
 
     /**
      * Get the build ID, which is the date and the git log version
      *
-     * @param  array  $cfg
      * @return string
      */
-    public function getBuildId($cfg)
+    public function getBuildId(array $cfg)
     {
         return $cfg['build']['number'];
     }
@@ -132,7 +129,7 @@ class VersionService extends Service
      * @param  array        $cfg The version config
      * @return false|string
      */
-    public function generateBuildId($cfg)
+    public function generateBuildId(array $cfg): string
     {
         $date = date('ymd');
         exec($cfg['git']['git-local'], $version);
@@ -151,10 +148,9 @@ class VersionService extends Service
     /**
      * Get the current version
      *
-     * @param  bool   $include_build True will include the build ID
-     * @return string
+     * @param bool $include_build True will include the build ID
      */
-    public function getCurrentVersion($include_build = true)
+    public function getCurrentVersion($include_build = true): string
     {
         $version_file = config_path('version.yml');
         $cfg = Yaml::parse(file_get_contents($version_file));
@@ -180,9 +176,8 @@ class VersionService extends Service
      * See if a new version is available. Saves a flag into the KVP store if there is
      *
      * @param null [$current_version]
-     * @return bool
      */
-    public function isNewVersionAvailable($current_version = null)
+    public function isNewVersionAvailable($current_version = null): bool
     {
         $current_version = $current_version ? $this->cleanVersionString($current_version) : $this->getCurrentVersion(false);
 
@@ -210,11 +205,9 @@ class VersionService extends Service
     }
 
     /**
-     * @param  string $version1
-     * @param  string $version2
-     * @return bool   If $version1 is greater than $version2
+     * @return bool If $version1 is greater than $version2
      */
-    public function isGreaterThan($version1, $version2): bool
+    public function isGreaterThan(string $version1, string $version2): bool
     {
         $parsedVersion1 = Version::fromString($version1);
         $parsedVersion2 = Version::fromString($version2);

@@ -9,12 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class NewVersionCheck extends Listener
 {
-    private VersionService $versionSvc;
-
-    public function __construct(VersionService $versionSvc)
-    {
-        $this->versionSvc = $versionSvc;
-    }
+    public function __construct(private readonly VersionService $versionSvc) {}
 
     /**
      * Set any users to being on leave after X days

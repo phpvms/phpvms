@@ -12,7 +12,7 @@ class AirlineImporter extends BaseImporter
     /**
      * @param int $start
      */
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- AIRLINE IMPORT ---');
 

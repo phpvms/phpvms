@@ -14,15 +14,12 @@ class ComposerCommand extends Command
     /**
      * Run composer update related commands
      */
-    public function handle()
+    public function handle(): void
     {
-        switch (trim($this->argument('cmd'))) {
-            case 'post-update':
-                $this->postUpdate();
-                break;
-            default:
-                $this->error('Command exists');
-        }
+        match (trim($this->argument('cmd'))) {
+            'post-update' => $this->postUpdate(),
+            default       => $this->error('Command exists'),
+        };
     }
 
     /**

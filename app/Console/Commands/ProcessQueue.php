@@ -16,7 +16,7 @@ class ProcessQueue extends Command
     /**
      * Run the queue tasks
      */
-    public function handle()
+    public function handle(): void
     {
         Artisan::call('queue:work', [
             // '--sansdaemon'      => null,

@@ -14,25 +14,19 @@ abstract class Metar
      * Implement retrieving the METAR - return the METAR string. Needs to be protected,
      * since this shouldn't be directly called. Call `metar($icao)`. If not implemented,
      * return a blank string
-     *
-     *
-     * @return mixed
      */
     abstract protected function get_metar($icao): string;
 
     /**
      * Implement retrieving the TAF - return the string. Call `taf($icao)`. If not implemented,
      * return a blank string
-     *
-     *
-     * @return mixed
      */
     abstract protected function get_taf($icao): string;
 
     /**
      * Download the METAR, wrap in caching
      */
-    public function metar($icao): string
+    public function metar(string $icao): string
     {
         $cache = config('cache.keys.METAR_WEATHER_LOOKUP');
         $key = $cache['key'].$icao;
@@ -62,7 +56,7 @@ abstract class Metar
     /**
      * Download the TAF, wrap in caching
      */
-    public function taf($icao): string
+    public function taf(string $icao): string
     {
         $cache = config('cache.keys.TAF_WEATHER_LOOKUP');
         $key = $cache['key'].$icao;

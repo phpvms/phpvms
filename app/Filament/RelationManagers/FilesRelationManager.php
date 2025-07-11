@@ -68,7 +68,7 @@ class FilesRelationManager extends RelationManager
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
                     ->hidden(fn (File $record): bool => $record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
-                Tables\Actions\DeleteAction::make()->before(function (File $record) {
+                Tables\Actions\DeleteAction::make()->before(function (File $record): void {
                     if ($record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
                         Storage::disk($record->disk)->delete($record->path);
                     }
@@ -76,8 +76,8 @@ class FilesRelationManager extends RelationManager
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
-                        $records->each(function (File $record) {
+                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records): void {
+                        $records->each(function (File $record): void {
                             if ($record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
                                 Storage::disk($record->disk)->delete($record->path);
                             }

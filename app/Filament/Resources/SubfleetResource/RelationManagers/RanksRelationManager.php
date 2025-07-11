@@ -39,7 +39,7 @@ class RanksRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()->icon('heroicon-o-plus-circle')->recordSelect(fn (Select $select) => $select->multiple()),
+                Tables\Actions\AttachAction::make()->icon('heroicon-o-plus-circle')->recordSelect(fn (Select $select): \Filament\Forms\Components\Select => $select->multiple()),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make(),

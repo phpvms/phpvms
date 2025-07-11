@@ -26,10 +26,8 @@ class SimBriefXML extends SimpleXMLElement
 
     /**
      * Return the URL to the vmsACARS flight plan file
-     *
-     * @return string|null
      */
-    public function getAcarsXmlUrl()
+    public function getAcarsXmlUrl(): ?string
     {
         if (!empty($this->fms_downloads->vms)) {
             $base_url = $this->fms_downloads->directory;
@@ -84,8 +82,10 @@ class SimBriefXML extends SimpleXMLElement
             }
 
             $ident = $fix->ident->__toString();
-
-            if ($ident === 'TOC' || $ident === 'TOD') {
+            if ($ident === 'TOC') {
+                continue;
+            }
+            if ($ident === 'TOD') {
                 continue;
             }
 
