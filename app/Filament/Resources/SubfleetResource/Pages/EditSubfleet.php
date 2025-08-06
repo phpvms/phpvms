@@ -7,7 +7,10 @@ use App\Filament\Resources\SubfleetResource;
 use App\Models\File;
 use App\Models\Subfleet;
 use App\Services\FileService;
-use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSubfleet extends EditRecord
@@ -17,18 +20,18 @@ class EditSubfleet extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('aircraft')
+            Action::make('aircraft')
                 ->url(fn (Subfleet $record): string => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='.$record->id)
                 ->label('Aircraft')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success'),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make()->before(function (Subfleet $record) {
+            DeleteAction::make(),
+            ForceDeleteAction::make()->before(function (Subfleet $record) {
                 $record->files()->each(function (File $file) {
                     app(FileService::class)->removeFile($file);
                 });
             }),
-            Actions\RestoreAction::make(),
+            RestoreAction::make(),
         ];
     }
 }

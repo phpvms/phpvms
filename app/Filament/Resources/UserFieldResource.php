@@ -2,12 +2,19 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserFieldResource\Pages;
+use App\Filament\Resources\UserFieldResource\Pages\ManageUserFields;
 use App\Models\UserField;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -19,37 +26,37 @@ class UserFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->string()
                     ->required(),
 
-                Forms\Components\TextInput::make('description')
+                TextInput::make('description')
                     ->string(),
 
-                Forms\Components\Toggle::make('required')
+                Toggle::make('required')
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
                     ->onColor('success'),
 
-                Forms\Components\Toggle::make('show_on_registration')
+                Toggle::make('show_on_registration')
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
                     ->onColor('success'),
 
-                Forms\Components\Toggle::make('private')
+                Toggle::make('private')
                     ->label('Private (Only Visible To Admins)')
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
                     ->onColor('success'),
 
-                Forms\Components\Toggle::make('active')
+                Toggle::make('active')
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
@@ -62,29 +69,29 @@ class UserFieldResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->where('internal', false))
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('description'),
+                TextColumn::make('description'),
 
-                Tables\Columns\IconColumn::make('required')
+                IconColumn::make('required')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('show_on_registration')
+                IconColumn::make('show_on_registration')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('private')
+                IconColumn::make('private')
                     ->label('Private (Only Visible To Admins)')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
@@ -92,17 +99,17 @@ class UserFieldResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add User Field'),
             ]);
@@ -111,7 +118,7 @@ class UserFieldResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageUserFields::route('/'),
+            'index' => ManageUserFields::route('/'),
         ];
     }
 }

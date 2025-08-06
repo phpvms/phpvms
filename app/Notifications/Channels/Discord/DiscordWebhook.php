@@ -5,7 +5,7 @@ namespace App\Notifications\Channels\Discord;
 use App\Contracts\Notification;
 use App\Support\HttpClient;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Message;
 use Illuminate\Support\Facades\Log;
 
 class DiscordWebhook
@@ -38,8 +38,8 @@ class DiscordWebhook
             $data = $message->toArray();
             $this->httpClient->post($webhook_url, $data);
         } catch (RequestException $e) {
-            $request = Psr7\Message::toString($e->getRequest());
-            $response = Psr7\Message::toString($e->getResponse());
+            $request = Message::toString($e->getRequest());
+            $response = Message::toString($e->getResponse());
             Log::error('Error sending Discord notification: request: '.$e->getMessage().', '.$request);
             Log::error('Error sending Discord notification: response: '.$response);
         }

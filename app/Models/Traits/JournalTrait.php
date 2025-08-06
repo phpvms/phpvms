@@ -3,6 +3,7 @@
 namespace App\Models\Traits;
 
 use App\Models\Journal;
+use Exception;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 trait JournalTrait
@@ -33,7 +34,7 @@ trait JournalTrait
      *
      * @return Journal
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function initJournal(string $currency_code = 'USD')
     {

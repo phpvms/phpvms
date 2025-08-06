@@ -7,7 +7,10 @@ use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
 use Carbon\Carbon;
-use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPirep extends EditRecord
@@ -17,23 +20,23 @@ class EditPirep extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('accept')
+            Action::make('accept')
                 ->color('success')
                 ->icon('heroicon-m-check-circle')
                 ->label('Accept')
                 ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
                 ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::ACCEPTED)),
 
-            Actions\Action::make('reject')
+            Action::make('reject')
                 ->color('danger')
                 ->icon('heroicon-m-x-circle')
                 ->label('Reject')
                 ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
                 ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::REJECTED)),
 
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            DeleteAction::make(),
+            ForceDeleteAction::make(),
+            RestoreAction::make(),
         ];
     }
 

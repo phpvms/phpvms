@@ -6,7 +6,9 @@ use App\Filament\Resources\AirportResource;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAirport extends EditRecord
@@ -16,13 +18,13 @@ class EditAirport extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make()->before(function (Airport $record) {
+            DeleteAction::make(),
+            ForceDeleteAction::make()->before(function (Airport $record) {
                 $record->files()->each(function (File $file) {
                     app(FileService::class)->removeFile($file);
                 });
             }),
-            Actions\RestoreAction::make(),
+            RestoreAction::make(),
         ];
     }
 }

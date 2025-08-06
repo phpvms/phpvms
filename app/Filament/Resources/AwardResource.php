@@ -2,14 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AwardResource\Pages;
-use App\Filament\Resources\AwardResource\RelationManagers;
+use App\Filament\Resources\AwardResource\Pages\CreateAward;
+use App\Filament\Resources\AwardResource\Pages\EditAward;
+use App\Filament\Resources\AwardResource\Pages\ListAwards;
+use App\Filament\Resources\AwardResource\RelationManagers\UsersRelationManager;
 use App\Models\Award;
 use App\Services\AwardService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,17 +36,17 @@ class AwardResource extends Resource
 {
     protected static ?string $model = Award::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationLabel = 'Awards';
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         $awards = [];
 
@@ -37,42 +55,42 @@ class AwardResource extends Resource
             $awards[$class_ref] = $award->name;
         }
 
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Award Information')
+        return $schema
+            ->components([
+                Section::make('Award Information')
                     ->description('These are the awards that pilots can earn. Each award is assigned an award class, which will be run whenever a pilot\'s stats are changed, including after a PIREP is accepted.')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->required()
                             ->string(),
 
-                        Forms\Components\RichEditor::make('description'),
+                        RichEditor::make('description'),
 
-                        Forms\Components\TextInput::make('image_url')
+                        TextInput::make('image_url')
                             ->label('Image URL')
                             ->url(),
 
-                        Forms\Components\FileUpload::make('image_file')
+                        FileUpload::make('image_file')
                             ->label('Image')
                             ->image()
                             ->imageEditor()
                             ->disk(config('filesystems.public_files'))
                             ->directory('awards'),
 
-                        Forms\Components\Grid::make('')
+                        Grid::make('')
                             ->schema([
-                                Forms\Components\Select::make('ref_model')
+                                Select::make('ref_model')
                                     ->label('Award Class')
                                     ->searchable()
                                     ->native(false)
                                     ->options($awards),
 
-                                Forms\Components\TextInput::make('ref_model_params')
+                                TextInput::make('ref_model_params')
                                     ->label('Award Class parammeters')
                                     ->string(),
                             ])->columnSpan(1),
 
-                        Forms\Components\Toggle::make('active')
+                        Toggle::make('active')
                             ->offIcon('heroicon-m-x-circle')
                             ->offColor('danger')
                             ->onIcon('heroicon-m-check-circle')
@@ -86,37 +104,37 @@ class AwardResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('description'),
+                TextColumn::make('description'),
 
-                Tables\Columns\ImageColumn::make('image_url')
+                ImageColumn::make('image_url')
                     ->height(100),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Award'),
             ]);
@@ -125,16 +143,16 @@ class AwardResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\UsersRelationManager::make(),
+            UsersRelationManager::make(),
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAwards::route('/'),
-            'create' => Pages\CreateAward::route('/create'),
-            'edit'   => Pages\EditAward::route('/{record}/edit'),
+            'index'  => ListAwards::route('/'),
+            'create' => CreateAward::route('/create'),
+            'edit'   => EditAward::route('/{record}/edit'),
         ];
     }
 

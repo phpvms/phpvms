@@ -2,44 +2,58 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PageResource\Pages;
+use App\Filament\Resources\PageResource\Pages\CreatePage;
+use App\Filament\Resources\PageResource\Pages\EditPage;
+use App\Filament\Resources\PageResource\Pages\ListPages;
 use App\Models\Enums\PageType;
 use App\Models\Page;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class PageResource extends Resource
 {
     protected static ?string $model = Page::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 7;
 
     protected static ?string $navigationLabel = 'Pages';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Page Information')->schema([
-                    Forms\Components\Grid::make('')->schema([
-                        Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                Section::make('Page Information')->schema([
+                    Grid::make('')->schema([
+                        TextInput::make('name')
                             ->label('Page Name')
                             ->required()
                             ->string(),
 
-                        Forms\Components\TextInput::make('icon')
+                        TextInput::make('icon')
                             ->string(),
 
-                        Forms\Components\Select::make('type')
+                        Select::make('type')
                             ->label('Page Type')
                             ->options(PageType::select())
                             ->default(PageType::PAGE)
@@ -47,14 +61,14 @@ class PageResource extends Resource
                             ->native(false)
                             ->live(),
                     ])->columns(3),
-                    Forms\Components\Grid::make('')->schema([
-                        Forms\Components\Toggle::make('public')
+                    Grid::make('')->schema([
+                        Toggle::make('public')
                             ->offIcon('heroicon-m-x-circle')
                             ->offColor('danger')
                             ->onIcon('heroicon-m-check-circle')
                             ->onColor('success'),
 
-                        Forms\Components\Toggle::make('enabled')
+                        Toggle::make('enabled')
                             ->offIcon('heroicon-m-x-circle')
                             ->offColor('danger')
                             ->onIcon('heroicon-m-check-circle')
@@ -62,25 +76,25 @@ class PageResource extends Resource
                             ->default(true),
                     ])->columns(2),
                 ]),
-                Forms\Components\Section::make('Content')->schema([
-                    Forms\Components\RichEditor::make('body')
+                Section::make('Content')->schema([
+                    RichEditor::make('body')
                         ->label('Page Content')
-                        ->required(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE)
-                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::PAGE),
+                        ->required(fn (Get $get): bool => $get('type') == PageType::PAGE)
+                        ->visible(fn (Get $get): bool => $get('type') == PageType::PAGE),
 
-                    Forms\Components\TextInput::make('link')
+                    TextInput::make('link')
                         ->label('Page Link')
                         ->url()
-                        ->required(fn (Forms\Get $get): bool => $get('type') == PageType::LINK)
-                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
+                        ->required(fn (Get $get): bool => $get('type') == PageType::LINK)
+                        ->visible(fn (Get $get): bool => $get('type') == PageType::LINK),
 
-                    Forms\Components\Toggle::make('new_window')
+                    Toggle::make('new_window')
                         ->label('Open In New Window')
                         ->offIcon('heroicon-m-x-circle')
                         ->offColor('danger')
                         ->onIcon('heroicon-m-check-circle')
                         ->onColor('success')
-                        ->visible(fn (Forms\Get $get): bool => $get('type') == PageType::LINK),
+                        ->visible(fn (Get $get): bool => $get('type') == PageType::LINK),
                 ]),
             ]);
     }
@@ -89,19 +103,19 @@ class PageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->sortable()
                     ->formatStateUsing(fn (int $state): string => PageType::label($state)),
 
-                Tables\Columns\IconColumn::make('public')
+                IconColumn::make('public')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('enabled')
+                IconColumn::make('enabled')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
@@ -109,17 +123,17 @@ class PageResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Page'),
             ]);
@@ -135,9 +149,9 @@ class PageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPages::route('/'),
-            'create' => Pages\CreatePage::route('/create'),
-            'edit'   => Pages\EditPage::route('/{record}/edit'),
+            'index'  => ListPages::route('/'),
+            'create' => CreatePage::route('/create'),
+            'edit'   => EditPage::route('/{record}/edit'),
         ];
     }
 }

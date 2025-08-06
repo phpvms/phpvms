@@ -2,49 +2,58 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ExpenseResource\Pages;
+use App\Filament\Resources\ExpenseResource\Pages\ManageExpenses;
 use App\Models\Enums\ExpenseType;
 use App\Models\Enums\FlightType;
 use App\Models\Expense;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Expenses';
 
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Grid::make('')->schema([
-                    Forms\Components\Select::make('airline_id')
+        return $schema
+            ->components([
+                Grid::make('')->schema([
+                    Select::make('airline_id')
                         ->relationship('airline', 'name')
                         ->searchable()
                         ->native(false)
                         ->label('Airline'),
 
-                    Forms\Components\Select::make('type')
+                    Select::make('type')
                         ->options(ExpenseType::select())
                         ->searchable()
                         ->native(false)
                         ->required()
                         ->label('Expense Type'),
 
-                    Forms\Components\Select::make('flight_type')
+                    Select::make('flight_type')
                         ->options(FlightType::select())
                         ->searchable()
                         ->native(false)
@@ -52,24 +61,24 @@ class ExpenseResource extends Resource
                         ->label('Flight Types'),
                 ])->columns(3),
 
-                Forms\Components\Grid::make('')->schema([
-                    Forms\Components\TextInput::make('name')
+                Grid::make('')->schema([
+                    TextInput::make('name')
                         ->required()
                         ->string()
                         ->label('Expense Name'),
 
-                    Forms\Components\TextInput::make('amount')
+                    TextInput::make('amount')
                         ->required()
                         ->numeric(),
 
-                    Forms\Components\Toggle::make('multiplier')
+                    Toggle::make('multiplier')
                         ->inline()
                         ->onColor('success')
                         ->onIcon('heroicon-m-check-circle')
                         ->offColor('danger')
                         ->offIcon('heroicon-m-x-circle'),
 
-                    Forms\Components\Toggle::make('active')
+                    Toggle::make('active')
                         ->inline()
                         ->onColor('success')
                         ->onIcon('heroicon-m-check-circle')
@@ -83,23 +92,23 @@ class ExpenseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->sortable()
                     ->formatStateUsing(fn ($state) => ExpenseType::label($state)),
 
-                Tables\Columns\TextColumn::make('amount')
+                TextColumn::make('amount')
                     ->sortable()
                     ->money(setting('units.currency')),
 
-                Tables\Columns\TextColumn::make('airline.name')
+                TextColumn::make('airline.name')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
@@ -108,17 +117,17 @@ class ExpenseResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Expense'),
             ]);
@@ -127,7 +136,7 @@ class ExpenseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageExpenses::route('/'),
+            'index' => ManageExpenses::route('/'),
         ];
     }
 }

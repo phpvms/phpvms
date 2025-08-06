@@ -6,7 +6,7 @@ use App\Filament\Actions\ExportAction;
 use App\Filament\Actions\ImportAction;
 use App\Filament\Resources\AircraftResource;
 use App\Models\Enums\ImportExportType;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListAircraft extends ListRecords
@@ -18,7 +18,7 @@ class ListAircraft extends ListRecords
         return [
             ExportAction::make('export')->arguments(['resourceTitle' => 'aircraft', 'exportType' => ImportExportType::AIRCRAFT]),
             ImportAction::make('import')->arguments(['resourceTitle' => 'aircraft', 'importType' => ImportExportType::AIRCRAFT]),
-            Actions\CreateAction::make()->label('Add Aircraft')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Aircraft')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

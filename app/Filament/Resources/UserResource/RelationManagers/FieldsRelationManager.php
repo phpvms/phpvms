@@ -2,10 +2,14 @@
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,11 +17,11 @@ class FieldsRelationManager extends RelationManager
 {
     protected static string $relationship = 'fields';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('value')->required(),
+        return $schema
+            ->components([
+                TextInput::make('value')->required(),
             ]);
     }
 
@@ -27,20 +31,20 @@ class FieldsRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('field', fn (Builder $subQuery) => $subQuery->where('internal', false)))
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextInputColumn::make('value'),
+                TextColumn::make('name'),
+                TextInputColumn::make('value'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
             ])
-            ->actions([
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([

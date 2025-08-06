@@ -2,6 +2,9 @@
 
 namespace App\Support\Units;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Time implements Arrayable
@@ -103,12 +106,12 @@ class Time implements Arrayable
      * @param int $seconds
      * @return array['h', 'm', 's']
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function secondsToTimeParts($seconds): array
     {
-        $dtF = new \DateTimeImmutable('@0', new \DateTimeZone('UTC'));
-        $dtT = new \DateTimeImmutable("@$seconds", new \DateTimeZone('UTC'));
+        $dtF = new DateTimeImmutable('@0', new DateTimeZone('UTC'));
+        $dtT = new DateTimeImmutable("@$seconds", new DateTimeZone('UTC'));
 
         $t = $dtF->diff($dtT);
 
@@ -126,7 +129,7 @@ class Time implements Arrayable
      * @param int  $seconds
      * @param bool $incl_sec
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function secondsToTimeString($seconds, $incl_sec = false): string
     {

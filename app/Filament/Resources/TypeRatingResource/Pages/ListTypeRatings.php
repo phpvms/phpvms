@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\TypeRatingResource\Pages;
 
 use App\Filament\Resources\TyperatingResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTypeRatings extends ListRecords
@@ -13,7 +13,7 @@ class ListTypeRatings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Type Rating')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Type Rating')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

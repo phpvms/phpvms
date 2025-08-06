@@ -2,7 +2,12 @@
 
 namespace App\Contracts;
 
+use Exception;
+use Generator;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Exception\LogicException;
+use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Process\Process;
 
 use function is_array;
@@ -46,7 +51,7 @@ abstract class Command extends \Illuminate\Console\Command
      */
     public function redirectLoggingToFile($channel_name): void
     {
-        $logger = app(\Illuminate\Log\Logger::class);
+        $logger = app(Logger::class);
 
         // Close the existing loggers
         try {
@@ -54,7 +59,7 @@ abstract class Command extends \Illuminate\Console\Command
             foreach ($handlers as $handler) {
                 $handler->close();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Error closing handlers: '.$e->getMessage());
         }
 
@@ -64,7 +69,7 @@ abstract class Command extends \Illuminate\Console\Command
             $logger->setHandlers(
                 Log::channel($channel_name)->getHandlers()
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Couldn\'t splice the logger: '.$e->getMessage());
         }
     }
@@ -72,7 +77,7 @@ abstract class Command extends \Illuminate\Console\Command
     /**
      * Streaming file reader
      */
-    public function readFile($filename): ?\Generator
+    public function readFile($filename): ?Generator
     {
         $fp = fopen($filename, 'rb');
         while (($line = fgets($fp)) !== false) {
@@ -92,8 +97,8 @@ abstract class Command extends \Illuminate\Console\Command
      * @param bool         $return
      * @param mixed        $verbose
      *
-     * @throws \Symfony\Component\Process\Exception\RuntimeException
-     * @throws \Symfony\Component\Process\Exception\LogicException
+     * @throws RuntimeException
+     * @throws LogicException
      */
     public function runCommand($cmd, $return = false, $verbose = true): string
     {

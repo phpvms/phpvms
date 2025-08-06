@@ -19,6 +19,7 @@ use App\Console\Cron\Nightly;
 use App\Console\Cron\ThirtyMinute;
 use App\Console\Cron\Weekly;
 use App\Contracts\Command;
+use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 
 class Cron
@@ -79,7 +80,7 @@ class Cron
 
         $run = [];
 
-        /** @var \Illuminate\Console\Scheduling\Event $event */
+        /** @var Event $event */
         foreach ($events as $event) {
             foreach ($this->cronRunners as $signature => $task) {
                 if (!str_contains($event->command, $signature)) {

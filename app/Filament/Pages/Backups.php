@@ -9,7 +9,7 @@ class Backups extends BaseBackups
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-circle-stack';
 
     protected static ?int $navigationSort = 11;
 

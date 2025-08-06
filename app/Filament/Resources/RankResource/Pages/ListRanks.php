@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\RankResource\Pages;
 
 use App\Filament\Resources\RankResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListRanks extends ListRecords
@@ -13,7 +13,7 @@ class ListRanks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Rank')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Rank')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

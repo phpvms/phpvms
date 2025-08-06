@@ -8,7 +8,7 @@ use App\Contracts\Factory;
 use App\Models\Fare;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Fare>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Fare>
  */
 class FareFactory extends Factory
 {

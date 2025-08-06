@@ -4,11 +4,12 @@ namespace App\Filament\Resources\PirepResource\Pages;
 
 use App\Filament\Resources\PirepFieldResource;
 use App\Filament\Resources\PirepResource;
+use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Enums\PirepState;
 use Filament\Actions\Action;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListPireps extends ListRecords
@@ -31,7 +32,7 @@ class ListPireps extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            PirepResource\Widgets\PirepStats::class,
+            PirepStats::class,
         ];
     }
 

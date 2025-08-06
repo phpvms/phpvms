@@ -7,13 +7,16 @@ use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Flight;
 use App\Models\GeoJson;
+use App\Models\GeoJson\Feature\FeatureCollection;
 use App\Models\Pirep;
 use App\Repositories\AcarsRepository;
 use App\Repositories\NavdataRepository;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use League\Geotools\Coordinate\Coordinate;
+use League\Geotools\Exception\InvalidArgumentException;
 use League\Geotools\Geotools;
 
 class GeoService extends Service
@@ -33,7 +36,7 @@ class GeoService extends Service
      * @param  array $all_coords
      * @return mixed
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getClosestCoords($coordStart, $all_coords)
     {
@@ -89,7 +92,7 @@ class GeoService extends Service
                 $points = $this->navRepo->findWhere(['id' => $route_point]);
             } catch (ModelNotFoundException $e) {
                 continue;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error($e);
 
                 continue;
@@ -154,7 +157,7 @@ class GeoService extends Service
      *
      * @return array
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getCenter($latA, $lonA, $latB, $lonB)
     {
@@ -233,9 +236,9 @@ class GeoService extends Service
     /**
      * Return a single feature point for the
      *
-     * @param  mixed                              $pireps
+     * @param  mixed             $pireps
      * @return mixed
-     * @return \GeoJson\Feature\FeatureCollection
+     * @return FeatureCollection
      */
     public function getFeatureForLiveFlights($pireps)
     {

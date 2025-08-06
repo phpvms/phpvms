@@ -3,6 +3,7 @@
 namespace App\Console\Services;
 
 use PDO;
+use PDOException;
 
 /**
  * Class Database
@@ -29,14 +30,14 @@ class Database
     /**
      * @return PDO
      *
-     * @throws \PDOException
+     * @throws PDOException
      */
     public function createPDO($dsn, $user, $pass)
     {
         try {
             $conn = new PDO($dsn, $user, $pass);
             $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw $e;
         }
 

@@ -6,7 +6,7 @@ use App\Filament\Actions\ExportAction;
 use App\Filament\Actions\ImportAction;
 use App\Filament\Resources\ExpenseResource;
 use App\Models\Enums\ImportExportType;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageExpenses extends ManageRecords
@@ -18,7 +18,7 @@ class ManageExpenses extends ManageRecords
         return [
             ExportAction::make('export')->arguments(['resourceTitle' => 'expenses', 'exportType' => ImportExportType::EXPENSES]),
             ImportAction::make('import')->arguments(['resourceTitle' => 'expenses', 'importType' => ImportExportType::EXPENSES]),
-            Actions\CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

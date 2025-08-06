@@ -6,10 +6,11 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Filament\Facades\Filament;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\ViewField;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +20,9 @@ use Illuminate\Support\HtmlString;
 
 class Updater extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.system.updater';
+    protected string $view = 'filament.system.updater';
 
     protected static ?string $slug = 'update';
 
@@ -77,20 +78,20 @@ class Updater extends Page
     /**
      * The filament form
      */
-    public function form(Form $form): Form
+    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $form->schema([
-            Forms\Components\Wizard::make([
-                Forms\Components\Wizard\Step::make('Before Update')->schema([
+        return $schema->components([
+            Wizard::make([
+                Step::make('Before Update')->schema([
 
                 ])->afterValidation(
                     function () {
                         $this->dispatch('start-migrations');
                     }
                 ),
-                Forms\Components\Wizard\Step::make('Update')
+                Step::make('Update')
                     ->schema([
-                        Forms\Components\ViewField::make('details')
+                        ViewField::make('details')
                             ->view('filament.system.migrations_details'),
                     ]),
             ])

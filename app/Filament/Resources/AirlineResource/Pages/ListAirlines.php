@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\AirlineResource\Pages;
 
 use App\Filament\Resources\AirlineResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListAirlines extends ListRecords
@@ -13,7 +13,7 @@ class ListAirlines extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Airline')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Airline')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

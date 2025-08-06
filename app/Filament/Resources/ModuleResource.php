@@ -2,13 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ModuleResource\Pages;
+use App\Filament\Resources\ModuleResource\Pages\ManageModules;
 use App\Models\Module;
 use App\Services\ModuleService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Exception;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\File;
@@ -18,29 +25,29 @@ class ModuleResource extends Resource
 {
     protected static ?string $model = Module::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 8;
 
     protected static ?string $navigationLabel = 'Modules';
 
-    protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 // Edit Only (we are not using default create action)
-                Forms\Components\Toggle::make('enabled')
+                Toggle::make('enabled')
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
                     ->onIcon('heroicon-m-check-circle')
                     ->onColor('success')
                     ->hiddenOn('create'),
 
-                Forms\Components\Hidden::make('id')
+                Hidden::make('id')
                     ->hiddenOn('create'),
             ]);
     }
@@ -49,11 +56,11 @@ class ModuleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('enabled')
+                IconColumn::make('enabled')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
@@ -61,25 +68,25 @@ class ModuleResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()->before(function (array $data) {
+            ->recordActions([
+                EditAction::make()->before(function (array $data) {
                     app(ModuleService::class)->updateModule($data['id'], $data['enabled']);
                 }),
-                Tables\Actions\DeleteAction::make()->before(function (Module $record) {
+                DeleteAction::make()->before(function (Module $record) {
                     try {
                         File::deleteDirectory(base_path().'/modules/'.$record->name);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Log::error('Folder Deleted Manually for Module : '.$record->name);
                     }
                 }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->before(function (Collection $records) {
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->before(function (Collection $records) {
                         $records->each(function (Module $record) {
                             try {
                                 File::deleteDirectory(base_path().'/modules/'.$record->name);
-                            } catch (\Exception $e) {
+                            } catch (Exception $e) {
                                 Log::error('Folder Deleted Manually for Module : '.$record->name);
                             }
                         });
@@ -91,7 +98,7 @@ class ModuleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageModules::route('/'),
+            'index' => ManageModules::route('/'),
         ];
     }
 }

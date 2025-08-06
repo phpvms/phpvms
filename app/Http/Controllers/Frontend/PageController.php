@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Contracts\Controller;
 use App\Exceptions\PageNotFound;
 use App\Exceptions\Unauthorized;
+use App\Models\Page;
 use App\Repositories\PageRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class PageController extends Controller
      */
     public function show(string $slug): View
     {
-        /** @var \App\Models\Page $page */
+        /** @var Page $page */
         $page = $this->pageRepo->findWhere(['slug' => $slug])->first();
         if (!$page) {
             throw new PageNotFound(new Exception('Page not found'));

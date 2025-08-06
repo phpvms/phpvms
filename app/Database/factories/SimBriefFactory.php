@@ -9,7 +9,7 @@ use App\Models\SimBrief;
 use Carbon\Carbon;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SimBrief>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<SimBrief>
  */
 class SimBriefFactory extends Factory
 {

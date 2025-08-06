@@ -12,6 +12,7 @@ use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -176,7 +177,7 @@ class FlightImporter extends ImportExport
 
         try {
             $flight->save();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

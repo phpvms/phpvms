@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ActivityLogResource\Pages;
+use App\Filament\Resources\ActivityLogResource\Pages\ListActivityLogs;
+use App\Filament\Resources\ActivityLogResource\Pages\ViewActivityLog;
 use Carbon\Carbon;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Spatie\Activitylog\Models\Activity;
 
@@ -16,30 +19,30 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationLabel = 'Activities';
 
-    protected static ?string $navigationIcon = 'heroicon-o-newspaper';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Causer Information')
+        return $schema
+            ->components([
+                Section::make('Causer Information')
                     ->schema([
-                        Infolists\Components\TextEntry::make('causer_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
-                        Infolists\Components\TextEntry::make('causer_id')
+                        TextEntry::make('causer_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
+                        TextEntry::make('causer_id')
                             ->formatStateUsing(function (Activity $record): string {
                                 if (class_basename($record->causer_type) === 'User') {
                                     return $record->causer_id.' | '.$record->causer->name_private;
@@ -49,20 +52,20 @@ class ActivityLogResource extends Resource
                             })
                             ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
                             ->label('Causer'),
-                        Infolists\Components\TextEntry::make('created_at')->formatStateUsing(fn (Carbon $state): string => $state->diffForHumans().' | '.$state->format('d.M'))->label('Caused'),
+                        TextEntry::make('created_at')->formatStateUsing(fn (Carbon $state): string => $state->diffForHumans().' | '.$state->format('d.M'))->label('Caused'),
                     ])->columns(3),
 
-                Infolists\Components\Section::make('Subject Information')
+                Section::make('Subject Information')
                     ->schema([
-                        Infolists\Components\TextEntry::make('subject_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
-                        Infolists\Components\TextEntry::make('subject_id'),
-                        Infolists\Components\TextEntry::make('subject.name')->placeholder('N/A'),
-                        Infolists\Components\TextEntry::make('event')->label('Event Type'),
+                        TextEntry::make('subject_type')->formatStateUsing(fn (string $state): string => class_basename($state)),
+                        TextEntry::make('subject_id'),
+                        TextEntry::make('subject.name')->placeholder('N/A'),
+                        TextEntry::make('event')->label('Event Type'),
                     ])->columns(4),
 
-                Infolists\Components\Section::make('Changes')
+                Section::make('Changes')
                     ->schema([
-                        Infolists\Components\ViewEntry::make('changes')
+                        ViewEntry::make('changes')
                             ->view('filament.infolists.entries.activity-fields'),
                     ]),
             ]);
@@ -72,13 +75,13 @@ class ActivityLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('subject_type')
+                TextColumn::make('subject_type')
                     ->formatStateUsing(fn (Activity $record): string => class_basename($record->subject_type).' '.$record->event)
                     ->sortable()
                     ->searchable()
                     ->label('Action'),
 
-                Tables\Columns\TextColumn::make('causer_type')
+                TextColumn::make('causer_type')
                     ->formatStateUsing(function (Activity $record): string {
                         if (class_basename($record->causer_type) === 'User') {
                             return $record->causer_id.' | '.$record->causer->name_private;
@@ -91,7 +94,7 @@ class ActivityLogResource extends Resource
                     ->searchable()
                     ->label('Causer'),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->sortable()
                     ->label('Date')
                     ->since(),
@@ -100,10 +103,10 @@ class ActivityLogResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make()->color('primary'),
+            ->recordActions([
+                ViewAction::make()->color('primary'),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -118,8 +121,8 @@ class ActivityLogResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListActivityLogs::route('/'),
-            'view'  => Pages\ViewActivityLog::route('/{record}'),
+            'index' => ListActivityLogs::route('/'),
+            'view'  => ViewActivityLog::route('/{record}'),
         ];
     }
 }

@@ -26,7 +26,7 @@ class ModuleLinksPlugin implements Plugin
         // Render in the topbar (wide screen)
         $panel->renderHook('panels::topbar.start', function () {
             return view('filament.plugins.module-links-topbar', [
-                'current_panel' => Filament::getCurrentPanel(),
+                'current_panel' => Filament::getCurrentOrDefaultPanel(),
                 'group'         => $this->getGroup(),
             ]);
         });

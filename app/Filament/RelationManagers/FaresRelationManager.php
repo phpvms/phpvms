@@ -3,19 +3,24 @@
 namespace App\Filament\RelationManagers;
 
 use App\Models\Fare;
-use Filament\Forms\Form;
+use Filament\Actions\AttachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachAction;
+use Filament\Actions\DetachBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 
 class FaresRelationManager extends RelationManager
 {
     protected static string $relationship = 'fares';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
@@ -25,20 +30,20 @@ class FaresRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
-                Tables\Columns\TextInputColumn::make('pivot.capacity')
+                TextColumn::make('name')->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
+                TextInputColumn::make('pivot.capacity')
                     ->placeholder('Inherited')
                     ->label('Capacity')
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['capacity' => $state]);
                     }),
-                Tables\Columns\TextInputColumn::make('pivot.price')
+                TextInputColumn::make('pivot.price')
                     ->label('Price')
                     ->placeholder('Inherited')
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['price' => $state]);
                     }),
-                Tables\Columns\TextInputColumn::make('pivot.cost')
+                TextInputColumn::make('pivot.cost')
                     ->label('Cost')
                     ->placeholder('Inherited')
                     ->updateStateUsing(function (Fare $record, string $state) {
@@ -49,14 +54,14 @@ class FaresRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make(),
+                AttachAction::make(),
             ])
-            ->actions([
-                Tables\Actions\DetachAction::make(),
+            ->recordActions([
+                DetachAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ]);
     }

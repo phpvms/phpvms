@@ -4,17 +4,39 @@ namespace App\Filament\Resources;
 
 use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
-use App\Filament\Resources\AirportResource\Pages;
+use App\Filament\Resources\AirportResource\Pages\CreateAirport;
+use App\Filament\Resources\AirportResource\Pages\EditAirport;
+use App\Filament\Resources\AirportResource\Pages\ListAirports;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\AirportService;
 use App\Services\FileService;
 use App\Support\Timezonelist;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,31 +48,31 @@ class AirportResource extends Resource
 {
     protected static ?string $model = Airport::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Airports';
 
-    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('airport_information')
+        return $schema
+            ->components([
+                Section::make('airport_information')
                     ->heading('Airport Information')
                     ->schema([
-                        Forms\Components\TextInput::make('icao')
+                        TextInput::make('icao')
                             ->label('ICAO')
                             ->required()
                             ->string()
                             ->length(4)
                             ->columnSpan(2)
                             ->hintAction(
-                                Forms\Components\Actions\Action::make('lookup')
+                                Action::make('lookup')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->action(function (Forms\Get $get, Forms\Set $set) {
+                                    ->action(function (Get $get, Set $set) {
                                         $airport = app(AirportService::class)->lookupAirport($get('icao'));
 
                                         foreach ($airport as $key => $value) {
@@ -76,72 +98,72 @@ class AirportResource extends Resource
                                     })
                             ),
 
-                        Forms\Components\TextInput::make('iata')
+                        TextInput::make('iata')
                             ->label('IATA')
                             ->string()
                             ->length(3)
                             ->columnSpan(2),
 
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->required()
                             ->string(),
 
-                        Forms\Components\TextInput::make('lat')
+                        TextInput::make('lat')
                             ->label('Latitude')
                             ->required()
                             ->minValue(-90)
                             ->maxValue(90)
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('lon')
+                        TextInput::make('lon')
                             ->label('Longitude')
                             ->required()
                             ->minValue(-180)
                             ->maxValue(180)
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('elevation')
+                        TextInput::make('elevation')
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('country')
+                        TextInput::make('country')
                             ->string(),
 
-                        Forms\Components\TextInput::make('location')
+                        TextInput::make('location')
                             ->string(),
 
-                        Forms\Components\TextInput::make('region')
+                        TextInput::make('region')
                             ->string(),
 
-                        Forms\Components\Select::make('timezone')
+                        Select::make('timezone')
                             ->options(Timezonelist::toArray())
                             ->searchable()
                             ->allowHtml()
                             ->native(false),
 
-                        Forms\Components\TextInput::make('ground_handling_cost')
+                        TextInput::make('ground_handling_cost')
                             ->label('Ground Handling Cost')
                             ->helperText('This is the base rate per-flight. A multiplier for this rate can be set in the subfleet, so you can modulate those costs from there.')
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('fuel_jeta_cost')
+                        TextInput::make('fuel_jeta_cost')
                             ->label('Jet A Fuel Cost')
                             ->helperText('This is the cost per lbs.')
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('fuel_100ll_cost')
+                        TextInput::make('fuel_100ll_cost')
                             ->label('100LL Fuel Cost')
                             ->helperText('This is the cost per lbs.')
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('fuel_mogas_cost')
+                        TextInput::make('fuel_mogas_cost')
                             ->label('MOGAS Fuel Cost')
                             ->helperText('This is the cost per lbs.')
                             ->numeric(),
 
-                        Forms\Components\RichEditor::make('notes')
+                        RichEditor::make('notes')
                             ->columnSpan(4),
 
-                        Forms\Components\Toggle::make('hub')
+                        Toggle::make('hub')
                             ->offIcon('heroicon-m-x-circle')
                             ->offColor('danger')
                             ->onIcon('heroicon-m-check-circle')
@@ -154,72 +176,72 @@ class AirportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('icao')
+                TextColumn::make('icao')
                     ->label('ICAO')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('iata')
+                TextColumn::make('iata')
                     ->label('IATA')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('location')
+                TextColumn::make('location')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('hub')
+                IconColumn::make('hub')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\TextInputColumn::make('ground_handling_cost')
+                TextInputColumn::make('ground_handling_cost')
                     ->label('GH Cost')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextInputColumn::make('fuel_jeta_cost')
+                TextInputColumn::make('fuel_jeta_cost')
                     ->label('JetA')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextInputColumn::make('fuel_100ll_cost')
+                TextInputColumn::make('fuel_100ll_cost')
                     ->label('100LL')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextInputColumn::make('fuel_mogas_cost')
+                TextInputColumn::make('fuel_mogas_cost')
                     ->label('MOGAS')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\Filter::make('only_hubs')->query(fn (Builder $query): Builder => $query->where('hub', 1)),
-                Tables\Filters\TrashedFilter::make(),
+                Filter::make('only_hubs')->query(fn (Builder $query): Builder => $query->where('hub', 1)),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Airport $record) {
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make()->before(function (Airport $record) {
                     $record->files()->each(function (File $file) {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
-                Tables\Actions\RestoreAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
                         $records->each(fn (Airport $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Airport'),
             ]);
@@ -236,9 +258,9 @@ class AirportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAirports::route('/'),
-            'create' => Pages\CreateAirport::route('/create'),
-            'edit'   => Pages\EditAirport::route('/{record}/edit'),
+            'index'  => ListAirports::route('/'),
+            'create' => CreateAirport::route('/create'),
+            'edit'   => EditAirport::route('/{record}/edit'),
         ];
     }
 

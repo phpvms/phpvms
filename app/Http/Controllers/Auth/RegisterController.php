@@ -14,6 +14,7 @@ use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
 use App\Support\Timezonelist;
+use Exception;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\View\View;
+use RuntimeException;
 
 class RegisterController extends Controller
 {
@@ -147,8 +149,8 @@ class RegisterController extends Controller
      *
      * @param array $opts
      *
-     * @throws \Exception
-     * @throws \RuntimeException
+     * @throws Exception
+     * @throws RuntimeException
      */
     protected function create(Request $request): User
     {
@@ -216,7 +218,7 @@ class RegisterController extends Controller
      * Handle a registration request for the application.
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function register(Request $request): RedirectResponse|View
     {

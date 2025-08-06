@@ -8,6 +8,7 @@ use App\Models\Bid;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Typerating;
+use App\Models\User;
 use App\Repositories\AirlineRepository;
 use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
@@ -42,7 +43,7 @@ class FlightController extends Controller
     ) {}
 
     /**
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function index(Request $request): View
     {
@@ -53,7 +54,7 @@ class FlightController extends Controller
      * Make a search request using the Repository search
      *
      *
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function search(Request $request): View
     {
@@ -62,7 +63,7 @@ class FlightController extends Controller
             'visible' => true,
         ];
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $user->loadMissing(['current_airport', 'typeratings']);
 

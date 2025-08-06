@@ -2,13 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\RankResource\Pages;
-use App\Filament\Resources\RankResource\RelationManagers;
+use App\Filament\Resources\RankResource\Pages\CreateRank;
+use App\Filament\Resources\RankResource\Pages\EditRank;
+use App\Filament\Resources\RankResource\Pages\ListRanks;
+use App\Filament\Resources\RankResource\RelationManagers\SubfleetsRelationManager;
 use App\Models\Rank;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -17,51 +31,51 @@ class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Ranks';
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-up';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Rank Informations')->schema([
-                    Forms\Components\Grid::make('')
+        return $schema
+            ->components([
+                Section::make('Rank Informations')->schema([
+                    Grid::make('')
                         ->schema([
-                            Forms\Components\TextInput::make('name')
+                            TextInput::make('name')
                                 ->required()
                                 ->string(),
 
-                            Forms\Components\TextInput::make('image_url')
+                            TextInput::make('image_url')
                                 ->label('Image Link')
                                 ->string(),
                         ])->columns(2),
-                    Forms\Components\Grid::make('')
+                    Grid::make('')
                         ->schema([
-                            Forms\Components\TextInput::make('hours')
+                            TextInput::make('hours')
                                 ->required()
                                 ->numeric()
                                 ->minValue(0),
 
-                            Forms\Components\TextInput::make('acars_base_pay_rate')
+                            TextInput::make('acars_base_pay_rate')
                                 ->label('ACARS Base Pay Rate')
                                 ->numeric()
                                 ->minValue(0)
                                 ->helperText('Base rate, per-flight hour, for ACARS PIREPs. Can be adjusted via a multiplier on the subfleet.'),
 
-                            Forms\Components\TextInput::make('manual_base_pay_rate')
+                            TextInput::make('manual_base_pay_rate')
                                 ->label('Manual Base Pay Rate')
                                 ->numeric()
                                 ->minValue(0)
                                 ->helperText('Base rate, per-flight hour, for manually-filed PIREPs. Can be adjusted via a multiplier on the subfleet.'),
 
-                            Forms\Components\Toggle::make('auto_approve_acars')
+                            Toggle::make('auto_approve_acars')
                                 ->helperText('PIREPS submitted through ACARS are automatically accepted')
                                 ->label('Auto Approve ACARS PIREPs')
                                 ->offIcon('heroicon-m-x-circle')
@@ -69,7 +83,7 @@ class RankResource extends Resource
                                 ->onIcon('heroicon-m-check-circle')
                                 ->onColor('success'),
 
-                            Forms\Components\Toggle::make('auto_approve_manual')
+                            Toggle::make('auto_approve_manual')
                                 ->helperText('PIREPS submitted manually are automatically accepted')
                                 ->label('Auto Approve Manual PIREPs')
                                 ->offIcon('heroicon-m-x-circle')
@@ -77,7 +91,7 @@ class RankResource extends Resource
                                 ->onIcon('heroicon-m-check-circle')
                                 ->onColor('success'),
 
-                            Forms\Components\Toggle::make('auto_promote')
+                            Toggle::make('auto_promote')
                                 ->helperText('When a pilot reaches these hours, they\'ll be upgraded to this rank')
                                 ->label('Auto Promote')
                                 ->offIcon('heroicon-m-x-circle')
@@ -93,28 +107,28 @@ class RankResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('hours')
+                TextColumn::make('hours')
                     ->label('Hours')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('auto_approve_acars')
+                IconColumn::make('auto_approve_acars')
                     ->label('Auto Approve Acars')
                     ->color(fn ($state) => $state ? 'success' : 'danger')
                     ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('auto_approve_manual')
+                IconColumn::make('auto_approve_manual')
                     ->label('Auto Approve Manual')
                     ->color(fn ($state) => $state ? 'success' : 'danger')
                     ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('auto_promote')
+                IconColumn::make('auto_promote')
                     ->label('Auto Promote')
                     ->color(fn ($state) => $state ? 'success' : 'danger')
                     ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
@@ -122,21 +136,21 @@ class RankResource extends Resource
             ])
             ->defaultSort('hours')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Airport'),
             ]);
@@ -145,16 +159,16 @@ class RankResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\SubfleetsRelationManager::class,
+            SubfleetsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListRanks::route('/'),
-            'create' => Pages\CreateRank::route('/create'),
-            'edit'   => Pages\EditRank::route('/{record}/edit'),
+            'index'  => ListRanks::route('/'),
+            'create' => CreateRank::route('/create'),
+            'edit'   => EditRank::route('/{record}/edit'),
         ];
     }
 

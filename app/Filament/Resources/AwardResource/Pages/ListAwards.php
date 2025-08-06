@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\AwardResource\Pages;
 
 use App\Filament\Resources\AwardResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListAwards extends ListRecords
@@ -13,7 +13,7 @@ class ListAwards extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Award')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()->label('Add Award')->icon('heroicon-o-plus-circle'),
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Contracts\Command;
 use App\Models\Enums\NavaidType;
 use App\Models\Navdata;
+use League\Geotools\Exception\InvalidArgumentException;
 
 class NavdataImport extends Command
 {
@@ -15,7 +16,7 @@ class NavdataImport extends Command
     /**
      * @return void
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function handle()
     {
@@ -30,7 +31,7 @@ class NavdataImport extends Command
     /**
      * Read and parse in the navaid file
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function read_wp_nav_aid(): void
     {

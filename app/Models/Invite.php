@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
- * @property string         $email
- * @property string         $token
- * @property int            $usage_count
- * @property int            $usage_limit
- * @property \Carbon\Carbon $expires_at
+ * @property string $email
+ * @property string $token
+ * @property int    $usage_count
+ * @property int    $usage_limit
+ * @property Carbon $expires_at
  */
 class Invite extends Model
 {

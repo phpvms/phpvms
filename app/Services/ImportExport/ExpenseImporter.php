@@ -7,6 +7,7 @@ use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\Expense;
 use App\Models\Subfleet;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -55,7 +56,7 @@ class ExpenseImporter extends ImportExport
             $expense = Expense::updateOrCreate([
                 'name' => $row['name'],
             ], $row);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

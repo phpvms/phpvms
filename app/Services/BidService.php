@@ -12,6 +12,7 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -121,7 +122,7 @@ class BidService extends Service
      *
      * @return mixed
      *
-     * @throws \App\Exceptions\BidExistsForFlight
+     * @throws BidExistsForFlight
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null)
     {
@@ -222,7 +223,7 @@ class BidService extends Service
      * If the setting is enabled, remove the bid
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function removeBidForPirep(Pirep $pirep)
     {

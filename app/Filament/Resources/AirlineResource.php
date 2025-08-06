@@ -3,14 +3,30 @@
 namespace App\Filament\Resources;
 
 use App\Filament\RelationManagers\FilesRelationManager;
-use App\Filament\Resources\AirlineResource\Pages;
+use App\Filament\Resources\AirlineResource\Pages\CreateAirline;
+use App\Filament\Resources\AirlineResource\Pages\EditAirline;
+use App\Filament\Resources\AirlineResource\Pages\ListAirlines;
 use App\Models\Airline;
 use App\Models\File;
 use App\Services\FileService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,49 +37,49 @@ class AirlineResource extends Resource
 {
     protected static ?string $model = Airline::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Airlines';
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Airline Informations')->schema([
-                    Forms\Components\TextInput::make('icao')->label('ICAO (3LD)')
+        return $schema
+            ->components([
+                Section::make('Airline Informations')->schema([
+                    TextInput::make('icao')->label('ICAO (3LD)')
                         ->required()
                         ->string()
                         ->length(3),
 
-                    Forms\Components\TextInput::make('iata')
+                    TextInput::make('iata')
                         ->label('IATA (2LD)')
                         ->string()
                         ->length(2),
 
-                    Forms\Components\TextInput::make('callsign')
+                    TextInput::make('callsign')
                         ->label('Radio Callsign')
                         ->string(),
 
-                    Forms\Components\TextInput::make('name')
+                    TextInput::make('name')
                         ->required()
                         ->string(),
 
-                    Forms\Components\TextInput::make('logo')
+                    TextInput::make('logo')
                         ->label('Logo URL')
                         ->string(),
 
-                    Forms\Components\Select::make('country')
+                    Select::make('country')
                         ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                         ->searchable()
                         ->native(false),
 
-                    Forms\Components\Toggle::make('active')
+                    Toggle::make('active')
                         ->inline()
                         ->onColor('success')
                         ->onIcon('heroicon-m-check-circle')
@@ -77,7 +93,7 @@ class AirlineResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('Code')
+                TextColumn::make('Code')
                     ->formatStateUsing(function (Airline $record) {
                         $html = '';
                         if (filled($record->country)) {
@@ -93,40 +109,40 @@ class AirlineResource extends Resource
                     ->searchable()
                     ->html(),
 
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle'),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make()->before(function (Airline $record) {
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make()->before(function (Airline $record) {
                     $record->files()->each(function (File $file) {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
-                Tables\Actions\RestoreAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make()->before(function (Collection $records) {
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
                         $records->each(fn (Airline $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Airline'),
             ]);
@@ -150,9 +166,9 @@ class AirlineResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAirlines::route('/'),
-            'create' => Pages\CreateAirline::route('/create'),
-            'edit'   => Pages\EditAirline::route('/{record}/edit'),
+            'index'  => ListAirlines::route('/'),
+            'create' => CreateAirline::route('/create'),
+            'edit'   => EditAirline::route('/{record}/edit'),
         ];
     }
 }

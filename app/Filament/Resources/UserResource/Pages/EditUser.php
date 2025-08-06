@@ -6,7 +6,10 @@ use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
-use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Auth\Events\Verified;
@@ -23,7 +26,7 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('verify_email')->label('Verify Email')->action(function (User $record) {
+            Action::make('verify_email')->label('Verify Email')->action(function (User $record) {
                 if ($record->markEmailAsVerified()) {
                     event(new Verified($record));
                 }
@@ -33,7 +36,7 @@ class EditUser extends EditRecord
                     ->success()
                     ->send();
             })->visible(fn (User $record): bool => !$record->hasVerifiedEmail()),
-            Actions\Action::make('request_email_verification')->label('Request new email verification')->action(function (User $record) {
+            Action::make('request_email_verification')->label('Request new email verification')->action(function (User $record) {
                 $record->update([
                     'email_verified_at' => null,
                 ]);
@@ -45,9 +48,9 @@ class EditUser extends EditRecord
                     ->success()
                     ->send();
             })->color('warning')->visible(fn (User $record): bool => $record->hasVerifiedEmail()),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            DeleteAction::make(),
+            ForceDeleteAction::make(),
+            RestoreAction::make(),
         ];
     }
 

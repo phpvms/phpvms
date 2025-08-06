@@ -3,18 +3,39 @@
 namespace App\Filament\Resources;
 
 use App\Filament\RelationManagers\FaresRelationManager;
-use App\Filament\Resources\FlightResource\Pages;
-use App\Filament\Resources\FlightResource\RelationManagers;
+use App\Filament\Resources\FlightResource\Pages\CreateFlight;
+use App\Filament\Resources\FlightResource\Pages\EditFlight;
+use App\Filament\Resources\FlightResource\Pages\ListFlights;
+use App\Filament\Resources\FlightResource\RelationManagers\FieldValuesRelationManager;
+use App\Filament\Resources\FlightResource\RelationManagers\SubfleetsRelationManager;
 use App\Models\Airport;
 use App\Models\Enums\Days;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,95 +46,95 @@ class FlightResource extends Resource
 {
     protected static ?string $model = Flight::class;
 
-    protected static ?string $navigationGroup = 'Operations';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operations';
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Flights';
 
-    protected static ?string $navigationIcon = 'heroicon-o-adjustments-vertical';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-adjustments-vertical';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Grid::make()->schema([
-                    Forms\Components\Section::make('flight_information')->heading('Flight Information')->schema([
-                        Forms\Components\Select::make('airline_id')
+        return $schema
+            ->components([
+                Grid::make()->schema([
+                    Section::make('flight_information')->heading('Flight Information')->schema([
+                        Select::make('airline_id')
                             ->relationship('airline', 'name')
                             ->searchable()
                             ->required()
                             ->native(false),
 
-                        Forms\Components\Select::make('flight_type')
+                        Select::make('flight_type')
                             ->searchable()
                             ->native(false)
                             ->required()
                             ->options(FlightType::select()),
 
-                        Forms\Components\TextInput::make('callsign')
+                        TextInput::make('callsign')
                             ->string()
                             ->maxLength(4),
 
-                        Forms\Components\TextInput::make('flight_number')
+                        TextInput::make('flight_number')
                             ->integer()
                             ->required(),
 
-                        Forms\Components\TextInput::make('route_code')
+                        TextInput::make('route_code')
                             ->string()
                             ->maxLength(5),
 
-                        Forms\Components\TextInput::make('route_leg')
+                        TextInput::make('route_leg')
                             ->integer(),
 
-                        Forms\Components\TimePicker::make('flight_time')
+                        TimePicker::make('flight_time')
                             ->seconds(false)
                             ->label('Flight Time')
                             ->native(false)
                             ->required(),
 
-                        Forms\Components\TextInput::make('pilot_pay')
+                        TextInput::make('pilot_pay')
                             ->numeric()
                             ->helperText('Fill this in to pay a pilot a fixed amount for this flight.'),
 
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\TextInput::make('load_factor')
+                        Grid::make()->schema([
+                            TextInput::make('load_factor')
                                 ->numeric()
                                 ->helperText('Percentage value for pax/cargo load, leave blank to use the default value.'),
 
-                            Forms\Components\TextInput::make('load_factor_variance')
+                            TextInput::make('load_factor_variance')
                                 ->numeric()
                                 ->helperText('Percentage of how much the load can vary (+/-), leave blank to use the default value.'),
 
                         ])->columnSpan(3),
                     ])->columns(3)->columnSpan(['lg' => 2]),
-                    Forms\Components\Section::make('scheduling')->heading('Scheduling')->schema([
-                        Forms\Components\DatePicker::make('start_date')
+                    Section::make('scheduling')->heading('Scheduling')->schema([
+                        DatePicker::make('start_date')
                             ->native(false)
                             ->minDate(now()),
 
-                        Forms\Components\DatePicker::make('end_date')
+                        DatePicker::make('end_date')
                             ->native(false)
                             ->minDate(now()),
 
-                        Forms\Components\Select::make('days')
+                        Select::make('days')
                             ->options(Days::labels())
                             ->multiple()
                             ->native(false),
 
-                        Forms\Components\TimePicker::make('dpt_time')
+                        TimePicker::make('dpt_time')
                             ->seconds(false)
                             ->label('Departure Time'),
 
-                        Forms\Components\TimePicker::make('arr_time')
+                        TimePicker::make('arr_time')
                             ->seconds(false)
                             ->label('Arrival Time'),
                     ])->columnSpan(1),
                 ])->columns(3),
 
-                Forms\Components\Section::make('route')->heading('Route')->schema([
-                    Forms\Components\Grid::make()->schema([
-                        Forms\Components\Select::make('dpt_airport_id')
+                Section::make('route')->heading('Route')->schema([
+                    Grid::make()->schema([
+                        Select::make('dpt_airport_id')
                             ->label('Departure Airport')
                             ->relationship('dpt_airport', 'icao')
                             ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -121,7 +142,7 @@ class FlightResource extends Resource
                             ->required()
                             ->native(false),
 
-                        Forms\Components\Select::make('arr_airport_id')
+                        Select::make('arr_airport_id')
                             ->label('Arrival Airport')
                             ->relationship('arr_airport', 'icao')
                             ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -130,38 +151,38 @@ class FlightResource extends Resource
                             ->native(false),
                     ])->columns(2),
 
-                    Forms\Components\Textarea::make('route'),
+                    Textarea::make('route'),
 
-                    Forms\Components\Grid::make('')->schema([
-                        Forms\Components\Select::make('alt_aiport_id')
+                    Grid::make('')->schema([
+                        Select::make('alt_aiport_id')
                             ->label('Alternate Airport')
                             ->relationship('alt_airport', 'icao')
                             ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                             ->searchable()
                             ->native(false),
 
-                        Forms\Components\TextInput::make('level')
+                        TextInput::make('level')
                             ->label('Flight Level')
                             ->integer()
                             ->hint('In feet'),
 
-                        Forms\Components\TextInput::make('distance')
+                        TextInput::make('distance')
                             ->integer()
                             ->hint('In nautical miles'),
                     ])->columns(3),
                 ]),
 
-                Forms\Components\Section::make('remarks')->heading('Remarks')->schema([
-                    Forms\Components\RichEditor::make('notes')
+                Section::make('remarks')->heading('Remarks')->schema([
+                    RichEditor::make('notes')
                         ->columnSpanFull(),
 
-                    Forms\Components\Toggle::make('active')
+                    Toggle::make('active')
                         ->offIcon('heroicon-m-x-circle')
                         ->offColor('danger')
                         ->onIcon('heroicon-m-check-circle')
                         ->onColor('success'),
 
-                    Forms\Components\Toggle::make('visible')
+                    Toggle::make('visible')
                         ->offIcon('heroicon-m-x-circle')
                         ->offColor('danger')
                         ->onIcon('heroicon-m-check-circle')
@@ -210,42 +231,42 @@ class FlightResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
 
-                Tables\Filters\SelectFilter::make('airline')
+                SelectFilter::make('airline')
                     ->relationship('airline', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\SelectFilter::make('dpt_airport')
+                SelectFilter::make('dpt_airport')
                     ->label('Departure Airport')
                     ->relationship('dpt_airport', 'icao')
                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\SelectFilter::make('arr_airport')
+                SelectFilter::make('arr_airport')
                     ->label('Arrival Airport')
                     ->relationship('arr_airport', 'icao')
                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
                     ->searchable()
                     ->preload(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Flight'),
             ]);
@@ -254,8 +275,8 @@ class FlightResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\SubfleetsRelationManager::class,
-            RelationManagers\FieldValuesRelationManager::class,
+            SubfleetsRelationManager::class,
+            FieldValuesRelationManager::class,
             FaresRelationManager::class,
         ];
     }
@@ -263,9 +284,9 @@ class FlightResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListFlights::route('/'),
-            'create' => Pages\CreateFlight::route('/create'),
-            'edit'   => Pages\EditFlight::route('/{record}/edit'),
+            'index'  => ListFlights::route('/'),
+            'create' => CreateFlight::route('/create'),
+            'edit'   => EditFlight::route('/{record}/edit'),
         ];
     }
 

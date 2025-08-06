@@ -5,10 +5,17 @@ namespace App\Filament\System;
 use App\Models\User;
 use App\Services\Installer\DatabaseService;
 use App\Services\LegacyImporterService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Exception;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
@@ -18,9 +25,9 @@ use Illuminate\Support\HtmlString;
 
 class LegacyImporter extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.system.legacy-importer';
+    protected string $view = 'filament.system.legacy-importer';
 
     protected static ?string $slug = 'legacy-import';
 
@@ -62,68 +69,68 @@ class LegacyImporter extends Page
     /**
      * The filament form
      */
-    public function form(Form $form): Form
+    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $form->schema([
-            Forms\Components\Wizard::make([
-                Forms\Components\Wizard\Step::make('Important Notes')->schema([
-                    Forms\Components\ViewField::make('notes')
+        return $schema->components([
+            Wizard::make([
+                Step::make('Important Notes')->schema([
+                    ViewField::make('notes')
                         ->view('filament.system.legacy_importer_notes'),
                 ]),
-                Forms\Components\Wizard\Step::make('Legacy Database Config')
+                Step::make('Legacy Database Config')
                     ->schema([
-                        Forms\Components\Group::make()
+                        Group::make()
                             ->statePath('db')
                             ->columns()
                             ->schema([
-                                Forms\Components\Select::make('db_conn')
+                                Select::make('db_conn')
                                     ->hint('Enter details about your legacy phpVMS Database')
                                     ->label('Database Type')
                                     ->required()
                                     ->live()
                                     ->options(['mysql' => 'mysql', 'mariadb' => 'mariadb', 'sqlite' => 'sqlite']),
 
-                                Forms\Components\TextInput::make('db_prefix')
+                                TextInput::make('db_prefix')
                                     ->string()
                                     ->default('phpvms_')
                                     ->hint('Prefix of the tables, if you\'re using one')
                                     ->label('Database Prefix'),
 
-                                Forms\Components\Group::make([
-                                    Forms\Components\TextInput::make('db_host')
+                                Group::make([
+                                    TextInput::make('db_host')
                                         ->label('Database Host')
                                         ->required()
                                         ->string()
                                         ->hintAction(
-                                            Forms\Components\Actions\Action::make('testDb')
+                                            Action::make('testDb')
                                                 ->label('Test Database Credentials')
                                                 ->action(fn () => $this->testDb())
                                         )
                                         ->default('localhost'),
 
-                                    Forms\Components\TextInput::make('db_port')
+                                    TextInput::make('db_port')
                                         ->label('Database Port')
                                         ->required()
                                         ->numeric()
                                         ->default('3306'),
 
-                                    Forms\Components\TextInput::make('db_name')
+                                    TextInput::make('db_name')
                                         ->required()
                                         ->string()
                                         ->label('Database Name'),
 
-                                    Forms\Components\TextInput::make('db_user')
+                                    TextInput::make('db_user')
                                         ->required()
                                         ->string()
                                         ->label('Database User'),
 
-                                    Forms\Components\TextInput::make('db_pass')
+                                    TextInput::make('db_pass')
                                         ->password()
                                         ->revealable()
                                         ->label('Database Password'),
                                 ])
                                     ->visible(fn (
-                                        Forms\Get $get
+                                        Get $get
                                     ): bool => $get('db_conn') && $get('db_conn') !== 'sqlite')
                                     ->columns()
                                     ->columnSpanFull(),
@@ -134,9 +141,9 @@ class LegacyImporter extends Page
                         }
                     ),
 
-                Forms\Components\Wizard\Step::make('Import')
+                Step::make('Import')
                     ->schema([
-                        Forms\Components\ViewField::make('details')
+                        ViewField::make('details')
                             ->view('filament.system.legacy_importer_details'),
                     ]),
             ])
@@ -169,7 +176,7 @@ class LegacyImporter extends Page
                 $data['db_user'],
                 $data['db_pass']
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Testing db failed');
             Log::error($e->getMessage());
 
@@ -216,7 +223,7 @@ class LegacyImporter extends Page
         try {
             // Save creds for later
             app(LegacyImporterService::class)->saveCredentials($creds);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Legacy Importer Error: '.$e->getMessage(), $e->getTrace());
 
             Notification::make()
@@ -260,7 +267,7 @@ class LegacyImporter extends Page
             app(LegacyImporterService::class)->run($batch['importer'], $batch['start']);
 
             $this->dispatch('import-update', completed: $batch_index * 100 / count($manifest), error: false, message: $batch['message'], nextIndex: $batch_index + 1);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Legacy Importer Error: '.$e->getMessage(), $e->getTrace());
 
             $this->dispatch('import-update', completed: $batch_index * 100 / count($manifest), error: true, message: 'Legacy Importer Error: '.$e->getMessage());

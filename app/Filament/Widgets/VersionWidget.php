@@ -7,7 +7,7 @@ use Filament\Widgets\Widget;
 
 class VersionWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.version-widget';
+    protected string $view = 'filament.widgets.version-widget';
 
     protected int|string|array $columnSpan = 'full';
 

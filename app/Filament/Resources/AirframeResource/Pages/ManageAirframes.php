@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\AirframeResource\Pages;
 
 use App\Filament\Resources\AirframeResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageAirframes extends ManageRecords
@@ -13,7 +13,7 @@ class ManageAirframes extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

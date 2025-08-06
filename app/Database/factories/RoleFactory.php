@@ -8,7 +8,7 @@ use App\Contracts\Factory;
 use App\Models\Role;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Role>
  */
 class RoleFactory extends Factory
 {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\BidNotFound;
 use App\Exceptions\Unauthorized;
 use App\Exceptions\UserNotFound;
@@ -19,6 +20,8 @@ use App\Repositories\PirepRepository;
 use App\Repositories\UserRepository;
 use App\Services\BidService;
 use App\Services\UserService;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
@@ -76,8 +79,8 @@ class UserController extends Controller
      *
      * @return mixed
      *
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     * @throws \App\Exceptions\BidExistsForFlight
+     * @throws ModelNotFoundException
+     * @throws BidExistsForFlight
      */
     public function bids(Request $request)
     {
@@ -145,7 +148,7 @@ class UserController extends Controller
         }
 
         if ($bid->user_id !== $user->id) {
-            throw new Unauthorized(new \Exception('Bid not not belong to authenticated user'));
+            throw new Unauthorized(new Exception('Bid not not belong to authenticated user'));
         }
 
         return new BidResource($bid);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -69,7 +70,7 @@ class Award extends Model
 
         try {
             return new $this->ref_model($award, $user);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }

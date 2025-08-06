@@ -2,18 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\RelationManagers\AwardsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\FieldsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\PirepsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\TypeRatingsRelationManager;
 use App\Filament\Resources\UserResource\Widgets\UserStats;
 use App\Models\Airport;
 use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Support\Timezonelist;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -24,13 +42,13 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationGroup = 'Operations';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operations';
 
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Users';
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -41,52 +59,52 @@ class UserResource extends Resource
             : null;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Group::make()
+        return $schema
+            ->components([
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Basic Information')
+                        Section::make('Basic Information')
                             ->schema([
-                                Forms\Components\TextInput::make('pilot_id')
+                                TextInput::make('pilot_id')
                                     ->required()
                                     ->numeric()
                                     ->label('Pilot ID'),
 
-                                Forms\Components\TextInput::make('callsign'),
+                                TextInput::make('callsign'),
 
-                                Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
                                     ->required()
                                     ->string(),
 
-                                Forms\Components\TextInput::make('email')
+                                TextInput::make('email')
                                     ->required()
                                     ->email(),
 
-                                Forms\Components\TextInput::make('password')
+                                TextInput::make('password')
                                     ->required(fn (string $operation) => $operation === 'create')
                                     ->password()
                                     ->autocomplete('new-password')
                                     ->columnSpanFull(),
                             ])
                             ->columns(2),
-                        Forms\Components\Section::make('Location Information')
+                        Section::make('Location Information')
                             ->schema([
-                                Forms\Components\Select::make('country')
+                                Select::make('country')
                                     ->required()
                                     ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                                     ->searchable()
                                     ->native(false),
 
-                                Forms\Components\Select::make('timezone')
+                                Select::make('timezone')
                                     ->options(Timezonelist::toArray())
                                     ->searchable()
                                     ->allowHtml()
                                     ->required(fn (string $operation) => $operation === 'create')
                                     ->native(false),
 
-                                Forms\Components\Select::make('home_airport_id')
+                                Select::make('home_airport_id')
                                     ->label('Home Airport')
                                     ->relationship('home_airport', 'icao')
                                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -94,7 +112,7 @@ class UserResource extends Resource
                                     ->required(fn (string $operation) => $operation === 'create')
                                     ->native(false),
 
-                                Forms\Components\Select::make('current_airport_id')
+                                Select::make('current_airport_id')
                                     ->label('Current Airport')
                                     ->relationship('current_airport', 'icao')
                                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -103,31 +121,31 @@ class UserResource extends Resource
                             ])
                             ->columns(2),
                     ])->columnSpan(['lg' => 2]),
-                Forms\Components\Group::make()
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make('User Information')
+                        Section::make('User Information')
                             ->schema([
-                                Forms\Components\Select::make('state')
+                                Select::make('state')
                                     ->options(UserState::labels())
                                     ->searchable()
                                     ->native(false),
 
-                                Forms\Components\Select::make('airline_id')
+                                Select::make('airline_id')
                                     ->relationship('airline', 'name')
                                     ->searchable()
                                     ->required(fn (string $operation) => $operation === 'create')
                                     ->native(false),
 
-                                Forms\Components\Select::make('rank_id')
+                                Select::make('rank_id')
                                     ->relationship('rank', 'name')
                                     ->searchable()
                                     ->native(false),
 
-                                Forms\Components\TextInput::make('transfer_time')
+                                TextInput::make('transfer_time')
                                     ->label('Transferred Hours')
                                     ->numeric(),
 
-                                Forms\Components\Select::make('roles')
+                                Select::make('roles')
                                     ->label('Roles')
                                     ->visible(Auth::user()?->hasRole('super_admin') ?? false)
                                     ->relationship('roles', 'name')
@@ -136,7 +154,7 @@ class UserResource extends Resource
                                     ->native(false)
                                     ->multiple(),
 
-                                Forms\Components\RichEditor::make('notes')
+                                RichEditor::make('notes')
                                     ->label('Management Notes')
                                     ->columnSpanFull(),
                             ])
@@ -183,21 +201,21 @@ class UserResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('state')
+                TrashedFilter::make(),
+                SelectFilter::make('state')
                     ->options(UserState::labels()),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
@@ -207,19 +225,19 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\FieldsRelationManager::class,
-            RelationManagers\AwardsRelationManager::class,
-            RelationManagers\TypeRatingsRelationManager::class,
-            RelationManagers\PirepsRelationManager::class,
+            FieldsRelationManager::class,
+            AwardsRelationManager::class,
+            TypeRatingsRelationManager::class,
+            PirepsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'index'  => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit'   => EditUser::route('/{record}/edit'),
         ];
     }
 

@@ -8,6 +8,7 @@ use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Services\FareService;
 use App\Services\FleetService;
+use Exception;
 
 /**
  * Import subfleets
@@ -61,7 +62,7 @@ class SubfleetImporter extends ImportExport
             $subfleet = Subfleet::updateOrCreate([
                 'type' => $row['type'],
             ], $row);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

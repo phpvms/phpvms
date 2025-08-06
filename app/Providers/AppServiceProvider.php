@@ -6,6 +6,7 @@ use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Services\ModuleService;
 use App\Support\ThemeViewFinder;
 use App\Support\Utils;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -45,9 +46,9 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.debug') === true) {
             /* @noinspection NestedPositiveIfStatementsInspection */
             /* @noinspection PhpFullyQualifiedNameUsageInspection */
-            if (class_exists(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class)) {
+            if (class_exists(IdeHelperServiceProvider::class)) {
                 /* @noinspection PhpFullyQualifiedNameUsageInspection */
-                $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+                $this->app->register(IdeHelperServiceProvider::class);
             }
 
             if (config('app.debug_toolbar') === true) {

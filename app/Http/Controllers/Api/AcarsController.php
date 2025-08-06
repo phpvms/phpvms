@@ -18,10 +18,12 @@ use App\Repositories\AcarsRepository;
 use App\Repositories\PirepRepository;
 use App\Services\GeoService;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AcarsController extends Controller
 {
@@ -38,7 +40,7 @@ class AcarsController extends Controller
      * Check if a PIREP is cancelled
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws PirepCancelled
      */
     protected function checkCancelled(Pirep $pirep): void
     {
@@ -118,8 +120,8 @@ class AcarsController extends Controller
      * Post ACARS updates for a PIREP
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     * @throws PirepCancelled
+     * @throws BadRequestHttpException
      */
     public function acars_store(string $id, PositionRequest $request): JsonResponse
     {
@@ -155,7 +157,7 @@ class AcarsController extends Controller
             }
 
             if (isset($position['sim_time'])) {
-                if ($position['sim_time'] instanceof \DateTime) {
+                if ($position['sim_time'] instanceof DateTime) {
                     $position['sim_time'] = Carbon::instance($position['sim_time']);
                 } else {
                     $position['sim_time'] = Carbon::createFromTimeString($position['sim_time']);
@@ -163,7 +165,7 @@ class AcarsController extends Controller
             }
 
             if (isset($position['created_at'])) {
-                if ($position['created_at'] instanceof \DateTime) {
+                if ($position['created_at'] instanceof DateTime) {
                     $position['created_at'] = Carbon::instance($position['created_at']);
                 } else {
                     $position['created_at'] = Carbon::createFromTimeString($position['created_at']);
@@ -205,8 +207,8 @@ class AcarsController extends Controller
      * But rather in a log file.
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     * @throws PirepCancelled
+     * @throws BadRequestHttpException
      */
     public function acars_logs(string $id, LogRequest $request): JsonResponse
     {
@@ -259,8 +261,8 @@ class AcarsController extends Controller
      * But rather in a log file.
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     * @throws PirepCancelled
+     * @throws BadRequestHttpException
      */
     public function acars_events(string $id, EventRequest $request): JsonResponse
     {

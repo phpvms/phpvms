@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AirframeResource\Pages;
+use App\Filament\Resources\AirframeResource\Pages\ManageAirframes;
 use App\Models\Enums\AirframeSource;
 use App\Models\SimBriefAirframe;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
@@ -17,32 +22,32 @@ class AirframeResource extends Resource
 {
     protected static ?string $model = SimBriefAirframe::class;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'SimBrief Airframe';
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('icao')
+        return $schema
+            ->components([
+                TextInput::make('icao')
                     ->label('ICAO')
                     ->required()
                     ->string(),
 
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->string(),
 
-                Forms\Components\TextInput::make('airframe_id')
+                TextInput::make('airframe_id')
                     ->label('SimBrief Aiframe ID')
                     ->string(),
 
-                Forms\Components\Hidden::make('source')
+                Hidden::make('source')
                     ->visibleOn('create')
                     ->formatStateUsing(fn () => AirframeSource::INTERNAL),
             ])
@@ -53,36 +58,36 @@ class AirframeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('icao')
+                TextColumn::make('icao')
                     ->label('ICAO')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('airframe_id')
+                TextColumn::make('airframe_id')
                     ->label('SimBrief Aiframe ID')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->date('d/m/Y H:i'),
 
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->date('d/m/Y H:i'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -90,7 +95,7 @@ class AirframeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageAirframes::route('/'),
+            'index' => ManageAirframes::route('/'),
         ];
     }
 

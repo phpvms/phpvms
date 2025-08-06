@@ -2,22 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TypeRatingResource\Pages;
-use App\Filament\Resources\TypeRatingResource\RelationManagers;
+use App\Filament\Resources\TypeRatingResource\Pages\CreateTypeRating;
+use App\Filament\Resources\TypeRatingResource\Pages\EditTypeRating;
+use App\Filament\Resources\TypeRatingResource\Pages\ListTypeRatings;
+use App\Filament\Resources\TypeRatingResource\RelationManagers\SubfleetsRelationManager;
 use App\Models\Typerating;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class TyperatingResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rocket-launch';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rocket-launch';
 
     protected static ?string $navigationLabel = 'Type Ratings';
 
@@ -27,22 +37,22 @@ class TyperatingResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Type Rating Informations')->schema([
-                    Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                Section::make('Type Rating Informations')->schema([
+                    TextInput::make('name')
                         ->required(),
 
-                    Forms\Components\TextInput::make('type')
+                    TextInput::make('type')
                         ->required(),
 
-                    Forms\Components\TextInput::make('description'),
+                    TextInput::make('description'),
 
-                    Forms\Components\TextInput::make('image_url'),
+                    TextInput::make('image_url'),
 
-                    Forms\Components\Toggle::make('active')
+                    Toggle::make('active')
                         ->offIcon('heroicon-m-x-circle')
                         ->offColor('danger')
                         ->onIcon('heroicon-m-check-circle')
@@ -56,19 +66,19 @@ class TyperatingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('description'),
+                TextColumn::make('description'),
 
-                Tables\Columns\TextColumn::make('image_url'),
+                TextColumn::make('image_url'),
 
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->label('Active')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
@@ -77,17 +87,17 @@ class TyperatingResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Type Rating'),
             ]);
@@ -96,16 +106,16 @@ class TyperatingResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\SubfleetsRelationManager::class,
+            SubfleetsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTypeRatings::route('/'),
-            'create' => Pages\CreateTypeRating::route('/create'),
-            'edit'   => Pages\EditTypeRating::route('/{record}/edit'),
+            'index'  => ListTypeRatings::route('/'),
+            'create' => CreateTypeRating::route('/create'),
+            'edit'   => EditTypeRating::route('/{record}/edit'),
         ];
     }
 }

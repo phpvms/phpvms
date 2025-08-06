@@ -18,15 +18,15 @@ class AirlineFinanceChart extends ChartWidget
     use HasWidgetShield;
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Finance';
+    protected ?string $heading = 'Finance';
 
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected function getData(): array
     {
-        $start_date = $this->filters['start_date'] !== null ? Carbon::createFromTimeString($this->filters['start_date']) : now()->startOfYear();
-        $end_date = $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
-        $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
+        $start_date = $this->pageFilters['start_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['start_date']) : now()->startOfYear();
+        $end_date = $this->pageFilters['end_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['end_date']) : now();
+        $airline_id = $this->pageFilters['airline_id'] ?? Auth::user()->airline_id;
 
         $airline = Airline::find($airline_id);
 

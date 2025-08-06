@@ -2,11 +2,17 @@
 
 namespace App\Filament\Resources\FlightResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class FieldValuesRelationManager extends RelationManager
 {
@@ -14,16 +20,16 @@ class FieldValuesRelationManager extends RelationManager
 
     protected static ?string $title = 'Fields';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->required()
                     ->string()
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('value')
+                TextInput::make('value')
                     ->required()
                     ->string()
                     ->maxLength(255),
@@ -35,27 +41,27 @@ class FieldValuesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextInputColumn::make('value'),
+                TextColumn::make('name'),
+                TextInputColumn::make('value'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Add Flight Field')
-                    ->mutateFormDataUsing(function (array $data): array {
+                CreateAction::make()->label('Add Flight Field')
+                    ->mutateDataUsing(function (array $data): array {
                         $data['flight_id'] = $this->getOwnerRecord()->id;
-                        $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
+                        $data['slug'] = Str::slug($data['name']);
 
                         return $data;
                     }),
             ])
-            ->actions([
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

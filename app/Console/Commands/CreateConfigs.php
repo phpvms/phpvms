@@ -8,6 +8,7 @@ use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use DatabaseSeeder;
 use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * Create the config files
@@ -29,7 +30,7 @@ class CreateConfigs extends Command
     /**
      * Run dev related commands
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     public function handle()
     {
@@ -46,7 +47,7 @@ class CreateConfigs extends Command
     /**
      * Rewrite the configuration files
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     protected function writeConfigs()
     {

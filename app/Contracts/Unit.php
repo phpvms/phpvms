@@ -3,6 +3,7 @@
 namespace App\Contracts;
 
 use ArrayAccess;
+use Exception;
 
 /**
  * Abstract unit wrapper
@@ -38,7 +39,7 @@ class Unit implements ArrayAccess
      * Factory method for creating a new unit type
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function make(mixed $value, string $unit): self
     {

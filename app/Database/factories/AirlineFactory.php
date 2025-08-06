@@ -9,7 +9,7 @@ use App\Models\Airline;
 use Hashids\Hashids;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Airline>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Airline>
  */
 class AirlineFactory extends Factory
 {

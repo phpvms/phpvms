@@ -12,9 +12,9 @@ class LatestPirepsChart extends ChartWidget
 {
     use HasWidgetShield;
 
-    protected static ?string $heading = 'Pireps Filed';
+    protected ?string $heading = 'Pireps Filed';
 
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
 

@@ -7,6 +7,7 @@ use App\Support\Units\Distance;
 use App\Support\Units\Pressure;
 use App\Support\Units\Temperature;
 use App\Support\Units\Velocity;
+use ArrayAccess;
 use PhpUnitsOfMeasure\Exception\NonNumericValue;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 
@@ -33,7 +34,7 @@ use function count;
     or TAF. In addition to the return METAR parameters, the script also displays the
     interpreted (easy to understand) information of these parameters.
 */
-class Metar implements \ArrayAccess
+class Metar implements ArrayAccess
 {
     /*
      * Array of decoded result, by default all parameters is null.
@@ -1006,9 +1007,9 @@ class Metar implements \ArrayAccess
         // Runway visual range report
         if (isset($observed['runway']) && ($observed['runway'] !== '' && $observed['runway'] !== '0')) {
             $report = [];
-            if ($observed['variable'] instanceof \App\Support\Units\Distance) {
+            if ($observed['variable'] instanceof Distance) {
                 $report[] = $observed['variable'][$report_unit].$report_unit;
-            } elseif ($observed['interval_min'] instanceof \App\Support\Units\Distance && $observed['interval_max'] instanceof \App\Support\Units\Distance) {
+            } elseif ($observed['interval_min'] instanceof Distance && $observed['interval_max'] instanceof Distance) {
                 if (isset(static::$rvr_prefix_codes[$observed['variable_prefix']])) {
                     $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
                         static::$rvr_prefix_codes[$observed['variable_prefix']].' that '.
@@ -1107,7 +1108,7 @@ class Metar implements \ArrayAccess
             $report[] = static::$cloud_codes[$observed['amount']];
             $report_ft[] = static::$cloud_codes[$observed['amount']];
 
-            if ($observed['height'] instanceof \App\Support\Units\Altitude) {
+            if ($observed['height'] instanceof Altitude) {
                 if ($observed['type'] !== null) {
                     $report[] = 'at '.round($observed['height']['m'], 0).' meters, '.static::$cloud_type_codes[$observed['type']];
                     $report_ft[] = 'at '.round($observed['height']['ft'], 0).' feet, '.static::$cloud_type_codes[$observed['type']];

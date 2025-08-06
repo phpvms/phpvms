@@ -29,8 +29,8 @@ trait MailChannel
     /**
      * Get the mail representation of the notification.
      *
-     * @param  mixed                                          $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @param  mixed       $notifiable
+     * @return MailMessage
      */
     public function toMail($notifiable)
     {

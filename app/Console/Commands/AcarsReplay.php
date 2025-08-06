@@ -6,6 +6,8 @@ use App\Contracts\Command;
 use App\Support\Units\Time;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
+use RuntimeException;
+use stdClass;
 
 class AcarsReplay extends Command
 {
@@ -49,9 +51,9 @@ class AcarsReplay extends Command
     /**
      * Make a request to start a PIREP
      *
-     * @param \stdClass $flight
+     * @param stdClass $flight
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function startPirep($flight): string
     {
@@ -87,7 +89,7 @@ class AcarsReplay extends Command
      *
      * @return mixed
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function filePirep($pirep_id)
     {
@@ -103,7 +105,7 @@ class AcarsReplay extends Command
     /**
      * @return array
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function postUpdate($pirep_id, $data)
     {
@@ -154,7 +156,7 @@ class AcarsReplay extends Command
      * Parse this file and run the updates
      *
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function updatesFromFile(array $files)
     {
@@ -229,7 +231,7 @@ class AcarsReplay extends Command
      *
      * @return mixed
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function handle(): void
     {

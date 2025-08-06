@@ -8,7 +8,7 @@ use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
- * @mixin \App\Models\Airline
+ * @mixin Airline
  */
 class AirlineRepository extends Repository implements CacheableInterface
 {

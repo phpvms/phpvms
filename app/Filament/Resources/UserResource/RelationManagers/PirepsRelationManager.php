@@ -6,19 +6,22 @@ use App\Models\Aircraft;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Support\Units\Time;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class PirepsRelationManager extends RelationManager
 {
     protected static string $relationship = 'pireps';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
 
             ]);
     }
@@ -28,15 +31,15 @@ class PirepsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('ident')->label('Flight Ident'),
-                Tables\Columns\TextColumn::make('dpt_airport_id')->label('DEP'),
-                Tables\Columns\TextColumn::make('arr_airport_id')->label('ARR'),
-                Tables\Columns\TextColumn::make('flight_time')->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
-                Tables\Columns\TextColumn::make('aircraft')->label('Aircraft')->formatStateUsing(fn (Aircraft $state): string => $state->registration.' \''.$state->name.'\''),
-                Tables\Columns\TextColumn::make('level')->label('Flight Level'),
-                Tables\Columns\TextColumn::make('source')->label('Filed using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
-                Tables\Columns\TextColumn::make('created_at')->label('Filed at')->date('d/m/Y H:i'),
-                Tables\Columns\TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
+                TextColumn::make('ident')->label('Flight Ident'),
+                TextColumn::make('dpt_airport_id')->label('DEP'),
+                TextColumn::make('arr_airport_id')->label('ARR'),
+                TextColumn::make('flight_time')->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state)),
+                TextColumn::make('aircraft')->label('Aircraft')->formatStateUsing(fn (Aircraft $state): string => $state->registration.' \''.$state->name.'\''),
+                TextColumn::make('level')->label('Flight Level'),
+                TextColumn::make('source')->label('Filed using')->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
+                TextColumn::make('created_at')->label('Filed at')->date('d/m/Y H:i'),
+                TextColumn::make('state')->badge()->color(fn (int $state): string => match ($state) {
                     PirepState::PENDING  => 'warning',
                     PirepState::ACCEPTED => 'success',
                     PirepState::REJECTED => 'danger',
@@ -48,12 +51,12 @@ class PirepsRelationManager extends RelationManager
             ])
             ->headerActions([
             ])
-            ->actions([
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([

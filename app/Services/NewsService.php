@@ -24,7 +24,7 @@ class NewsService extends Service
      *
      * @return mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function addNews(array $attrs)
     {

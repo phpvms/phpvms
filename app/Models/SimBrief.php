@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
@@ -46,15 +47,15 @@ class SimBrief extends Model
         'updated_at',
     ];
 
-    /** @var \App\Models\SimBriefXML Store a cached version of the XML object */
+    /** @var SimBriefXML Store a cached version of the XML object */
     private $xml_instance;
 
     /**
      * Return a SimpleXML object of the $ofp_xml
      */
-    protected function xml(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function xml(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+        return Attribute::make(get: function () {
             if (empty($this->attributes['ofp_xml'])) {
                 return null;
             }
@@ -72,9 +73,9 @@ class SimBrief extends Model
     /**
      * Returns a list of images
      */
-    protected function images(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function images(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+        return Attribute::make(get: function () {
             return $this->xml->getImages();
         });
     }
@@ -82,9 +83,9 @@ class SimBrief extends Model
     /**
      * Return all of the flight plans
      */
-    protected function files(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function files(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+        return Attribute::make(get: function () {
             return $this->xml->getFlightPlans();
         });
     }

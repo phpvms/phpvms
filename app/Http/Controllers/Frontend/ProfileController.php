@@ -13,6 +13,7 @@ use App\Repositories\UserRepository;
 use App\Support\Countries;
 use App\Support\Timezonelist;
 use App\Support\Utils;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,6 +26,7 @@ use Illuminate\View\View;
 use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
 use Nwidart\Modules\Facades\Module;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class ProfileController extends Controller
 {
@@ -73,7 +75,7 @@ class ProfileController extends Controller
             'rank',
             'typeratings',
         ];
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = User::with($with)->where('id', $id)->first();
 
         if (empty($user)) {
@@ -95,11 +97,11 @@ class ProfileController extends Controller
      * Show the edit for form the user's profile
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function edit(Request $request): RedirectResponse|View
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = User::with('fields.field', 'home_airport')->where('id', Auth::id())->first();
 
         if (empty($user)) {
@@ -125,7 +127,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function update(Request $request): RedirectResponse
     {

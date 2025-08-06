@@ -13,17 +13,18 @@ use App\Services\Installer\SeederService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
+use Exception;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ViewField;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Blade;
@@ -31,12 +32,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class Installer extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.system.installer';
+    protected string $view = 'filament.system.installer';
 
     protected static ?string $slug = 'install';
 
@@ -87,13 +89,13 @@ class Installer extends Page
     /**
      * The filament form
      */
-    public function form(Form $form): Form
+    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         $requirementsData = $this->getRequirementsData();
 
-        return $form->schema([
+        return $schema->components([
             Wizard::make([
-                Wizard\Step::make('Requirements')
+                Step::make('Requirements')
                     ->schema([
                         ViewField::make('requirements')
                             ->view('filament.system.installer_requirements')
@@ -111,7 +113,7 @@ class Installer extends Page
                     }),
 
                 // Required only if we haven't passed this step yet (ie no .env yet)
-                Wizard\Step::make('Database Setup')->schema([
+                Step::make('Database Setup')->schema([
                     Section::make('Site Config')
                         ->statePath('env')
                         ->columns()
@@ -187,7 +189,7 @@ class Installer extends Page
                     }
                 ),
 
-                Wizard\Step::make('Migrations')->schema([
+                Step::make('Migrations')->schema([
                     ViewField::make('details')
                         ->view('filament.system.migrations_details'),
                 ])->afterValidation(function () {
@@ -203,7 +205,7 @@ class Installer extends Page
                     }
                 }),
 
-                Wizard\Step::make('User & Airline Setup')->schema([
+                Step::make('User & Airline Setup')->schema([
                     Section::make('Airline Information')
                         ->statePath('user')
                         ->headerActions([
@@ -353,7 +355,7 @@ class Installer extends Page
          */
         try {
             app(ConfigService::class)->createConfigFiles($attrs);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Config files failed to write');
             Log::error($e->getMessage());
 
@@ -404,7 +406,7 @@ class Installer extends Page
     /**
      * Create first user and airline
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     private function airlineAndUserSetup(): void
     {
@@ -458,7 +460,7 @@ class Installer extends Page
                 $data['db_user'],
                 $data['db_pass']
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Testing db failed');
             Log::error($e->getMessage());
 
@@ -483,7 +485,7 @@ class Installer extends Page
     /**
      * Called when the form is filed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function save(): void
     {

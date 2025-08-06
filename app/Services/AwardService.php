@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Award;
 use App\Contracts\Service;
 use App\Support\ClassLoader;
 use Nwidart\Modules\Facades\Module;
@@ -13,7 +14,7 @@ class AwardService extends Service
     /**
      * Find any of the award classes
      *
-     * @return \App\Contracts\Award[]
+     * @return Award[]
      */
     public function findAllAwardClasses(): array
     {

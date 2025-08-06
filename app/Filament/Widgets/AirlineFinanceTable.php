@@ -5,7 +5,8 @@ namespace App\Filament\Widgets;
 use App\Models\Airline;
 use App\Models\JournalTransaction;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
-use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
@@ -20,16 +21,16 @@ class AirlineFinanceTable extends TableWidget
 
     protected static ?string $pollingInterval = null;
 
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return $record->transaction_group;
     }
 
     public function table(Table $table): Table
     {
-        $start_date = $this->filters['start_date'] !== null ? Carbon::createFromTimeString($this->filters['start_date']) : now()->startOfYear();
-        $end_date = $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
-        $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
+        $start_date = $this->pageFilters['start_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['start_date']) : now()->startOfYear();
+        $end_date = $this->pageFilters['end_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['end_date']) : now();
+        $airline_id = $this->pageFilters['airline_id'] ?? Auth::user()->airline_id;
         $airline_journal_id = Airline::find($airline_id)->journal->id;
 
         return $table
@@ -47,22 +48,22 @@ class AirlineFinanceTable extends TableWidget
                     ->orderBy('transaction_group', 'asc')
             )
             ->columns([
-                Tables\Columns\TextColumn::make('transaction_group')
+                TextColumn::make('transaction_group')
                     ->label('Expense'),
 
-                Tables\Columns\TextColumn::make('sum_credits')
+                TextColumn::make('sum_credits')
                     ->label('Credit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_credits ?? 0, $record->currency))
                     ->summarize(
-                        Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money(setting('units.currency'), divideBy: 100)
                     ),
 
-                Tables\Columns\TextColumn::make('sum_debits')
+                TextColumn::make('sum_debits')
                     ->label('Debit')
                     ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_debits ?? 0, $record->currency))
                     ->summarize(
-                        Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money(setting('units.currency'), divideBy: 100)
                     ),
             ]);

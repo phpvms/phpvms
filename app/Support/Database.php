@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,7 @@ class Database
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public static function seed_from_yaml_file($yaml_file, bool $ignore_errors = false): array
     {

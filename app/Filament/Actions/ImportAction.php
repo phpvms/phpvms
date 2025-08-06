@@ -26,7 +26,7 @@ class ImportAction extends Action
 
         $this->label('Import from CSV');
 
-        $this->form([
+        $this->schema([
             FileUpload::make('importFile')->acceptedFileTypes(['text/csv'])->disk('local')->directory('import'),
             Toggle::make('deletePrevious')->label('Delete Existing Data')->default(false),
         ]);
@@ -70,7 +70,7 @@ class ImportAction extends Action
                     ->body(implode('<br>', $logs['errors']))
                     ->persistent()
                     ->actions([
-                        \Filament\Notifications\Actions\Action::make('close')->label('Close')->close(),
+                        Action::make('close')->label('Close')->close(),
                     ])
                     ->danger()
                     ->send();

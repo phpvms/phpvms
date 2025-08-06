@@ -2,13 +2,21 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PirepFieldResource\Pages;
+use App\Filament\Resources\PirepFieldResource\Pages\ManagePirepFields;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\PirepField;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class PirepFieldResource extends Resource
@@ -19,23 +27,23 @@ class PirepFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->string()
                     ->required(),
 
-                Forms\Components\TextInput::make('description')
+                TextInput::make('description')
                     ->string(),
 
-                Forms\Components\Select::make('pirep_source')
+                Select::make('pirep_source')
                     ->options(PirepFieldSource::select())
                     ->native(false)
                     ->required(),
 
-                Forms\Components\Toggle::make('required')
+                Toggle::make('required')
                     ->inline(false)
                     ->offIcon('heroicon-m-x-circle')
                     ->offColor('danger')
@@ -48,17 +56,17 @@ class PirepFieldResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('description'),
+                TextColumn::make('description'),
 
-                Tables\Columns\TextColumn::make('pirep_source')
+                TextColumn::make('pirep_source')
                     ->formatStateUsing(fn (int $state): string => PirepFieldSource::label($state))
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('required')
+                IconColumn::make('required')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->sortable(),
@@ -66,17 +74,17 @@ class PirepFieldResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
                     ->label('Add Pirep Field'),
             ]);
@@ -85,7 +93,7 @@ class PirepFieldResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManagePirepFields::route('/'),
+            'index' => ManagePirepFields::route('/'),
         ];
     }
 }

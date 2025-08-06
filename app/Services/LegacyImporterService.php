@@ -121,7 +121,7 @@ class LegacyImporterService extends Service
      * @param  int      $start
      * @return int|void
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function run($importer, $start = 0)
     {

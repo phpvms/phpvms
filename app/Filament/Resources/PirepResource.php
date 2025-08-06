@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PirepResource\Pages;
-use App\Filament\Resources\PirepResource\RelationManagers;
+use App\Filament\Resources\PirepResource\Pages\EditPirep;
+use App\Filament\Resources\PirepResource\Pages\ListPireps;
+use App\Filament\Resources\PirepResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\FaresRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\FieldValuesRelationManager;
+use App\Filament\Resources\PirepResource\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Airport;
 use App\Models\Enums\FlightType;
@@ -12,14 +16,31 @@ use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
 use App\Support\Units\Time;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,13 +51,13 @@ class PirepResource extends Resource
 {
     protected static ?string $model = Pirep::class;
 
-    protected static ?string $navigationGroup = 'Operations';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operations';
 
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Pireps';
 
-    protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-up';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cloud-arrow-up';
 
     public static function getNavigationBadge(): ?string
     {
@@ -45,53 +66,53 @@ class PirepResource extends Resource
             : null;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Basic Information')->schema([
+        return $schema
+            ->components([
+                Section::make('Basic Information')->schema([
 
-                    Forms\Components\TextInput::make('flight_number')
+                    TextInput::make('flight_number')
                         ->label('Flight Number'),
 
-                    Forms\Components\TextInput::make('route_code')
+                    TextInput::make('route_code')
                         ->label('Route Code'),
 
-                    Forms\Components\TextInput::make('route_leg')
+                    TextInput::make('route_leg')
                         ->label('Route Leg'),
 
-                    Forms\Components\Select::make('flight_type')
+                    Select::make('flight_type')
                         ->disabled(false)
                         ->options(FlightType::select())
                         ->native(false),
 
-                    Forms\Components\Placeholder::make('source')
+                    Placeholder::make('source')
                         ->content(fn (Pirep $record): string => PirepSource::label($record->source).(filled($record->source_name) ? '('.$record->source_name.')' : ''))
                         ->label('Filed Via: '),
                 ])
                     ->columns(5)
                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                Forms\Components\Grid::make()->schema([
-                    Forms\Components\Section::make('Pirep Details')->schema([
-                        Forms\Components\Grid::make('')->schema([
-                            Forms\Components\Select::make('airline_id')
+                Grid::make()->schema([
+                    Section::make('Pirep Details')->schema([
+                        Grid::make('')->schema([
+                            Select::make('airline_id')
                                 ->relationship('airline', 'name')
                                 ->native(false)
                                 ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            Forms\Components\Select::make('aircraft_id')
+                            Select::make('aircraft_id')
                                 ->relationship('aircraft', 'name')
                                 ->native(false)
                                 ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            Forms\Components\TimePicker::make('flight_time')
+                            TimePicker::make('flight_time')
                                 ->label('Flight Time')
                                 ->seconds(false)
                                 ->native(false),
 
-                            Forms\Components\Grid::make('')->schema([
-                                Forms\Components\Select::make('dpt_airport_id')
+                            Grid::make('')->schema([
+                                Select::make('dpt_airport_id')
                                     ->label('Departure Airport')
                                     ->relationship('dpt_airport', 'icao')
                                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -100,7 +121,7 @@ class PirepResource extends Resource
                                     ->columnSpan(1)
                                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                                Forms\Components\Select::make('arr_airport_id')
+                                Select::make('arr_airport_id')
                                     ->label('Arrival Airport')
                                     ->relationship('arr_airport', 'icao')
                                     ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
@@ -112,45 +133,45 @@ class PirepResource extends Resource
                                 ->columns(2)
                                 ->columnSpan(3),
 
-                            Forms\Components\TextInput::make('block_fuel')
+                            TextInput::make('block_fuel')
                                 ->hint('In lbs'),
 
-                            Forms\Components\TextInput::make('fuel_used')
+                            TextInput::make('fuel_used')
                                 ->label('Used Fuel')
                                 ->hint('In lbs'),
 
-                            Forms\Components\TextInput::make('level')
+                            TextInput::make('level')
                                 ->hint('In ft')
                                 ->label('Flight Level'),
 
-                            Forms\Components\TextInput::make('distance')
+                            TextInput::make('distance')
                                 ->hint('In nmi'),
 
-                            Forms\Components\TextInput::make('score'),
+                            TextInput::make('score'),
                         ])->columns(3),
 
-                        Forms\Components\Textarea::make('route'),
+                        Textarea::make('route'),
 
-                        Forms\Components\RichEditor::make('notes'),
+                        RichEditor::make('notes'),
                     ])->columnSpan(2),
 
-                    Forms\Components\Section::make('Planned Details')->schema([
-                        Forms\Components\TimePicker::make('planned_flight_time')
+                    Section::make('Planned Details')->schema([
+                        TimePicker::make('planned_flight_time')
                             ->label('Planned Flight Time')
                             ->seconds(false)
                             ->native(false),
 
-                        Forms\Components\TextInput::make('level')
+                        TextInput::make('level')
                             ->hint('In ft')
                             ->label('Planned Flight Level'),
 
-                        Forms\Components\TextInput::make('planned_distance')
+                        TextInput::make('planned_distance')
                             ->hint('In nmi'),
 
-                        Forms\Components\TextInput::make('landing_rate')
+                        TextInput::make('landing_rate')
                             ->hint('In ft/min'),
 
-                        Forms\Components\Textarea::make('route')
+                        Textarea::make('route')
                             ->label('Provided Route')
                             ->autosize(),
                     ])
@@ -216,7 +237,7 @@ class PirepResource extends Resource
             ->defaultSort('submitted_at', 'desc')
             ->filters([
                 Filter::make('submitted_at')
-                    ->form([
+                    ->schema([
                         DatePicker::make('filed_from'),
                         DatePicker::make('filed_until'),
                     ])
@@ -231,12 +252,12 @@ class PirepResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
                             );
                     }),
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordUrl(fn (Pirep $record): string => self::getUrl('edit', ['record' => $record]))
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('accept')
+            ->recordActions([
+                ActionGroup::make([
+                    Action::make('accept')
                         ->color('success')
                         ->icon('heroicon-m-check-circle')
                         ->label('Accept')
@@ -256,7 +277,7 @@ class PirepResource extends Resource
                             }
                         }),
 
-                    Tables\Actions\Action::make('reject')
+                    Action::make('reject')
                         ->color('danger')
                         ->icon('heroicon-m-x-circle')
                         ->label('Reject')
@@ -276,13 +297,13 @@ class PirepResource extends Resource
                             }
                         }),
 
-                    Tables\Actions\EditAction::make(),
+                    EditAction::make(),
 
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
 
-                    Tables\Actions\Action::make('view')
+                    Action::make('view')
                         ->color('info')
                         ->icon('heroicon-m-eye')
                         ->label('View Pirep')
@@ -290,11 +311,11 @@ class PirepResource extends Resource
                         ->openUrlInNewTab(),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -302,18 +323,18 @@ class PirepResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\FaresRelationManager::class,
-            RelationManagers\FieldValuesRelationManager::class,
-            RelationManagers\CommentsRelationManager::class,
-            RelationManagers\TransactionsRelationManager::class,
+            FaresRelationManager::class,
+            FieldValuesRelationManager::class,
+            CommentsRelationManager::class,
+            TransactionsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPireps::route('/'),
-            'edit'  => Pages\EditPirep::route('/{record}/edit'),
+            'index' => ListPireps::route('/'),
+            'edit'  => EditPirep::route('/{record}/edit'),
         ];
     }
 

@@ -21,15 +21,15 @@ class Maintenance extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationLabel = 'Maintenance';
 
-    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
-    protected static string $view = 'filament.pages.maintenance';
+    protected string $view = 'filament.pages.maintenance';
 
     public function forceUpdateCheckAction(): Action
     {

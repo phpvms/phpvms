@@ -6,7 +6,9 @@ use App\Filament\Resources\AircraftResource;
 use App\Models\Aircraft;
 use App\Models\File;
 use App\Services\FileService;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAircraft extends EditRecord
@@ -16,13 +18,13 @@ class EditAircraft extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make()->before(function (Aircraft $record) {
+            DeleteAction::make(),
+            ForceDeleteAction::make()->before(function (Aircraft $record) {
                 $record->files()->each(function (File $file) {
                     app(FileService::class)->removeFile($file);
                 });
             }),
-            Actions\RestoreAction::make(),
+            RestoreAction::make(),
         ];
     }
 

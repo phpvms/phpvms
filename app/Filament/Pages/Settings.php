@@ -8,13 +8,14 @@ use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
@@ -26,15 +27,15 @@ class Settings extends Page
     use HasPageShield;
     use InteractsWithFormActions;
 
-    protected static ?string $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = 'Config';
 
     protected static ?int $navigationSort = 10;
 
     protected static ?string $navigationLabel = 'Settings';
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
 
-    protected static string $view = 'filament.pages.settings';
+    protected string $view = 'filament.pages.settings';
 
     public ?array $data = [];
 
@@ -118,9 +119,9 @@ class Settings extends Page
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form;
+        return $schema;
     }
 
     protected function getForms(): array
@@ -142,7 +143,7 @@ class Settings extends Page
 
         $grouped_settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
-            $tabs[] = Tabs\Tab::make(Str::ucfirst($group))->schema(
+            $tabs[] = Tab::make(Str::ucfirst($group))->schema(
                 $settings->map(function ($setting) {
                     if ($setting->type === 'date') {
                         return DatePicker::make($setting->key)->label($setting->name)->helperText($setting->description)->format('Y-m-d');

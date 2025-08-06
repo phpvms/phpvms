@@ -3,6 +3,7 @@
 namespace App\Services\LegacyImporter;
 
 use App\Models\Flight;
+use Exception;
 
 class FlightImporter extends BaseImporter
 {
@@ -52,7 +53,7 @@ class FlightImporter extends BaseImporter
                 $w = ['airline_id' => $airline_id, 'flight_number' => $flight_num];
                 // $flight = Flight::updateOrCreate($w, $attrs);
                 $flight = Flight::create(array_merge($w, $attrs));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error($e);
             }
 
