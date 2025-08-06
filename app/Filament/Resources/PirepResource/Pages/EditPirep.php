@@ -6,6 +6,7 @@ use App\Filament\Resources\PirepResource;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -43,12 +44,31 @@ class EditPirep extends EditRecord
         $data['block_fuel'] = $data['block_fuel']->toUnit('lbs');
         $data['fuel_used'] = $data['fuel_used']->toUnit('lbs');
 
+        if ($data['flight_time'] !== null) {
+            $data['flight_time'] = Carbon::createFromTime(
+                (int) ($data['flight_time'] / 60),
+                $data['flight_time'] % 60,
+                0
+            );
+        }
+
+        if ($data['planned_flight_time'] !== null) {
+            $data['planned_flight_time'] = Carbon::createFromTime(
+                (int) ($data['planned_flight_time'] / 60),
+                $data['planned_flight_time'] % 60,
+                0
+            );
+        }
+
         return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $data['flight_time'] = $data['hours'] * 60 + $data['minutes'];
+        if ($data['flight_time'] !== null) {
+            $flt_time = Carbon::parse($data['flight_time']);
+            $data['flight_time'] = $flt_time->hour * 60 + $flt_time->minute;
+        }
 
         return $data;
     }

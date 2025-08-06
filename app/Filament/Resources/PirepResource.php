@@ -21,7 +21,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use Guava\FilamentClusters\Forms\Cluster;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -52,23 +51,18 @@ class PirepResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Basic Information')->schema([
 
-                    Cluster::make([
-                        Forms\Components\TextInput::make('flight_number')
-                            ->placeholder('Flight Number'),
+                    Forms\Components\TextInput::make('flight_number')
+                        ->label('Flight Number'),
 
-                        Forms\Components\TextInput::make('route_code')
-                            ->placeholder('Route Code'),
+                    Forms\Components\TextInput::make('route_code')
+                        ->label('Route Code'),
 
-                        Forms\Components\TextInput::make('route_leg')
-                            ->placeholder('Route Leg'),
-                    ])
-                        ->label('Flight Number/Route Code/Route Leg')
-                        ->columnSpan(2),
+                    Forms\Components\TextInput::make('route_leg')
+                        ->label('Route Leg'),
 
                     Forms\Components\Select::make('flight_type')
                         ->disabled(false)
                         ->options(FlightType::select())
-                        ->columnSpan(2)
                         ->native(false),
 
                     Forms\Components\Placeholder::make('source')
@@ -91,15 +85,10 @@ class PirepResource extends Resource
                                 ->native(false)
                                 ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                            Cluster::make([
-                                Forms\Components\TextInput::make('hours')
-                                    ->placeholder('hours')
-                                    ->formatStateUsing(fn (Pirep $record): int => $record->flight_time / 60),
-
-                                Forms\Components\TextInput::make('minutes')
-                                    ->placeholder('minutes')
-                                    ->formatStateUsing(fn (Pirep $record): int => $record->flight_time % 60),
-                            ])->label('Flight Time'),
+                            Forms\Components\TimePicker::make('flight_time')
+                                ->label('Flight Time')
+                                ->seconds(false)
+                                ->native(false),
 
                             Forms\Components\Grid::make('')->schema([
                                 Forms\Components\Select::make('dpt_airport_id')
@@ -146,16 +135,10 @@ class PirepResource extends Resource
                     ])->columnSpan(2),
 
                     Forms\Components\Section::make('Planned Details')->schema([
-                        Cluster::make([
-                            Forms\Components\TextInput::make('pln_hours')
-                                ->placeholder('hours')
-                                ->formatStateUsing(fn (Pirep $record): int => $record->planned_flight_time / 60),
-
-                            Forms\Components\TextInput::make('pln_minutes')
-                                ->placeholder('minutes')
-                                ->formatStateUsing(fn (Pirep $record): int => $record->planned_flight_time % 60),
-                        ])
-                            ->label('Planned Flight Time'),
+                        Forms\Components\TimePicker::make('planned_flight_time')
+                            ->label('Planned Flight Time')
+                            ->seconds(false)
+                            ->native(false),
 
                         Forms\Components\TextInput::make('level')
                             ->hint('In ft')

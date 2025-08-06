@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "37df433558aed7b3da671994b8f9e228",
+    "content-hash": "793e6587a7ad615fb2f36ed3797d8422",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -3555,81 +3555,6 @@
                 }
             ],
             "time": "2024-07-20T21:45:45+00:00"
-        },
-        {
-            "name": "guava/filament-clusters",
-            "version": "1.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/GuavaCZ/filament-clusters.git",
-                "reference": "fda54d83b2141813e79578fdd6ac56e8b3ea6884"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/GuavaCZ/filament-clusters/zipball/fda54d83b2141813e79578fdd6ac56e8b3ea6884",
-                "reference": "fda54d83b2141813e79578fdd6ac56e8b3ea6884",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^3.0",
-                "illuminate/contracts": "^10.0 | ^11.0 | ^12.0",
-                "php": "^8.1",
-                "spatie/laravel-package-tools": "^1.14.0"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^7.8",
-                "nunomaduro/larastan": "^2.0.1",
-                "orchestra/testbench": "^8.8 | ^10.0",
-                "pestphp/pest": "^2.0 | ^3.7",
-                "pestphp/pest-plugin-arch": "^2.0 | ^3.0",
-                "pestphp/pest-plugin-laravel": "^2.0 | ^3.1",
-                "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan-deprecation-rules": "^1.0 | ^2.0",
-                "phpstan/phpstan-phpunit": "^1.0 | ^2.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Guava\\FilamentClusters\\FilamentClustersServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Guava\\FilamentClusters\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Lukas Frey",
-                    "email": "lukas.frey@guava.cz",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Filament clusters allow you to cluster multiple fields into one visually.",
-            "homepage": "https://github.com/GuavaCZ/filament-clusters",
-            "keywords": [
-                "Guava",
-                "filament-clusters",
-                "laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/GuavaCZ/filament-clusters/issues",
-                "source": "https://github.com/GuavaCZ/filament-clusters/tree/1.5.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/GuavaCZ",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-02-25T13:48:00+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

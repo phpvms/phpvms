@@ -82,7 +82,6 @@
         "filament/filament": "^3.3.14",
         "flowframe/laravel-trend": "^0.4.0",
         "bezhansalleh/filament-shield": "^3.3.6",
-        "guava/filament-clusters": "^1.5.0",
         "spatie/laravel-backup": "^9.2.9",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2.4",
         "laravel/socialite": "^5.18",

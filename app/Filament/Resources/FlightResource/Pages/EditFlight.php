@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FlightResource\Pages;
 
 use App\Filament\Resources\FlightResource;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -22,15 +23,20 @@ class EditFlight extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['distance'] = $data['distance']->toUnit('nmi');
-        $data['hours'] = (int) ($data['flight_time'] / 60);
-        $data['minutes'] = $data['flight_time'] % 60;
+
+        $data['flight_time'] = Carbon::createFromTime(
+            (int) ($data['flight_time'] / 60),
+            $data['flight_time'] % 60,
+            0
+        );
 
         return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $data['flight_time'] = $data['hours'] * 60 + $data['minutes'];
+        $flt_time = Carbon::parse($data['flight_time']);
+        $data['flight_time'] = $flt_time->hour * 60 + $flt_time->minute;
 
         return $data;
     }

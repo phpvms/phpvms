@@ -16,7 +16,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Guava\FilamentClusters\Forms\Cluster;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -67,15 +66,11 @@ class FlightResource extends Resource
                         Forms\Components\TextInput::make('route_leg')
                             ->integer(),
 
-                        Cluster::make([
-                            Forms\Components\TextInput::make('hours')
-                                ->placeholder('hours')
-                                ->integer(),
-
-                            Forms\Components\TextInput::make('minutes')
-                                ->placeholder('minutes')
-                                ->integer(),
-                        ])->label('Flight Time')->columnSpan(2)->required(),
+                        Forms\Components\TimePicker::make('flight_time')
+                            ->seconds(false)
+                            ->label('Flight Time')
+                            ->native(false)
+                            ->required(),
 
                         Forms\Components\TextInput::make('pilot_pay')
                             ->numeric()
