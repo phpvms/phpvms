@@ -1,5 +1,13 @@
 @can('view_module')
-  <ul class="fi-sidebar-nav-groups -mx-2 flex flex-col gap-y-7 lg:hidden">
+  <style>
+    @media (min-width: 1024px) {
+      .lg\:hidden {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <ul class="fi-sidebar-nav-groups lg:hidden">
     <x-filament-panels::sidebar.group
       :active="$group->isActive()"
       :collapsible="$group->isCollapsible()"

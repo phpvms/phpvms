@@ -1,5 +1,5 @@
 @can('view_module')
-  <ul class="me-4 hidden items-center gap-x-4 lg:flex">
+  <ul class="fi-topbar-nav-groups">
     <x-filament-panels::topbar.item
       :active="$current_panel->getId() === 'admin'"
       icon="heroicon-o-home"
