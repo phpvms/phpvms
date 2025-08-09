@@ -76,4 +76,5 @@ return [
     'updated_at'           => 'Updated At',
     'simbrief_airframe'    => 'SimBrief Airframe',
     'simbrief_airframe_id' => 'SimBrief Airframe ID',
+    'logo_url'             => 'Logo URL',
 ];

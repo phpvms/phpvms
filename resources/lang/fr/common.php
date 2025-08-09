@@ -76,4 +76,5 @@ return [
     'updated_at'           => 'Mis à jour le',
     'simbrief_airframe'    => 'Profil SimBrief',
     'simbrief_airframe_id' => 'ID du Profil SimBrief',
+    'logo_url'             => 'URL du Logo',
 ];

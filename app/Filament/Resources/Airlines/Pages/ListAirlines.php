@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\AirlineResource\Pages;
+namespace App\Filament\Resources\Airlines\Pages;
 
-use App\Filament\Resources\AirlineResource;
+use App\Filament\Resources\Airlines\AirlineResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListAirlines extends ListRecords
 {
@@ -13,7 +14,8 @@ class ListAirlines extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Add Airline')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlusCircle),
         ];
     }
 }
