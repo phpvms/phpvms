@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\AwardResource\Pages;
+namespace App\Filament\Resources\Awards\Pages;
 
-use App\Filament\Resources\AwardResource;
+use App\Filament\Resources\Awards\AwardResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListAwards extends ListRecords
 {
@@ -13,7 +14,8 @@ class ListAwards extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Add Award')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlusCircle),
         ];
     }
 }

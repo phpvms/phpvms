@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\AwardResource\RelationManagers;
+namespace App\Filament\Resources\Awards\RelationManagers;
 
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
@@ -10,6 +10,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class UsersRelationManager extends RelationManager
 {
@@ -29,19 +30,22 @@ class UsersRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
+                    ->label(__('common.name'))
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('created_at')
-                    ->label('Issued')
+                TextColumn::make('pivot.created_at')
+                    ->label(__('filament.awarded'))
                     ->since()
+                    ->dateTooltip('d/m/Y H:i')
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                AttachAction::make(),
+                AttachAction::make()
+                    ->preloadRecordSelect(),
             ])
             ->recordActions([
                 DetachAction::make(),
@@ -51,5 +55,15 @@ class UsersRelationManager extends RelationManager
                     DetachBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return trans_choice('common.user', 1);
+    }
+
+    public static function getTitle(EloquentModel $ownerRecord, string $pageClass): string
+    {
+        return trans_choice('common.user', 2);
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\AwardResource\Pages;
+namespace App\Filament\Resources\Awards\Pages;
 
-use App\Filament\Resources\AwardResource;
+use App\Filament\Resources\Awards\AwardResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;

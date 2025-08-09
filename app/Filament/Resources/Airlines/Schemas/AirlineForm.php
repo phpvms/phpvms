@@ -39,7 +39,7 @@ class AirlineForm
                             ->string(),
 
                         TextInput::make('logo')
-                            ->label(__('common.logo_url'))
+                            ->label(__('common.image_url'))
                             ->string(),
 
                         Select::make('country')
