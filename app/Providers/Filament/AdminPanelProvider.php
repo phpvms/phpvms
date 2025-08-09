@@ -3,8 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
+use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\ModuleLinksPlugin;
-use App\Http\Middleware\SetActiveLanguage;
 use App\Models\Enums\NavigationGroup as EnumsNavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -58,7 +58,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                // SetActiveLanguage::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -84,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),
+                LanguageSwitcherPlugin::make(),
             ])
             ->bootUsing(function () {
                 activity()->enableLogging();
@@ -92,7 +92,8 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(public_asset('assets/img/favicon.png'))
             ->unsavedChangesAlerts()
             ->spa()
-            ->errorNotifications();
+            ->errorNotifications()
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 
     public function register(): void

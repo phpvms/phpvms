@@ -1,12 +1,4 @@
 @can('view_module')
-  <style>
-    @media (min-width: 1024px) {
-      .lg\:hidden {
-        display: none !important;
-      }
-    }
-  </style>
-
   <ul class="fi-sidebar-nav-groups lg:hidden">
     <x-filament-panels::sidebar.group
       :active="$group->isActive()"
