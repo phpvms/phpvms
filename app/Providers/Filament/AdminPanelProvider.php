@@ -64,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                NavigationGroup::make()->label('Operations'),
+                // NavigationGroup::make()->label('Operations'),
                 // NavigationGroup::make()->label('Config'),
                 NavigationGroup::make()->label('Modules'),
             ])

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\FareResource\Pages;
+namespace App\Filament\Resources\Fares\Pages;
 
-use App\Filament\Resources\FareResource;
+use App\Filament\Resources\Fares\FareResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -19,10 +19,5 @@ class EditFare extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
-    }
-
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
     }
 }

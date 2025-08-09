@@ -89,4 +89,7 @@ return [
     'type'                 => 'Type',
     'award'                => 'Award',
     'multiplier'           => 'Multiplier',
+    'price'                => 'Price',
+    'cost'                 => 'Cost',
+    'capacity'             => 'Capacity',
 ];

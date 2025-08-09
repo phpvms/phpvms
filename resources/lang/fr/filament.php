@@ -8,4 +8,9 @@ return [
     'award_class'          => 'Classe de récompense',
     'award_class_param'    => 'Paramètres de la classe de récompense',
     'awarded'              => 'Récompensé',
+    'fare_informations'    => 'Informations sur le tarif',
+    'fare_description'     => 'Lorsqu\'un tarif est attribué à une sous-flotte, le prix, le coût et la capacité peuvent être remplacés, vous pouvez donc créer des valeurs par défaut qui s\'appliqueront à la plupart de vos sous-flottes et les modifier là où elles diffèrent.',
+    'fare_price_hint'      => 'Ceci est le prix d\'un billet par unité (passager ou kg)',
+    'fare_cost_hint'       => 'Le coût d\'exploitation par unité (passager ou kg)',
+    'fare_capacity_hint'   => 'Nombre maximal de sièges ou capacité disponible. Cela peut être ajusté dans la sous-flotte',
 ];
