@@ -14,8 +14,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ExpensesRelationManager extends RelationManager
 {
@@ -26,15 +28,18 @@ class ExpensesRelationManager extends RelationManager
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('common.name'))
                     ->string()
                     ->required(),
 
                 TextInput::make('amount')
+                    ->label(__('common.amount'))
                     ->numeric()
                     ->step(0.01)
                     ->required(),
 
                 Select::make('type')
+                    ->label(__('common.type'))
                     ->options(ExpenseType::select())
                     ->required(),
             ]);
@@ -45,15 +50,23 @@ class ExpensesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('amount')->money(setting('units.currency')),
-                TextColumn::make('type')->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+
+                TextColumn::make('amount')
+                    ->label(__('common.amount'))
+                    ->money(setting('units.currency')),
+
+                TextColumn::make('type')
+                    ->label(__('common.type'))
+                    ->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle')
+                CreateAction::make()
+                    ->icon(Heroicon::OutlinedPlusCircle)
                     ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
@@ -76,8 +89,7 @@ class ExpensesRelationManager extends RelationManager
             ])
             ->emptyStateActions([
                 CreateAction::make()
-                    ->icon('heroicon-o-plus-circle')
-                    ->label('Add Expense')
+                    ->icon(Heroicon::OutlinedPlusCircle)
                     ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
@@ -89,5 +101,17 @@ class ExpensesRelationManager extends RelationManager
                         return $data;
                     }),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('expenses.expense');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('expenses.expense'))
+            ->plural()
+            ->toString();
     }
 }
