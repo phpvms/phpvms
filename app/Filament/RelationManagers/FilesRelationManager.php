@@ -16,6 +16,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -124,5 +125,12 @@ class FilesRelationManager extends RelationManager
     public static function getModelLabel(): string
     {
         return __('common.file');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('common.file'))
+            ->plural()
+            ->toString();
     }
 }
