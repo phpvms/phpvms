@@ -70,4 +70,6 @@ return [
     'auto'                 => 'Auto',
     'map'                  => 'Carte',
     'notes'                => 'Notes',
+    'date'                 => 'Date',
+    'action'               => 'Action',
 ];
