@@ -12,10 +12,12 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class FilesRelationManager extends RelationManager
 {
@@ -26,17 +28,21 @@ class FilesRelationManager extends RelationManager
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('common.name'))
                     ->required()
                     ->string(),
 
                 TextInput::make('description')
+                    ->label(__('common.description'))
                     ->string(),
 
                 TextInput::make('url')
+                    ->label('URL')
                     ->url()
                     ->requiredWithout('file'),
 
                 FileUpload::make('file')
+                    ->label(__('common.file'))
                     ->disk(config('filesystems.public_files'))
                     ->directory('files')
                     ->requiredWithout('url'),
@@ -47,30 +53,39 @@ class FilesRelationManager extends RelationManager
     {
         return $table->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('download_count')->label('Downloads'),
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+
+                TextColumn::make('download_count')
+                    ->label(trans_choice('common.download', 1)),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus-circle')->label('Add File')->mutateDataUsing(function (array $data): array {
-                    if (!empty($data['url'])) {
-                        $data['path'] = $data['url'];
-                    } elseif (!empty($data['file'])) {
-                        $data['path'] = $data['file'];
-                        $data['disk'] = config('filesystems.public_files');
-                    }
+                CreateAction::make()
+                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->mutateDataUsing(function (array $data): array {
+                        if (!empty($data['url'])) {
+                            $data['path'] = $data['url'];
+                        } elseif (!empty($data['file'])) {
+                            $data['path'] = $data['file'];
+                            $data['disk'] = config('filesystems.public_files');
+                        }
 
-                    return $data;
-                }),
+                        return $data;
+                    }),
             ])
             ->recordActions([
-                Action::make('download')->icon('heroicon-m-link')->label('Link to file')
+                Action::make('download')
+                    ->icon(Heroicon::Link)
+                    ->label(__('common.link_to_file'))
                     ->action(fn (File $record) => Storage::disk($record->disk)->download($record->path, Str::kebab($record->name)))
                     ->visible(fn (File $record): bool => $record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
-                Action::make('view_file')->icon('heroicon-m-link')->label('Link to file')
+                Action::make('view_file')
+                    ->icon(Heroicon::Link)
+                    ->label(__('common.link_to_file'))
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
                     ->hidden(fn (File $record): bool => $record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
@@ -92,16 +107,22 @@ class FilesRelationManager extends RelationManager
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()->icon('heroicon-o-plus-circle')->label('Add File')->mutateDataUsing(function (array $data): array {
-                    if (!empty($data['url'])) {
-                        $data['path'] = $data['url'];
-                    } elseif (!empty($data['file'])) {
-                        $data['path'] = $data['file'];
-                        $data['disk'] = config('filesystems.public_files');
-                    }
+                CreateAction::make()->icon(Heroicon::OutlinedPlusCircle)
+                    ->mutateDataUsing(function (array $data): array {
+                        if (!empty($data['url'])) {
+                            $data['path'] = $data['url'];
+                        } elseif (!empty($data['file'])) {
+                            $data['path'] = $data['file'];
+                            $data['disk'] = config('filesystems.public_files');
+                        }
 
-                    return $data;
-                }),
+                        return $data;
+                    }),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('common.file');
     }
 }

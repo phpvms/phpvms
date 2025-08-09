@@ -77,4 +77,7 @@ return [
     'simbrief_airframe'    => 'SimBrief Airframe',
     'simbrief_airframe_id' => 'SimBrief Airframe ID',
     'logo_url'             => 'Logo URL',
+    'description'          => 'Description',
+    'file'                 => 'File',
+    'link_to_file'         => 'Link to File',
 ];
