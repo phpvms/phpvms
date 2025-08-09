@@ -80,4 +80,5 @@ return [
     'description'          => 'Description',
     'file'                 => 'File',
     'link_to_file'         => 'Link to File',
+    'in_feet'              => 'In feet',
 ];
