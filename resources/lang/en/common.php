@@ -85,6 +85,7 @@ return [
     'file'                 => 'File',
     'link_to_file'         => 'Link to File',
     'in_feet'              => 'In feet',
+    'in_nautical_miles'    => 'In nautical miles',
     'amount'               => 'Amount',
     'type'                 => 'Type',
     'award'                => 'Award',
@@ -92,4 +93,9 @@ return [
     'price'                => 'Price',
     'cost'                 => 'Cost',
     'capacity'             => 'Capacity',
+    'start_date'           => 'Start Date',
+    'end_date'             => 'End Date',
+    'days_text'            => 'Days',
+    'visible'              => 'Visible',
+    'inherited'            => 'Inherited',
 ];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\FlightResource\RelationManagers;
+namespace App\Filament\Resources\Flights\RelationManagers;
 
 use App\Models\Subfleet;
 use Filament\Actions\AttachAction;
@@ -11,6 +11,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class SubfleetsRelationManager extends RelationManager
 {
@@ -29,16 +30,20 @@ class SubfleetsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('airline.name')->label('Airline'),
-                TextColumn::make('type'),
-                TextColumn::make('name'),
+                TextColumn::make('airline.name')
+                    ->label(__('common.airline')),
+
+                TextColumn::make('type')
+                    ->label(__('common.type')),
+
+                TextColumn::make('name')
+                    ->label(__('common.name')),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 AttachAction::make()
-                    ->icon('heroicon-o-plus-circle')
                     ->multiple()
                     ->preloadRecordSelect()
                     ->recordTitle(fn (Subfleet $record): string => $record->airline->name.' - '.$record->name),
@@ -51,5 +56,17 @@ class SubfleetsRelationManager extends RelationManager
                     DetachBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('common.subfleet');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('common.subfleet'))
+            ->plural()
+            ->toString();
     }
 }

@@ -85,6 +85,7 @@ return [
     'file'                 => 'Fichier',
     'link_to_file'         => 'Lien vers le fichier',
     'in_feet'              => 'En pieds',
+    'in_nautical_miles'    => 'En milles nautiques',
     'amount'               => 'Montant',
     'type'                 => 'Type',
     'award'                => 'Récompense',
@@ -92,4 +93,9 @@ return [
     'price'                => 'Prix',
     'cost'                 => 'Coût',
     'capacity'             => 'Capacité',
+    'start_date'           => 'Date de début',
+    'end_date'             => 'Date de fin',
+    'days_text'            => 'Jours',
+    'visible'              => 'Visible',
+    'inherited'            => 'Hérité',
 ];

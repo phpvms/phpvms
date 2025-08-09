@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class FaresRelationManager extends RelationManager
 {
@@ -30,22 +31,25 @@ class FaresRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name')->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
+                TextColumn::make('name')
+                    ->label(__('common.name'))
+                    ->formatStateUsing(fn (Fare $record): string => $record->name.' ('.$record->code.')'),
+
                 TextInputColumn::make('pivot.capacity')
-                    ->placeholder('Inherited')
-                    ->label('Capacity')
+                    ->placeholder(__('common.inherited'))
+                    ->label(__('common.capacity'))
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['capacity' => $state]);
                     }),
                 TextInputColumn::make('pivot.price')
-                    ->label('Price')
-                    ->placeholder('Inherited')
+                    ->label(__('common.price'))
+                    ->placeholder(__('common.inherited'))
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['price' => $state]);
                     }),
                 TextInputColumn::make('pivot.cost')
-                    ->label('Cost')
-                    ->placeholder('Inherited')
+                    ->label(__('common.cost'))
+                    ->placeholder(__('common.inherited'))
                     ->updateStateUsing(function (Fare $record, string $state) {
                         $record->pivot->update(['cost' => $state]);
                     }),
@@ -54,7 +58,8 @@ class FaresRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                AttachAction::make(),
+                AttachAction::make()
+                    ->preloadRecordSelect(),
             ])
             ->recordActions([
                 DetachAction::make(),
@@ -64,5 +69,15 @@ class FaresRelationManager extends RelationManager
                     DetachBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return trans_choice( 'pireps.fare', 1);
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return trans_choice('pireps.fare', 2);
     }
 }
