@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
 use App\Filament\Plugins\ModuleLinksPlugin;
+use App\Http\Middleware\SetActiveLanguage;
+use App\Models\Enums\NavigationGroup as EnumsNavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -12,6 +14,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentView;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -35,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => '#067ec1',
+                'primary' => Color::generatePalette('#067ec1'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -55,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                // SetActiveLanguage::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -62,14 +66,14 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
                 NavigationGroup::make()->label('Operations'),
-                NavigationGroup::make()->label('Config'),
+                // NavigationGroup::make()->label('Config'),
                 NavigationGroup::make()->label('Modules'),
             ])
             ->navigationItems([
                 NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
                 NavigationItem::make()
                     ->visible(fn (): bool => auth()->user()->can('view_logs'))
-                    ->group('Config')
+                    ->group(EnumsNavigationGroup::Config)
                     ->sort(10)
                     ->icon('heroicon-o-document-text')
                     ->label('View Logs')
@@ -87,7 +91,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
             ->unsavedChangesAlerts()
-            ->spa();
+            ->spa()
+            ->errorNotifications();
     }
 
     public function register(): void
