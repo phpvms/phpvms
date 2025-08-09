@@ -72,4 +72,8 @@ return [
     'notes'                => 'Notes',
     'date'                 => 'Date',
     'action'               => 'Action',
+    'updated'              => 'Mis à jour',
+    'updated_at'           => 'Mis à jour le',
+    'simbrief_airframe'    => 'Profil SimBrief',
+    'simbrief_airframe_id' => 'ID du Profil SimBrief',
 ];

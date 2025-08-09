@@ -72,4 +72,8 @@ return [
     'notes'                => 'Notes',
     'date'                 => 'Date',
     'action'               => 'Action',
+    'updated'              => 'Updated',
+    'updated_at'           => 'Updated At',
+    'simbrief_airframe'    => 'SimBrief Airframe',
+    'simbrief_airframe_id' => 'SimBrief Airframe ID',
 ];
