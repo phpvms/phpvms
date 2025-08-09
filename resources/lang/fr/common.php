@@ -88,4 +88,5 @@ return [
     'amount'               => 'Montant',
     'type'                 => 'Type',
     'award'                => 'Récompense',
+    'multiplier'           => 'Multiplicateur',
 ];
