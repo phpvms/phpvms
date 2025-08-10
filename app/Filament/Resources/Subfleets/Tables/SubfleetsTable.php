@@ -2,12 +2,10 @@
 
 namespace App\Filament\Resources\Subfleets\Tables;
 
-use App\Filament\Resources\AircraftResource;
 use App\Models\Airport;
 use App\Models\File;
 use App\Models\Subfleet;
 use App\Services\FileService;
-use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -70,11 +68,6 @@ class SubfleetsTable
                     ->preload(),
             ])
             ->recordActions([
-                /*Action::make('aircraft')
-                    ->url(fn (Subfleet $record): string => AircraftResource::getUrl('index').'?tableFilters[subfleet][value]='.$record->id)
-                    ->label('Aircraft')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('success'),*/
                 EditAction::make(),
                 DeleteAction::make(),
                 ForceDeleteAction::make()->before(function (Subfleet $record) {

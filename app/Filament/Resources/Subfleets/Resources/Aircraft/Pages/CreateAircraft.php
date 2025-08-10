@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\AircraftResource\Pages;
+namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
-use App\Filament\Resources\AircraftResource;
+use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Support\Units\Mass;
 use Filament\Resources\Pages\CreateRecord;
 

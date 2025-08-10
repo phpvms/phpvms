@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\AircraftResource\Pages;
+namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
-use App\Filament\Resources\AircraftResource;
+use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Models\Aircraft;
 use App\Models\File;
 use App\Services\FileService;

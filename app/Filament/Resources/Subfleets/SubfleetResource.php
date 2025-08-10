@@ -8,6 +8,7 @@ use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\Subfleets\Pages\CreateSubfleet;
 use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Filament\Resources\Subfleets\Pages\ListSubfleets;
+use App\Filament\Resources\Subfleets\RelationManagers\AircraftRelationManager;
 use App\Filament\Resources\Subfleets\RelationManagers\RanksRelationManager;
 use App\Filament\Resources\Subfleets\RelationManagers\TyperatingsRelationManager;
 use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
@@ -46,6 +47,7 @@ class SubfleetResource extends Resource
     public static function getRelations(): array
     {
         return [
+            AircraftRelationManager::class,
             RanksRelationManager::class,
             TyperatingsRelationManager::class,
             FaresRelationManager::class,
