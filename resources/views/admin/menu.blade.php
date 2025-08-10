@@ -86,7 +86,7 @@
       @endcan
 
       @can('view_any_page')
-        <li><a href="{!! \App\Filament\Resources\PageResource::getUrl() !!}"><i class="pe-7s-note"></i>pages/links</a>
+        <li><a href="{!! \App\Filament\Resources\Pages\PageResource::getUrl() !!}"><i class="pe-7s-note"></i>pages/links</a>
         </li>
       @endcan
 

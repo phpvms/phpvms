@@ -26,4 +26,6 @@ return [
     'module_method_zip'                => 'Téléverser un fichier zip de module (non recommandé)',
     'module_method_autodiscover'       => 'Activer un nouveau module (déjà téléversé dans le dossier des modules).',
     'module_zip'                       => 'Fichier zip du module',
+    'page_informations'                => 'Information sur la page',
+    'should_open_in_new_tab'           => 'Doit s\'ouvrir dans un nouvel onglet',
 ];

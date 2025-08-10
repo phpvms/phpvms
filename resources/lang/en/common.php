@@ -105,4 +105,8 @@ return [
     'invite'               => 'Invite',
     'enabled'              => 'Enabled',
     'module'               => 'Module',
+    'page'                 => 'Page',
+    'icon'                 => 'Icon',
+    'public'               => 'Public',
+    'content'              => 'Content',
 ];

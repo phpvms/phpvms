@@ -26,4 +26,6 @@ return [
     'module_method_zip'                => 'Upload module zip file (Not Recommended)',
     'module_method_autodiscover'       => 'Enable new module (already uploaded in modules folder).',
     'module_zip'                       => 'Module zip file',
+    'page_informations'                => 'Page Informations',
+    'should_open_in_new_tab'           => 'Should open in a new tab',
 ];
