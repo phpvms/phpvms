@@ -44,5 +44,7 @@ return [
     'rank_auto_approve_manual'         => 'Approbation automatique des PIREPs manuels',
     'rank_auto_promote'                => 'Promotion automatique',
     'rank_auto_promote_hint'           => 'Quand un pilote atteint ce nombre d’heures, il sera promu à ce grade',
-
+    'subfleet_informations'            => 'Informations sur la Sous-Flotte',
+    'subfleet_description'             => 'Les sous-flottes sont des groupes d’avions. Le "type" est un nom court. Les compagnies aériennes regroupent toujours les avions selon leurs caractéristiques, par exemple les 737 avec winglets peuvent avoir un type "B.738-WL". Vous pouvez en créer autant que vous voulez, mais vous devez en avoir au moins une. Pour en savoir plus sur les sous-flottes, consultez la documentation.',
+    'subfleet_expense_multiplier_hint' => 'Ceci est le multiplicateur appliqué à toutes les dépenses (y compris les coûts au sol) pour les avions de cette sous-flotte, exprimé en pourcentage. La valeur par défaut est 100.',
 ];

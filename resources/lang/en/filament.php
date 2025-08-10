@@ -44,4 +44,7 @@ return [
     'rank_auto_approve_manual'         => 'Auto Approve Manual PIREPs',
     'rank_auto_promote'                => 'Auto Promote',
     'rank_auto_promote_hint'           => 'When a pilot reaches these hours, they\'ll be upgraded to this rank',
+    'subfleet_informations'            => 'Subfleet Informations',
+    'subfleet_description'             => 'Subfleets are aircraft groups. The "type" is a short name. Airlines always group aircraft together by feature, so 737s with winglets might have a type of "B.738-WL". You can create as many as you want, you need at least one, though. Read more about subfleets in the docs.',
+    'subfleet_expense_multiplier_hint' => 'This is the multiplier for all expenses (inc GH costs) being applied to aircraft in this subfleet, as a percentage. Defaults to 100.',
 ];

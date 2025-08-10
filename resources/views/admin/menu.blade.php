@@ -22,7 +22,8 @@
       @endcan
 
       @can('view_any_subfleet')
-        <li><a href="{{ \App\Filament\Resources\SubfleetResource::getUrl() }}"><i class="pe-7s-plane"></i>fleet</a></li>
+        <li><a href="{{ \App\Filament\Resources\Subfleets\SubfleetResource::getUrl() }}"><i class="pe-7s-plane"></i>fleet</a>
+        </li>
       @endcan
 
       @can('view_any_fare')
