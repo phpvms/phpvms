@@ -10,7 +10,7 @@
   <div class="collapse" id="operations_menu" aria-expanded="true">
     <ul class="nav">
       @can('view_any_pirep')
-        <li><a href="{{ \App\Filament\Resources\PirepResource::getUrl() }}"><i class="pe-7s-cloud-upload"></i>pireps
+        <li><a href="{{ \App\Filament\Resources\Pireps\PirepResource::getUrl() }}"><i class="pe-7s-cloud-upload"></i>pireps
             <span data-toggle="tooltip" title="3 New" class="badge bg-light-blue pull-right">3</span>
           </a>
         </li>

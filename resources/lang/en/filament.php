@@ -28,4 +28,11 @@ return [
     'module_zip'                       => 'Module zip file',
     'page_informations'                => 'Page Informations',
     'should_open_in_new_tab'           => 'Should open in a new tab',
+    'recalculate_finances'             => 'Recalculate finances',
+    'finances_recalculated'            => 'Finances recalculated',
+    'basic_informations'               => 'Basic informations',
+    'pirep_details'                    => 'PIREP Details',
+    'planned_details'                  => 'Planned Details',
+    'filed_after'                      => 'Filed after',
+    'filed_before'                     => 'Filed before',
 ];

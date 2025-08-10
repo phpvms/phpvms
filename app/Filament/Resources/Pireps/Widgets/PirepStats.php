@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\PirepResource\Widgets;
+namespace App\Filament\Resources\Pireps\Widgets;
 
-use App\Filament\Resources\PirepResource\Pages\ListPireps;
+use App\Filament\Resources\Pireps\Pages\ListPireps;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use Filament\Widgets\Concerns\InteractsWithPageTable;
@@ -33,9 +33,9 @@ class PirepStats extends BaseWidget
             ->count();
 
         return [
-            Stat::make('Pireps', $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value) => $value->aggregate)->toArray()),
-            Stat::make('Accepted Pireps', $this->getPageTableQuery()->where('state', PirepState::ACCEPTED)->count())->color('danger'),
-            Stat::make('Pending Pireps', $this->getPageTableQuery()->where('state', PirepState::PENDING)->count()),
+            Stat::make(trans_choice('common.pirep', 2), $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value) => $value->aggregate)->toArray()),
+            Stat::make(__('pireps.state.accepted'), $this->getPageTableQuery()->where('state', PirepState::ACCEPTED)->count())->color('danger'),
+            Stat::make(__('pireps.state.pending'), $this->getPageTableQuery()->where('state', PirepState::PENDING)->count()),
         ];
     }
 }

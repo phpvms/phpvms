@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\PirepResource\Pages;
+namespace App\Filament\Resources\Pireps\Pages;
 
-use App\Filament\Resources\PirepResource;
-use App\Models\Enums\PirepState;
-use App\Models\Pirep;
-use App\Services\PirepService;
+use App\Filament\Resources\Pireps\Actions\AcceptAction;
+use App\Filament\Resources\Pireps\Actions\RejectAction;
+use App\Filament\Resources\Pireps\PirepResource;
 use Carbon\Carbon;
-use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -20,20 +18,8 @@ class EditPirep extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('accept')
-                ->color('success')
-                ->icon('heroicon-m-check-circle')
-                ->label('Accept')
-                ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
-                ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::ACCEPTED)),
-
-            Action::make('reject')
-                ->color('danger')
-                ->icon('heroicon-m-x-circle')
-                ->label('Reject')
-                ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
-                ->action(fn (Pirep $record) => app(PirepService::class)->changeState($record, PirepState::REJECTED)),
-
+            AcceptAction::make(),
+            RejectAction::make(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),

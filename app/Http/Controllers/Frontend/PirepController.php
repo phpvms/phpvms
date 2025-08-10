@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
-use App\Filament\Resources\PirepResource;
+use App\Filament\Resources\Pireps\PirepResource;
 use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\UpdatePirepRequest;
 use App\Models\Enums\PirepFieldSource;

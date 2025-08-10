@@ -28,4 +28,11 @@ return [
     'module_zip'                       => 'Fichier zip du module',
     'page_informations'                => 'Information sur la page',
     'should_open_in_new_tab'           => 'Doit s\'ouvrir dans un nouvel onglet',
+    'recalculate_finances'             => 'Recalculer les finances',
+    'finances_recalculated'            => 'Finances recalculées',
+    'basic_informations'               => 'Informations de base',
+    'pirep_details'                    => 'Détails du PIREP',
+    'planned_details'                  => 'Détails planifiés',
+    'filed_after'                      => 'Déposé après',
+    'filed_before'                     => 'Dépose avant',
 ];
