@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Expenses\Tables;
 
 use App\Models\Enums\ExpenseType;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -62,8 +61,6 @@ class ExpensesTable
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
             ]);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Ranks\Tables;
 
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -77,8 +76,6 @@ class RanksTable
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
             ]);
     }
 }

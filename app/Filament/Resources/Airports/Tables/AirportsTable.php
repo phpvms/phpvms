@@ -6,7 +6,6 @@ use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -109,8 +108,6 @@ class AirportsTable
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
             ]);
     }
 }

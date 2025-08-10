@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Fares\Tables;
 
 use App\Models\Enums\FareType;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -81,8 +80,6 @@ class FaresTable
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
             ]);
     }
 }

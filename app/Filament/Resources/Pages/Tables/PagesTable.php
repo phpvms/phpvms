@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Pages\Tables;
 
 use App\Models\Enums\PageType;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -56,8 +55,6 @@ class PagesTable
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
             ]);
     }
 }
