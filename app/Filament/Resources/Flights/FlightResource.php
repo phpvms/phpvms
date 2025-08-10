@@ -80,8 +80,8 @@ class FlightResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Departure Airport' => $record->dpt_airport_id,
-            'Arrival Airport'   => $record->arr_airport_id,
+            __('airports.departure') => $record->dpt_airport_id,
+            __('airports.arrival')   => $record->arr_airport_id,
         ];
     }
 
