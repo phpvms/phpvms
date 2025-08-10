@@ -129,4 +129,5 @@ return [
     'user_field'            => 'User Field|User Fields',
     'role'                  => 'Role|Roles',
     'registered_on'         => 'Registered On',
+    'finances'              => 'Finances',
 ];

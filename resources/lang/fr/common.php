@@ -129,4 +129,5 @@ return [
     'user_field'            => 'Champ utilisateur|Champ utilisateurs',
     'role'                  => 'Rôle|Rôles',
     'registered_on'         => 'Inscrit le',
+    'finances'              => 'Finances',
 ];

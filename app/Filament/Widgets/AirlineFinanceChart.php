@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Finances;
 use App\Models\Airline;
 use App\Models\JournalTransaction;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
@@ -24,9 +26,19 @@ class AirlineFinanceChart extends ChartWidget
 
     protected function getData(): array
     {
-        $start_date = $this->pageFilters['start_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['start_date']) : now()->startOfYear();
-        $end_date = $this->pageFilters['end_date'] !== null ? Carbon::createFromTimeString($this->pageFilters['end_date']) : now();
-        $airline_id = $this->pageFilters['airline_id'] ?? Auth::user()->airline_id;
+        $filters = $this->pageFilters ?? [
+            'start_date' => null,
+            'end_date'   => null,
+            'airline_id' => null,
+        ];
+
+        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $airline_id = $filters['airline_id'];
+
+        if ($airline_id === null || $airline_id === '') {
+            $airline_id = Auth::user()->airline_id;
+        }
 
         $airline = Airline::find($airline_id);
 
@@ -51,14 +63,14 @@ class AirlineFinanceChart extends ChartWidget
                 [
                     'label'           => 'Debit',
                     'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
-                    'backgroundColor' => 'rgba('.Color::Red[400].', 0.1)',
-                    'borderColor'     => 'rgb('.Color::Red[400].')',
+                    'backgroundColor' => str(Color::Red[600])->replace(')', '/0.1)'),
+                    'borderColor'     => Color::Red[600],
                 ],
                 [
                     'label'           => 'Credit',
                     'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
-                    'backgroundColor' => 'rgba('.Color::Green[400].', 0.1)',
-                    'borderColor'     => 'rgb('.Color::Green[400].')',
+                    'backgroundColor' => str(Color::Green[600])->replace(')', '/0.1)'),
+                    'borderColor'     => Color::Green[600],
                 ],
             ],
             'labels' => $debit->map(fn (TrendValue $value) => $value->date),
@@ -72,6 +84,7 @@ class AirlineFinanceChart extends ChartWidget
 
     public static function canView(): bool
     {
-        return false;
+        // Display if the page is finance or /livewire/update from finance
+        return request()->url() === Finances::getUrl() || (request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl()));
     }
 }
