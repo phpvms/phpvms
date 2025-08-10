@@ -18,4 +18,6 @@ return [
     'flight_load_factor_hint'          => 'Pourcentage de charge pour pax/cargo, laissez vide pour utiliser la valeur par défaut.',
     'flight_load_factor_variance_hint' => 'Pourcentage de variation de la charge (+/-), laissez vide pour utiliser la valeur par défaut.',
     'scheduling'                       => 'Planification',
+    'invite_email_hint'                => 'Si ce champ est vide, toutes les adresses e-mail seront autorisées à s\'inscrire en utilisant le lien.',
+    'invite_email_link_hint'           => 'Si activé, un e-mail sera envoyé à l\'adresse e-mail ci-dessus avec le lien d\'invitation.',
 ];

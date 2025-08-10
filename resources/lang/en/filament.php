@@ -18,4 +18,6 @@ return [
     'flight_load_factor_hint'          => 'Percentage value for pax/cargo load, leave blank to use the default value.',
     'flight_load_factor_variance_hint' => 'Percentage of how much the load can vary (+/-), leave blank to use the default value.',
     'scheduling'                       => 'Scheduling',
+    'invite_email_hint'                => 'If empty all emails will be allowed to register using the link.',
+    'invite_email_link_hint'           => 'If enabled an email will be sent to the email address above with the invite link.',
 ];

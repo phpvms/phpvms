@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\InviteResource\Pages;
+namespace App\Filament\Resources\Invites\Pages;
 
-use App\Filament\Resources\InviteResource;
+use App\Filament\Resources\Invites\InviteResource;
 use App\Models\Invite;
 use App\Notifications\Messages\InviteLink;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -18,8 +19,7 @@ class ManageInvites extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->label('Add Invite')
-                ->icon('heroicon-o-plus-circle')
+                ->icon(Heroicon::OutlinedPlusCircle)
                 ->mutateDataUsing(function (array $data): array {
                     if (!is_null($data['email'])) {
                         $data['usage_limit'] = 1;

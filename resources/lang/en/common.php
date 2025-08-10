@@ -77,6 +77,8 @@ return [
     'updated_at'           => 'Updated At',
     'created'              => 'Created',
     'created_at'           => 'Created At',
+    'expires'              => 'Expires',
+    'expires_at'           => 'Expires At',
     'simbrief_airframe'    => 'SimBrief Airframe',
     'simbrief_airframe_id' => 'SimBrief Airframe ID',
     'image'                => 'Image',
@@ -98,4 +100,7 @@ return [
     'days_text'            => 'Days',
     'visible'              => 'Visible',
     'inherited'            => 'Inherited',
+    'never'                => 'Never',
+    'link'                 => 'Link',
+    'invite'               => 'Invite',
 ];

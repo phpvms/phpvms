@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
-use App\Filament\Resources\InviteResource;
+use App\Filament\Resources\Invites\InviteResource;
 use App\Filament\Resources\UserFieldResource;
 use App\Filament\Resources\UserResource;
-use App\Filament\Resources\UserResource\Widgets\UserStats;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;

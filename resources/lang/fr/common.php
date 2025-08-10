@@ -77,6 +77,8 @@ return [
     'updated_at'           => 'Mis à jour le',
     'created'              => 'Créé',
     'created_at'           => 'Créé le',
+    'expires'              => 'Expire',
+    'expires_at'           => 'Expire le',
     'simbrief_airframe'    => 'Profil SimBrief',
     'simbrief_airframe_id' => 'ID du Profil SimBrief',
     'image'                => 'Image',
@@ -98,4 +100,7 @@ return [
     'days_text'            => 'Jours',
     'visible'              => 'Visible',
     'inherited'            => 'Hérité',
+    'never'                => 'Jamais',
+    'link'                 => 'Lien',
+    'invite'               => 'Invitation',
 ];
