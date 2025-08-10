@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\Resources\Users\Pages;
 
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
+use App\Filament\Resources\Users\Actions\VerifyEmailAction;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
-use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Hash;
 
 class EditUser extends EditRecord
@@ -26,28 +25,8 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('verify_email')->label('Verify Email')->action(function (User $record) {
-                if ($record->markEmailAsVerified()) {
-                    event(new Verified($record));
-                }
-
-                Notification::make()
-                    ->title('User\'s email verified successfully')
-                    ->success()
-                    ->send();
-            })->visible(fn (User $record): bool => !$record->hasVerifiedEmail()),
-            Action::make('request_email_verification')->label('Request new email verification')->action(function (User $record) {
-                $record->update([
-                    'email_verified_at' => null,
-                ]);
-
-                $record->sendEmailVerificationNotification();
-
-                Notification::make()
-                    ->title('User email verification requested successfully')
-                    ->success()
-                    ->send();
-            })->color('warning')->visible(fn (User $record): bool => $record->hasVerifiedEmail()),
+            VerifyEmailAction::make(),
+            RequestEmailVerificationAction::make(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),

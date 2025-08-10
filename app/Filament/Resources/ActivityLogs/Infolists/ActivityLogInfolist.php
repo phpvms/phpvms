@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ActivityLogs\Infolists;
 
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Users\UserResource;
 use Carbon\Carbon;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;

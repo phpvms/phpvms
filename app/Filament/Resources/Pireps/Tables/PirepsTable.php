@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Pireps\Tables;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\Airport;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;

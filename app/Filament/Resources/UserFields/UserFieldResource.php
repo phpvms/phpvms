@@ -37,6 +37,6 @@ class UserFieldResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('common.user_field');
+        return trans_choice('common.user_field', 1);
     }
 }

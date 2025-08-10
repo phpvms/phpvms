@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ActivityLogs\Tables;
 
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;

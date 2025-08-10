@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\RelationManagers;
+namespace App\Filament\Resources\Users\RelationManagers;
 
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class AwardsRelationManager extends RelationManager
 {
@@ -29,9 +30,15 @@ class AwardsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('description'),
-                ImageColumn::make('image')->url(fn ($record) => $record->image_url),
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+
+                TextColumn::make('description')
+                    ->label(__('common.description')),
+
+                ImageColumn::make('image')
+                    ->label(__('common.image'))
+                    ->url(fn ($record) => $record->image_url),
             ])
             ->filters([
                 //
@@ -49,5 +56,17 @@ class AwardsRelationManager extends RelationManager
             ])
             ->emptyStateActions([
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('common.award');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('common.award'))
+            ->plural()
+            ->toString();
     }
 }

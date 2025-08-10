@@ -126,5 +126,7 @@ return [
     'cost_per_hour'         => 'Cost per hour',
     'cost_delay_per_minute' => 'Cost delay per minute',
     'expense_multiplier'    => 'Expense Multiplier',
-    'user_field'            => 'User Field',
+    'user_field'            => 'User Field|User Fields',
+    'role'                  => 'Role|Roles',
+    'registered_on'         => 'Registered On',
 ];

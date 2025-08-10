@@ -35,7 +35,8 @@
       @endcan
 
       @can('view_any_user')
-        <li><a href="{{ \App\Filament\Resources\UserResource::getUrl() }}"><i class="pe-7s-users"></i>users</a></li>
+        <li><a href="{{ \App\Filament\Resources\Users\UserResource::getUrl() }}"><i class="pe-7s-users"></i>users</a>
+        </li>
       @endcan
     </ul>
   </div>
