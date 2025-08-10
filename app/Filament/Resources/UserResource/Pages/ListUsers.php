@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\Invites\InviteResource;
-use App\Filament\Resources\UserFieldResource;
+use App\Filament\Resources\UserFields\UserFieldResource;
 use App\Filament\Resources\UserResource;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;

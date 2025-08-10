@@ -50,4 +50,6 @@ return [
     'aircraft_informations'            => 'Aircraft Informations',
     'certified_weights'                => 'Certified Weights',
     'typerating_informations'          => 'Typerating Informations',
+    'user_field_private'               => 'Private (Only Visible To Admins)',
+    'user_field_show_on_registration'  => 'Show on registration',
 ];

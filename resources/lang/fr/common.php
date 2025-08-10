@@ -126,4 +126,5 @@ return [
     'cost_per_hour'         => 'Coût par heure',
     'cost_delay_per_minute' => 'Coût du retard par minute',
     'expense_multiplier'    => 'Multiplicateur de dépenses',
+    'user_field'            => 'Champ utilisateur',
 ];

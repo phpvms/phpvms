@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\UserFieldResource\Pages;
+namespace App\Filament\Resources\UserFields\Pages;
 
-use App\Filament\Resources\UserFieldResource;
+use App\Filament\Resources\UserFields\UserFieldResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ManageUserFields extends ManageRecords
 {
@@ -13,7 +14,8 @@ class ManageUserFields extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Add User Field')->icon('heroicon-o-plus-circle')->modalHeading('Add User Field'),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlusCircle),
         ];
     }
 }

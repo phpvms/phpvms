@@ -50,4 +50,6 @@ return [
     'aircraft_informations'            => 'Informations sur l\'avion',
     'certified_weights'                => 'Masses certifiées',
     'typerating_informations'          => 'Informations sur la qualification de type',
+    'user_field_private'               => 'Privé (Visible seulements par les Admins)',
+    'user_field_show_on_registration'  => 'Afficher lors de l\'inscription',
 ];
