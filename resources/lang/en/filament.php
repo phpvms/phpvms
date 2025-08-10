@@ -20,4 +20,10 @@ return [
     'scheduling'                       => 'Scheduling',
     'invite_email_hint'                => 'If empty all emails will be allowed to register using the link.',
     'invite_email_link_hint'           => 'If enabled an email will be sent to the email address above with the invite link.',
+    'module_informations'              => 'Module Informations',
+    'module_description'               => 'If you choose to upload a module zip file it will be installed and enabled automatically. Please not that module folder must be on top level of the zip and the zip name must be EXACTLY equal to the name of the module folder inside. If you choose to enable an already uploaded module, you have to upload it in the modules folder.',
+    'module_method'                    => 'Method',
+    'module_method_zip'                => 'Upload module zip file (Not Recommended)',
+    'module_method_autodiscover'       => 'Enable new module (already uploaded in modules folder).',
+    'module_zip'                       => 'Module zip file',
 ];

@@ -20,4 +20,10 @@ return [
     'scheduling'                       => 'Planification',
     'invite_email_hint'                => 'Si ce champ est vide, toutes les adresses e-mail seront autorisées à s\'inscrire en utilisant le lien.',
     'invite_email_link_hint'           => 'Si activé, un e-mail sera envoyé à l\'adresse e-mail ci-dessus avec le lien d\'invitation.',
+    'module_informations'              => 'Informations sur le module',
+    'module_description'               => 'Si vous choisissez de téléverser un fichier zip de module, il sera installé et activé automatiquement. Veuillez noter que le dossier du module doit se trouver à la racine du zip et que le nom du zip doit être EXACTEMENT identique au nom du dossier du module qu’il contient. Si vous choisissez d’activer un module déjà téléversé, vous devez l’avoir placé dans le dossier des modules.',
+    'module_method'                    => 'Méthode',
+    'module_method_zip'                => 'Téléverser un fichier zip de module (non recommandé)',
+    'module_method_autodiscover'       => 'Activer un nouveau module (déjà téléversé dans le dossier des modules).',
+    'module_zip'                       => 'Fichier zip du module',
 ];

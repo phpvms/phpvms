@@ -103,4 +103,6 @@ return [
     'never'                => 'Jamais',
     'link'                 => 'Lien',
     'invite'               => 'Invitation',
+    'enabled'              => 'Activé',
+    'module'               => 'Module',
 ];
