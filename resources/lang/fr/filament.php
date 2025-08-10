@@ -49,4 +49,5 @@ return [
     'subfleet_expense_multiplier_hint' => 'Ceci est le multiplicateur appliqué à toutes les dépenses (y compris les coûts au sol) pour les avions de cette sous-flotte, exprimé en pourcentage. La valeur par défaut est 100.',
     'aircraft_informations'            => 'Informations sur l\'avion',
     'certified_weights'                => 'Masses certifiées',
+    'typerating_informations'          => 'Informations sur la qualification de type',
 ];

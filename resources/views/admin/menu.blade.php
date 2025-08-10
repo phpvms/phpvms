@@ -73,7 +73,8 @@
       @endcan
 
       @can('view_any_typerating')
-        <li><a href="{{ \App\Filament\Resources\TyperatingResource::getUrl() }}"><i class="pe-7s-plane"></i>type ratings</a>
+        <li><a href="{{ \App\Filament\Resources\Typeratings\TyperatingResource::getUrl() }}"><i class="pe-7s-plane"></i>type
+            ratings</a>
         </li>
       @endcan
 

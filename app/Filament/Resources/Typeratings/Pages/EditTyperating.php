@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\TypeRatingResource\Pages;
+namespace App\Filament\Resources\Typeratings\Pages;
 
-use App\Filament\Resources\TyperatingResource;
+use App\Filament\Resources\Typeratings\TyperatingResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditTypeRating extends EditRecord
+class EditTyperating extends EditRecord
 {
     protected static string $resource = TyperatingResource::class;
 
