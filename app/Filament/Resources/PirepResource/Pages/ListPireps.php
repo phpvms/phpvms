@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\PirepResource\Pages;
 
-use App\Filament\Resources\PirepFieldResource;
+use App\Filament\Resources\PirepFields\PirepFieldResource;
 use App\Filament\Resources\PirepResource;
 use App\Filament\Resources\PirepResource\Widgets\PirepStats;
 use App\Models\Enums\PirepState;

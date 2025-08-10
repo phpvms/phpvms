@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\PirepFieldResource\Pages;
+namespace App\Filament\Resources\PirepFields\Pages;
 
-use App\Filament\Resources\PirepFieldResource;
+use App\Filament\Resources\PirepFields\PirepFieldResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ManagePirepFields extends ManageRecords
 {
@@ -13,7 +14,8 @@ class ManagePirepFields extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Add Pirep Field')->icon('heroicon-o-plus-circle')->modalHeading('Add Pirep Field'),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlusCircle),
         ];
     }
 }

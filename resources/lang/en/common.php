@@ -109,4 +109,5 @@ return [
     'icon'                 => 'Icon',
     'public'               => 'Public',
     'content'              => 'Content',
+    'required'             => 'Required',
 ];
