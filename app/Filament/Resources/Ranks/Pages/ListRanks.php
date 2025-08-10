@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\RankResource\Pages;
+namespace App\Filament\Resources\Ranks\Pages;
 
-use App\Filament\Resources\RankResource;
+use App\Filament\Resources\Ranks\RankResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListRanks extends ListRecords
 {
@@ -13,7 +14,8 @@ class ListRanks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Add Rank')->icon('heroicon-o-plus-circle'),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlusCircle),
         ];
     }
 }

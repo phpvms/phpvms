@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\RankResource\RelationManagers;
+namespace App\Filament\Resources\Ranks\RelationManagers;
 
 use App\Models\Subfleet;
 use Filament\Actions\AttachAction;
@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class SubfleetsRelationManager extends RelationManager
 {
@@ -30,17 +31,27 @@ class SubfleetsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('airline.name')->label('Airline'),
-                TextColumn::make('name'),
-                TextInputColumn::make('acars_pay')->placeholder('inherited')->rules(['nullable', 'numeric', 'min:0']),
-                TextInputColumn::make('manual_pay')->placeholder('inherited')->rules(['nullable', 'numeric', 'min:0']),
+                TextColumn::make('airline.name')
+                    ->label(__('common.airline')),
+
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+
+                TextInputColumn::make('acars_pay')
+                    ->label(__('common.acars_pay'))
+                    ->placeholder(__('common.inherited'))
+                    ->rules(['nullable', 'numeric', 'min:0']),
+
+                TextInputColumn::make('manual_pay')
+                    ->label(__('common.manual_pay'))
+                    ->placeholder(__('common.inherited'))
+                    ->rules(['nullable', 'numeric', 'min:0']),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 AttachAction::make()
-                    ->icon('heroicon-o-plus-circle')
                     ->multiple()
                     ->preloadRecordSelect()
                     ->recordTitle(fn (Subfleet $record): string => $record->airline->name.' - '.$record->name),
@@ -53,5 +64,17 @@ class SubfleetsRelationManager extends RelationManager
                     DetachBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('common.subfleet');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('common.subfleet'))
+            ->plural()
+            ->toString();
     }
 }

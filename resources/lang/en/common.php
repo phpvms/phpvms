@@ -117,4 +117,7 @@ return [
     'memo'                 => 'Memo',
     'credit'               => 'Credit',
     'debit'                => 'Debit',
+    'acars_pay'            => 'Acars pay',
+    'manual_pay'           => 'Manual pay',
+    'rank'                 => 'Rank',
 ];

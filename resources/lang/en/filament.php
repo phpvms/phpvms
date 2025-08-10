@@ -35,4 +35,13 @@ return [
     'planned_details'                  => 'Planned Details',
     'filed_after'                      => 'Filed after',
     'filed_before'                     => 'Filed before',
+    'rank_informations'                => 'Rank informations',
+    'rank_acars_base_pay_rate'         => 'ACARS Base Pay Rate',
+    'rank_acars_base_pay_rate_hint'    => 'Base rate, per-flight hour, for ACARS PIREPs. Can be adjusted via a multiplier on the subfleet.',
+    'rank_manual_base_pay_rate'        => 'Manual Base Pay Rate',
+    'rank_manual_base_pay_rate_hint'   => 'Base rate, per-flight hour, for manually-filed PIREPs. Can be adjusted via a multiplier on the subfleet.',
+    'rank_auto_approve_acars'          => 'Auto Approve ACARS PIREPs',
+    'rank_auto_approve_manual'         => 'Auto Approve Manual PIREPs',
+    'rank_auto_promote'                => 'Auto Promote',
+    'rank_auto_promote_hint'           => 'When a pilot reaches these hours, they\'ll be upgraded to this rank',
 ];

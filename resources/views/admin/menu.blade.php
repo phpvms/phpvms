@@ -67,7 +67,8 @@
       @endcan
 
       @can('view_any_rank')
-        <li><a href="{{ \App\Filament\Resources\RankResource::getUrl() }}"><i class="pe-7s-graph1"></i>ranks</a></li>
+        <li><a href="{{ \App\Filament\Resources\Ranks\RankResource::getUrl() }}"><i class="pe-7s-graph1"></i>ranks</a>
+        </li>
       @endcan
 
       @can('view_any_typerating')

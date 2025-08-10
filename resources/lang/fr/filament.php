@@ -35,4 +35,14 @@ return [
     'planned_details'                  => 'Détails planifiés',
     'filed_after'                      => 'Déposé après',
     'filed_before'                     => 'Dépose avant',
+    'rank_informations'                => 'Informations sur le grade',
+    'rank_acars_base_pay_rate'         => 'Salaire de base ACARS',
+    'rank_acars_base_pay_rate_hint'    => 'Salaire de base, par heure de vol, pour les PIREPs ACARS. Peut être ajusté via un multiplicateur sur le sous-flotte.',
+    'rank_manual_base_pay_rate'        => 'Salaire de base manuel',
+    'rank_manual_base_pay_rate_hint'   => 'Salaire de base, par heure de vol, pour les PIREPs déposés manuellement. Peut être ajusté via un multiplicateur sur le sous-flotte.',
+    'rank_auto_approve_acars'          => 'Approbation automatique des PIREPs ACARS',
+    'rank_auto_approve_manual'         => 'Approbation automatique des PIREPs manuels',
+    'rank_auto_promote'                => 'Promotion automatique',
+    'rank_auto_promote_hint'           => 'Quand un pilote atteint ce nombre d’heures, il sera promu à ce grade',
+
 ];
