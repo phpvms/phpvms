@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\SimBriefAirframes;
 
-use App\Filament\Resources\SimBriefAirframes\Forms\SimBriefAirframeForm;
 use App\Filament\Resources\SimBriefAirframes\Pages\ManageSimBriefAirframes;
+use App\Filament\Resources\SimBriefAirframes\Schemas\SimBriefAirframeForm;
 use App\Filament\Resources\SimBriefAirframes\Tables\SimBriefAirframesTable;
 use App\Models\Enums\NavigationGroup;
 use App\Models\SimBriefAirframe;

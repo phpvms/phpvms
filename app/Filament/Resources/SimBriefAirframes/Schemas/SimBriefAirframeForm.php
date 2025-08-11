@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\SimBriefAirframes\Forms;
+namespace App\Filament\Resources\SimBriefAirframes\Schemas;
 
 use App\Models\Enums\AirframeSource;
 use Filament\Forms\Components\Hidden;
