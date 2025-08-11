@@ -133,4 +133,5 @@ return [
     'registered_on'         => 'Registered On',
     'finances'              => 'Finances',
     'see_the_docs'          => 'See the docs',
+    'setting'               => 'Setting|Settings',
 ];

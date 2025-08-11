@@ -133,4 +133,5 @@ return [
     'registered_on'         => 'Inscrit le',
     'finances'              => 'Finances',
     'see_the_docs'          => 'Voir la docs',
+    'setting'               => 'Paramètre|Paramètres',
 ];

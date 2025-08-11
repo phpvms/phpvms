@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Enums\NavigationGroup;
 use App\Repositories\SettingRepository;
 use App\Services\FinanceService;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -13,73 +14,86 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
+use Filament\Support\Facades\FilamentView;
+use Filament\Support\Icons\Heroicon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 
+/**
+ * @property-read Schema $form
+ */
 class Settings extends Page
 {
     use HasPageShield;
     use InteractsWithFormActions;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $navigationLabel = 'Settings';
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
-
-    protected string $view = 'filament.pages.settings';
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
 
     public ?array $data = [];
 
     public function mount(): void
     {
         $this->fillForm();
+        $this->previousUrl = url()->previous();
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            Form::make([EmbeddedSchema::make('form')])
+                ->id('form')
+                ->livewireSubmitHandler('save')
+                ->footer([
+                    $this->getFormActionsComponents(),
+                ]),
+        ]);
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components($this->getFormSchema())
+            ->statePath('data');
     }
 
     protected function fillForm(): void
     {
-        $this->callHook('beforeFill');
-
         $settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
 
-        $data = $this->mutateFormDataBeforeFill($settings->toArray());
-
-        $this->form->fill($data);
-
-        $this->callHook('afterFill');
-    }
-
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        $newData = [];
+        $data = $settings->toArray();
+        $formattedData = [];
 
         foreach ($data as $setting) {
-            $newData[$setting['key']] = $setting['value'];
+            $formattedData[$setting['key']] = $setting['value'];
         }
 
-        return Arr::undot($newData);
+        $formattedData = Arr::undot($formattedData);
+
+        $this->form->fill($formattedData);
     }
 
     public function save(): void
     {
-        try {
-            $this->callHook('beforeValidate');
+        abort_unless(static::canAccess(), 403);
 
+        try {
             $data = $this->form->getState();
 
-            $this->callHook('afterValidate');
-
-            $data = $this->mutateFormDataBeforeSave($data);
-
-            $this->callHook('beforeSave');
+            $data = Arr::dot($data);
 
             foreach ($data as $key => $value) {
                 app(SettingRepository::class)->store($key, $value);
@@ -90,92 +104,117 @@ class Settings extends Page
 
             app(FinanceService::class)->changeJournalCurrencies();
 
-            $this->callHook('afterSave');
-
-            $this->getSavedNotification()?->send();
-
-            if ($redirectUrl = $this->getRedirectUrl()) {
-                $this->redirect($redirectUrl);
-            }
+            Notification::make()
+                ->success()
+                ->title('Settings saved successfully')
+                ->send();
         } catch (Halt $exception) {
             return;
         }
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
+    public function getFormActionsComponents(): Actions
     {
-        return Arr::dot($data);
+        return Actions::make([
+            $this->getSaveFormAction(),
+            $this->getCancelFormAction(),
+        ]);
     }
 
-    public function getSavedNotification(): ?Notification
+    protected function getSaveFormAction(): Action
     {
-        return Notification::make()->success()->title('Settings saved successfully');
+        return Action::make('save')
+            ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+            ->submit('save')
+            ->keyBindings(['mod+s']);
     }
 
-    public function getFormActions()
+    protected function getCancelFormAction(): Action
     {
-        return [
-            Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s']),
-        ];
-    }
+        $url = $this->previousUrl ?? Dashboard::getUrl();
 
-    public function form(Schema $schema): Schema
-    {
-        return $schema;
-    }
-
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->schema($this->getFormSchema())
-                    ->statePath('data')
-                    ->columns(2)
-                    ->inlineLabel($this->hasInlineLabels()),
-            ),
-        ];
+        return Action::make('cancel')
+            ->label(__('filament-panels::resources/pages/edit-record.form.actions.cancel.label'))
+            ->alpineClickHandler(
+                FilamentView::hasSpaMode($url)
+                    ? 'document.referrer ? window.history.back() : Livewire.navigate('.Js::from($url).')'
+                    : 'document.referrer ? window.history.back() : (window.location.href = '.Js::from($url).')',
+            )
+            ->color('gray');
     }
 
     protected function getFormSchema(): array
     {
         $tabs = [];
 
-        $grouped_settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
+        $grouped_settings = app(SettingRepository::class)
+            ->where('type', '!=', 'hidden')
+            ->orderBy('order')
+            ->get();
+
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
-            $tabs[] = Tab::make(Str::ucfirst($group))->schema(
-                $settings->map(function ($setting) {
-                    if ($setting->type === 'date') {
-                        return DatePicker::make($setting->key)->label($setting->name)->helperText($setting->description)->format('Y-m-d');
-                    } elseif ($setting->type === 'boolean' || $setting->type === 'bool') {
-                        return Toggle::make($setting->key)->label($setting->name)->helperText($setting->description)->offIcon('heroicon-m-x-circle')->offColor('danger')->onIcon('heroicon-m-check-circle')->onColor('success');
-                    } elseif ($setting->type === 'int') {
-                        return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->integer();
-                    } elseif ($setting->type === 'number') {
-                        return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->numeric()->step(0.01);
-                    } elseif ($setting->type === 'select') {
-                        if ($setting->id === 'general_theme') {
-                            return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc($this->getThemes()));
-                        } elseif ($setting->id === 'units_currency') {
-                            return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options($this->getCurrencyList())->searchable()->native(false);
+            $tabs[] = Tab::make(Str::ucfirst($group))
+                ->schema(
+                    $settings->map(function ($setting) {
+                        if ($setting->type === 'date') {
+                            return DatePicker::make($setting->key)
+                                ->label($setting->name)
+                                ->helperText($setting->description)
+                                ->format('Y-m-d')
+                                ->native(false);
+                        } elseif ($setting->type === 'boolean' || $setting->type === 'bool') {
+                            return Toggle::make($setting->key)
+                                ->label($setting->name)
+                                ->helperText($setting->description)
+                                ->offIcon(Heroicon::XCircle)
+                                ->offColor('danger')
+                                ->onIcon(Heroicon::CheckCircle)
+                                ->onColor('success');
+                        } elseif ($setting->type === 'int') {
+                            return TextInput::make($setting->key)
+                                ->label($setting->name)
+                                ->helperText($setting->description)
+                                ->integer();
+                        } elseif ($setting->type === 'number') {
+                            return TextInput::make($setting->key)
+                                ->label($setting->name)
+                                ->helperText($setting->description)
+                                ->numeric()
+                                ->step(0.01);
+                        } elseif ($setting->type === 'select') {
+                            if ($setting->id === 'general_theme') {
+                                return Select::make($setting->key)
+                                    ->label($setting->name)
+                                    ->helperText($setting->description)
+                                    ->options(list_to_assoc($this->getThemes()));
+                            } elseif ($setting->id === 'units_currency') {
+                                return Select::make($setting->key)
+                                    ->label($setting->name)
+                                    ->helperText($setting->description)
+                                    ->options($this->getCurrencyList())
+                                    ->searchable()
+                                    ->native(false);
+                            }
+
+                            return Select::make($setting->key)
+                                ->label($setting->name)
+                                ->helperText($setting->description)
+                                ->options(list_to_assoc(explode(',', $setting->options)));
                         }
 
-                        return Select::make($setting->key)->label($setting->name)->helperText($setting->description)->options(list_to_assoc(explode(',', $setting->options)));
-                    }
-
-                    return TextInput::make($setting->key)->label($setting->name)->helperText($setting->description)->string();
-                })->toArray()
-            );
+                        return TextInput::make($setting->key)
+                            ->label($setting->name)
+                            ->helperText($setting->description)
+                            ->string();
+                    })->toArray()
+                );
         }
 
         return [
-            Tabs::make('settings')->tabs($tabs)->columnSpanFull(),
+            Tabs::make('settings')
+                ->tabs($tabs)
+                ->columnSpanFull(),
         ];
-    }
-
-    public function getRedirectUrl(): ?string
-    {
-        return null;
     }
 
     private function getThemes(): array
@@ -202,5 +241,15 @@ class Settings extends Page
         }
 
         return $curr;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return trans_choice('common.setting', 2);
+    }
+
+    public function getTitle(): string
+    {
+        return trans_choice('common.setting', 2);
     }
 }
