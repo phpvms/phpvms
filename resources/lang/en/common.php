@@ -105,6 +105,8 @@ return [
     'never'                 => 'Never',
     'link'                  => 'Link',
     'invite'                => 'Invite',
+    'disable'               => 'Disable',
+    'disabled'              => 'Disabled',
     'enabled'               => 'Enabled',
     'module'                => 'Module',
     'page'                  => 'Page',
@@ -130,4 +132,5 @@ return [
     'role'                  => 'Role|Roles',
     'registered_on'         => 'Registered On',
     'finances'              => 'Finances',
+    'see_the_docs'          => 'See the docs',
 ];

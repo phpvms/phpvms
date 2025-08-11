@@ -2,16 +2,23 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Enums\NavigationGroup;
 use App\Repositories\KvpRepository;
+use App\Services\CronService;
 use App\Services\Installer\InstallerService;
-use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\VersionService;
 use App\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Flex;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -19,205 +26,237 @@ use Illuminate\Support\Facades\Log;
 
 class Maintenance extends Page
 {
+    public array $cron = [];
+
     use HasPageShield;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Config';
+    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 9;
 
-    protected static ?string $navigationLabel = 'Maintenance';
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    // protected string $view = 'filament.pages.maintenance';
 
-    protected string $view = 'filament.pages.maintenance';
-
-    public function forceUpdateCheckAction(): Action
+    public function content(Schema $schema): Schema
     {
-        return Action::make('forceUpdateCheck')->label('Force Update Check')->icon('heroicon-o-arrow-path')->action(function () {
-            app(VersionService::class)->isNewVersionAvailable();
+        $this->cron = [
+            'command'   => app(CronService::class)->getCronExecString(),
+            'random_id' => empty(setting('cron.random_id')) ? __('common.disabled') : url(route('api.maintenance.cron', setting('cron.random_id'))),
+        ];
 
-            $kvpRepo = app(KvpRepository::class);
+        $cronProblemExists = app(CronService::class)->cronProblemExists();
 
-            $new_version_avail = $kvpRepo->get('new_version_available', false);
-            $new_version_tag = $kvpRepo->get('latest_version_tag');
+        return $schema->components([
 
-            Log::info('Force check, available='.$new_version_avail.', tag='.$new_version_tag);
+            Section::make()
+                ->schema([
+                    Flex::make([
+                        $this->updateDatabase(),
+                        $this->checkForPhpVMSUpdates(),
+                        $this->resyncAllSeeds(),
+                        $this->flushFailedJobs(),
+                    ]),
+                    Flex::make([
+                        $this->optimizeApp(),
+                        $this->clearCache(),
+                    ]),
+                ]),
 
-            if (!$new_version_avail) {
+            Section::make(__('filament.maintenance_cron_setup'))
+                ->statePath('cron')
+                ->schema([
+                    TextEntry::make(__('filament.maintenance_cron_run_recently'))
+                        ->color( $cronProblemExists ? 'danger' : 'success')
+                        ->state(fn () => $cronProblemExists ? __('common.no') : __('common.yes')),
+
+                    TextInput::make('command')
+                        ->label(__('filament.maintenance_cron_command'))
+                        ->hintAction(
+                            Action::make('openDocs')
+                                ->label(__('common.see_the_docs'))
+                                ->url(docs_link('cron'), shouldOpenInNewTab: true)
+                        )
+                        ->helperText(__('filament.maintenance_cron_command_hint'))
+                        ->disabled(),
+
+                    TextInput::make('random_id')
+                        ->label(__('filament.maintenance_cron_web_url'))
+                        ->hintActions([
+                            $this->enableWebCron(),
+                            $this->disableWebCron(),
+                        ])
+                        ->helperText(__('filament.maintenance_cron_web_url_hint'))
+                        ->disabled(),
+                ]),
+        ]);
+    }
+
+    public function checkForPhpVMSUpdates(): Action
+    {
+        return Action::make('checkForPhpVMSUpdates')
+            ->label(__('filament.maintenance_check_update'))
+            ->icon(Heroicon::OutlinedArrowPath)
+            ->action(function () {
+                app(VersionService::class)->isNewVersionAvailable();
+
+                $kvpRepo = app(KvpRepository::class);
+
+                $new_version_avail = $kvpRepo->get('new_version_available', false);
+                $new_version_tag = $kvpRepo->get('latest_version_tag');
+
+                $current_version = app(VersionService::class)->getCurrentVersion(include_build: false);
+
+                Log::info('Force check, available='.$new_version_avail.', tag='.$new_version_tag);
+
+                if (!$new_version_avail) {
+                    Notification::make()
+                        ->title(__('filament.maintenance_is_up_to_date', ['service' => 'phpVMS application']))
+                        ->success()
+                        ->send();
+                } else {
+                    Notification::make()
+                        ->title(__('filament.maintenance_new_version_available', ['version' => $new_version_tag]))
+                        ->body(__('filament.maintenance_current_version', ['version' => $current_version]))
+                        ->success()
+                        ->send();
+                }
+            });
+    }
+
+    public function enableWebCron(): Action
+    {
+        return Action::make('enableWebCron')
+            ->label(__('filament.maintenance_cron_change_id'))
+            ->action(function () {
+                $id = Utils::generateNewId(24);
+                setting_save('cron.random_id', $id);
+                $this->cron['random_id'] = url(route('api.maintenance.cron', $id));
+
+                // Remove the webcron id from cache
+                $cache = config('cache.keys.SETTINGS');
+                Cache::forget($cache['key'].'cron.random_id');
+
                 Notification::make()
-                    ->title('No new version available')
+                    ->title(__('filament.maintenance_cron_web_updated'))
                     ->success()
                     ->send();
-            } else {
+            });
+    }
+
+    public function disableWebCron(): Action
+    {
+        return Action::make('disableWebCron')
+            ->label(__('common.disable'))
+            ->color('warning')
+            ->action(function () {
+                setting_save('cron.random_id', '');
+
+                $this->cron['random_id'] = __('common.disabled');
+
+                // Remove the webcron id from cache
+                $cache = config('cache.keys.SETTINGS');
+                Cache::forget($cache['key'].'cron.random_id');
+
                 Notification::make()
-                    ->title('New version available: '.$new_version_tag)
+                    ->title(__('filament.maintenance_cron_web_updated'))
                     ->success()
                     ->send();
-            }
-        });
+            });
     }
 
-    public function webCronEnable(): Action
+    public function clearCache(): Action
     {
-        return Action::make('webCronEnable')->label('Enable/Change ID')->action(function () {
-            $id = Utils::generateNewId(24);
-            setting_save('cron.random_id', $id);
+        return Action::make('clearCache')
+            ->icon(Heroicon::OutlinedTrash)
+            ->color('danger')
+            ->label(__('filament.maintenance_clear_cache'))
+            ->action(function () {
+                $calls = [
+                    'optimize:clear',
+                    'cache:clear',
+                ];
 
-            // Remove the webcron id from cache
-            $cache = config('cache.keys.SETTINGS');
-            Cache::forget($cache['key'].'cron.random_id');
+                $theme_cache_file = base_path().'/bootstrap/cache/themes.php';
+                $module_cache_files = base_path().'/bootstrap/cache/*_module.php';
 
-            Notification::make()
-                ->title('Web cron refreshed!')
-                ->success()
-                ->send();
-        });
-    }
-
-    public function webCronDisable(): Action
-    {
-        return Action::make('webCronDisable')->label('Disable')->color('warning')->action(function () {
-            setting_save('cron.random_id', '');
-
-            // Remove the webcron id from cache
-            $cache = config('cache.keys.SETTINGS');
-            Cache::forget($cache['key'].'cron.random_id');
-
-            Notification::make()
-                ->title('Web cron disabled!')
-                ->success()
-                ->send();
-        });
-    }
-
-    public function clearCaches(): Action
-    {
-        return Action::make('clearCaches')->icon('heroicon-o-trash')->label('Clear Cache')->action(function (array $arguments) {
-            $calls = [];
-            $type = $arguments['type'];
-
-            $theme_cache_file = base_path().'/bootstrap/cache/themes.php';
-            $module_cache_files = base_path().'/bootstrap/cache/*_module.php';
-
-            // When clearing the application, clear the config and the app itself
-            if ($type === 'application' || $type === 'all') {
-                $calls[] = 'config:cache';
-                $calls[] = 'cache:clear';
-                $calls[] = 'route:cache';
-                $calls[] = 'clear-compiled';
-                $calls[] = 'filament:clear-cached-components';
-
+                // Let's clear the module cache files
                 $files = File::glob($module_cache_files);
                 foreach ($files as $file) {
                     $module_cache = File::delete($file) ? 'Module cache file deleted' : 'Module cache file not found!';
                     Log::debug($module_cache.' | '.$file);
                 }
-            }
 
-            // If we want to clear only the views but keep everything else
-            if ($type === 'views' || $type === 'all') {
-                $calls[] = 'view:clear';
+                foreach ($calls as $call) {
+                    Artisan::call($call);
+                }
 
-                $theme_cache = unlink($theme_cache_file) ? 'Theme cache file deleted' : 'Theme cache file not found!';
-                Log::debug($theme_cache.' | '.$theme_cache_file);
-            }
-
-            foreach ($calls as $call) {
-                Artisan::call($call);
-            }
-
-            Notification::make()
-                ->title('Cache cleared!')
-                ->success()
-                ->send();
-        });
+                Notification::make()
+                    ->title(__('filament.maintenance_cache_cleared'))
+                    ->body(__('filament.maintenance_recommend_optimize'))
+                    ->success()
+                    ->send();
+            });
     }
 
-    public function flushQueue(): Action
+    public function flushFailedJobs(): Action
     {
-        return Action::make('flushQueue')->icon('heroicon-o-trash')->label('Flush Failed Jobs')->action(function () {
-            Artisan::call('queue:flush');
+        return Action::make('flushFailedJobs')
+            ->color('danger')
+            ->icon(Heroicon::OutlinedTrash)
+            ->label(__('filament.maintenance_flush_failed_jobs'))
+            ->action(function () {
+                Artisan::call('queue:flush');
 
-            Notification::make()
-                ->title('Failed jobs flushed!')
-                ->success()
-                ->send();
-        });
+                Notification::make()
+                    ->title(__('filament.maintenance_failed_jobs_flushed'))
+                    ->success()
+                    ->send();
+            });
     }
 
-    public function reseed(): Action
+    public function resyncAllSeeds(): Action
     {
-        return Action::make('reseed')->icon('heroicon-o-circle-stack')->label('Rerun seeding')->action(function () {
-            app(SeederService::class)->syncAllSeeds();
+        return Action::make('resyncAllSeeds')
+            ->icon(Heroicon::OutlinedCircleStack)
+            ->color('warning')
+            ->label(__('filament.maintenance_resync_all_seeds'))
+            ->action(function () {
+                app(SeederService::class)->syncAllSeeds();
 
-            Notification::make()
-                ->title('Seeds synced successfully!')
-                ->success()
-                ->send();
-        });
+                Notification::make()
+                    ->title(__('filament.maintenance_seeds_resynced'))
+                    ->success()
+                    ->send();
+            });
     }
 
     public function optimizeApp(): Action
     {
-        return Action::make('optimizeApp')->icon('heroicon-o-wrench-screwdriver')->label('Optimize App')->action(function () {
-            $calls = [
-                // 'icons:cache',
-                'filament:cache-components',
-                'optimize',
-            ];
-
-            foreach ($calls as $call) {
-                Artisan::call($call);
-            }
-
-            Notification::make()
-                ->title('Application optimized!')
-                ->success()
-                ->send();
-        });
-    }
-
-    public function update(): Action
-    {
-        return Action::make('update')
-            ->icon('heroicon-o-arrow-path')
-            ->color('success')
-            ->label('Update App')
-            ->visible(fn (): bool => app(InstallerService::class)->isUpgradePending())
+        return Action::make('optimizeApp')
+            ->icon(Heroicon::OutlinedWrenchScrewdriver)
+            ->label(__('filament.maintenance_optimize_app'))
             ->action(function () {
-                Log::info('Update: run_migrations');
-
-                $migrationSvc = app(MigrationService::class);
-                $seederSvc = app(SeederService::class);
-
-                $migrationsPending = $migrationSvc->migrationsAvailable();
-                $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
-
-                if (count($migrationsPending) === 0 && count($dataMigrationsPending) === 0) {
-                    $seederSvc->syncAllSeeds();
-                    Notification::make()
-                        ->title('Application updated successfully')
-                        ->body('See logs for details')
-                        ->success()
-                        ->send();
-
-                    return;
-                }
-
-                if (count($migrationsPending) !== 0) {
-                    $migrationSvc->runAllMigrations();
-                }
-                $seederSvc->syncAllSeeds();
-
-                if (count($dataMigrationsPending) !== 0) {
-                    $migrationSvc->runAllDataMigrations();
-                }
+                Artisan::call('optimize');
 
                 Notification::make()
-                    ->title('Application updated successfully')
-                    ->body('See logs for details')
+                    ->title(__('filament.maintenance_app_optimized'))
                     ->success()
                     ->send();
             });
+    }
+
+    public function updateDatabase(): Action
+    {
+        $upgradePending = app(InstallerService::class)
+            ->isUpgradePending();
+
+        return Action::make('updateDatabase')
+            ->icon(Heroicon::OutlinedArrowPath)
+            ->color('success')
+            ->extraAttributes(['style' => 'text-align: center;'])
+            ->label($upgradePending ? __('filament.maintenance_update_database') : __('filament.maintenance_database_is_up_to_date'))
+            ->disabled(!$upgradePending)
+            ->url('/'); // TODO: link to the system page
     }
 }
