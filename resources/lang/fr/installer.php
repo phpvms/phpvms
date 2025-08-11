@@ -10,6 +10,7 @@ return [
     'next'   => 'Etape suivante',
     'back'   => 'Etape Précédente',
     'finish' => 'Installation',
+    'output' => 'Sortie de la console',
     'forms'  => [
         'errorTitle' => 'Les erreurs suivantes se sont produites:',
     ],
@@ -204,7 +205,7 @@ return [
          * Shared translations.
          *
          */
-        'title' => 'Laravel Updater',
+        'title' => 'Outil de mise à jour de phpVMS',
 
         /*
          *

@@ -10,6 +10,7 @@ return [
     'next'   => 'Next Step',
     'back'   => 'Previous',
     'finish' => 'Install',
+    'output' => 'Console Output',
     'forms'  => [
         'errorTitle' => 'The Following errors occurred:',
     ],
@@ -204,7 +205,7 @@ return [
          * Shared translations.
          *
          */
-        'title' => 'Laravel Updater',
+        'title' => 'phpVMS Updater',
 
         /*
          *

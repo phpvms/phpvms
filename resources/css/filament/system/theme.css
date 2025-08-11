@@ -1,0 +1,7 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/System/**/*';
+@source '../../../../resources/views/filament/system/**/*';
+
+@source '../../../../app/Filament/Plugins/LanguageSwitcherPlugin.php'
+@source '../../../../resources/views/filament/plugins/language-switcher.blade.php';
