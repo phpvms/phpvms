@@ -134,4 +134,6 @@ return [
     'finances'              => 'Finances',
     'see_the_docs'          => 'Voir la docs',
     'setting'               => 'Paramètre|Paramètres',
+    'go_back_to'            => 'Revenir sur :name',
+    'view_logs'             => 'Voir les logs',
 ];

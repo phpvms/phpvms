@@ -80,5 +80,8 @@ return [
     'maintenance_seeds_resynced'         => 'Toutes les données initiales ont été resynchronisées',
     'maintenance_update_database'        => 'Mettre à jour la base de données',
     'maintenance_database_is_up_to_date' => 'Votre base de données est à jour',
-
+    'config'                             => 'Configuration',
+    'operations'                         => 'Opérations',
+    'modules'                            => 'Modules',
+    'developers'                         => 'Développeurs',
 ];

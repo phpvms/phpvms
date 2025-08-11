@@ -37,9 +37,9 @@ class Settings extends Page
     use HasPageShield;
     use InteractsWithFormActions;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Developers;
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 6;
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
 

@@ -8,6 +8,7 @@ use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 
 class ModuleLinksPlugin implements Plugin
@@ -57,7 +58,7 @@ class ModuleLinksPlugin implements Plugin
 
             $panel_name = ucfirst(str_replace('::admin', '', $panel->getId()));
             $items[] = NavigationItem::make($panel_name)
-                ->icon('heroicon-o-puzzle-piece')
+                ->icon(Heroicon::OutlinedPuzzlePiece)
                 ->url(url($panel->getPath()));
         }
 
@@ -65,10 +66,13 @@ class ModuleLinksPlugin implements Plugin
         foreach ($old_links as $link) {
             $items[] = NavigationItem::make($link['title'])
                 ->url($link['url'])
-                ->icon('heroicon-o-folder');
+                ->icon(Heroicon::OutlinedFolder);
         }
 
-        return NavigationGroup::make('Modules')
+        $group = \App\Models\Enums\NavigationGroup::Modules;
+
+        return NavigationGroup::make($group->name)
+            ->label($group->getLabel())
             ->items($items);
     }
 }

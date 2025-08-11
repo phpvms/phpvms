@@ -81,4 +81,8 @@ return [
     'maintenance_seeds_resynced'         => 'All seeds resynced',
     'maintenance_update_database'        => 'Update database',
     'maintenance_database_is_up_to_date' => 'Your database is up to date',
+    'config'                             => 'Config',
+    'operations'                         => 'Operations',
+    'modules'                            => 'Modules',
+    'developers'                         => 'Developers',
 ];

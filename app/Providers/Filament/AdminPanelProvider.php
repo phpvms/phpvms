@@ -10,12 +10,12 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentView;
+use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -64,18 +64,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                // NavigationGroup::make()->label('Operations'),
-                // NavigationGroup::make()->label('Config'),
-                NavigationGroup::make()->label('Modules'),
+                \App\Models\Enums\NavigationGroup::Config->name,
+                \App\Models\Enums\NavigationGroup::Operations->name,
+                \App\Models\Enums\NavigationGroup::Modules->name,
+                \App\Models\Enums\NavigationGroup::Developers->name,
             ])
             ->navigationItems([
-                NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
+                // Labels should be in a closure to allow for translation
+
+                NavigationItem::make()
+                    ->label(fn () => __('common.go_back_to', ['name' => config('app.name')]))
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
+                    ->url('/'),
+
                 NavigationItem::make()
                     ->visible(fn (): bool => auth()->user()->can('view_logs'))
-                    ->group(EnumsNavigationGroup::Config)
-                    ->sort(10)
-                    ->icon('heroicon-o-document-text')
-                    ->label('View Logs')
+                    ->group(EnumsNavigationGroup::Developers)
+                    ->sort(3)
+                    ->icon(Heroicon::OutlinedDocumentText)
+                    ->label(fn () => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([

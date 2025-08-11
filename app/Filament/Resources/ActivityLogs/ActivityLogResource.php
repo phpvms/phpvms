@@ -17,9 +17,9 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Developers;
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 5;
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
 
