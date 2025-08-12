@@ -3,31 +3,34 @@
 namespace App\Filament\System;
 
 use App\Database\seeds\ShieldSeeder;
+use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\User;
 use App\Services\AirlineService;
-use App\Services\Installer\ConfigService;
-use App\Services\Installer\DatabaseService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\RequirementsService;
 use App\Services\Installer\SeederService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\ViewField;
+use Filament\Infolists\Components\Entry;
+use Filament\Infolists\Components\KeyValueEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -36,17 +39,9 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class Installer extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
-
-    protected string $view = 'filament.system.installer';
-
     protected static ?string $slug = 'install';
 
-    public ?string $requirements;
-
-    public ?string $details;
-
-    public ?array $env;
+    public string $stream = 'console_output';
 
     public ?array $user;
 
@@ -55,217 +50,46 @@ class Installer extends Page
      */
     public function mount(): void
     {
-        if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
-            Notification::make()
-                ->title('phpVMS is already installed')
-                ->danger()
-                ->send();
+        try {
+            if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
+                Notification::make()
+                    ->title(__('installer.already_installed'))
+                    ->danger()
+                    ->send();
 
-            $this->redirect('/admin');
+                $this->redirect('/admin');
 
-            return;
+                return;
+            }
+        } catch (QueryException $e) {
+
         }
-
-        // We want to run migrations if we are on the migrations page or if we're going to be moved there
-        if (request()->get('step') === 'migrations' || (!request()->has('step') && !empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')) {
-            $this->dispatch('start-migrations');
-        }
-
-        $this->fillForm();
-    }
-
-    /**
-     * To fill the form (set default values)
-     */
-    public function fillForm(): void
-    {
-        $this->callHook('beforeFill');
 
         $this->form->fill();
+    }
 
-        $this->callHook('afterFill');
+    public function content(FilamentSchema $schema): FilamentSchema
+    {
+        return $schema->components([
+            Form::make([EmbeddedSchema::make('form')])
+                ->id('form')
+                ->livewireSubmitHandler('save'),
+        ]);
     }
 
     /**
      * The filament form
      */
-    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public function form(FilamentSchema $schema): FilamentSchema
     {
-        $requirementsData = $this->getRequirementsData();
-
         return $schema->components([
             Wizard::make([
-                Step::make('Requirements')
-                    ->schema([
-                        ViewField::make('requirements')
-                            ->view('filament.system.installer_requirements')
-                            ->viewData($requirementsData),
-                    ])
-                    ->beforeValidation(function () use ($requirementsData) {
-                        if (!$requirementsData['php']['passed'] || !$requirementsData['extensionsPassed'] || !$requirementsData['directoriesPassed']) {
-                            Notification::make()
-                                ->title('Requirements are not met')
-                                ->danger()
-                                ->send();
+                $this->getRequirementsStep(),
 
-                            throw new Halt();
-                        }
-                    }),
+                $this->getMigrationStep(),
 
-                // Required only if we haven't passed this step yet (ie no .env yet)
-                Step::make('Database Setup')->schema([
-                    Section::make('Site Config')
-                        ->statePath('env')
-                        ->columns()
-                        ->schema([
-                            TextInput::make('site_name')
-                                ->label('Site Name')
-                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                ->string(),
-
-                            TextInput::make('app_url')
-                                ->label('Site URL')
-                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                ->url()
-                                ->default(request()->root()),
-                        ]),
-
-                    Section::make('Database Config')
-                        ->statePath('env')
-                        ->columns()
-                        ->description('Enter the target database information')
-                        ->schema([
-                            Select::make('db_conn')
-                                ->label('Database Type')
-                                ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                ->live()
-                                ->options(['mysql' => 'mysql', 'mariadb' => 'mariadb', 'sqlite' => 'sqlite']),
-
-                            TextInput::make('db_prefix')
-                                ->string()
-                                ->hint('Set this if you\'re sharing the database with another application')
-                                ->label('Database Prefix'),
-
-                            Group::make([
-                                TextInput::make('db_host')
-                                    ->label('Database Host')
-                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                    ->string()
-                                    ->hintAction(
-                                        Action::make('testDb')
-                                            ->label('Test Database Credentials')
-                                            ->action(fn () => $this->testDb())
-                                    )
-                                    ->default('localhost'),
-
-                                TextInput::make('db_port')
-                                    ->label('Database Port')
-                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                    ->numeric()
-                                    ->default('3306'),
-
-                                TextInput::make('db_name')
-                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                    ->string()
-                                    ->label('Database Name'),
-
-                                TextInput::make('db_user')
-                                    ->required(empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=')
-                                    ->string()
-                                    ->label('Database User'),
-
-                                TextInput::make('db_pass')
-                                    ->password()
-                                    ->revealable()
-                                    ->label('Database Password'),
-                            ])
-                                ->visible(fn (Get $get): bool => $get('db_conn') && $get('db_conn') !== 'sqlite')
-                                ->columns()
-                                ->columnSpanFull(),
-                        ]),
-                ])->afterValidation(
-                    function () {
-                        $this->envAndDBSetup();
-                    }
-                ),
-
-                Step::make('Migrations')->schema([
-                    ViewField::make('details')
-                        ->view('filament.system.migrations_details'),
-                ])->afterValidation(function () {
-                    if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
-                        Notification::make()
-                            ->title('You still have '.count(app(MigrationService::class)->migrationsAvailable()).' migrations to run. Trying again...')
-                            ->warning()
-                            ->send();
-
-                        $this->dispatch('start-migrations');
-
-                        throw new Halt();
-                    }
-                }),
-
-                Step::make('User & Airline Setup')->schema([
-                    Section::make('Airline Information')
-                        ->statePath('user')
-                        ->headerActions([
-                            Action::make('test')
-                                ->label('phpVMS v5 Legacy Importer')
-                                ->url('/system/legacy-import'),
-                        ])
-                        ->schema([
-                            TextInput::make('airline_icao')
-                                ->length(3)
-                                ->string()
-                                ->required()
-                                ->unique('airlines', 'icao')
-                                ->label('Airline ICAO'),
-
-                            TextInput::make('airline_name')
-                                ->string()
-                                ->required()
-                                ->label('Airline Name'),
-
-                            Select::make('airline_country')
-                                ->options(Countries::getSelectList())
-                                ->native(false)
-                                ->required()
-                                ->searchable(),
-                        ])->columns(),
-
-                    Section::make('Super Admin User Information')
-                        ->statePath('user')
-                        ->schema([
-                            TextInput::make('name')
-                                ->required()
-                                ->string(),
-
-                            TextInput::make('email')
-                                ->unique('users', 'email')
-                                ->required()
-                                ->email(),
-
-                            TextInput::make('password')
-                                ->revealable()
-                                ->password()
-                                ->confirmed()
-                                ->required(),
-
-                            TextInput::make('password_confirmation')
-                                ->password()
-                                ->required(),
-                        ])->columns(),
-                ]),
+                $this->getUserAndAirlineSetupStep(),
             ])
-                ->startOnStep(function (): int {
-                    // If .env hasn't been created yet, we want to create it
-                    if (empty(config('app.key')) || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
-                        return 1;
-                    }
-
-                    // Else we directly skip to migrations
-                    return 3;
-                })
                 ->persistStepInQueryString()
                 ->submitAction(new HtmlString(Blade::render(
                     <<<'BLADE'
@@ -273,7 +97,7 @@ class Installer extends Page
                         type="submit"
                         size="sm"
                     >
-                        Complete Setup
+                        {{ __('installer.complete_setup') }}
                     </x-filament::button>
                 BLADE
                 ))),
@@ -285,21 +109,47 @@ class Installer extends Page
      */
     private function getRequirementsData(): array
     {
+
         $reqSvc = app(RequirementsService::class);
 
         $php_version = $reqSvc->checkPHPVersion();
         $extensions = $reqSvc->checkExtensions();
         $directories = $reqSvc->checkPermissions();
 
+        $ext = [];
+        foreach ($extensions as $extData) {
+            $ext[$extData['ext']] = $extData['passed'] ? 'OK' : __('installer.failed');
+        }
+
+        $dirs = [];
+        foreach ($directories as $extData) {
+            $dirs[$extData['dir']] = $extData['passed'] ? 'OK' : __('installer.failed');
+        }
+
         $extensionsPassed = $this->allPassed($extensions);
         $directoriesPassed = $this->allPassed($directories);
 
+        try {
+            DB::connection()->getPdo();
+            $db = [
+                'passed' => true,
+                'msg'    => __('installer.db_connection_ok'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error while trying to connect to the database', [$e]);
+            $db = [
+                'passed' => false,
+                'msg'    => __('installer.db_connection_failed', ['exception' => $e->getMessage()]),
+            ];
+        }
+
         return [
             'php'               => $php_version,
-            'extensions'        => $extensions,
+            'extensions'        => $ext,
             'extensionsPassed'  => $extensionsPassed,
-            'directories'       => $directories,
+            'directories'       => $dirs,
             'directoriesPassed' => $directoriesPassed,
+            'db'                => $db,
         ];
     }
 
@@ -317,90 +167,41 @@ class Installer extends Page
         return true;
     }
 
-    /**
-     * Set up .env and trigger start migrations
-     *
-     * @throws Halt
-     */
-    private function envAndDbSetup(): void
+    public function migrate(): Action
     {
-        $log_str = $this->env ?? [];
-        $log_str['db_pass'] = '';
+        return Action::make('migrate')
+            ->label(__('installer.update'))
+            ->action(function (Entry $component) {
+                $output = __('installer.starting_migration_process').PHP_EOL;
+                $this->stream(to: $this->stream, content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL);
 
-        $data = $this->env ?? [];
+                app(MigrationService::class)
+                    ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output) {
+                        $output .= $buffer;
+                        $this->stream(to: $this->stream, content: $buffer);
+                    });
 
-        Log::info('ENV Setup', $log_str);
+                app(SeederService::class)->syncAllSeeds();
+                app(ShieldSeeder::class)->run();
 
-        if (!$this->testDb()) {
-            throw new Halt();
-        }
+                $output .= __('installer.migrations_completed').PHP_EOL;
+                $this->stream($this->stream, __('installer.migrations_completed').PHP_EOL);
 
-        // Now write out the env file
-        $attrs = [
-            'SITE_NAME'     => $data['site_name'],
-            'APP_URL'       => $data['app_url'],
-            'DB_CONNECTION' => $data['db_conn'],
-            'DB_HOST'       => $data['db_host'],
-            'DB_PORT'       => $data['db_port'],
-            'DB_DATABASE'   => $data['db_name'],
-            'DB_USERNAME'   => $data['db_user'],
-            'DB_PASSWORD'   => $data['db_pass'],
-            'DB_PREFIX'     => $data['db_prefix'],
-        ];
+                // Let's generate a new key if the app is still using the one from the .env.example
+                if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=') {
+                    $output .= __('installer.generating_app_key').PHP_EOL;
+                    $this->stream(to: $this->stream, content: __('installer.generating_app_key').PHP_EOL);
 
-        /*
-         * Create the config files and then redirect so that the
-         * framework can pickup all those configs, etc, before we
-         * setup the database and stuff
-         */
-        try {
-            app(ConfigService::class)->createConfigFiles($attrs);
-        } catch (Exception $e) {
-            Log::error('Config files failed to write');
-            Log::error($e->getMessage());
+                    Artisan::call('key:generate', ['--force' => true]);
+                    $artisan_output = Artisan::output();
+                    $this->stream(to: $this->stream, content: $artisan_output);
+                    $output .= $artisan_output;
+                }
 
-            Notification::make()
-                ->title('Failed to write config files')
-                ->body($e->getMessage())
-                ->danger()
-                ->persistent()
-                ->send();
+                $component->state(fn () => $output);
 
-            throw new Halt();
-        }
-
-        $this->dispatch('start-migrations');
-    }
-
-    /**
-     * Run the migrations
-     */
-    public function migrate(): void
-    {
-        $console_out = '';
-
-        try {
-            $console_out .= app(DatabaseService::class)->setupDB();
-            $console_out .= app(MigrationService::class)->runAllMigrations();
-            app(SeederService::class)->syncAllSeeds();
-            app(ShieldSeeder::class)->run();
-        } catch (QueryException $e) {
-            Log::error('Error on db setup: '.$e->getMessage());
-
-            app(ConfigService::class)->removeConfigFiles();
-
-            Notification::make()
-                ->title('Error Setting Up Database')
-                ->body($e->getMessage())
-                ->danger()
-                ->persistent()
-                ->send();
-
-            return;
-        }
-
-        Log::info('DB Setup Details', [$console_out]);
-        $this->dispatch('migrations-completed', message: $console_out);
+                return true;
+            });
     }
 
     /**
@@ -445,44 +246,6 @@ class Installer extends Page
     }
 
     /**
-     * Test db connection
-     */
-    private function testDb(): bool
-    {
-        $data = $this->env ?? [];
-
-        try {
-            app(DatabaseService::class)->checkDbConnection(
-                $data['db_conn'],
-                $data['db_host'],
-                $data['db_port'],
-                $data['db_name'],
-                $data['db_user'],
-                $data['db_pass']
-            );
-        } catch (Exception $e) {
-            Log::error('Testing db failed');
-            Log::error($e->getMessage());
-
-            Notification::make()
-                ->title('Database connection failed')
-                ->body($e->getMessage())
-                ->danger()
-                ->persistent()
-                ->send();
-
-            return false;
-        }
-
-        Notification::make()
-            ->title('Database Connection Looks Good')
-            ->success()
-            ->send();
-
-        return true;
-    }
-
-    /**
      * Called when the form is filed
      *
      * @throws ValidatorException
@@ -492,7 +255,193 @@ class Installer extends Page
         $this->validate();
         $this->airlineAndUserSetup();
 
-        flash()->success('phpVMS Installation Completed Successfully');
+        flash()->success(__('installer.install_completed'));
         $this->redirect('/login');
+    }
+
+    private function getRequirementsStep(): Step
+    {
+        $data = $this->getRequirementsData();
+
+        return
+            Step::make(__('installer.requirements'))
+                ->schema([
+                    TextEntry::make('info')
+                        ->label(__('installer.important'))
+                        ->hintAction(Action::make('openDocs')
+                            ->label(__('common.see_the_docs'))
+                            ->url(docs_link('installation'))
+                            ->openUrlInNewTab()
+                        )
+                        ->state(fn () => __('installer.create_env')),
+
+                    Section::make('PHP')
+                        ->afterHeader([
+                            TextEntry::make('php_passed')
+                                ->hiddenLabel()
+                                ->size('md')
+                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->badge(),
+                        ])
+                        ->schema([
+                            TextEntry::make('php_version')
+                                ->inlineLabel()
+                                ->label(__('installer.php_version'))
+                                ->alignEnd()
+                                ->badge()
+                                ->state(fn () => $data['php']['version']),
+
+                            KeyValueEntry::make('extensions')
+                                ->label(__('installer.php_extensions'))
+                                ->keyLabel(__('installer.extension'))
+                                ->valueLabel(__('common.status'))
+                                ->state(fn () => $data['extensions']),
+                        ])
+                        ->columnSpanFull(),
+
+                    Section::make(__('installer.directory_permissions'))
+                        ->afterHeader([
+                            TextEntry::make('directory_passed')
+                                ->hiddenLabel()
+                                ->size('md')
+                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->badge(),
+                        ])
+                        ->description(__('installer.directory_permissions_description'))
+                        ->schema([
+                            KeyValueEntry::make('directories')
+                                ->hiddenLabel()
+                                ->keyLabel(__('installer.directory'))
+                                ->valueLabel(__('common.status'))
+                                ->state(fn () => $data['directories']),
+                        ])
+                        ->columnSpanFull(),
+
+                    Section::make(__('installer.database'))
+                        ->afterHeader([
+                            TextEntry::make('database_passed')
+                                ->hiddenLabel()
+                                ->size('md')
+                                ->state(fn () => $data['db']['passed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['db']['passed'] ? 'success' : 'danger')
+                                ->badge(),
+                        ])
+                        ->schema([
+                            TextEntry::make('db_connection')
+                                ->inlineLabel($data['db']['passed'])
+                                ->label(__('installer.database_connection'))
+                                ->color(fn () => $data['db']['passed'] ? 'success' : 'danger')
+                                ->alignEnd($data['db']['passed'])
+                                ->badge($data['db']['passed'])
+                                ->state(fn () => $data['db']['msg']),
+                        ]),
+                ])
+                ->beforeValidation(function () use ($data) {
+                    if (!$data['php']['passed'] || !$data['extensionsPassed'] || !$data['directoriesPassed'] || !$data['db']['passed']) {
+                        Notification::make()
+                            ->title(__('installer.requirements_not_met'))
+                            ->danger()
+                            ->send();
+
+                        throw new Halt();
+                    }
+                });
+
+    }
+
+    private function getMigrationStep(): Step
+    {
+        return Step::make(__('installer.migrations'))
+            ->schema([
+                StreamEntry::make('output')
+                    ->state(fn () => __('installer.click_update_to_run'))
+                    ->afterLabel($this->migrate())
+                    ->label(__('installer.output'))
+                    ->viewData([
+                        'stream' => $this->stream,
+                    ]),
+            ])
+            ->afterValidation(function () {
+                if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
+                    Notification::make()
+                        ->title(__('installer.migrations_not_completed', ['count' => count(app(MigrationService::class)->migrationsAvailable())]))
+                        ->danger()
+                        ->send();
+
+                    throw new Halt();
+                }
+            });
+    }
+
+    private function getUserAndAirlineSetupStep(): Step
+    {
+        return
+            Step::make(__('installer.user_and_airline_setup'))
+                ->schema([
+                    Section::make(__('filament.airline_informations'))
+                        ->statePath('user')
+                        ->headerActions([
+                            Action::make('test')
+                                ->label(__('installer.legacy_importer'))
+                                ->openUrlInNewTab()
+                                ->url(docs_link('importing_legacy')),
+                        ])
+                        ->schema([
+                            TextInput::make('airline_icao')
+                                ->length(3)
+                                ->string()
+                                ->required()
+                                ->unique('airlines', 'icao')
+                                ->label('ICAO'),
+
+                            TextInput::make('airline_name')
+                                ->string()
+                                ->required()
+                                ->label(__('common.name')),
+
+                            Select::make('airline_country')
+                                ->label(__('common.country'))
+                                ->options(Countries::getSelectList())
+                                ->native(false)
+                                ->required()
+                                ->searchable(),
+                        ])
+                        ->columns(),
+
+                    Section::make(__('installer.super_admin_informations'))
+                        ->statePath('user')
+                        ->schema([
+                            TextInput::make('name')
+                                ->label(__('common.name'))
+                                ->required()
+                                ->string(),
+
+                            TextInput::make('email')
+                                ->label(__('common.email'))
+                                ->unique('users', 'email')
+                                ->required()
+                                ->email(),
+
+                            TextInput::make('password')
+                                ->label(__('auth.password'))
+                                ->revealable()
+                                ->password()
+                                ->confirmed()
+                                ->required(),
+
+                            TextInput::make('password_confirmation')
+                                ->label(__('passwords.confirm'))
+                                ->password()
+                                ->required(),
+                        ])
+                        ->columns(),
+                ]);
+    }
+
+    public function getTitle(): string
+    {
+        return __('installer.title');
     }
 }

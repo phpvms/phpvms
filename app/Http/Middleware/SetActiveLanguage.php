@@ -19,7 +19,7 @@ class SetActiveLanguage
     public function handle(Request $request, Closure $next)
     {
         $preferredLanguage = 'en';
-        if (setting('general.auto_language_detection', false) && !$request->hasCookie('lang')) {
+        if ((setting('general.auto_language_detection', false) && !$request->hasCookie('lang')) || request()->is('system/install')) {
             $preferredLanguage = $request->getPreferredLanguage(array_keys(config('languages')));
         } else {
             $preferredLanguage = $request->cookie('lang', config('app.locale', 'en'));

@@ -2,33 +2,34 @@
 
 namespace App\Filament\System;
 
+use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
-use Filament\Infolists\Components\ViewEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Process\Process;
 
 class Updater extends Page
 {
     protected static ?string $slug = 'update';
-
-    public $defaultAction = 'update';
 
     private string $stream = 'console_output';
 
     public function content(FilamentSchema $schema): FilamentSchema
     {
         return $schema->components([
-            ViewEntry::make('output')
+            StreamEntry::make('output')
+                ->state(fn () => __('installer.click_update_to_run'))
+                ->afterLabel($this->update())
                 ->label(__('installer.output'))
-                ->view('filament.system.stream', [
+                ->viewData([
                     'stream' => $this->stream,
                 ]),
         ]);
@@ -39,6 +40,24 @@ class Updater extends Page
      */
     public function mount(): void
     {
+        // We do this when the component is loaded instead of in canAccess()
+        // That's because canAccess() is called whenever a component of the panel is called (for navigation)
+        // Or we can't connect to the db when loading the installer
+
+        // Custom permission check (to support both v7 and v8 db)
+        // v7
+        if (Schema::hasTable('role_user')) {
+            $result = DB::table('role_user')
+                ->where('user_id', Auth::id())
+                ->where('roles.name', 'LIKE', '%admin%')
+                ->join('roles', 'role_user.role_id', '=', 'roles.id')
+                ->count();
+
+            abort_if($result === 0, 403);
+        } else { // v8
+            abort_if(!Auth::user()?->can('admin_access'), 403);
+        }
+
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
                 ->title(__('filament.maintenance_database_is_up_to_date'))
@@ -52,8 +71,9 @@ class Updater extends Page
     public function update(): Action
     {
         return Action::make('update')
+            ->label(__('installer.update'))
             ->action(function () {
-                $this->stream(to: $this->stream, content: 'Starting update process...');
+                $this->stream(to: $this->stream, content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL);
 
                 $migrationSvc = app(MigrationService::class);
                 $seederSvc = app(SeederService::class);
@@ -61,45 +81,44 @@ class Updater extends Page
                 $migrationsPending = $migrationSvc->migrationsAvailable();
                 $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
 
+                $streamCallback = function (string $buffer) {
+                    $this->stream(to: $this->stream, content: $buffer.PHP_EOL);
+                };
+
                 if (count($migrationsPending) !== 0) {
-                    $migrationSvc->runAllMigrationsWithStreaming(function (string $buffer) {
-                        $this->stream(to: $this->stream, content: $buffer);
-                    });
+                    $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
                 }
 
                 $seederSvc->syncAllSeeds();
 
                 if (count($dataMigrationsPending) !== 0) {
-                    $migrationSvc->runAllDataMigrationsWithStreaming(function (string $buffer) {
-                        $this->stream(to: $this->stream, content: $buffer);
+                    $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+                }
+
+                $this->stream(to: $this->stream, content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
+                $php = PHP_BINARY;
+                $artisan = base_path('artisan');
+                $commands = [
+                    [$php, $artisan, 'optimize:clear'],
+                    [$php, $artisan, 'optimize'],
+                ];
+
+                foreach ($commands as $command) {
+                    $process = new Process($command);
+                    $process->setTimeout(120);
+                    $process->run(function ($type, $buffer) use ($streamCallback) {
+                        $streamCallback($buffer);
                     });
                 }
 
-                $this->stream($this->stream, 'Update completed, you\'ll be redirected in 10 seconds...');
+                $this->stream($this->stream, PHP_EOL.__('installer.update_completed').PHP_EOL);
                 sleep(10);
                 $this->redirect(Filament::getDefaultPanel()->getUrl());
             });
     }
 
-    public static function canAccess(): bool
-    {
-        // Custom permission check (to support both v7 and v8 db)
-        // v7
-        if (Schema::hasTable('role_user')) {
-            $result = DB::table('role_user')
-                ->where('user_id', Auth::id())
-                ->where('roles.name', 'LIKE', '%admin%')
-                ->join('roles', 'role_user.role_id', '=', 'roles.id')
-                ->count();
-
-            return $result > 0;
-        } else { // v8
-            return Auth::user()?->can('admin_access') ?? false;
-        }
-    }
-
     public function getTitle(): string
     {
-        return __('installer.updater.title');
+        return __('installer.update_phpvms');
     }
 }

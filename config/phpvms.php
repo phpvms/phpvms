@@ -133,6 +133,7 @@ return [
         'importing_legacy' => '/installation/importing',
         'load_factor'      => '/operations/flights#load-factor',
         'subfleets'        => '/concepts/basics#subfleets-and-aircraft',
+        'installation'     => '/installation',
     ],
 
     /*
