@@ -19,7 +19,6 @@ export default defineConfig({
         "resources/sass/fonts/Pe-icon-7-stroke.ttf",
         "resources/sass/fonts/Pe-icon-7-stroke.woff",
         "resources/css/filament/admin/theme.css",
-        "resources/css/filament/system/theme.css",
         // "resources/js/admin/app.js",
         // "resources/js/admin/airport_lookup.js",
         // "resources/js/admin/calculate_distance.js",

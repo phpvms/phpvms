@@ -47,7 +47,7 @@ class SystemPanelProvider extends PanelProvider
             ])
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
-            ->viteTheme('resources/css/filament/system/theme.css')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)
             ->spa()
