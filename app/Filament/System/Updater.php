@@ -94,7 +94,7 @@ class Updater extends Page
 
             return $result > 0;
         } else { // v8
-            return Auth::user()?->can('admin_access');
+            return Auth::user()?->can('admin_access') ?? false;
         }
     }
 
