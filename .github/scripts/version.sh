@@ -20,7 +20,7 @@ if test "$GIT_TAG_NAME"; then
 else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
-  export FILE_NAME="phpvms-${NBGV_PrereleaseVersionNoLeadingHyphen}"
+  export FILE_NAME="phpvms-${BRANCH}"
 fi
 
 export TAR_NAME="$FILE_NAME.tar.gz"
