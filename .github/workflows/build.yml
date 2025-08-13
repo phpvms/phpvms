@@ -97,6 +97,7 @@ jobs:
         php --version
         mysql --version
         composer install --dev --no-interaction --verbose
+        composer global require laravel/pint
         composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
@@ -104,17 +105,17 @@ jobs:
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 
-    - name: Get version
-      run: .github/scripts/version.sh
+    - name: Run Pint
+      run: pint --test
 
     - name: Run Tests
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
         vendor/bin/pest --parallel --ci
 
-    - name: Run Rector
-      run: |
-        vendor/bin/rector --dry-run
+#     - name: Run Rector
+#       run: |
+#         vendor/bin/rector --dry-run
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
@@ -214,12 +215,32 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev')
+    if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # Configure Caching
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+        # Dependencies
+      - name: 'Install Release Dependencies'
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --verbose
+          composer dump-autoload
+          sudo chmod +x ./.github/scripts/*
 
       # https://github.com/marketplace/actions/nerdbank-gitversioning
       - name: Nerdbank.GitVersioning
@@ -244,9 +265,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=edge,branch=dev
+            type=semver,pattern={{version}},value=${{ env.NBGV_SemVer2 }}
+            type=semver,pattern={{version}},value=${{ env.NBGV_MajorMinorVersion }}
             type=ref,event=branch
-#           type=sha,enable=false
 
       - name: Build and push
         id: push

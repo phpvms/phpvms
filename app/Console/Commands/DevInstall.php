@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App;
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
-use DatabaseSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**

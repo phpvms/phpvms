@@ -51,7 +51,7 @@ class SeederService extends Service
         $this->syncAllCustomPermissions();
 
         // Seed base
-        $this->databaseSvc->seed_from_yaml_file(database_path('seeds/base.yml'));
+        $this->databaseSvc->seed_from_yaml_file(database_path('seeders/base.yml'));
 
         $this->syncAllYamlFileSeeds();
     }
@@ -71,7 +71,7 @@ class SeederService extends Service
         collect()
             ->concat(Storage::disk('seeds')->files($env))
             ->map(function ($file) {
-                return database_path('seeds/'.$file);
+                return database_path('seeders/'.$file);
             })
             ->filter(function ($file) {
                 $info = pathinfo($file);
@@ -86,7 +86,7 @@ class SeederService extends Service
 
     public function syncAllModules(): void
     {
-        $data = file_get_contents(database_path('/seeds/modules.yml'));
+        $data = file_get_contents(database_path('/seeders/modules.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $module) {
             $module['updated_at'] = Carbon::now('UTC');
@@ -104,7 +104,7 @@ class SeederService extends Service
 
     public function syncAllSettings(): void
     {
-        $data = file_get_contents(database_path('/seeds/settings.yml'));
+        $data = file_get_contents(database_path('/seeders/settings.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $setting) {
             if (trim($setting['key']) === '') {
@@ -117,7 +117,7 @@ class SeederService extends Service
 
     public function syncAllCustomPermissions(): void
     {
-        $data = file_get_contents(database_path('/seeds/custom_permissions.yml'));
+        $data = file_get_contents(database_path('/seeders/custom_permissions.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $setting) {
             $name = trim($setting['name']);
@@ -232,7 +232,7 @@ class SeederService extends Service
     private function settingsSeedsPending(): bool
     {
         $all_settings = DB::table('settings')->get();
-        $data = file_get_contents(database_path('/seeds/settings.yml'));
+        $data = file_get_contents(database_path('/seeders/settings.yml'));
         $yml = Yaml::parse($data);
 
         // See if any are missing from the DB
