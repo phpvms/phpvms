@@ -50,17 +50,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-#       - name: Update Release Notes
-#         uses: ./gitreleasemanager/create
-#         with:
-#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-#           owner: ${{ github.repository_owner }}
-#           repository: phpvms
-#           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
-#           name: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
-#           isPreRelease: ${{ github.event.release.prerelease }}
-#           targetcommitish: 'main'
-
         # Dependencies
       - name: 'Install Release Dependencies'
         run: |
@@ -106,23 +95,6 @@ jobs:
           source: dist
           cdn_domain: phpvms.cdn.vmslabs.net
           permission: public-read
-
-#       - name: Add Assets
-#         uses: ./gitreleasemanager/addasset
-#         with:
-#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-#           owner: ${{ github.repository_owner }}
-#           repository: phpvms
-#           targetDirectory: dist/
-#           assets: ${{ env.TAR_NAME }},${{ env.TAR_NAME }}.sha256,${{ env.ZIP_NAME }},${{ env.ZIP_NAME }}.sha256
-
-#       - name: Close Release
-#         uses: ./gitreleasemanager/close
-#         with:
-#           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-#           owner: ${{ github.repository_owner }}
-#           repository: actions
-#           milestone: "v${{ steps.gitversion.outputs.majorMinorPatch }}"
 
       # Push to Docker
       - name: Login to GitHub Container Registry
