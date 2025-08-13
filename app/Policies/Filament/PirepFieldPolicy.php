@@ -15,7 +15,7 @@ class PirepFieldPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_pirep::field');
+        return $user->can('view_any_pirepfield');
     }
 
     /**
@@ -23,7 +23,7 @@ class PirepFieldPolicy
      */
     public function view(User $user, PirepField $pirepField): bool
     {
-        return $user->can('view_pirep::field');
+        return $user->can('view_pirepfield');
     }
 
     /**
@@ -31,7 +31,7 @@ class PirepFieldPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_pirep::field');
+        return $user->can('create_pirepfield');
     }
 
     /**
@@ -39,7 +39,7 @@ class PirepFieldPolicy
      */
     public function update(User $user, PirepField $pirepField): bool
     {
-        return $user->can('update_pirep::field');
+        return $user->can('update_pirepfield');
     }
 
     /**
@@ -47,7 +47,7 @@ class PirepFieldPolicy
      */
     public function delete(User $user, PirepField $pirepField): bool
     {
-        return $user->can('delete_pirep::field');
+        return $user->can('delete_pirepfield');
     }
 
     /**
@@ -55,7 +55,7 @@ class PirepFieldPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_pirep::field');
+        return $user->can('delete_any_pirepfield');
     }
 
     /**
@@ -63,7 +63,7 @@ class PirepFieldPolicy
      */
     public function forceDelete(User $user, PirepField $pirepField): bool
     {
-        return $user->can('force_delete_pirep::field');
+        return $user->can('force_delete_pirepfield');
     }
 
     /**
@@ -71,7 +71,7 @@ class PirepFieldPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_pirep::field');
+        return $user->can('force_delete_any_pirepfield');
     }
 
     /**
@@ -79,7 +79,7 @@ class PirepFieldPolicy
      */
     public function restore(User $user, PirepField $pirepField): bool
     {
-        return $user->can('restore_pirep::field');
+        return $user->can('restore_pirepfield');
     }
 
     /**
@@ -87,7 +87,7 @@ class PirepFieldPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_pirep::field');
+        return $user->can('restore_any_pirepfield');
     }
 
     /**
@@ -95,7 +95,7 @@ class PirepFieldPolicy
      */
     public function replicate(User $user, PirepField $pirepField): bool
     {
-        return $user->can('replicate_pirep::field');
+        return $user->can('replicate_pirepfield');
     }
 
     /**
@@ -103,6 +103,6 @@ class PirepFieldPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_pirep::field');
+        return $user->can('reorder_pirepfield');
     }
 }

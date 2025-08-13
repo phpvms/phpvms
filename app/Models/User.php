@@ -366,8 +366,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // For the admin panel
-        if ($panel->getId() === 'admin') {
+        // For phpvms panels
+        if ($panel->getId() === 'admin' || $panel->getId() === 'system') {
             return $this->hasAdminAccess();
         }
 

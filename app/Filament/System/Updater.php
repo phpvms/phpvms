@@ -55,7 +55,7 @@ class Updater extends Page
 
             abort_if($result === 0, 403);
         } else { // v8
-            abort_if(!Auth::user()?->can('admin_access'), 403);
+            abort_if(!Auth::user()?->can('access_admin'), 403);
         }
 
         if (!app(InstallerService::class)->isUpgradePending()) {

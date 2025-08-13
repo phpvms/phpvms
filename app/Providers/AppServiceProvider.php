@@ -7,6 +7,7 @@ use App\Services\ModuleService;
 use App\Support\ThemeViewFinder;
 use App\Support\Utils;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -23,6 +24,15 @@ class AppServiceProvider extends ServiceProvider
         View::share('moduleSvc', app(ModuleService::class));
 
         activity()->disableLogging();
+
+        // TODO: See if Filament Shield changes the way they do this by default since Filament 4 because of the new structure. If not, leave it as is
+        FilamentShield::configurePermissionIdentifierUsing(
+            fn ($resource) => str($resource)
+                ->afterLast('\\')
+                ->beforeLast('Resource')
+                ->lower()
+                ->toString()
+        );
 
         Notification::extend('discord_webhook', function ($app) {
             return app(DiscordWebhook::class);

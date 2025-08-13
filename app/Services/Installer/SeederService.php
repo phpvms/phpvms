@@ -3,6 +3,7 @@
 namespace App\Services\Installer;
 
 use App\Contracts\Service;
+use App\Models\Permission;
 use App\Models\Setting;
 use App\Services\DatabaseService;
 use Carbon\Carbon;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Exceptions\PermissionAlreadyExists;
+use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -45,6 +48,7 @@ class SeederService extends Service
     {
         $this->syncAllSettings();
         $this->syncAllModules();
+        $this->syncAllCustomPermissions();
 
         // Seed base
         $this->databaseSvc->seed_from_yaml_file(database_path('seeds/base.yml'));
@@ -108,6 +112,27 @@ class SeederService extends Service
             }
 
             $this->addSetting($setting['key'], $setting);
+        }
+    }
+
+    public function syncAllCustomPermissions(): void
+    {
+        $data = file_get_contents(database_path('/seeds/custom_permissions.yml'));
+        $yml = Yaml::parse($data);
+        foreach ($yml as $setting) {
+            $name = trim($setting['name']);
+
+            if ($name === '') {
+                continue;
+            }
+
+            // Check if the permission already exists
+            $exists = Permission::where('name', $name)->exists();
+            if ($exists) {
+                continue;
+            }
+
+            $this->addCustomPermission($name);
         }
     }
 
@@ -244,5 +269,17 @@ class SeederService extends Service
         }
 
         return false;
+    }
+
+    private function addCustomPermission(string $name): void
+    {
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        try {
+            Permission::create(['name' => $name]);
+        } catch (PermissionAlreadyExists $e) {
+            Log::info('Permission already exists: '.$name);
+        }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
