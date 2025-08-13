@@ -1,6 +1,7 @@
 <?php
 
-use App\Database\seeds\ShieldSeeder;
+namespace Database\Seeders;
+
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Illuminate\Database\Seeder;
