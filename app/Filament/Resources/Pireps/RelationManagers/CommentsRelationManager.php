@@ -57,13 +57,13 @@ class CommentsRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
-                    EditAction::make(),
-                    DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
-                    ]),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ]);
     }
 

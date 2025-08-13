@@ -9,8 +9,8 @@ if echo "$files" | grep --quiet "\.php$"; then
 
     if [ -x "$PHP_BINARY" ]; then
         echo "Running pre-commit hooks on host..."
-        ./vendor/bin/pint $files
-        #./vendor/bin/rector process $files
+        ./vendor/bin/pint --parallel $php_files
+        ./vendor/bin/rector process $files
         git add $files
     else
         # Detect Docker binary
@@ -24,8 +24,8 @@ if echo "$files" | grep --quiet "\.php$"; then
 
         if [ -n "$SAIL_RUNNING" ]; then
             echo "Running pre-commit hooks in laravel sail..."
-            ./vendor/bin/sail pint $files
-            #./vendor/bin/sail bin rector process $files
+            ./vendor/bin/sail pint --parallel $php_files
+            ./vendor/bin/sail bin rector process $files
             git add $files
         else
             echo "Skipping pre-commit hooks (no PHP or running Sail detected)."

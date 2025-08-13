@@ -105,7 +105,7 @@
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v8.8.0",
         "laravel/sail": "^1.41",
-        "laravel/pint": "^1.19",
+        "laravel/pint": "^1.23",
         "kitloong/laravel-migrations-generator": "^7.1.2",
         "rector/rector": "^2.0",
         "driftingly/rector-laravel": "^2.0",
