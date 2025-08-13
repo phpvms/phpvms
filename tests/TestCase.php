@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use App\Contracts\Factory;
 use App\Contracts\Unit;
 use App\Exceptions\Handler;
 use App\Models\User;
@@ -86,9 +85,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
         Notification::fake();
         // $this->disableExceptionHandling();
 
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'App\\Database\\Factories\\'.class_basename($modelName).'Factory';
-        });
     }
 
     /**
