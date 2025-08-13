@@ -221,6 +221,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Configure Caching
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+        # Dependencies
+      - name: 'Install Release Dependencies'
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --verbose
+          composer dump-autoload
+          sudo chmod +x ./.github/scripts/*
+
       # https://github.com/marketplace/actions/nerdbank-gitversioning
       - name: Nerdbank.GitVersioning
         uses: dotnet/nbgv@v0.4.2
