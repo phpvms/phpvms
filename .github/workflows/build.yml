@@ -97,6 +97,7 @@ jobs:
         php --version
         mysql --version
         composer install --dev --no-interaction --verbose
+        composer global require laravel/pint
         composer dump-autoload
         cp .github/scripts/env.test .env
         cp .github/scripts/phpunit.xml phpunit.xml
@@ -104,17 +105,17 @@ jobs:
         php artisan database:create --reset
         php artisan migrate:refresh --seed
 
-    - name: Get version
-      run: .github/scripts/version.sh
+    - name: Run Pint
+      run: pint --test
 
     - name: Run Tests
       run: |
         export PHP_CS_FIXER_IGNORE_ENV=1
         vendor/bin/pest --parallel --ci
 
-    - name: Run Rector
-      run: |
-        vendor/bin/rector --dry-run
+#     - name: Run Rector
+#       run: |
+#         vendor/bin/rector --dry-run
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever

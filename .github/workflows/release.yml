@@ -1,14 +1,30 @@
 ---
 name: release
 on:
-  release:
-    types: [ published ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  bump-version:
+    name: Bump Version and Push Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ env.NBGV_SemVer2 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine Version
+        uses: dotnet/nbgv@master
+        id: ngbv
+        with:
+          setAllVars: true
   release:
     runs-on: ${{ matrix.os }}
     permissions:
