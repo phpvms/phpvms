@@ -17,6 +17,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use SimpleXMLElement;
 
 class SimBriefService extends Service
 {
@@ -107,7 +108,7 @@ class SimBriefService extends Service
     }
 
     /**
-     * @return \SimpleXMLElement|null
+     * @return SimpleXMLElement|null
      */
     public function getAcarsOFP(SimBriefXML $ofp)
     {

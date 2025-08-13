@@ -8,9 +8,11 @@ use App\Models\JournalTransaction;
 use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
 use Prettus\Validator\Exceptions\ValidatorException;
+use UnexpectedValueException;
 
 /**
  * Class JournalRepository
@@ -35,7 +37,7 @@ class JournalRepository extends Repository implements CacheableInterface
      */
     public function formatPostDate(?Carbon $date = null)
     {
-        if (!$date instanceof \Carbon\Carbon) {
+        if (!$date instanceof Carbon) {
             return null;
         }
 
@@ -48,8 +50,8 @@ class JournalRepository extends Repository implements CacheableInterface
      *
      * @return Journal
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function recalculateBalance(Journal $journal)
     {
@@ -104,8 +106,8 @@ class JournalRepository extends Repository implements CacheableInterface
 
         $attrs = [
             'journal_id'        => $journal->id,
-            'credit'            => $credit instanceof \App\Support\Money ? $credit->getAmount() : null,
-            'debit'             => $debit instanceof \App\Support\Money ? $debit->getAmount() : null,
+            'credit'            => $credit instanceof Money ? $credit->getAmount() : null,
+            'debit'             => $debit instanceof Money ? $debit->getAmount() : null,
             'currency'          => setting('units.currency', 'USD'),
             'memo'              => $memo,
             'post_date'         => $post_date,
@@ -132,14 +134,14 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getBalance(?Journal $journal = null, ?Carbon $date = null)
     {
         $journal->refresh();
 
-        if (!$date instanceof \Carbon\Carbon) {
+        if (!$date instanceof Carbon) {
             $date = Carbon::now('UTC');
         }
 
@@ -154,8 +156,8 @@ class JournalRepository extends Repository implements CacheableInterface
      *
      * @param null $transaction_group
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCreditBalanceBetween(
         Carbon $date,
@@ -165,7 +167,7 @@ class JournalRepository extends Repository implements CacheableInterface
     ): Money {
         $where = [];
 
-        if ($journal instanceof \App\Models\Journal) {
+        if ($journal instanceof Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -176,7 +178,7 @@ class JournalRepository extends Repository implements CacheableInterface
         $query = JournalTransaction::where($where);
         $query = $query->whereDate('post_date', '<=', $date->toDateString());
 
-        if ($start_date instanceof \Carbon\Carbon) {
+        if ($start_date instanceof Carbon) {
             $query = $query->whereDate('post_date', '>=', $start_date->toDateString());
         }
 
@@ -188,8 +190,8 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * @param null $transaction_group
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getDebitBalanceBetween(
         Carbon $date,
@@ -199,7 +201,7 @@ class JournalRepository extends Repository implements CacheableInterface
     ): Money {
         $where = [];
 
-        if ($journal instanceof \App\Models\Journal) {
+        if ($journal instanceof Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -210,7 +212,7 @@ class JournalRepository extends Repository implements CacheableInterface
         $query = JournalTransaction::where($where);
         $query = $query->whereDate('post_date', '<=', $date->toDateString());
 
-        if ($start_date instanceof \Carbon\Carbon) {
+        if ($start_date instanceof Carbon) {
             $query = $query->whereDate('post_date', '>=', $start_date->toDateString());
         }
 
@@ -225,8 +227,8 @@ class JournalRepository extends Repository implements CacheableInterface
      * @param  null  $journal
      * @return array
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getAllForObject($object, $journal = null, ?Carbon $date = null)
     {
@@ -239,7 +241,7 @@ class JournalRepository extends Repository implements CacheableInterface
             $where['journal_id'] = $journal->id;
         }
 
-        if ($date instanceof \Carbon\Carbon) {
+        if ($date instanceof Carbon) {
             $date = $this->formatPostDate($date);
             $where[] = ['post_date', '=', $date];
         }

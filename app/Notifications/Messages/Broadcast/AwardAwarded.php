@@ -4,6 +4,7 @@ namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
 use App\Models\Award;
+use App\Models\Pirep;
 use App\Models\User;
 use App\Models\UserAward;
 use App\Notifications\Channels\Discord\DiscordMessage;
@@ -16,7 +17,7 @@ class AwardAwarded extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      *
-     * @param \App\Models\Pirep $pirep
+     * @param Pirep $pirep
      */
     public function __construct(UserAward $userAward)
     {

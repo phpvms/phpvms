@@ -9,7 +9,7 @@ use App\Models\Acars;
 use DateTime;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Acars>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Acars>
  */
 class AcarsFactory extends Factory
 {

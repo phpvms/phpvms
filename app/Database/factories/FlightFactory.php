@@ -11,7 +11,7 @@ use App\Models\Flight;
 use DateTime;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Flight>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Flight>
  */
 class FlightFactory extends Factory
 {

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\LegacyImporterService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 class ImportFromClassicCommand extends Command
@@ -33,7 +34,7 @@ class ImportFromClassicCommand extends Command
         foreach ($manifest as $record) {
             try {
                 $importerSvc->run($record['importer'], $record['start']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error($e->getMessage());
             }
         }

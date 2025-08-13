@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Nwidart\Modules\Facades\Module;
+use Symfony\Component\Process\Process;
 
 class MigrationService extends Service
 {
@@ -112,6 +113,27 @@ class MigrationService extends Service
         return $output;
     }
 
+    public function runAllMigrationsWithStreaming(\Closure $streamCallback): void
+    {
+        // Inspired by runAllMigrations() but instead we're streaming the output to the callback (and then the browser) live
+
+        // First, run the main migration to ensure the migration table is there
+        $php = PHP_BINARY;
+        $artisan = base_path('artisan');
+        $command = [$php, $artisan, 'migrate', '--force'];
+
+        $process = new Process($command);
+        $process->setTimeout(120);
+        $process->run(function ($type, $buffer) use ($streamCallback) {
+            $streamCallback($buffer);
+        });
+
+        // Then get any remaining migrations that are left over
+        $migrator = $this->getMigrator();
+        $availMigrations = $this->migrationsAvailable();
+        $this->runMigrationsWithStreaming($migrator, $availMigrations, $streamCallback);
+    }
+
     /**
      * Return what migrations are available
      */
@@ -168,5 +190,29 @@ class MigrationService extends Service
         }
 
         return $output;
+    }
+
+    public function runAllDataMigrationsWithStreaming(\Closure $streamCallback): void
+    {
+        // Inspired by runAllDataMigrations() but instead we're streaming the output to the callback (and then the browser) live
+
+        $migrator = $this->getDataMigrator();
+        $availMigrations = $this->dataMigrationsAvailable();
+        $this->runMigrationsWithStreaming($migrator, $availMigrations, $streamCallback);
+    }
+
+    protected function runMigrationsWithStreaming(Migrator $migrator, array $migrations, \Closure $streamCallback): void
+    {
+        $totalRan = 0;
+
+        if ($migrations !== []) {
+            Log::info('Running '.count($migrations).' available migrations');
+            foreach ($migrations as $migration) {
+                $ret = $migrator->run([$migration]);
+                $streamCallback(implode("\n", $ret));
+                $totalRan += count($ret);
+            }
+            Log::info('Ran '.$totalRan.' migrations');
+        }
     }
 }

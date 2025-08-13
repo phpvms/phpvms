@@ -3,6 +3,8 @@
 namespace App\Models\Observers;
 
 use App\Models\Journal;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Class JournalObserver
@@ -10,8 +12,8 @@ use App\Models\Journal;
 class JournalObserver
 {
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function creating(Journal $journal): void
     {

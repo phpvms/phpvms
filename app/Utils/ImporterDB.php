@@ -2,9 +2,11 @@
 
 namespace App\Utils;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use PDO;
 use PDOException;
+use PDOStatement;
 
 /**
  * Real basic to interface with an importer
@@ -137,8 +139,8 @@ class ImporterDB
     /**
      * Read rows from a table with a given assoc array. Simple
      *
-     * @param  string              $table
-     * @return false|\PDOStatement
+     * @param  string             $table
+     * @return false|PDOStatement
      */
     public function findBy($table, array $attrs)
     {
@@ -189,7 +191,7 @@ class ImporterDB
             foreach ($result as $row) {
                 $rows[] = $row;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('foreach rows error: '.$e->getMessage());
         }
 
@@ -197,11 +199,11 @@ class ImporterDB
     }
 
     /**
-     * @param  string                   $table
-     * @param  int                      $limit  Number of rows to read
-     * @param  int                      $offset Where to start from
-     * @param  string                   $fields
-     * @return false|\PDOStatement|null
+     * @param  string                  $table
+     * @param  int                     $limit  Number of rows to read
+     * @param  int                     $offset Where to start from
+     * @param  string                  $fields
+     * @return false|PDOStatement|null
      */
     public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')
     {
@@ -233,7 +235,7 @@ class ImporterDB
             if (strpos($e->getMessage(), 'server has gone away') !== false) {
                 $this->connect();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error readRowsOffset: '.$e->getMessage());
         }
 

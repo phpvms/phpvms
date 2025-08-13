@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
 use Closure;
+use Exception;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -50,7 +51,7 @@ class SetActiveTheme implements Middleware
 
         try {
             $theme = setting('general.theme', 'seven');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e->getMessage());
             $theme = 'seven';
         }

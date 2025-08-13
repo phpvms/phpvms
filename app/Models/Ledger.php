@@ -10,6 +10,8 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Support\Money;
 use Carbon\Carbon;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Class Ledger
@@ -38,8 +40,8 @@ class Ledger extends Model
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCurrentBalance(): Money
     {
@@ -53,8 +55,8 @@ class Ledger extends Model
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCurrentBalanceInDollars()
     {

@@ -17,6 +17,10 @@ use App\Repositories\FlightRepository;
 use App\Repositories\NavdataRepository;
 use App\Repositories\PirepRepository;
 use App\Support\Units\Time;
+use Exception;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class FlightService extends Service
 {
@@ -38,10 +42,10 @@ class FlightService extends Service
     /**
      * Create a new flight
      *
-     * @param  array                             $fields
-     * @return \Illuminate\Http\RedirectResponse
+     * @param  array            $fields
+     * @return RedirectResponse
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function createFlight($fields)
     {
@@ -65,11 +69,11 @@ class FlightService extends Service
     /**
      * Update a flight with values from the given fields
      *
-     * @param  Flight                   $flight
-     * @param  array                    $fields
-     * @return \App\Models\Flight|mixed
+     * @param  Flight       $flight
+     * @param  array        $fields
+     * @return Flight|mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function updateFlight($flight, $fields)
     {
@@ -142,8 +146,7 @@ class FlightService extends Service
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
-
-        /** @var \Illuminate\Support\Collection $subfleets */
+        /** @var Collection $subfleets */
         $subfleets = $flight->subfleets;
 
         // If no subfleets assigned and airline subfleets are forced, get airline subfleets
@@ -240,7 +243,7 @@ class FlightService extends Service
      * Delete a flight, and all the user bids, etc associated with it
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function deleteFlight(Flight $flight): void
     {
@@ -271,7 +274,7 @@ class FlightService extends Service
      * Return all of the navaid points as a collection
      *
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getRoute(Flight $flight)
     {

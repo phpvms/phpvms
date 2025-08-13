@@ -13,11 +13,13 @@ use App\Services\AirportService;
 use App\Services\AwardService;
 use App\Services\DatabaseService;
 use App\Services\UserService;
+use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PDO;
+use SimpleXMLElement;
 use Symfony\Component\Yaml\Yaml;
 
 class DevCommands extends Command
@@ -164,7 +166,7 @@ class DevCommands extends Command
         $this->info('Reading '.$file);
 
         $xml_str = file_get_contents($file);
-        $xml = new \SimpleXMLElement($xml_str);
+        $xml = new SimpleXMLElement($xml_str);
 
         $yaml = [];
         $table_name = (string) $xml->database->table_data['name'];
@@ -227,7 +229,7 @@ class DevCommands extends Command
             foreach ($rows as $row) {
                 try {
                     $this->dbSvc->insert_row($table, $row);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->error($e);
                 }
 
@@ -273,14 +275,14 @@ class DevCommands extends Command
 
         try {
             unlink('config.php');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         $this->info('Deleting env file');
 
         try {
             unlink('env.php');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         $this->info('Clearing caches');

@@ -10,6 +10,7 @@ use App\Models\Airport;
 use App\Repositories\AirportRepository;
 use App\Support\Metar;
 use App\Support\Units\Distance;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use League\Geotools\Coordinate\Coordinate;
 use League\Geotools\Geotools;
@@ -95,8 +96,8 @@ class AirportService extends Service
     /**
      * Lookup an airport and save it if it hasn't been found
      *
-     * @param  string                                   $icao
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @param  string     $icao
+     * @return Model|null
      */
     public function lookupAirportIfNotFound($icao)
     {

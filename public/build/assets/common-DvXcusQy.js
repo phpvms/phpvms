@@ -1,0 +1,1 @@
+import{r as e}from"./rivets-E6ezbrAH.js";e.formatters.prepend=function(t,r){return r+t};e.formatters.time_hm=function(t){const r=Math.floor(t/60),o=t%60;return`${r}h ${o}m`};e.formatters.gt=(t,r)=>t.length>r;e.formatters.lt=(t,r)=>t.length<r;e.formatters.eq=(t,r)=>t.length>r;e.formatters.fallback=(t,r)=>t||r;

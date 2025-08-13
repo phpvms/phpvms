@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
-use App\Filament\Resources\PirepResource;
+use App\Filament\Resources\Pireps\PirepResource;
 use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\UpdatePirepRequest;
 use App\Models\Enums\PirepFieldSource;
@@ -29,12 +29,16 @@ use App\Services\UserService;
 use App\Support\Units\Fuel;
 use App\Support\Units\Time;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
+use Prettus\Repository\Exceptions\RepositoryException;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepController extends Controller
 {
@@ -114,7 +118,7 @@ class PirepController extends Controller
      * Save the fares that have been specified/saved
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function saveFares(Pirep $pirep, Request $request): void
     {
@@ -137,7 +141,7 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function index(Request $request): View
     {
@@ -297,7 +301,7 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function store(CreatePirepRequest $request): RedirectResponse
     {
@@ -467,7 +471,7 @@ class PirepController extends Controller
         // set the custom fields
         foreach ($pirep->fields as $field) {
             if ($field->slug === null) {
-                $field->slug = \Illuminate\Support\Str::slug($field->name);
+                $field->slug = Str::slug($field->name);
             }
 
             $field_name = 'field_'.$field->slug;
@@ -502,8 +506,8 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \Exception
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws Exception
+     * @throws ValidatorException
      */
     public function update(string $id, UpdatePirepRequest $request): RedirectResponse
     {
@@ -565,7 +569,7 @@ class PirepController extends Controller
      * Submit the PIREP
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function submit(string $id, Request $request): RedirectResponse
     {

@@ -8,7 +8,7 @@ use App\Contracts\Factory;
 use App\Models\Rank;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Rank>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Rank>
  */
 class RankFactory extends Factory
 {

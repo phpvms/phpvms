@@ -1,7 +1,9 @@
 <?php
 
 use App\Contracts\Migration;
+use App\Models\Fare;
 use App\Models\PirepFare;
+use App\Services\FareService;
 
 /**
  * Check if the PIREP fare has an empty capacity and update it from the subfleet
@@ -11,7 +13,7 @@ return new class() extends Migration
     public function up()
     {
         $cached = [];
-        $fareSvc = app(App\Services\FareService::class);
+        $fareSvc = app(FareService::class);
         $all_fares = PirepFare::with('pirep', 'pirep.aircraft', 'pirep.aircraft.subfleet')->get();
 
         /** @var PirepFare $fare */
@@ -30,7 +32,7 @@ return new class() extends Migration
                 $cached[$subfleet->id] = $fareSvc->getForSubfleet($subfleet);
             }
 
-            /** @var \App\Models\Fare $sf */
+            /** @var Fare $sf */
             $sf = $cached[$subfleet->id]->where('code', $fare->code)->first();
             $fare->capacity = empty($sf) ? $fare->count : $sf->capacity;
             $fare->save();

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\ImportService;
+use Illuminate\Validation\ValidationException;
 
 class ImportCsv extends Command
 {
@@ -26,7 +27,7 @@ class ImportCsv extends Command
     /**
      * @return mixed|void
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function handle()
     {

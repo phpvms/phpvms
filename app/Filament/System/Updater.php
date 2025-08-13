@@ -2,38 +2,48 @@
 
 namespace App\Filament\System;
 
+use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\HtmlString;
+use Symfony\Component\Process\Process;
 
 class Updater extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
-    protected static string $view = 'filament.system.updater';
-
     protected static ?string $slug = 'update';
 
-    public ?string $notes;
+    private string $stream = 'console_output';
 
-    public ?string $details;
+    public function content(FilamentSchema $schema): FilamentSchema
+    {
+        return $schema->components([
+            StreamEntry::make('output')
+                ->state(fn () => __('installer.click_update_to_run'))
+                ->afterLabel($this->update())
+                ->label(__('installer.output'))
+                ->viewData([
+                    'stream' => $this->stream,
+                ]),
+        ]);
+    }
 
     /**
      * Called whenever the component is loaded
      */
     public function mount(): void
     {
+        // We do this when the component is loaded instead of in canAccess()
+        // That's because canAccess() is called whenever a component of the panel is called (for navigation)
+        // Or we can't connect to the db when loading the installer
+
         // Custom permission check (to support both v7 and v8 db)
         // v7
         if (Schema::hasTable('role_user')) {
@@ -45,111 +55,70 @@ class Updater extends Page
 
             abort_if($result === 0, 403);
         } else { // v8
-            abort_if(!Auth::user()?->can('admin_access'), 403);
+            abort_if(!Auth::user()?->can('access_admin'), 403);
         }
 
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
-                ->title('phpVMS is already up to date')
+                ->title(__('filament.maintenance_database_is_up_to_date'))
                 ->danger()
                 ->send();
 
             $this->redirect(Filament::getDefaultPanel()->getUrl());
-
-            return;
         }
-
-        $this->fillForm();
     }
 
-    /**
-     * To fill the form (set default values)
-     */
-    public function fillForm(): void
+    public function update(): Action
     {
-        $this->callHook('beforeFill');
+        return Action::make('update')
+            ->label(__('installer.update'))
+            ->action(function () {
+                $this->stream(to: $this->stream, content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL);
 
-        $this->form->fill();
+                $migrationSvc = app(MigrationService::class);
+                $seederSvc = app(SeederService::class);
 
-        $this->callHook('afterFill');
+                $migrationsPending = $migrationSvc->migrationsAvailable();
+                $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
+
+                $streamCallback = function (string $buffer) {
+                    $this->stream(to: $this->stream, content: $buffer.PHP_EOL);
+                };
+
+                if (count($migrationsPending) !== 0) {
+                    $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
+                }
+
+                $seederSvc->syncAllSeeds();
+
+                if (count($dataMigrationsPending) !== 0) {
+                    $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+                }
+
+                $this->stream(to: $this->stream, content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
+                $php = PHP_BINARY;
+                $artisan = base_path('artisan');
+                $commands = [
+                    [$php, $artisan, 'optimize:clear'],
+                    [$php, $artisan, 'optimize'],
+                ];
+
+                foreach ($commands as $command) {
+                    $process = new Process($command);
+                    $process->setTimeout(120);
+                    $process->run(function (string $type, string $buffer) use ($streamCallback) {
+                        $streamCallback($buffer);
+                    });
+                }
+
+                $this->stream($this->stream, PHP_EOL.__('installer.update_completed').PHP_EOL);
+                sleep(10);
+                $this->redirect(Filament::getDefaultPanel()->getUrl());
+            });
     }
 
-    /**
-     * The filament form
-     */
-    public function form(Form $form): Form
+    public function getTitle(): string
     {
-        return $form->schema([
-            Forms\Components\Wizard::make([
-                Forms\Components\Wizard\Step::make('Before Update')->schema([
-
-                ])->afterValidation(
-                    function () {
-                        $this->dispatch('start-migrations');
-                    }
-                ),
-                Forms\Components\Wizard\Step::make('Update')
-                    ->schema([
-                        Forms\Components\ViewField::make('details')
-                            ->view('filament.system.migrations_details'),
-                    ]),
-            ])
-                ->submitAction(new HtmlString(Blade::render(
-                    <<<'BLADE'
-                    <x-filament::button
-                        type="submit"
-                        size="sm"
-                    >
-                        Finish Update
-                    </x-filament::button>
-                BLADE
-                ))),
-        ]);
-    }
-
-    /**
-     * Migrate the database
-     */
-    public function migrate(): void
-    {
-        Log::info('Update: run_migrations');
-
-        $migrationSvc = app(MigrationService::class);
-        $seederSvc = app(SeederService::class);
-
-        $migrationsPending = $migrationSvc->migrationsAvailable();
-        $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
-
-        if (count($migrationsPending) === 0 && count($dataMigrationsPending) === 0) {
-            $seederSvc->syncAllSeeds();
-            Notification::make()
-                ->title('Application updated successfully')
-                ->body('See logs for details')
-                ->success()
-                ->send();
-
-            $this->redirect('/admin');
-
-            return;
-        }
-        $output = '';
-        if (count($migrationsPending) !== 0) {
-            $output .= $migrationSvc->runAllMigrations();
-        }
-        $seederSvc->syncAllSeeds();
-
-        if (count($dataMigrationsPending) !== 0) {
-            $output .= $migrationSvc->runAllDataMigrations();
-        }
-
-        $this->dispatch('migrations-completed', message: $output);
-    }
-
-    /**
-     * Called when the form is filed (ie update completed)
-     */
-    public function save(): void
-    {
-        $this->redirect('/admin');
+        return __('installer.update_phpvms');
     }
 }

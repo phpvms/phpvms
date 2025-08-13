@@ -3,6 +3,7 @@
 namespace App\Models\Observers;
 
 use App\Models\JournalTransaction;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class JournalTransactionObserver
@@ -15,7 +16,7 @@ class JournalTransactionObserver
     public function creating(JournalTransaction $transaction): void
     {
         if (!$transaction->id) {
-            $transaction->id = \Ramsey\Uuid\Uuid::uuid4()->toString();
+            $transaction->id = Uuid::uuid4()->toString();
         }
     }
 

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
+use App\Models\User;
 use App\Repositories\PirepRepository;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -39,13 +41,13 @@ class DashboardController extends Controller
             },
         ];
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $user->loadMissing('journal');
 
         try {
             $last_pirep = $this->pirepRepo->with($with_pirep)->find($user->last_pirep_id);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         // Get the current airport for the weather

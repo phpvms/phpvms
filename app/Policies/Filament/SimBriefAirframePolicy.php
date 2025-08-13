@@ -15,7 +15,7 @@ class SimBriefAirframePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_airframe');
+        return $user->can('view_any_simbriefairframe');
     }
 
     /**
@@ -23,7 +23,7 @@ class SimBriefAirframePolicy
      */
     public function view(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('view_airframe');
+        return $user->can('view_simbriefairframe');
     }
 
     /**
@@ -31,7 +31,7 @@ class SimBriefAirframePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_airframe');
+        return $user->can('create_simbriefairframe');
     }
 
     /**
@@ -39,7 +39,7 @@ class SimBriefAirframePolicy
      */
     public function update(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('update_airframe');
+        return $user->can('update_simbriefairframe');
     }
 
     /**
@@ -47,7 +47,7 @@ class SimBriefAirframePolicy
      */
     public function delete(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('delete_airframe');
+        return $user->can('delete_simbriefairframe');
     }
 
     /**
@@ -55,7 +55,7 @@ class SimBriefAirframePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_airframe');
+        return $user->can('delete_any_simbriefairframe');
     }
 
     /**
@@ -63,7 +63,7 @@ class SimBriefAirframePolicy
      */
     public function forceDelete(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('force_delete_airframe');
+        return $user->can('force_delete_simbriefairframe');
     }
 
     /**
@@ -71,7 +71,7 @@ class SimBriefAirframePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_airframe');
+        return $user->can('force_delete_any_simbriefairframe');
     }
 
     /**
@@ -79,7 +79,7 @@ class SimBriefAirframePolicy
      */
     public function restore(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('restore_airframe');
+        return $user->can('restore_simbriefairframe');
     }
 
     /**
@@ -87,7 +87,7 @@ class SimBriefAirframePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_airframe');
+        return $user->can('restore_any_simbriefairframe');
     }
 
     /**
@@ -95,7 +95,7 @@ class SimBriefAirframePolicy
      */
     public function replicate(User $user, SimBriefAirframe $simBriefAirframe): bool
     {
-        return $user->can('replicate_airframe');
+        return $user->can('replicate_simbriefairframe');
     }
 
     /**
@@ -103,6 +103,6 @@ class SimBriefAirframePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_airframe');
+        return $user->can('reorder_simbriefairframe');
     }
 }

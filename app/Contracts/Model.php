@@ -2,11 +2,13 @@
 
 namespace App\Contracts;
 
+use Illuminate\Database\Eloquent\Builder;
+
 /**
  * @property mixed $id
  * @property bool  $skip_mutator
  *
- * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin Builder
  */
 abstract class Model extends \Illuminate\Database\Eloquent\Model
 {

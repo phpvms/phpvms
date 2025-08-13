@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException as SymfonyHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -49,7 +51,7 @@ abstract class AbstractHttpException extends SymfonyHttpException implements Htt
     /**
      * Return a response object that can be used by Laravel
      *
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @return JsonResponse|Response
      */
     public function getResponse()
     {

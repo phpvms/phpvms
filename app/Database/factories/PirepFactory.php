@@ -5,16 +5,18 @@
 namespace App\Database\Factories;
 
 use App\Contracts\Factory;
+use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\Pirep;
+use App\Models\User;
 use Carbon\Carbon;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pirep>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Pirep>
  */
 class PirepFactory extends Factory
 {
@@ -41,8 +43,8 @@ class PirepFactory extends Factory
         return [
             'id'                  => fake()->unique()->numberBetween(10, 10000000),
             'airline_id'          => fn () => $airline->id,
-            'user_id'             => fn () => \App\Models\User::factory()->create()->id,
-            'aircraft_id'         => fn () => \App\Models\Aircraft::factory()->create()->id,
+            'user_id'             => fn () => User::factory()->create()->id,
+            'aircraft_id'         => fn () => Aircraft::factory()->create()->id,
             'flight_id'           => fn () => $flight->id,
             'flight_number'       => fn () => $flight->flight_number,
             'route_code'          => null,

@@ -6,6 +6,8 @@ use App\Contracts\Listener;
 use App\Events\CronNightly;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Determine if any pilots should be set to ON LEAVE status
@@ -26,8 +28,8 @@ class PilotLeave extends Listener
      * Set any users to being on leave after X days
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function handle(CronNightly $event): void
     {

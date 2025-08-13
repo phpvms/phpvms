@@ -1,0 +1,1 @@
+import{r as s}from"./request-CC2mSmLh.js";import"./config-BQWid5Bw.js";async function d(a,r=null){return s({method:"POST",url:"/api/user/bids",data:{_method:"POST",flight_id:a,aircraft_id:r}})}async function m(a){return s({method:"POST",url:"/api/user/bids",data:{_method:"DELETE",flight_id:a}})}export{d as a,m as r};

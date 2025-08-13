@@ -9,6 +9,7 @@ use App\Models\Typerating;
 use App\Repositories\Criteria\WhereCriteria;
 use Illuminate\Http\Request;
 use Prettus\Repository\Contracts\CacheableInterface;
+use Prettus\Repository\Exceptions\RepositoryException;
 use Prettus\Repository\Traits\CacheableRepository;
 
 /**
@@ -69,7 +70,7 @@ class FlightRepository extends Repository implements CacheableInterface
      *
      * @return $this
      *
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function searchCriteria(Request $request, bool $only_active = true): self
     {

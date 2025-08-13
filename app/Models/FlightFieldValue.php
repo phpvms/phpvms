@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 /**
  * Class FlightFieldValue
@@ -34,7 +35,7 @@ class FlightFieldValue extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name),
+                'slug' => Str::slug($name),
             ]
         );
     }

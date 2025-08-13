@@ -3,7 +3,10 @@
 namespace App\Support;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+
+use function GuzzleHttp\json_decode;
 
 /**
  * Helper for HTTP stuff
@@ -24,7 +27,7 @@ class HttpClient
      *
      * @return string
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function get($uri, array $opts = [])
     {
@@ -37,14 +40,14 @@ class HttpClient
         $body = $response->getBody()->getContents();
         $content_type = $response->getHeaderLine('content-type');
         if (strpos($content_type, 'application/json') !== false) {
-            $body = \GuzzleHttp\json_decode($body, true);
+            $body = json_decode($body, true);
         }
 
         return $body;
     }
 
     /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function post($uri, $body, array $opts = []): mixed
     {
@@ -58,14 +61,14 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = \GuzzleHttp\json_decode($content, true);
+            $content = json_decode($content, true);
         }
 
         return $content;
     }
 
     /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function form_post($uri, $body, array $opts = []): mixed
     {
@@ -79,7 +82,7 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = \GuzzleHttp\json_decode($content, true);
+            $content = json_decode($content, true);
         }
 
         return $content;
@@ -102,7 +105,7 @@ class HttpClient
 
         $body = $response->getBody()->getContents();
         if ($response->getHeader('content-type') === 'application/json') {
-            $body = \GuzzleHttp\json_decode($body);
+            $body = json_decode($body);
         }
 
         return $body;

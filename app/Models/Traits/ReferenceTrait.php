@@ -2,16 +2,19 @@
 
 namespace App\Models\Traits;
 
+use App\Contracts\Model;
+use Exception;
+
 /**
  * Trait ReferenceTrait
  *
- * @property \App\Contracts\Model $ref_model
- * @property mixed                $ref_model_id
+ * @property Model $ref_model
+ * @property mixed $ref_model_id
  */
 trait ReferenceTrait
 {
     /**
-     * @param  \App\Contracts\Model $object
+     * @param  Model $object
      * @return self
      */
     public function referencesObject($object)
@@ -26,7 +29,7 @@ trait ReferenceTrait
     /**
      * Return an instance of the object or null
      *
-     * @return \App\Contracts\Model|$this|null
+     * @return Model|$this|null
      */
     public function getReferencedObject()
     {
@@ -43,7 +46,7 @@ trait ReferenceTrait
             $obj = $klass->find($this->ref_model_id);
 
             return $obj;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }

@@ -12,7 +12,7 @@ return [
     'env'           => env('APP_ENV', 'dev'),
     'debug'         => env('APP_DEBUG', true),
     'url'           => env('APP_URL', ''),
-    'version'       => '7.0.0',
+    'version'       => '8.0.0',
     'debug_toolbar' => env('DEBUG_TOOLBAR', false),
 
     'locale'          => env('APP_LOCALE', 'en'),
@@ -37,7 +37,7 @@ return [
         Laracasts\Flash\FlashServiceProvider::class,
         Prettus\Repository\Providers\RepositoryServiceProvider::class,
         Igaster\LaravelTheme\themeServiceProvider::class,
-        Nwidart\Modules\LaravelModulesServiceProvider::class,
+        // Nwidart\Modules\LaravelModulesServiceProvider::class,
         SocialiteProviders\Manager\ServiceProvider::class,
 
         /*
@@ -53,6 +53,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\MeasurementsProvider::class,
         App\Providers\ObserverServiceProviders::class,
+        App\Providers\ModulesServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\Filament\SystemPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
@@ -61,8 +62,6 @@ return [
     'aliases' => \Illuminate\Support\Facades\Facade::defaultAliases()->merge([
         'Carbon' => Carbon::class,
         'Flash'  => Laracasts\Flash\Flash::class,
-        'Form'   => Collective\Html\FormFacade::class,
-        'Html'   => Collective\Html\HtmlFacade::class,
         'Theme'  => Igaster\LaravelTheme\Facades\Theme::class,
         'Yaml'   => Symfony\Component\Yaml\Yaml::class,
 

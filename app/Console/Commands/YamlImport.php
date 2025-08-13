@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\DatabaseService;
+use Exception;
 
 /**
  * Class YamlImport
@@ -29,7 +30,7 @@ class YamlImport extends Command
     /**
      * Run dev related commands
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle()
     {

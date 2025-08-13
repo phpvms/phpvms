@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Generator;
 use Illuminate\Support\Collection;
 use SimpleXMLElement;
 
@@ -73,7 +74,7 @@ class SimBriefXML extends SimpleXMLElement
     /**
      * Return a generator which sends out the fix values. This can be a long list
      *
-     * @return \Generator
+     * @return Generator
      */
     public function getRoute()
     {

@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Plugins\LanguageSwitcherPlugin;
+use App\Http\Middleware\SetActiveLanguage;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
@@ -23,7 +25,9 @@ class SystemPanelProvider extends PanelProvider
             ->id('system')
             ->path('system')
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::generatePalette(
+                    '#067ec1',
+                ),
             ])
             ->discoverPages(in: app_path('Filament/System'), for: 'App\\Filament\\System')
             ->middleware([
@@ -36,11 +40,17 @@ class SystemPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetActiveLanguage::class,
+            ])
+            ->plugins([
+                LanguageSwitcherPlugin::make(),
             ])
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)
-            ->spa();
+            ->spa()
+            ->errorNotifications();
     }
 }

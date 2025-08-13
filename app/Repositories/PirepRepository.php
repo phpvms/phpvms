@@ -36,7 +36,7 @@ class PirepRepository extends Repository
     public function getPending(?User $user = null)
     {
         $where = [];
-        if ($user instanceof \App\Models\User) {
+        if ($user instanceof User) {
             $where['user_id'] = $user->id;
         }
 
@@ -57,7 +57,7 @@ class PirepRepository extends Repository
             'state' => PirepState::PENDING,
         ];
 
-        if ($user instanceof \App\Models\User) {
+        if ($user instanceof User) {
             $where['user_id'] = $user->id;
         }
 

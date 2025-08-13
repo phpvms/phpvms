@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Models\Enums\PirepFieldSource;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 /**
  * @property string pirep_id
@@ -41,7 +42,7 @@ class PirepFieldValue extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name),
+                'slug' => Str::slug($name),
             ]
         );
     }

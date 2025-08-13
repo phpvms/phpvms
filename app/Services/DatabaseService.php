@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Support\Database;
 use Carbon\Carbon;
+use Exception;
 use Webpatser\Uuid\Uuid;
 
 class DatabaseService extends Service
@@ -28,7 +29,7 @@ class DatabaseService extends Service
     /**
      * @param bool $ignore_errors
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function seed_from_yaml_file($yaml_file, $ignore_errors = false): array
     {
@@ -38,7 +39,7 @@ class DatabaseService extends Service
     /**
      * @param bool $ignore_errors
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function seed_from_yaml($yml, $ignore_errors = false): array
     {
@@ -48,7 +49,7 @@ class DatabaseService extends Service
     /**
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function insert_row($table, $row)
     {

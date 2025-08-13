@@ -9,6 +9,7 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\Subfleet;
 use App\Support\Math;
+use Exception;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -29,7 +30,7 @@ class FareService extends Service
      *
      * @param PirepFare[] $fares
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveToPirep(Pirep $pirep, array $fares)
     {

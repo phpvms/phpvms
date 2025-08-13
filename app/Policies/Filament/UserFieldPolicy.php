@@ -15,7 +15,7 @@ class UserFieldPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_user::field');
+        return $user->can('view_any_userfield');
     }
 
     /**
@@ -23,7 +23,7 @@ class UserFieldPolicy
      */
     public function view(User $user, UserField $userField): bool
     {
-        return $user->can('view_user::field');
+        return $user->can('view_userfield');
     }
 
     /**
@@ -31,7 +31,7 @@ class UserFieldPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_user::field');
+        return $user->can('create_userfield');
     }
 
     /**
@@ -39,7 +39,7 @@ class UserFieldPolicy
      */
     public function update(User $user, UserField $userField): bool
     {
-        return $user->can('update_user::field');
+        return $user->can('update_userfield');
     }
 
     /**
@@ -47,7 +47,7 @@ class UserFieldPolicy
      */
     public function delete(User $user, UserField $userField): bool
     {
-        return $user->can('delete_user::field');
+        return $user->can('delete_userfield');
     }
 
     /**
@@ -55,7 +55,7 @@ class UserFieldPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_user::field');
+        return $user->can('delete_any_userfield');
     }
 
     /**
@@ -63,7 +63,7 @@ class UserFieldPolicy
      */
     public function forceDelete(User $user, UserField $userField): bool
     {
-        return $user->can('force_delete_user::field');
+        return $user->can('force_delete_userfield');
     }
 
     /**
@@ -71,7 +71,7 @@ class UserFieldPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_user::field');
+        return $user->can('force_delete_any_userfield');
     }
 
     /**
@@ -79,7 +79,7 @@ class UserFieldPolicy
      */
     public function restore(User $user, UserField $userField): bool
     {
-        return $user->can('restore_user::field');
+        return $user->can('restore_userfield');
     }
 
     /**
@@ -87,7 +87,7 @@ class UserFieldPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_user::field');
+        return $user->can('restore_any_userfield');
     }
 
     /**
@@ -95,7 +95,7 @@ class UserFieldPolicy
      */
     public function replicate(User $user, UserField $userField): bool
     {
-        return $user->can('replicate_user::field');
+        return $user->can('replicate_userfield');
     }
 
     /**
@@ -103,6 +103,6 @@ class UserFieldPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_user::field');
+        return $user->can('reorder_userfield');
     }
 }

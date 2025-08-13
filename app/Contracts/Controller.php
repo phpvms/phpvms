@@ -5,8 +5,10 @@ namespace App\Contracts;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laracasts\Flash\Flash;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Class Controller
@@ -38,7 +40,7 @@ abstract class Controller extends \Illuminate\Routing\Controller
      * @param  array   $addtl_fields
      * @return array
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function getFromReq($request, $attrs_or_validations, $addtl_fields = null)
     {
@@ -78,9 +80,9 @@ abstract class Controller extends \Illuminate\Routing\Controller
     /**
      * Simple normalized method for forming the JSON responses
      *
-     * @param  null|mixed                    $count
-     * @param  mixed                         $attrs
-     * @return \Illuminate\Http\JsonResponse
+     * @param  null|mixed   $count
+     * @param  mixed        $attrs
+     * @return JsonResponse
      */
     public function message($message, $count = null, $attrs = [])
     {

@@ -24,6 +24,7 @@ use App\Repositories\UserRepository;
 use App\Support\Units\Time;
 use App\Support\Utils;
 use Carbon\Carbon;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
@@ -119,7 +120,7 @@ class UserService extends Service
      * something random
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function removeUser(User $user)
     {
@@ -555,7 +556,7 @@ class UserService extends Service
             $user->update([
                 'discord_private_channel_id' => $privateChannel,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Discord OAuth Error: '.$e->getMessage());
         } catch (GuzzleException $e) {
             Log::error('Discord OAuth Error: '.$e->getMessage());

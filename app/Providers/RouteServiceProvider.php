@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -118,7 +119,7 @@ class RouteServiceProvider extends ServiceProvider
                 Route::get('{provider}/logout', 'OAuthController@logoutProvider')->name('logout')->middleware('auth');
             });
 
-            Route::get('/logout', 'Auth\LoginController@logout')->name(\Illuminate\Auth\Events\Logout::class);
+            Route::get('/logout', 'Auth\LoginController@logout')->name(Logout::class);
             Auth::routes(['verify' => true]);
 
             // Redirect /update

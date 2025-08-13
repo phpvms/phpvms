@@ -3,6 +3,8 @@
 namespace App\Support\Units;
 
 use App\Contracts\Unit;
+use PhpUnitsOfMeasure\Exception\NonNumericValue;
+use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\PhysicalQuantity\Pressure as PressureUnit;
 
 /**
@@ -18,8 +20,8 @@ class Pressure extends Unit
     /**
      * @param float $value
      *
-     * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
-     * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
+     * @throws NonNumericValue
+     * @throws NonStringUnitName
      */
     public function __construct($value, string $unit)
     {

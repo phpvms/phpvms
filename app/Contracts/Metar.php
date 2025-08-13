@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -46,7 +47,7 @@ abstract class Metar
 
         try {
             $raw_metar = $this->get_metar($icao);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error getting METAR: '.$e->getMessage(), $e->getTrace());
 
             return '';
@@ -76,7 +77,7 @@ abstract class Metar
 
         try {
             $taf = $this->get_taf($icao);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error getting TAF: '.$e->getMessage(), $e->getTrace());
 
             return '';

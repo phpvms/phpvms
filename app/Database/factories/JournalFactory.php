@@ -8,7 +8,7 @@ use App\Contracts\Factory;
 use App\Models\Journal;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Journal>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Journal>
  */
 class JournalFactory extends Factory
 {

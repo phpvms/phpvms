@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Nwidart\Modules\Support\Stub;
 use PDO;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -205,7 +206,7 @@ class ConfigService extends Service
     protected function configCacheDriver($opts)
     {
         // Set the cache prefix
-        $prefix = substr(\Illuminate\Support\Str::slug($opts['SITE_NAME'], '_'), 0, 8);
+        $prefix = substr(Str::slug($opts['SITE_NAME'], '_'), 0, 8);
         $opts['CACHE_PREFIX'] = strtolower(uniqid($prefix.'_'));
 
         // Figure out what cache driver to initially use, depending on

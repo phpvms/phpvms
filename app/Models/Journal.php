@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Holds various journals, depending on the morphed_type and morphed_id columns
@@ -87,8 +89,8 @@ class Journal extends Model
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function resetCurrentBalances()
     {
@@ -97,8 +99,8 @@ class Journal extends Model
     }
 
     /**
-     * @param  Journal                                         $object
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @param  Journal $object
+     * @return HasMany
      */
     public function transactionsReferencingObjectQuery($object)
     {
@@ -114,8 +116,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCreditBalanceOn(Carbon $date)
     {
@@ -132,8 +134,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getBalanceOn(Carbon $date)
     {
@@ -146,8 +148,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCurrentBalance()
     {
@@ -159,8 +161,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getBalance()
     {

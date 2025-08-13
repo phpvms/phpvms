@@ -5,6 +5,10 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Http\Resources\SimBrief as SimbriefResource;
 use App\Support\Units\Distance;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use PhpUnitsOfMeasure\Exception\NonNumericValue;
+use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use stdClass;
 
 /**
@@ -17,7 +21,7 @@ class Flight extends Resource
      */
     protected function setFields()
     {
-        /** @var \Illuminate\Support\Collection $field_values */
+        /** @var Collection $field_values */
         $return_values = new stdClass();
         $field_values = $this->field_values;
         if (empty($field_values) || $field_values->count() === 0) {
@@ -32,11 +36,11 @@ class Flight extends Resource
     }
 
     /**
-     * @param  \Illuminate\Http\Request $request
+     * @param  Request $request
      * @return array
      *
-     * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
-     * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
+     * @throws NonNumericValue
+     * @throws NonStringUnitName
      */
     public function toArray($request)
     {

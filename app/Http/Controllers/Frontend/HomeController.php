@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use PDOException;
 
 class HomeController extends Controller
 {
@@ -18,7 +19,7 @@ class HomeController extends Controller
     {
         try {
             $users = User::with('home_airport')->where('state', '!=', UserState::DELETED)->orderBy('created_at', 'desc')->take(4)->get();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             Log::emergency($e);
 
             return view('system/errors/database_error', [

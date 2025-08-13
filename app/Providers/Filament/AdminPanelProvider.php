@@ -3,17 +3,21 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Backups;
+use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\ModuleLinksPlugin;
+use App\Models\Enums\NavigationGroup as EnumsNavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentView;
-use Filament\Widgets;
+use Filament\Support\Icons\Heroicon;
+use Filament\Widgets\AccountWidget;
+use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -34,15 +38,15 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => '#067ec1',
+                'primary' => Color::generatePalette('#067ec1'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                AccountWidget::class,
+                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -60,18 +64,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                NavigationGroup::make()->label('Operations'),
-                NavigationGroup::make()->label('Config'),
-                NavigationGroup::make()->label('Modules'),
+                \App\Models\Enums\NavigationGroup::Config->name,
+                \App\Models\Enums\NavigationGroup::Operations->name,
+                \App\Models\Enums\NavigationGroup::Modules->name,
+                \App\Models\Enums\NavigationGroup::Developers->name,
             ])
             ->navigationItems([
-                NavigationItem::make()->label('Go back to '.config('app.name'))->icon('heroicon-o-arrow-uturn-left')->url('/'),
+                // Labels should be in a closure to allow for translation
+
+                NavigationItem::make()
+                    ->label(fn () => __('common.go_back_to', ['name' => config('app.name')]))
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
+                    ->url('/'),
+
                 NavigationItem::make()
                     ->visible(fn (): bool => auth()->user()->can('view_logs'))
-                    ->group('Config')
-                    ->sort(10)
-                    ->icon('heroicon-o-document-text')
-                    ->label('View Logs')
+                    ->group(EnumsNavigationGroup::Developers)
+                    ->sort(3)
+                    ->icon(Heroicon::OutlinedDocumentText)
+                    ->label(fn () => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
@@ -79,6 +90,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),
+                LanguageSwitcherPlugin::make(),
             ])
             ->bootUsing(function () {
                 activity()->enableLogging();
@@ -86,7 +98,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
             ->unsavedChangesAlerts()
-            ->spa();
+            ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
+            ->errorNotifications()
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 
     public function register(): void

@@ -42,11 +42,11 @@ class SimBriefController
      * Show the main OFP form
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function generate(Request $request): RedirectResponse|View
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $flight_id = $request->input('flight_id');
@@ -335,7 +335,7 @@ class SimBriefController
      * or if no pirep_id is attached to the briefing delete it completely
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function generate_new(Request $request): RedirectResponse
     {
@@ -444,7 +444,7 @@ class SimBriefController
      * Generate the API code
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function api_code(Request $request): RedirectResponse|JsonResponse
     {

@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import laravel, { refreshPaths } from "laravel-vite-plugin";
+import tailwindcss from '@tailwindcss/vite'
 // import react from '@vitejs/plugin-react';
 // import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     laravel({
       input: [
         "resources/sass/app.scss",
@@ -16,6 +18,7 @@ export default defineConfig({
         "resources/sass/fonts/Pe-icon-7-stroke.svg",
         "resources/sass/fonts/Pe-icon-7-stroke.ttf",
         "resources/sass/fonts/Pe-icon-7-stroke.woff",
+        "resources/css/filament/admin/theme.css",
         // "resources/js/admin/app.js",
         // "resources/js/admin/airport_lookup.js",
         // "resources/js/admin/calculate_distance.js",

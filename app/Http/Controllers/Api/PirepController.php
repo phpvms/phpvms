@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Events\PirepUpdated;
+use App\Exceptions\AircraftNotAtAirport;
 use App\Exceptions\AircraftPermissionDenied;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepError;
+use App\Exceptions\UserNotAtAirport;
 use App\Http\Requests\Acars\CommentRequest;
 use App\Http\Requests\Acars\FieldsRequest;
 use App\Http\Requests\Acars\FileRequest;
@@ -33,11 +35,17 @@ use App\Services\Finance\PirepFinanceService;
 use App\Services\PirepService;
 use App\Services\UserService;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Prettus\Validator\Exceptions\ValidatorException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use UnexpectedValueException;
 
 class PirepController extends Controller
 {
@@ -75,7 +83,7 @@ class PirepController extends Controller
      * Check if a PIREP is cancelled
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws PirepCancelled
      */
     protected function checkCancelled(Pirep $pirep): void
     {
@@ -88,7 +96,7 @@ class PirepController extends Controller
      * Check if a PIREP is cancelled
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws PirepCancelled
      */
     protected function checkReadOnly(Pirep $pirep): void
     {
@@ -124,7 +132,7 @@ class PirepController extends Controller
      *
      * @return ?PirepFare[]
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getFares(Request $request): ?array
     {
@@ -172,11 +180,11 @@ class PirepController extends Controller
      * status, and whatever other statuses may be defined
      *
      *
-     * @throws \App\Exceptions\AircraftNotAtAirport
-     * @throws \App\Exceptions\UserNotAtAirport
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \App\Exceptions\AircraftPermissionDenied
-     * @throws \Exception
+     * @throws AircraftNotAtAirport
+     * @throws UserNotAtAirport
+     * @throws PirepCancelled
+     * @throws AircraftPermissionDenied
+     * @throws Exception
      */
     public function prefile(PrefileRequest $request): PirepResource
     {
@@ -203,10 +211,10 @@ class PirepController extends Controller
      * status, and whatever other statuses may be defined
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \App\Exceptions\AircraftPermissionDenied
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     * @throws \Exception
+     * @throws PirepCancelled
+     * @throws AircraftPermissionDenied
+     * @throws ValidatorException
+     * @throws Exception
      */
     public function update(string $pirep_id, UpdateRequest $request): PirepResource
     {
@@ -246,10 +254,10 @@ class PirepController extends Controller
      * File the PIREP
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \App\Exceptions\AircraftPermissionDenied
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     * @throws \Exception
+     * @throws PirepCancelled
+     * @throws AircraftPermissionDenied
+     * @throws ModelNotFoundException
+     * @throws Exception
      */
     public function file(string $pirep_id, FileRequest $request): PirepResource
     {
@@ -279,7 +287,7 @@ class PirepController extends Controller
             $fields = $this->getFields($request);
             $fares = $this->getFares($request);
             $pirep = $this->pirepSvc->file($pirep, $attrs, $fields, $fares);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e);
 
             throw $e;
@@ -305,7 +313,7 @@ class PirepController extends Controller
      *
      * @return mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function cancel(string $pirep_id, Request $request)
     {
@@ -333,7 +341,7 @@ class PirepController extends Controller
      * Add a new comment
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
+     * @throws PirepCancelled
      */
     public function comments_post(string $id, CommentRequest $request): PirepCommentResource
     {
@@ -376,8 +384,8 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function finances_get(string $id): AnonymousResourceCollection
     {
@@ -388,10 +396,10 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Exception
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws Exception
+     * @throws ValidatorException
      */
     public function finances_recalculate(string $id, Request $request): AnonymousResourceCollection
     {
@@ -419,9 +427,9 @@ class PirepController extends Controller
      * Post the ROUTE for a PIREP, can be done from the ACARS log
      *
      *
-     * @throws \App\Exceptions\PirepCancelled
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-     * @throws \Exception
+     * @throws PirepCancelled
+     * @throws BadRequestHttpException
+     * @throws Exception
      */
     public function route_post(string $id, RouteRequest $request): JsonResponse
     {
@@ -461,7 +469,7 @@ class PirepController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function route_delete(string $id, Request $request): JsonResponse
     {
