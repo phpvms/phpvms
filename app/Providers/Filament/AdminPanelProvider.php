@@ -98,7 +98,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('phpVMS')
             ->favicon(public_asset('assets/img/favicon.png'))
             ->unsavedChangesAlerts()
-            ->spa()
+            ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
