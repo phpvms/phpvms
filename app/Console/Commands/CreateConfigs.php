@@ -6,7 +6,7 @@ use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
-use DatabaseSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 

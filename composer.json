@@ -11,10 +11,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/arthurpar06/laravel-theme"
-        },
-        {
-          "type": "vcs",
-          "url": "https://github.com/arthurpar06/filament-modules"
         }
       ],
     "require": {
@@ -119,14 +115,13 @@
         "pestphp/pest-plugin-arch": "^3.1"
     },
     "autoload": {
-        "classmap": [
-            "app/Database"
-        ],
         "files": [
             "app/helpers.php"
         ],
         "psr-4": {
             "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/",
             "Modules\\": "modules/"
         }
     },

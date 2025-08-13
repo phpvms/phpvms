@@ -4,7 +4,6 @@ namespace Tests;
 
 use App\Contracts\Factory;
 use App\Contracts\Unit;
-use App\Database\seeds\ShieldSeeder;
 use App\Exceptions\Handler;
 use App\Models\User;
 use App\Repositories\SettingRepository;
@@ -12,6 +11,7 @@ use App\Services\DatabaseService;
 use App\Services\Installer\SeederService;
 use App\Services\ModuleService;
 use Carbon\Carbon;
+use Database\Seeders\ShieldSeeder;
 use DateTimeImmutable;
 use Exception;
 use GuzzleHttp\Client;

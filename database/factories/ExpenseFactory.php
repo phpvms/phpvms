@@ -2,7 +2,7 @@
 
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
-namespace App\Database\Factories;
+namespace Database\Factories;
 
 use App\Contracts\Factory;
 use App\Models\Enums\ExpenseType;

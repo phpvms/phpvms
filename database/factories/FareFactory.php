@@ -2,7 +2,7 @@
 
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
-namespace App\Database\Factories;
+namespace Database\factories;
 
 use App\Contracts\Factory;
 use App\Models\Fare;

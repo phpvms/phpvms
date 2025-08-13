@@ -1,5 +1,0 @@
-{
-  "name": "default",
-  "description": "This theme is just an alias for the beta theme",
-  "extends": "beta"
-}

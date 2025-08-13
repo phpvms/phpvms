@@ -2,22 +2,22 @@
 
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
-namespace App\Database\Factories;
+namespace Database\Factories;
 
 use App\Contracts\Factory;
-use App\Models\Role;
+use App\Models\Journal;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Role>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Journal>
  */
-class RoleFactory extends Factory
+class JournalFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Role::class;
+    protected $model = Journal::class;
 
     /**
      * Define the model's default state.
@@ -27,9 +27,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'         => null,
-            'name'       => fake()->name,
-            'guard_name' => 'web',
+            'currency' => 'USD',
         ];
     }
 }

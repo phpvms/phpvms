@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Database\seeds;
+namespace Database\Seeders;
 
+use App\Contracts\Model;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
