@@ -264,7 +264,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=edge,branch=dev
+            type=semver,pattern={{version}},value=${{ env.NBGV_SemVer2 }}
             type=ref,event=branch
 
       - name: Build and push
