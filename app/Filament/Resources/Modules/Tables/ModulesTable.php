@@ -8,7 +8,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -29,8 +28,7 @@ class ModulesTable
 
                 IconColumn::make('enabled')
                     ->label(__('common.enabled'))
-                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
-                    ->icon(fn (bool $state): Heroicon => $state ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedXCircle)
+                    ->boolean()
                     ->sortable(),
             ])
             ->filters([
@@ -52,18 +50,18 @@ class ModulesTable
                     }),
             ])
             ->toolbarActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make()
-                            ->before(function (Collection $records) {
-                                $records->each(function (Module $record) {
-                                    try {
-                                        File::deleteDirectory(base_path().'/modules/'.$record->name);
-                                    } catch (\Exception $e) {
-                                        Log::error('Folder Deleted Manually for Module : '.$record->name);
-                                    }
-                                });
-                            }),
-                    ]),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->before(function (Collection $records) {
+                            $records->each(function (Module $record) {
+                                try {
+                                    File::deleteDirectory(base_path().'/modules/'.$record->name);
+                                } catch (\Exception $e) {
+                                    Log::error('Folder Deleted Manually for Module : '.$record->name);
+                                }
+                            });
+                        }),
+                ]),
             ]);
     }
 }

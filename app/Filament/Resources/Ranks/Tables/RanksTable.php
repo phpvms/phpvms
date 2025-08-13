@@ -8,7 +8,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
@@ -38,8 +37,7 @@ class RanksTable
                 IconColumn::make('auto_approve_acars')
                     ->label(__('filament.rank_auto_approve_acars'))
                     ->toggleable()
-                    ->color(fn ($state): string => $state ? 'success' : 'danger')
-                    ->icon(fn ($state): Heroicon => $state ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedXCircle)
+                    ->boolean()
                     ->sortable(),
 
                 TextColumn::make('manual_pay')
@@ -50,14 +48,12 @@ class RanksTable
                 IconColumn::make('auto_approve_manual')
                     ->label(__('filament.rank_auto_approve_manual'))
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->color(fn ($state): string => $state ? 'success' : 'danger')
-                    ->icon(fn ($state): Heroicon => $state ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedXCircle)
+                    ->boolean()
                     ->sortable(),
 
                 IconColumn::make('auto_promote')
                     ->label(__('filament.rank_auto_promote'))
-                    ->color(fn ($state): string => $state ? 'success' : 'danger')
-                    ->icon(fn ($state): Heroicon => $state ? Heroicon::OutlinedCheckCircle : Heroicon::OutlinedXCircle)
+                    ->boolean()
                     ->sortable(),
             ])
             ->defaultSort('hours')
