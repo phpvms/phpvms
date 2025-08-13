@@ -8,6 +8,7 @@ use App\Repositories\AirlineRepository;
 use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
 use App\Repositories\SubfleetRepository;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class AirlineService extends Service
 {
@@ -22,7 +23,7 @@ class AirlineService extends Service
      * Create a new airline, and initialize the journal
      *
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function createAirline(array $attr): Airline
     {

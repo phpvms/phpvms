@@ -6,10 +6,19 @@ use App\Events\NewsAdded;
 use App\Events\NewsUpdated;
 use App\Models\News as NewsModel;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
-use Filament\Forms;
-use Filament\Support\Enums\ActionSize;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables;
+use Filament\Support\Enums\Size;
+use Filament\Support\Enums\TextSize;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
@@ -25,16 +34,21 @@ class News extends BaseWidget
     private function formContent(): array
     {
         return [
-            Forms\Components\TextInput::make('subject')
+            TextInput::make('subject')
+                ->label(__('filament.news_subject'))
                 ->string()
                 ->required(),
-            Forms\Components\RichEditor::make('body')
+
+            RichEditor::make('body')
+                ->label(__('filament.news_body'))
                 ->required(),
-            Forms\Components\Toggle::make('send_notifications')
+
+            Toggle::make('send_notifications')
+                ->label(__('filament.news_send_notifications'))
                 ->onColor('success')
-                ->onIcon('heroicon-m-check-circle')
+                ->onIcon(Heroicon::CheckCircle)
                 ->offColor('danger')
-                ->offIcon('heroicon-m-x-circle'),
+                ->offIcon(Heroicon::XCircle),
         ];
     }
 
@@ -44,28 +58,30 @@ class News extends BaseWidget
             ->query(
                 NewsModel::orderBy('created_at', 'desc')
             )
-            ->paginated([2, 10, 25, 50, 100, 'all'])
+            ->heading(__('widgets.latestnews.news'))
+            ->modelLabel(__('widgets.latestnews.news'))
+            ->paginated([1, 2, 5])
             ->defaultPaginationPageOption(2)
             ->columns([
-                Tables\Columns\Layout\Stack::make([
-                    Tables\Columns\TextColumn::make('subject')
-                        ->size(Tables\Columns\TextColumn\TextColumnSize::Large)
+                Stack::make([
+                    TextColumn::make('subject')
+                        ->size(TextSize::Large)
                         ->weight(FontWeight::Bold),
 
-                    Tables\Columns\TextColumn::make('body')
+                    TextColumn::make('body')
                         ->color('gray')
                         ->html(),
 
-                    Tables\Columns\TextColumn::make('user.name')
+                    TextColumn::make('user.name')
                         ->formatStateUsing(fn (NewsModel $record): string => $record->user->name.' - '.$record->created_at->diffForHumans())
                         ->alignEnd(),
                 ]),
             ])
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->form($this->formContent())
-                        ->mutateFormDataUsing(function (array $data): array {
+            ->recordActions([
+                ActionGroup::make([
+                    EditAction::make()
+                        ->schema($this->formContent())
+                        ->mutateDataUsing(function (array $data): array {
                             $data['user_id'] = Auth::id();
 
                             return $data;
@@ -76,17 +92,16 @@ class News extends BaseWidget
                             }
                         }),
 
-                    Tables\Actions\DeleteAction::make(),
+                    DeleteAction::make(),
                 ]),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make('create')
-                    ->label('Add News')
-                    ->icon('heroicon-o-plus-circle')
-                    ->size(ActionSize::Small)
+                CreateAction::make('create')
+                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->size(Size::Small)
                     ->model(NewsModel::class)
-                    ->form($this->formContent())
-                    ->mutateFormDataUsing(function (array $data): array {
+                    ->schema($this->formContent())
+                    ->mutateDataUsing(function (array $data): array {
                         $data['user_id'] = Auth::id();
 
                         return $data;

@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\VersionService;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
+use Version\Extension\Build;
+use Version\Extension\PreRelease;
 
 class Version extends Command
 {
@@ -22,7 +25,7 @@ class Version extends Command
     /**
      * Run dev related commands
      *
-     * @throws \Symfony\Component\Yaml\Exception\ParseException
+     * @throws ParseException
      */
     public function handle()
     {
@@ -41,10 +44,10 @@ class Version extends Command
                 }
 
                 $prerelease = $version->getPreRelease();
-                $cfg['current']['prerelease'] = $prerelease instanceof \Version\Extension\PreRelease ? $prerelease->toString() : false;
+                $cfg['current']['prerelease'] = $prerelease instanceof PreRelease ? $prerelease->toString() : false;
 
                 $build_meta = $version->getBuild();
-                if ($build_meta instanceof \Version\Extension\Build) {
+                if ($build_meta instanceof Build) {
                     $cfg['current']['buildmetadata'] = $build_meta->toString();
                 } else {
                     $build_number = $this->versionSvc->generateBuildId($cfg);

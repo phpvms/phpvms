@@ -40,11 +40,13 @@ use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Nwidart\Modules\Facades\Module;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepService extends Service
 {
@@ -66,7 +68,7 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Exception
+     * @throws Exception
      * @throws AirportNotFound If one of the departure or arrival airports isn't found locally
      */
     public function prefile(User $user, array $attrs, array $fields = [], array $fares = []): Pirep
@@ -228,8 +230,8 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     * @throws \Exception
+     * @throws ValidatorException
+     * @throws Exception
      */
     public function update(string $pirep_id, array $attrs, array $fields = [], array $fares = []): Pirep
     {
@@ -246,7 +248,7 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function file(Pirep $pirep, array $attrs = [], array $fields = [], array $fares = []): Pirep
     {
@@ -360,7 +362,7 @@ class PirepService extends Service
      * entered into the PIREP's route field
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveRoute(Pirep $pirep): Pirep
     {
@@ -413,7 +415,7 @@ class PirepService extends Service
      * Submit the PIREP. Figure out its default state
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function submit(Pirep $pirep)
     {
@@ -467,7 +469,7 @@ class PirepService extends Service
      * Cancel a PIREP
      *
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function cancel(Pirep $pirep): Pirep
     {
@@ -539,7 +541,7 @@ class PirepService extends Service
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function changeState(Pirep $pirep, int $new_state): Pirep
     {
@@ -586,7 +588,7 @@ class PirepService extends Service
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function accept(Pirep $pirep): Pirep
     {

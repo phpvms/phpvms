@@ -12,9 +12,10 @@ use App\Models\Enums\AircraftStatus;
 use App\Models\Subfleet;
 use App\Support\ICAO;
 use DateTime;
+use Exception;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Aircraft>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Aircraft>
  */
 class AircraftFactory extends Factory
 {
@@ -30,7 +31,7 @@ class AircraftFactory extends Factory
      *
      * @return array<string, mixed>
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function definition(): array
     {

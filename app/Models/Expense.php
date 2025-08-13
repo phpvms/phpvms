@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Models\Casts\CommaDelimitedCast;
 use App\Models\Traits\ReferenceTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property bool    charge_to_user
  * @property Airline $airline
  *
- * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin Builder
  */
 class Expense extends Model
 {

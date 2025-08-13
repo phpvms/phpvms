@@ -12,6 +12,7 @@ use App\Repositories\AirlineRepository;
 use App\Repositories\JournalRepository;
 use App\Support\Dates;
 use App\Support\Money;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class FinanceService extends Service
 {
@@ -32,7 +33,7 @@ class FinanceService extends Service
     {
         $expense = new Expense($attrs);
 
-        if ($model instanceof \App\Contracts\Model) {
+        if ($model instanceof Model) {
             $expense->ref_model = get_class($model);
 
             // In case it's a generic expense not tied to a specific instance
@@ -66,7 +67,7 @@ class FinanceService extends Service
      * @param  string                              $post_date
      * @return mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function creditToJournal(
         Journal $journal,
@@ -100,7 +101,7 @@ class FinanceService extends Service
      * @param  string                              $post_date
      * @return mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function debitFromJournal(
         Journal $journal,

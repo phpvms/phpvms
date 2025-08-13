@@ -9,7 +9,7 @@ use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Expense>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Expense>
  */
 class ExpenseFactory extends Factory
 {
@@ -34,7 +34,7 @@ class ExpenseFactory extends Factory
             'amount'       => fake()->randomFloat(2, 100, 1000),
             'type'         => ExpenseType::FLIGHT,
             'multiplier'   => false,
-            'ref_model'    => \App\Models\Expense::class,
+            'ref_model'    => Expense::class,
             'ref_model_id' => null,
             'active'       => true,
         ];

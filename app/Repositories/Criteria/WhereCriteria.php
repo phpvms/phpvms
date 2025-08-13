@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Criteria;
 
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 class WhereCriteria implements CriteriaInterface
 {
     /**
-     * @var \Illuminate\Http\Request
+     * @var Request
      */
     protected $request;
 
@@ -41,7 +42,7 @@ class WhereCriteria implements CriteriaInterface
      * @param  Builder|Model $model
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function apply($model, RepositoryInterface $repository)
     {

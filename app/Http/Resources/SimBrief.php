@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use App\Models\Fare;
+use Exception;
 use Illuminate\Http\Resources\MissingValue;
 
 /**
@@ -24,12 +26,12 @@ class SimBrief extends Resource
             if (!empty($this->fare_data)) {
                 $fare_data = json_decode($this->fare_data, true);
                 foreach ($fare_data as $fare) {
-                    $fares[] = new \App\Models\Fare($fare);
+                    $fares[] = new Fare($fare);
                 }
 
                 $fares = collect($fares);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Invalid fare data
         }
 

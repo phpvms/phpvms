@@ -23,6 +23,10 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Log\Events\MessageLogged;
+use SocialiteProviders\Discord\DiscordExtendSocialite;
+use SocialiteProviders\Ivao\IvaoExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Vatsim\VatsimExtendSocialite;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -59,10 +63,10 @@ class EventServiceProvider extends ServiceProvider
         ProfileUpdated::class => [],
 
         // For discord OAuth
-        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-            \SocialiteProviders\Discord\DiscordExtendSocialite::class.'@handle',
-            \SocialiteProviders\Ivao\IvaoExtendSocialite::class.'@handle',
-            \SocialiteProviders\Vatsim\VatsimExtendSocialite::class.'@handle',
+        SocialiteWasCalled::class => [
+            DiscordExtendSocialite::class.'@handle',
+            IvaoExtendSocialite::class.'@handle',
+            VatsimExtendSocialite::class.'@handle',
         ],
 
     ];

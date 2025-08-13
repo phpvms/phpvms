@@ -2,10 +2,13 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Finances;
 use App\Models\Airline;
 use App\Models\JournalTransaction;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
-use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
@@ -20,16 +23,27 @@ class AirlineFinanceTable extends TableWidget
 
     protected static ?string $pollingInterval = null;
 
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return $record->transaction_group;
     }
 
     public function table(Table $table): Table
     {
-        $start_date = $this->filters['start_date'] !== null ? Carbon::createFromTimeString($this->filters['start_date']) : now()->startOfYear();
-        $end_date = $this->filters['end_date'] !== null ? Carbon::createFromTimeString($this->filters['end_date']) : now();
-        $airline_id = $this->filters['airline_id'] ?? Auth::user()->airline_id;
+        $filters = $this->pageFilters ?? [
+            'start_date' => null,
+            'end_date'   => null,
+            'airline_id' => null,
+        ];
+
+        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $airline_id = $filters['airline_id'];
+
+        if ($airline_id === null || $airline_id === '') {
+            $airline_id = Auth::user()->airline_id;
+        }
+
         $airline_journal_id = Airline::find($airline_id)->journal->id;
 
         return $table
@@ -47,22 +61,24 @@ class AirlineFinanceTable extends TableWidget
                     ->orderBy('transaction_group', 'asc')
             )
             ->columns([
-                Tables\Columns\TextColumn::make('transaction_group')
+                TextColumn::make('transaction_group')
                     ->label('Expense'),
 
-                Tables\Columns\TextColumn::make('sum_credits')
+                TextColumn::make('sum_credits')
                     ->label('Credit')
-                    ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_credits, $record->currency))
+                    ->color('success')
+                    ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_credits ?? 0, $record->currency))
                     ->summarize(
-                        Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money(setting('units.currency'), divideBy: 100)
                     ),
 
-                Tables\Columns\TextColumn::make('sum_debits')
+                TextColumn::make('sum_debits')
                     ->label('Debit')
-                    ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_debits, $record->currency))
+                    ->color('danger')
+                    ->formatStateUsing(fn (JournalTransaction $record): string => money($record->sum_debits ?? 0, $record->currency))
                     ->summarize(
-                        Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money(setting('units.currency'), divideBy: 100)
                     ),
             ]);
@@ -70,6 +86,7 @@ class AirlineFinanceTable extends TableWidget
 
     public static function canView(): bool
     {
-        return false;
+        // Display if the page is finance or /livewire/update from finance
+        return request()->url() === Finances::getUrl() || (request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl()));
     }
 }

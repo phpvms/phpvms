@@ -4,6 +4,7 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Fare;
+use Exception;
 
 /**
  * Import aircraft
@@ -39,7 +40,7 @@ class FareImporter extends ImportExport
             $fare = Fare::updateOrCreate([
                 'code' => $row['code'],
             ], $row);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

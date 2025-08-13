@@ -3,6 +3,9 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\SimBrief as SimbriefResource;
+use Illuminate\Http\Request;
+use PhpUnitsOfMeasure\Exception\NonNumericValue;
+use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 
 /**
  * @mixin \App\Models\Flight
@@ -10,11 +13,11 @@ use App\Http\Resources\SimBrief as SimbriefResource;
 class BidFlight extends Flight
 {
     /**
-     * @param  \Illuminate\Http\Request $request
+     * @param  Request $request
      * @return array
      *
-     * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
-     * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
+     * @throws NonNumericValue
+     * @throws NonStringUnitName
      */
     public function toArray($request)
     {

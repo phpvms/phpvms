@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Composer\Autoload\ClassMapGenerator;
+use Exception;
 use Log;
 
 /**
@@ -22,7 +23,7 @@ class ClassLoader
         foreach ($all_classes as $cl) {
             try {
                 $klass = new $cl();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('Error loading class: '.$e->getMessage());
 
                 continue;

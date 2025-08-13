@@ -1,0 +1,3 @@
+- name: view_logs
+- name: download-backup
+- name: delete-backup

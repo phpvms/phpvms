@@ -8,6 +8,8 @@ use App\Contracts\Controller;
 use App\Exceptions\CronInvalid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\NullOutput;
 
 class MaintenanceController extends Controller
 {
@@ -28,8 +30,8 @@ class MaintenanceController extends Controller
 
         // Run a null artisan thing just so Laravel internals can be setup properly
         $status = $consoleKernel->handle(
-            new \Symfony\Component\Console\Input\ArgvInput(),
-            new \Symfony\Component\Console\Output\NullOutput()
+            new ArgvInput(),
+            new NullOutput()
         );
 
         $cron = app(Cron::class);

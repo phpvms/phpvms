@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Str;
 
 /**
  * @property string name
@@ -38,7 +39,7 @@ class UserField extends Model
     public function slug(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => \Illuminate\Support\Str::slug($attrs['name'], '_')
+            get: fn ($_, $attrs) => Str::slug($attrs['name'], '_')
         );
     }
 

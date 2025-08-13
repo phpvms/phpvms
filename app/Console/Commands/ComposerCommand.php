@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\Facades\Artisan;
 
 class ComposerCommand extends Command
@@ -31,7 +32,7 @@ class ComposerCommand extends Command
     protected function postUpdate(): void
     {
         /* @noinspection NestedPositiveIfStatementsInspection */
-        if (config('app.env') === 'dev' && class_exists(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class)) {
+        if (config('app.env') === 'dev' && class_exists(IdeHelperServiceProvider::class)) {
             Artisan::call('ide-helper:generate');
             Artisan::call('ide-helper:meta');
         }

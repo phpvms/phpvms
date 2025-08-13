@@ -7,6 +7,8 @@ use App\Events\CronNightly;
 use App\Services\AircraftService;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * This recalculates the balances on all of the journals
@@ -27,8 +29,8 @@ class RecalculateStats extends Listener
      * Recalculate the stats for active users
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function handle(CronNightly $event): void
     {

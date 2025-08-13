@@ -3,6 +3,7 @@
 namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
+use App\Models\Pirep;
 use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordMessage;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,7 +15,7 @@ class UserRankChanged extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      *
-     * @param \App\Models\Pirep $pirep
+     * @param Pirep $pirep
      */
     public function __construct(User $user)
     {

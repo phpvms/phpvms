@@ -39,7 +39,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
         $moduleName = $this->argument('module');
         $this->module = app('modules')->find($moduleName);
 
-        if (!$this->module) {
+        if (!$this->module instanceof Module) {
             $this->fail("Module {$moduleName} not found, are you sure it's installed and enabled?");
         }
 

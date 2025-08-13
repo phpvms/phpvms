@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Exception;
+
 /**
  * ICAO Helper Tools
  */
@@ -13,7 +15,7 @@ class ICAO
      *
      * @param null $country
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function createHexCode($country = null): string
     {

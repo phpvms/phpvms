@@ -10,6 +10,8 @@ use App\Models\Enums\AircraftStatus;
 use App\Models\Subfleet;
 use App\Support\ICAO;
 use App\Support\Units\Mass;
+use Exception;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Import aircraft
@@ -46,7 +48,7 @@ class AircraftImporter extends ImportExport
      * first airline that's been found
      *
      *
-     * @return Subfleet|\Illuminate\Database\Eloquent\Model|null|object|static
+     * @return Subfleet|Model|null|object|static
      */
     protected function getSubfleet($type)
     {
@@ -63,7 +65,7 @@ class AircraftImporter extends ImportExport
      *
      * @param int $index
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function import(array $row, $index): bool
     {
@@ -100,7 +102,7 @@ class AircraftImporter extends ImportExport
             Aircraft::updateOrCreate([
                 'registration' => $row['registration'],
             ], $row);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;
