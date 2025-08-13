@@ -7733,16 +7733,16 @@
         },
         {
             "name": "openspout/openspout",
-            "version": "v4.30.1",
+            "version": "v4.28.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/openspout/openspout.git",
-                "reference": "4550fc0dbf01aff86d12691f8a7f6ce22d2b2edc"
+                "reference": "ab05a09fe6fce57c90338f83280648a9786ce36b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openspout/openspout/zipball/4550fc0dbf01aff86d12691f8a7f6ce22d2b2edc",
-                "reference": "4550fc0dbf01aff86d12691f8a7f6ce22d2b2edc",
+                "url": "https://api.github.com/repos/openspout/openspout/zipball/ab05a09fe6fce57c90338f83280648a9786ce36b",
+                "reference": "ab05a09fe6fce57c90338f83280648a9786ce36b",
                 "shasum": ""
             },
             "require": {
@@ -7752,17 +7752,17 @@
                 "ext-libxml": "*",
                 "ext-xmlreader": "*",
                 "ext-zip": "*",
-                "php": "~8.3.0 || ~8.4.0"
+                "php": "~8.2.0 || ~8.3.0 || ~8.4.0"
             },
             "require-dev": {
                 "ext-zlib": "*",
-                "friendsofphp/php-cs-fixer": "^3.80.0",
-                "infection/infection": "^0.30.1",
-                "phpbench/phpbench": "^1.4.1",
-                "phpstan/phpstan": "^2.1.17",
-                "phpstan/phpstan-phpunit": "^2.0.6",
-                "phpstan/phpstan-strict-rules": "^2.0.4",
-                "phpunit/phpunit": "^12.2.6"
+                "friendsofphp/php-cs-fixer": "^3.68.3",
+                "infection/infection": "^0.29.10",
+                "phpbench/phpbench": "^1.4.0",
+                "phpstan/phpstan": "^2.1.2",
+                "phpstan/phpstan-phpunit": "^2.0.4",
+                "phpstan/phpstan-strict-rules": "^2",
+                "phpunit/phpunit": "^11.5.4"
             },
             "suggest": {
                 "ext-iconv": "To handle non UTF-8 CSV files (if \"php-mbstring\" is not already installed or is too limited)",
@@ -7810,7 +7810,7 @@
             ],
             "support": {
                 "issues": "https://github.com/openspout/openspout/issues",
-                "source": "https://github.com/openspout/openspout/tree/v4.30.1"
+                "source": "https://github.com/openspout/openspout/tree/v4.28.5"
             },
             "funding": [
                 {
@@ -7822,7 +7822,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-07T06:15:55+00:00"
+            "time": "2025-01-30T13:51:11+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
