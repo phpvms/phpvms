@@ -81,4 +81,9 @@ class AirportResource extends Resource
             'ICAO' => $record->icao,
         ];
     }
+
+    public static function getModelLabel(): string
+    {
+        return __('common.airport');
+    }
 }

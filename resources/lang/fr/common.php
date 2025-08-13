@@ -26,6 +26,7 @@ return [
     'arrival'        => 'Arrivée',
     'aircraft'       => 'Avion',
     'airline'        => 'Compagnie',
+    'airport'        => 'Aéroport',
     'subfleet'       => 'Sous-Flotte',
     'distance'       => 'Distance',
     'fuel'           => 'Carburant',
