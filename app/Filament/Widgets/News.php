@@ -16,6 +16,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\Size;
 use Filament\Support\Enums\TextSize;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -34,15 +35,20 @@ class News extends BaseWidget
     {
         return [
             TextInput::make('subject')
+                ->label(__('filament.news_subject'))
                 ->string()
                 ->required(),
+
             RichEditor::make('body')
+                ->label(__('filament.news_body'))
                 ->required(),
+
             Toggle::make('send_notifications')
+                ->label(__('filament.news_send_notifications'))
                 ->onColor('success')
-                ->onIcon('heroicon-m-check-circle')
+                ->onIcon(Heroicon::CheckCircle)
                 ->offColor('danger')
-                ->offIcon('heroicon-m-x-circle'),
+                ->offIcon(Heroicon::XCircle),
         ];
     }
 
@@ -52,7 +58,9 @@ class News extends BaseWidget
             ->query(
                 NewsModel::orderBy('created_at', 'desc')
             )
-            ->paginated([2, 10, 25, 50, 100, 'all'])
+            ->heading(__('widgets.latestnews.news'))
+            ->modelLabel(__('widgets.latestnews.news'))
+            ->paginated([1, 2, 5])
             ->defaultPaginationPageOption(2)
             ->columns([
                 Stack::make([
@@ -89,8 +97,7 @@ class News extends BaseWidget
             ])
             ->headerActions([
                 CreateAction::make('create')
-                    ->label('Add News')
-                    ->icon('heroicon-o-plus-circle')
+                    ->icon(Heroicon::OutlinedPlusCircle)
                     ->size(Size::Small)
                     ->model(NewsModel::class)
                     ->schema($this->formContent())

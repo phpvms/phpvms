@@ -84,4 +84,13 @@ return [
     'operations'                         => 'Opérations',
     'modules'                            => 'Modules',
     'developers'                         => 'Développeurs',
+    'today'                              => 'Aujourd\'hui',
+    'this_week'                          => 'Cette semaine',
+    'this_month'                         => 'Ce mois-ci',
+    'this_year'                          => 'Cette année',
+    'pireps_field'                       => 'PIREPs déposés',
+    'news_subject'                       => 'Sujet',
+    'news_body'                          => 'Corps',
+    'news_send_notifications'            => 'Envoyer des notifications',
+
 ];

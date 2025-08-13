@@ -12,8 +12,6 @@ class LatestPirepsChart extends ChartWidget
 {
     use HasWidgetShield;
 
-    protected ?string $heading = 'Pireps Filed';
-
     protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
@@ -44,7 +42,7 @@ class LatestPirepsChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Pireps Filed',
+                    'label' => __('filament.pireps_field'),
                     'data'  => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],
@@ -55,15 +53,20 @@ class LatestPirepsChart extends ChartWidget
     protected function getFilters(): ?array
     {
         return [
-            'today' => 'Today',
-            'week'  => 'This week',
-            'month' => 'This month',
-            'year'  => 'This year',
+            'today' => __('filament.today'),
+            'week'  => __('filament.this_week'),
+            'month' => __('filament.this_month'),
+            'year'  => __('filament.this_year'),
         ];
     }
 
     protected function getType(): string
     {
         return 'line';
+    }
+
+    public function getHeading(): string
+    {
+        return __('filament.pireps_field');
     }
 }

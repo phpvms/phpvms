@@ -85,4 +85,12 @@ return [
     'operations'                         => 'Operations',
     'modules'                            => 'Modules',
     'developers'                         => 'Developers',
+    'today'                              => 'Today',
+    'this_week'                          => 'This week',
+    'this_month'                         => 'This month',
+    'this_year'                          => 'This year',
+    'pireps_field'                       => 'PIREPs Filed',
+    'news_subject'                       => 'Subject',
+    'news_body'                          => 'Body',
+    'news_send_notifications'            => 'Send Notifications',
 ];
