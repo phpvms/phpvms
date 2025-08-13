@@ -130,6 +130,7 @@ return [
     'cost_delay_per_minute' => 'Cost delay per minute',
     'expense_multiplier'    => 'Expense Multiplier',
     'user_field'            => 'User Field|User Fields',
+    'pirep_field'           => 'PIREP Field|PIREPs Fields',
     'role'                  => 'Role|Roles',
     'registered_on'         => 'Registered On',
     'finances'              => 'Finances',

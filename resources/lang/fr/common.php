@@ -130,6 +130,7 @@ return [
     'cost_delay_per_minute' => 'Coût du retard par minute',
     'expense_multiplier'    => 'Multiplicateur de dépenses',
     'user_field'            => 'Champ utilisateur|Champ utilisateurs',
+    'pirep_field'           => 'Champ PIREP|Champ PIREPs',
     'role'                  => 'Rôle|Rôles',
     'registered_on'         => 'Inscrit le',
     'finances'              => 'Finances',

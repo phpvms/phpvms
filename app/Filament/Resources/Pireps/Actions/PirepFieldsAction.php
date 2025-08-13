@@ -12,7 +12,7 @@ class PirepFieldsAction
     public static function make(): Action
     {
         return Action::make('pirepfields')
-            ->label(__('pireps.fields'))
+            ->label(trans_choice('common.pirep_field', 2))
             ->icon(Heroicon::OutlinedClipboardDocumentList)
             ->url(PirepFieldResource::getUrl('index'))
             ->visible(fn (): bool => auth()->user()?->can('view-any', PirepField::class));

@@ -37,6 +37,6 @@ class PirepFieldResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return trans_choice('common.field', 1);
+        return trans_choice('common.pirep_field', 1);
     }
 }
