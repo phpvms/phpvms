@@ -106,7 +106,7 @@ class Updater extends Page
                 foreach ($commands as $command) {
                     $process = new Process($command);
                     $process->setTimeout(120);
-                    $process->run(function ($type, $buffer) use ($streamCallback) {
+                    $process->run(function (string $type, string $buffer) use ($streamCallback) {
                         $streamCallback($buffer);
                     });
                 }

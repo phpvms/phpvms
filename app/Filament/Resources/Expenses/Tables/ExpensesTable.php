@@ -26,7 +26,7 @@ class ExpensesTable
                 TextColumn::make('type')
                     ->label(__('common.type'))
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => ExpenseType::label($state)),
+                    ->formatStateUsing(fn (string $state) => ExpenseType::label($state)),
 
                 TextColumn::make('amount')
                     ->label(__('common.amount'))

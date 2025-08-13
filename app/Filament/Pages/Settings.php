@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Enums\NavigationGroup;
+use App\Models\Setting;
 use App\Repositories\SettingRepository;
 use App\Services\FinanceService;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -155,7 +156,7 @@ class Settings extends Page
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
             $tabs[] = Tab::make(Str::ucfirst($group))
                 ->schema(
-                    $settings->map(function ($setting) {
+                    $settings->map(function (Setting $setting) {
                         if ($setting->type === 'date') {
                             return DatePicker::make($setting->key)
                                 ->label($setting->name)

@@ -133,11 +133,11 @@ class PirepsTable
                         return $query
                             ->when(
                                 isset($data['filed_after']) && $data['filed_after'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '>=', $date),
+                                fn (Builder $query): Builder => $query->whereDate('submitted_at', '>=', $data['filed_after']),
                             )
                             ->when(
                                 isset($data['filed_before']) && $data['filed_before'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('submitted_at', '<=', $date),
+                                fn (Builder $query): Builder => $query->whereDate('submitted_at', '<=', $data['filed_before']),
                             );
                     }),
                 TrashedFilter::make(),

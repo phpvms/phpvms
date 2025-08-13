@@ -78,7 +78,7 @@ class AirportsTable
 
                 SelectFilter::make('country')
                     ->label(label: __('common.country'))
-                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn ($item, $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn (array $item, string $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                     ->searchable()
                     ->native(false),
 

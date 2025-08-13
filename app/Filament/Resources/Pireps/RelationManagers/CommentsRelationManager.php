@@ -50,7 +50,7 @@ class CommentsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->mutateDataUsing(function ($data) {
+                    ->mutateDataUsing(function (array $data) {
                         $data['user_id'] = auth()->id();
 
                         return $data;

@@ -17,9 +17,8 @@ class VersionWidget extends Widget
 
     protected string $version_full;
 
-    public function mount(
-        VersionService $versionSvc
-    ) {
+    public function mount(VersionService $versionSvc): void
+    {
         $this->version = $versionSvc->getCurrentVersion(false);
         $this->version_full = $versionSvc->getCurrentVersion(true);
     }

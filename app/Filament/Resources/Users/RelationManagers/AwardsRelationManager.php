@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
+use App\Models\Award;
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DetachAction;
@@ -38,7 +39,7 @@ class AwardsRelationManager extends RelationManager
 
                 ImageColumn::make('image')
                     ->label(__('common.image'))
-                    ->url(fn ($record) => $record->image_url),
+                    ->url(fn (Award $record) => $record->image_url),
             ])
             ->filters([
                 //
