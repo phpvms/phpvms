@@ -17,6 +17,7 @@ php artisan phpvms:version
 if test "$GIT_TAG_NAME"; then
   echo "Tagged with ${GIT_TAG_NAME}"
   export FILE_NAME="phpvms-${GIT_TAG_NAME}"
+  export IMAGE_NAME="phpvms:${GIT_TAG_NAME}"
 else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
