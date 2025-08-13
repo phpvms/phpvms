@@ -1,4 +1,5 @@
 @section('scripts')
+    @parent
     @if (setting('bids.block_aircraft', false))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
