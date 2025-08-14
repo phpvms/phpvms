@@ -159,6 +159,11 @@
             "@php artisan filament:upgrade",
             ".hooks/setup-git-hooks.sh"
         ],
+        "post-update-cmd": [
+          "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+          "@php artisan ide-helper:generate",
+          "@php artisan ide-helper:meta"
+        ],
         "pint": "pint --dirty",
         "test": "phpunit",
         "dev": [
