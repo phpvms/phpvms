@@ -267,6 +267,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}},value=${{ env.NBGV_SemVer2 }}
             type=semver,pattern={{version}},value=${{ env.NBGV_MajorMinorVersion }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.NBGV_MajorMinorVersion }}
             type=ref,event=branch
 
       - name: Build and push
