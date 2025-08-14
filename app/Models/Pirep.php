@@ -409,7 +409,7 @@ class Pirep extends Model
      */
     public function allowedUpdates(): bool
     {
-        return !$this->getReadOnlyAttribute();
+        return !$this->read_only;
     }
 
     /**

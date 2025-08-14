@@ -3,7 +3,7 @@
 namespace App\Contracts;
 
 use Exception;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -11,6 +11,8 @@ use function is_array;
 
 /**
  * @mixin BaseRepository
+ *
+ * @method where($column, $operator = null, $value = null, $boolean = 'and')
  */
 abstract class Repository extends BaseRepository
 {
@@ -106,7 +108,7 @@ abstract class Repository extends BaseRepository
      * Retrieve all data of repository, paginated. Added in extra parameter to read from the
      * request which page it should be on
      *
-     * @param  null   $limit
+     * @param  ?int   $limit
      * @param  array  $columns
      * @param  string $method
      * @return mixed

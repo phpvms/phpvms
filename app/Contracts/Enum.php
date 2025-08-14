@@ -22,7 +22,7 @@ abstract class Enum
     /**
      * Create an instance of this Enum
      */
-    public function __construct($val)
+    final public function __construct($val)
     {
         $this->value = $val;
     }

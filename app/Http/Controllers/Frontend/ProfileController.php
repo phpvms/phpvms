@@ -75,10 +75,10 @@ class ProfileController extends Controller
             'rank',
             'typeratings',
         ];
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::with($with)->where('id', $id)->first();
 
-        if (empty($user)) {
+        if (!$user) {
             Flash::error('User not found!');
 
             return redirect(route('frontend.dashboard.index'));
@@ -101,7 +101,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): RedirectResponse|View
     {
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::with('fields.field', 'home_airport')->where('id', Auth::id())->first();
 
         if (empty($user)) {

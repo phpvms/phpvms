@@ -36,7 +36,10 @@ class SimBrief extends Resource
         }
 
         if (!($this->whenLoaded('aircraft') instanceof MissingValue)) {
-            $data['subfleet'] = new BidSubfleet($this->aircraft->subfleet, $this->aircraft, $fares);
+            $resource = (object) $this->aircraft->subfleet;
+            $resource->aircraft = $this->aircraft->withoutRelations();
+            $resource->fares = $fares;
+            $data['subfleet'] = new BidSubfleet($resource);
         }
 
         return $data;
