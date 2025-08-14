@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.description="The official phpVMS image"
 COPY composer.json composer.json
 COPY composer.lock composer.lock
 
-COPY app/Database app/Database
+COPY database database
 
 RUN composer install \
     --ignore-platform-reqs \
