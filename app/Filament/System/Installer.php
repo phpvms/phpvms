@@ -280,8 +280,8 @@ class Installer extends Page
                             TextEntry::make('php_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->state(fn () => $data['php']['passed'] && $data['extensionsPassed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['php']['passed'] && $data['extensionsPassed'] ? 'success' : 'danger')
                                 ->badge(),
                         ])
                         ->schema([
@@ -305,8 +305,8 @@ class Installer extends Page
                             TextEntry::make('directory_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->state(fn () => $data['directoriesPassed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['directoriesPassed'] ? 'success' : 'danger')
                                 ->badge(),
                         ])
                         ->description(__('installer.directory_permissions_description'))
