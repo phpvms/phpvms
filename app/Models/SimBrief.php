@@ -6,25 +6,42 @@ use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Collection;
 
 /**
- * @property string      $id                   The Simbrief OFP ID
- * @property int         $user_id              The user that generated this
- * @property string      $flight_id            Optional, if attached to a flight, removed if attached to PIREP
- * @property string      $pirep_id             Optional, if attached to a PIREP, removed if attached to flight
- * @property string      $aircraft_id          The aircraft this is for
- * @property string      $acars_xml
- * @property string      $ofp_xml
- * @property string      $ofp_html
- * @property string      $fare_data            JSON string of the fare data that was generated
- * @property Collection  $images
- * @property Collection  $files
- * @property Flight      $flight
- * @property User        $user
- * @property SimBriefXML $xml
- * @property Aircraft    $aircraft
- * @property string      $acars_flightplan_url
+ * @property string                          $id
+ * @property int                             $user_id
+ * @property string|null                     $flight_id
+ * @property string|null                     $pirep_id
+ * @property int|null                        $aircraft_id
+ * @property string                          $acars_xml
+ * @property string                          $ofp_xml
+ * @property string|null                     $fare_data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Aircraft|null $aircraft
+ * @property-read mixed $files
+ * @property-read \App\Models\Flight|null $flight
+ * @property-read mixed $images
+ * @property-read \App\Models\Pirep|null $pirep
+ * @property-read \App\Models\User|null $user
+ * @property-read mixed $xml
+ *
+ * @method static \Database\Factories\SimBriefFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereAcarsXml($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereAircraftId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereFareData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereFlightId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereOfpXml($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief wherePirepId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUserId($value)
+ *
+ * @mixin \Eloquent
  */
 class SimBrief extends Model
 {

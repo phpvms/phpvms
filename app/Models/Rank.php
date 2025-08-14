@@ -13,13 +13,51 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string name
- * @property int    hours
- * @property float  manual_base_pay_rate
- * @property float  acars_base_pay_rate
- * @property bool   auto_promote
- * @property bool   auto_approve_acars
- * @property bool   auto_approve_manual
+ * @property int                             $id
+ * @property string                          $name
+ * @property string|null                     $image_url
+ * @property int                             $hours
+ * @property string|null                     $acars_base_pay_rate
+ * @property string|null                     $manual_base_pay_rate
+ * @property bool|null                       $auto_approve_acars
+ * @property bool|null                       $auto_approve_manual
+ * @property bool|null                       $auto_promote
+ * @property int|null                        $auto_approve_above_score
+ * @property int|null                        $auto_approve_score
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read int|null $subfleets_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\RankFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAcarsBasePayRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAutoApproveAboveScore($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAutoApproveAcars($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAutoApproveManual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAutoApproveScore($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereAutoPromote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereHours($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereManualBasePayRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Rank withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Rank extends Model
 {

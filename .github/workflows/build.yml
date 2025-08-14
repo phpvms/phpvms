@@ -106,7 +106,7 @@ jobs:
         php artisan migrate:refresh --seed
 
     - name: Run Pint
-      run: pint --test
+      run: pint --test --parallel
 
     - name: Run Tests
       run: |

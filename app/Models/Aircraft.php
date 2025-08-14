@@ -22,33 +22,86 @@ use Znck\Eloquent\Relations\BelongsToThrough as ZnckBelongsToThrough;
 use Znck\Eloquent\Traits\BelongsToThrough;
 
 /**
- * @property int      id
- * @property mixed    subfleet_id
- * @property string   airport_id   The apt where the aircraft is
- * @property string   hub_id       The apt where the aircraft is based
- * @property string   ident
- * @property string   name
- * @property string   icao
- * @property string   registration
- * @property string   fin
- * @property int      flight_time
- * @property Mass     dow
- * @property Mass     mlw
- * @property Mass     mtow
- * @property Mass     zfw
- * @property string   hex_code
- * @property string   selcal
- * @property Airport  airport
- * @property Airport  hub
- * @property Airport  home
- * @property Airline  airline
- * @property Subfleet subfleet
- * @property int      status
- * @property int      state
- * @property string   simbrief_type
- * @property Carbon   landing_time
- * @property Fuel     fuel_onboard
- * @property Bid      bid
+ * @property int                             $id
+ * @property int                             $subfleet_id
+ * @property string|null                     $icao
+ * @property string|null                     $iata
+ * @property string|null                     $airport_id
+ * @property string|null                     $hub_id
+ * @property string|null                     $landing_time
+ * @property string                          $name
+ * @property string|null                     $registration
+ * @property string|null                     $fin
+ * @property string|null                     $hex_code
+ * @property string|null                     $selcal
+ * @property mixed|null                      $dow
+ * @property mixed|null                      $mtow
+ * @property mixed|null                      $mlw
+ * @property mixed|null                      $zfw
+ * @property string|null                     $simbrief_type
+ * @property mixed|null                      $fuel_onboard
+ * @property float|null                      $flight_time
+ * @property string                          $status
+ * @property int                             $state
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $active
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \App\Models\Airport|null $airport
+ * @property-read \App\Models\Bid|null $bid
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read int|null $expenses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read int|null $files_count
+ * @property-read \App\Models\Airport|null $home
+ * @property-read \App\Models\Airport|null $hub
+ * @property-read mixed $ident
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pirep> $pireps
+ * @property-read int|null $pireps_count
+ * @property-read \App\Models\SimBriefAircraft|null $sbaircraft
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimBriefAirframe> $sbairframes
+ * @property-read int|null $sbairframes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimBrief> $simbriefs
+ * @property-read int|null $simbriefs_count
+ * @property-read \App\Models\Subfleet|null $subfleet
+ * @property-read \App\Models\Airline|null $airline
+ *
+ * @method static \Database\Factories\AircraftFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereAirportId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereDow($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFlightTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFuelOnboard($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereHexCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereHubId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereIata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereIcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereLandingTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereMlw($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereMtow($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereRegistration($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSelcal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSimbriefType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSubfleetId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereZfw($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Aircraft extends Model
 {

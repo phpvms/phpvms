@@ -14,13 +14,40 @@ use Kyslik\ColumnSortable\Sortable;
 /**
  * The Award model
  *
- * @property mixed      id
- * @property string     name
- * @property string     description
- * @property string     title
- * @property string     image
- * @property mixed      ref_model
- * @property mixed|null ref_model_params
+ * @property int                             $id
+ * @property string                          $name
+ * @property string|null                     $description
+ * @property string|null                     $image_url
+ * @property string|null                     $ref_model
+ * @property string|null                     $ref_model_params
+ * @property int|null                        $active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $image
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\AwardFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelParams($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Award extends Model
 {

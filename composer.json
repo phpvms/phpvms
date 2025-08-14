@@ -39,7 +39,7 @@
         "composer/composer": "^2.7.7",
         "composer/installers": "^2.3.0",
         "laravel/framework": "^v12.19",
-        "arrilot/laravel-widgets": "~3.13.0",
+        "arrilot/laravel-widgets": "^3.14.0",
         "guzzlehttp/guzzle": "^7.9.0",
         "hashids/hashids": "~4.1.0",
         "igaster/laravel-theme": "dev-master",
@@ -67,7 +67,7 @@
         "laravel/ui": "^4.6.1",
         "madnest/madzipper": "^1.6.0",
         "elcobvg/laravel-opcache": "^0.4.1",
-        "fakerphp/faker": "^v1.19.0",
+        "fakerphp/faker": "^1.24.1",
         "jpkleemans/attribute-events": "^1.4.0",
         "akaunting/laravel-money": "^6.0.2",
         "staudenmeir/belongs-to-through": "^v2.17.0",
@@ -84,7 +84,7 @@
         "socialiteproviders/discord": "^4.2",
         "symfony/postmark-mailer": "^7.2",
         "league/html-to-markdown": "^5.1",
-        "league/flysystem-aws-s3-v3": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.29.0",
         "league/flysystem-sftp-v3": "^3.0",
         "nikolaposa/version": "^4.2",
         "spatie/laravel-activitylog": "^4.10.1",
@@ -112,7 +112,8 @@
         "pestphp/pest-plugin-laravel": "^3.2",
         "pestphp/pest-plugin-livewire": "^3.0",
         "pestphp/pest-plugin-watch": "^3.0",
-        "pestphp/pest-plugin-arch": "^3.1"
+        "pestphp/pest-plugin-arch": "^3.1",
+        "barryvdh/laravel-ide-helper": "^3.6"
     },
     "autoload": {
         "files": [
@@ -157,6 +158,11 @@
             "@php artisan phpvms:caches",
             "@php artisan filament:upgrade",
             ".hooks/setup-git-hooks.sh"
+        ],
+        "post-update-cmd": [
+          "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+          "@php artisan ide-helper:generate",
+          "@php artisan ide-helper:meta"
         ],
         "pint": "pint --dirty",
         "test": "phpunit",

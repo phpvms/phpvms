@@ -1,4 +1,4 @@
----
+#---
 #
 # Run Laravel Pint
 # https://laravel.com/docs/11.x/pint#running-tests-on-github-actions
