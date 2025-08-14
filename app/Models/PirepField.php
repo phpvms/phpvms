@@ -9,8 +9,26 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string name
- * @property string slug
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $slug
+ * @property string|null $description
+ * @property bool|null   $required
+ * @property int|null    $pirep_source
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField wherePirepSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereSlug($value)
+ *
+ * @mixin \Eloquent
  */
 class PirepField extends Model
 {

@@ -18,20 +18,68 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int        id
- * @property string     type
- * @property string     simbrief_type
- * @property string     name
- * @property int        airline_id
- * @property int        hub_id
- * @property string     ground_handling_multiplier
- * @property Fare[]     fares
- * @property float      cost_block_hour
- * @property float      cost_delay_minute
- * @property Airline    airline
- * @property Airport    home
- * @property int        fuel_type
- * @property Aircraft[] $aircraft
+ * @property int                             $id
+ * @property int|null                        $airline_id
+ * @property string|null                     $hub_id
+ * @property string                          $type
+ * @property string|null                     $simbrief_type
+ * @property string                          $name
+ * @property float|null                      $cost_block_hour
+ * @property float|null                      $cost_delay_minute
+ * @property int|null                        $fuel_type
+ * @property float|null                      $ground_handling_multiplier
+ * @property float|null                      $cargo_capacity
+ * @property float|null                      $fuel_capacity
+ * @property float|null                      $gross_weight
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read int|null $aircraft_count
+ * @property-read \App\Models\Airline|null $airline
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read int|null $expenses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Fare> $fares
+ * @property-read int|null $fares_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read int|null $files_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $flights
+ * @property-read int|null $flights_count
+ * @property-read \App\Models\Airport|null $home
+ * @property-read \App\Models\Airport|null $hub
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Rank> $ranks
+ * @property-read int|null $ranks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Typerating> $typeratings
+ * @property-read int|null $typeratings_count
+ *
+ * @method static \Database\Factories\SubfleetFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereAirlineId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCargoCapacity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCostBlockHour($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCostDelayMinute($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereFuelCapacity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereFuelType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereGrossWeight($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereGroundHandlingMultiplier($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereHubId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereSimbriefType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Subfleet extends Model
 {
