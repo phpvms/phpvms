@@ -28,7 +28,6 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -189,13 +188,8 @@ class Installer extends Page
 
                 // Let's generate a new key if the app is still using the one from the .env.example
                 if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=') {
-                    $output .= __('installer.generating_app_key').PHP_EOL;
-                    $this->stream(to: $this->stream, content: __('installer.generating_app_key').PHP_EOL);
-
-                    Artisan::call('key:generate', ['--force' => true]);
-                    $artisan_output = Artisan::output();
-                    $this->stream(to: $this->stream, content: $artisan_output);
-                    $output .= $artisan_output;
+                    $output .= __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL;
+                    $this->stream(to: $this->stream, content: __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL);
                 }
 
                 $component->state(fn () => $output);

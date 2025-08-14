@@ -20,6 +20,7 @@ return [
     'starting_migration_process'        => 'Démarrage du processus de migration...',
     'migrations_completed'              => 'Migrations terminées avec succès.',
     'generating_app_key'                => 'Génération d\'une nouvelle clé d\'application...',
+    'app_key_warning'                   => 'AVERTISSEMENT : Vous utilisez encore la clé d’application par défaut. Cela n’est pas recommandé. Veuillez générer une nouvelle clé en exécutant :',
     'requirements'                      => 'Prérequis',
     'create_env'                        => 'La première étape consiste à créer un fichier .env. Vous pouvez utiliser .env.example comme référence et, surtout, consulter notre documentation.',
     'important'                         => 'Important',

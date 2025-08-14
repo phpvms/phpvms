@@ -20,6 +20,7 @@ return [
     'starting_migration_process'        => 'Starting migration process...',
     'migrations_completed'              => 'Migrations completed successfully.',
     'generating_app_key'                => 'Generating new application key...',
+    'app_key_warning'                   => 'WARNING: You are still using the default application key. This is not recommended. Please generate a new key by running:',
     'requirements'                      => 'Requirements',
     'create_env'                        => 'The first step is to create a .env file. You can use .env.example as a reference and, more importantly, consult our documentation.',
     'important'                         => 'Important',
