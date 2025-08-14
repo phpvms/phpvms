@@ -16,25 +16,72 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * Class Airport
  *
- * @property string id
- * @property string iata
- * @property string icao
- * @property string name
- * @property string full_name
- * @property string description
- * @property string location
- * @property string region
- * @property string country
- * @property string timezone
- * @property string notes
- * @property float  ground_handling_cost
- * @property float  fuel_100ll_cost
- * @property float  fuel_jeta_cost
- * @property float  fuel_mogas_cost
- * @property float  lat
- * @property float  lon
- * @property int    elevation
- * @property bool   hub
+ * @property string                          $id
+ * @property string|null                     $iata
+ * @property string                          $icao
+ * @property string                          $name
+ * @property string|null                     $location
+ * @property string|null                     $region
+ * @property string|null                     $country
+ * @property string|null                     $timezone
+ * @property bool                            $hub
+ * @property string|null                     $notes
+ * @property float|null                      $lat
+ * @property float|null                      $lon
+ * @property int|null                        $elevation
+ * @property float|null                      $ground_handling_cost
+ * @property float|null                      $fuel_100ll_cost
+ * @property float|null                      $fuel_jeta_cost
+ * @property float|null                      $fuel_mogas_cost
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read int|null $aircraft_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $arrivals
+ * @property-read int|null $arrivals_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $departures
+ * @property-read int|null $departures_count
+ * @property-read mixed $description
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read int|null $expenses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read int|null $files_count
+ * @property-read mixed $full_name
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $pilots
+ * @property-read int|null $pilots_count
+ * @property mixed $tz
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\AirportFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereElevation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereFuel100llCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereFuelJetaCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereFuelMogasCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereGroundHandlingCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereHub($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereIata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereIcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereLat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereLocation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereLon($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereRegion($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereTimezone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Airport extends Model
 {

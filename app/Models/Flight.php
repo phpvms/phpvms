@@ -6,8 +6,6 @@ use App\Contracts\Model;
 use App\Models\Casts\DistanceCast;
 use App\Models\Enums\Days;
 use App\Models\Traits\HashIdTrait;
-use App\Support\Units\Distance;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,49 +14,108 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string     id
- * @property mixed      ident
- * @property mixed      atc
- * @property Airline    airline
- * @property int        airline_id
- * @property mixed      flight_number
- * @property mixed      callsign
- * @property mixed      route_code
- * @property int        route_leg
- * @property bool       has_bid
- * @property Collection field_values
- * @property Collection fares
- * @property Collection subfleets
- * @property int        days
- * @property Distance   distance
- * @property Distance   planned_distance
- * @property int        flight_time
- * @property string     route
- * @property string     dpt_time
- * @property string     arr_time
- * @property string     flight_type
- * @property string     notes
- * @property int        level
- * @property float      load_factor
- * @property float      load_factor_variance
- * @property float      pilot_pay
- * @property Airport    dpt_airport
- * @property Airport    arr_airport
- * @property Airport    alt_airport
- * @property string     dpt_airport_id
- * @property string     arr_airport_id
- * @property string     alt_airport_id
- * @property int        event_id
- * @property int        user_id
- * @property int        active
- * @property Carbon     start_date
- * @property Carbon     end_date
+ * @property string                          $id
+ * @property int                             $airline_id
+ * @property int                             $flight_number
+ * @property string|null                     $callsign
+ * @property string|null                     $route_code
+ * @property int|null                        $route_leg
+ * @property string                          $dpt_airport_id
+ * @property string                          $arr_airport_id
+ * @property string|null                     $alt_airport_id
+ * @property string|null                     $dpt_time
+ * @property string|null                     $arr_time
+ * @property int|null                        $level
+ * @property mixed|null                      $distance
+ * @property int|null                        $flight_time
+ * @property string                          $flight_type
+ * @property float|null                      $load_factor
+ * @property float|null                      $load_factor_variance
+ * @property string|null                     $route
+ * @property float|null                      $pilot_pay
+ * @property string|null                     $notes
+ * @property int|null                        $scheduled
+ * @property int|null                        $days
+ * @property \Illuminate\Support\Carbon|null $start_date
+ * @property \Illuminate\Support\Carbon|null $end_date
+ * @property bool                            $has_bid
+ * @property bool                            $active
+ * @property bool                            $visible
+ * @property int|null                        $event_id
+ * @property int|null                        $user_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property string|null                     $owner_type
+ * @property string|null                     $owner_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \App\Models\Airline|null $airline
+ * @property-read \App\Models\Airport|null $alt_airport
+ * @property-read \App\Models\Airport|null $arr_airport
+ * @property-read mixed $atc
+ * @property-read \App\Models\Airport|null $dpt_airport
+ * @property-read \App\Models\Event|null $event
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Fare> $fares
+ * @property-read int|null $fares_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FlightFieldValue> $field_values
+ * @property-read int|null $field_values_count
+ * @property-read mixed $ident
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $owner
+ * @property-read \App\Models\SimBrief|null $simbrief
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read int|null $subfleets_count
+ * @property-read \App\Models\User|null $user
+ *
+ * @method static \Database\Factories\FlightFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereAirlineId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereAltAirportId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereArrAirportId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereArrTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereCallsign($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDistance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDptAirportId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDptTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereEndDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereHasBid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLevel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLoadFactor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLoadFactorVariance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereOwnerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereOwnerType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight wherePilotPay($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRoute($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRouteCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRouteLeg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereScheduled($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereStartDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereVisible($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Flight extends Model
 {

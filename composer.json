@@ -112,7 +112,8 @@
         "pestphp/pest-plugin-laravel": "^3.2",
         "pestphp/pest-plugin-livewire": "^3.0",
         "pestphp/pest-plugin-watch": "^3.0",
-        "pestphp/pest-plugin-arch": "^3.1"
+        "pestphp/pest-plugin-arch": "^3.1",
+        "barryvdh/laravel-ide-helper": "^3.6"
     },
     "autoload": {
         "files": [
@@ -157,6 +158,11 @@
             "@php artisan phpvms:caches",
             "@php artisan filament:upgrade",
             ".hooks/setup-git-hooks.sh"
+        ],
+        "post-update-cmd": [
+          "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+          "@php artisan ide-helper:generate",
+          "@php artisan ide-helper:meta"
         ],
         "pint": "pint --dirty",
         "test": "phpunit",

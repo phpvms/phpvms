@@ -7,10 +7,27 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string    name
- * @property string    value
- * @property UserField field
- * @property User      user
+ * @property int                             $id
+ * @property int                             $user_field_id
+ * @property string                          $user_id
+ * @property string|null                     $value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\UserField|null $field
+ * @property-read mixed $name
+ * @property-read \App\Models\User|null $user
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUserFieldId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereValue($value)
+ *
+ * @mixin \Eloquent
  */
 class UserFieldValue extends Model
 {

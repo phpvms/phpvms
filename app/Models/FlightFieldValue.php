@@ -10,9 +10,27 @@ use Illuminate\Support\Str;
 /**
  * Class FlightFieldValue
  *
- * @property string   flight_id
- * @property string   name
- * @property string   value
+ * @property int                             $id
+ * @property string                          $flight_id
+ * @property string                          $name
+ * @property string|null                     $slug
+ * @property string|null                     $value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Flight|null $flight
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereFlightId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereValue($value)
+ *
+ * @mixin \Eloquent
  */
 class FlightFieldValue extends Model
 {
