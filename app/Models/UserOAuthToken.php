@@ -7,12 +7,30 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int            user_id
- * @property User           user
- * @property string         provider
- * @property string         token
- * @property string         refresh_token
- * @property \Carbon\Carbon expires_at
+ * @property int                             $id
+ * @property int                             $user_id
+ * @property string                          $provider
+ * @property string                          $token
+ * @property string                          $refresh_token
+ * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $is_expired
+ * @property-read \App\Models\User|null $user
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereProvider($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereRefreshToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereUserId($value)
+ *
+ * @mixin \Eloquent
  */
 class UserOAuthToken extends Model
 {

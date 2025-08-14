@@ -3,22 +3,39 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Enums\FareType;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int       id
- * @property string    pirep_id
- * @property int       fare_id
- * @property string    code
- * @property string    name
- * @property int       count
- * @property float     price
- * @property float $cost
- * @property int   $capacity
- * @property Pirep     pirep
- * @property Fare|null fare
- * @property FareType  type
+ * @property int         $id
+ * @property string      $pirep_id
+ * @property int|null    $fare_id
+ * @property int|null    $count
+ * @property string|null $code
+ * @property string|null $name
+ * @property float|null  $price
+ * @property float|null  $cost
+ * @property int|null    $capacity
+ * @property int|null    $type
+ * @property string|null $deleted_at
+ * @property-read \App\Models\Fare|null $fare
+ * @property-read \App\Models\Pirep|null $pirep
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCapacity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereFareId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare wherePirepId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereType($value)
+ *
+ * @mixin \Eloquent
  */
 class PirepFare extends Model
 {

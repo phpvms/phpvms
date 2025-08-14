@@ -3,15 +3,32 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
- * @property string $email
- * @property string $token
- * @property int    $usage_count
- * @property int    $usage_limit
- * @property Carbon $expires_at
+ * @property int                             $id
+ * @property string|null                     $email
+ * @property string                          $token
+ * @property int                             $usage_count
+ * @property int|null                        $usage_limit
+ * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $link
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUsageCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUsageLimit($value)
+ *
+ * @mixin \Eloquent
  */
 class Invite extends Model
 {

@@ -6,6 +6,27 @@ use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property string     $id
+ * @property string     $name
+ * @property int        $type
+ * @property float|null $lat
+ * @property float|null $lon
+ * @property float|null $freq
+ *
+ * @method static \Database\Factories\NavdataFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereFreq($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereLat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereLon($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereType($value)
+ *
+ * @mixin \Eloquent
+ */
 class Navdata extends Model
 {
     use HasFactory;

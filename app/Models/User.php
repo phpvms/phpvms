@@ -25,53 +25,122 @@ use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
- * @property int              id
- * @property int              pilot_id
- * @property int              airline_id
- * @property string           callsign
- * @property string           name
- * @property string           name_private Only first name, rest are initials
- * @property string           email
- * @property string           password
- * @property string           api_key
- * @property mixed            timezone
- * @property string           ident
- * @property string           atc
- * @property string           curr_airport_id
- * @property string           home_airport_id
- * @property string           avatar
- * @property Airline          airline
- * @property int              flights
- * @property int              flight_time
- * @property int              transfer_time
- * @property string           remember_token
- * @property \Carbon\Carbon   created_at
- * @property \Carbon\Carbon   updated_at
- * @property Rank             rank
- * @property Journal          journal
- * @property int              rank_id
- * @property string           discord_id
- * @property string           vatsim_id
- * @property string           ivao_id
- * @property int              state
- * @property string           last_ip
- * @property \Carbon\Carbon   lastlogin_at
- * @property bool             opt_in
- * @property Pirep[]          pireps
- * @property string           last_pirep_id
- * @property Pirep            last_pirep
- * @property UserFieldValue[] fields
- * @property UserOAuthToken[] oauth_tokens
- * @property Role[]           roles
- * @property Subfleet[]       subfleets
- * @property TypeRating[]     typeratings
- * @property Airport          home_airport
- * @property Airport          current_airport
- * @property Airport          location
- * @property Bid[]            bids
+ * @property int                             $id
+ * @property int|null                        $pilot_id
+ * @property string|null                     $callsign
+ * @property string|null                     $name
+ * @property string                          $email
+ * @property string                          $password
+ * @property string|null                     $api_key
+ * @property int                             $airline_id
+ * @property int|null                        $rank_id
+ * @property string                          $discord_id
+ * @property string                          $discord_private_channel_id
+ * @property string                          $vatsim_id
+ * @property string                          $ivao_id
+ * @property string|null                     $country
+ * @property string|null                     $home_airport_id
+ * @property string|null                     $curr_airport_id
+ * @property string|null                     $last_pirep_id
+ * @property int                             $flights
+ * @property int|null                        $flight_time
+ * @property int|null                        $transfer_time
+ * @property string|null                     $avatar
+ * @property string|null                     $timezone
+ * @property int|null                        $status
+ * @property int|null                        $state
+ * @property bool|null                       $toc_accepted
+ * @property bool|null                       $opt_in
+ * @property int|null                        $active
+ * @property string|null                     $last_ip
+ * @property \Illuminate\Support\Carbon|null $lastlogin_at
+ * @property string|null                     $remember_token
+ * @property string|null                     $notes
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \App\Models\Airline|null $airline
+ * @property-read mixed $atc
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Award> $awards
+ * @property-read int|null $awards_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Bid> $bids
+ * @property-read int|null $bids_count
+ * @property-read \App\Models\Airport|null $current_airport
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserFieldValue> $fields
+ * @property-read int|null $fields_count
+ * @property-read \App\Models\Airport|null $home_airport
+ * @property-read mixed $ident
+ * @property-read \App\Models\Journal|null $journal
+ * @property-read \App\Models\Pirep|null $last_pirep
+ * @property-read \App\Models\Airport|null $location
+ * @property-read mixed $name_private
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserOAuthToken> $oauth_tokens
+ * @property-read int|null $oauth_tokens_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
+ * @property-read int|null $permissions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pirep> $pireps
+ * @property-read int|null $pireps_count
+ * @property-read \App\Models\Rank|null $rank
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
+ * @property-read int|null $roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Typerating> $typeratings
+ * @property-read int|null $typeratings_count
+ * @property mixed $tz
  *
- * @mixin Builder
- * @mixin Notifiable
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static Builder<static>|User            newModelQuery()
+ * @method static Builder<static>|User            newQuery()
+ * @method static Builder<static>|User            onlyTrashed()
+ * @method static Builder<static>|User            permission($permissions, $without = false)
+ * @method static Builder<static>|User            query()
+ * @method static Builder<static>|User            role($roles, $guard = null, $without = false)
+ * @method static Builder<static>|User            sortable($defaultParameters = null)
+ * @method static Builder<static>|User            whereActive($value)
+ * @method static Builder<static>|User            whereAirlineId($value)
+ * @method static Builder<static>|User            whereApiKey($value)
+ * @method static Builder<static>|User            whereAvatar($value)
+ * @method static Builder<static>|User            whereCallsign($value)
+ * @method static Builder<static>|User            whereCountry($value)
+ * @method static Builder<static>|User            whereCreatedAt($value)
+ * @method static Builder<static>|User            whereCurrAirportId($value)
+ * @method static Builder<static>|User            whereDeletedAt($value)
+ * @method static Builder<static>|User            whereDiscordId($value)
+ * @method static Builder<static>|User            whereDiscordPrivateChannelId($value)
+ * @method static Builder<static>|User            whereEmail($value)
+ * @method static Builder<static>|User            whereEmailVerifiedAt($value)
+ * @method static Builder<static>|User            whereFlightTime($value)
+ * @method static Builder<static>|User            whereFlights($value)
+ * @method static Builder<static>|User            whereHomeAirportId($value)
+ * @method static Builder<static>|User            whereId($value)
+ * @method static Builder<static>|User            whereIvaoId($value)
+ * @method static Builder<static>|User            whereLastIp($value)
+ * @method static Builder<static>|User            whereLastPirepId($value)
+ * @method static Builder<static>|User            whereLastloginAt($value)
+ * @method static Builder<static>|User            whereName($value)
+ * @method static Builder<static>|User            whereNotes($value)
+ * @method static Builder<static>|User            whereOptIn($value)
+ * @method static Builder<static>|User            wherePassword($value)
+ * @method static Builder<static>|User            wherePilotId($value)
+ * @method static Builder<static>|User            whereRankId($value)
+ * @method static Builder<static>|User            whereRememberToken($value)
+ * @method static Builder<static>|User            whereState($value)
+ * @method static Builder<static>|User            whereStatus($value)
+ * @method static Builder<static>|User            whereTimezone($value)
+ * @method static Builder<static>|User            whereTocAccepted($value)
+ * @method static Builder<static>|User            whereTransferTime($value)
+ * @method static Builder<static>|User            whereUpdatedAt($value)
+ * @method static Builder<static>|User            whereVatsimId($value)
+ * @method static Builder<static>|User            withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|User            withoutPermission($permissions)
+ * @method static Builder<static>|User            withoutRole($roles, $guard = null)
+ * @method static Builder<static>|User            withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
