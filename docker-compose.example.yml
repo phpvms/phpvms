@@ -13,6 +13,7 @@ services:
       AUTORUN_ENABLED: 1
     env_file: .env
     volumes:
+      - phpvms_assets:/var/www/html/public/build:rw
       - ./modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
@@ -73,6 +74,7 @@ services:
       - "${FORWARD_HTTPS_PORT:-443}:443"
     volumes:
       - ./public/:/var/www/html/public
+      - phpvms_assets:/var/www/html/public/build
       - ./resources/docker/Caddyfile:/etc/caddy/Caddyfile
       - caddy_config:/config
       - caddy_data:/data
@@ -123,6 +125,7 @@ volumes:
   mariadb:
   phpvms_storage:
   phpvms_uploads:
+  phpvms_assets:
   redis:
 
 networks:
