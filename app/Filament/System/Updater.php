@@ -14,6 +14,7 @@ use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
 class Updater extends Page
@@ -96,7 +97,17 @@ class Updater extends Page
                 }
 
                 $this->stream(to: $this->stream, content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
-                $php = PHP_BINARY;
+
+                $finder = new PhpExecutableFinder();
+                $php_path = $finder->find(false);
+                $php = str_replace('-fpm', '', $php_path);
+
+                // If this is the cgi version of the exec, add this arg, otherwise there's
+                // an error with no arguments existing
+                if (str_contains($php, '-cgi')) {
+                    $php .= ' -d register_argc_argv=On';
+                }
+
                 $artisan = base_path('artisan');
                 $commands = [
                     [$php, $artisan, 'optimize:clear'],
