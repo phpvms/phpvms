@@ -5,21 +5,17 @@ services:
     container_name: phpvms-app
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     image: ghcr.io/phpvms/phpvms:main
-    build:
-      context: .
-      args:
-        WWWUSER: ${WWWUSER:-1000}
-        WWWGROUP: ${WWWGROUP:-1000}
+    hostname: app
     restart: unless-stopped
     environment:
       PHP_OPCACHE_ENABLE: 1
       # some basic laravel stuff
-      AUTORUN_ENABLED: true
+      AUTORUN_ENABLED: 1
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     depends_on:
       - caddy
       - mariadb
@@ -42,8 +38,8 @@ services:
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
@@ -62,8 +58,8 @@ services:
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
@@ -81,6 +77,7 @@ services:
       - caddy_config:/config
       - caddy_data:/data
     networks:
+      - default
       - phpvms
 
   mariadb:
@@ -124,6 +121,8 @@ volumes:
   caddy_data:
   caddy_config:
   mariadb:
+  phpvms_storage:
+  phpvms_uploads:
   redis:
 
 networks:
