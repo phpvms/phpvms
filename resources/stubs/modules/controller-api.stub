@@ -1,42 +1,59 @@
 <?php
 
-namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers\Api;
+namespace $CLASS_NAMESPACE$;
 
-use App\Contracts\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-/**
- * class ApiController
- * @package $MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers\Api
- */
-class ApiController extends Controller
+class $CLASS$ extends Controller
 {
     /**
-     * Just send out a message
-     *
-     * @param Request $request
-     *
-     * @return mixed
+     * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        return $this->message('Hello, world!');
+        //
+
+        return response()->json([]);
     }
 
     /**
-     * Handles /hello
-     *
-     * @param Request $request
-     *
-     * @return mixed
+     * Store a newly created resource in storage.
      */
-    public function hello(Request $request)
+    public function store(Request $request)
     {
-        // Another way to return JSON, this for a custom response
-        // It's recommended to use Resources for responses from the database
-        return response()->json([
-            'name' => Auth::user()->name,
-        ]);
+        //
+
+        return response()->json([]);
     }
 
+    /**
+     * Show the specified resource.
+     */
+    public function show($id)
+    {
+        //
+
+        return response()->json([]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        //
+
+        return response()->json([]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        //
+
+        return response()->json([]);
+    }
 }
