@@ -16,6 +16,7 @@ app/storage/
 
 # Laravel 5 & Lumen specific
 public/storage
+public/build
 public/hot
 storage/*.key
 storage/settings.json

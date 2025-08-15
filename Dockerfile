@@ -33,6 +33,11 @@ RUN apt-get update; \
         apt-get install -yqq --no-install-recommends --show-progress \
         mariadb-client
 
+# Install nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get install -y nodejs \
+  && rm -rf /var/lib/apt/lists/* 
+
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \
     && groupmod -og $WWWGROUP www-data
@@ -43,7 +48,16 @@ USER www-data
 # Copy application files
 COPY --chown=www-data:www-data . /var/www/html
 
-COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
-
 # Copy deps from the composer build stage
 COPY --chown=www-data:www-data --from=vendor /app/vendor/ /var/www/html/vendor/
+
+# Build assets
+# Note: the assets are moved to the build directory in the image, they'll be moved back to
+# the public directory in the entrypoint script. This allows to overwrite the volume
+# so that the assets are also updated in caddy.
+
+RUN npm install && npm run build && \
+    cp -R ./public/build/ ./build
+
+COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
+COPY --chmod=755 ./resources/docker/copy-assets.sh /etc/entrypoint.d/30-copy-assets.sh
