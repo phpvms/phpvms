@@ -24,6 +24,10 @@ class LookupAction
                         $key = 'location';
                     }
 
+                    if ($key === 'country') {
+                        $value = strtolower($value);
+                    }
+
                     $set($key, $value);
                 }
 
