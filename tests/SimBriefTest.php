@@ -207,7 +207,6 @@ final class SimBriefTest extends TestCase
 
         $subfleet = $body['flight']['simbrief']['subfleet'];
         $this->assertEquals($fares[0]['id'], $subfleet['fares'][0]['id']);
-        dd($fares[0], $subfleet['fares'][0]);
         $this->assertEquals($fares[0]['count'], $subfleet['fares'][0]['count']);
 
         $this->assertCount(1, $subfleet['aircraft']);
