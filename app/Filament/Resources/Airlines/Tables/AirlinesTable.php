@@ -25,11 +25,11 @@ class AirlinesTable
     {
         return $table
             ->columns([
-                TextColumn::make('Code')
+                TextColumn::make('code')
                     ->label(__('flights.code'))
-                    ->formatStateUsing(callback: fn (Airline $record): string => $record->iata.'/'.$record->icao)
+                    ->formatStateUsing(fn (Airline $record): string => ($record->iata ? $record->iata.'/' : '').$record->icao)
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(['iata', 'icao']),
 
                 TextColumn::make('name')
                     ->label(__(key: 'common.name'))
