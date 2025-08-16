@@ -20,16 +20,16 @@ class SimBrief extends Resource
             'url'         => url(route('api.flights.briefing', ['id' => $this->id])),
         ];
 
-        $fares = [];
+        $fares = collect();
 
         try {
             if (!empty($this->fare_data)) {
                 $fare_data = json_decode($this->fare_data, true);
                 foreach ($fare_data as $fare) {
-                    $fares[] = new Fare($fare);
+                    $newFare = new Fare($fare);
+                    $newFare->count = $fare['count'];
+                    $fares->push($newFare);
                 }
-
-                $fares = collect($fares);
             }
         } catch (Exception $e) {
             // Invalid fare data
