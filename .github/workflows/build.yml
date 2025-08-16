@@ -113,6 +113,9 @@ jobs:
         export PHP_CS_FIXER_IGNORE_ENV=1
         vendor/bin/pest --parallel --ci
 
+    - name: Run PHPStan
+      run: vendor/bin/phpstan analyse --memory-limit=2G
+
 #     - name: Run Rector
 #       run: |
 #         vendor/bin/rector --dry-run
