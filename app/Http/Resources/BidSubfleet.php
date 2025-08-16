@@ -4,21 +4,12 @@ namespace App\Http\Resources;
 
 /**
  * @mixin \App\Models\Subfleet
+ *
+ * @property \App\Models\Aircraft $aircraft
+ * @property \App\Models\Fare[]   $fares
  */
 class BidSubfleet extends Subfleet
 {
-    protected $aircraft;
-
-    protected $fares;
-
-    public function __construct($resource, $aircraft, $fares)
-    {
-        parent::__construct($resource);
-
-        $this->aircraft = $aircraft;
-        $this->fares = $fares;
-    }
-
     public function toArray($request)
     {
         return [

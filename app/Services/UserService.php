@@ -55,7 +55,7 @@ class UserService extends Service
             $with[] = 'rank.subfleets';
         }
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = $this->userRepo
             ->with($with)
             ->find($user_id);
@@ -248,7 +248,7 @@ class UserService extends Service
             }
         }
 
-        if (empty($ident_str)) {
+        if (empty($ident_str) || empty($airline)) {
             throw new PilotIdNotFound($pilot_id);
         }
 

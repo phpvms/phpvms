@@ -1,8 +1,17 @@
-parameters:
-  autoload_files:
-    #- %currentWorkingDirectory%/_ide_helper.php
-  ignoreErrors:
-    - '#PHPDoc tag(.*)#'
-    - '#Access to an undefined property App\\Models(.*)#'
 includes:
-  - vendor/weebly/phpstan-laravel/extension.neon
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 10 is the highest level
+    level: 1
+
+#    ignoreErrors:
+#        - '#PHPDoc tag @var#'
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php

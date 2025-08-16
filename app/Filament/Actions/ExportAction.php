@@ -67,6 +67,12 @@ class ExportAction extends Action
                     break;
             }
 
+            if (!isset($path)) {
+                $this->failure();
+
+                return null;
+            }
+
             $this->sendSuccessNotification();
 
             return response()->download($path, $file_name, ['content-type' => 'text/csv'])->deleteFileAfterSend(true);

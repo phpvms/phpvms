@@ -8,7 +8,7 @@ use Exception;
 /**
  * Abstract unit wrapper
  */
-class Unit implements ArrayAccess
+abstract class Unit implements ArrayAccess
 {
     /**
      * The localized unit the user wants it displayed in
@@ -34,6 +34,8 @@ class Unit implements ArrayAccess
      * Units that are included as part of the REST response
      */
     public array $responseUnits = [];
+
+    abstract public function __construct(mixed $value, string $unit);
 
     /**
      * Factory method for creating a new unit type

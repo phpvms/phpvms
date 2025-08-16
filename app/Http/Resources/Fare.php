@@ -6,6 +6,8 @@ use App\Contracts\Resource;
 
 /**
  * @mixin \App\Models\Fare
+ *
+ * @property int|null $count
  */
 class Fare extends Resource
 {

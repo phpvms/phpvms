@@ -64,6 +64,12 @@ class ImportAction extends Action
                     break;
             }
 
+            if (!isset($logs)) {
+                $this->failure();
+
+                return;
+            }
+
             if (count($logs['errors']) > 0) {
                 Notification::make()
                     ->title('There were '.count($logs['errors']).' errors importing '.$arguments['resourceTitle'])

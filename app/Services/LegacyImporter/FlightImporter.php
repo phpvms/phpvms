@@ -55,6 +55,8 @@ class FlightImporter extends BaseImporter
                 $flight = Flight::create(array_merge($w, $attrs));
             } catch (Exception $e) {
                 $this->error($e);
+
+                continue;
             }
 
             $this->idMapper->addMapping('flights', $row->id, $flight->id);

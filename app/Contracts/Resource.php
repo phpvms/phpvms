@@ -14,6 +14,11 @@ use Illuminate\Pagination\AbstractPaginator;
  */
 class Resource extends JsonResource
 {
+    final public function __construct($resource)
+    {
+        parent::__construct($resource);
+    }
+
     /**
      * Iterate through the list of $fields and check if they're a "Unit"
      * If they are, then add the response

@@ -46,6 +46,8 @@ class Settings extends Page
 
     public ?array $data = [];
 
+    public string $previousUrl;
+
     public function mount(): void
     {
         $this->fillForm();

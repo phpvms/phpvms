@@ -148,6 +148,15 @@ class Journal extends Model
         return new Money($balance);
     }
 
+    public function getDebitBalanceOn(Carbon $date): Money
+    {
+        $balance = $this->transactions()
+            ->where('post_date', '<=', $date)
+            ->sum('debit') ?: 0;
+
+        return new Money($balance);
+    }
+
     /**
      * Get the balance of the journal based on a given date.
      *

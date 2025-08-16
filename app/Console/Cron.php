@@ -74,7 +74,7 @@ class Cron
     public function run(): array
     {
         $events = $this->scheduler->dueEvents(app());
-        if (empty($events)) {
+        if ($events->isEmpty()) {
             return [];
         }
 
