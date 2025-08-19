@@ -37,6 +37,7 @@ class EditUser extends EditRecord
     {
         $data['name'] = $this->record->name;
         $data['email'] = $this->record->email;
+        $data['transfer_time'] = $this->record->transfer_time / 60;
 
         return $data;
     }
@@ -48,6 +49,8 @@ class EditUser extends EditRecord
         } else {
             unset($data['password']);
         }
+
+        $data['transfer_time'] *= 60;
 
         return $data;
     }
