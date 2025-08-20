@@ -45,7 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int                             $flights
  * @property int|null                        $flight_time
  * @property int|null                        $transfer_time
- * @property string|null                     $avatar_url
+ * @property File|null                       $avatar
  * @property string|null                     $timezone
  * @property int|null                        $status
  * @property int|null                        $state
@@ -64,7 +64,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $activities_count
  * @property-read \App\Models\Airline|null $airline
  * @property-read mixed $atc
- * @property-read mixed $avatar
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Award> $awards
  * @property-read int|null $awards_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Bid> $bids
@@ -182,7 +181,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'flights',
         'flight_time',
         'transfer_time',
-        'avatar_url',
+        'avatar',
         'timezone',
         'state',
         'status',
@@ -317,14 +316,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function avatar(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
-                if (!array_key_exists('avatar_url', $attrs) || !$attrs['avatar_url']) {
+            get: function (mixed $value) {
+                if (!$value) {
                     return null;
                 }
 
-                return new File([
-                    'path' => $attrs['avatar_url'],
-                ]);
+                return new File(['path' => $value]);
             }
         );
     }
