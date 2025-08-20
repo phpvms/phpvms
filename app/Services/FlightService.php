@@ -146,7 +146,7 @@ class FlightService extends Service
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
-        /** @var Collection $subfleets */
+        /** @var \Illuminate\Database\Eloquent\Collection<Subfleet> $subfleets */
         $subfleets = $flight->subfleets;
 
         // If no subfleets assigned and airline subfleets are forced, get airline subfleets
@@ -167,7 +167,7 @@ class FlightService extends Service
         // Only allow aircraft that the user has access to by their rank or type rating
         if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
-            $subfleets = $subfleets->filter(function ($subfleet, $i) use ($allowed_subfleets) {
+            $subfleets = $subfleets->filter(function (Subfleet $subfleet, $i) use ($allowed_subfleets) {
                 return $allowed_subfleets->contains($subfleet->id);
             });
         }
@@ -182,6 +182,8 @@ class FlightService extends Service
             $subfleets->loadMissing('aircraft');
 
             foreach ($subfleets as $subfleet) {
+                /** @var Subfleet $subfleet */
+                // @phpstan-ignore-next-line
                 $subfleet->aircraft = $subfleet->aircraft->filter(
                     function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
                         if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
@@ -200,6 +202,7 @@ class FlightService extends Service
             }
         }
 
+        /** @phpstan-ignore-next-line  */
         $flight->subfleets = $subfleets;
 
         return $flight;
@@ -297,6 +300,7 @@ class FlightService extends Service
 
     public function removeExpiredRepositionFlights(): void
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<Flight> $flights */
         $flights = $this->flightRepo->where('route_code', PirepStatus::DIVERTED)->get();
 
         foreach ($flights as $flight) {

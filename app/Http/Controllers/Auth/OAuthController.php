@@ -37,17 +37,26 @@ class OAuthController extends Controller
                 $envScopes = config('services.discord.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                return Socialite::driver('discord')->scopes($scopes)->redirect();
+                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                $driver = Socialite::driver('discord');
+
+                return $driver->scopes($scopes)->redirect();
             case 'ivao':
                 $scopes = config('services.ivao.scopes', []);
 
-                return Socialite::driver('ivao')->scopes($scopes)->redirect();
+                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                $driver = Socialite::driver('ivao');
+
+                return $driver->scopes($scopes)->redirect();
             case 'vatsim':
                 $requiredScopes = ['email'];
                 $envScopes = config('services.vatsim.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                return Socialite::driver('vatsim')->scopes($scopes)->redirect();
+                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                $driver = Socialite::driver('vatsim');
+
+                return $driver->scopes($scopes)->redirect();
             default:
                 abort(404);
         }
@@ -61,19 +70,14 @@ class OAuthController extends Controller
             abort(404);
         }
 
-        switch ($provider) {
-            case 'discord':
-                $providerUser = Socialite::driver('discord')->user();
-                break;
-            case 'ivao':
-                $providerUser = Socialite::driver('ivao')->user();
-                break;
-            case 'vatsim':
-                $providerUser = Socialite::driver('vatsim')->user();
-                break;
-            default:
-                abort(404);
+        if (!in_array($provider, ['discord', 'ivao', 'vatsim'])) {
+            abort(404);
         }
+
+        /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+        $driver = Socialite::driver($provider);
+        /** @var \Laravel\Socialite\Two\User $providerUser */
+        $providerUser = $driver->user();
 
         if (!$providerUser) {
             flash()->error('Provider '.$provider.' not found');

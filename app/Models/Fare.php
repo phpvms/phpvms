@@ -67,12 +67,11 @@ class Fare extends Model
         'price',
         'cost',
         'capacity',
-        'count',
         'notes',
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'code' => 'required',
         'name' => 'required',
         'type' => 'required',
@@ -105,7 +104,6 @@ class Fare extends Model
             'price'    => 'float',
             'cost'     => 'float',
             'capacity' => 'integer',
-            'count'    => 'integer',
             'type'     => 'integer',
             'active'   => 'boolean',
         ];

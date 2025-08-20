@@ -101,10 +101,8 @@ class Airline extends Model
 
     /**
      * Validation rules
-     *
-     * @var array
      */
-    public static $rules = [
+    public static array $rules = [
         'callsign' => 'nullable',
         'country'  => 'nullable',
         'iata'     => 'nullable|max:5',

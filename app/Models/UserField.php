@@ -49,7 +49,7 @@ class UserField extends Model
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'        => 'required',
         'description' => 'nullable',
     ];

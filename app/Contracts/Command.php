@@ -2,10 +2,7 @@
 
 namespace App\Contracts;
 
-use Exception;
 use Generator;
-use Illuminate\Log\Logger;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Exception\LogicException;
 use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Process\Process;
@@ -41,37 +38,6 @@ abstract class Command extends \Illuminate\Console\Command
     public function getSignature(): string
     {
         return $this->signature;
-    }
-
-    /**
-     * Splice the logger and replace the active handlers with the handlers from the
-     * a stack in config/logging.php
-     *
-     * @param string $channel_name Channel name from config/logging.php
-     */
-    public function redirectLoggingToFile($channel_name): void
-    {
-        $logger = app(Logger::class);
-
-        // Close the existing loggers
-        try {
-            $handlers = $logger->getHandlers();
-            foreach ($handlers as $handler) {
-                $handler->close();
-            }
-        } catch (Exception $e) {
-            $this->error('Error closing handlers: '.$e->getMessage());
-        }
-
-        // Open the handlers for the channel name,
-        // and then set them to the main logger
-        try {
-            $logger->setHandlers(
-                Log::channel($channel_name)->getHandlers()
-            );
-        } catch (Exception $e) {
-            $this->error('Couldn\'t splice the logger: '.$e->getMessage());
-        }
     }
 
     /**

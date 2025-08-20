@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pireps\RelationManagers;
 
 use App\Models\Enums\PirepSource;
+use App\Models\Pirep;
 use App\Models\PirepField;
 use App\Models\PirepFieldValue;
 use Filament\Actions\CreateAction;
@@ -22,7 +23,9 @@ class FieldValuesRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        $pirepFieldValues = PirepFieldValue::where('pirep_id', $this->getOwnerRecord()->id)->pluck('name');
+        /** @var Pirep $pirep */
+        $pirep = $this->getOwnerRecord();
+        $pirepFieldValues = PirepFieldValue::where('pirep_id', $pirep->id)->pluck('name');
 
         $pirepFields = PirepField::whereNotIn('name', $pirepFieldValues)->pluck('name', 'name')->toArray();
 
@@ -60,9 +63,17 @@ class FieldValuesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->hidden($this->getOwnerRecord()->read_only)
+                    ->hidden(function (): bool {
+                        /** @var Pirep $pirep */
+                        $pirep = $this->getOwnerRecord();
+
+                        return $pirep->read_only;
+                    })
                     ->mutateDataUsing(function (array $data): array {
-                        $data['pirep_id'] = $this->getOwnerRecord()->id;
+                        /** @var Pirep $pirep */
+                        $pirep = $this->getOwnerRecord();
+
+                        $data['pirep_id'] = $pirep->id;
                         $data['slug'] = Str::slug($data['name']);
 
                         return $data;

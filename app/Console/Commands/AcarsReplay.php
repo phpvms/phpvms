@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
+use App\Models\Flight;
 use App\Support\Units\Time;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
@@ -161,7 +162,7 @@ class AcarsReplay extends Command
     protected function updatesFromFile(array $files)
     {
         /**
-         * @var $flights Collection
+         * @var Collection $flights
          */
         $flights = collect($files)->transform(function ($f) {
             $file = $f;
@@ -186,7 +187,8 @@ class AcarsReplay extends Command
         /*
          * File the initial pirep to get a "preflight" status
          */
-        $flights->each(function ($updates, $idx) {
+        $flights->each(function (Collection $updates, $idx) {
+            /** @var Flight $update */
             $update = $updates->first();
             $pirep_id = $this->startPirep($update);
             $this->pirepList[$update->callsign] = $pirep_id;
@@ -202,7 +204,8 @@ class AcarsReplay extends Command
          * Continue until we have no more flights and updates left
          */
         while ($flights->count() > 0) {
-            $flights = $flights->each(function ($updates, $idx) {
+            $flights = $flights->each(function (Collection $updates, $idx) {
+                /** @var Flight $update */
                 $update = $updates->shift();
                 $pirep_id = $this->pirepList[$update->callsign];
 
@@ -228,8 +231,6 @@ class AcarsReplay extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      *
      * @throws RuntimeException
      */

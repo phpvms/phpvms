@@ -3,7 +3,7 @@
 namespace App\Contracts;
 
 use Exception;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -11,6 +11,8 @@ use function is_array;
 
 /**
  * @mixin BaseRepository
+ *
+ * @property Model $model
  */
 abstract class Repository extends BaseRepository
 {
@@ -31,7 +33,7 @@ abstract class Repository extends BaseRepository
      */
     public function validate($values)
     {
-        $validator = Validator::make($values, $this->model()->rules);
+        $validator = Validator::make($values, $this->model::$rules);
         if ($validator->fails()) {
             return $validator->messages();
         }
@@ -106,7 +108,7 @@ abstract class Repository extends BaseRepository
      * Retrieve all data of repository, paginated. Added in extra parameter to read from the
      * request which page it should be on
      *
-     * @param  null   $limit
+     * @param  ?int   $limit
      * @param  array  $columns
      * @param  string $method
      * @return mixed

@@ -263,7 +263,10 @@ class DevCommands extends Command
             }
 
             $this->info('Dropping all tables');
-            $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+
+            $schema = DB::getSchemaBuilder()->getCurrentSchemaName();
+            $tables = DB::getSchemaBuilder()->getTableListing($schema, schemaQualified: false);
+
             foreach ($tables as $table) {
                 Schema::dropIfExists($table);
             }

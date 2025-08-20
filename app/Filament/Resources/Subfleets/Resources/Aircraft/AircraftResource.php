@@ -69,6 +69,9 @@ class AircraftResource extends Resource
         return ['name', 'registration', 'icao'];
     }
 
+    /**
+     * @param Aircraft $record
+     */
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name.' - '.$record->registration;

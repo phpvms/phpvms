@@ -124,7 +124,7 @@ class Airport extends Model
     /**
      * Validation rules
      */
-    public static $rules = [
+    public static array $rules = [
         'icao'                 => 'required',
         'iata'                 => 'sometimes|nullable',
         'name'                 => 'required',
@@ -179,8 +179,6 @@ class Airport extends Model
     /**
      * Return full name like:
      * KJFK - John F Kennedy
-     *
-     * @return string
      */
     public function fullName(): Attribute
     {

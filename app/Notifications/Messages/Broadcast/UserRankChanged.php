@@ -3,7 +3,6 @@
 namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
-use App\Models\Pirep;
 use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordMessage;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,8 +13,6 @@ class UserRankChanged extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param Pirep $pirep
      */
     public function __construct(User $user)
     {
@@ -31,11 +28,8 @@ class UserRankChanged extends Notification implements ShouldQueue
 
     /**
      * Send a Discord notification
-     *
-     * @param Pirep $pirep
-     * @param mixed $user
      */
-    public function toDiscordChannel($user): ?DiscordMessage
+    public function toDiscordChannel(User $user): ?DiscordMessage
     {
         $title = 'Rank changed '.$user->rank->name;
         // $fields = $this->createFields($user);

@@ -14,6 +14,7 @@ use App\Models\Enums\UserState;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Role;
+use App\Models\Subfleet;
 use App\Models\Typerating;
 use App\Models\User;
 use App\Models\UserFieldValue;
@@ -28,7 +29,6 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -55,7 +55,7 @@ class UserService extends Service
             $with[] = 'rank.subfleets';
         }
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = $this->userRepo
             ->with($with)
             ->find($user_id);
@@ -71,6 +71,7 @@ class UserService extends Service
         if ($with_subfleets) {
             // Load the proper subfleets to the rank
             $user->rank->subfleets = $this->getAllowableSubfleets($user);
+            // @phpstan-ignore-next-line
             $user->subfleets = $user->rank->subfleets;
         }
 
@@ -248,7 +249,7 @@ class UserService extends Service
             }
         }
 
-        if (empty($ident_str)) {
+        if (empty($ident_str) || empty($airline)) {
             throw new PilotIdNotFound($pilot_id);
         }
 
@@ -276,8 +277,7 @@ class UserService extends Service
         $date = Carbon::now('UTC');
         $users = User::where('state', UserState::ACTIVE)->get();
 
-        /** @var User $user */
-        return $users->filter(function ($user, $i) use ($date, $leave_days) {
+        return $users->filter(function (User $user, $i) use ($date, $leave_days) {
             // If any role for this user has the "disable_activity_check" feature activated, skip this user
             foreach ($user->roles()->get() as $role) {
                 /** @var Role $role */
@@ -300,7 +300,7 @@ class UserService extends Service
      * based on their current Rank and/or by Type Rating
      *
      *
-     * @return Collection
+     * @return \Illuminate\Database\Eloquent\Collection<Subfleet>
      */
     public function getAllowableSubfleets($user, bool $paginate = false)
     {

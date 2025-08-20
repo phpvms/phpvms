@@ -47,7 +47,7 @@ class News extends Model
         'body',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'subject' => 'required',
         'body'    => 'required',
     ];

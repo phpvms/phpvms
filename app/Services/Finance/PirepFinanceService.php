@@ -269,13 +269,8 @@ class PirepFinanceService extends Service
         // Convert to cost per-minute
         $cost_per_min = round($sf->cost_block_hour / 60, 2);
 
-        // Time to use - use the block time if it's there, actual
-        // flight time if that hasn't been used
-        $block_time = $pirep->block_time;
-        if (!filled($block_time)) {
-            Log::info('Finance: No block time, using PIREP flight time');
-            $block_time = $pirep->flight_time;
-        }
+        // Time to use - use the flight time
+        $block_time = $pirep->flight_time;
 
         $debit = Money::createFromAmount($cost_per_min * $block_time);
         Log::info('Finance: Subfleet Block Hourly, D='.$debit->getAmount());

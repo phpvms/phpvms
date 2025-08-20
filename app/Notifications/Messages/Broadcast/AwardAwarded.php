@@ -4,7 +4,6 @@ namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
 use App\Models\Award;
-use App\Models\Pirep;
 use App\Models\User;
 use App\Models\UserAward;
 use App\Notifications\Channels\Discord\DiscordMessage;
@@ -16,8 +15,6 @@ class AwardAwarded extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param Pirep $pirep
      */
     public function __construct(UserAward $userAward)
     {
@@ -33,11 +30,8 @@ class AwardAwarded extends Notification implements ShouldQueue
 
     /**
      * Send a Discord notification
-     *
-     * @param Pirep $pirep
-     * @param mixed $userAward
      */
-    public function toDiscordChannel($userAward): ?DiscordMessage
+    public function toDiscordChannel(UserAward $userAward): ?DiscordMessage
     {
         $award = Award::where('id', $userAward->award_id)->first();
 

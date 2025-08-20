@@ -65,7 +65,7 @@ class AircraftTable
                 TextColumn::make('flight_time')
                     ->label(__('flights.flighttime'))
                     ->toggleable()
-                    ->formatStateUsing(fn (string $state): string => floor($state / 60).'h'.$state % 60 .'min')
+                    ->formatStateUsing(fn (int $state): string => floor($state / 60).'h'.$state % 60 .'min')
                     ->sortable(),
 
                 TextColumn::make('status')

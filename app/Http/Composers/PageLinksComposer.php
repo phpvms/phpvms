@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class PageLinksComposer extends Composer
 {
-    private static $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
+    public static array $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
 
     /**
      * PageLinksComposer constructor.

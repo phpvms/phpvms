@@ -79,7 +79,7 @@ class Rank extends Model
         'auto_promote',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'                 => 'required',
         'hours'                => 'required|integer',
         'acars_base_pay_rate'  => 'nullable|numeric',

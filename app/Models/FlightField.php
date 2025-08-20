@@ -34,7 +34,7 @@ class FlightField extends Model
         'required',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 

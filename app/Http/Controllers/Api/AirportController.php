@@ -96,8 +96,6 @@ class AirportController extends Controller
 
     /**
      * Search for airports in the database
-     *
-     * @param string $searchString
      */
     public function search(Request $request): AnonymousResourceCollection
     {
