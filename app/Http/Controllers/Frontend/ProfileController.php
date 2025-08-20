@@ -190,7 +190,7 @@ class ProfileController extends Controller
             Log::info('Uploading avatar into folder '.public_path('uploads/avatars'));
             $canvas->save(public_path('uploads/avatars/'.$file_name));
 
-            $req_data['avatar'] = $path;
+            $req_data['avatar_url'] = $path;
         }
 
         // User needs to verify their new email address

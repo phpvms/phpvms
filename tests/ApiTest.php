@@ -352,7 +352,7 @@ final class ApiTest extends TestCase
     public function test_get_user(): void
     {
         $this->user = User::factory()->create([
-            'avatar' => '/assets/avatar.jpg',
+            'avatar_url' => '/assets/avatar.jpg',
         ]);
 
         $res = $this->get('/api/user')->assertStatus(200);
