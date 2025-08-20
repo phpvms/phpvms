@@ -4,22 +4,19 @@ services:
   app:
     container_name: phpvms-app
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: phpvms:app
-    build:
-      context: .
-      args:
-        WWWUSER: ${WWWUSER:-1000}
-        WWWGROUP: ${WWWGROUP:-1000}
+    image: ghcr.io/phpvms/phpvms:main
+    hostname: app
     restart: unless-stopped
     environment:
       PHP_OPCACHE_ENABLE: 1
       # some basic laravel stuff
-      AUTORUN_ENABLED: true
+      AUTORUN_ENABLED: 1
     env_file: .env
     volumes:
+      - phpvms_assets:/var/www/html/public/build:rw
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     depends_on:
       - caddy
       - mariadb
@@ -30,7 +27,7 @@ services:
   task:
     container_name: phpvms-task
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: phpvms:app
+    image: ghcr.io/phpvms/phpvms:main
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
@@ -42,15 +39,15 @@ services:
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
   queue:
     container_name: phpvms-queue
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: phpvms:app
+    image: ghcr.io/phpvms/phpvms:main
     restart: unless-stopped
     command: [ "php", "/var/www/html/artisan", "queue:work", "--tries=3" ]
     environment:
@@ -62,8 +59,8 @@ services:
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
-      - ./public/uploads:/var/www/html/public/uploads:rw
-      - ./storage:/var/www/html/storage:rw
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
     networks:
       - phpvms
 
@@ -77,10 +74,12 @@ services:
       - "${FORWARD_HTTPS_PORT:-443}:443"
     volumes:
       - ./public/:/var/www/html/public
+      - phpvms_assets:/var/www/html/public/build
       - ./resources/docker/Caddyfile:/etc/caddy/Caddyfile
       - caddy_config:/config
       - caddy_data:/data
     networks:
+      - default
       - phpvms
 
   mariadb:
@@ -124,6 +123,9 @@ volumes:
   caddy_data:
   caddy_config:
   mariadb:
+  phpvms_storage:
+  phpvms_uploads:
+  phpvms_assets:
   redis:
 
 networks:

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Nwidart\Modules\Facades\Module;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
 class MigrationService extends Service
@@ -118,7 +119,17 @@ class MigrationService extends Service
         // Inspired by runAllMigrations() but instead we're streaming the output to the callback (and then the browser) live
 
         // First, run the main migration to ensure the migration table is there
-        $php = PHP_BINARY;
+
+        $finder = new PhpExecutableFinder();
+        $php_path = $finder->find(false);
+        $php = str_replace('-fpm', '', $php_path);
+
+        // If this is the cgi version of the exec, add this arg, otherwise there's
+        // an error with no arguments existing
+        if (str_contains($php, '-cgi')) {
+            $php .= ' -d register_argc_argv=On';
+        }
+
         $artisan = base_path('artisan');
         $command = [$php, $artisan, 'migrate', '--force'];
 

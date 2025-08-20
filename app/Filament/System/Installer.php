@@ -28,7 +28,6 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -192,13 +191,8 @@ class Installer extends Page
 
                 // Let's generate a new key if the app is still using the one from the .env.example
                 if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=') {
-                    $output .= __('installer.generating_app_key').PHP_EOL;
-                    $this->stream(to: $this->stream, content: __('installer.generating_app_key').PHP_EOL);
-
-                    Artisan::call('key:generate', ['--force' => true]);
-                    $artisan_output = Artisan::output();
-                    $this->stream(to: $this->stream, content: $artisan_output);
-                    $output .= $artisan_output;
+                    $output .= __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL;
+                    $this->stream(to: $this->stream, content: __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL);
                 }
 
                 $component->state(fn () => $output);
@@ -283,8 +277,8 @@ class Installer extends Page
                             TextEntry::make('php_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->state(fn () => $data['php']['passed'] && $data['extensionsPassed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['php']['passed'] && $data['extensionsPassed'] ? 'success' : 'danger')
                                 ->badge(),
                         ])
                         ->schema([
@@ -308,8 +302,8 @@ class Installer extends Page
                             TextEntry::make('directory_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn () => $data['php']['passed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn () => $data['php']['passed'] ? 'success' : 'danger')
+                                ->state(fn () => $data['directoriesPassed'] ? 'OK' : __('installer.failed'))
+                                ->color(fn () => $data['directoriesPassed'] ? 'success' : 'danger')
                                 ->badge(),
                         ])
                         ->description(__('installer.directory_permissions_description'))
