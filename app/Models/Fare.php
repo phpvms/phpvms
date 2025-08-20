@@ -71,7 +71,7 @@ class Fare extends Model
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'code' => 'required',
         'name' => 'required',
         'type' => 'required',

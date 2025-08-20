@@ -15,8 +15,6 @@ class Utils
 {
     /**
      * Generate a new ID with a given length
-     *
-     * @param int [$length]
      */
     public static function generateNewId(?int $length = null): string
     {

@@ -75,8 +75,6 @@ class ModuleService extends Service
 
     /**
      * Get all of the modules from database but make sure they also exist on disk
-     *
-     * @return object
      */
     public function getAllModules(): array
     {

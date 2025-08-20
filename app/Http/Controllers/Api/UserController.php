@@ -60,8 +60,6 @@ class UserController extends Controller
 
     /**
      * Get the profile for the passed-in user
-     *
-     * @param Request $request
      */
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
@@ -132,9 +130,6 @@ class UserController extends Controller
 
     /**
      * Get a particular bid for a user
-     *
-     *
-     * @return Bid
      */
     public function get_bid(int $bid_id, Request $request): BidResource
     {

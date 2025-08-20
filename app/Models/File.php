@@ -65,7 +65,7 @@ class File extends Model
         'ref_model_id',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 

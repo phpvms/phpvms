@@ -21,4 +21,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
      * For the factories, skip the mutators. Only apply to one instance
      */
     public $skip_mutator = false;
+
+    public static array $rules = [];
 }

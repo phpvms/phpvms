@@ -56,7 +56,7 @@ class Page extends Model
         'new_window',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required|unique:pages,name',
         'body' => 'nullable',
         'type' => 'required',

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ActivityLogs\Tables;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -22,7 +23,9 @@ class ActivityLogsTable
 
                 TextColumn::make('causer_type')
                     ->formatStateUsing(function (Activity $record): string {
-                        if (class_basename($record->causer_type) === 'User') {
+                        if ($record->causer_type === User::class) {
+                            assert($record->causer instanceof User);
+
                             return $record->causer_id.' | '.$record->causer->name_private;
                         }
 

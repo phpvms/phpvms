@@ -2,12 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Contracts\Model;
 use App\Contracts\Repository;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Support\Money;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;

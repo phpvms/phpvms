@@ -38,7 +38,7 @@ use Illuminate\Support\HtmlString;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
- * @property-read Schema $form
+ * @property-read FilamentSchema $form
  */
 class Installer extends Page
 {

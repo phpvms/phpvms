@@ -45,7 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int                             $flights
  * @property int|null                        $flight_time
  * @property int|null                        $transfer_time
- * @property string|null                     $avatar
+ * @property string|null                     $avatar_url
  * @property string|null                     $timezone
  * @property int|null                        $status
  * @property int|null                        $state
@@ -64,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $activities_count
  * @property-read \App\Models\Airline|null $airline
  * @property-read mixed $atc
+ * @property-read mixed $avatar
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Award> $awards
  * @property-read int|null $awards_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Bid> $bids
@@ -103,7 +104,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            whereActive($value)
  * @method static Builder<static>|User            whereAirlineId($value)
  * @method static Builder<static>|User            whereApiKey($value)
- * @method static Builder<static>|User            whereAvatar($value)
+ * @method static Builder<static>|User            whereAvatarUrl($value)
  * @method static Builder<static>|User            whereCallsign($value)
  * @method static Builder<static>|User            whereCountry($value)
  * @method static Builder<static>|User            whereCreatedAt($value)
@@ -181,7 +182,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'flights',
         'flight_time',
         'transfer_time',
-        'avatar',
+        'avatar_url',
         'timezone',
         'state',
         'status',
@@ -209,7 +210,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'notes',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'     => 'required',
         'email'    => 'required|email',
         'pilot_id' => 'required|integer',
@@ -317,12 +318,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if (!array_key_exists('avatar', $attrs) || !$attrs['avatar']) {
+                if (!array_key_exists('avatar_url', $attrs) || !$attrs['avatar_url']) {
                     return null;
                 }
 
                 return new File([
-                    'path' => $attrs['avatar'],
+                    'path' => $attrs['avatar_url'],
                 ]);
             }
         );

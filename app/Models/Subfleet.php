@@ -119,7 +119,7 @@ class Subfleet extends Model
         'gross_weight'               => 'float',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'type'                       => 'required',
         'name'                       => 'required',
         'hub_id'                     => 'nullable',

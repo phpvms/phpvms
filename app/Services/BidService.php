@@ -55,9 +55,11 @@ class BidService extends Service
         if (!empty($bid->aircraft)) {
             $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
         } else {
+            // @phpstan-ignore-next-line
             $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
         }
 
+        // @phpstan-ignore-next-line
         $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
 
         return $bid;
@@ -106,9 +108,11 @@ class BidService extends Service
                 if ($bid->aircraft) {
                     $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
                 } else {
+                    // @phpstan-ignore-next-line
                     $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
                 }
 
+                // @phpstan-ignore-next-line
                 $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
             }
         }

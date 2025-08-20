@@ -37,7 +37,7 @@ class PirepComment extends Model
         'comment',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'comment' => 'required',
     ];
 

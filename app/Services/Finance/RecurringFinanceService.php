@@ -3,14 +3,17 @@
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
+use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
+use App\Models\Subfleet;
 use App\Services\FinanceService;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Prettus\Validator\Exceptions\ValidatorException;
 
@@ -70,6 +73,7 @@ class RecurringFinanceService extends Service
             $memo = "Subfleet Expense: {$expense->name}";
             $transaction_group = "Subfleet: {$expense->name}";
         } elseif ($klass === 'Aircraft') {
+            /** @var Aircraft $obj */
             $memo = "Aircraft Expense: {$expense->name} ({$obj->name})";
             $transaction_group = "Aircraft: {$expense->name} ({$obj->name}-{$obj->registration})";
         } else {
@@ -98,7 +102,7 @@ class RecurringFinanceService extends Service
         }
 
         /**
-         * @var $expenses Expense[]
+         * @var Collection<int, Expense> $expenses
          */
         foreach ($expenses as $expense) {
             // Apply the expenses to the appropriate journals
@@ -134,6 +138,7 @@ class RecurringFinanceService extends Service
 
                 // Determine if this object actually belongs to this airline or not
                 if ($type === 'Subfleet' || $type === 'Aircraft') {
+                    /** @var Aircraft|Subfleet $ref_model */
                     $ref_model = $expense->ref_model()->with('airline')->first();
                     if ($ref_model?->airline?->id !== $journal->morphed_id) {
                         Log::info(

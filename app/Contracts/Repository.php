@@ -12,7 +12,7 @@ use function is_array;
 /**
  * @mixin BaseRepository
  *
- * @method where($column, $operator = null, $value = null, $boolean = 'and')
+ * @property Model $model
  */
 abstract class Repository extends BaseRepository
 {
@@ -33,7 +33,7 @@ abstract class Repository extends BaseRepository
      */
     public function validate($values)
     {
-        $validator = Validator::make($values, $this->model()->rules);
+        $validator = Validator::make($values, $this->model::$rules);
         if ($validator->fails()) {
             return $validator->messages();
         }

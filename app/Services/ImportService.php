@@ -192,13 +192,11 @@ class ImportService extends Service
     /**
      * Import flights
      *
-     * @param  string $csv_file
-     * @param  bool   $delete_previous
      * @return mixed
      *
      * @throws ValidationException
      */
-    public function importFlights($csv_file, ?string $delete_previous = null)
+    public function importFlights(string $csv_file, ?string $delete_previous = null)
     {
         if ($delete_previous !== null && $delete_previous !== '' && $delete_previous !== '0') {
             // If delete_previous contains all, then delete everything

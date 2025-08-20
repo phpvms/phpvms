@@ -198,7 +198,7 @@ class Pirep extends Model
         'updated_at',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'airline_id'     => 'required|exists:airlines,id',
         'aircraft_id'    => 'required|exists:aircraft,id',
         'event_id'       => 'nullable|numeric',
