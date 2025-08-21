@@ -2,7 +2,7 @@
 
 return [
     'php' => [
-        'version' => '7.3',
+        'version' => '8.2',
     ],
 
     'cache' => [
@@ -25,6 +25,7 @@ return [
         'json',
         'curl',
         'dom',
+        'zip',
     ],
 
     // Make sure these are writable
