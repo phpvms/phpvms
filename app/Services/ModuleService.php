@@ -250,7 +250,7 @@ class ModuleService extends Service
         $module = Module::find($id);
 
         $cache = config('cache.keys.MODULES');
-        Cache::forget($cache['key'].'.'.$module->name);
+        Cache::forget($cache['key']);
 
         $module->update([
             'enabled' => $status,
@@ -258,6 +258,10 @@ class ModuleService extends Service
 
         if ($status === true) {
             Artisan::call('module:migrate', ['module' => $module->name, '--force' => true]);
+        }
+
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
         }
 
         return true;
@@ -279,6 +283,10 @@ class ModuleService extends Service
 
             try {
                 File::deleteDirectory($moduleDir);
+
+                if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+                    unlink(base_path('bootstrap/cache/modules.php'));
+                }
             } catch (Exception $e) {
                 Log::info('Folder Deleted Manually for Module : '.$module->name);
 

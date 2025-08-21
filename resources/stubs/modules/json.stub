@@ -3,15 +3,10 @@
     "alias": "$LOWER_NAME$",
     "description": "",
     "keywords": [],
-    "active": 1,
-    "order": 0,
+    "priority": 0,
     "providers": [
-        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\AppServiceProvider",
-        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\EventServiceProvider",
-        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\RouteServiceProvider",
-        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\Providers\\Filament\\AdminPanelProvider"
+        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\$PROVIDER_NAMESPACE$\\$STUDLY_NAME$ServiceProvider",
+        "$MODULE_NAMESPACE$\\$STUDLY_NAME$\\$PROVIDER_NAMESPACE$\\Filament\\AdminPanelProvider"
     ],
-    "aliases": {},
-    "files": [],
-    "requires": []
+    "files": []
 }

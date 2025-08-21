@@ -7,6 +7,7 @@ use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Nwidart\Modules\Contracts\ActivatorInterface;
 use Nwidart\Modules\Module;
@@ -14,61 +15,25 @@ use Nwidart\Modules\Module;
 class DatabaseActivator implements ActivatorInterface
 {
     /**
+     * Laravel Filesystem instance
+     */
+    private Filesystem $files;
+
+    /**
      * Laravel config instance
-     *
-     * @var Config
      */
-    private $config;
-
-    /**
-     * @var Filesystem
-     */
-    private $files;
-
-    /**
-     * The module path.
-     *
-     * @var string|null
-     */
-    protected $path;
-
-    /**
-     * The scanned paths.
-     *
-     * @var array
-     */
-    protected $paths = [];
+    private Config $config;
 
     /**
      * Array of modules activation statuses
-     *
-     * @var array
      */
-    private $modulesStatuses;
+    private array $modulesStatuses;
 
-    public function __construct(Container $app, $path = null)
+    public function __construct(Container $app)
     {
         $this->config = $app['config'];
         $this->files = $app['files'];
         $this->modulesStatuses = $this->getModulesStatuses();
-        $this->path = $path;
-    }
-
-    public function getModuleByName(string $name): ?\App\Models\Module
-    {
-        try {
-            if (app()->environment('production')) {
-                $cache = config('cache.keys.MODULES');
-
-                return Cache::remember($cache['key'].'.'.$name, $cache['time'], function () use ($name) {
-                    return \App\Models\Module::where(['name' => $name])->first();
-                });
-            } else {
-                return \App\Models\Module::where(['name' => $name])->first();
-            }
-        } catch (Exception $e) { // Catch any database/connection errors
-            return null;
-        }
     }
 
     /**
@@ -79,26 +44,18 @@ class DatabaseActivator implements ActivatorInterface
         try {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.MODULES');
-                $retVal = Cache::remember($cache['key'], $cache['time'], function () {
-                    $modules = \App\Models\Module::select('name', 'enabled')->get();
-
-                    $retValCache = [];
-                    foreach ($modules as $i) {
-                        $retValCache[$i->name] = $i->enabled;
-                    }
-
-                    return $retValCache;
+                $modules = Cache::remember($cache['key'], $cache['time'], function () {
+                    return \App\Models\Module::select('name', 'enabled')->get()->mapWithKeys(function ($item) {
+                        return [$item->name => $item->enabled];
+                    });
                 });
             } else {
-                $modules = \App\Models\Module::select('name', 'enabled')->get();
-
-                $retVal = [];
-                foreach ($modules as $i) {
-                    $retVal[$i->name] = $i->enabled;
-                }
+                $modules = \App\Models\Module::select('name', 'enabled')->get()->mapWithKeys(function ($item) {
+                    return [$item->name => $item->enabled];
+                });
             }
 
-            return $retVal;
+            return $modules->toArray();
         } catch (Exception $e) {
             return [];
         }
@@ -109,7 +66,8 @@ class DatabaseActivator implements ActivatorInterface
      */
     public function reset(): void
     {
-        (new \App\Models\Module())->truncate();
+        DB::table('modules')->truncate();
+        $this->modulesStatuses = [];
     }
 
     /**
@@ -117,7 +75,7 @@ class DatabaseActivator implements ActivatorInterface
      */
     public function enable(Module $module): void
     {
-        $this->setActive($module, true);
+        $this->setActiveByName($module->getName(), true);
     }
 
     /**
@@ -125,21 +83,21 @@ class DatabaseActivator implements ActivatorInterface
      */
     public function disable(Module $module): void
     {
-        $this->setActive($module, false);
+        $this->setActiveByName($module->getName(), false);
     }
 
     /**
-     * \Nwidart\Modules\Module instance passed
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function hasStatus(Module $module, bool $status): bool
+    public function hasStatus(Module|string $module, bool $status): bool
     {
-        $module = $this->getModuleByName($module->getName());
-        if (!$module instanceof \App\Models\Module) {
-            return false;
+        $name = $module instanceof Module ? $module->getName() : $module;
+
+        if (!isset($this->modulesStatuses[$name])) {
+            return $status === false;
         }
 
-        return $module->enabled;
+        return $this->modulesStatuses[$name] === $status;
     }
 
     /**
@@ -147,29 +105,37 @@ class DatabaseActivator implements ActivatorInterface
      */
     public function setActive(Module $module, bool $active): void
     {
-        $moduleClass = $this->getModuleByName($module->getName());
-        if (!$moduleClass instanceof \App\Models\Module) {
-            $moduleClass = \App\Models\Module::create([
-                'name' => $module->getName(),
-            ]);
-        }
-
-        $moduleClass->enabled = $active;
-        $moduleClass->save();
+        $this->setActiveByName($module->getName(), $active);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setActiveByName(string $name, bool $status): void
+    public function setActiveByName(string $name, bool $active): void
     {
-        $module = $this->getModuleByName($name);
-        if (!$module instanceof \App\Models\Module) {
-            return;
+        $this->modulesStatuses[$name] = $active;
+
+        \App\Models\Module::updateOrCreate([
+            'name' => $name,
+        ], [
+            'enabled' => $active,
+        ]);
+
+        // Update the cache accordingly if in production
+        if (app()->environment('production')) {
+            $cache = config('cache.keys.MODULES');
+            Cache::forget($cache['key']);
+            Cache::remember($cache['key'], $cache['time'], function () {
+                return \App\Models\Module::select('name', 'enabled')->get()->mapWithKeys(function ($item) {
+                    return [$item->name => $item->enabled];
+                });
+            });
         }
 
-        $module->enabled = $status;
-        $module->save();
+        // Delete the cache file here as well (just in case)
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
+        }
     }
 
     /**
@@ -179,8 +145,13 @@ class DatabaseActivator implements ActivatorInterface
     {
         $name = $module->getName();
 
+        if (!isset($this->modulesStatuses[$module->getName()])) {
+            return;
+        }
+        unset($this->modulesStatuses[$module->getName()]);
+
         try {
-            (new \App\Models\Module())->where([
+            \App\Models\Module::where([
                 'name' => $name,
             ])->delete();
         } catch (Exception $e) {
