@@ -15,12 +15,18 @@ class $CLASS$ extends Model
      */
     protected $fillable = $FILLABLE$;
 
+    public static array $rules = [
+
+    ];
+
+    protected function casts(): array
+    {
+        return [
+        ];
+    }
+
     // protected static function newFactory(): $NAME$Factory
     // {
     //     // return $NAME$Factory::new();
     // }
-
-    public static array $rules = [
-
-    ];
 }
