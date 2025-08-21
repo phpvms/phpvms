@@ -15,7 +15,7 @@ return [
 
         'seeds' => [
             'driver' => 'local',
-            'root'   => database_path('seeds'),
+            'root'   => database_path('seeders'),
         ],
 
         'public' => [
