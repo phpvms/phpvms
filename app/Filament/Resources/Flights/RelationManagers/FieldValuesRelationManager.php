@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Flights\RelationManagers;
 
+use App\Models\Flight;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -56,7 +57,10 @@ class FieldValuesRelationManager extends RelationManager
                 CreateAction::make()
                     ->icon(Heroicon::OutlinedPlusCircle)
                     ->mutateDataUsing(function (array $data): array {
-                        $data['flight_id'] = $this->getOwnerRecord()->id;
+                        /** @var Flight $flight */
+                        $flight = $this->getOwnerRecord();
+
+                        $data['flight_id'] = $flight->id;
                         $data['slug'] = Str::slug($data['name']);
 
                         return $data;

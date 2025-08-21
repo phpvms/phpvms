@@ -43,7 +43,7 @@ class CreditsController extends Controller
 
         $contents = json_decode(file_get_contents($file));
 
-        $details = collect();
+        $details = new \stdClass();
         $details->name = isset($contents->name) ? $contents->name : $module_name;
         $details->description = isset($contents->description) ? $contents->description : null;
         $details->version = isset($contents->version) ? $contents->version : null;

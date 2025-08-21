@@ -19,4 +19,8 @@ class $CLASS$ extends Model
     // {
     //     // return $NAME$Factory::new();
     // }
+
+    public static array $rules = [
+
+    ];
 }

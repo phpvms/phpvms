@@ -46,11 +46,17 @@ class SimBriefAirframeResource extends Resource
         return ['icao', 'airframe_id'];
     }
 
+    /**
+     * @param SimBriefAirframe $record
+     */
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name;
     }
 
+    /**
+     * @param SimBriefAirframe $record
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [

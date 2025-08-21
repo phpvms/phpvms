@@ -141,7 +141,7 @@ class Aircraft extends Model
     /**
      * Validation rules
      */
-    public static $rules = [
+    public static array $rules = [
         'name'          => 'required',
         'registration'  => 'required',
         'fin'           => 'nullable|unique:aircraft',

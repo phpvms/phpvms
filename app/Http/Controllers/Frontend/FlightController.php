@@ -219,9 +219,6 @@ class FlightController extends Controller
 
     /**
      * Show the flight information page
-     *
-     *
-     * @return mixed
      */
     public function show(string $id): View
     {

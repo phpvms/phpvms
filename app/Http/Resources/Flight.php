@@ -21,10 +21,10 @@ class Flight extends Resource
      */
     protected function setFields()
     {
-        /** @var Collection $field_values */
         $return_values = new stdClass();
+        /** @var Collection $field_values */
         $field_values = $this->field_values;
-        if (empty($field_values) || $field_values->count() === 0) {
+        if ($field_values->isEmpty() || $field_values->count() === 0) {
             return $return_values;
         }
 

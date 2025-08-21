@@ -178,11 +178,8 @@ class VersionService extends Service
 
     /**
      * See if a new version is available. Saves a flag into the KVP store if there is
-     *
-     * @param null [$current_version]
-     * @return bool
      */
-    public function isNewVersionAvailable($current_version = null)
+    public function isNewVersionAvailable(?string $current_version = null): bool
     {
         $current_version = $current_version ? $this->cleanVersionString($current_version) : $this->getCurrentVersion(false);
 

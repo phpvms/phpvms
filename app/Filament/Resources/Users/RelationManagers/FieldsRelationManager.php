@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -55,7 +56,10 @@ class FieldsRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->using(function (array $data, string $model) {
-                        $this->getOwnerRecord()->fields()->updateOrCreate([
+                        /** @var User $user */
+                        $user = $this->getOwnerRecord();
+
+                        $user->fields()->updateOrCreate([
                             'user_field_id' => $data['user_field_id'],
                         ], $data);
                     }),

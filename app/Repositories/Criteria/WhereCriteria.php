@@ -27,7 +27,7 @@ class WhereCriteria implements CriteriaInterface
      * Create a new Where search.
      *
      * @param array $where
-     * @param array   [$relations] Any whereHas (key = table name, value = array of criterea
+     * @param array $relations Any whereHas (key = table name, value = array of criterea
      */
     public function __construct(Request $request, $where, $relations = [])
     {

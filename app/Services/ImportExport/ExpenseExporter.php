@@ -54,10 +54,13 @@ class ExpenseExporter extends ImportExport
             }
 
             if ($expense->ref_model === Aircraft::class) {
+                /** @var Aircraft $obj */
                 $ret['ref_model_id'] = $obj->registration;
             } elseif ($expense->ref_model === Airport::class) {
+                /** @var Airport $obj */
                 $ret['ref_model_id'] = $obj->icao;
             } elseif ($expense->ref_model === Subfleet::class) {
+                /** @var Subfleet $obj */
                 $ret['ref_model_id'] = $obj->type;
             }
         }

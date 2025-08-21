@@ -6,8 +6,6 @@ use Illuminate\Support\Str;
 
 /**
  * Create a slug from a name
- *
- * @property object attributes
  */
 class Sluggable
 {

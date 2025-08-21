@@ -63,7 +63,7 @@ class Setting extends Model
         'description',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'  => 'required',
         'key'   => 'required',
         'group' => 'required',

@@ -71,7 +71,7 @@ class CreateConfigs extends Command
 
         $this->info('Regenerating the config files');
         $cfgSvc->createConfigFiles([
-            'SITE_NAME'     => $this->argument('name'),
+            // 'SITE_NAME'     => $this->argument('name'),
             'DB_CONNECTION' => 'mysql',
             'DB_HOST'       => $this->argument('db_host'),
             'DB_DATABASE'   => $this->argument('db_name'),

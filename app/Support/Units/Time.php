@@ -83,7 +83,7 @@ class Time implements Arrayable
     }
 
     /**
-     * @param string $minutes
+     * @param int $minutes
      */
     public static function minutesToTimeParts($minutes): array
     {
@@ -103,8 +103,8 @@ class Time implements Arrayable
     /**
      * Convert seconds to an array of hours, minutes, seconds
      *
-     * @param int $seconds
-     * @return array['h', 'm', 's']
+     * @param  int                                 $seconds
+     * @return array{'h': int, 'm': int, 's': int}
      *
      * @throws Exception
      */

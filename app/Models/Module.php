@@ -39,7 +39,7 @@ class Module extends Model
         'updated_at',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 

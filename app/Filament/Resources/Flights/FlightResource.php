@@ -72,11 +72,17 @@ class FlightResource extends Resource
         return ['flight_number', 'route_code'];
     }
 
+    /**
+     * @param Flight $record
+     */
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->airline->icao.$record->flight_number;
     }
 
+    /**
+     * @param Flight $record
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
