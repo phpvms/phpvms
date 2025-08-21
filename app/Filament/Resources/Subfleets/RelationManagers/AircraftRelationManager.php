@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Subfleets\RelationManagers;
 
+use App\Filament\Actions\ExportAction;
+use App\Filament\Actions\ImportAction;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Tables\AircraftTable;
+use App\Models\Enums\ImportExportType;
 use Filament\Actions\CreateAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +22,18 @@ class AircraftRelationManager extends RelationManager
     {
         return AircraftTable::configure($table)
             ->headerActions([
+                ExportAction::make('export')
+                    ->arguments([
+                        'resourceTitle' => 'aircraft',
+                        'exportType'    => ImportExportType::AIRCRAFT,
+                    ]),
+
+                ImportAction::make('import')
+                    ->arguments([
+                        'resourceTitle' => 'aircraft',
+                        'importType'    => ImportExportType::AIRCRAFT,
+                    ]),
+
                 CreateAction::make()
                     ->icon(Heroicon::OutlinedPlusCircle),
             ]);
