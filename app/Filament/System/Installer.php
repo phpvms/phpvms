@@ -190,7 +190,7 @@ class Installer extends Page
                 $this->stream($this->stream, __('installer.migrations_completed').PHP_EOL);
 
                 // Let's generate a new key if the app is still using the one from the .env.example
-                if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=') {
+                if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=' || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
                     $output .= __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL;
                     $this->stream(to: $this->stream, content: __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL);
                 }
