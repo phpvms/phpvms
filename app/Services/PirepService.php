@@ -183,8 +183,6 @@ class PirepService extends Service
 
     /**
      * Create a new PIREP with some given fields
-     *
-     * @param array PirepFieldValue[] $field_values
      */
     public function create(Pirep $pirep, array $fields = []): Pirep
     {
@@ -390,11 +388,9 @@ class PirepService extends Service
             $pirep->route
         );
 
-        /**
-         * @var $point Navdata
-         */
         $point_count = 1;
         foreach ($route as $point) {
+            /** @var Navdata $point */
             $acars = new Acars();
             $acars->pirep_id = $pirep->id;
             $acars->type = AcarsType::ROUTE;
@@ -714,7 +710,9 @@ class PirepService extends Service
         $has_vmsacars = Module::find('VMSAcars');
 
         if ($has_vmsacars && $flight) {
-            $free_flights_disabled = DB::table('vmsacars_config')->find('disable_free_flights')?->value;
+            /** @var ?object $query */
+            $query = DB::table('vmsacars_config')->find('disable_free_flights');
+            $free_flights_disabled = $query?->value;
             // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
             if (get_truth_state($free_flights_disabled) == true) {

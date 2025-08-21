@@ -45,7 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int                             $flights
  * @property int|null                        $flight_time
  * @property int|null                        $transfer_time
- * @property string|null                     $avatar
+ * @property File|null                       $avatar
  * @property string|null                     $timezone
  * @property int|null                        $status
  * @property int|null                        $state
@@ -103,7 +103,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            whereActive($value)
  * @method static Builder<static>|User            whereAirlineId($value)
  * @method static Builder<static>|User            whereApiKey($value)
- * @method static Builder<static>|User            whereAvatar($value)
+ * @method static Builder<static>|User            whereAvatarUrl($value)
  * @method static Builder<static>|User            whereCallsign($value)
  * @method static Builder<static>|User            whereCountry($value)
  * @method static Builder<static>|User            whereCreatedAt($value)
@@ -209,7 +209,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         'notes',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'     => 'required',
         'email'    => 'required|email',
         'pilot_id' => 'required|integer',
@@ -316,14 +316,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function avatar(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
-                if (!array_key_exists('avatar', $attrs) || !$attrs['avatar']) {
+            get: function (mixed $value) {
+                if (!$value) {
                     return null;
                 }
 
-                return new File([
-                    'path' => $attrs['avatar'],
-                ]);
+                return new File(['path' => $value]);
             }
         );
     }
@@ -347,7 +345,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function resolveAvatarUrl()
     {
-        /** @var File $avatar */
+        /** @var ?File $avatar */
         $avatar = $this->avatar;
         if (empty($avatar)) {
             return $this->gravatar();

@@ -8,6 +8,7 @@ use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class AcarsRepository extends Repository
 {
@@ -47,10 +48,9 @@ class AcarsRepository extends Repository
      * Get all of the PIREPS that are in-progress, and then
      * get the latest update for those flights
      *
-     * @param  int   $live_time Age in hours of the oldest flights to show
-     * @return Pirep
+     * @param int $live_time Age in hours of the oldest flights to show
      */
-    public function getPositions($live_time = 0)
+    public function getPositions(int $live_time = 0): Collection
     {
         $with = [
             'aircraft',

@@ -51,10 +51,8 @@ class Role extends SpatieRole
 
     /**
      * Validation rules
-     *
-     * @var array
      */
-    public static $rules = [
+    public static array $rules = [
         'name'       => 'required',
         'guard_name' => 'required',
     ];

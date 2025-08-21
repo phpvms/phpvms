@@ -23,6 +23,9 @@ class AirlineFinanceTable extends TableWidget
 
     protected static ?string $pollingInterval = null;
 
+    /**
+     * @param JournalTransaction $record
+     */
     public function getTableRecordKey(Model|array $record): string
     {
         return $record->transaction_group;

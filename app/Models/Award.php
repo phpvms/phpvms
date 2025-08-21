@@ -66,7 +66,7 @@ class Award extends Model
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',

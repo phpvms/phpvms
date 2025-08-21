@@ -43,7 +43,7 @@ class FlightFieldValue extends Model
         'value',
     ];
 
-    public static $rules = [];
+    public static array $rules = [];
 
     /**
      * When setting the name attribute, also set the slug

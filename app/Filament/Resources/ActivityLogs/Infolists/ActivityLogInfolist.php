@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ActivityLogs\Infolists;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -23,7 +24,9 @@ class ActivityLogInfolist
 
                         TextEntry::make('causer_id')
                             ->formatStateUsing(function (Activity $record): string {
-                                if (class_basename($record->causer_type) === 'User') {
+                                if ($record->causer_type === User::class) {
+                                    assert($record->causer instanceof User);
+
                                     return $record->causer_id.' | '.$record->causer->name_private;
                                 }
 

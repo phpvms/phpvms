@@ -39,7 +39,7 @@ class UserFieldValue extends Model
         'value',
     ];
 
-    public static $rules = [];
+    public static array $rules = [];
 
     /**
      * Return related field's name along with field values

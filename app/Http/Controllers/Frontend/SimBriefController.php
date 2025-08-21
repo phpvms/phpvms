@@ -382,7 +382,7 @@ class SimBriefController
     public function cancel(Request $request): RedirectResponse
     {
         $sb = SimBrief::find($request->id);
-        if (!$sb) {
+        if ($sb) {
             $sb->delete();
         }
 

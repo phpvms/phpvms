@@ -87,9 +87,9 @@ class RegisterController extends Controller
             'hubs_only'  => setting('pilots.home_hubs_only'),
             'invite'     => $invite ?? null,
             'captcha'    => [
-                'enabled'    => setting('captcha.enabled', env('CAPTCHA_ENABLED', false)),
-                'site_key'   => setting('captcha.site_key', env('CAPTCHA_SITE_KEY')),
-                'secret_key' => setting('captcha.secret_key', env('CAPTCHA_SECRET_KEY')),
+                'enabled'    => setting('captcha.enabled', false),
+                'site_key'   => setting('captcha.site_key', ''),
+                'secret_key' => setting('captcha.secret_key', ''),
             ],
         ]);
     }
@@ -123,13 +123,13 @@ class RegisterController extends Controller
         /*
          * Validation for hcaptcha
          */
-        $captcha_enabled = setting('captcha.enabled', env('CAPTCHA_ENABLED', false));
+        $captcha_enabled = setting('captcha.enabled', false);
         if ($captcha_enabled === true) {
             $rules['h-captcha-response'] = [
                 'required',
                 function ($attribute, $value, $fail) {
                     $response = $this->httpClient->form_post('https://hcaptcha.com/siteverify', [
-                        'secret'   => setting('captcha.secret_key', env('CAPTCHA_SECRET_KEY')),
+                        'secret'   => setting('captcha.secret_key', ''),
                         'response' => $value,
                     ]);
 
@@ -146,8 +146,6 @@ class RegisterController extends Controller
 
     /**
      * Get a validator for an incoming registration request.
-     *
-     * @param array $opts
      *
      * @throws Exception
      * @throws RuntimeException

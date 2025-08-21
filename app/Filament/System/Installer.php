@@ -36,6 +36,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 use Prettus\Validator\Exceptions\ValidatorException;
 
+/**
+ * @property-read FilamentSchema $form
+ */
 class Installer extends Page
 {
     protected static ?string $slug = 'install';

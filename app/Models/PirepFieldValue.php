@@ -46,7 +46,7 @@ class PirepFieldValue extends Model
         'source',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 
@@ -65,8 +65,6 @@ class PirepFieldValue extends Model
 
     /**
      * If it was filled in from ACARS, then it's read only
-     *
-     * @return bool
      */
     public function readOnly(): Attribute
     {

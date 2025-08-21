@@ -44,7 +44,7 @@ class UserOAuthToken extends Model
         'expires_at',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'user_id'       => 'required|integer',
         'provider'      => 'required|string',
         'token'         => 'required|string',

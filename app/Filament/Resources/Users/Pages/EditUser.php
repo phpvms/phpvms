@@ -35,9 +35,11 @@ class EditUser extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['name'] = $this->record->name;
-        $data['email'] = $this->record->email;
-        $data['transfer_time'] = $this->record->transfer_time / 60;
+        if ($this->record instanceof User) {
+            $data['name'] = $this->record->name;
+            $data['email'] = $this->record->email;
+            $data['transfer_time'] = $this->record->transfer_time / 60;
+        }
 
         return $data;
     }

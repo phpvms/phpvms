@@ -17,7 +17,7 @@ class $CLASS$ extends Model
 
     ];
 
-    public static $rules = [
+    public static array $rules = [
 
     ];
 }

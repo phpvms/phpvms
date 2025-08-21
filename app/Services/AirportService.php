@@ -157,11 +157,12 @@ class AirportService extends Service
         $geotools = new Geotools();
         $start = new Coordinate([$from->lat, $from->lon]);
         $end = new Coordinate([$to->lat, $to->lon]);
-        $dist = $geotools->distance()->setFrom($start)->setTo($end);
+        /** @var \League\Geotools\Distance\Distance $dist */
+        $dist = $geotools->distance()->setFrom($start)->setTo($end)->in('mi');
 
         // Convert into a Distance object
         try {
-            $distance = new Distance($dist->in('mi')->greatCircle(), 'mi');
+            $distance = new Distance($dist->greatCircle(), 'mi');
 
             return $distance;
         } catch (NonNumericValue $e) {

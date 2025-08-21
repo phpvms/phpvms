@@ -55,7 +55,7 @@ class Typerating extends Model
     ];
 
     // Validation
-    public static $rules = [
+    public static array $rules = [
         'name'        => 'required',
         'type'        => 'required',
         'description' => 'nullable',

@@ -75,8 +75,6 @@ class ModuleService extends Service
 
     /**
      * Get all of the modules from database but make sure they also exist on disk
-     *
-     * @return object
      */
     public function getAllModules(): array
     {
@@ -85,9 +83,8 @@ class ModuleService extends Service
 
         /** @var Module $module */
         foreach ($moduleList as $module) {
-            /** @var \Nwidart\Modules\Module $moduleInstance */
             $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-            if (empty($moduleInstance)) {
+            if (!$moduleInstance) {
                 continue;
             }
 
@@ -109,9 +106,8 @@ class ModuleService extends Service
             return false;
         }
 
-        /** @var \Nwidart\Modules\Module $moduleInstance */
         $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-        if (empty($moduleInstance)) {
+        if (!$moduleInstance) {
             return false;
         }
 

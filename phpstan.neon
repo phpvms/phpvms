@@ -1,8 +1,24 @@
-parameters:
-  autoload_files:
-    #- %currentWorkingDirectory%/_ide_helper.php
-  ignoreErrors:
-    - '#PHPDoc tag(.*)#'
-    - '#Access to an undefined property App\\Models(.*)#'
 includes:
-  - vendor/weebly/phpstan-laravel/extension.neon
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 10 is the highest level
+    level: 2
+
+    ignoreErrors:
+
+        # PHPStan is not able to understand the pivot attributes at the moment
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z]+#'
+        - '#Access to an undefined property App\\Models\\[a-zA-Z]+::\$pivot#'
+
+        # Eloquent Builder methods are not documented on repositories
+        - '#Call to an undefined method App\\Repositories\\[a-zA-Z]+Repository::[a-zA-Z]+\(\)#'
+#        - '#PHPDoc tag @var#'
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php

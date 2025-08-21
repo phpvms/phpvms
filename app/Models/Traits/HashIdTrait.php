@@ -10,7 +10,7 @@ trait HashIdTrait
     /**
      * @throws HashidsException
      */
-    final protected static function createNewHashId(): string
+    final public static function createNewHashId(): string
     {
         return Utils::generateNewId();
     }

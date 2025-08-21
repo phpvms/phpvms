@@ -46,7 +46,7 @@ class PirepField extends Model
         'pirep_source',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'        => 'required',
         'description' => 'nullable',
     ];

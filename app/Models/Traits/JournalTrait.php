@@ -20,8 +20,6 @@ trait JournalTrait
 
     /**
      * Morph to Journal.
-     *
-     * @return mixed
      */
     public function journal(): MorphOne
     {

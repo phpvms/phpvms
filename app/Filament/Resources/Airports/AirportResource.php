@@ -70,11 +70,17 @@ class AirportResource extends Resource
         return ['name', 'icao', 'location'];
     }
 
+    /**
+     * @param Airport $record
+     */
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name;
     }
 
+    /**
+     * @param Airport $record
+     */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [

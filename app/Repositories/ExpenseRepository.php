@@ -34,6 +34,8 @@ class ExpenseRepository extends Repository implements CacheableInterface
             ['airline_id', '=', null],
         ];
 
+        $ref_model_type = null;
+
         if ($ref_model) {
             $ref_model_type = \is_object($ref_model) ? \get_class($ref_model) : $ref_model;
             if ($ref_model) {
@@ -53,7 +55,7 @@ class ExpenseRepository extends Repository implements CacheableInterface
                 'airline_id' => $airline_id,
             ];
 
-            if ($ref_model) {
+            if ($ref_model_type) {
                 $where['ref_model'] = $ref_model_type;
             }
 
