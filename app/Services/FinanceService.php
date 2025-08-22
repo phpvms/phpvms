@@ -34,14 +34,10 @@ class FinanceService extends Service
         $expense = new Expense($attrs);
 
         if ($model instanceof Model) {
-            $expense->ref_model = get_class($model);
-
-            // In case it's a generic expense not tied to a specific instance
-            if (!empty($model->id)) {
-                $expense->ref_model_id = $model->id;
-            }
+            $expense->ref_model_type = get_class($model);
+            $expense->ref_model_id = $model->id;
         } else {
-            $expense->ref_model = Expense::class;
+            $expense->ref_model_type = Expense::class;
         }
 
         if ($airline_id !== null && $airline_id !== 0) {

@@ -126,7 +126,7 @@ class Journal extends Model
     {
         return $this
             ->transactions()
-            ->where('ref_model', \get_class($object))
+            ->where('ref_model_type', \get_class($object))
             ->where('ref_model_id', $object->id);
     }
 

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Traits\HashIdTrait;
-use App\Models\Traits\ReferenceTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -17,7 +16,7 @@ use Illuminate\Support\Str;
  * @property string|null                     $path
  * @property bool                            $public
  * @property int                             $download_count
- * @property string|null                     $ref_model
+ * @property string|null                     $ref_model_type
  * @property string|null                     $ref_model_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -37,8 +36,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
  *
  * @mixin \Eloquent
@@ -46,7 +45,6 @@ use Illuminate\Support\Str;
 class File extends Model
 {
     use HashIdTrait;
-    use ReferenceTrait;
 
     public $table = 'files';
 
@@ -61,7 +59,7 @@ class File extends Model
         'disk',
         'path',
         'public',
-        'ref_model',
+        'ref_model_type',
         'ref_model_id',
     ];
 

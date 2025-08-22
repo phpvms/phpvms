@@ -8,7 +8,6 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Traits\ReferenceTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string                          $currency
  * @property string|null                     $memo
  * @property array<array-key, mixed>|null    $tags
- * @property string|null                     $ref_model
+ * @property string|null                     $ref_model_type
  * @property string|null                     $ref_model_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -39,8 +38,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereJournalId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereMemo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction wherePostDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModelId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTags($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTransactionGroup($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereUpdatedAt($value)
@@ -50,7 +49,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class JournalTransaction extends Model
 {
     use HasFactory;
-    use ReferenceTrait;
 
     protected $table = 'journal_transactions';
 
@@ -64,7 +62,7 @@ class JournalTransaction extends Model
         'currency',
         'memo',
         'tags',
-        'ref_model',
+        'ref_model_type',
         'ref_model_id',
         'post_date',
     ];

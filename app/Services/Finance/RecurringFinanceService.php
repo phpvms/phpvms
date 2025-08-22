@@ -5,6 +5,7 @@ namespace App\Services\Finance;
 use App\Contracts\Service;
 use App\Models\Aircraft;
 use App\Models\Airline;
+use App\Models\Airport;
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 use App\Models\Journal;
@@ -55,27 +56,19 @@ class RecurringFinanceService extends Service
      */
     protected function getMemoAndGroup(Expense $expense): array
     {
-        $klass = 'Expense';
-        if ($expense->ref_model) {
-            $ref = explode('\\', $expense->ref_model);
-            $klass = end($ref);
-            $obj = $expense->getReferencedObject();
-        }
-
-        if (empty($obj)) {
+        if (!$expense->ref_model) {
             return [null, null];
         }
 
-        if ($klass === 'Airport') {
+        if ($expense->ref_model instanceof Airport) {
             $memo = "Airport Expense: {$expense->name} ({$expense->ref_model_id})";
             $transaction_group = "Airport: {$expense->ref_model_id}";
-        } elseif ($klass === 'Subfleet') {
+        } elseif ($expense->ref_model instanceof Subfleet) {
             $memo = "Subfleet Expense: {$expense->name}";
             $transaction_group = "Subfleet: {$expense->name}";
-        } elseif ($klass === 'Aircraft') {
-            /** @var Aircraft $obj */
-            $memo = "Aircraft Expense: {$expense->name} ({$obj->name})";
-            $transaction_group = "Aircraft: {$expense->name} ({$obj->name}-{$obj->registration})";
+        } elseif ($expense->ref_model instanceof Aircraft) {
+            $memo = "Aircraft Expense: {$expense->name} ({$expense->ref_model->name})";
+            $transaction_group = "Aircraft: {$expense->name} ({$expense->ref_model->name}-{$expense->ref_model->registration})";
         } else {
             $memo = "Expense: {$expense->name}";
             $transaction_group = "Expense: {$expense->name}";
@@ -113,9 +106,9 @@ class RecurringFinanceService extends Service
                 // Has this expense already been charged? Check
                 // against this specific journal, on today
                 $w = [
-                    'journal_id'   => $journal->id,
-                    'ref_model'    => Expense::class,
-                    'ref_model_id' => $expense->id,
+                    'journal_id'     => $journal->id,
+                    'ref_model_type' => Expense::class,
+                    'ref_model_id'   => $expense->id,
                 ];
 
                 $ref = explode('\\', $expense->ref_model);

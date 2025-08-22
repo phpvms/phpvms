@@ -16,7 +16,7 @@ trait FilesTrait
         return $this->morphMany(
             File::class,
             'files',  // overridden by the next two anyway
-            'ref_model',
+            'ref_model_type',
             'ref_model_id'
         );
     }
