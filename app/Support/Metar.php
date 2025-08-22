@@ -270,23 +270,23 @@ class Metar implements ArrayAccess
     /*
      * Trends time codes.
      */
-    private static $trends_flag_codes = [
+    /*private static $trends_flag_codes = [
         'BECMG' => 'expected to arise soon',
         'TEMPO' => 'expected to arise temporarily',
         'INTER' => 'expected to arise intermittent',
         'PROV'  => 'provisional forecast',
         'CNL'   => 'cancelled forecast',
         'NIL'   => 'nil forecast',
-    ];
+    ];*/
 
     /*
      * Trends time codes.
      */
-    private static $trends_time_codes = [
+    /*private static $trends_time_codes = [
         'AT' => 'at',
         'FM' => 'from',
         'TL' => 'until',
-    ];
+    ];*/
 
     /*
      * Interpretation of compass degrees codes.
@@ -601,15 +601,11 @@ class Metar implements ArrayAccess
 
     /**
      * Sets the report text to parameter in result array.
-     *
-     * @param string $separator
      */
-    private function set_result_report($parameter, $report, $separator = ';')
+    private function set_result_report(string $parameter, string $report, string $separator = ';')
     {
         $this->result[$parameter] .= $separator.' '.$report;
-        if ($this->result[$parameter] !== null) {
-            $this->result[$parameter] = ucfirst(ltrim($this->result[$parameter], ' '.$separator));
-        }
+        $this->result[$parameter] = ucfirst(ltrim($this->result[$parameter], ' '.$separator));
     }
 
     /**
@@ -777,7 +773,7 @@ class Metar implements ArrayAccess
             }
 
             // Speed variations (gust speed)
-            if (isset($found[4]) && (isset($found[4]) && ($found[4] !== '' && $found[4] !== '0'))) {
+            if ($found[4] !== '') {
                 $this->set_result_value('wind_gust_speed', $this->convert_speed($found[4], $unit));
             }
         }
@@ -862,14 +858,14 @@ class Metar implements ArrayAccess
             $prefix = '';
 
             // ICAO visibility (in meters)
-            if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
+            if (isset($found[2]) && $found[2] !== '') {
                 $visibility = $this->createDistance((int) $found[2], 'm');
             } else {
-                if (isset($found[3]) && (isset($found[3]) && ($found[3] !== '' && $found[3] !== '0'))) {
+                if (isset($found[3]) && $found[3] !== '') {
                     $prefix = 'Less than ';
                 }
 
-                if (isset($found[7]) && (isset($found[7]) && ($found[7] !== '' && $found[7] !== '0'))) {
+                if (isset($found[7]) && $found[7] !== '') {
                     $visibility = (int) $found[4] + (int) $found[6] / (int) $found[7];
                 } else {
                     $visibility = (int) $found[4];
@@ -880,10 +876,8 @@ class Metar implements ArrayAccess
                     $unit = 'mi';
                 } elseif ($units === 'M') {
                     $unit = 'm';
-                } elseif ($units === 'KM') {
-                    $unit = 'km';
                 } else {
-                    $unit = $units;
+                    $unit = 'km';
                 }
 
                 $visibility = $this->createDistance($visibility, $unit);
@@ -931,7 +925,7 @@ class Metar implements ArrayAccess
         $meters = $this->createDistance((int) $found[1], 'm');
         $this->set_result_value('visibility_min', $meters);
 
-        if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
+        if (isset($found[2]) && $found[2] !== '') {
             $this->set_result_value('visibility_min_direction', $found[2]);
         }
 
@@ -970,7 +964,7 @@ class Metar implements ArrayAccess
 
         $unit = 'meter';
         $report_unit = 'm';
-        if (isset($found[6]) && $found[6] === 'FT') {
+        if ($found[7] === 'FT') {
             $unit = 'feet';
             $report_unit = 'nmi';
         }
@@ -986,45 +980,39 @@ class Metar implements ArrayAccess
         ];
 
         // Runway past tendency
-        if (isset($found[8], self::$rvr_tendency_codes[$found[8]])) {
+        if (isset(self::$rvr_tendency_codes[$found[8]])) {
             $observed['tendency'] = $found[8];
         }
 
         // Runway visual range
-        if (isset($found[6])) {
-            if (isset($found[4]) && ($found[4] !== '' && $found[4] !== '0')) {
-                $observed['interval_min'] = $this->createDistance($found[4], $unit);
-                $observed['interval_max'] = $this->createDistance($found[6], $unit);
-                if (isset($found[5]) && ($found[5] !== '' && $found[5] !== '0')) {
-                    $observed['variable_prefix'] = $found[5];
-                }
-            } else {
-                $observed['variable'] = $this->createDistance($found[6], $unit);
+        if ($found[4] !== '') {
+            $observed['interval_min'] = $this->createDistance($found[4], $unit);
+            $observed['interval_max'] = $this->createDistance($found[6], $unit);
+            if ($found[5] !== '') {
+                $observed['variable_prefix'] = $found[5];
             }
+        } else {
+            $observed['variable'] = $this->createDistance($found[6], $unit);
         }
 
         // Runway visual range report
-        if (isset($observed['runway']) && ($observed['runway'] !== '' && $observed['runway'] !== '0')) {
-            $report = [];
-            if ($observed['variable'] instanceof Distance) {
-                $report[] = $observed['variable'][$report_unit].$report_unit;
-            } elseif ($observed['interval_min'] instanceof Distance && $observed['interval_max'] instanceof Distance) {
-                if (isset(self::$rvr_prefix_codes[$observed['variable_prefix']])) {
-                    $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
-                        self::$rvr_prefix_codes[$observed['variable_prefix']].' that '.
-                        $observed['interval_max'][$report_unit].' '.$report_unit;
-                } else {
-                    $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
-                        $observed['interval_max'][$report_unit].$report_unit;
-                }
-            }
-
-            if ($observed['tendency'] !== null && isset(self::$rvr_tendency_codes[$observed['tendency']])) {
-                $report[] = 'and '.self::$rvr_tendency_codes[$observed['tendency']];
-            }
-
-            $observed['report'] = ucfirst(implode(' ', $report));
+        $report = [];
+        if ($observed['variable'] instanceof Distance) {
+            $report[] = $observed['variable'][$report_unit].$report_unit;
+        } elseif (isset(self::$rvr_prefix_codes[$observed['variable_prefix']])) {
+            $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
+                self::$rvr_prefix_codes[$observed['variable_prefix']].' that '.
+                $observed['interval_max'][$report_unit].' '.$report_unit;
+        } else {
+            $report[] = 'varying from a min. of '.$observed['interval_min'][$report_unit].$report_unit.' until a max. of '.
+                $observed['interval_max'][$report_unit].$report_unit;
         }
+
+        if ($observed['tendency'] !== null && isset(self::$rvr_tendency_codes[$observed['tendency']])) {
+            $report[] = 'and '.self::$rvr_tendency_codes[$observed['tendency']];
+        }
+
+        $observed['report'] = ucfirst(implode(' ', $report));
 
         $this->set_result_group('runways_visual_range', $observed);
 
@@ -1077,12 +1065,12 @@ class Metar implements ArrayAccess
         ];
 
         // Clear skies or no observation
-        if (isset($found[2]) && (isset($found[2]) && ($found[2] !== '' && $found[2] !== '0'))) {
+        if (isset($found[2]) && $found[2] !== '' ) {
             if (isset(self::$cloud_codes[$found[2]])) {
                 $observed['amount'] = $found[2];
             }
         } // Cloud cover observed
-        elseif (isset($found[5]) && (isset($found[5]) && ($found[5] !== '' && $found[5] !== '0')) && is_numeric($found[5])) {
+        elseif (isset($found[5]) && $found[5] !== '' && is_numeric($found[5])) {
             $observed['height'] = $this->createAltitude($found[5] * 100, 'feet');
 
             // Cloud height
@@ -1095,7 +1083,7 @@ class Metar implements ArrayAccess
             }
         }
         // Type
-        if (isset($found[6], self::$cloud_type_codes[$found[6]]) && (isset($found[6]) && ($found[6] !== '' && $found[6] !== '0')) && $found[4] !== 'VV') {
+        if (isset($found[6], self::$cloud_type_codes[$found[6]]) && $found[4] !== 'VV') {
             $observed['type'] = $found[6];
         }
 
@@ -1167,7 +1155,7 @@ class Metar implements ArrayAccess
         $this->calculate_wind_chill($temperature['F']);
 
         // Dew point
-        if (isset($found[2]) && $found[2] !== '' && $found[2] !== 'XX') {
+        if (isset($found[2]) && $found[2] !== 'XX') {
             $dew_point_c = (int) str_replace('M', '-', $found[2]);
             $dew_point = $this->createTemperature($dew_point_c, 'C');
             $rh = round(100 * (((112 - (0.1 * $temperature_c) + $dew_point_c) / (112 + (0.9 * $temperature_c))) ** 8));
@@ -1419,7 +1407,7 @@ class Metar implements ArrayAccess
             'time'  => null,
         ];
 
-        if (isset($found[3]) && ($found[3] !== '' && $found[3] !== '0')) {
+        if ($found[3] !== '') {
             $forecast['day'] = (int) $found[3];
         }
 
@@ -1459,6 +1447,7 @@ class Metar implements ArrayAccess
         // 10
         // Ignore trends
         return (bool) preg_match($r, $part, $found);
+        /*
         // Detects TAF on report
         if ($this->part <= 4) {
             $this->set_result_value('taf', true);
@@ -1559,7 +1548,7 @@ class Metar implements ArrayAccess
                 foreach ($debug as $message) {
                     $this->set_debug('Recursion: '.$message);
                 }
-            }*/
+            }*/ /*end of commented code
 
             // Process parse errors
             if ($errors = $parser->errors()) {
@@ -1599,6 +1588,7 @@ class Metar implements ArrayAccess
         $this->set_result_group('trends', $trend);
 
         return true;
+        */
     }
 
     /**
@@ -1654,9 +1644,7 @@ class Metar implements ArrayAccess
         ];
 
         // Intensity
-        if ($found[1] !== null) {
-            $observed['intensity'] = $found[1];
-        }
+        $observed['intensity'] = $found[1];
 
         foreach (\array_slice($found, 1) as $code) {
             // Types
@@ -1677,12 +1665,11 @@ class Metar implements ArrayAccess
         // Build recent weather report
         if ($observed['characteristics'] !== null || $observed['types'] !== null) {
             $report = [];
-            if ($observed['intensity'] !== null) {
-                if ($observed['intensity'] === 'VC') {
-                    $report[] = self::$weather_intensity_codes[$observed['intensity']].',';
-                } else {
-                    $report[] = self::$weather_intensity_codes[$observed['intensity']];
-                }
+
+            if ($observed['intensity'] === 'VC') {
+                $report[] = self::$weather_intensity_codes[$observed['intensity']].',';
+            } else {
+                $report[] = self::$weather_intensity_codes[$observed['intensity']];
             }
 
             if ($observed['characteristics'] !== null) {
@@ -1737,7 +1724,7 @@ class Metar implements ArrayAccess
      */
     private function calculate_wind_chill($temperature_f): void
     {
-        if ($temperature_f < 51 && $this->result['wind_speed'] && $this->result['wind_speed'] !== 0) {
+        if ($temperature_f < 51 && $this->result['wind_speed'] instanceof Distance) {
             $windspeed = $this->result['wind_speed']->toUnit('mph');
             if ($windspeed > 3) {
                 $chill_f = 35.74 + 0.6215 * $temperature_f - 35.75 * ($windspeed ** 0.16);

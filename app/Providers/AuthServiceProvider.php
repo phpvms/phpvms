@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
-use Filament\FilamentManager;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -43,7 +42,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Activity::class, ActivityPolicy::class);
 
         Gate::guessPolicyNamesUsing(function (string $modelClass) {
-            if (filament() instanceof FilamentManager && filament()->isServing()) {
+            if (filament()->isServing()) {
                 // try to resolve policies under Filament
                 $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass).'Policy';
 

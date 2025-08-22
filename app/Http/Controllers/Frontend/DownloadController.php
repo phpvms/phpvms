@@ -108,9 +108,7 @@ class DownloadController extends Controller
             return redirect()->back();
         }
 
-        /**
-         * @var File $file
-         */
+        /** @var ?File $file */
         $file = File::find($id);
         if (!$file) {
             Flash::error('File doesn\'t exist');

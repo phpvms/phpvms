@@ -50,7 +50,7 @@ class FareService extends Service
             /**
              * See if there's match with the provided fares, so we can copy the information over
              *
-             * @var PirepFare $pirep_fare
+             * @var ?PirepFare $pirep_fare
              */
             $pirep_fare = $fares->where('fare_id', $fare->id)->first();
 

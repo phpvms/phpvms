@@ -64,8 +64,8 @@ class SimBrief extends Model
         'updated_at',
     ];
 
-    /** @var SimBriefXML Store a cached version of the XML object */
-    private $xml_instance;
+    /** @var ?SimBriefXML Store a cached version of the XML object */
+    private ?SimBriefXML $xml_instance = null;
 
     /**
      * Return a SimpleXML object of the $ofp_xml
@@ -77,13 +77,17 @@ class SimBrief extends Model
                 return null;
             }
 
-            if (!$this->xml_instance) {
+            if (!$this->xml_instance instanceof \App\Models\SimBriefXML) {
                 $xml = simplexml_load_string(
                     $this->attributes['ofp_xml'],
                     SimBriefXML::class
                 );
 
-                return ($xml instanceof SimBriefXML) ? $xml : null;
+                if ($xml instanceof SimBriefXML) {
+                    $this->xml_instance = $xml;
+                } else {
+                    return null;
+                }
             }
 
             return $this->xml_instance;

@@ -32,8 +32,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
-use function is_array;
-
 class UserService extends Service
 {
     public function __construct(
@@ -101,7 +99,7 @@ class UserService extends Service
         $user->save();
 
         // Attach any additional roles
-        if ($roles !== [] && is_array($roles)) {
+        if ($roles !== []) {
             foreach ($roles as $role) {
                 $this->addUserToRole($user, $role);
             }

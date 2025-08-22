@@ -74,9 +74,9 @@ class OAuthController extends Controller
             abort(404);
         }
 
-        /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+        /** @var ?\Laravel\Socialite\Two\AbstractProvider $driver */
         $driver = Socialite::driver($provider);
-        /** @var \Laravel\Socialite\Two\User $providerUser */
+        /** @var ?\Laravel\Socialite\Two\User $providerUser */
         $providerUser = $driver->user();
 
         if (!$providerUser) {

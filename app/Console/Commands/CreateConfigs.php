@@ -5,8 +5,6 @@ namespace App\Console\Commands;
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
 use App\Services\Installer\MigrationService;
-use App\Services\Installer\SeederService;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -20,8 +18,6 @@ class CreateConfigs extends Command
     protected $description = 'Create the config files';
 
     public function __construct(
-        private readonly DatabaseSeeder $databaseSeeder,
-        private readonly SeederService $seederSvc,
         private readonly MigrationService $migrationSvc,
     ) {
         parent::__construct();

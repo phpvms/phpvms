@@ -96,7 +96,7 @@ class PirepController extends Controller
      * Check if a PIREP is cancelled
      *
      *
-     * @throws PirepCancelled
+     * @throws PirepError
      */
     protected function checkReadOnly(Pirep $pirep): void
     {

@@ -77,7 +77,7 @@ class Utils
      */
     public static function installerEnabled()
     {
-        /** @var \Nwidart\Modules\Module $installer */
+        /** @var ?\Nwidart\Modules\Module $installer */
         $installer = Module::find('installer');
         if (!$installer) {
             return false;

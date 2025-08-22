@@ -169,11 +169,7 @@ class Time implements Arrayable
         return $minutes / 60;
     }
 
-    /**
-     * @param  null      $minutes
-     * @return float|int
-     */
-    public static function hoursToMinutes($hours, $minutes = null)
+    public static function hoursToMinutes(int|float $hours, int|float|null $minutes = null): int
     {
         $total = (int) $hours * 60;
         if ($minutes) {

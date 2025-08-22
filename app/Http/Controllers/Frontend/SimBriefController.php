@@ -52,7 +52,7 @@ class SimBriefController
         $flight_id = $request->input('flight_id');
         $aircraft_id = $request->input('aircraft_id');
 
-        /** @var Flight $flight */
+        /** @var ?Flight $flight */
         $flight = $this->flightRepo->with(['airline', 'arr_airport', 'dpt_airport', 'fares', 'subfleets'])->find($flight_id);
 
         if (!$flight) {
@@ -300,7 +300,7 @@ class SimBriefController
         /** @var User $user */
         $user = Auth::user();
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');

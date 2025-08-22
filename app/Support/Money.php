@@ -28,7 +28,6 @@ class Money
      * @return MoneyBase
      *
      * @throws UnexpectedValueException
-     * @throws InvalidArgumentException
      */
     public static function create($amount)
     {

@@ -131,7 +131,7 @@ class RecurringFinanceService extends Service
 
                 // Determine if this object actually belongs to this airline or not
                 if ($type === 'Subfleet' || $type === 'Aircraft') {
-                    /** @var Aircraft|Subfleet $ref_model */
+                    /** @var Aircraft|Subfleet|null $ref_model */
                     $ref_model = $expense->ref_model()->with('airline')->first();
                     if ($ref_model?->airline?->id !== $journal->morphed_id) {
                         Log::info(

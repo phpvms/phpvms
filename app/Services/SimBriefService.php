@@ -129,7 +129,6 @@ class SimBriefService extends Service
             }
         } catch (GuzzleException $e) {
             Log::error('Simbrief HTTP Error: '.$e->getMessage());
-            dd($e);
 
             return null;
         }

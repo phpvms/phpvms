@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
@@ -41,7 +40,6 @@ class RegisterController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly HttpClient $httpClient,
         private readonly UserService $userService,
     ) {

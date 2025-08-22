@@ -180,7 +180,7 @@ class ImporterDB
 
         $rows = [];
         $result = $this->readRowsOffset($table, $this->batchSize, $offset, $order_by, $fields);
-        if ($result === false || $result === null) {
+        if (!$result instanceof \PDOStatement) {
             return [];
         }
 
@@ -196,13 +196,10 @@ class ImporterDB
     }
 
     /**
-     * @param  string                  $table
-     * @param  int                     $limit  Number of rows to read
-     * @param  int                     $offset Where to start from
-     * @param  string                  $fields
-     * @return false|PDOStatement|null
+     * @param int $limit  Number of rows to read
+     * @param int $offset Where to start from
      */
-    public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')
+    public function readRowsOffset(string $table, int $limit, int $offset, string $order_by, array|string $fields = '*'): ?PDOStatement
     {
         if (is_array($fields)) {
             $fields = implode(',', $fields);
@@ -232,8 +229,6 @@ class ImporterDB
             if (strpos($e->getMessage(), 'server has gone away') !== false) {
                 $this->connect();
             }
-        } catch (Exception $e) {
-            Log::error('Error readRowsOffset: '.$e->getMessage());
         }
 
         return null;

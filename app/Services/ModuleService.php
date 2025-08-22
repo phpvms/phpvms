@@ -83,6 +83,7 @@ class ModuleService extends Service
 
         /** @var Module $module */
         foreach ($moduleList as $module) {
+            /** @var ?\Nwidart\Modules\Module $moduleInstance */
             $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
             if (!$moduleInstance) {
                 continue;
@@ -106,6 +107,7 @@ class ModuleService extends Service
             return false;
         }
 
+        /** @var ?\Nwidart\Modules\Module $moduleInstance */
         $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
         if (!$moduleInstance) {
             return false;
@@ -312,10 +314,6 @@ class ModuleService extends Service
         $modules = [];
 
         $manifests = (new Filesystem())->glob("{$path}/module.json");
-
-        if (!is_array($manifests)) {
-            $manifests = [];
-        }
 
         foreach ($manifests as $manifest) {
             $name = Json::make($manifest)->get('name');

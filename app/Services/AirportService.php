@@ -36,7 +36,7 @@ class AirportService extends Service
         }
 
         $raw_metar = $this->metarProvider->metar($icao);
-        if ($raw_metar && $raw_metar !== '') {
+        if ($raw_metar !== '' && $raw_metar !== '0') {
             return new Metar($raw_metar);
         }
 
@@ -54,7 +54,7 @@ class AirportService extends Service
         }
 
         $raw_taf = $this->metarProvider->taf($icao);
-        if ($raw_taf && $raw_taf !== '') {
+        if ($raw_taf !== '' && $raw_taf !== '0') {
             return new Metar($raw_taf, true);
         }
 

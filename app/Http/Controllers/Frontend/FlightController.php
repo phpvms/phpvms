@@ -10,7 +10,6 @@ use App\Models\Flight;
 use App\Models\Typerating;
 use App\Models\User;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
@@ -33,7 +32,6 @@ class FlightController extends Controller
 {
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
