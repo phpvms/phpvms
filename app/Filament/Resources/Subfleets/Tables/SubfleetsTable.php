@@ -79,6 +79,7 @@ class SubfleetsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                        /** @var Collection<int, Subfleet> $records */
                         $records->each(fn (Subfleet $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));

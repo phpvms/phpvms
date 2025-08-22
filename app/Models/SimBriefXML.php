@@ -22,7 +22,7 @@ class SimBriefXML extends SimpleXMLElement
 
         $fl = (int) $this->alternate->cruise_altitude / 100;
 
-        return str_pad($fl, 3, '0', STR_PAD_LEFT);
+        return str_pad((string) $fl, 3, '0', STR_PAD_LEFT);
     }
 
     /**

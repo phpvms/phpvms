@@ -371,14 +371,11 @@ class Metar implements ArrayAccess
     /**
      * Shortcut to call
      *
-     * @param  string $taf
      * @return mixed
      */
-    public static function parse($metar, $taf = '')
+    public static function parse(string $metar, bool $taf = false)
     {
-        $mtr = new static($metar, $taf);
-
-        return $mtr->parse_all();
+        return (new static($metar, $taf))->parse_all();
     }
 
     /**
@@ -702,7 +699,7 @@ class Metar implements ArrayAccess
             // Take one month, if the observed day is greater than the current day
             $month = $day > date('j') ? date('n') - 1 : date('n');
             // Get observed time from a METAR/TAF part
-            $observed_time = mktime($hour, $minute, 0, $month, $day, date('Y'));
+            $observed_time = mktime($hour, $minute, 0, $month, $day, (int) date('Y'));
             $this->set_observed_date($observed_time);
         }
 
@@ -986,13 +983,13 @@ class Metar implements ArrayAccess
 
         // Runway visual range
         if ($found[4] !== '') {
-            $observed['interval_min'] = $this->createDistance($found[4], $unit);
-            $observed['interval_max'] = $this->createDistance($found[6], $unit);
+            $observed['interval_min'] = $this->createDistance((float) $found[4], $unit);
+            $observed['interval_max'] = $this->createDistance((float) $found[6], $unit);
             if ($found[5] !== '') {
                 $observed['variable_prefix'] = $found[5];
             }
         } else {
-            $observed['variable'] = $this->createDistance($found[6], $unit);
+            $observed['variable'] = $this->createDistance((float) $found[6], $unit);
         }
 
         // Runway visual range report
@@ -1108,7 +1105,7 @@ class Metar implements ArrayAccess
             $report = implode(' ', $report);
             $report_ft = implode(' ', $report_ft);
 
-            $observed['report'] = $this->createAltitude($report_ft, 'ft');
+            $observed['report'] = $this->createAltitude((float) $report_ft, 'ft');
             $observed['report'] = ucfirst($report);
             $observed['report_ft'] = ucfirst($report_ft);
 

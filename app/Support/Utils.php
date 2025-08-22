@@ -23,7 +23,7 @@ class Utils
         }
 
         $hashids = new Hashids(uniqid(), $length);
-        $mt = str_replace('.', '', microtime(true));
+        $mt = str_replace('.', '', (string) microtime(true));
 
         return $hashids->encode($mt);
     }

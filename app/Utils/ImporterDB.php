@@ -164,14 +164,8 @@ class ImporterDB
 
     /**
      * Read all the rows in a table, but read them in a batched manner
-     *
-     * @param  string $table        The name of the table
-     * @param  string $order_by     Column to order by
-     * @param  int    $start_offset
-     * @param  string $fields
-     * @return array
      */
-    public function readRows($table, $order_by = 'id', $start_offset = 0, $fields = '*')
+    public function readRows(string $table, string $order_by = 'id', int $start_offset = 0, array|string $fields = '*'): array
     {
         $this->connect();
 

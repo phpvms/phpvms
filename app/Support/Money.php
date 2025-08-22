@@ -221,13 +221,9 @@ class Money
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      */
-    public function multiply($amount)
+    public function multiply(int|float $amount)
     {
-        if (!($amount instanceof self)) {
-            $amount = static::createFromAmount($amount);
-        }
-
-        $this->money = $this->money->multiply($amount->money);
+        $this->money = $this->money->multiply($amount);
 
         return $this;
     }

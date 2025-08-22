@@ -298,7 +298,7 @@ class UserService extends Service
      * based on their current Rank and/or by Type Rating
      *
      *
-     * @return \Illuminate\Database\Eloquent\Collection<Subfleet>
+     * @return \Illuminate\Database\Eloquent\Collection<int, Subfleet>
      */
     public function getAllowableSubfleets($user, bool $paginate = false)
     {

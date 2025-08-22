@@ -20,6 +20,7 @@ use App\Services\ModuleService;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -125,7 +126,8 @@ class FlightController extends Controller
             ->get();
 
         // Build collection with type codes and labels
-        $flight_types = collect('');
+        /** @var Collection<string, string> $flight_types */
+        $flight_types = collect();
         foreach ($usedtypes as $ftype) {
             $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
         }

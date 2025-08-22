@@ -12,6 +12,7 @@ use App\Repositories\AirlineRepository;
 use App\Repositories\JournalRepository;
 use App\Support\Dates;
 use App\Support\Money;
+use Carbon\Carbon;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 class FinanceService extends Service
@@ -56,11 +57,6 @@ class FinanceService extends Service
      *
      * creditToJournal($user->journal, new Money(1000), $pirep, 'Payment', 'pirep', 'payment');
      *
-     * @param  \Illuminate\Database\Eloquent\Model $reference
-     * @param  string                              $memo
-     * @param  string                              $transaction_group
-     * @param  string|array                        $tag
-     * @param  string                              $post_date
      * @return mixed
      *
      * @throws ValidatorException
@@ -68,11 +64,11 @@ class FinanceService extends Service
     public function creditToJournal(
         Journal $journal,
         Money $amount,
-        $reference,
-        $memo,
-        $transaction_group,
-        $tag,
-        $post_date = null
+        Model $reference,
+        string $memo,
+        string $transaction_group,
+        string|array $tag,
+        Carbon|string|null $post_date = null
     ) {
         return $this->journalRepo->post(
             $journal,
@@ -80,7 +76,7 @@ class FinanceService extends Service
             null,
             $reference,
             $memo,
-            null,
+            $post_date,
             $transaction_group,
             $tag
         );
@@ -90,11 +86,6 @@ class FinanceService extends Service
      * Charge some expense for a given PIREP to the airline its file against
      * E.g, some amount for expenses or ground handling fees, etc.
      *
-     * @param  \Illuminate\Database\Eloquent\Model $reference
-     * @param  string                              $memo
-     * @param  string                              $transaction_group
-     * @param  string|array                        $tag
-     * @param  string                              $post_date
      * @return mixed
      *
      * @throws ValidatorException
@@ -102,11 +93,11 @@ class FinanceService extends Service
     public function debitFromJournal(
         Journal $journal,
         Money $amount,
-        $reference,
-        $memo,
-        $transaction_group,
-        $tag,
-        $post_date = null
+        Model $reference,
+        string $memo,
+        string $transaction_group,
+        string|array $tag,
+        string|Carbon|null $post_date = null
     ) {
         return $this->journalRepo->post(
             $journal,
