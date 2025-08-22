@@ -74,7 +74,7 @@ class PageForm
 
                         TextInput::make('link')
                             ->label(__('common.link'))
-                            ->url()
+                            ->string()
                             ->requiredIf('type', PageType::LINK)
                             ->visibleJs(<<<'JS'
                                     $get('type') == '1'

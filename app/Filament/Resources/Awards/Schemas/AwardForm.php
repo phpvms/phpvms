@@ -36,7 +36,7 @@ class AwardForm
 
                         TextInput::make('image_url')
                             ->label(__('common.image_url'))
-                            ->url(),
+                            ->string(),
 
                         RichEditor::make('description')
                             ->label(__('common.description'))
