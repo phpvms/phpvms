@@ -86,7 +86,6 @@ class Money
      * @param mixed $amount
      *
      * @throws UnexpectedValueException
-     * @throws InvalidArgumentException
      */
     public function __construct($amount)
     {
