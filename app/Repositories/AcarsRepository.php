@@ -8,6 +8,7 @@ use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class AcarsRepository extends Repository
@@ -75,7 +76,7 @@ class AcarsRepository extends Repository
     }
 
     /**
-     * @return $this
+     * @return Builder<Pirep>
      */
     public function getAllAcarsPoints()
     {

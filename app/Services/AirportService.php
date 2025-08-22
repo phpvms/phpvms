@@ -135,12 +135,8 @@ class AirportService extends Service
 
     /**
      * Calculate the distance from one airport to another
-     *
-     * @param  string   $fromIcao
-     * @param  string   $toIcao
-     * @return Distance
      */
-    public function calculateDistance($fromIcao, $toIcao)
+    public function calculateDistance(string $fromIcao, string $toIcao): ?Distance
     {
         $from = $this->airportRepo->find($fromIcao, ['lat', 'lon']);
         $to = $this->airportRepo->find($toIcao, ['lat', 'lon']);

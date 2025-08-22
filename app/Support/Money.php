@@ -96,10 +96,8 @@ class Money
 
     /**
      * Return the amount of currency in smallest denomination
-     *
-     * @return string
      */
-    public function getAmount()
+    public function getAmount(): float|int
     {
         return $this->money->getAmount();
     }

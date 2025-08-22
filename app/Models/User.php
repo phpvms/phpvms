@@ -103,7 +103,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            whereActive($value)
  * @method static Builder<static>|User            whereAirlineId($value)
  * @method static Builder<static>|User            whereApiKey($value)
- * @method static Builder<static>|User            whereAvatarUrl($value)
+ * @method static Builder<static>|User            whereAvatar($value)
  * @method static Builder<static>|User            whereCallsign($value)
  * @method static Builder<static>|User            whereCountry($value)
  * @method static Builder<static>|User            whereCreatedAt($value)

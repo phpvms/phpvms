@@ -76,11 +76,14 @@ class SimBrief extends Model
             if (empty($this->attributes['ofp_xml'])) {
                 return null;
             }
+
             if (!$this->xml_instance) {
-                $this->xml_instance = simplexml_load_string(
+                $xml = simplexml_load_string(
                     $this->attributes['ofp_xml'],
                     SimBriefXML::class
                 );
+
+                return ($xml instanceof SimBriefXML) ? $xml : null;
             }
 
             return $this->xml_instance;

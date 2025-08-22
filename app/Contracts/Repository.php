@@ -4,6 +4,7 @@ namespace App\Contracts;
 
 use Exception;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -28,10 +29,7 @@ abstract class Repository extends BaseRepository
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function validate($values)
+    public function validate($values): bool|MessageBag
     {
         $validator = Validator::make($values, $this->model::$rules);
         if ($validator->fails()) {

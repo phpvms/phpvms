@@ -19,6 +19,7 @@ use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
 use App\Services\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -220,7 +221,7 @@ class FlightController extends Controller
     /**
      * Show the flight information page
      */
-    public function show(string $id): View
+    public function show(string $id): View|RedirectResponse
     {
         $user = Auth::user();
         // Support retrieval of deleted relationships

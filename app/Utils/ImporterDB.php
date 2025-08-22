@@ -18,10 +18,7 @@ class ImporterDB
      */
     public $batchSize;
 
-    /**
-     * @var PDO
-     */
-    private $conn;
+    private ?PDO $conn;
 
     /**
      * @var string
@@ -66,7 +63,7 @@ class ImporterDB
 
     public function close()
     {
-        if ($this->conn) {
+        if ($this->conn instanceof \PDO) {
             $this->conn = null;
         }
     }

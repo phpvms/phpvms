@@ -13,10 +13,7 @@ class Time implements Arrayable
 
     public $minutes;
 
-    /**
-     * @return static
-     */
-    public static function init($minutes, $hours)
+    public static function init($minutes, $hours): self
     {
         return new self($minutes, $hours);
     }
@@ -77,7 +74,7 @@ class Time implements Arrayable
     /**
      * Get the instance as an array.
      */
-    public function toArray()
+    public function toArray(): float|int|array
     {
         return $this->getMinutes();
     }

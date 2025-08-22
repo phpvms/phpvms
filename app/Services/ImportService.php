@@ -52,7 +52,7 @@ class ImportService extends Service
     }
 
     /**
-     * @return Reader
+     * @return ?Reader
      *
      * @throws ValidationException
      */

@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Models\Casts\DistanceCast;
 use App\Models\Enums\Days;
 use App\Models\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -72,48 +73,48 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $subfleets_count
  * @property-read \App\Models\User|null $user
  *
- * @method static \Database\Factories\FlightFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereAirlineId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereAltAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereArrAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereArrTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereCallsign($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDays($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDistance($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDptAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereDptTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereEndDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereEventId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereFlightType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereHasBid($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLoadFactor($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereLoadFactorVariance($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereNotes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereOwnerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereOwnerType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight wherePilotPay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRoute($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRouteCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereRouteLeg($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereScheduled($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereStartDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight whereVisible($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flight withoutTrashed()
+ * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Flight            newModelQuery()
+ * @method static Builder<static>|Flight            newQuery()
+ * @method static Builder<static>|Flight            onlyTrashed()
+ * @method static Builder<static>|Flight            query()
+ * @method static Builder<static>|Flight            sortable($defaultParameters = null)
+ * @method static Builder<static>|Flight            whereActive($value)
+ * @method static Builder<static>|Flight            whereAirlineId($value)
+ * @method static Builder<static>|Flight            whereAltAirportId($value)
+ * @method static Builder<static>|Flight            whereArrAirportId($value)
+ * @method static Builder<static>|Flight            whereArrTime($value)
+ * @method static Builder<static>|Flight            whereCallsign($value)
+ * @method static Builder<static>|Flight            whereCreatedAt($value)
+ * @method static Builder<static>|Flight            whereDays($value)
+ * @method static Builder<static>|Flight            whereDeletedAt($value)
+ * @method static Builder<static>|Flight            whereDistance($value)
+ * @method static Builder<static>|Flight            whereDptAirportId($value)
+ * @method static Builder<static>|Flight            whereDptTime($value)
+ * @method static Builder<static>|Flight            whereEndDate($value)
+ * @method static Builder<static>|Flight            whereEventId($value)
+ * @method static Builder<static>|Flight            whereFlightNumber($value)
+ * @method static Builder<static>|Flight            whereFlightTime($value)
+ * @method static Builder<static>|Flight            whereFlightType($value)
+ * @method static Builder<static>|Flight            whereHasBid($value)
+ * @method static Builder<static>|Flight            whereId($value)
+ * @method static Builder<static>|Flight            whereLevel($value)
+ * @method static Builder<static>|Flight            whereLoadFactor($value)
+ * @method static Builder<static>|Flight            whereLoadFactorVariance($value)
+ * @method static Builder<static>|Flight            whereNotes($value)
+ * @method static Builder<static>|Flight            whereOwnerId($value)
+ * @method static Builder<static>|Flight            whereOwnerType($value)
+ * @method static Builder<static>|Flight            wherePilotPay($value)
+ * @method static Builder<static>|Flight            whereRoute($value)
+ * @method static Builder<static>|Flight            whereRouteCode($value)
+ * @method static Builder<static>|Flight            whereRouteLeg($value)
+ * @method static Builder<static>|Flight            whereScheduled($value)
+ * @method static Builder<static>|Flight            whereStartDate($value)
+ * @method static Builder<static>|Flight            whereUpdatedAt($value)
+ * @method static Builder<static>|Flight            whereUserId($value)
+ * @method static Builder<static>|Flight            whereVisible($value)
+ * @method static Builder<static>|Flight            withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Flight            withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -212,10 +213,10 @@ class Flight extends Model
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
      *
-     * @param  Days[] $days List of the enumerated values
-     * @return Flight
+     * @param  Days[]          $days List of the enumerated values
+     * @return Builder<Flight>
      */
-    public static function findByDays(array $days)
+    public static function findByDays(array $days): Builder
     {
         /** @noinspection DynamicInvocationViaScopeResolutionInspection */
         $flights = self::where('active', true);

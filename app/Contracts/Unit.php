@@ -40,10 +40,12 @@ abstract class Unit implements ArrayAccess
     /**
      * Factory method for creating a new unit type
      *
+     * @param  mixed  $value If instance of self, returns it; otherwise, returns new static
+     * @return static
      *
      * @throws Exception
      */
-    public static function make(mixed $value, string $unit): self
+    public static function make(mixed $value, string $unit): static|self
     {
         if ($value instanceof self) {
             return $value;

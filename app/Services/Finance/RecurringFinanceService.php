@@ -31,7 +31,7 @@ class RecurringFinanceService extends Service
      * to every airline journal
      *
      *
-     * @return Journal[]
+     * @return Collection<int, Journal>
      */
     protected function findJournals(Expense $expense)
     {

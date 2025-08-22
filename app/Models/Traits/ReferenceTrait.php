@@ -2,14 +2,14 @@
 
 namespace App\Models\Traits;
 
-use App\Contracts\Model;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Trait ReferenceTrait
  *
- * @property Model $ref_model
- * @property mixed $ref_model_id
+ * @property Model|string|class-string $ref_model
+ * @property mixed                     $ref_model_id
  */
 trait ReferenceTrait
 {

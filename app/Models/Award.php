@@ -87,7 +87,7 @@ class Award extends Model
      * Get the referring object
      *
      *
-     * @return null
+     * @return ?object
      */
     public function getReference(?self $award = null, ?User $user = null)
     {

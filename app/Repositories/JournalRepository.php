@@ -31,11 +31,8 @@ class JournalRepository extends Repository implements CacheableInterface
 
     /**
      * Return a Y-m-d string for the post date
-     *
-     *
-     * @return string
      */
-    public function formatPostDate(?Carbon $date = null)
+    public function formatPostDate(?Carbon $date = null): ?string
     {
         if (!$date instanceof Carbon) {
             return null;

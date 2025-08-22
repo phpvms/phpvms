@@ -355,7 +355,7 @@ class PirepFinanceService extends Service
                 // force into percent mode
                 $multiplier = $pirep->aircraft->subfleet->ground_handling_multiplier.'%';
                 // do the math and calculate the amount
-                $expense->amount = Math::applyAmountOrPercent($expense->amount, $multiplier);
+                $expense->amount = (int) Math::applyAmountOrPercent($expense->amount, $multiplier);
             }
 
             $debit = Money::createFromAmount($expense->amount);
