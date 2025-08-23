@@ -19,10 +19,11 @@ use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 class Maintenance extends Page
 {
@@ -173,8 +174,8 @@ class Maintenance extends Page
             ->label(__('filament.maintenance_clear_cache'))
             ->action(function () {
                 $calls = [
-                    'optimize:clear',
                     'cache:clear',
+                    'optimize:clear',
                 ];
 
                 $theme_cache_file = base_path().'/bootstrap/cache/themes.php';
@@ -188,7 +189,7 @@ class Maintenance extends Page
                 }
 
                 foreach ($calls as $call) {
-                    Artisan::call($call);
+                    Process::run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
                 }
 
                 Notification::make()
@@ -206,7 +207,7 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedTrash)
             ->label(__('filament.maintenance_flush_failed_jobs'))
             ->action(function () {
-                Artisan::call('queue:flush');
+                Process::run([$this->getPhpBinary(), base_path('artisan'), 'queue:flush'])->throw();
 
                 Notification::make()
                     ->title(__('filament.maintenance_failed_jobs_flushed'))
@@ -237,7 +238,7 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function () {
-                Artisan::call('optimize');
+                Process::run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
 
                 Notification::make()
                     ->title(__('filament.maintenance_app_optimized'))
@@ -258,5 +259,20 @@ class Maintenance extends Page
             ->label($upgradePending ? __('filament.maintenance_update_database') : __('filament.maintenance_database_is_up_to_date'))
             ->disabled(!$upgradePending)
             ->url('/'); // TODO: link to the system page
+    }
+
+    private function getPhpBinary(): string
+    {
+        $finder = new PhpExecutableFinder();
+        $php_path = $finder->find(false);
+        $php = str_replace('-fpm', '', $php_path);
+
+        // If this is the cgi version of the exec, add this arg, otherwise there's
+        // an error with no arguments existing
+        if (str_contains($php, '-cgi')) {
+            $php .= ' -d register_argc_argv=On';
+        }
+
+        return $php;
     }
 }
