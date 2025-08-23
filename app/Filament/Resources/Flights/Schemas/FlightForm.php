@@ -93,13 +93,14 @@ class FlightForm
                         ->schema([
                             DatePicker::make('start_date')
                                 ->label(__('common.start_date'))
+                                ->live()
                                 ->native(false)
                                 ->minDate(now()),
 
                             DatePicker::make('end_date')
                                 ->label(__('common.end_date'))
                                 ->native(false)
-                                ->minDate(fn (Get $get): Carbon => $get('start_date') ?? now()),
+                                ->minDate(fn (Get $get): Carbon|string => $get('start_date') ?? now()),
 
                             Select::make('days')
                                 ->label(__('common.days_text'))
