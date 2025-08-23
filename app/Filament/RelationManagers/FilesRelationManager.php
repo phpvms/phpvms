@@ -39,7 +39,7 @@ class FilesRelationManager extends RelationManager
 
                 TextInput::make('url')
                     ->label('URL')
-                    ->string()
+                    ->url()
                     ->requiredWithout('file'),
 
                 FileUpload::make('file')
