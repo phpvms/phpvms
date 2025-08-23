@@ -55,7 +55,8 @@ class Finances extends Page
                 Select::make('airline_id')
                     ->native(false)
                     ->label(__('common.airline'))
-                    ->options(app(AirlineRepository::class)->selectBoxList()),
+                    ->searchable()
+                    ->options(app(AirlineRepository::class)->selectBoxList(order_by: 'name')),
             ])
                 ->columnSpanFull()
                 ->columns(3),

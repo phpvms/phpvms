@@ -26,18 +26,15 @@ class AirlineRepository extends Repository implements CacheableInterface
 
     /**
      * Return the list of airline formatted for a select box
-     *
-     * @param bool $add_blank
-     * @param bool $only_active
      */
-    public function selectBoxList($add_blank = false, $only_active = true): array
+    public function selectBoxList(bool $add_blank = false, bool $only_active = true, string $order_by = 'id'): array
     {
         $retval = [];
         $where = [
             'active' => $only_active,
         ];
 
-        $items = $this->findWhere($where);
+        $items = $this->orderBy($order_by)->findWhere($where);
 
         if ($add_blank) {
             $retval[''] = '';
