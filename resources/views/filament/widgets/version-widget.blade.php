@@ -6,7 +6,8 @@
                 rel="noopener noreferrer"
                 target="_blank"
             >
-                <img src="{{ public_asset('/assets/img/logo_white_no_bg.svg') }}" style="height: calc(var(--spacing)*10); /* h-10 */" alt="phpvms Logo" />
+                <img src="{{ public_asset('/assets/img/logo_white_no_bg.svg') }}" class="h-10 hidden dark:block" alt="phpVMS Logo" />
+                <img src="{{ public_asset('/assets/img/logo_blue_no_bg.svg') }}" class="h-10 block dark:hidden" alt="phpVMS Logo" />
             </a>
 
             <p class="fi-filament-info-widget-version">
