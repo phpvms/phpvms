@@ -7,6 +7,7 @@ use App\Services\ImportService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
@@ -26,10 +27,23 @@ class ImportAction extends Action
 
         $this->label('Import from CSV');
 
-        $this->schema([
-            FileUpload::make('importFile')->acceptedFileTypes(['text/csv'])->disk('local')->directory('import'),
-            Toggle::make('deletePrevious')->label('Delete Existing Data')->default(false),
-        ]);
+        $this->schema(function (array $arguments): array {
+            $schema = [
+                FileUpload::make('importFile')->acceptedFileTypes(['text/csv'])->disk('local')->directory('import'),
+            ];
+
+            if (isset($arguments['importType']) && $arguments['importType'] === ImportExportType::FLIGHTS) {
+                $schema[] = Select::make('deletePrevious')->options([
+                    'none' => 'None',
+                    'all'  => 'All',
+                    'core' => 'Core',
+                ]);
+            } else {
+                $schema[] = Toggle::make('deletePrevious')->label('Delete Existing Data')->default(false);
+            }
+
+            return $schema;
+        });
 
         $this->action(function (array $data, array $arguments): void {
             if (!isset($arguments['resourceTitle']) || !$arguments['importType']) {
