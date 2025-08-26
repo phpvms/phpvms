@@ -103,7 +103,8 @@ class FlightController extends Controller
                 ->pluck('flight_id')
                 ->toArray();
             // Get flight_id's of open (non restricted) flights
-            $open_flights = Flight::withCount('subfleets')->whereNull('user_id')->having('subfleets_count', 0)->pluck('id')->toArray();
+            // Each flight must have at least one subfleet assigned to it
+            $open_flights = Flight::whereNull('user_id')->has('subfleets')->pluck('id')->toArray();
             $allowed_flights = array_merge($user_flights, $open_flights);
             // Build aircraft icao codes by considering allowed subfleets
             $icao_codes = Aircraft::whereIn('subfleet_id', $user_subfleets)->groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
