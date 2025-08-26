@@ -75,7 +75,12 @@ class RecurringFinanceService extends Service
             $memo = "Subfleet Expense: {$expense->name}";
             $transaction_group = "Subfleet: {$expense->name}";
         } elseif ($klass === 'Aircraft') {
-            /** @var Aircraft $obj */
+            if (!isset($obj) || !$obj instanceof Aircraft) {
+                Log::warning('Could not find referenced object for expense id '.$expense->id);
+
+                return [null, null];
+            }
+
             $memo = "Aircraft Expense: {$expense->name} ({$obj->name})";
             $transaction_group = "Aircraft: {$expense->name} ({$obj->name}-{$obj->registration})";
         } else {
