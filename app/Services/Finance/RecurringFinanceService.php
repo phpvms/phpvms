@@ -56,13 +56,13 @@ class RecurringFinanceService extends Service
     protected function getMemoAndGroup(Expense $expense): array
     {
         $klass = 'Expense';
-        if ($expense->ref_model) {
+        if ($expense->ref_model && $expense->ref_model !== Expense::class) {
             $ref = explode('\\', $expense->ref_model);
             $klass = end($ref);
             $obj = $expense->getReferencedObject();
         }
 
-        if (empty($obj)) {
+        if ($expense->ref_model && $expense->ref_model !== Expense::class && $obj === null) {
             return [null, null];
         }
 
