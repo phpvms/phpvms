@@ -62,7 +62,7 @@ class RecurringFinanceService extends Service
             $obj = $expense->getReferencedObject();
         }
 
-        if ($expense->ref_model && $expense->ref_model !== Expense::class && $obj === null) {
+        if ($expense->ref_model && $expense->ref_model !== Expense::class && isset($obj) && $obj === null) {
             return [null, null];
         }
 
