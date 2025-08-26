@@ -60,10 +60,12 @@ class RecurringFinanceService extends Service
             $ref = explode('\\', $expense->ref_model);
             $klass = end($ref);
             $obj = $expense->getReferencedObject();
-        }
 
-        if ($expense->ref_model && $expense->ref_model !== Expense::class && isset($obj) && $obj === null) {
-            return [null, null];
+            if (!$obj) {
+                Log::warning('Could not find referenced object for expense id '.$expense->id);
+
+                return [null, null];
+            }
         }
 
         if ($klass === 'Airport') {
