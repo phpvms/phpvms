@@ -72,7 +72,7 @@ class FlightController extends Controller
         }
 
         // default restrictions on the flights shown. Handle search differently
-        if (setting('pilots.only_flights_from_current')) {
+        if (setting('pilots.only_show_flights_from_current')) {
             $where['dpt_airport_id'] = $user->curr_airport_id;
         }
 
