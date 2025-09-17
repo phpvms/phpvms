@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
 use App\Models\Flight;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class FlightPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_flight');
+        return $authUser->can('ViewAny:Flight');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Flight $flight): bool
+    public function view(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('view_flight');
+        return $authUser->can('View:Flight');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_flight');
+        return $authUser->can('Create:Flight');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Flight $flight): bool
+    public function update(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('update_flight');
+        return $authUser->can('Update:Flight');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Flight $flight): bool
+    public function delete(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('delete_flight');
+        return $authUser->can('Delete:Flight');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('delete_any_flight');
+        return $authUser->can('Restore:Flight');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Flight $flight): bool
+    public function forceDelete(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('force_delete_flight');
+        return $authUser->can('ForceDelete:Flight');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_flight');
+        return $authUser->can('ForceDeleteAny:Flight');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Flight $flight): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_flight');
+        return $authUser->can('RestoreAny:Flight');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Flight $flight): bool
     {
-        return $user->can('restore_any_flight');
+        return $authUser->can('Replicate:Flight');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Flight $flight): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_flight');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_flight');
+        return $authUser->can('Reorder:Flight');
     }
 }
