@@ -48,7 +48,6 @@ class SeederService extends Service
     {
         $this->syncAllSettings();
         $this->syncAllModules();
-        // $this->syncAllCustomPermissions();
 
         // Seed base
         $this->databaseSvc->seed_from_yaml_file(database_path('seeders/base.yml'));
@@ -112,27 +111,6 @@ class SeederService extends Service
             }
 
             $this->addSetting($setting['key'], $setting);
-        }
-    }
-
-    public function syncAllCustomPermissions(): void
-    {
-        $data = file_get_contents(database_path('/seeders/custom_permissions.yml'));
-        $yml = Yaml::parse($data);
-        foreach ($yml as $setting) {
-            $name = trim($setting['name']);
-
-            if ($name === '') {
-                continue;
-            }
-
-            // Check if the permission already exists
-            $exists = Permission::where('name', $name)->exists();
-            if ($exists) {
-                continue;
-            }
-
-            $this->addCustomPermission($name);
         }
     }
 
