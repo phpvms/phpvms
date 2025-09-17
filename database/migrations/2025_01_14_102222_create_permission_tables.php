@@ -11,6 +11,14 @@ return new class() extends Migration
      */
     public function up(): void
     {
+        // Since we can't migrate from laratrust to spatie we delete everything
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permissions');
+
+        // Now we create the spatie/laravel-permissions tables
         $teams = config('permission.teams');
         $tableNames = config('permission.table_names');
         $columnNames = config('permission.column_names');
@@ -114,6 +122,13 @@ return new class() extends Migration
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
+
+        // We just add a disable_activity_check field for the roles
+        Schema::table($tableNames['roles'], static function (Blueprint $table): void {
+            $table->boolean('disable_activity_checks')
+                ->default(false)
+                ->after('guard_name');
+        });
     }
 
     /**
