@@ -170,7 +170,7 @@ class Flight extends Model
 
     public static array $rules = [
         'airline_id'           => 'required|exists:airlines,id',
-        'flight_number'        => 'required',
+        'flight_number'        => 'required|integer|max_digits:4',
         'callsign'             => 'string|max:4|nullable',
         'route_code'           => 'nullable',
         'route_leg'            => 'nullable',
