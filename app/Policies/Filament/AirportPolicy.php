@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
 use App\Models\Airport;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class AirportPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_airport');
+        return $authUser->can('ViewAny:Airport');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Airport $airport): bool
+    public function view(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('view_airport');
+        return $authUser->can('View:Airport');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_airport');
+        return $authUser->can('Create:Airport');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Airport $airport): bool
+    public function update(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('update_airport');
+        return $authUser->can('Update:Airport');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Airport $airport): bool
+    public function delete(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('delete_airport');
+        return $authUser->can('Delete:Airport');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('delete_any_airport');
+        return $authUser->can('Restore:Airport');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Airport $airport): bool
+    public function forceDelete(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('force_delete_airport');
+        return $authUser->can('ForceDelete:Airport');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_airport');
+        return $authUser->can('ForceDeleteAny:Airport');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Airport $airport): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_airport');
+        return $authUser->can('RestoreAny:Airport');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Airport $airport): bool
     {
-        return $user->can('restore_any_airport');
+        return $authUser->can('Replicate:Airport');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Airport $airport): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_airport');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_airport');
+        return $authUser->can('Reorder:Airport');
     }
 }
