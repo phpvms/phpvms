@@ -15,9 +15,8 @@ class Backups extends BaseBackups
 
     protected static ?int $navigationSort = 4;
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): \UnitEnum
     {
-        // TODO: send a PR to the main package to add support for Enums in navigation groups
-        return NavigationGroup::Developers->getLabel();
+        return NavigationGroup::Developers;
     }
 }
