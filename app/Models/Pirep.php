@@ -202,7 +202,7 @@ class Pirep extends Model
         'airline_id'     => 'required|exists:airlines,id',
         'aircraft_id'    => 'required|exists:aircraft,id',
         'event_id'       => 'nullable|numeric',
-        'flight_number'  => 'required',
+        'flight_number'  => 'required|integer|max_digits:4',
         'dpt_airport_id' => 'required',
         'arr_airport_id' => 'required',
         'block_fuel'     => 'nullable|numeric',
