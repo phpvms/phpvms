@@ -19,7 +19,7 @@ class UpdatePirepRequest extends FormRequest
         if ($action === 'save' || $action === 'cancel' || $action === 'delete') {
             return [
                 'airline_id'     => 'required|exists:airlines,id',
-                'flight_number'  => 'required',
+                'flight_number'  => 'required|integer|max_digits:4',
                 'dpt_airport_id' => 'required',
                 'arr_airport_id' => 'required',
             ];

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
@@ -165,17 +164,17 @@ class Subfleet extends Model
         return $this->belongsTo(Airline::class, 'airline_id');
     }
 
-    public function home(): HasOne
+    public function home(): BelongsTo
     {
-        return $this->hasOne(Airport::class, 'id', 'hub_id');
+        return $this->belongsTo(Airport::class, 'hub_id');
     }
 
     /**
      * @deprecated use home()
      */
-    public function hub(): HasOne
+    public function hub(): BelongsTo
     {
-        return $this->hasOne(Airport::class, 'id', 'hub_id');
+        return $this->home();
     }
 
     public function fares(): BelongsToMany
