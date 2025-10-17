@@ -90,7 +90,7 @@ class Updater extends Page
                 };
 
                 if (count($migrationsPending) !== 0) {
-                    if (function_exists('proc_open') && false) {
+                    if (function_exists('proc_open')) {
                         // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
                         $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
                     } else {
@@ -101,7 +101,7 @@ class Updater extends Page
                 $seederSvc->syncAllSeeds();
 
                 if (count($dataMigrationsPending) !== 0) {
-                    if (function_exists('proc_open') && false) {
+                    if (function_exists('proc_open')) {
                         // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
                         $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
                     } else {
@@ -111,7 +111,7 @@ class Updater extends Page
 
                 $this->stream(to: $this->stream, content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
 
-                if (function_exists('proc_open') && false) {
+                if (function_exists('proc_open')) {
                     // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
                     app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
                     app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
