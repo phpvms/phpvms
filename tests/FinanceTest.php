@@ -27,6 +27,7 @@ use App\Services\FleetService;
 use App\Services\PirepService;
 use App\Support\Math;
 use App\Support\Money;
+use Carbon\Carbon;
 use Exception;
 
 final class FinanceTest extends TestCase
@@ -1247,6 +1248,8 @@ final class FinanceTest extends TestCase
      */
     public function test_daily_expenses_are_applied()
     {
+        Carbon::setTestNow(now());
+
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
         $airline->initJournal(setting('units.currency', 'USD'));
@@ -1271,7 +1274,7 @@ final class FinanceTest extends TestCase
             'ref_model_type' => Expense::class,
             'ref_model_id'   => $expense->id,
             'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'      => now(),
+            'post_date'      => Carbon::getTestNow(),
         ]);
 
         $this->assertDatabaseHas('journal_transactions', [
@@ -1279,7 +1282,7 @@ final class FinanceTest extends TestCase
             'ref_model_type' => Expense::class,
             'ref_model_id'   => $expense->id,
             'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'      => now(),
+            'post_date'      => Carbon::getTestNow(),
         ]);
     }
 }
