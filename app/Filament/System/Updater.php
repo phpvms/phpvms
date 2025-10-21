@@ -6,16 +6,19 @@ use App\Filament\Infolists\Components\StreamEntry;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
+use App\Services\Installer\StreamedCommandsService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema as FilamentSchema;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Process\Process;
+
+use function Illuminate\Support\defer;
 
 class Updater extends Page
 {
@@ -87,38 +90,46 @@ class Updater extends Page
                 };
 
                 if (count($migrationsPending) !== 0) {
-                    $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
+                    if (function_exists('proc_open')) {
+                        // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+                        $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
+                    } else {
+                        $migrationSvc->runAllMigrations();
+                    }
                 }
 
                 $seederSvc->syncAllSeeds();
 
                 if (count($dataMigrationsPending) !== 0) {
-                    $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+                    if (function_exists('proc_open')) {
+                        // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+                        $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+                    } else {
+                        $migrationSvc->runAllDataMigrations();
+                    }
                 }
 
                 $this->stream(to: $this->stream, content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
 
-                $finder = new PhpExecutableFinder();
-                $php_path = $finder->find(false);
-                $php = str_replace('-fpm', '', $php_path);
+                if (function_exists('proc_open')) {
+                    // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+                    app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
+                    app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
+                } else {
+                    $this->stream($this->stream, PHP_EOL.__('installer.cache_build_background').PHP_EOL);
 
-                // If this is the cgi version of the exec, add this arg, otherwise there's
-                // an error with no arguments existing
-                if (str_contains($php, '-cgi')) {
-                    $php .= ' -d register_argc_argv=On';
-                }
+                    // Clearing the cache immediately sends the response, thus killing the request. So we defer it, it's executed at the end of the request in the background.
+                    defer(function () {
+                        Artisan::call('optimize:clear');
+                        $clearOutput = Artisan::output();
 
-                $artisan = base_path('artisan');
-                $commands = [
-                    [$php, $artisan, 'optimize:clear'],
-                    [$php, $artisan, 'optimize'],
-                ];
+                        Artisan::call('optimize');
+                        $optimizeOutput = Artisan::output();
 
-                foreach ($commands as $command) {
-                    $process = new Process($command);
-                    $process->setTimeout(120);
-                    $process->run(function (string $type, string $buffer) use ($streamCallback) {
-                        $streamCallback($buffer);
+                        // Combine both outputs for better logging
+                        $output = "Optimize:clear Output:\n".$clearOutput."\nOptimize Output:\n".$optimizeOutput;
+
+                        Log::info('Optimized cache successfully', ['output' => $output]);
                     });
                 }
 
