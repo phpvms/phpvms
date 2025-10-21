@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
 use App\Models\Page;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class PagePolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_page');
+        return $authUser->can('ViewAny:Page');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Page $page): bool
+    public function view(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('view_page');
+        return $authUser->can('View:Page');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_page');
+        return $authUser->can('Create:Page');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Page $page): bool
+    public function update(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('update_page');
+        return $authUser->can('Update:Page');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Page $page): bool
+    public function delete(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('delete_page');
+        return $authUser->can('Delete:Page');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('delete_any_page');
+        return $authUser->can('Restore:Page');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Page $page): bool
+    public function forceDelete(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('force_delete_page');
+        return $authUser->can('ForceDelete:Page');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_page');
+        return $authUser->can('ForceDeleteAny:Page');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Page $page): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_page');
+        return $authUser->can('RestoreAny:Page');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Page $page): bool
     {
-        return $user->can('restore_any_page');
+        return $authUser->can('Replicate:Page');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Page $page): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_page');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_page');
+        return $authUser->can('Reorder:Page');
     }
 }
