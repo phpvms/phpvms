@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
@@ -171,7 +170,7 @@ class Flight extends Model
 
     public static array $rules = [
         'airline_id'           => 'required|exists:airlines,id',
-        'flight_number'        => 'required',
+        'flight_number'        => 'required|integer|max_digits:4',
         'callsign'             => 'string|max:4|nullable',
         'route_code'           => 'nullable',
         'route_leg'            => 'nullable',
@@ -321,19 +320,19 @@ class Flight extends Model
         return $this->belongsTo(Airline::class, 'airline_id');
     }
 
-    public function dpt_airport(): HasOne
+    public function dpt_airport(): BelongsTo
     {
-        return $this->hasOne(Airport::class, 'id', 'dpt_airport_id');
+        return $this->belongsTo(Airport::class);
     }
 
-    public function arr_airport(): HasOne
+    public function arr_airport(): BelongsTo
     {
-        return $this->hasOne(Airport::class, 'id', 'arr_airport_id');
+        return $this->belongsTo(Airport::class);
     }
 
-    public function alt_airport(): HasOne
+    public function alt_airport(): BelongsTo
     {
-        return $this->hasOne(Airport::class, 'id', 'alt_airport_id');
+        return $this->belongsTo(Airport::class);
     }
 
     public function fares(): BelongsToMany
