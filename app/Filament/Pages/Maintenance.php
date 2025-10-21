@@ -19,11 +19,14 @@ use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Symfony\Component\Process\PhpExecutableFinder;
+
+use function Illuminate\Support\defer;
 
 class Maintenance extends Page
 {
@@ -188,8 +191,21 @@ class Maintenance extends Page
                     Log::debug($module_cache.' | '.$file);
                 }
 
-                foreach ($calls as $call) {
-                    Process::run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
+                if (function_exists('proc_open')) {
+                    foreach ($calls as $call) {
+                        Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                            ->run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
+                    }
+                } else {
+                    Artisan::call('cache:clear');
+
+                    // We have to defer it because it kills the livewire request, thus throwing errors.
+                    defer(function () {
+                        Artisan::call('optimize:clear');
+                        Artisan::call('filament:optimize-clear');
+
+                        Log::info('Clearing cache', [Artisan::output()]);
+                    });
                 }
 
                 Notification::make()
@@ -207,7 +223,11 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedTrash)
             ->label(__('filament.maintenance_flush_failed_jobs'))
             ->action(function () {
-                Process::run([$this->getPhpBinary(), base_path('artisan'), 'queue:flush'])->throw();
+                if (function_exists('proc_open')) {
+                    Process::run([$this->getPhpBinary(), base_path('artisan'), 'queue:flush'])->throw();
+                } else {
+                    Artisan::call('queue:flush');
+                }
 
                 Notification::make()
                     ->title(__('filament.maintenance_failed_jobs_flushed'))
@@ -238,7 +258,16 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function () {
-                Process::run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                if (function_exists('proc_open')) {
+                    Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                        ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                } else {
+                    // We have to defer it because it kills the livewire request, thus throwing errors.
+                    defer(function () {
+                        Artisan::call('optimize');
+                        Artisan::call('filament:optimize');
+                    });
+                }
 
                 Notification::make()
                     ->title(__('filament.maintenance_app_optimized'))
