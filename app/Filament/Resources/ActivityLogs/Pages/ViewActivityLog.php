@@ -11,6 +11,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Spatie\Activitylog\Models\Activity;
 
 class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
 {
@@ -64,7 +65,9 @@ class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
 
     public function getChangesRecords(): array
     {
-        $changes = $this->getRecord()->changes ?? [];
+        /** @var Activity $record */
+        $record = $this->getRecord();
+        $changes = $record->changes;
         $attributes = $changes['attributes'] ?? [];
         $oldValues = $changes['old'] ?? [];
 

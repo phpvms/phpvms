@@ -96,7 +96,7 @@ class PirepController extends Controller
      * Check if a PIREP is cancelled
      *
      *
-     * @throws PirepCancelled
+     * @throws PirepError
      */
     protected function checkReadOnly(Pirep $pirep): void
     {
@@ -297,7 +297,7 @@ class PirepController extends Controller
         // If there isn't, then just write the route data from the
         // route that's been posted from the PIREP
         $w = ['pirep_id' => $pirep->id, 'type' => AcarsType::ROUTE];
-        $count = Acars::where($w)->count(['id']);
+        $count = Acars::where($w)->count('id');
         if ($count === 0) {
             $this->pirepSvc->saveRoute($pirep);
         }

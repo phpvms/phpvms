@@ -3,9 +3,6 @@
 namespace App\Support\Modules;
 
 use Exception;
-use Illuminate\Config\Repository as Config;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -15,24 +12,12 @@ use Nwidart\Modules\Module;
 class DatabaseActivator implements ActivatorInterface
 {
     /**
-     * Laravel Filesystem instance
-     */
-    private Filesystem $files;
-
-    /**
-     * Laravel config instance
-     */
-    private Config $config;
-
-    /**
      * Array of modules activation statuses
      */
     private array $modulesStatuses;
 
-    public function __construct(Container $app)
+    public function __construct()
     {
-        $this->config = $app['config'];
-        $this->files = $app['files'];
         $this->modulesStatuses = $this->getModulesStatuses();
     }
 

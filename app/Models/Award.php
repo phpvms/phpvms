@@ -18,7 +18,7 @@ use Kyslik\ColumnSortable\Sortable;
  * @property string                          $name
  * @property string|null                     $description
  * @property string|null                     $image_url
- * @property string|null                     $ref_model
+ * @property string|null                     $ref_model_type
  * @property string|null                     $ref_model_params
  * @property int|null                        $active
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -41,8 +41,8 @@ use Kyslik\ColumnSortable\Sortable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereImageUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelParams($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
@@ -61,7 +61,7 @@ class Award extends Model
         'name',
         'description',
         'image_url',
-        'ref_model',
+        'ref_model_type',
         'ref_model_params',
         'active',
     ];
@@ -70,7 +70,7 @@ class Award extends Model
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',
-        'ref_model'        => 'required',
+        'ref_model_type'   => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
     ];
@@ -87,16 +87,16 @@ class Award extends Model
      * Get the referring object
      *
      *
-     * @return null
+     * @return ?object
      */
     public function getReference(?self $award = null, ?User $user = null)
     {
-        if (!$this->ref_model) {
+        if (!$this->ref_model_type) {
             return null;
         }
 
         try {
-            return new $this->ref_model($award, $user);
+            return new $this->ref_model_type($award, $user);
         } catch (Exception $e) {
             return null;
         }

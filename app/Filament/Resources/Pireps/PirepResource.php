@@ -36,7 +36,7 @@ class PirepResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return Pirep::where('state', PirepState::PENDING)->count() > 0
-            ? Pirep::where('state', PirepState::PENDING)->count()
+            ? (string) Pirep::where('state', PirepState::PENDING)->count()
             : null;
     }
 

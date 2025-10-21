@@ -88,7 +88,7 @@ class Finances extends Page
     {
         return $schema
             ->components([
-                ...(method_exists($this, 'getFiltersForm') ? [$this->getFiltersFormContentComponent()] : []),
+                $this->getFiltersFormContentComponent(),
                 $this->getWidgetsContentComponent(),
             ]);
     }

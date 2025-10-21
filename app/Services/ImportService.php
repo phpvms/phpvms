@@ -9,7 +9,6 @@ use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
-use App\Repositories\FlightRepository;
 use App\Services\ImportExport\AircraftImporter;
 use App\Services\ImportExport\AirportImporter;
 use App\Services\ImportExport\ExpenseImporter;
@@ -24,13 +23,6 @@ use League\Csv\Reader;
 
 class ImportService extends Service
 {
-    /**
-     * ImporterService constructor.
-     */
-    public function __construct(
-        private readonly FlightRepository $flightRepo
-    ) {}
-
     /**
      * Throw a validation error back up because it will automatically show
      * itself under the CSV file upload, and nothing special needs to be done
@@ -52,7 +44,7 @@ class ImportService extends Service
     }
 
     /**
-     * @return Reader
+     * @return ?Reader
      *
      * @throws ValidationException
      */

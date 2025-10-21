@@ -3,7 +3,6 @@
 namespace App\Services\Installer;
 
 use App\Contracts\Service;
-use App\Models\Permission;
 use App\Models\Setting;
 use App\Services\DatabaseService;
 use Carbon\Carbon;
@@ -11,8 +10,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Exceptions\PermissionAlreadyExists;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -152,11 +149,8 @@ class SeederService extends Service
      * Dynamically figure out the offset and the start number for a group.
      * This way we don't need to mess with how to order things
      * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on
-     *
-     * @param null $offset
-     * @param int  $start_offset
      */
-    private function addCounterGroup($name, $offset = null, $start_offset = 0): void
+    private function addCounterGroup(string $name, ?int $offset = null, int $start_offset = 0): void
     {
         if ($offset === null) {
             $group = DB::table('settings')
@@ -164,20 +158,22 @@ class SeederService extends Service
                 ->first();
 
             if ($group === null) {
-                $offset = (int) DB::table('settings')->max('offset');
+                $offset = DB::table('settings')->max('offset');
                 if ($offset === null) {
                     $offset = 0;
                     $start_offset = 1;
                 } else {
+                    $offset = (int) $offset;
                     $offset += 100;
                     $start_offset = $offset + 1;
                 }
             } else {
                 // Now find the number to start from
-                $start_offset = (int) DB::table('settings')->where('group', $name)->max('order');
+                $start_offset = DB::table('settings')->where('group', $name)->max('order');
                 if ($start_offset === null) {
                     $start_offset = $offset + 1;
                 } else {
+                    $start_offset = (int) $start_offset;
                     $start_offset++;
                 }
 
@@ -247,17 +243,5 @@ class SeederService extends Service
         }
 
         return false;
-    }
-
-    private function addCustomPermission(string $name): void
-    {
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        try {
-            Permission::create(['name' => $name]);
-        } catch (PermissionAlreadyExists $e) {
-            Log::info('Permission already exists: '.$name);
-        }
-
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

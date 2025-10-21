@@ -18,10 +18,7 @@ class ImporterDB
      */
     public $batchSize;
 
-    /**
-     * @var PDO
-     */
-    private $conn;
+    private ?PDO $conn;
 
     /**
      * @var string
@@ -66,7 +63,7 @@ class ImporterDB
 
     public function close()
     {
-        if ($this->conn) {
+        if ($this->conn instanceof \PDO) {
             $this->conn = null;
         }
     }
@@ -167,14 +164,8 @@ class ImporterDB
 
     /**
      * Read all the rows in a table, but read them in a batched manner
-     *
-     * @param  string $table        The name of the table
-     * @param  string $order_by     Column to order by
-     * @param  int    $start_offset
-     * @param  string $fields
-     * @return array
      */
-    public function readRows($table, $order_by = 'id', $start_offset = 0, $fields = '*')
+    public function readRows(string $table, string $order_by = 'id', int $start_offset = 0, array|string $fields = '*'): array
     {
         $this->connect();
 
@@ -183,7 +174,7 @@ class ImporterDB
 
         $rows = [];
         $result = $this->readRowsOffset($table, $this->batchSize, $offset, $order_by, $fields);
-        if ($result === false || $result === null) {
+        if (!$result instanceof \PDOStatement) {
             return [];
         }
 
@@ -199,13 +190,10 @@ class ImporterDB
     }
 
     /**
-     * @param  string                  $table
-     * @param  int                     $limit  Number of rows to read
-     * @param  int                     $offset Where to start from
-     * @param  string                  $fields
-     * @return false|PDOStatement|null
+     * @param int $limit  Number of rows to read
+     * @param int $offset Where to start from
      */
-    public function readRowsOffset($table, $limit, $offset, $order_by, $fields = '*')
+    public function readRowsOffset(string $table, int $limit, int $offset, string $order_by, array|string $fields = '*'): ?PDOStatement
     {
         if (is_array($fields)) {
             $fields = implode(',', $fields);
@@ -235,8 +223,6 @@ class ImporterDB
             if (strpos($e->getMessage(), 'server has gone away') !== false) {
                 $this->connect();
             }
-        } catch (Exception $e) {
-            Log::error('Error readRowsOffset: '.$e->getMessage());
         }
 
         return null;

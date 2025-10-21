@@ -23,7 +23,7 @@ class Utils
         }
 
         $hashids = new Hashids(uniqid(), $length);
-        $mt = str_replace('.', '', microtime(true));
+        $mt = str_replace('.', '', (string) microtime(true));
 
         return $hashids->encode($mt);
     }
@@ -77,7 +77,7 @@ class Utils
      */
     public static function installerEnabled()
     {
-        /** @var \Nwidart\Modules\Module $installer */
+        /** @var ?\Nwidart\Modules\Module $installer */
         $installer = Module::find('installer');
         if (!$installer) {
             return false;

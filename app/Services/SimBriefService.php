@@ -29,7 +29,7 @@ class SimBriefService extends Service
      * Check to see if the OFP exists server-side. If it does, download it and
      * cache it immediately
      *
-     * @param  string        $user_id      User who generated this
+     * @param  int           $user_id      User who generated this
      * @param  string        $ofp_id       The SimBrief OFP ID
      * @param  string        $flight_id    The flight ID
      * @param  string        $ac_id        The aircraft ID
@@ -38,7 +38,7 @@ class SimBriefService extends Service
      * @return SimBrief|null
      */
     public function downloadOfp(
-        string $user_id,
+        int $user_id,
         string $ofp_id,
         string $flight_id,
         string $ac_id,
@@ -129,7 +129,6 @@ class SimBriefService extends Service
             }
         } catch (GuzzleException $e) {
             Log::error('Simbrief HTTP Error: '.$e->getMessage());
-            dd($e);
 
             return null;
         }

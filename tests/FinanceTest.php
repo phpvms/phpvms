@@ -27,6 +27,7 @@ use App\Services\FleetService;
 use App\Services\PirepService;
 use App\Support\Math;
 use App\Support\Money;
+use Carbon\Carbon;
 use Exception;
 
 final class FinanceTest extends TestCase
@@ -159,22 +160,22 @@ final class FinanceTest extends TestCase
 
         // Add a subfleet expense
         Expense::factory()->create([
-            'ref_model'    => Subfleet::class,
-            'ref_model_id' => $subfleet['subfleet']->id,
-            'amount'       => 200,
+            'ref_model_type' => Subfleet::class,
+            'ref_model_id'   => $subfleet['subfleet']->id,
+            'amount'         => 200,
         ]);
 
         // Add expenses for airports
         Expense::factory()->create([
-            'ref_model'    => Airport::class,
-            'ref_model_id' => $dpt_apt->id,
-            'amount'       => 50,
+            'ref_model_type' => Airport::class,
+            'ref_model_id'   => $dpt_apt->id,
+            'amount'         => 50,
         ]);
 
         Expense::factory()->create([
-            'ref_model'    => Airport::class,
-            'ref_model_id' => $arr_apt->id,
-            'amount'       => 100,
+            'ref_model_type' => Airport::class,
+            'ref_model_id'   => $arr_apt->id,
+            'amount'         => 100,
         ]);
 
         $pirep = $this->pirepSvc->create($pirep, []);
@@ -847,9 +848,9 @@ final class FinanceTest extends TestCase
 
         $subfleet = Subfleet::factory()->create();
         Expense::factory()->create([
-            'airline_id'   => null,
-            'ref_model'    => Subfleet::class,
-            'ref_model_id' => $subfleet->id,
+            'airline_id'     => null,
+            'ref_model_type' => Subfleet::class,
+            'ref_model_id'   => $subfleet->id,
         ]);
 
         $expenses = $this->expenseRepo->getAllForType(
@@ -861,9 +862,8 @@ final class FinanceTest extends TestCase
         $this->assertCount(1, $expenses);
 
         $expense = $expenses->random();
-        $this->assertEquals(Subfleet::class, $expense->ref_model);
-        $obj = $expense->getReferencedObject();
-        $this->assertEquals($obj->id, $expense->ref_model_id);
+        $this->assertInstanceOf(Subfleet::class, $expense->ref_model);
+        $this->assertEquals($expense->ref_model->id, $expense->ref_model_id);
     }
 
     public function test_airport_expenses(): void
@@ -878,21 +878,21 @@ final class FinanceTest extends TestCase
         $apt3 = Airport::factory()->create();
 
         Expense::factory()->create([
-            'airline_id'   => null,
-            'ref_model'    => Airport::class,
-            'ref_model_id' => $apt1->id,
+            'airline_id'     => null,
+            'ref_model_type' => Airport::class,
+            'ref_model_id'   => $apt1->id,
         ]);
 
         Expense::factory()->create([
-            'airline_id'   => null,
-            'ref_model'    => Airport::class,
-            'ref_model_id' => $apt2->id,
+            'airline_id'     => null,
+            'ref_model_type' => Airport::class,
+            'ref_model_id'   => $apt2->id,
         ]);
 
         Expense::factory()->create([
-            'airline_id'   => null,
-            'ref_model'    => Airport::class,
-            'ref_model_id' => $apt3->id,
+            'airline_id'     => null,
+            'ref_model_type' => Airport::class,
+            'ref_model_id'   => $apt3->id,
         ]);
 
         $expenses = $this->expenseRepo->getAllForType(
@@ -1126,10 +1126,10 @@ final class FinanceTest extends TestCase
         /** @var Subfleet $subfleet */
         $subfleet = Subfleet::factory()->create();
         Expense::factory()->create([
-            'airline_id'   => null,
-            'amount'       => 100,
-            'ref_model'    => Subfleet::class,
-            'ref_model_id' => $subfleet->id,
+            'airline_id'     => null,
+            'amount'         => 100,
+            'ref_model_type' => Subfleet::class,
+            'ref_model_id'   => $subfleet->id,
         ]);
 
         // Override the fares
@@ -1248,6 +1248,8 @@ final class FinanceTest extends TestCase
      */
     public function test_daily_expenses_are_applied()
     {
+        Carbon::setTestNow(now());
+
         /** @var Airline $airline */
         $airline = Airline::factory()->create();
         $airline->initJournal(setting('units.currency', 'USD'));
@@ -1268,19 +1270,19 @@ final class FinanceTest extends TestCase
         $recurringFService->processExpenses();
 
         $this->assertDatabaseHas('journal_transactions', [
-            'journal_id'   => $airline->journal->id,
-            'ref_model'    => Expense::class,
-            'ref_model_id' => $expense->id,
-            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'    => now(),
+            'journal_id'     => $airline->journal->id,
+            'ref_model_type' => Expense::class,
+            'ref_model_id'   => $expense->id,
+            'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'      => Carbon::getTestNow(),
         ]);
 
         $this->assertDatabaseHas('journal_transactions', [
-            'journal_id'   => $airline2->journal->id,
-            'ref_model'    => Expense::class,
-            'ref_model_id' => $expense->id,
-            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'    => now(),
+            'journal_id'     => $airline2->journal->id,
+            'ref_model_type' => Expense::class,
+            'ref_model_id'   => $expense->id,
+            'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'      => Carbon::getTestNow(),
         ]);
     }
 }

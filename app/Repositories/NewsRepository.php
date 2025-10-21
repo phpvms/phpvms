@@ -29,6 +29,6 @@ class NewsRepository extends Repository implements CacheableInterface
     {
         return $this->orderBy('created_at', 'desc')
             ->with(['user'])
-            ->paginate($count);
+            ->paginate($count); // @phpstan-ignore-line
     }
 }

@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\UserRepository;
 use App\Support\Countries;
 use App\Support\Timezonelist;
@@ -35,7 +34,6 @@ class ProfileController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly UserRepository $userRepo
     ) {}
 
@@ -46,6 +44,7 @@ class ProfileController extends Controller
     {
         // Is the ACARS module enabled?
         $acars_enabled = false;
+        /** @var ?\Nwidart\Modules\Module $acars */
         $acars = Module::find('VMSAcars');
         if ($acars) {
             $acars_enabled = $acars->isEnabled();

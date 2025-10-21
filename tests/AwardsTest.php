@@ -44,7 +44,7 @@ final class AwardsTest extends TestCase
     {
         // Create one award that's given out with one flight
         $award = Award::factory()->create([
-            'ref_model'        => PilotFlightAwards::class,
+            'ref_model_type'   => PilotFlightAwards::class,
             'ref_model_params' => 1,
         ]);
 
@@ -84,7 +84,7 @@ final class AwardsTest extends TestCase
 
         /** @var \App\Models\Award $award */
         $award = Award::factory()->create([
-            'ref_model'        => FlightRouteAwards::class,
+            'ref_model_type'   => FlightRouteAwards::class,
             'ref_model_params' => 1,
         ]);
 

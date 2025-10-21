@@ -28,7 +28,6 @@ class Money
      * @return MoneyBase
      *
      * @throws UnexpectedValueException
-     * @throws InvalidArgumentException
      */
     public static function create($amount)
     {
@@ -87,7 +86,6 @@ class Money
      * @param mixed $amount
      *
      * @throws UnexpectedValueException
-     * @throws InvalidArgumentException
      */
     public function __construct($amount)
     {
@@ -96,10 +94,8 @@ class Money
 
     /**
      * Return the amount of currency in smallest denomination
-     *
-     * @return string
      */
-    public function getAmount()
+    public function getAmount(): float|int
     {
         return $this->money->getAmount();
     }
@@ -224,13 +220,9 @@ class Money
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      */
-    public function multiply($amount)
+    public function multiply(int|float $amount)
     {
-        if (!($amount instanceof self)) {
-            $amount = static::createFromAmount($amount);
-        }
-
-        $this->money = $this->money->multiply($amount->money);
+        $this->money = $this->money->multiply($amount);
 
         return $this;
     }

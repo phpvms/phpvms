@@ -10,7 +10,6 @@ use App\Models\Flight;
 use App\Models\Typerating;
 use App\Models\User;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
@@ -19,7 +18,9 @@ use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
 use App\Services\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +33,6 @@ class FlightController extends Controller
 {
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
@@ -127,7 +127,8 @@ class FlightController extends Controller
             ->get();
 
         // Build collection with type codes and labels
-        $flight_types = collect('');
+        /** @var Collection<string, string> $flight_types */
+        $flight_types = collect();
         foreach ($usedtypes as $ftype) {
             $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
         }
@@ -221,7 +222,7 @@ class FlightController extends Controller
     /**
      * Show the flight information page
      */
-    public function show(string $id): View
+    public function show(string $id): View|RedirectResponse
     {
         $user = Auth::user();
         // Support retrieval of deleted relationships

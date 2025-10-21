@@ -157,7 +157,7 @@ class FlightController extends Controller
             'id' => $id,
         ];
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::where($w)->first();
 
         if ($simbrief === null) {

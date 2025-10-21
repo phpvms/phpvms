@@ -6,7 +6,7 @@ use App\Contracts\Command;
 use App\Models\Flight;
 use App\Support\Units\Time;
 use GuzzleHttp\Client;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use RuntimeException;
 use stdClass;
 
@@ -161,9 +161,6 @@ class AcarsReplay extends Command
      */
     protected function updatesFromFile(array $files)
     {
-        /**
-         * @var Collection $flights
-         */
         $flights = collect($files)->transform(function ($f) {
             $file = $f;
             if (file_exists($file)) {
@@ -188,7 +185,6 @@ class AcarsReplay extends Command
          * File the initial pirep to get a "preflight" status
          */
         $flights->each(function (Collection $updates, $idx) {
-            /** @var Flight $update */
             $update = $updates->first();
             $pirep_id = $this->startPirep($update);
             $this->pirepList[$update->callsign] = $pirep_id;

@@ -30,7 +30,7 @@ class ExpenseImporter extends ImportExport
         'charge_to_user' => 'nullable|boolean',
         'multiplier'     => 'nullable|numeric',
         'active'         => 'nullable|boolean',
-        'ref_model'      => 'nullable',
+        'ref_model_type' => 'nullable',
         'ref_model_id'   => 'nullable',
     ];
 
@@ -75,21 +75,27 @@ class ExpenseImporter extends ImportExport
      */
     protected function getRefClassInfo(array $row)
     {
-        $row['ref_model'] = trim($row['ref_model']);
+        if (array_key_exists('ref_model_type', $row)) {
+            $row['ref_model_type'] = trim($row['ref_model_type']);
+        } elseif (array_key_exists('ref_model', $row)) {
+            $row['ref_model_type'] = trim($row['ref_model']);
+        } else {
+            $row['ref_model_type'] = '';
+        }
 
         // class from import is being saved as the name of the model only
         // prepend the full class path so we can search it out
-        if (\strlen($row['ref_model']) > 0) {
-            if (substr_count($row['ref_model'], 'App\Models\\') === 0) {
-                $row['ref_model'] = 'App\Models\\'.$row['ref_model'];
+        if (\strlen($row['ref_model_type']) > 0) {
+            if (substr_count($row['ref_model_type'], 'App\Models\\') === 0) {
+                $row['ref_model_type'] = 'App\Models\\'.$row['ref_model_type'];
             }
         } else {
-            $row['ref_model'] = Expense::class;
+            $row['ref_model_type'] = Expense::class;
 
             return $row;
         }
 
-        $class = $row['ref_model'];
+        $class = $row['ref_model_type'];
         $id = $row['ref_model_id'];
         $obj = null;
 

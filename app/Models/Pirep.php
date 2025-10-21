@@ -547,7 +547,7 @@ class Pirep extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(JournalTransaction::class, 'ref_model_id')->where(
-            'ref_model',
+            'ref_model_type',
             __CLASS__
         )->orderBy('credit', 'desc')->orderBy('debit', 'desc');
     }

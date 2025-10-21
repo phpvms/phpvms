@@ -16,7 +16,7 @@ class UpdatePirepRequest extends FormRequest
     {
         // Don't run validations if it's just being saved
         $action = strtolower(request('submit', 'submit'));
-        if ($action === 'save' || $action === 'cancel' || $action === 'delete') {
+        if (in_array($action, ['save', 'cancel', 'delete'], true)) {
             return [
                 'airline_id'     => 'required|exists:airlines,id',
                 'flight_number'  => 'required|integer|max_digits:4',

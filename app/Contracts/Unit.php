@@ -43,9 +43,9 @@ abstract class Unit implements ArrayAccess
      *
      * @throws Exception
      */
-    public static function make(mixed $value, string $unit): self
+    public static function make(mixed $value, string $unit): static
     {
-        if ($value instanceof self) {
+        if ($value instanceof static) {
             return $value;
         }
 

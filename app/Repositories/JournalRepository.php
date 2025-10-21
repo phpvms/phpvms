@@ -6,8 +6,10 @@ use App\Contracts\Model;
 use App\Contracts\Repository;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
+use App\Models\User;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 use Prettus\Repository\Contracts\CacheableInterface;
 use Prettus\Repository\Traits\CacheableRepository;
@@ -31,11 +33,8 @@ class JournalRepository extends Repository implements CacheableInterface
 
     /**
      * Return a Y-m-d string for the post date
-     *
-     *
-     * @return string
      */
-    public function formatPostDate(?Carbon $date = null)
+    public function formatPostDate(?Carbon $date = null): ?string
     {
         if (!$date instanceof Carbon) {
             return null;
@@ -116,7 +115,7 @@ class JournalRepository extends Repository implements CacheableInterface
         ];
 
         if ($reference !== null) {
-            $attrs['ref_model'] = \get_class($reference);
+            $attrs['ref_model_type'] = \get_class($reference);
             $attrs['ref_model_id'] = $reference->id;
         }
 
@@ -154,8 +153,6 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Get the credit only balance of the journal based on a given date.
      *
-     * @param null $transaction_group
-     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
@@ -163,7 +160,7 @@ class JournalRepository extends Repository implements CacheableInterface
         Carbon $date,
         ?Journal $journal = null,
         ?Carbon $start_date = null,
-        $transaction_group = null
+        ?string $transaction_group = null
     ): Money {
         $where = [];
 
@@ -188,8 +185,6 @@ class JournalRepository extends Repository implements CacheableInterface
     }
 
     /**
-     * @param null $transaction_group
-     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
@@ -197,7 +192,7 @@ class JournalRepository extends Repository implements CacheableInterface
         Carbon $date,
         ?Journal $journal = null,
         ?Carbon $start_date = null,
-        $transaction_group = null
+        ?string $transaction_group = null
     ): Money {
         $where = [];
 
@@ -224,20 +219,19 @@ class JournalRepository extends Repository implements CacheableInterface
     /**
      * Return all transactions for a given object
      *
-     * @param  null  $journal
-     * @return array
+     * @return array{'credits': Money, 'debits': Money, 'transactions': Collection<int, JournalTransaction>}
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getAllForObject($object, $journal = null, ?Carbon $date = null)
+    public function getAllForObject(Model|User $object, ?Journal $journal = null, ?Carbon $date = null): array
     {
         $where = [
-            'ref_model'    => \get_class($object),
-            'ref_model_id' => $object->id,
+            'ref_model_type' => \get_class($object),
+            'ref_model_id'   => $object->id,
         ];
 
-        if ($journal) {
+        if ($journal instanceof \App\Models\Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -260,18 +254,15 @@ class JournalRepository extends Repository implements CacheableInterface
 
     /**
      * Delete all transactions for a given object
-     *
-     * @param  null $journal
-     * @return void
      */
-    public function deleteAllForObject($object, $journal = null)
+    public function deleteAllForObject(Model $object, ?Journal $journal = null): void
     {
         $where = [
-            'ref_model'    => \get_class($object),
-            'ref_model_id' => $object->id,
+            'ref_model_type' => \get_class($object),
+            'ref_model_id'   => $object->id,
         ];
 
-        if ($journal) {
+        if ($journal instanceof \App\Models\Journal) {
             $where['journal_id'] = $journal->id;
         }
 

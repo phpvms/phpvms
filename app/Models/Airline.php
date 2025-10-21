@@ -127,7 +127,7 @@ class Airline extends Model
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if ($this->iata && $this->iata !== '') {
+                if ($this->iata) {
                     return $this->iata;
                 }
 
