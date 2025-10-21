@@ -26,6 +26,8 @@ class PirepForm
                 Section::make(__('filament.basic_informations'))->schema([
 
                     TextInput::make('flight_number')
+                        ->integer()
+                        ->maxLength(4)
                         ->label(__('flights.flightnumber')),
 
                     TextInput::make('route_code')

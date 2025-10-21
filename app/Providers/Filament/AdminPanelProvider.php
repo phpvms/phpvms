@@ -86,7 +86,10 @@ class AdminPanelProvider extends PanelProvider
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup(EnumsNavigationGroup::Config)
+                    ->navigationSort(1),
+
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),

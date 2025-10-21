@@ -8,12 +8,14 @@
 
 @section('scripts')
   <script type="text/javascript">
-    phpvms.map.render_route_map({
-      route_points: {!! json_encode($map_features['route_points']) !!},
-      planned_route_line: {!! json_encode($map_features['planned_route_line']) !!},
-      metar_wms: {!! json_encode(config('map.metar_wms')) !!},
-      circle_color: '#056093',
-      flightplan_route_color: '#8B008B',
+    document.addEventListener('DOMContentLoaded', function () {
+      phpvms.map.render_route_map({
+        route_points: {!! json_encode($map_features['route_points']) !!},
+        planned_route_line: {!! json_encode($map_features['planned_route_line']) !!},
+        metar_wms: {!! json_encode(config('map.metar_wms')) !!},
+        circle_color: '#056093',
+        flightplan_route_color: '#8B008B',
+      });
     });
   </script>
 @endsection
