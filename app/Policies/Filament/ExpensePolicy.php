@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
 use App\Models\Expense;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class ExpensePolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_expense');
+        return $authUser->can('ViewAny:Expense');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Expense $expense): bool
+    public function view(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('view_expense');
+        return $authUser->can('View:Expense');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_expense');
+        return $authUser->can('Create:Expense');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Expense $expense): bool
+    public function update(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('update_expense');
+        return $authUser->can('Update:Expense');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Expense $expense): bool
+    public function delete(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('delete_expense');
+        return $authUser->can('Delete:Expense');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('delete_any_expense');
+        return $authUser->can('Restore:Expense');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Expense $expense): bool
+    public function forceDelete(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('force_delete_expense');
+        return $authUser->can('ForceDelete:Expense');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_expense');
+        return $authUser->can('ForceDeleteAny:Expense');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Expense $expense): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_expense');
+        return $authUser->can('RestoreAny:Expense');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Expense $expense): bool
     {
-        return $user->can('restore_any_expense');
+        return $authUser->can('Replicate:Expense');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Expense $expense): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_expense');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_expense');
+        return $authUser->can('Reorder:Expense');
     }
 }

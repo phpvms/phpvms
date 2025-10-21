@@ -1241,4 +1241,45 @@ final class FinanceTest extends TestCase
         $txn_airline2 = $journalRepo->getAllForObject($airline2);
         // dd($txn_airline1);
     }
+
+    /**
+     * Test that the daily expenses not tied to an airline are correctly applied to all airlines
+     */
+    public function test_daily_expenses_are_applied()
+    {
+        /** @var Airline $airline */
+        $airline = Airline::factory()->create();
+        $airline->initJournal(setting('units.currency', 'USD'));
+        $airline->refresh();
+
+        /** @var Airline $airline2 */
+        $airline2 = Airline::factory()->create();
+        $airline2->initJournal(setting('units.currency', 'USD'));
+        $airline2->refresh();
+
+        $expense = Expense::factory()->create([
+            'airline_id' => null,
+            'type'       => ExpenseType::DAILY,
+        ]);
+
+        /** @var RecurringFinanceService $recurringFService */
+        $recurringFService = app(RecurringFinanceService::class);
+        $recurringFService->processExpenses();
+
+        $this->assertDatabaseHas('journal_transactions', [
+            'journal_id'   => $airline->journal->id,
+            'ref_model'    => Expense::class,
+            'ref_model_id' => $expense->id,
+            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'    => now(),
+        ]);
+
+        $this->assertDatabaseHas('journal_transactions', [
+            'journal_id'   => $airline2->journal->id,
+            'ref_model'    => Expense::class,
+            'ref_model_id' => $expense->id,
+            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'    => now(),
+        ]);
+    }
 }

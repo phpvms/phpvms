@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\PhpExecutableFinder;
+
+use function Illuminate\Support\defer;
 
 class Maintenance extends Page
 {
@@ -173,8 +177,8 @@ class Maintenance extends Page
             ->label(__('filament.maintenance_clear_cache'))
             ->action(function () {
                 $calls = [
-                    'optimize:clear',
                     'cache:clear',
+                    'optimize:clear',
                 ];
 
                 $theme_cache_file = base_path().'/bootstrap/cache/themes.php';
@@ -187,8 +191,21 @@ class Maintenance extends Page
                     Log::debug($module_cache.' | '.$file);
                 }
 
-                foreach ($calls as $call) {
-                    Artisan::call($call);
+                if (function_exists('proc_open')) {
+                    foreach ($calls as $call) {
+                        Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                            ->run([$this->getPhpBinary(), base_path('artisan'), $call])->throw();
+                    }
+                } else {
+                    Artisan::call('cache:clear');
+
+                    // We have to defer it because it kills the livewire request, thus throwing errors.
+                    defer(function () {
+                        Artisan::call('optimize:clear');
+                        Artisan::call('filament:optimize-clear');
+
+                        Log::info('Clearing cache', [Artisan::output()]);
+                    });
                 }
 
                 Notification::make()
@@ -206,7 +223,11 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedTrash)
             ->label(__('filament.maintenance_flush_failed_jobs'))
             ->action(function () {
-                Artisan::call('queue:flush');
+                if (function_exists('proc_open')) {
+                    Process::run([$this->getPhpBinary(), base_path('artisan'), 'queue:flush'])->throw();
+                } else {
+                    Artisan::call('queue:flush');
+                }
 
                 Notification::make()
                     ->title(__('filament.maintenance_failed_jobs_flushed'))
@@ -237,7 +258,16 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function () {
-                Artisan::call('optimize');
+                if (function_exists('proc_open')) {
+                    Process::env(['APP_RUNNING_IN_CONSOLE' => true])
+                        ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
+                } else {
+                    // We have to defer it because it kills the livewire request, thus throwing errors.
+                    defer(function () {
+                        Artisan::call('optimize');
+                        Artisan::call('filament:optimize');
+                    });
+                }
 
                 Notification::make()
                     ->title(__('filament.maintenance_app_optimized'))
@@ -258,5 +288,20 @@ class Maintenance extends Page
             ->label($upgradePending ? __('filament.maintenance_update_database') : __('filament.maintenance_database_is_up_to_date'))
             ->disabled(!$upgradePending)
             ->url('/'); // TODO: link to the system page
+    }
+
+    private function getPhpBinary(): string
+    {
+        $finder = new PhpExecutableFinder();
+        $php_path = $finder->find(false);
+        $php = str_replace('-fpm', '', $php_path);
+
+        // If this is the cgi version of the exec, add this arg, otherwise there's
+        // an error with no arguments existing
+        if (str_contains($php, '-cgi')) {
+            $php .= ' -d register_argc_argv=On';
+        }
+
+        return $php;
     }
 }

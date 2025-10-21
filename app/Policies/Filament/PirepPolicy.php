@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
 use App\Models\Pirep;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class PirepPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_pirep');
+        return $authUser->can('ViewAny:Pirep');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Pirep $pirep): bool
+    public function view(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('view_pirep');
+        return $authUser->can('View:Pirep');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_pirep');
+        return $authUser->can('Create:Pirep');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Pirep $pirep): bool
+    public function update(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('update_pirep');
+        return $authUser->can('Update:Pirep');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Pirep $pirep): bool
+    public function delete(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('delete_pirep');
+        return $authUser->can('Delete:Pirep');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('delete_any_pirep');
+        return $authUser->can('Restore:Pirep');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Pirep $pirep): bool
+    public function forceDelete(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('force_delete_pirep');
+        return $authUser->can('ForceDelete:Pirep');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_pirep');
+        return $authUser->can('ForceDeleteAny:Pirep');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Pirep $pirep): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_pirep');
+        return $authUser->can('RestoreAny:Pirep');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Pirep $pirep): bool
     {
-        return $user->can('restore_any_pirep');
+        return $authUser->can('Replicate:Pirep');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Pirep $pirep): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_pirep');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_pirep');
+        return $authUser->can('Reorder:Pirep');
     }
 }
