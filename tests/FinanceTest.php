@@ -1267,19 +1267,19 @@ final class FinanceTest extends TestCase
         $recurringFService->processExpenses();
 
         $this->assertDatabaseHas('journal_transactions', [
-            'journal_id'   => $airline->journal->id,
-            'ref_model'    => Expense::class,
-            'ref_model_id' => $expense->id,
-            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'    => now(),
+            'journal_id'     => $airline->journal->id,
+            'ref_model_type' => Expense::class,
+            'ref_model_id'   => $expense->id,
+            'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'      => now(),
         ]);
 
         $this->assertDatabaseHas('journal_transactions', [
-            'journal_id'   => $airline2->journal->id,
-            'ref_model'    => Expense::class,
-            'ref_model_id' => $expense->id,
-            'debit'        => Money::createFromAmount($expense->amount)->toAmount(),
-            'post_date'    => now(),
+            'journal_id'     => $airline2->journal->id,
+            'ref_model_type' => Expense::class,
+            'ref_model_id'   => $expense->id,
+            'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
+            'post_date'      => now(),
         ]);
     }
 }

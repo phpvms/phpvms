@@ -3,7 +3,6 @@
 namespace App\Services\Installer;
 
 use App\Contracts\Service;
-use App\Models\Permission;
 use App\Models\Setting;
 use App\Services\DatabaseService;
 use Carbon\Carbon;
@@ -11,8 +10,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Exceptions\PermissionAlreadyExists;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -246,17 +243,5 @@ class SeederService extends Service
         }
 
         return false;
-    }
-
-    private function addCustomPermission(string $name): void
-    {
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        try {
-            Permission::create(['name' => $name]);
-        } catch (PermissionAlreadyExists $e) {
-            Log::info('Permission already exists: '.$name);
-        }
-
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
