@@ -8,6 +8,7 @@ use App\Models\Airline;
 use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
+use App\Models\User;
 use App\Repositories\AirlineRepository;
 use App\Repositories\JournalRepository;
 use App\Support\Dates;
@@ -64,7 +65,7 @@ class FinanceService extends Service
     public function creditToJournal(
         Journal $journal,
         Money $amount,
-        Model $reference,
+        Model|User|null $reference,
         string $memo,
         string $transaction_group,
         string|array $tag,
@@ -93,7 +94,7 @@ class FinanceService extends Service
     public function debitFromJournal(
         Journal $journal,
         Money $amount,
-        Model $reference,
+        Model|User|null $reference,
         string $memo,
         string $transaction_group,
         string|array $tag,
