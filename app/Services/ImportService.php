@@ -122,7 +122,7 @@ class ImportService extends Service
         if ($delete_previous) {
             Aircraft::truncate();
 
-            Log::warning('Aircraft table truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
+            // Log::warning('Aircraft table truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
         }
 
         $importer = new AircraftImporter();
@@ -228,7 +228,7 @@ class ImportService extends Service
             DB::table('flight_subfleet')->truncate();
             DB::table('typerating_subfleet')->truncate();
 
-            Log::warning('Subfleet and tied relationship tables truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
+            // Log::warning('Subfleet and tied relationship tables truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
         }
 
         $importer = new SubfleetImporter();
