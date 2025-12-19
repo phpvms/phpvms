@@ -166,6 +166,8 @@ class FlightImporter extends ImportExport
         // Any other specific transformations
         $flight->setAttribute('notes', filled($row['notes']) ? $row['notes'] : null);
 
+        $flight->setAttribute('callsign', filled($row['callsign']) ? $row['callsign'] : null);
+
         // Check for a valid value
         $flight_type = $row['flight_type'];
         if (!array_key_exists($flight_type, FlightType::labels())) {
