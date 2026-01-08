@@ -8,6 +8,9 @@ use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Number;
 
+/**
+ * @property Fare $record
+ */
 class FareImporter extends Importer
 {
     protected static ?string $model = Fare::class;

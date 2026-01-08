@@ -11,12 +11,16 @@ use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
 use App\Support\Utils;
+use Filament\Actions\Imports\Exceptions\RowImportFailedException;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
+/**
+ * @property Flight $record
+ */
 class FlightImporter extends Importer
 {
     protected static ?string $model = Flight::class;
@@ -293,6 +297,12 @@ class FlightImporter extends Importer
 
     private static function processAirport(string $airport): Airport
     {
-        return app(AirportService::class)->lookupAirportIfNotFound($airport);
+        $airport = app(AirportService::class)->lookupAirportIfNotFound($airport);
+
+        if (!$airport) {
+            throw new RowImportFailedException('Could not find airport '.$airport);
+        }
+
+        return $airport;
     }
 }
