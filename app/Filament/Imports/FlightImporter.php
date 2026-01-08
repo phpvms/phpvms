@@ -170,6 +170,13 @@ class FlightImporter extends Importer
         return $body;
     }
 
+    protected function beforeUpdate(): void
+    {
+        if ($this->record->trashed()) {
+            $this->record->restore();
+        }
+    }
+
     protected function afterSave(): void
     {
         if (array_key_exists('subfleets', $this->data) && $this->data['subfleets'] !== '') {

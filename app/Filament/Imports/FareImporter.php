@@ -49,6 +49,13 @@ class FareImporter extends Importer
         ]);
     }
 
+    protected function beforeUpdate(): void
+    {
+        if ($this->record->trashed()) {
+            $this->record->restore();
+        }
+    }
+
     public static function getCompletedNotificationBody(Import $import): string
     {
         $body = 'Your fare import has completed and '.Number::format($import->successful_rows).' '.str('row')->plural($import->successful_rows).' imported.';

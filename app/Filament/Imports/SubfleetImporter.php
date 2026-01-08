@@ -62,6 +62,13 @@ class SubfleetImporter extends Importer
         ];
     }
 
+    protected function beforeUpdate(): void
+    {
+        if ($this->record->trashed()) {
+            $this->record->restore();
+        }
+    }
+
     protected function afterSave(): void
     {
         if (array_key_exists('fares', $this->data) && $this->data['fares'] !== '') {
