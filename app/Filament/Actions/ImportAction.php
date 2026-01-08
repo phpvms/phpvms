@@ -27,6 +27,8 @@ class ImportAction extends Action
 
         $this->label('Import from CSV');
 
+        $this->visible(!config('phpvms.use_queued_filament_imports'));
+
         $this->schema(function (array $arguments): array {
             $schema = [
                 FileUpload::make('importFile')->acceptedFileTypes(['text/csv'])->disk('local')->directory('import'),
