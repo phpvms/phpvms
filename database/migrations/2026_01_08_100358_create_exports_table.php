@@ -22,6 +22,8 @@ return new class() extends Migration
             $table->unsignedInteger('successful_rows')->default(0);
             $table->unsignedInteger('user_id');
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 
