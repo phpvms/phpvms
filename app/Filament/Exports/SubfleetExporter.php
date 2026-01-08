@@ -45,7 +45,7 @@ class SubfleetExporter extends Exporter
     }
 
     /**
-     * Return any custom fares that have been made to this flight
+     * Return any custom fares that have been made to this subfleet
      */
     private static function getFares(Subfleet $subfleet): string
     {
