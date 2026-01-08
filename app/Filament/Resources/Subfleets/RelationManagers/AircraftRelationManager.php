@@ -2,12 +2,16 @@
 
 namespace App\Filament\Resources\Subfleets\RelationManagers;
 
-use App\Filament\Actions\ExportAction;
-use App\Filament\Actions\ImportAction;
+use App\Filament\Actions\ExportAction as OldExportAction;
+use App\Filament\Actions\ImportAction as OldImportAction;
+use App\Filament\Exports\AircraftExporter;
+use App\Filament\Imports\AircraftImporter;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Tables\AircraftTable;
 use App\Models\Enums\ImportExportType;
 use Filament\Actions\CreateAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ImportAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -22,17 +26,25 @@ class AircraftRelationManager extends RelationManager
     {
         return AircraftTable::configure($table)
             ->headerActions([
-                ExportAction::make('export')
+                OldExportAction::make('export')
                     ->arguments([
                         'resourceTitle' => 'aircraft',
                         'exportType'    => ImportExportType::AIRCRAFT,
                     ]),
 
-                ImportAction::make('import')
+                OldImportAction::make('import')
                     ->arguments([
                         'resourceTitle' => 'aircraft',
                         'importType'    => ImportExportType::AIRCRAFT,
                     ]),
+
+                ImportAction::make('import')
+                    ->visible(config('phpvms.use_queued_filament_imports'))
+                    ->importer(AircraftImporter::class),
+
+                ExportAction::make('export')
+                    ->visible(config('phpvms.use_queued_filament_imports'))
+                    ->exporter(AircraftExporter::class),
 
                 CreateAction::make()
                     ->icon(Heroicon::OutlinedPlusCircle),

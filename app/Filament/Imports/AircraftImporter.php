@@ -3,10 +3,13 @@
 namespace App\Filament\Imports;
 
 use App\Models\Aircraft;
+use App\Models\Enums\AircraftState;
 use App\Support\ICAO;
+use App\Support\Units\Mass;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
 class AircraftImporter extends Importer
@@ -25,11 +28,13 @@ class AircraftImporter extends Importer
             ImportColumn::make('iata')
                 ->rules(['max:4']),
             ImportColumn::make('airport')
+                ->guess(['airport_id'])
                 ->relationship(),
             ImportColumn::make('hub')
+                ->guess(['hub_id'])
                 ->relationship(),
             ImportColumn::make('landing_time')
-                ->rules(['datetime']),
+                ->rules(['nullable', 'datetime']),
             ImportColumn::make('name')
                 ->requiredMapping()
                 ->rules(['required']),
@@ -38,29 +43,41 @@ class AircraftImporter extends Importer
             ImportColumn::make('hex_code'),
             ImportColumn::make('selcal'),
             ImportColumn::make('dow')
+                ->fillRecordUsing(function (Aircraft $record, ?int $state): void {
+                    $record->dow = $state > 0 ? Mass::make((float) $state, setting('units.weight')) : null;
+                })
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('mtow')
+                ->fillRecordUsing(function (Aircraft $record, ?int $state): void {
+                    Log::info('State:'.$state);
+                    $record->mtow = $state > 0 ? Mass::make((float) $state, setting('units.weight')) : null;
+                })
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('mlw')
+                ->fillRecordUsing(function (Aircraft $record, ?int $state): void {
+                    $record->mlw = $state > 0 ? Mass::make((float) $state, setting('units.weight')) : null;
+                })
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('zfw')
+                ->fillRecordUsing(function (Aircraft $record, ?int $state): void {
+                    $record->zfw = $state > 0 ? Mass::make((float) $state, setting('units.weight')) : null;
+                })
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('simbrief_type'),
             ImportColumn::make('fuel_onboard')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('flight_time')
                 ->numeric()
-                ->rules(['integer']),
+                ->rules(['nullable', 'integer']),
             ImportColumn::make('status')
                 ->requiredMapping()
                 ->rules(['required']),
             ImportColumn::make('state')
-                ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'integer']),
         ];
@@ -68,7 +85,7 @@ class AircraftImporter extends Importer
 
     public function resolveRecord(): Aircraft
     {
-        return Aircraft::firstOrNew([
+        return Aircraft::withTrashed()->firstOrNew([
             'registration' => $this->data['registration'],
         ]);
     }
@@ -77,6 +94,17 @@ class AircraftImporter extends Importer
     {
         if (!$this->record->hex_code) {
             $this->record->hex_code = ICAO::createHexCode();
+        }
+
+        if (!$this->record->state) {
+            $this->record->state = AircraftState::PARKED;
+        }
+    }
+
+    protected function beforeUpdate(): void
+    {
+        if ($this->record->trashed()) {
+            $this->record->restore();
         }
     }
 
