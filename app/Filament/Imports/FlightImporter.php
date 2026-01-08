@@ -135,19 +135,13 @@ class FlightImporter extends Importer
                 ->rules(['max:36']),
 
             ImportColumn::make('subfleets')
-                ->fillRecordUsing(function (Flight $record, ?string $state): void {
-                    self::processSubfleets($record, $state);
-                }),
+                ->fillRecordUsing(function (): void {}),
 
             ImportColumn::make('fares')
-                ->fillRecordUsing(function (Flight $record, ?string $state): void {
-                    self::processFares($record, $state);
-                }),
+                ->fillRecordUsing(function (): void {}),
 
             ImportColumn::make('fields')
-                ->fillRecordUsing(function (Flight $record, ?string $state): void {
-                    self::processFields($record, $state);
-                }),
+                ->fillRecordUsing(function (): void {}),
         ];
     }
 
@@ -174,6 +168,21 @@ class FlightImporter extends Importer
         }
 
         return $body;
+    }
+
+    protected function afterSave(): void
+    {
+        if (array_key_exists('subfleets', $this->data) && $this->data['subfleets'] !== '') {
+            $this->processSubfleets($this->record, $this->data['subfleets']);
+        }
+
+        if (array_key_exists('fares', $this->data) && $this->data['fares'] !== '') {
+            $this->processFares($this->record, $this->data['fares']);
+        }
+
+        if (array_key_exists('fields', $this->data) && $this->data['fields'] !== '') {
+            $this->processFields($this->record, $this->data['fields']);
+        }
     }
 
     private static function setDays(string $state): int
@@ -214,7 +223,7 @@ class FlightImporter extends Importer
         return Days::getDaysMask($days);
     }
 
-    private static function processSubfleets(Flight $flight, $col): void
+    private function processSubfleets(Flight $flight, $col): void
     {
         $count = 0;
         $subfleets = Utils::parseMultiColumnValues($col);
@@ -242,7 +251,7 @@ class FlightImporter extends Importer
         Log::info('Subfleets added/processed: '.$count);
     }
 
-    private static function processFares(Flight $flight, ?string $state): void
+    private function processFares(Flight $flight, ?string $state): void
     {
         $fares = Utils::parseMultiColumnValues($state);
         foreach ($fares as $fare_code => $fare_attributes) {
@@ -260,12 +269,10 @@ class FlightImporter extends Importer
     /**
      * Parse all of the subfields
      */
-    private static function processFields(Flight $flight, ?string $col): void
+    private function processFields(Flight $flight, ?string $col): void
     {
         $pass_fields = [];
         $fields = Utils::parseMultiColumnValues($col);
-
-        Log::info('Debug field:', [$fields]);
 
         foreach ($fields as $field_name => $field_value) {
             $pass_fields[] = [
