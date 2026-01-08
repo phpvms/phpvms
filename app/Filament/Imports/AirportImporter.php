@@ -49,33 +49,34 @@ class AirportImporter extends Importer
                 ->rules(['numeric']),
             ImportColumn::make('elevation')
                 ->integer()
-                ->rules(['integer']),
+                ->rules(['integer', 'nullable']),
             ImportColumn::make('ground_handling_cost')
                 ->numeric()
-                ->rules(['numeric']),
+                ->rules(['numeric', 'nullable']),
             ImportColumn::make('fuel_100ll_cost')
                 ->numeric()
-                ->rules(['numeric']),
+                ->rules(['numeric', 'nullable']),
             ImportColumn::make('fuel_jeta_cost')
                 ->numeric()
-                ->rules(['numeric']),
+                ->rules(['numeric', 'nullable']),
             ImportColumn::make('fuel_mogas_cost')
                 ->numeric()
-                ->rules(['numeric']),
+                ->rules(['numeric', 'nullable']),
         ];
     }
 
     public function resolveRecord(): Airport
     {
-        $record = Airport::withTrashed()->firstOrNew([
+        return Airport::withTrashed()->firstOrNew([
             'id' => $this->data['icao'],
         ]);
+    }
 
-        if ($record->trashed()) {
-            $record->restore();
+    protected function beforeUpdate(): void
+    {
+        if ($this->record->trashed()) {
+            $this->record->restore();
         }
-
-        return $record;
     }
 
     public static function getCompletedNotificationBody(Import $import): string
