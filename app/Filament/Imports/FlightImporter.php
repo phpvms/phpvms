@@ -112,7 +112,9 @@ class FlightImporter extends Importer
 
             ImportColumn::make('days')
                 ->fillRecordUsing(function (Flight $record, ?string $state) {
-                    $record->days = self::setDays($state);
+                    if ($state) {
+                        $record->days = self::setDays($state);
+                    }
                 }),
 
             ImportColumn::make('start_date')
@@ -295,12 +297,12 @@ class FlightImporter extends Importer
         app(FlightService::class)->updateCustomFields($flight, $pass_fields);
     }
 
-    private static function processAirport(string $airport): Airport
+    private static function processAirport(string $id): Airport
     {
-        $airport = app(AirportService::class)->lookupAirportIfNotFound($airport);
+        $airport = app(AirportService::class)->lookupAirportIfNotFound($id);
 
         if (!$airport) {
-            throw new RowImportFailedException('Could not find airport '.$airport);
+            throw new RowImportFailedException('Could not find airport '.$id);
         }
 
         return $airport;

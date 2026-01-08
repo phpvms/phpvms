@@ -66,7 +66,7 @@ class ExpenseImporter extends Importer
         if ($class === Aircraft::class) {
             Log::info('Trying to import expense on aircraft, registration: '.$id);
 
-            if (is_int($id)) {
+            if (is_numeric($id)) {
                 $obj = Aircraft::where('id', $id)->first();
             } else {
                 $obj = Aircraft::where('registration', $id)->first();
@@ -76,7 +76,7 @@ class ExpenseImporter extends Importer
             $obj = Airport::where('icao', $id)->first();
         } elseif ($class === Subfleet::class) {
             Log::info('Trying to import expense on subfleet, type: '.$id);
-            if (is_int($id)) {
+            if (is_numeric($id)) {
                 $obj = Subfleet::where('id', $id)->first();
             } else {
                 $obj = Subfleet::where('type', $id)->first();

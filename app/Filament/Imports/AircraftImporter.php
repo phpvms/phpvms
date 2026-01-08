@@ -9,7 +9,6 @@ use App\Support\Units\Mass;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
 /**
@@ -53,7 +52,6 @@ class AircraftImporter extends Importer
                 ->rules(['nullable', 'integer']),
             ImportColumn::make('mtow')
                 ->fillRecordUsing(function (Aircraft $record, ?int $state): void {
-                    Log::info('State:'.$state);
                     $record->mtow = $state > 0 ? Mass::make((float) $state, setting('units.weight')) : null;
                 })
                 ->numeric()
@@ -99,7 +97,7 @@ class AircraftImporter extends Importer
             $this->record->hex_code = ICAO::createHexCode();
         }
 
-        if (!$this->record->state) {
+        if (!array_key_exists('state', $this->data) || $this->data['state'] === null) {
             $this->record->state = AircraftState::PARKED;
         }
     }

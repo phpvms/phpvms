@@ -52,15 +52,15 @@ class SubfleetExporter extends Exporter
         $fares = [];
         foreach ($subfleet->fares as $fare) {
             $fare_export = [];
-            if ($fare->pivot->price) {
+            if ($fare->pivot->price !== null) {
                 $fare_export['price'] = $fare->pivot->price;
             }
 
-            if ($fare->pivot->cost) {
+            if ($fare->pivot->cost !== null) {
                 $fare_export['cost'] = $fare->pivot->cost;
             }
 
-            if ($fare->pivot->capacity) {
+            if ($fare->pivot->capacity !== null) {
                 $fare_export['capacity'] = $fare->pivot->capacity;
             }
 
@@ -78,11 +78,11 @@ class SubfleetExporter extends Exporter
         $ranks = [];
         foreach ($subfleet->ranks as $rank) {
             $rank_export = [];
-            if ($rank->pivot->acars_pay) {
+            if ($rank->pivot->acars_pay !== null) {
                 $rank_export['acars_pay'] = $rank->pivot->acars_pay;
             }
 
-            if ($rank->pivot->manual_pay) {
+            if ($rank->pivot->manual_pay !== null) {
                 $rank_export['manual_pay'] = $rank->pivot->manual_pay;
             }
 
