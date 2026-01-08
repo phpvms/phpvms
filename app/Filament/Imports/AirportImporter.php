@@ -10,6 +10,9 @@ use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;
 use League\ISO3166\ISO3166;
 
+/**
+ * @property Airport $record
+ */
 class AirportImporter extends Importer
 {
     protected static ?string $model = Airport::class;

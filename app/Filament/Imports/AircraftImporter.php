@@ -12,6 +12,9 @@ use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
+/**
+ * @property Aircraft $record
+ */
 class AircraftImporter extends Importer
 {
     protected static ?string $model = Aircraft::class;
