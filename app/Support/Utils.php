@@ -123,4 +123,135 @@ class Utils
 
         return '';
     }
+
+    /**
+     * Parse a multi column values field. E.g:
+     * Y?price=200&cost=100; F?price=1200
+     *    or
+     * gate=B32;cost index=100
+     *
+     * Converted into a multi-dimensional array
+     */
+    public static function parseMultiColumnValues(string $field): array|string
+    {
+        $ret = [];
+        $split_values = explode(';', $field);
+
+        // No multiple values in here, just a straight value
+        if (\count($split_values) === 1) {
+            if (trim($split_values[0]) === '') {
+                return [];
+            }
+
+            if (str_contains($split_values[0], '?')) {
+                // This contains the query string, which turns it into a multi-level array
+                $query_str = explode('?', $split_values[0]);
+                $parent = trim($query_str[0]);
+
+                $children = [];
+                $kvp = explode('&', trim($query_str[1]));
+                foreach ($kvp as $items) {
+                    if ($items === '' || $items === '0') {
+                        continue;
+                    }
+
+                    self::kvpToArray($items, $children);
+                }
+
+                $ret[$parent] = $children;
+
+                return $ret;
+            }
+
+            if (str_contains($split_values[0], '=')) {
+                $ret = [];
+                self::kvpToArray($split_values[0], $ret);
+
+                return $ret;
+            }
+
+            // This is not a query string, return it back untouched
+            return [$split_values[0]];
+        }
+
+        foreach ($split_values as $value) {
+            $value = trim($value);
+            if ($value === '') {
+                continue;
+            }
+
+            // This isn't in the query string format, so it's
+            // just a straight key-value pair set
+            if (!str_contains($value, '?')) {
+                self::kvpToArray($value, $ret);
+
+                continue;
+            }
+
+            // This contains the query string, which turns it
+            // into the multi-level array
+
+            $query_str = explode('?', $value);
+            $parent = trim($query_str[0]);
+
+            $children = [];
+            $kvp = explode('&', trim($query_str[1]));
+            foreach ($kvp as $items) {
+                if ($items === '' || $items === '0') {
+                    continue;
+                }
+
+                self::kvpToArray($items, $children);
+            }
+
+            $ret[$parent] = $children;
+        }
+
+        return $ret;
+    }
+
+    public static function kvpToArray($kvp_str, array &$arr): void
+    {
+        $item = explode('=', $kvp_str);
+        if (\count($item) === 1) {  // just a list?
+            $arr[] = trim($item[0]);
+        } else {  // actually a key-value pair
+            $k = trim($item[0]);
+            $v = trim($item[1]);
+            $arr[$k] = $v;
+        }
+    }
+
+    public static function objectToMultiString(object|array $obj): object|string
+    {
+        if (!\is_array($obj)) {
+            return $obj;
+        }
+
+        $ret_list = [];
+        foreach ($obj as $key => $val) {
+            if (is_numeric($key) && !\is_array($val)) {
+                $ret_list[] = $val;
+
+                continue;
+            }
+
+            $key = trim($key);
+
+            if (!\is_array($val)) {
+                $val = trim($val);
+                $ret_list[] = "{$key}={$val}";
+            } else {
+                $q = [];
+                foreach ($val as $subkey => $subval) {
+                    $q[] = is_numeric($subkey) ? $subval : "{$subkey}={$subval}";
+                }
+
+                $q = implode('&', $q);
+                $ret_list[] = $q === '' || $q === '0' ? $key : "{$key}?{$q}";
+            }
+        }
+
+        return implode(';', $ret_list);
+    }
 }

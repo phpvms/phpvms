@@ -358,12 +358,12 @@ class Flight extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id', 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function event(): BelongsTo
     {
-        return $this->belongsTo(Event::class, 'id', 'event_id');
+        return $this->belongsTo(Event::class);
     }
 
     public function owner(): MorphTo

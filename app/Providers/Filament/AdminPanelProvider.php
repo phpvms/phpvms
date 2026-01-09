@@ -103,6 +103,7 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()
+            ->databaseNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
 

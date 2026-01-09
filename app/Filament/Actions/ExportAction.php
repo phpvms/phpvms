@@ -29,6 +29,8 @@ class ExportAction extends Action
 
         $this->label('Export to CSV');
 
+        $this->visible(!config('phpvms.use_queued_filament_imports'));
+
         $this->action(function (array $arguments): ?BinaryFileResponse {
             if (!isset($arguments['resourceTitle']) || !$arguments['exportType']) {
                 $this->failure();
