@@ -112,9 +112,7 @@ class FlightImporter extends Importer
 
             ImportColumn::make('days')
                 ->fillRecordUsing(function (Flight $record, ?string $state) {
-                    if ($state) {
-                        $record->days = self::setDays($state);
-                    }
+                    $record->days = self::setDays($state);
                 }),
 
             ImportColumn::make('start_date')
@@ -198,9 +196,9 @@ class FlightImporter extends Importer
         }
     }
 
-    private static function setDays(string $state): int
+    private static function setDays(?string $state): int
     {
-        if ($state === '' || $state === '0') {
+        if (in_array($state, [null, '', '0'], true)) {
             return 0;
         }
 
