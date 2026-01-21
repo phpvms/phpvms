@@ -24,7 +24,7 @@
     "leaflet-providers": "1.0.*",
     "leaflet-rotatedmarker": "^0.2.0",
     "leaflet.geodesic": "^2.5.2",
-    "lodash": ">=4.17.19",
+    "lodash": ">=4.17.23",
     "marked": "^12.0.1",
     "minimist": "^1.2.2",
     "moment": "^2.29.1",
