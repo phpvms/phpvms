@@ -27,8 +27,12 @@ class AirportService extends Service
     /**
      * Return the METAR for a given airport
      */
-    public function getMetar($icao): ?Metar
+    public function getMetar(?string $icao): ?Metar
     {
+        if ($icao === null) {
+            return null;
+        }
+
         $icao = trim($icao);
         if ($icao === '') {
             return null;
@@ -45,8 +49,12 @@ class AirportService extends Service
     /**
      * Return the METAR for a given airport
      */
-    public function getTaf($icao): ?Metar
+    public function getTaf(?string $icao): ?Metar
     {
+        if ($icao === null) {
+            return null;
+        }
+
         $icao = trim($icao);
         if ($icao === '') {
             return null;

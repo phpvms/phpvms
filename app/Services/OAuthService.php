@@ -26,10 +26,12 @@ class OAuthService extends Service
         $end_date = now()->addHours(25);
 
         $tokens = UserOAuthToken::where(function (Builder $query) use ($start_date, $end_date) {
+            /** @var Builder<UserOAuthToken> $query */
             return $query->whereNot('provider', 'ivao')
                 ->whereBetween('expires_at', [$start_date, $end_date]);
         })
             ->orWhere(function (Builder $query) {
+                /** @var Builder<UserOAuthToken> $query */
                 return $query->where('provider', 'ivao')
                     ->whereBetween('expires_at', [now()->subDays(8), now()->subDays(6)]);
             })
