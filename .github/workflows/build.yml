@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['8.2', '8.3', '8.4']
+        php-versions: ['8.3', '8.4', '8.5']
     name: PHP ${{ matrix.php-versions }}
     env:
       extensions: intl, pcov, mbstring
@@ -110,7 +110,7 @@ jobs:
       with:
         node-version: 22
         cache: 'npm'
-    
+
     - name: Install NPM dependencies
       run: npm install
 
