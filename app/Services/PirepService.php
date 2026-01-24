@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
 use Prettus\Validator\Exceptions\ValidatorException;
 
@@ -710,7 +711,9 @@ class PirepService extends Service
         /** @var ?\Nwidart\Modules\Module $has_vmsacars */
         $has_vmsacars = Module::find('VMSAcars');
 
-        if ($has_vmsacars && $flight) {
+        $has_vmsacars_config = Schema::hasTable('vmsacars_config');
+
+        if ($has_vmsacars && $has_vmsacars_config && $flight) {
             /** @var ?object $query */
             $query = DB::table('vmsacars_config')->find('disable_free_flights');
             $free_flights_disabled = $query?->value;
