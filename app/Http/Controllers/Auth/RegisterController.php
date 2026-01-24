@@ -59,8 +59,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== $request->get('token')) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== $request->input('token')) {
                 abort(403, 'Invalid invite');
             }
 
@@ -159,8 +159,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== base64_decode($request->get('invite_token'))) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== base64_decode($request->input('invite_token'))) {
                 abort(403, 'Invalid invite');
             }
 
@@ -172,7 +172,7 @@ class RegisterController extends Controller
                 abort(403, 'Invite has expired');
             }
 
-            if ($invite->email && $invite->email !== $request->get('email')) {
+            if ($invite->email && $invite->email !== $request->input('email')) {
                 abort(403, 'Invite is for a different email address');
             }
 

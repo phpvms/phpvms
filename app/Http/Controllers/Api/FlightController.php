@@ -78,7 +78,7 @@ class FlightController extends Controller
         ];
 
         // Allow the option to bypass some of these restrictions for the searches
-        if (!$request->filled('ignore_restrictions') || $request->get('ignore_restrictions') === '0') {
+        if (!$request->filled('ignore_restrictions') || $request->input('ignore_restrictions') === '0') {
             if (setting('pilots.restrict_to_company')) {
                 $where['airline_id'] = $user->airline_id;
             }

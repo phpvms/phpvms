@@ -40,12 +40,12 @@ class UserController extends Controller
 
     protected function getUserId(Request $request): mixed
     {
-        $id = $request->get('id');
+        $id = $request->input('id');
         if ($id === null || $id === 'me') {
             return Auth::user()->id;
         }
 
-        return $request->get('id');
+        return $request->input('id');
     }
 
     /**
