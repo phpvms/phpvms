@@ -169,7 +169,7 @@ class FlightImporter extends Importer
     {
         $body = 'Your flight import has completed and '.Number::format($import->successful_rows).' '.str('row')->plural($import->successful_rows).' imported.';
 
-        if ($failedRowsCount = $import->getFailedRowsCount()) {
+        if (($failedRowsCount = $import->getFailedRowsCount()) !== 0) {
             $body .= ' '.Number::format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to import.';
         }
 
@@ -200,7 +200,7 @@ class FlightImporter extends Importer
 
     private static function setDays(string $state): int
     {
-        if (!$state) {
+        if ($state === '' || $state === '0') {
             return 0;
         }
 

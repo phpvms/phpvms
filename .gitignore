@@ -78,12 +78,6 @@ error_log
 /config.bak.php
 /VERSION
 sync.sh
-
-###> friendsofphp/php-cs-fixer ###
-/.php-cs-fixer.php
-/.php-cs-fixer.cache
-###< friendsofphp/php-cs-fixer ###
-
 ###> phpunit/phpunit ###
 /phpunit.xml
 ###< phpunit/phpunit ###

@@ -196,7 +196,7 @@ class ImportService extends Service
      */
     public function importFlights(string $csv_file, ?string $delete_previous = null)
     {
-        if ($delete_previous !== null && $delete_previous !== '' && $delete_previous !== '0') {
+        if (!in_array($delete_previous, [null, '', '0'], true)) {
             // If delete_previous contains all, then delete everything
             if ($delete_previous === 'all') {
                 Flight::truncate();

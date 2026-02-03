@@ -27,7 +27,6 @@ class SimBrief extends Resource
                 $fare_data = json_decode($this->fare_data, true);
                 foreach ($fare_data as $fare) {
                     $newFare = new Fare($fare);
-                    // @phpstan-ignore-next-line
                     $newFare->count = $fare['count'];
                     $fares->push($newFare);
                 }

@@ -14,7 +14,6 @@ parameters:
 
         # PHPStan is not able to understand the pivot attributes at the moment
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z]+#'
-        - '#Access to an undefined property App\\Models\\[a-zA-Z]+::\$pivot#'
 
         # Eloquent Builder methods are not documented on repositories
         - '#Call to an undefined method App\\Repositories\\[a-zA-Z]+Repository::[a-zA-Z]+\(\)#'
