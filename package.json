@@ -8,7 +8,7 @@
     "@turf/center": "^6.0.1",
     "acorn": "^7.4.1",
     "animate.css": "~3.6",
-    "axios": "^1.6.8",
+    "axios": "^1.12.0",
     "bootstrap": "~4.6",
     "ckeditor4": "4.14.0",
     "cookieconsent": "^3.1.0",
