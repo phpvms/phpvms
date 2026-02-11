@@ -15,6 +15,7 @@ use App\Services\SimBriefService;
 use App\Support\Utils;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 final class SimBriefTest extends TestCase
 {
@@ -68,6 +69,8 @@ final class SimBriefTest extends TestCase
      */
     protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {
+        Storage::fake('local');
+
         Http::fake([
             'simbrief.com/*' => Http::response(file_get_contents(__DIR__.'/data/simbrief/briefing.json'), 200),
         ]);
