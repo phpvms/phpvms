@@ -25,12 +25,13 @@ class InstalledCheck implements Middleware
     {
         $key = config('app.key');
 
-        // TODO: update and fix
+        // If we're in the installer, skip this
+        // Also skip if this is a livewire update (might be called from the system)
+        if ($request->is('system*') || request()->is('livewire/update')) {
+            return $next($request);
+        }
 
-        if ((empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' || !Schema::hasTable('users') || User::count() === 0)
-            && !$request->is('system*')
-            && !$request->is('livewire/update')
-        ) {
+        if (empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' || !Schema::hasTable('users') || User::count() === 0) {
             return redirect('/system/install');
         }
 

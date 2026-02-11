@@ -1,79 +1,24 @@
 <?php
 
-namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Providers;
+namespace $NAMESPACE$;
 
-use App\Contracts\Modules\ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-/**
- * @package $NAMESPACE$
- */
-class AppServiceProvider extends ServiceProvider
+class $CLASS$ extends ServiceProvider
 {
-    private $moduleSvc;
-
-    protected $defer = false;
-
-    /**
-     * Boot the application events.
-     */
-    public function boot(): void
-    {
-        $this->moduleSvc = app('App\Services\ModuleService');
-
-        $this->registerTranslations();
-        $this->registerConfig();
-        $this->registerViews();
-
-        // Uncomment this if you have migrations
-        // $this->loadMigrationsFrom(__DIR__ . '/../$MIGRATIONS_PATH$');
-    }
-
     /**
      * Register the service provider.
      */
-    public function register()
+    public function register(): void
     {
         //
     }
 
     /**
-     * Register config.
+     * Get the services provided by the provider.
      */
-    protected function registerConfig()
+    public function provides(): array
     {
-        $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('$LOWER_NAME$.php'),
-        ], '$LOWER_NAME$');
-
-        $this->mergeConfigFrom(__DIR__.'/../Config/config.php', '$LOWER_NAME$');
-    }
-
-    /**
-     * Register views.
-     */
-    public function registerViews()
-    {
-        $viewPath = resource_path('views/modules/$LOWER_NAME$');
-        $sourcePath = __DIR__ . '/../Resources/views';
-
-        $this->publishes([$sourcePath => $viewPath,], 'views');
-
-        $this->loadViewsFrom(array_merge(array_map(function ($path) {
-            return str_replace('default', setting('general.theme'), $path) . '/modules/$LOWER_NAME$';
-        }, \Config::get('view.paths')), [$sourcePath]), '$LOWER_NAME$');
-    }
-
-    /**
-     * Register translations.
-     */
-    public function registerTranslations()
-    {
-        $langPath = resource_path('lang/modules/$LOWER_NAME$');
-
-        if (is_dir($langPath)) {
-            $this->loadTranslationsFrom($langPath, '$LOWER_NAME$');
-        } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', '$LOWER_NAME$');
-        }
+        return [];
     }
 }

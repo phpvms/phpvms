@@ -4,6 +4,7 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Airport;
+use Exception;
 
 /**
  * Import airports
@@ -61,7 +62,7 @@ class AirportImporter extends ImportExport
             Airport::updateOrCreate([
                 'id' => $row['icao'],
             ], $row);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

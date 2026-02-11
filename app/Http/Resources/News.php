@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use Illuminate\Http\Request;
 
 /**
  * @mixin \App\Models\News
@@ -12,7 +13,7 @@ class News extends Resource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  Request $request
      * @return array
      */
     public function toArray($request)

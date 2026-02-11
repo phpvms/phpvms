@@ -17,15 +17,59 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property mixed   id
- * @property string  code
- * @property string  icao
- * @property string  iata
- * @property string  name
- * @property string  callsign
- * @property string  logo
- * @property string  country
- * @property Journal journal
+ * @property int                             $id
+ * @property string                          $icao
+ * @property string|null                     $iata
+ * @property string                          $name
+ * @property string|null                     $callsign
+ * @property string|null                     $country
+ * @property string|null                     $logo
+ * @property bool                            $active
+ * @property int|null                        $total_flights
+ * @property int|null                        $total_time
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read int|null $aircraft_count
+ * @property-read mixed $code
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read int|null $files_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $flights
+ * @property-read int|null $flights_count
+ * @property-read \App\Models\Journal|null $journal
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pirep> $pireps
+ * @property-read int|null $pireps_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read int|null $subfleets_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\AirlineFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCallsign($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereIata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereIcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereLogo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereTotalFlights($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereTotalTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Airline extends Model
 {
@@ -57,10 +101,8 @@ class Airline extends Model
 
     /**
      * Validation rules
-     *
-     * @var array
      */
-    public static $rules = [
+    public static array $rules = [
         'callsign' => 'nullable',
         'country'  => 'nullable',
         'iata'     => 'nullable|max:5',
@@ -85,7 +127,7 @@ class Airline extends Model
     {
         return Attribute::make(
             get: function ($_, $attrs) {
-                if ($this->iata && $this->iata !== '') {
+                if ($this->iata) {
                     return $this->iata;
                 }
 

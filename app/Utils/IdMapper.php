@@ -19,7 +19,7 @@ class IdMapper extends Service
      *
      * @param string $entity Name of the entity (e,g table)
      */
-    public function addMapping(string $entity, string $old_id, string $new_id)
+    public function addMapping(string $entity, string $old_id, int|string $new_id)
     {
         $key_name = $entity.'_'.$old_id;
         if (!$this->valueStore->has($key_name)) {

@@ -4,14 +4,36 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Str;
 
 /**
- * @property string name
- * @property string slug
- * @property string value  Only set if "squashed"
- * @property bool   show_on_registration
- * @property bool   required
- * @property bool   private
+ * @property int                             $id
+ * @property string                          $name
+ * @property string|null                     $description
+ * @property bool|null                       $show_on_registration
+ * @property bool|null                       $required
+ * @property bool|null                       $private
+ * @property bool                            $internal
+ * @property bool|null                       $active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $slug
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereInternal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField wherePrivate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereShowOnRegistration($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
  */
 class UserField extends Model
 {
@@ -27,7 +49,7 @@ class UserField extends Model
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'        => 'required',
         'description' => 'nullable',
     ];
@@ -38,7 +60,7 @@ class UserField extends Model
     public function slug(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => \Illuminate\Support\Str::slug($attrs['name'], '_')
+            get: fn ($_, $attrs) => Str::slug($attrs['name'], '_')
         );
     }
 

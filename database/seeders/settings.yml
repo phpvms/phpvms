@@ -1,0 +1,586 @@
+- key: general.theme
+  name: 'Current Theme'
+  group: general
+  value: 'seven'
+  options: ''
+  type: select
+  description: 'The currently active theme'
+- key: general.start_date
+  name: 'Start Date'
+  group: general
+  value: ''
+  options: ''
+  type: date
+  description: 'The date your VA started'
+- key: general.admin_email
+  name: 'Admin Email'
+  group: general
+  value: ''
+  options: ''
+  type: text
+  description: 'Email where system notices, etc are sent'
+- key: general.auto_airport_lookup
+  name: 'Automatic airport lookup'
+  group: general
+  value: true
+  options:
+  type: boolean
+  description: If an airport isn't added, try to look it up when adding schedules
+- key: general.allow_unadded_airports
+  name: 'Allow unadded airports'
+  group: general
+  value: false
+  options:
+  type: boolean
+  description: If an un-added airport is used, it is looked up and added
+- key: general.check_prerelease_version
+  name: 'Pre-release versions in version check'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: 'Include beta and other pre-release versions when checking for a new version'
+- key: general.telemetry
+  name: 'Send telemetry to phpVMS'
+  group: general
+  value: true
+  options: ''
+  type: boolean
+  description: 'Send some data (php version, mysql version) to phpVMS. See AnalyticsSvc code for details'
+- key: general.google_analytics_id
+  name: 'Google Analytics Tracking ID'
+  group: general
+  value: ''
+  options: ''
+  type: text
+  description: 'Enter your Google Analytics Tracking ID'
+- key: general.record_user_ip
+  name: 'Record user IP address'
+  group: general
+  value: true
+  options: ''
+  type: boolean
+  description: Record the user's IP address on register/login
+- key: general.invite_only_registrations
+  name: 'Invite Only Registrations'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, only users with an invite can register
+- key: general.disable_registrations
+  name: 'Disable registrations'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, registrations will be disabled and only admins can add pilots
+- key: general.auto_language_detection
+  name: 'Auto language detection'
+  group: general
+  value: false
+  options: ''
+  type: boolean
+  description: If checked, the app's language will be inferred from the browser's preferences
+- key: captcha.enabled
+  name: 'hCaptcha Enabled'
+  group: captcha
+  value: false
+  options: ''
+  type: boolean
+  description: Is hCaptcha enabled
+- key: captcha.site_key
+  name: 'hCaptcha Site Key'
+  group: captcha
+  value: ''
+  options: ''
+  type: text
+  description: Your hCaptcha Site Key
+- key: captcha.secret_key
+  name: 'hCaptcha Secret Key'
+  group: captcha
+  value: ''
+  options: ''
+  type: text
+  description: Your hCaptcha Secret Key
+- key: units.currency
+  name: 'Currency'
+  group: units
+  value: USD
+  type: select
+  description: 'The currency to use'
+- key: units.distance
+  name: 'Distance Units'
+  group: units
+  value: nmi
+  options: 'km=kilometers,mi=miles,nmi=nautical miles'
+  type: select
+  description: 'The distance unit for display'
+- key: units.weight
+  name: 'Weight Units'
+  group: units
+  value: lbs
+  options: 'lbs,kg'
+  type: select
+  description: 'The weight unit for display'
+- key: units.speed
+  name: 'Speed Units'
+  group: units
+  value: knot
+  options: 'km/h,knot'
+  type: select
+  description: 'The speed unit for display'
+- key: units.altitude
+  name: 'Altitude Units'
+  group: units
+  value: ft
+  options: 'ft=feet,m=meters'
+  type: select
+  description: 'The altitude unit for display'
+- key: units.fuel
+  name: 'Fuel Units'
+  group: units
+  value: lbs
+  options: 'lbs,kg'
+  type: select
+  description: 'The units for fuel for display'
+- key: units.volume
+  name: 'Volume Units'
+  group: units
+  value: gallons
+  options: 'gallons,l=liters'
+  type: select
+  description: 'The units of volume for display'
+- key: units.temperature
+  name: 'Temperature Units'
+  group: units
+  value: F
+  options: 'F=Fahrenheit,C=Celsius'
+  type: select
+  description: 'The units for temperature'
+- key: acars.live_time
+  name: 'Live Time'
+  group: acars
+  value: 12
+  options: ''
+  type: int
+  description: 'Age of flights to show on the map in hours. Set to 0 to show only all in-progress flights'
+- key: acars.center_coords
+  name: 'Center Coords'
+  group: acars
+  value: '30.1945,-97.6699'
+  options: ''
+  type: text
+  description: 'Where to center the map; enter as LAT,LON'
+- key: acars.default_zoom
+  name: 'Default Zoom'
+  group: acars
+  value: 5
+  options: ''
+  type: int
+  description: 'Initial zoom level on the map'
+- key: acars.update_interval
+  name: 'Refresh Interval'
+  group: acars
+  value: 60
+  options: ''
+  type: int
+  description: 'How often the live map updates its data'
+- key: airports.default_ground_handling_cost
+  name: 'Default Ground Handling Cost'
+  group: airports
+  value: 250
+  options:
+  type: int
+  description: If an airport's Ground Handling Cost Cost isn't added, set this value by default
+- key: airports.default_jet_a_fuel_cost
+  name: 'Default Jet A Fuel Cost'
+  group: airports
+  value: 0.7
+  options:
+  type: text
+  description: If an airport's Jet A Fuel Cost isn't added, set this value by default
+- key: airports.default_100ll_fuel_cost
+  name: 'Default 100LL Fuel Cost'
+  group: airports
+  value: 0.9
+  options:
+  type: text
+  description: If an airport's 100LL Fuel Cost isn't added, set this value by default
+- key: airports.default_mogas_fuel_cost
+  name: 'Default MOGAS Fuel Cost'
+  group: airports
+  value: 0.8
+  options:
+  type: text
+  description: If an airport's MOGAS Fuel Cost isn't added, set this value by default
+- key: bids.disable_flight_on_bid
+  name: 'Disable flight on bid'
+  group: bids
+  value: true
+  options: ''
+  type: boolean
+  description: 'When a flight is bid on, no one else can bid on it'
+- key: bids.allow_multiple_bids
+  name: 'Allow multiple bids'
+  group: bids
+  value: true
+  options: ''
+  type: boolean
+  description: 'Whether or not someone can bid on multiple flights'
+- key: bids.block_aircraft
+  name: 'Restrict Aircraft'
+  group: bids
+  value: true
+  options: ''
+  type: boolean
+  description: 'When enabled, an aircraft can only be used for one active Bid and Flight/Pirep'
+- key: bids.expire_time
+  name: 'Expire Time'
+  group: bids
+  value: 48
+  options: ''
+  type: int
+  description: 'Number of hours to expire bids after'
+- key: flights.default_load_factor
+  name: 'Load Factor'
+  group: flights
+  value: 82
+  options: ''
+  type: number
+  description: 'The default load factor for a flight, as a percent'
+- key: flights.load_factor_variance
+  name: 'Load Factor Variance'
+  group: flights
+  value: 5
+  options: ''
+  type: number
+  description: 'How much the load factor can vary per-flight'
+- key: flights.use_cargo_load_factor
+  name: 'Different Cargo Load Factor'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled these values will be used for cargo fares'
+- key: flights.default_cargo_load_factor
+  name: 'Cargo Load Factor'
+  group: flights
+  value: 32
+  options: ''
+  type: number
+  description: 'The default cargo load factor for a flight, as a percent'
+- key: flights.cargo_load_factor_variance
+  name: 'Cargo Load Factor Variance'
+  group: flights
+  value: 5
+  options: ''
+  type: number
+  description: 'How much the cargo load factor can vary per-flight'
+- key: flights.only_company_aircraft
+  name: 'Allow Only Company Aircraft'
+  group: flights
+  value: false
+  options: ''
+  type: boolean
+  description: 'If no subfleets are assigned to a flight, only company aircraft will be used'
+- key: simbrief.api_key
+  name: 'Simbrief API Key'
+  group: simbrief
+  value: ''
+  options: ''
+  type: string
+  description: 'Your Simbrief API key'
+- key: simbrief.only_bids
+  name: 'Only allow for bids'
+  group: simbrief
+  value: true
+  options: ''
+  type: boolean
+  description: 'Only allow briefs to be created for bidded flights'
+- key: simbrief.expire_hours
+  name: 'Simbrief Expire Time'
+  group: simbrief
+  value: 6
+  options: ''
+  type: number
+  description: 'Hours after how long to remove unused briefs'
+- key: simbrief.noncharter_pax_weight
+  name: 'Non-Charter Passenger Weight'
+  group: simbrief
+  value: 185
+  options: ''
+  type: number
+  description: 'Passenger weight for non-charter flights excluding baggage (lbs)'
+- key: simbrief.noncharter_baggage_weight
+  name: 'Non-Charter Baggage Weight'
+  group: simbrief
+  value: 35
+  options: ''
+  type: number
+  description: 'Passenger baggage weight for non-charter flights (lbs)'
+- key: simbrief.charter_pax_weight
+  name: 'Charter Passenger Weight'
+  group: simbrief
+  value: 168
+  options: ''
+  type: number
+  description: 'Passenger weight for charter flights excluding baggage (lbs)'
+- key: simbrief.charter_baggage_weight
+  name: 'Charter Baggage Weight'
+  group: simbrief
+  value: 28
+  options: ''
+  type: number
+  description: 'Passenger baggage weight for charter flights (lbs)'
+- key: simbrief.callsign
+  name: 'Use ATC Callsign'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'Use pilot ident as Simbrief ATC Callsign'
+- key: simbrief.name_private
+  name: 'Use Privatized Name at OFPs'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'Use privatized user name as SimBrief OFP captain name'
+- key: simbrief.block_aircraft
+  name: 'Restrict Aircraft'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled, an aircraft can only be used for one active SimBrief OFP and Flight/Pirep'
+- key: simbrief.use_standard_weights
+  name: 'Use Only phpVMS Weights'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled, only phpVMS Passenger and Baggage weights will be used (instead of Airframe definitions)'
+- key: simbrief.use_custom_airframes
+  name: 'Use Only Custom Airframes'
+  group: simbrief
+  value: false
+  options: ''
+  type: boolean
+  description: 'When enabled, only phpVMS Airframes will be listed for flight planning (instead of combined list)'
+- key: pireps.duplicate_check_time
+  name: 'PIREP duplicate time check'
+  group: pireps
+  value: 10
+  options: ''
+  type: int
+  description: 'The time in minutes to check for a duplicate PIREP'
+- key: pireps.restrict_aircraft_to_rank
+  name: 'Restrict Aircraft to Ranks'
+  group: pireps
+  value: true
+  options: ''
+  type: boolean
+  description: 'Aircraft restricted to user''s rank'
+- key: pireps.restrict_aircraft_to_typerating
+  name: 'Restrict Aircraft by Type Ratings'
+  group: pireps
+  value: false
+  options: ''
+  type: boolean
+  description: 'Aircraft restricted to user type ratings'
+- key: pireps.only_aircraft_at_dpt_airport
+  name: 'Restrict Aircraft At Departure'
+  group: pireps
+  value: false
+  options: ''
+  type: boolean
+  description: 'Only allow aircraft that are at the departure airport'
+- key: pireps.advanced_fuel
+  name: 'Advanced Fuel Calculations'
+  group: pireps
+  value: false
+  options: ''
+  type: boolean
+  description: 'Enables remaining fuel amounts to be considered for fuel expenses'
+- key: pireps.delete_cancelled_hours
+  name: 'Delete cancelled PIREPs'
+  group: pireps
+  value: 12
+  options: ''
+  type: int
+  description: 'The time in hours to delete a cancelled PIREP'
+- key: pireps.delete_rejected_hours
+  name: 'Delete rejected PIREPs'
+  group: pireps
+  value: 12
+  options: ''
+  type: int
+  description: 'The time in hours to delete a rejected PIREP'
+- key: pireps.handle_diversion
+  name: 'Handle pirep diversion'
+  group: pireps
+  value: true
+  options: ''
+  type: boolean
+  description: 'Auto Handle Diversions (move assets and create re position flight)'
+- key: pilots.id_length
+  name: 'Pilot ID Length'
+  group: pilots
+  value: 4
+  options: ''
+  type: int
+  description: 'The length of a pilot''s ID'
+- key: pilots.id_code
+  name: 'Pilot ID Code'
+  group: pilots
+  value: ''
+  options: ''
+  type: text
+  description: 'Fixed ICAO code for pilot IDs'
+- key: pilots.auto_accept
+  name: 'Auto Accept New Pilot'
+  group: pilots
+  value: true
+  options: ''
+  type: boolean
+  description: 'Automatically accept a pilot when they register'
+- key: pilots.home_hubs_only
+  name: 'Hubs as home airport'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Pilots can only select hubs as their home airport'
+- key: pilots.only_flights_from_current
+  name: 'Only allow flights from Current'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Only allow flights from their current location'
+- key: pilots.only_show_flights_from_current
+  name: 'Only show flights from Current'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Only show flights from their current location'
+- key: pilots.auto_leave_days
+  name: 'Pilot to ON LEAVE days'
+  group: pilots
+  value: 30
+  options: ''
+  type: int
+  description: 'Automatically set a pilot to ON LEAVE status after N days of no activity'
+- key: pilots.hide_inactive
+  name: 'Hide Inactive Pilots'
+  group: pilots
+  value: true
+  options: ''
+  type: boolean
+  description: 'Don''t show inactive pilots in the public view'
+- key: pilots.restrict_to_company
+  name: 'Restrict the flights to company'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Restrict flights to the user''s airline'
+- key: pilots.allow_transfer_hours
+  name: 'Allow transfer hours'
+  group: pilots
+  value: true
+  options: ''
+  type: boolean
+  description: 'Allow specifying transfer hours on registration page and displayed on profile page'
+- key: pilots.count_transfer_hours
+  name: 'Count transfer hours in calculations'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Count transfer hours in calculations, like ranks and the total hours'
+- key: notifications.discord_public_webhook_url
+  name: Discord Public Webhook URL
+  group: notifications
+  value: ''
+  options: ''
+  type: text
+  description: The Discord Webhook URL for public notifications
+- key: notifications.discord_private_webhook_url
+  name: Discord Private Webhook URL
+  group: notifications
+  value: ''
+  options: ''
+  type: text
+  description: The Discord Webhook URL for private notifications
+- key: notifications.discord_pirep_status
+  name: Discord Pirep Messages (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Pirep status messages (Only key events are being sent)
+- key: notifications.mail_pirep_admin
+  name: Pirep Filed (Admin)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Pirep filed mails sent to admins
+- key: notifications.mail_pirep_user_ack
+  name: Pirep Accepted (Pilot)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Pirep Accepted mails sent to pilots
+- key: notifications.mail_pirep_user_rej
+  name: Pirep Rejected (Pilot)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Pirep Rejected mails sent to pilots
+- key: notifications.mail_news
+  name: News Mails
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: News mails sent to all members
+- key: 'cron.random_id'
+  name: 'Cron Randomized ID'
+  group: 'cron'
+  value: ''
+  type: 'hidden'
+  description: ''
+- key: notifications.discord_award_awarded
+  name: Discord Award Message (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a user is awarded
+- key: notifications.discord_user_rank_changed
+  name: Discord User Rank Changed (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a user's rank is changed
+- key: notifications.discord_pirep_diverted
+  name: Discord Pirep Diverted (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a pirep is diverted
+- key: notifications.discord_pirep_filed
+  name: Discord Pirep Filed Message (Public)
+  group: notifications
+  value: true
+  options: ''
+  type: boolean
+  description: Send out a discord notification when a pirep is filed

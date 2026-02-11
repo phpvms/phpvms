@@ -121,7 +121,7 @@ class LegacyImporterService extends Service
      * @param  int      $start
      * @return int|void
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function run($importer, $start = 0)
     {
@@ -129,7 +129,7 @@ class LegacyImporterService extends Service
             throw new Exception('Unknown importer "'.$importer.'"');
         }
 
-        /** @var $importerInst BaseImporter */
+        /** @var BaseImporter $importerInst */
         $importerInst = new $importer();
 
         try {

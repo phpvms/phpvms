@@ -31,10 +31,8 @@ class MigrationService extends Service
     /**
      * Find all of the possible paths that migrations exist.
      * Include looking in all of the modules Database/migrations directories
-     *
-     * @param mixed $dir
      */
-    public function getMigrationPaths($dir = 'migrations'): array
+    public function getMigrationPaths(string $dir = 'migrations'): array
     {
         $paths = [
             'core' => App::databasePath().'/'.$dir,
@@ -88,28 +86,20 @@ class MigrationService extends Service
      */
     public function runAllMigrations(): string
     {
-        // A little ugly, run the main migration first, this makes sure the migration table is there
-        $output = '';
+        Artisan::call('migrate', ['--force' => true, '--realpath' => true, '--path' => $this->getMigrationPaths()]);
 
-        Artisan::call('migrate', ['--force' => true]);
-        $output .= trim(Artisan::output());
+        return trim(Artisan::output());
+    }
 
-        // Then get any remaining migrations that are left over
-        // Due to caching or whatever reason, the migrations are not all loaded when Artisan first
-        // runs. This is likely a side effect of the database being used as the module activator,
-        // and the list of migrations being pulled before the initial modules are populated
-        $migrator = $this->getMigrator();
-        $availMigrations = $this->migrationsAvailable();
+    public function runAllMigrationsWithStreaming(\Closure $streamCallback): void
+    {
+        $command = ['migrate', '--force', '--realpath'];
 
-        if ($availMigrations !== []) {
-            Log::info('Running '.count($availMigrations).' available migrations');
-            $ret = $migrator->run($availMigrations);
-            Log::info('Ran '.count($ret).' migrations');
-
-            return $output."\n".implode("\n", $ret);
+        foreach ($this->getMigrationPaths() as $path) {
+            $command[] = '--path='.$path;
         }
 
-        return $output;
+        app(StreamedCommandsService::class)->streamArtisanCommand($command, $streamCallback);
     }
 
     /**
@@ -150,23 +140,19 @@ class MigrationService extends Service
      */
     public function runAllDataMigrations(): string
     {
-        $output = '';
+        Artisan::call('migrate-data', ['--force' => true, '--realpath' => true, '--path' => $this->getMigrationPaths('migrations_data')]);
 
-        // Then get any remaining migrations that are left over
-        // Due to caching or whatever reason, the migrations are not all loaded when Artisan first
-        // runs. This is likely a side effect of the database being used as the module activator,
-        // and the list of migrations being pulled before the initial modules are populated
-        $migrator = $this->getDataMigrator();
-        $availMigrations = $this->dataMigrationsAvailable();
+        return trim(Artisan::output());
+    }
 
-        if ($availMigrations !== []) {
-            Log::info('Running '.count($availMigrations).' available migrations');
-            $ret = $migrator->run($availMigrations);
-            Log::info('Ran '.count($ret).' migrations');
+    public function runAllDataMigrationsWithStreaming(\Closure $streamCallback): void
+    {
+        $command = ['migrate-data', '--force', '--realpath'];
 
-            return $output."\n".implode("\n", $ret);
+        foreach ($this->getMigrationPaths('migrations_data') as $path) {
+            $command[] = '--path='.$path;
         }
 
-        return $output;
+        app(StreamedCommandsService::class)->streamArtisanCommand($command, $streamCallback);
     }
 }

@@ -3,9 +3,11 @@
 namespace App\Contracts;
 
 use App\Models\Airline;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * Common functionality used across all of the importers
@@ -29,17 +31,17 @@ class ImportExport
      */
     public function export($row): array
     {
-        throw new \RuntimeException('export not implemented');
+        throw new RuntimeException('export not implemented');
     }
 
     /**
      * @param mixed $index
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function import(array $row, $index): bool
     {
-        throw new \RuntimeException('import not implemented');
+        throw new RuntimeException('import not implemented');
     }
 
     /**
@@ -76,10 +78,10 @@ class ImportExport
      *
      * @throws ValidationException
      */
-    protected function throwError($error, ?\Exception $e = null): void
+    protected function throwError($error, ?Exception $e = null): void
     {
         Log::error($error);
-        if ($e instanceof \Exception) {
+        if ($e instanceof Exception) {
             Log::error($e->getMessage());
         }
 

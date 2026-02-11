@@ -29,6 +29,8 @@ class ExportAction extends Action
 
         $this->label('Export to CSV');
 
+        $this->visible(!config('phpvms.use_queued_filament_imports'));
+
         $this->action(function (array $arguments): ?BinaryFileResponse {
             if (!isset($arguments['resourceTitle']) || !$arguments['exportType']) {
                 $this->failure();
@@ -65,6 +67,12 @@ class ExportAction extends Action
                     $data = app(SubfleetRepository::class)->all();
                     $path = $exportSvc->exportSubfleets($data);
                     break;
+            }
+
+            if (!isset($path)) {
+                $this->failure();
+
+                return null;
             }
 
             $this->sendSuccessNotification();

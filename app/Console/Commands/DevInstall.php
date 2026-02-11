@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App;
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * Create a fresh development install
@@ -14,19 +16,10 @@ class DevInstall extends Command
 
     protected $description = 'Run a developer install and run the sample migration';
 
-    private \DatabaseSeeder $databaseSeeder;
-
-    public function __construct(\DatabaseSeeder $databaseSeeder)
-    {
-        parent::__construct();
-
-        $this->databaseSeeder = $databaseSeeder;
-    }
-
     /**
      * Run dev related commands
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     public function handle()
     {
@@ -35,7 +28,7 @@ class DevInstall extends Command
         }
 
         // Reload the configuration
-        \App::boot();
+        App::boot();
 
         $this->info('Recreating database');
         $this->call('database:create', [
@@ -53,7 +46,7 @@ class DevInstall extends Command
     /**
      * Rewrite the configuration files
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     protected function rewriteConfigs()
     {

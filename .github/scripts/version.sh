@@ -17,10 +17,12 @@ php artisan phpvms:version
 if test "$GIT_TAG_NAME"; then
   echo "Tagged with ${GIT_TAG_NAME}"
   export FILE_NAME="phpvms-${GIT_TAG_NAME}"
+  #export IMAGE_NAME="phpvms:${GIT_TAG_NAME}"
 else
   export BRANCH=${GITHUB_REF##*/}
   echo "On branch $BRANCH"
-  export FILE_NAME="phpvms-${NBGV_PrereleaseVersionNoLeadingHyphen}"
+  export FILE_NAME="phpvms-${BRANCH}"
+  #export IMAGE_NAME="phpvms:${NBGV_SemVer2}"
 fi
 
 export TAR_NAME="$FILE_NAME.tar.gz"
@@ -41,6 +43,7 @@ echo "TAR_NAME=${TAR_NAME}" >> "$GITHUB_ENV"
 echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
 echo "BASE_DIR=${BASE_DIR}" >> "$GITHUB_ENV"
 echo "FULL_VERSION=${FULL_VERSION}" >> "$GITHUB_ENV"
+#echo "IMAGE_NAME=${IMAGE_NAME}" >> "$GITHUB_ENV"
 
 echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"

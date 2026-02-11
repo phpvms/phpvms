@@ -5,30 +5,41 @@ namespace App\Filament\RelationManagers;
 use App\Models\Aircraft;
 use App\Models\Enums\ExpenseType;
 use App\Models\Subfleet;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ExpensesRelationManager extends RelationManager
 {
     protected static string $relationship = 'expenses';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
+                    ->label(__('common.name'))
                     ->string()
                     ->required(),
 
-                Forms\Components\TextInput::make('amount')
+                TextInput::make('amount')
+                    ->label(__('common.amount'))
                     ->numeric()
                     ->step(0.01)
                     ->required(),
 
-                Forms\Components\Select::make('type')
+                Select::make('type')
+                    ->label(__('common.type'))
                     ->options(ExpenseType::select())
                     ->required(),
             ]);
@@ -39,16 +50,24 @@ class ExpensesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('amount')->money(setting('units.currency')),
-                Tables\Columns\TextColumn::make('type')->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
+                TextColumn::make('name')
+                    ->label(__('common.name')),
+
+                TextColumn::make('amount')
+                    ->label(__('common.amount'))
+                    ->money(setting('units.currency')),
+
+                TextColumn::make('type')
+                    ->label(__('common.type'))
+                    ->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Add Expense')->icon('heroicon-o-plus-circle')
-                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                CreateAction::make()
+                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
                             $data['airline_id'] = $ownerRecord->airline_id;
@@ -59,20 +78,19 @@ class ExpensesRelationManager extends RelationManager
                         return $data;
                     }),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus-circle')
-                    ->label('Add Expense')
-                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                CreateAction::make()
+                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
                             $data['airline_id'] = $ownerRecord->airline_id;
@@ -83,5 +101,17 @@ class ExpensesRelationManager extends RelationManager
                         return $data;
                     }),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('expenses.expense');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return str(__('expenses.expense'))
+            ->plural()
+            ->toString();
     }
 }

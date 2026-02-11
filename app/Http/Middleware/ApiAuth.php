@@ -10,8 +10,10 @@ use App\Contracts\Middleware;
 use App\Models\Enums\UserState;
 use App\Models\User;
 use Closure;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApiAuth implements Middleware
 {
@@ -58,8 +60,8 @@ class ApiAuth implements Middleware
     /**
      * Return an unauthorized message
      *
-     * @param  mixed                                                                                    $details
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     * @param  mixed                    $details
+     * @return ResponseFactory|Response
      */
     private function unauthorized($details = '')
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\BidNotFound;
 use App\Exceptions\Unauthorized;
 use App\Exceptions\UserNotFound;
@@ -19,6 +20,8 @@ use App\Repositories\PirepRepository;
 use App\Repositories\UserRepository;
 use App\Services\BidService;
 use App\Services\UserService;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -39,12 +42,12 @@ class UserController extends Controller
 
     protected function getUserId(Request $request): mixed
     {
-        $id = $request->get('id');
+        $id = $request->input('id');
         if ($id === null || $id === 'me') {
             return Auth::user()->id;
         }
 
-        return $request->get('id');
+        return $request->input('id');
     }
 
     /**
@@ -59,8 +62,6 @@ class UserController extends Controller
 
     /**
      * Get the profile for the passed-in user
-     *
-     * @param Request $request
      */
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
@@ -78,8 +79,8 @@ class UserController extends Controller
      *
      * @return mixed
      *
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     * @throws \App\Exceptions\BidExistsForFlight
+     * @throws ModelNotFoundException
+     * @throws BidExistsForFlight
      */
     public function bids(Request $request)
     {
@@ -131,9 +132,6 @@ class UserController extends Controller
 
     /**
      * Get a particular bid for a user
-     *
-     *
-     * @return Bid
      */
     public function get_bid(int $bid_id, Request $request): BidResource
     {
@@ -147,7 +145,7 @@ class UserController extends Controller
         }
 
         if ($bid->user_id !== $user->id) {
-            throw new Unauthorized(new \Exception('Bid not not belong to authenticated user'));
+            throw new Unauthorized(new Exception('Bid not not belong to authenticated user'));
         }
 
         return new BidResource($bid);

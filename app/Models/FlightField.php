@@ -4,13 +4,23 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Str;
 
 /**
  * Class FlightField
  *
- * @property string name
- * @property string slug
- * @property bool   required
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $slug
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereSlug($value)
+ *
+ * @mixin \Eloquent
  */
 class FlightField extends Model
 {
@@ -24,7 +34,7 @@ class FlightField extends Model
         'required',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 
@@ -36,7 +46,7 @@ class FlightField extends Model
         return Attribute::make(
             set: fn ($name) => [
                 'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name),
+                'slug' => Str::slug($name),
             ]
         );
     }

@@ -40,11 +40,14 @@ use App\Repositories\FlightRepository;
 use App\Repositories\PirepRepository;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepService extends Service
 {
@@ -66,7 +69,7 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Exception
+     * @throws Exception
      * @throws AirportNotFound If one of the departure or arrival airports isn't found locally
      */
     public function prefile(User $user, array $attrs, array $fields = [], array $fares = []): Pirep
@@ -116,14 +119,14 @@ class PirepService extends Service
         }
 
         // See if this aircraft is valid
-        /** @var Aircraft $aircraft */
+        /** @var ?Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
         if ($aircraft === null) {
             throw new AircraftInvalid($aircraft);
         }
 
         // See if this aircraft is available for flight
-        /** @var Aircraft $aircraft */
+        /** @var ?Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->where('id', $pirep->aircraft_id)->where('state', AircraftState::PARKED)->first();
         if ($aircraft === null) {
             throw new AircraftNotAvailable($pirep->aircraft);
@@ -164,7 +167,7 @@ class PirepService extends Service
         // Check if there is a simbrief_id, update it to have the pirep_id
         // Keep the flight_id until the end of flight (pirep file)
         if (array_key_exists('simbrief_id', $attrs)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief, true);
@@ -181,8 +184,6 @@ class PirepService extends Service
 
     /**
      * Create a new PIREP with some given fields
-     *
-     * @param array PirepFieldValue[] $field_values
      */
     public function create(Pirep $pirep, array $fields = []): Pirep
     {
@@ -228,8 +229,8 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     * @throws \Exception
+     * @throws ValidatorException
+     * @throws Exception
      */
     public function update(string $pirep_id, array $attrs, array $fields = [], array $fares = []): Pirep
     {
@@ -246,7 +247,7 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function file(Pirep $pirep, array $attrs = [], array $fields = [], array $fares = []): Pirep
     {
@@ -276,7 +277,7 @@ class PirepService extends Service
         // Check if there is a simbrief_id, change it to be set to the PIREP
         // at the end of the flight when it's been filed
         if (array_key_exists('simbrief_id', $attrs)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief);
@@ -360,7 +361,7 @@ class PirepService extends Service
      * entered into the PIREP's route field
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveRoute(Pirep $pirep): Pirep
     {
@@ -388,11 +389,9 @@ class PirepService extends Service
             $pirep->route
         );
 
-        /**
-         * @var $point Navdata
-         */
         $point_count = 1;
         foreach ($route as $point) {
+            /** @var Navdata $point */
             $acars = new Acars();
             $acars->pirep_id = $pirep->id;
             $acars->type = AcarsType::ROUTE;
@@ -413,7 +412,7 @@ class PirepService extends Service
      * Submit the PIREP. Figure out its default state
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function submit(Pirep $pirep)
     {
@@ -423,7 +422,7 @@ class PirepService extends Service
         // visible at pireps.show blade uses this function so Simbrief also needs to
         // checked here too (to remove the flight_id and release the aircraft)
         if (!empty($pirep->simbrief)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($pirep->simbrief->id);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief);
@@ -467,7 +466,7 @@ class PirepService extends Service
      * Cancel a PIREP
      *
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function cancel(Pirep $pirep): Pirep
     {
@@ -526,7 +525,7 @@ class PirepService extends Service
      */
     public function updateCustomFields(string $pirep_id, array $field_values): void
     {
-        if (!$field_values || $field_values === []) {
+        if ($field_values === []) {
             return;
         }
 
@@ -539,7 +538,7 @@ class PirepService extends Service
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function changeState(Pirep $pirep, int $new_state): Pirep
     {
@@ -586,7 +585,7 @@ class PirepService extends Service
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function accept(Pirep $pirep): Pirep
     {
@@ -709,10 +708,15 @@ class PirepService extends Service
 
         event(new PirepDiverted($pirep));
 
+        /** @var ?\Nwidart\Modules\Module $has_vmsacars */
         $has_vmsacars = Module::find('VMSAcars');
 
-        if ($has_vmsacars && $flight) {
-            $free_flights_disabled = DB::table('vmsacars_config')->find('disable_free_flights')?->value;
+        $has_vmsacars_config = Schema::hasTable('vmsacars_config');
+
+        if ($has_vmsacars && $has_vmsacars_config && $flight) {
+            /** @var ?object $query */
+            $query = DB::table('vmsacars_config')->find('disable_free_flights');
+            $free_flights_disabled = $query?->value;
             // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
             if (get_truth_state($free_flights_disabled) == true) {

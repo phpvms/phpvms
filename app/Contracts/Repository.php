@@ -3,7 +3,8 @@
 namespace App\Contracts;
 
 use Exception;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -11,6 +12,8 @@ use function is_array;
 
 /**
  * @mixin BaseRepository
+ *
+ * @property Model $model
  */
 abstract class Repository extends BaseRepository
 {
@@ -26,12 +29,9 @@ abstract class Repository extends BaseRepository
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function validate($values)
+    public function validate($values): bool|MessageBag
     {
-        $validator = Validator::make($values, $this->model()->rules);
+        $validator = Validator::make($values, $this->model::$rules);
         if ($validator->fails()) {
             return $validator->messages();
         }
@@ -79,13 +79,9 @@ abstract class Repository extends BaseRepository
     /**
      * Find records where values don't match a list but sort the rest
      *
-     * @param  string $col
-     * @param  array  $values
-     * @param  string $sort_by
-     * @param  string $order_by
      * @return $this
      */
-    public function whereNotInOrder($col, $values, $sort_by, $order_by = 'asc')
+    public function whereNotInOrder(string $col, array $values, array|string $sort_by, string $order_by = 'asc'): self
     {
         return $this->scopeQuery(function ($query) use ($col, $values, $sort_by, $order_by) {
             $q = $query->whereNotIn($col, $values);
@@ -106,7 +102,7 @@ abstract class Repository extends BaseRepository
      * Retrieve all data of repository, paginated. Added in extra parameter to read from the
      * request which page it should be on
      *
-     * @param  null   $limit
+     * @param  ?int   $limit
      * @param  array  $columns
      * @param  string $method
      * @return mixed

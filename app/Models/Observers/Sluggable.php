@@ -2,10 +2,10 @@
 
 namespace App\Models\Observers;
 
+use Illuminate\Support\Str;
+
 /**
  * Create a slug from a name
- *
- * @property object attributes
  */
 class Sluggable
 {
@@ -16,17 +16,17 @@ class Sluggable
 
     public function creating($model): void
     {
-        $model->slug = \Illuminate\Support\Str::slug($model->name);
+        $model->slug = Str::slug($model->name);
     }
 
     public function updating($model): void
     {
-        $model->slug = \Illuminate\Support\Str::slug($model->name);
+        $model->slug = Str::slug($model->name);
     }
 
     public function setNameAttribute($name): void
     {
         $this->attributes['name'] = $name;
-        $this->attributes['slug'] = \Illuminate\Support\Str::slug($name);
+        $this->attributes['slug'] = Str::slug($name);
     }
 }

@@ -16,6 +16,11 @@ use App\Events\UserStatsChanged;
 use App\Models\Enums\PirepStatus;
 use App\Models\Enums\UserState;
 use App\Models\User;
+use App\Notifications\Messages\AdminUserRegistered;
+use App\Notifications\Messages\Broadcast\PirepStatusChanged;
+use App\Notifications\Messages\Broadcast\UserRankChanged;
+use App\Notifications\Messages\UserPending;
+use App\Notifications\Messages\UserRegistered;
 use App\Notifications\Messages\UserRejected;
 use App\Notifications\Notifiables\Broadcast;
 use Exception;
@@ -29,8 +34,6 @@ use Illuminate\Support\Facades\Notification;
  */
 class NotificationEventsHandler extends Listener
 {
-    private static $broadcastNotifyable;
-
     public static $callbacks = [
         AwardAwarded::class      => 'onAwardAwarded',
         NewsAdded::class         => 'onNewsAdded',
@@ -44,11 +47,6 @@ class NotificationEventsHandler extends Listener
         UserStatsChanged::class  => 'onUserStatsChanged',
         Verified::class          => 'onEmailVerified',
     ];
-
-    public function __construct()
-    {
-        static::$broadcastNotifyable = app(Broadcast::class);
-    }
 
     /**
      * Send a notification to all of the admins
@@ -99,7 +97,7 @@ class NotificationEventsHandler extends Listener
 
         /** @var Collection $users */
         $users = User::where($where)->whereIn('state', [UserState::ACTIVE, UserState::ON_LEAVE])->get();
-        if (empty($users) || $users->count() === 0) {
+        if ($users->count() === 0) {
             return;
         }
 
@@ -112,33 +110,35 @@ class NotificationEventsHandler extends Listener
 
     public function onEmailVerified(Verified $event): void
     {
+        /** @var User $user */
+        $user = $event->user;
         // Return if the user has any flights (email change / admin requests new verification)
-        if ($event->user->flights > 0) {
+        if ($user->flights > 0) {
             return;
         }
 
         Log::info('NotificationEvents::onUserRegister: '
-            .$event->user->ident.' is '
-            .UserState::label($event->user->state).', sending active email');
+            .$user->ident.' is '
+            .UserState::label($user->state).', sending active email');
 
         /*
          * Send the user a confirmation email
          */
-        if ($event->user->state === UserState::ACTIVE) {
-            $this->notifyUser($event->user, new Messages\UserRegistered($event->user));
-        } elseif ($event->user->state === UserState::PENDING) {
-            $this->notifyUser($event->user, new Messages\UserPending($event->user));
+        if ($user->state === UserState::ACTIVE) {
+            $this->notifyUser($user, new UserRegistered($user));
+        } elseif ($user->state === UserState::PENDING) {
+            $this->notifyUser($user, new UserPending($user));
         }
 
         /*
          * Send all of the admins a notification that a new user registered
          */
-        $this->notifyAdmins(new Messages\AdminUserRegistered($event->user));
+        $this->notifyAdmins(new AdminUserRegistered($user));
 
         /*
          * Broadcast notifications
          */
-        Notification::send([$event->user], new Messages\Broadcast\UserRegistered($event->user));
+        Notification::send([$user], new Messages\Broadcast\UserRegistered($user));
     }
 
     /**
@@ -150,7 +150,7 @@ class NotificationEventsHandler extends Listener
 
         if ($event->old_state === UserState::PENDING) {
             if ($event->user->state === UserState::ACTIVE) {
-                $this->notifyUser($event->user, new Messages\UserRegistered($event->user));
+                $this->notifyUser($event->user, new UserRegistered($event->user));
             } elseif ($event->user->state === UserState::REJECTED) {
                 $this->notifyUser($event->user, new UserRejected($event->user));
             }
@@ -194,7 +194,7 @@ class NotificationEventsHandler extends Listener
         ];
 
         if (setting('notifications.discord_pirep_status', true) && in_array($event->pirep->status, $message_types, true)) {
-            Notification::send([$event->pirep], new Messages\Broadcast\PirepStatusChanged($event->pirep));
+            Notification::send([$event->pirep], new PirepStatusChanged($event->pirep));
         }
     }
 
@@ -292,7 +292,7 @@ class NotificationEventsHandler extends Listener
          * Broadcast notifications
          */
         if (setting('notifications.discord_user_rank_changed', true) && $event->stat_name === 'rank') {
-            Notification::send([$event->user], new Messages\Broadcast\UserRankChanged($event->user));
+            Notification::send([$event->user], new UserRankChanged($event->user));
         }
     }
 }

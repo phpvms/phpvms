@@ -30,7 +30,7 @@
 
         <div class="mb-3">
           <label for="route_code" class="form-label">@lang('flights.code')</label>
-          <input type="text" name="route_code" id="route_code" class="form-control" value="{{ request()->get('route_code') }}" />
+          <input type="text" name="route_code" id="route_code" class="form-control" value="{{ request()->input('route_code') }}" />
         </div>
 
         <div class="mb-3">
@@ -49,7 +49,7 @@
           <label for="subfleet_id" class="form-label">@lang('common.subfleet')</label>
           <select name="subfleet_id" id="subfleet_id" class="form-select select2">
             @foreach($subfleets as $subfleet_id => $subfleet_label)
-              <option value="{{ $subfleet_id }}" @if(request()->get('subfleet_id') == $subfleet_id) selected @endif>{{ $subfleet_label }}</option>
+              <option value="{{ $subfleet_id }}" @if(request()->input('subfleet_id') == $subfleet_id) selected @endif>{{ $subfleet_label }}</option>
             @endforeach
           </select>
         </div>
@@ -60,7 +60,7 @@
             <select name="type_rating_id" id="type_rating_id" class="form-select select2">
               <option value=""></option>
               @foreach($type_ratings as $tr)
-                <option value="{{ $tr->id }}" @if(request()->get('type_rating_id') == $tr->id) selected @endif>{{ $tr->type.' | '.$tr->name }}</option>
+                <option value="{{ $tr->id }}" @if(request()->input('type_rating_id') == $tr->id) selected @endif>{{ $tr->type.' | '.$tr->name }}</option>
               @endforeach
             </select>
           </div>
@@ -72,7 +72,7 @@
             <select name="icao_type" id="icao_type" class="form-select select2">
               <option value=""></option>
               @foreach($icao_codes as $icao)
-                <option value="{{ $icao }}" @if(request()->get('icao_type') == $icao) selected @endif>{{ $icao }}</option>
+                <option value="{{ $icao }}" @if(request()->input('icao_type') == $icao) selected @endif>{{ $icao }}</option>
               @endforeach
             </select>
           </div>

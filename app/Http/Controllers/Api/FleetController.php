@@ -43,7 +43,7 @@ class FleetController extends Controller
     {
         $where = [];
         if ($request->filled('type')) {
-            $where[$request->get('type')] = $id;
+            $where[$request->input('type')] = $id;
         } else {
             $where['id'] = $id;
         }

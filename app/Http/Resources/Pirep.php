@@ -7,6 +7,7 @@ use App\Http\Resources\SimBrief as SimbriefResource;
 use App\Models\Enums\PirepStatus;
 use App\Support\Units\Distance;
 use App\Support\Units\Fuel;
+use Illuminate\Http\Request;
 
 /**
  * @mixin \App\Models\Pirep
@@ -16,7 +17,7 @@ class Pirep extends Resource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  Request $request
      * @return array
      */
     public function toArray($request)

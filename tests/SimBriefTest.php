@@ -48,7 +48,7 @@ final class SimBriefTest extends TestCase
      */
     protected function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string $flight_id = null): SimBrief
     {
-        if ($flight_id === null || $flight_id === '' || $flight_id === '0') {
+        if (in_array($flight_id, [null, '', '0'], true)) {
             $flight_id = self::$simbrief_flight_id;
         }
 

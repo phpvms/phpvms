@@ -15,8 +15,6 @@ class AwardAwarded extends Notification implements ShouldQueue
 
     /**
      * Create a new notification instance.
-     *
-     * @param \App\Models\Pirep $pirep
      */
     public function __construct(UserAward $userAward)
     {
@@ -32,11 +30,8 @@ class AwardAwarded extends Notification implements ShouldQueue
 
     /**
      * Send a Discord notification
-     *
-     * @param Pirep $pirep
-     * @param mixed $userAward
      */
-    public function toDiscordChannel($userAward): ?DiscordMessage
+    public function toDiscordChannel(UserAward $userAward): ?DiscordMessage
     {
         $award = Award::where('id', $userAward->award_id)->first();
 

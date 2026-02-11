@@ -2,6 +2,8 @@
 
 namespace App\Contracts;
 
+use Illuminate\Support\Facades\Log;
+
 abstract class CronCommand extends Command
 {
     /**
@@ -15,6 +17,6 @@ abstract class CronCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->redirectLoggingToFile('cron');
+        Log::setDefaultDriver('cron');
     }
 }

@@ -5,8 +5,11 @@ namespace App\Contracts;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Laracasts\Flash\Flash;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Class Controller
@@ -33,14 +36,11 @@ abstract class Controller extends \Illuminate\Routing\Controller
     /**
      * Shortcut function to get the attributes from a request while running the validations
      *
-     * @param  Request $request
-     * @param  array   $attrs_or_validations
-     * @param  array   $addtl_fields
-     * @return array
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     * @throws BadRequestHttpException
+     * @throws ValidationException
      */
-    public function getFromReq($request, $attrs_or_validations, $addtl_fields = null)
+    public function getFromReq(Request $request, array $attrs_or_validations, ?array $addtl_fields = null): array
     {
         // See if a list of values is passed in, or if a validation list is passed in
         $is_validation = false;
@@ -58,17 +58,12 @@ abstract class Controller extends \Illuminate\Routing\Controller
                 $field = $idx;
             }
 
-            if ($request instanceof Request) {
-                if ($request->filled($field)) {
-                    $fields[$field] = $request->input($field);
-                }
-            } elseif (array_key_exists($field, $request)) {
-                /* @noinspection NestedPositiveIfStatementsInspection */
-                $fields[$field] = $request[$field];
+            if ($request->filled($field)) {
+                $fields[$field] = $request->input($field);
             }
         }
 
-        if (!empty($addtl_fields) && \is_array($addtl_fields)) {
+        if ($addtl_fields !== null && $addtl_fields !== []) {
             $fields = array_merge($fields, $addtl_fields);
         }
 
@@ -78,9 +73,9 @@ abstract class Controller extends \Illuminate\Routing\Controller
     /**
      * Simple normalized method for forming the JSON responses
      *
-     * @param  null|mixed                    $count
-     * @param  mixed                         $attrs
-     * @return \Illuminate\Http\JsonResponse
+     * @param  null|mixed   $count
+     * @param  mixed        $attrs
+     * @return JsonResponse
      */
     public function message($message, $count = null, $attrs = [])
     {

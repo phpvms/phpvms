@@ -4,25 +4,47 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Traits\HashIdTrait;
-use App\Models\Traits\ReferenceTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * @property string $name
- * @property string $description
- * @property string $disk
- * @property string $path
- * @property bool   $public
- * @property int    $download_count
- * @property string $url
- * @property string $filename
+ * @property string                          $id
+ * @property string                          $name
+ * @property string|null                     $description
+ * @property string|null                     $disk
+ * @property string|null                     $path
+ * @property bool                            $public
+ * @property int                             $download_count
+ * @property string|null                     $ref_model_type
+ * @property string|null                     $ref_model_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $extension
+ * @property-read mixed $filename
+ * @property-read bool $is_external_file
+ * @property-read mixed $url
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDisk($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDownloadCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePublic($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
  */
 class File extends Model
 {
     use HashIdTrait;
-    use ReferenceTrait;
 
     public $table = 'files';
 
@@ -37,11 +59,11 @@ class File extends Model
         'disk',
         'path',
         'public',
-        'ref_model',
+        'ref_model_type',
         'ref_model_id',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name' => 'required',
     ];
 

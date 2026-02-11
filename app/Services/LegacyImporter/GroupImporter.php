@@ -5,7 +5,9 @@ namespace App\Services\LegacyImporter;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\RoleService;
+use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Imports the groups into the permissions feature(s)
@@ -68,7 +70,7 @@ class GroupImporter extends BaseImporter
     {
         $this->comment('--- ROLES/GROUPS IMPORT ---');
 
-        /** @var \App\Services\RoleService $roleSvc */
+        /** @var RoleService $roleSvc */
         $roleSvc = app(RoleService::class);
         $permMappings = $this->getPermissions();
 
@@ -93,7 +95,7 @@ class GroupImporter extends BaseImporter
                 continue;
             }
 
-            $name = \Illuminate\Support\Str::slug($row->name);
+            $name = Str::slug($row->name);
             $role = Role::firstOrCreate(
                 ['name' => $name],
                 ['display_name' => $row->name]
@@ -129,7 +131,7 @@ class GroupImporter extends BaseImporter
                         if (!in_array($permMapId, $permissions, true)) {
                             $permissions[] = $permMapId;
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Log::error($e->getMessage());
                     }
                 }
@@ -156,7 +158,7 @@ class GroupImporter extends BaseImporter
     {
         $mappings = [];
         $permissions = Permission::all();
-        /** @var \App\Models\Permission $p */
+        /** @var Permission $p */
         foreach ($permissions as $p) {
             $mappings[$p->name] = $p->id;
         }

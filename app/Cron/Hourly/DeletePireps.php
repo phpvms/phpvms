@@ -9,6 +9,7 @@ use App\Models\Enums\PirepStatus;
 use App\Models\Pirep;
 use App\Services\PirepService;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -21,7 +22,7 @@ class DeletePireps extends Listener
      * Delete old rejected PIREPs
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(CronHourly $event): void
     {

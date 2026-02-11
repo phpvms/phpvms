@@ -9,11 +9,11 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
 use App\Support\Timezonelist;
+use Exception;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\View\View;
+use RuntimeException;
 
 class RegisterController extends Controller
 {
@@ -39,7 +40,6 @@ class RegisterController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly HttpClient $httpClient,
         private readonly UserService $userService,
     ) {
@@ -59,8 +59,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== $request->get('token')) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== $request->input('token')) {
                 abort(403, 'Invalid invite');
             }
 
@@ -85,9 +85,9 @@ class RegisterController extends Controller
             'hubs_only'  => setting('pilots.home_hubs_only'),
             'invite'     => $invite ?? null,
             'captcha'    => [
-                'enabled'    => setting('captcha.enabled', env('CAPTCHA_ENABLED', false)),
-                'site_key'   => setting('captcha.site_key', env('CAPTCHA_SITE_KEY')),
-                'secret_key' => setting('captcha.secret_key', env('CAPTCHA_SECRET_KEY')),
+                'enabled'    => setting('captcha.enabled', false),
+                'site_key'   => setting('captcha.site_key', ''),
+                'secret_key' => setting('captcha.secret_key', ''),
             ],
         ]);
     }
@@ -121,13 +121,13 @@ class RegisterController extends Controller
         /*
          * Validation for hcaptcha
          */
-        $captcha_enabled = setting('captcha.enabled', env('CAPTCHA_ENABLED', false));
+        $captcha_enabled = setting('captcha.enabled', false);
         if ($captcha_enabled === true) {
             $rules['h-captcha-response'] = [
                 'required',
                 function ($attribute, $value, $fail) {
                     $response = $this->httpClient->form_post('https://hcaptcha.com/siteverify', [
-                        'secret'   => setting('captcha.secret_key', env('CAPTCHA_SECRET_KEY')),
+                        'secret'   => setting('captcha.secret_key', ''),
                         'response' => $value,
                     ]);
 
@@ -145,10 +145,8 @@ class RegisterController extends Controller
     /**
      * Get a validator for an incoming registration request.
      *
-     * @param array $opts
-     *
-     * @throws \Exception
-     * @throws \RuntimeException
+     * @throws Exception
+     * @throws RuntimeException
      */
     protected function create(Request $request): User
     {
@@ -161,8 +159,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== base64_decode($request->get('invite_token'))) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== base64_decode($request->input('invite_token'))) {
                 abort(403, 'Invalid invite');
             }
 
@@ -174,7 +172,7 @@ class RegisterController extends Controller
                 abort(403, 'Invite has expired');
             }
 
-            if ($invite->email && $invite->email !== $request->get('email')) {
+            if ($invite->email && $invite->email !== $request->input('email')) {
                 abort(403, 'Invite is for a different email address');
             }
 
@@ -216,7 +214,7 @@ class RegisterController extends Controller
      * Handle a registration request for the application.
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function register(Request $request): RedirectResponse|View
     {

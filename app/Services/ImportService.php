@@ -4,18 +4,21 @@ namespace App\Services;
 
 use App\Contracts\ImportExport;
 use App\Contracts\Service;
+use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
-use App\Repositories\FlightRepository;
+use App\Models\Subfleet;
 use App\Services\ImportExport\AircraftImporter;
 use App\Services\ImportExport\AirportImporter;
 use App\Services\ImportExport\ExpenseImporter;
 use App\Services\ImportExport\FareImporter;
 use App\Services\ImportExport\FlightImporter;
 use App\Services\ImportExport\SubfleetImporter;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -24,13 +27,6 @@ use League\Csv\Reader;
 
 class ImportService extends Service
 {
-    /**
-     * ImporterService constructor.
-     */
-    public function __construct(
-        private readonly FlightRepository $flightRepo
-    ) {}
-
     /**
      * Throw a validation error back up because it will automatically show
      * itself under the CSV file upload, and nothing special needs to be done
@@ -52,7 +48,7 @@ class ImportService extends Service
     }
 
     /**
-     * @return Reader
+     * @return ?Reader
      *
      * @throws ValidationException
      */
@@ -124,7 +120,9 @@ class ImportService extends Service
     public function importAircraft($csv_file, bool $delete_previous = true)
     {
         if ($delete_previous) {
-            // TODO: delete airports
+            Aircraft::truncate();
+
+            // Log::warning('Aircraft table truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
         }
 
         $importer = new AircraftImporter();
@@ -192,15 +190,13 @@ class ImportService extends Service
     /**
      * Import flights
      *
-     * @param  string $csv_file
-     * @param  bool   $delete_previous
      * @return mixed
      *
      * @throws ValidationException
      */
-    public function importFlights($csv_file, ?string $delete_previous = null)
+    public function importFlights(string $csv_file, ?string $delete_previous = null)
     {
-        if ($delete_previous !== null && $delete_previous !== '' && $delete_previous !== '0') {
+        if (!in_array($delete_previous, [null, '', '0'], true)) {
             // If delete_previous contains all, then delete everything
             if ($delete_previous === 'all') {
                 Flight::truncate();
@@ -227,7 +223,12 @@ class ImportService extends Service
     public function importSubfleets($csv_file, bool $delete_previous = true)
     {
         if ($delete_previous) {
-            // TODO: Cleanup subfleet data
+            Subfleet::truncate();
+            DB::table('subfleet_rank')->truncate();
+            DB::table('flight_subfleet')->truncate();
+            DB::table('typerating_subfleet')->truncate();
+
+            // Log::warning('Subfleet and tied relationship tables truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
         }
 
         $importer = new SubfleetImporter();

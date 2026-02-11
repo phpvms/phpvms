@@ -7,6 +7,8 @@ use App\Events\CronNightly;
 use App\Models\Journal;
 use App\Repositories\JournalRepository;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * This recalculates the balances on all of the journals
@@ -27,8 +29,8 @@ class RecalculateBalances extends Listener
      * Recalculate all the balances for the different ledgers
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function handle(CronNightly $event): void
     {

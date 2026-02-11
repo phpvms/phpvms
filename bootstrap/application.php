@@ -25,7 +25,7 @@ class application extends Illuminate\Foundation\Application
             exit('Please rename env.php to .env');
         }
 
-        $this->useDatabasePath($this->basePath.'/app/Database');
+        // $this->useDatabasePath($this->basePath.'/app/Database');
         $this->useStoragePath($this->basePath.'/storage');
     }
 

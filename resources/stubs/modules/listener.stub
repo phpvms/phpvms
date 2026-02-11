@@ -3,20 +3,13 @@
 namespace $NAMESPACE$;
 
 use $EVENTNAME$;
-use App\Contracts\Listener;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-/**
- * Class $CLASS$
- * @package $NAMESPACE$
- */
-class $CLASS$ extends Listener
+class $CLASS$
 {
     /**
      * Create the event listener.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -25,11 +18,8 @@ class $CLASS$ extends Listener
 
     /**
      * Handle the event.
-     *
-     * @param $SHORTEVENTNAME$ $event
-     * @return void
      */
-    public function handle($SHORTEVENTNAME$ $event)
+    public function handle($SHORTEVENTNAME$ $event): void
     {
         //
     }

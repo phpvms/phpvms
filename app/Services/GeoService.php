@@ -7,14 +7,19 @@ use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Flight;
 use App\Models\GeoJson;
+use App\Models\GeoJson\Feature\FeatureCollection;
 use App\Models\Pirep;
 use App\Repositories\AcarsRepository;
 use App\Repositories\NavdataRepository;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use League\Geotools\Coordinate\Coordinate;
+use League\Geotools\Distance\Distance;
+use League\Geotools\Exception\InvalidArgumentException;
 use League\Geotools\Geotools;
+use League\Geotools\Vertex\Vertex;
 
 class GeoService extends Service
 {
@@ -33,7 +38,7 @@ class GeoService extends Service
      * @param  array $all_coords
      * @return mixed
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getClosestCoords($coordStart, $all_coords)
     {
@@ -43,6 +48,7 @@ class GeoService extends Service
 
         foreach ($all_coords as $coords) {
             $coord = new Coordinate($coords);
+            /** @var Distance $dist */
             $dist = $geotools->distance()->setFrom($start)->setTo($coord);
             $distance[] = $dist->greatCircle();
         }
@@ -68,6 +74,7 @@ class GeoService extends Service
         $coords = [];
         $filter_points = [$dep_icao, $arr_icao, 'SID', 'STAR'];
 
+        /** @var Collection<int, Acars> $split_route */
         $split_route = collect(explode(' ', $route))->transform(function ($point) {
             if ($point === '' || $point === '0') {
                 return false;
@@ -78,10 +85,6 @@ class GeoService extends Service
             return $point !== '' && $point !== '0' && !\in_array($point, $filter_points, true);
         });
 
-        /**
-         * @var $split_route Collection
-         * @var $route_point Acars
-         */
         foreach ($split_route as $route_point) {
             Log::debug('Looking for '.$route_point);
 
@@ -89,7 +92,7 @@ class GeoService extends Service
                 $points = $this->navRepo->findWhere(['id' => $route_point]);
             } catch (ModelNotFoundException $e) {
                 continue;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error($e);
 
                 continue;
@@ -154,7 +157,7 @@ class GeoService extends Service
      *
      * @return array
      *
-     * @throws \League\Geotools\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getCenter($latA, $lonA, $latB, $lonB)
     {
@@ -162,6 +165,7 @@ class GeoService extends Service
         $coordA = new Coordinate([$latA, $lonA]);
         $coordB = new Coordinate([$latB, $lonB]);
 
+        /** @var Vertex $vertex */
         $vertex = $geotools->vertex()->setFrom($coordA)->setTo($coordB);
         $middlePoint = $vertex->middle();
 
@@ -233,21 +237,13 @@ class GeoService extends Service
     /**
      * Return a single feature point for the
      *
-     * @param  mixed                              $pireps
-     * @return mixed
-     * @return \GeoJson\Feature\FeatureCollection
+     * @param \Illuminate\Database\Eloquent\Collection<int, Pirep> $pireps
      */
-    public function getFeatureForLiveFlights($pireps)
+    public function getFeatureForLiveFlights(\Illuminate\Database\Eloquent\Collection $pireps): \GeoJson\Feature\FeatureCollection
     {
         $flight = new GeoJson();
 
-        /**
-         * @var Pirep $pirep
-         */
         foreach ($pireps as $pirep) {
-            /**
-             * @var $point \App\Models\Acars
-             */
             $point = $pirep->position;
             if (!$point) {
                 continue;

@@ -1,108 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Filament;
 
-use App\Models\User;
 use App\Models\UserField;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class UserFieldPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_user::field');
+        return $authUser->can('ViewAny:UserField');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, UserField $userField): bool
+    public function view(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('view_user::field');
+        return $authUser->can('View:UserField');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_user::field');
+        return $authUser->can('Create:UserField');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, UserField $userField): bool
+    public function update(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('update_user::field');
+        return $authUser->can('Update:UserField');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, UserField $userField): bool
+    public function delete(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('delete_user::field');
+        return $authUser->can('Delete:UserField');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('delete_any_user::field');
+        return $authUser->can('Restore:UserField');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, UserField $userField): bool
+    public function forceDelete(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('force_delete_user::field');
+        return $authUser->can('ForceDelete:UserField');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_user::field');
+        return $authUser->can('ForceDeleteAny:UserField');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, UserField $userField): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_user::field');
+        return $authUser->can('RestoreAny:UserField');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, UserField $userField): bool
     {
-        return $user->can('restore_any_user::field');
+        return $authUser->can('Replicate:UserField');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, UserField $userField): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_user::field');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_user::field');
+        return $authUser->can('Reorder:UserField');
     }
 }

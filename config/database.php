@@ -47,7 +47,7 @@ return [
         ],
         'sqlite' => [
             'driver'         => 'sqlite',
-            'database'       => env('DB_DATABASE', storage_path('db.sqlite')),
+            'database'       => env('DB_DATABASE', database_path('database.sqlite')),
             'timezone'       => '+00:00',
             'prefix'         => '',
             'prefix_indexes' => true,

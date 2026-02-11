@@ -27,15 +27,19 @@ class AirportService extends Service
     /**
      * Return the METAR for a given airport
      */
-    public function getMetar($icao): ?Metar
+    public function getMetar(?string $icao): ?Metar
     {
+        if ($icao === null) {
+            return null;
+        }
+
         $icao = trim($icao);
         if ($icao === '') {
             return null;
         }
 
         $raw_metar = $this->metarProvider->metar($icao);
-        if ($raw_metar && $raw_metar !== '') {
+        if ($raw_metar !== '' && $raw_metar !== '0') {
             return new Metar($raw_metar);
         }
 
@@ -45,15 +49,19 @@ class AirportService extends Service
     /**
      * Return the METAR for a given airport
      */
-    public function getTaf($icao): ?Metar
+    public function getTaf(?string $icao): ?Metar
     {
+        if ($icao === null) {
+            return null;
+        }
+
         $icao = trim($icao);
         if ($icao === '') {
             return null;
         }
 
         $raw_taf = $this->metarProvider->taf($icao);
-        if ($raw_taf && $raw_taf !== '') {
+        if ($raw_taf !== '' && $raw_taf !== '0') {
             return new Metar($raw_taf, true);
         }
 
@@ -95,10 +103,9 @@ class AirportService extends Service
     /**
      * Lookup an airport and save it if it hasn't been found
      *
-     * @param  string                                   $icao
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @param string $icao
      */
-    public function lookupAirportIfNotFound($icao)
+    public function lookupAirportIfNotFound($icao): ?Airport
     {
         $icao = strtoupper($icao);
         $airport = $this->airportRepo->findWithoutFail($icao);
@@ -134,12 +141,8 @@ class AirportService extends Service
 
     /**
      * Calculate the distance from one airport to another
-     *
-     * @param  string   $fromIcao
-     * @param  string   $toIcao
-     * @return Distance
      */
-    public function calculateDistance($fromIcao, $toIcao)
+    public function calculateDistance(string $fromIcao, string $toIcao): ?Distance
     {
         $from = $this->airportRepo->find($fromIcao, ['lat', 'lon']);
         $to = $this->airportRepo->find($toIcao, ['lat', 'lon']);
@@ -156,11 +159,12 @@ class AirportService extends Service
         $geotools = new Geotools();
         $start = new Coordinate([$from->lat, $from->lon]);
         $end = new Coordinate([$to->lat, $to->lon]);
-        $dist = $geotools->distance()->setFrom($start)->setTo($end);
+        /** @var \League\Geotools\Distance\Distance $dist */
+        $dist = $geotools->distance()->setFrom($start)->setTo($end)->in('mi');
 
         // Convert into a Distance object
         try {
-            $distance = new Distance($dist->in('mi')->greatCircle(), 'mi');
+            $distance = new Distance($dist->greatCircle(), 'mi');
 
             return $distance;
         } catch (NonNumericValue $e) {

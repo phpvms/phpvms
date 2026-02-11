@@ -57,4 +57,7 @@ return [
     'aircraftbooking'  => 'Réservation d\'avion',
     'bookaircraft'     => 'Réserver l\'avion',
     'dontbookaircraft' => 'Ne pas réserver d\'avion',
+    'routecode'        => 'Code de Route',
+    'routeleg'         => 'Etape de Route',
+    'pilotpay'         => 'Salaire du Pilote',
 ];

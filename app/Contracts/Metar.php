@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -14,18 +15,12 @@ abstract class Metar
      * Implement retrieving the METAR - return the METAR string. Needs to be protected,
      * since this shouldn't be directly called. Call `metar($icao)`. If not implemented,
      * return a blank string
-     *
-     *
-     * @return mixed
      */
     abstract protected function get_metar($icao): string;
 
     /**
      * Implement retrieving the TAF - return the string. Call `taf($icao)`. If not implemented,
      * return a blank string
-     *
-     *
-     * @return mixed
      */
     abstract protected function get_taf($icao): string;
 
@@ -46,7 +41,7 @@ abstract class Metar
 
         try {
             $raw_metar = $this->get_metar($icao);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error getting METAR: '.$e->getMessage(), $e->getTrace());
 
             return '';
@@ -76,7 +71,7 @@ abstract class Metar
 
         try {
             $taf = $this->get_taf($icao);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error getting TAF: '.$e->getMessage(), $e->getTrace());
 
             return '';

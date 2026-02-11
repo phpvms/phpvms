@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'type' => [
+    'expense' => 'Expense',
+    'type'    => [
         'flight'  => 'Flight',
         'daily'   => 'Daily',
         'monthly' => 'Monthly',

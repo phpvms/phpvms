@@ -15,19 +15,41 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 /**
  * Holds various journals, depending on the morphed_type and morphed_id columns
  *
- * @property mixed                         id
- * @property Money  $balance
- * @property string $currency
- * @property Carbon $updated_at
- * @property Carbon $post_date
- * @property Carbon $created_at
- * @property \App\Models\Enums\JournalType type
- * @property mixed                         morphed_type
- * @property mixed                         morphed_id
+ * @property int                             $id
+ * @property int|null                        $ledger_id
+ * @property int                             $type
+ * @property mixed                           $balance
+ * @property string                          $currency
+ * @property string|null                     $morphed_type
+ * @property int|null                        $morphed_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Ledger|null $ledger
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $morphed
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JournalTransaction> $transactions
+ * @property-read int|null $transactions_count
+ *
+ * @method static \Database\Factories\JournalFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereBalance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereLedgerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereMorphedId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereMorphedType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
  */
 class Journal extends Model
 {
@@ -87,8 +109,8 @@ class Journal extends Model
     }
 
     /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function resetCurrentBalances()
     {
@@ -97,14 +119,14 @@ class Journal extends Model
     }
 
     /**
-     * @param  Journal                                         $object
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @param  Journal $object
+     * @return HasMany
      */
     public function transactionsReferencingObjectQuery($object)
     {
         return $this
             ->transactions()
-            ->where('ref_model', \get_class($object))
+            ->where('ref_model_type', \get_class($object))
             ->where('ref_model_id', $object->id);
     }
 
@@ -114,8 +136,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCreditBalanceOn(Carbon $date)
     {
@@ -126,14 +148,23 @@ class Journal extends Model
         return new Money($balance);
     }
 
+    public function getDebitBalanceOn(Carbon $date): Money
+    {
+        $balance = $this->transactions()
+            ->where('post_date', '<=', $date)
+            ->sum('debit') ?: 0;
+
+        return new Money($balance);
+    }
+
     /**
      * Get the balance of the journal based on a given date.
      *
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getBalanceOn(Carbon $date)
     {
@@ -146,8 +177,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getCurrentBalance()
     {
@@ -159,8 +190,8 @@ class Journal extends Model
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getBalance()
     {

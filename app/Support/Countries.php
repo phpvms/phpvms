@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Collection;
 use League\ISO3166\ISO3166;
 
 /**
@@ -12,7 +13,7 @@ class Countries
     /**
      * Get a select box list of all the countries
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public static function getSelectList()
     {

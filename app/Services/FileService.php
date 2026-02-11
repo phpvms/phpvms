@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\File;
+use Exception;
+use Hashids\HashidsException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -13,21 +16,21 @@ class FileService extends Service
     /**
      * Save a file to disk and return a File asset
      *
-     * @param  \Illuminate\Http\UploadedFile $file
-     * @param  string                        $folder
+     * @param  UploadedFile $file
+     * @param  string       $folder
      * @return File
      *
-     * @throws \Hashids\HashidsException
+     * @throws HashidsException
      */
     public function saveFile($file, $folder, array $attrs)
     {
         $attrs = array_merge([
-            'name'         => '',
-            'description'  => '',
-            'public'       => false,
-            'ref_model'    => '',
-            'ref_model_id' => '',
-            'disk'         => config('filesystems.public_files'),
+            'name'           => '',
+            'description'    => '',
+            'public'         => false,
+            'ref_model_type' => '',
+            'ref_model_id'   => '',
+            'disk'           => config('filesystems.public_files'),
         ], $attrs);
 
         $id = File::createNewHashId();
@@ -35,7 +38,7 @@ class FileService extends Service
 
         // Create the file, add the ID to the front of the file to account
         // for any duplicate filenames, but still can be found in an `ls`
-        $filename = $id.'_'.\Illuminate\Support\Str::slug(trim($path_info['filename'])).'.'.$path_info['extension'];
+        $filename = $id.'_'.Str::slug(trim($path_info['filename'])).'.'.$path_info['extension'];
         $file_path = $file->storeAs($folder, $filename, $attrs['disk']);
 
         Log::info('File saved to '.$file_path);
@@ -53,7 +56,7 @@ class FileService extends Service
      *
      * @param File $file
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function removeFile($file)
     {

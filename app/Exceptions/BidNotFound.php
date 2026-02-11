@@ -5,7 +5,7 @@ namespace App\Exceptions;
 class BidNotFound extends AbstractHttpException
 {
     public function __construct(
-        private readonly string $bid_id
+        private readonly int $bid_id
     ) {
         parent::__construct(
             404,

@@ -13,6 +13,7 @@ use App\Services\ImportExport\SubfleetExporter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\CannotInsertRecord;
 use League\Csv\CharsetConverter;
 use League\Csv\Writer;
 
@@ -33,7 +34,7 @@ class ExportService extends Service
      * Run the actual importer
      *
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     protected function runExport(Collection $collection, ImportExport $exporter): string
     {
@@ -65,7 +66,7 @@ class ExportService extends Service
      * @param  Collection $aircraft
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportAircraft($aircraft)
     {
@@ -78,7 +79,7 @@ class ExportService extends Service
      * @param  Collection $airports
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportAirports($airports)
     {
@@ -91,7 +92,7 @@ class ExportService extends Service
      * @param  Collection $expenses
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportExpenses($expenses)
     {
@@ -104,7 +105,7 @@ class ExportService extends Service
      * @param  Collection $fares
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportFares($fares)
     {
@@ -117,7 +118,7 @@ class ExportService extends Service
      * @param  Collection $flights
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportFlights($flights)
     {
@@ -130,7 +131,7 @@ class ExportService extends Service
      * @param  Collection $subfleets
      * @return mixed
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function exportSubfleets($subfleets)
     {

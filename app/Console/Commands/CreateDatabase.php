@@ -6,6 +6,8 @@ use App\Console\Services\Database;
 use App\Contracts\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use PDOException;
 use Tivie\OS\Detector;
 
 class CreateDatabase extends Command
@@ -45,7 +47,7 @@ class CreateDatabase extends Command
 
         try {
             $conn = DB::connection(config('database.default'))->getPdo();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             Log::error($e);
 
             return false;
@@ -57,7 +59,7 @@ class CreateDatabase extends Command
             try {
                 Log::info('Dropping database: '.$sql);
                 $conn->exec($sql);
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 Log::error($e);
             }
         }
@@ -67,13 +69,13 @@ class CreateDatabase extends Command
         try {
             Log::info('Creating database: '.$sql);
             $conn->exec($sql);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             Log::error($e);
 
             return false;
         }
 
-        return null;
+        return true;
     }
 
     /**
@@ -104,7 +106,7 @@ class CreateDatabase extends Command
                 '".exit"',
             ];
 
-            $this->runCommand($cmd);
+            echo Process::run($cmd)->output();
         }
     }
 

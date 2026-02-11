@@ -4,6 +4,8 @@ namespace App\Contracts;
 
 use App\Support\Resources\CustomAnonymousResourceCollection;
 use App\Support\Resources\CustomPaginatedResourceResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\AbstractPaginator;
 
@@ -12,6 +14,11 @@ use Illuminate\Pagination\AbstractPaginator;
  */
 class Resource extends JsonResource
 {
+    final public function __construct($resource)
+    {
+        parent::__construct($resource);
+    }
+
     /**
      * Iterate through the list of $fields and check if they're a "Unit"
      * If they are, then add the response
@@ -27,8 +34,8 @@ class Resource extends JsonResource
      * Customize the response to exclude all the extra data that isn't used. Based on:
      * https://gist.github.com/derekphilipau/4be52164a69ce487dcd0673656d280da
      *
-     * @param  \Illuminate\Http\Request      $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param  Request      $request
+     * @return JsonResponse
      */
     public function toResponse($request)
     {
@@ -41,6 +48,8 @@ class Resource extends JsonResource
     {
         return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection) {
             if (property_exists(static::class, 'preserveKeys')) {
+                // TODO: figure out what is this preserveKeys thing and whether we still need this
+                // @phpstan-ignore-next-line
                 $collection->preserveKeys = (new static([]))->preserveKeys === true;
             }
         });

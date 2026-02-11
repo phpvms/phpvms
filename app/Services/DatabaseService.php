@@ -5,7 +5,8 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Support\Database;
 use Carbon\Carbon;
-use Webpatser\Uuid\Uuid;
+use Exception;
+use Illuminate\Support\Str;
 
 class DatabaseService extends Service
 {
@@ -28,7 +29,7 @@ class DatabaseService extends Service
     /**
      * @param bool $ignore_errors
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function seed_from_yaml_file($yaml_file, $ignore_errors = false): array
     {
@@ -38,7 +39,7 @@ class DatabaseService extends Service
     /**
      * @param bool $ignore_errors
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function seed_from_yaml($yml, $ignore_errors = false): array
     {
@@ -48,7 +49,7 @@ class DatabaseService extends Service
     /**
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function insert_row($table, $row)
     {
@@ -56,7 +57,7 @@ class DatabaseService extends Service
         // if no ID is specified
         /* @noinspection NestedPositiveIfStatementsInspection */
         if (\in_array($table, $this->uuid_tables, true) && !array_key_exists('id', $row)) {
-            $row['id'] = Uuid::generate()->string;
+            $row['id'] = Str::uuid();
         }
 
         return Database::insert_row($table, $row);

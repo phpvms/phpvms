@@ -27,12 +27,12 @@ class ExpenseImporter extends BaseImporter
         $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
             $attrs = [
-                'airline_id' => null,
-                'name'       => $row->name,
-                'amount'     => $row->cost,
-                'type'       => $this->expense_types[$row->type],
-                'active'     => 1,
-                'ref_model'  => Expense::class,
+                'airline_id'     => null,
+                'name'           => $row->name,
+                'amount'         => $row->cost,
+                'type'           => $this->expense_types[$row->type],
+                'active'         => 1,
+                'ref_model_type' => Expense::class,
             ];
 
             $expense = Expense::updateOrCreate(['name' => $row->name], $attrs);

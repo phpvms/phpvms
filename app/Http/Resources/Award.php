@@ -13,7 +13,7 @@ class Award extends Resource
     {
         return [
             'id'          => $this->id,
-            'title'       => $this->title,
+            'name'        => $this->name,
             'description' => $this->description,
             'image'       => $this->image,
         ];

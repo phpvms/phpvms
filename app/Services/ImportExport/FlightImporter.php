@@ -12,6 +12,7 @@ use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -165,6 +166,8 @@ class FlightImporter extends ImportExport
         // Any other specific transformations
         $flight->setAttribute('notes', filled($row['notes']) ? $row['notes'] : null);
 
+        $flight->setAttribute('callsign', filled($row['callsign']) ? $row['callsign'] : null);
+
         // Check for a valid value
         $flight_type = $row['flight_type'];
         if (!array_key_exists($flight_type, FlightType::labels())) {
@@ -176,7 +179,7 @@ class FlightImporter extends ImportExport
 
         try {
             $flight->save();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
 
             return false;

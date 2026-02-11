@@ -1,1 +1,0 @@
-import{r as t}from"./request-GYCz8Tw9.js";import"./_commonjsHelpers-4gQjN7DL.js";import"./config-EkPhpDle.js";async function d(a,r=null){return t({method:"POST",url:"/api/user/bids",data:{_method:"POST",flight_id:a,aircraft_id:r}})}async function i(a){return t({method:"POST",url:"/api/user/bids",data:{_method:"DELETE",flight_id:a}})}export{d as a,i as r};

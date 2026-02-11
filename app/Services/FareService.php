@@ -9,6 +9,7 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\Subfleet;
 use App\Support\Math;
+use Exception;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -29,7 +30,7 @@ class FareService extends Service
      *
      * @param PirepFare[] $fares
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveToPirep(Pirep $pirep, array $fares)
     {
@@ -49,7 +50,7 @@ class FareService extends Service
             /**
              * See if there's match with the provided fares, so we can copy the information over
              *
-             * @var PirepFare $pirep_fare
+             * @var ?PirepFare $pirep_fare
              */
             $pirep_fare = $fares->where('fare_id', $fare->id)->first();
 
@@ -99,16 +100,16 @@ class FareService extends Service
      * Determine the correct fares to use between a subfleet and flight. You probably aren't
      * looking to call this one directly, but instead, call getReconciledFaresForFlight()
      *
-     * @param Collection[Fare] $subfleet_fares The fare for a subfleet
-     * @param Collection[Fare] $flight_fares   The fares on a flight
-     * @return Collection[Fare] Collection of Fare
+     * @param  ?Collection<int, Fare> $subfleet_fares The fare for a subfleet
+     * @param  ?Collection<int, Fare> $flight_fares   The fares on a flight
+     * @return Collection<int, Fare>  Collection of Fare
      */
-    public function getFareWithOverrides($subfleet_fares, $flight_fares): Collection
+    public function getFareWithOverrides(?Collection $subfleet_fares, ?Collection $flight_fares): Collection
     {
         /**
          * Make sure we've got something in terms of fares on the subfleet or the flight
          */
-        if (empty($subfleet_fares) && empty($flight_fares)) {
+        if ((!$subfleet_fares || $subfleet_fares->isEmpty()) && (!$flight_fares || $flight_fares->isEmpty())) {
             return collect();
         }
 
@@ -116,7 +117,7 @@ class FareService extends Service
          * Check to see if there are any subfleet fares. This might only have fares on the
          * flight, no matter how rare that might be
          */
-        if ($subfleet_fares === null || count($subfleet_fares) === 0) {
+        if (!$subfleet_fares instanceof \Illuminate\Support\Collection || count($subfleet_fares) === 0) {
             return $flight_fares->map(function ($fare, $_) {
                 return $this->getFareWithPivot($fare, $fare->pivot);
             });
@@ -169,9 +170,11 @@ class FareService extends Service
          * @var Subfleet $subfleet
          */
         foreach ($subfleets as $key => $subfleet) {
+            // @phpstan-ignore-next-line
             $subfleet->fares = $this->getFareWithOverrides($subfleet->fares, $flight_fares);
         }
 
+        // @phpstan-ignore-next-line
         $flight->subfleets = $subfleets;
 
         return $flight;
@@ -229,9 +232,9 @@ class FareService extends Service
 
         if (filled($pivot->capacity)) {
             if (strpos($pivot->capacity, '%', -1) !== false) {
-                $fare->capacity = floor(Math::getPercent($fare->capacity, $pivot->capacity));
+                $fare->capacity = (int) floor(Math::getPercent($fare->capacity, $pivot->capacity));
             } else {
-                $fare->capacity = floor($pivot->capacity);
+                $fare->capacity = (int) floor($pivot->capacity);
             }
         }
 
@@ -260,8 +263,6 @@ class FareService extends Service
 
     /**
      * Attach a fare to an flight
-     *
-     * @param array    set the price/cost/capacity
      */
     public function setForFlight(Flight $flight, Fare $fare, array $override = []): Flight
     {
@@ -295,8 +296,6 @@ class FareService extends Service
 
     /**
      * Attach a fare to a subfleet
-     *
-     * @param array    set the price/cost/capacity
      */
     public function setForSubfleet(Subfleet $subfleet, Fare $fare, array $override = []): Subfleet
     {

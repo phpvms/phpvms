@@ -19,6 +19,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -36,6 +37,7 @@ class Kernel extends HttpKernel
         CheckForMaintenanceMode::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
+        InvokeDeferredCallbacks::class,
     ];
 
     protected $middlewareGroups = [

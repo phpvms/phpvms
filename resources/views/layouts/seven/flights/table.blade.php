@@ -102,38 +102,38 @@
             <a class="btn btn-sm btn-primary" href="{{ route('frontend.flights.show', [$flight->id]) }}">
                 {{ __('flights.viewflight') }}
             </a>
-            @if ($acars_plugin)
+            @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id === $user->current_airport->icao)
+              @if ($acars_plugin)
                 @if (isset($saved[$flight->id]))
-                    <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-primary">Load in
-                        vmsACARS</a>
+                  <a href="vmsacars:bid/{{ $saved[$flight->id] }}" class="btn btn-sm btn-primary">Load in
+                    vmsACARS</a>
                 @else
-                    <a href="vmsacars:flight/{{ $flight->id }}" class="btn btn-sm btn-primary">Load in vmsACARS</a>
+                  <a href="vmsacars:flight/{{ $flight->id }}" class="btn btn-sm btn-primary">Load in vmsACARS</a>
                 @endif
-            @endif
-            @if ($simbrief !== false)
+               @endif
+              @if ($simbrief !== false)
                 @if ($flight->simbrief && $flight->simbrief->user_id === $user->id)
-                    <a href="{{ route('frontend.simbrief.briefing', $flight->simbrief->id) }}"
-                        class="btn btn-sm btn-primary">
-                        {{ __('flights.viewsimbrief') }}
-                    </a>
+                  <a href="{{ route('frontend.simbrief.briefing', $flight->simbrief->id) }}"
+                     class="btn btn-sm btn-primary">
+                    {{ __('flights.viewsimbrief') }}
+                  </a>
                 @else
-                    @if ($simbrief_bids === false || ($simbrief_bids === true && isset($saved[$flight->id])))
-                        @php
-                            $aircraft_id = isset($saved[$flight->id])
-                                ? App\Models\Bid::find($saved[$flight->id])->aircraft_id
-                                : null;
-                        @endphp
-                        <a href="{{ route('frontend.simbrief.generate') }}?flight_id={{ $flight->id }}@if ($aircraft_id) &aircraft_id={{ $aircraft_id }} @endif"
-                            class="btn btn-sm btn-primary">
-                            {{ __('flights.createsimbrief') }}
-                        </a>
-                    @endif
+                  @if ($simbrief_bids === false || ($simbrief_bids === true && isset($saved[$flight->id])))
+                    @php
+                        $aircraft_id = isset($saved[$flight->id])
+                            ? App\Models\Bid::find($saved[$flight->id])->aircraft_id
+                            : null;
+                      @endphp
+                    <a href="{{ route('frontend.simbrief.generate') }}?flight_id={{ $flight->id }}@if ($aircraft_id) &aircraft_id={{ $aircraft_id }} @endif"
+                       class="btn btn-sm btn-primary">
+                      {{ __('flights.createsimbrief') }}
+                    </a>
+                  @endif
                 @endif
-            @endif
-            <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}" class="btn btn-sm btn-info">
-                {{ __('pireps.newpirep') }}
-            </a>
-            @if (!setting('pilots.only_flights_from_current') || $flight->dpt_airport_id == $user->current_airport->icao)
+               @endif
+                <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}" class="btn btn-sm btn-info">
+                  {{ __('pireps.newpirep') }}
+                </a>
                 <button
                     class="btn btn-sm save_flight
                            {{ isset($saved[$flight->id]) ? 'btn-danger' : 'btn-success' }}"

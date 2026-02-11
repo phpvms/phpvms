@@ -6,6 +6,7 @@ use App\Contracts\Service;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use PDO;
+use PDOException;
 
 class DatabaseService extends Service
 {
@@ -25,7 +26,7 @@ class DatabaseService extends Service
 
             try {
                 $conn = new PDO($dsn, $user, $pass);
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 throw $e;
             }
 
@@ -38,7 +39,7 @@ class DatabaseService extends Service
 
         try {
             $conn = new PDO($dsn, $user, $pass);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw $e;
         }
 

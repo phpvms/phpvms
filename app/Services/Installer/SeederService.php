@@ -47,7 +47,7 @@ class SeederService extends Service
         $this->syncAllModules();
 
         // Seed base
-        $this->databaseSvc->seed_from_yaml_file(database_path('seeds/base.yml'));
+        $this->databaseSvc->seed_from_yaml_file(database_path('seeders/base.yml'));
 
         $this->syncAllYamlFileSeeds();
     }
@@ -67,7 +67,7 @@ class SeederService extends Service
         collect()
             ->concat(Storage::disk('seeds')->files($env))
             ->map(function ($file) {
-                return database_path('seeds/'.$file);
+                return database_path('seeders/'.$file);
             })
             ->filter(function ($file) {
                 $info = pathinfo($file);
@@ -82,7 +82,7 @@ class SeederService extends Service
 
     public function syncAllModules(): void
     {
-        $data = file_get_contents(database_path('/seeds/modules.yml'));
+        $data = file_get_contents(database_path('/seeders/modules.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $module) {
             $module['updated_at'] = Carbon::now('UTC');
@@ -100,7 +100,7 @@ class SeederService extends Service
 
     public function syncAllSettings(): void
     {
-        $data = file_get_contents(database_path('/seeds/settings.yml'));
+        $data = file_get_contents(database_path('/seeders/settings.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $setting) {
             if (trim($setting['key']) === '') {
@@ -149,11 +149,8 @@ class SeederService extends Service
      * Dynamically figure out the offset and the start number for a group.
      * This way we don't need to mess with how to order things
      * When calling getNextOrderNumber(users) 31, will be returned, then 32, and so on
-     *
-     * @param null $offset
-     * @param int  $start_offset
      */
-    private function addCounterGroup($name, $offset = null, $start_offset = 0): void
+    private function addCounterGroup(string $name, ?int $offset = null, int $start_offset = 0): void
     {
         if ($offset === null) {
             $group = DB::table('settings')
@@ -161,20 +158,22 @@ class SeederService extends Service
                 ->first();
 
             if ($group === null) {
-                $offset = (int) DB::table('settings')->max('offset');
+                $offset = DB::table('settings')->max('offset');
                 if ($offset === null) {
                     $offset = 0;
                     $start_offset = 1;
                 } else {
+                    $offset = (int) $offset;
                     $offset += 100;
                     $start_offset = $offset + 1;
                 }
             } else {
                 // Now find the number to start from
-                $start_offset = (int) DB::table('settings')->where('group', $name)->max('order');
+                $start_offset = DB::table('settings')->where('group', $name)->max('order');
                 if ($start_offset === null) {
                     $start_offset = $offset + 1;
                 } else {
+                    $start_offset = (int) $start_offset;
                     $start_offset++;
                 }
 
@@ -207,7 +206,7 @@ class SeederService extends Service
     private function settingsSeedsPending(): bool
     {
         $all_settings = DB::table('settings')->get();
-        $data = file_get_contents(database_path('/seeds/settings.yml'));
+        $data = file_get_contents(database_path('/seeders/settings.yml'));
         $yml = Yaml::parse($data);
 
         // See if any are missing from the DB

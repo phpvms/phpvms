@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Exception;
 use Monolog\Handler\StreamHandler;
 
 /**
@@ -15,7 +16,7 @@ class Logger
 
         try {
             $logger->pushHandler(new StreamHandler('php://stdout'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return $logger;

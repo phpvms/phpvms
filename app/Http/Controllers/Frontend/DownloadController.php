@@ -26,13 +26,13 @@ class DownloadController extends Controller
     public function index(): View
     {
         $airlines = Airline::where('active', 1)->count();
-        $files = File::orderBy('ref_model', 'asc')->get();
+        $files = File::orderBy('ref_model_type', 'asc')->get();
 
         /**
          * Group all the files but compound the model with the ID,
          * since we can have multiple files for every `ref_model`
          */
-        $grouped_files = $files->groupBy(fn ($item, $key) => $item['ref_model'].'_'.$item['ref_model_id']);
+        $grouped_files = $files->groupBy(fn ($item, $key) => $item['ref_model_type'].'_'.$item['ref_model_id']);
 
         /**
          * The $group here looks like: App\Models\Airport_KAUS
@@ -108,9 +108,7 @@ class DownloadController extends Controller
             return redirect()->back();
         }
 
-        /**
-         * @var File $file
-         */
+        /** @var ?File $file */
         $file = File::find($id);
         if (!$file) {
             Flash::error('File doesn\'t exist');

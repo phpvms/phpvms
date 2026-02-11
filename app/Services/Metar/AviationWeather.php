@@ -5,6 +5,7 @@ namespace App\Services\Metar;
 use App\Contracts\Metar;
 use App\Support\HttpClient;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -24,8 +25,8 @@ class AviationWeather extends Metar
      * Implement the METAR - Return the string
      *
      *
-     * @throws \Exception
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws Exception
+     * @throws GuzzleException
      */
     protected function get_metar($icao): string
     {
@@ -50,7 +51,7 @@ class AviationWeather extends Metar
      * Do the actual retrieval of the TAF
      *
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     protected function get_taf($icao): string
     {

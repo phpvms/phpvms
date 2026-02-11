@@ -100,6 +100,7 @@ class UserImport extends BaseImporter
         // them to the new group(s)
         $old_user_groups = $this->db->findBy('groupmembers', ['pilotid' => $old_pilot_id]);
         foreach ($old_user_groups as $oldGroup) {
+            /** @var object $oldGroup */
             $newRoleId = $this->idMapper->getMapping('group', $oldGroup->groupid);
 
             // This role should be ignored

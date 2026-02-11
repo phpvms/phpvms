@@ -4,11 +4,12 @@ namespace App\Models\Observers;
 
 use App\Models\Aircraft;
 use App\Support\ICAO;
+use Exception;
 
 class AircraftObserver
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function creating(Aircraft $aircraft): void
     {

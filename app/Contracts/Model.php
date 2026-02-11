@@ -2,11 +2,13 @@
 
 namespace App\Contracts;
 
+use Illuminate\Database\Eloquent\Builder;
+
 /**
  * @property mixed $id
  * @property bool  $skip_mutator
  *
- * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin Builder
  */
 abstract class Model extends \Illuminate\Database\Eloquent\Model
 {
@@ -19,4 +21,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
      * For the factories, skip the mutators. Only apply to one instance
      */
     public $skip_mutator = false;
+
+    public static array $rules = [];
 }

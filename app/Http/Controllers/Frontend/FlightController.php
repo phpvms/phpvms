@@ -8,8 +8,8 @@ use App\Models\Bid;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Typerating;
+use App\Models\User;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
 use App\Repositories\SubfleetRepository;
@@ -18,7 +18,9 @@ use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
 use App\Services\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +33,6 @@ class FlightController extends Controller
 {
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly FlightRepository $flightRepo,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
@@ -42,7 +43,7 @@ class FlightController extends Controller
     ) {}
 
     /**
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function index(Request $request): View
     {
@@ -53,7 +54,7 @@ class FlightController extends Controller
      * Make a search request using the Repository search
      *
      *
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function search(Request $request): View
     {
@@ -62,7 +63,7 @@ class FlightController extends Controller
             'visible' => true,
         ];
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $user->loadMissing(['current_airport', 'typeratings']);
 
@@ -71,7 +72,7 @@ class FlightController extends Controller
         }
 
         // default restrictions on the flights shown. Handle search differently
-        if (setting('pilots.only_flights_from_current')) {
+        if (setting('pilots.only_show_flights_from_current')) {
             $where['dpt_airport_id'] = $user->curr_airport_id;
         }
 
@@ -102,7 +103,8 @@ class FlightController extends Controller
                 ->pluck('flight_id')
                 ->toArray();
             // Get flight_id's of open (non restricted) flights
-            $open_flights = Flight::withCount('subfleets')->whereNull('user_id')->having('subfleets_count', 0)->pluck('id')->toArray();
+            // Each flight must have at least one subfleet assigned to it
+            $open_flights = Flight::whereNull('user_id')->has('subfleets')->pluck('id')->toArray();
             $allowed_flights = array_merge($user_flights, $open_flights);
             // Build aircraft icao codes by considering allowed subfleets
             $icao_codes = Aircraft::whereIn('subfleet_id', $user_subfleets)->groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
@@ -125,7 +127,8 @@ class FlightController extends Controller
             ->get();
 
         // Build collection with type codes and labels
-        $flight_types = collect('');
+        /** @var Collection<string, string> $flight_types */
+        $flight_types = collect();
         foreach ($usedtypes as $ftype) {
             $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
         }
@@ -218,11 +221,8 @@ class FlightController extends Controller
 
     /**
      * Show the flight information page
-     *
-     *
-     * @return mixed
      */
-    public function show(string $id): View
+    public function show(string $id): View|RedirectResponse
     {
         $user = Auth::user();
         // Support retrieval of deleted relationships

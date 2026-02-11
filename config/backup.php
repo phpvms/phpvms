@@ -28,8 +28,12 @@ return [
                  * Directories used by the backup process will automatically be excluded.
                  */
                 'exclude' => [
-                    base_path('vendor'),
+                    // base_path('vendor'),
                     base_path('node_modules'),
+                    base_path('bootstrap/cache/*'),
+                    base_path('storage/framework/cache/*'),
+                    base_path('storage/framework/sessions/*'),
+                    base_path('storage/framework/views/*'),
                 ],
 
                 /*

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,13 +14,40 @@ use Kyslik\ColumnSortable\Sortable;
 /**
  * The Award model
  *
- * @property mixed      id
- * @property string     name
- * @property string     description
- * @property string     title
- * @property string     image
- * @property mixed      ref_model
- * @property mixed|null ref_model_params
+ * @property int                             $id
+ * @property string                          $name
+ * @property string|null                     $description
+ * @property string|null                     $image_url
+ * @property string|null                     $ref_model_type
+ * @property string|null                     $ref_model_params
+ * @property int|null                        $active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $image
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\AwardFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award sortable($defaultParameters = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelParams($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 class Award extends Model
 {
@@ -33,16 +61,16 @@ class Award extends Model
         'name',
         'description',
         'image_url',
-        'ref_model',
+        'ref_model_type',
         'ref_model_params',
         'active',
     ];
 
-    public static $rules = [
+    public static array $rules = [
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',
-        'ref_model'        => 'required',
+        'ref_model_type'   => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
     ];
@@ -59,17 +87,17 @@ class Award extends Model
      * Get the referring object
      *
      *
-     * @return null
+     * @return ?object
      */
     public function getReference(?self $award = null, ?User $user = null)
     {
-        if (!$this->ref_model) {
+        if (!$this->ref_model_type) {
             return null;
         }
 
         try {
-            return new $this->ref_model($award, $user);
-        } catch (\Exception $e) {
+            return new $this->ref_model_type($award, $user);
+        } catch (Exception $e) {
             return null;
         }
     }
@@ -93,6 +121,8 @@ class Award extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_awards', 'award_id', 'user_id');
+        return $this->belongsToMany(User::class, 'user_awards', 'award_id', 'user_id')
+            ->withTimestamps()
+            ->withTrashed();
     }
 }

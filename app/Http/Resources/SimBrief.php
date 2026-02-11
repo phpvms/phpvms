@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use App\Models\Fare;
+use Exception;
 use Illuminate\Http\Resources\MissingValue;
 
 /**
@@ -18,23 +20,27 @@ class SimBrief extends Resource
             'url'         => url(route('api.flights.briefing', ['id' => $this->id])),
         ];
 
-        $fares = [];
+        $fares = collect();
 
         try {
             if (!empty($this->fare_data)) {
                 $fare_data = json_decode($this->fare_data, true);
                 foreach ($fare_data as $fare) {
-                    $fares[] = new \App\Models\Fare($fare);
+                    $newFare = new Fare($fare);
+                    $newFare->count = $fare['count'];
+                    $fares->push($newFare);
                 }
-
-                $fares = collect($fares);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Invalid fare data
         }
 
         if (!($this->whenLoaded('aircraft') instanceof MissingValue)) {
-            $data['subfleet'] = new BidSubfleet($this->aircraft->subfleet, $this->aircraft, $fares);
+            /** @var \stdClass $resource */
+            $resource = (object) $this->aircraft->subfleet;
+            $resource->aircraft = $this->aircraft->withoutRelations();
+            $resource->fares = $fares;
+            $data['subfleet'] = new BidSubfleet($resource);
         }
 
         return $data;

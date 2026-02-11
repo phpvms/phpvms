@@ -20,7 +20,7 @@ class Weather extends Widget
      */
     public function run()
     {
-        /** @var \App\Services\AirportService $airportSvc */
+        /** @var AirportService $airportSvc */
         $airportSvc = app(AirportService::class);
         $metar = $airportSvc->getMetar($this->config['icao']);
         $taf = $airportSvc->getTaf($this->config['icao']);

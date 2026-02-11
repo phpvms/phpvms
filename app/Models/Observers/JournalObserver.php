@@ -9,10 +9,6 @@ use App\Models\Journal;
  */
 class JournalObserver
 {
-    /**
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     */
     public function creating(Journal $journal): void
     {
         $journal->balance = 0;

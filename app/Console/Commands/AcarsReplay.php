@@ -3,9 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
+use App\Models\Flight;
 use App\Support\Units\Time;
 use GuzzleHttp\Client;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
+use RuntimeException;
+use stdClass;
 
 class AcarsReplay extends Command
 {
@@ -49,9 +52,9 @@ class AcarsReplay extends Command
     /**
      * Make a request to start a PIREP
      *
-     * @param \stdClass $flight
+     * @param stdClass $flight
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function startPirep($flight): string
     {
@@ -87,7 +90,7 @@ class AcarsReplay extends Command
      *
      * @return mixed
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function filePirep($pirep_id)
     {
@@ -103,7 +106,7 @@ class AcarsReplay extends Command
     /**
      * @return array
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function postUpdate($pirep_id, $data)
     {
@@ -154,13 +157,10 @@ class AcarsReplay extends Command
      * Parse this file and run the updates
      *
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function updatesFromFile(array $files)
     {
-        /**
-         * @var $flights Collection
-         */
         $flights = collect($files)->transform(function ($f) {
             $file = $f;
             if (file_exists($file)) {
@@ -184,7 +184,7 @@ class AcarsReplay extends Command
         /*
          * File the initial pirep to get a "preflight" status
          */
-        $flights->each(function ($updates, $idx) {
+        $flights->each(function (Collection $updates, $idx) {
             $update = $updates->first();
             $pirep_id = $this->startPirep($update);
             $this->pirepList[$update->callsign] = $pirep_id;
@@ -200,7 +200,8 @@ class AcarsReplay extends Command
          * Continue until we have no more flights and updates left
          */
         while ($flights->count() > 0) {
-            $flights = $flights->each(function ($updates, $idx) {
+            $flights = $flights->each(function (Collection $updates, $idx) {
+                /** @var Flight $update */
                 $update = $updates->shift();
                 $pirep_id = $this->pirepList[$update->callsign];
 
@@ -227,9 +228,7 @@ class AcarsReplay extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
-     *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function handle(): void
     {

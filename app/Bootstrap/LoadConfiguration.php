@@ -2,6 +2,7 @@
 
 namespace App\Bootstrap;
 
+use Exception;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
 use Illuminate\Contracts\Foundation\Application;
 
@@ -12,7 +13,7 @@ class LoadConfiguration extends \Illuminate\Foundation\Bootstrap\LoadConfigurati
      * that's sitting in the root, and then recursively merges it with the current configs
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function loadConfigurationFiles(Application $app, RepositoryContract $repository)
     {

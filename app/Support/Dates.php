@@ -58,7 +58,7 @@ class Dates
     public static function getMonthBoundary(string $month): array
     {
         [$year, $month] = explode('-', $month);
-        $days = static::getDaysInMonth($month, $year);
+        $days = static::getDaysInMonth((int) $month, (int) $year);
 
         return [
             "$year-$month-01",
@@ -78,6 +78,6 @@ class Dates
         $month = (int) $month;
         $year = (int) $year;
 
-        return $month == 2 ? ($year % 4 !== 0 ? 28 : ($year % 100 !== 0 ? 29 : ($year % 400 !== 0 ? 28 : 29))) : (($month - 1) % 7 % 2 !== 0 ? 30 : 31);
+        return $month === 2 ? ($year % 4 !== 0 ? 28 : ($year % 100 !== 0 ? 29 : ($year % 400 !== 0 ? 28 : 29))) : (($month - 1) % 7 % 2 !== 0 ? 30 : 31);
     }
 }

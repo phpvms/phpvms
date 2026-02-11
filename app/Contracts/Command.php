@@ -2,10 +2,7 @@
 
 namespace App\Contracts;
 
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
-
-use function is_array;
+use Generator;
 
 /**
  * Class BaseCommand
@@ -39,40 +36,9 @@ abstract class Command extends \Illuminate\Console\Command
     }
 
     /**
-     * Splice the logger and replace the active handlers with the handlers from the
-     * a stack in config/logging.php
-     *
-     * @param string $channel_name Channel name from config/logging.php
-     */
-    public function redirectLoggingToFile($channel_name): void
-    {
-        $logger = app(\Illuminate\Log\Logger::class);
-
-        // Close the existing loggers
-        try {
-            $handlers = $logger->getHandlers();
-            foreach ($handlers as $handler) {
-                $handler->close();
-            }
-        } catch (\Exception $e) {
-            $this->error('Error closing handlers: '.$e->getMessage());
-        }
-
-        // Open the handlers for the channel name,
-        // and then set them to the main logger
-        try {
-            $logger->setHandlers(
-                Log::channel($channel_name)->getHandlers()
-            );
-        } catch (\Exception $e) {
-            $this->error('Couldn\'t splice the logger: '.$e->getMessage());
-        }
-    }
-
-    /**
      * Streaming file reader
      */
-    public function readFile($filename): ?\Generator
+    public function readFile($filename): ?Generator
     {
         $fp = fopen($filename, 'rb');
         while (($line = fgets($fp)) !== false) {
@@ -85,36 +51,5 @@ abstract class Command extends \Illuminate\Console\Command
         }
 
         fclose($fp);
-    }
-
-    /**
-     * @param array|string $cmd
-     * @param bool         $return
-     * @param mixed        $verbose
-     *
-     * @throws \Symfony\Component\Process\Exception\RuntimeException
-     * @throws \Symfony\Component\Process\Exception\LogicException
-     */
-    public function runCommand($cmd, $return = false, $verbose = true): string
-    {
-        if (is_array($cmd)) {
-            $cmd = implode(' ', $cmd);
-        }
-
-        if ($verbose) {
-            $this->info('Running '.$cmd);
-        }
-
-        $val = '';
-        $process = Process::fromShellCommandline($cmd);
-        $process->run(function ($type, $buffer) use ($return, &$val) {
-            if ($return) {
-                $val .= $buffer;
-            } else {
-                echo $buffer;
-            }
-        });
-
-        return $val;
     }
 }

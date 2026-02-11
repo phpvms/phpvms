@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Services\ImportService;
+use Illuminate\Validation\ValidationException;
 
 class ImportCsv extends Command
 {
@@ -26,7 +27,7 @@ class ImportCsv extends Command
     /**
      * @return mixed|void
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function handle()
     {
@@ -41,6 +42,10 @@ class ImportCsv extends Command
             $status = $this->importer->importAirports($file);
         } elseif ($type === 'subfleet') {
             $status = $this->importer->importSubfleets($file);
+        } else {
+            $this->error('Invalid type');
+
+            return;
         }
 
         foreach ($status['success'] as $line) {

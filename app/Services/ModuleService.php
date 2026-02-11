@@ -75,8 +75,6 @@ class ModuleService extends Service
 
     /**
      * Get all of the modules from database but make sure they also exist on disk
-     *
-     * @return object
      */
     public function getAllModules(): array
     {
@@ -85,9 +83,9 @@ class ModuleService extends Service
 
         /** @var Module $module */
         foreach ($moduleList as $module) {
-            /** @var \Nwidart\Modules\Module $moduleInstance */
+            /** @var ?\Nwidart\Modules\Module $moduleInstance */
             $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-            if (empty($moduleInstance)) {
+            if (!$moduleInstance) {
                 continue;
             }
 
@@ -109,9 +107,9 @@ class ModuleService extends Service
             return false;
         }
 
-        /** @var \Nwidart\Modules\Module $moduleInstance */
+        /** @var ?\Nwidart\Modules\Module $moduleInstance */
         $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-        if (empty($moduleInstance)) {
+        if (!$moduleInstance) {
             return false;
         }
 
@@ -254,7 +252,7 @@ class ModuleService extends Service
         $module = Module::find($id);
 
         $cache = config('cache.keys.MODULES');
-        Cache::forget($cache['key'].'.'.$module->name);
+        Cache::forget($cache['key']);
 
         $module->update([
             'enabled' => $status,
@@ -262,6 +260,10 @@ class ModuleService extends Service
 
         if ($status === true) {
             Artisan::call('module:migrate', ['module' => $module->name, '--force' => true]);
+        }
+
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
         }
 
         return true;
@@ -283,6 +285,10 @@ class ModuleService extends Service
 
             try {
                 File::deleteDirectory($moduleDir);
+
+                if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+                    unlink(base_path('bootstrap/cache/modules.php'));
+                }
             } catch (Exception $e) {
                 Log::info('Folder Deleted Manually for Module : '.$module->name);
 
@@ -308,10 +314,6 @@ class ModuleService extends Service
         $modules = [];
 
         $manifests = (new Filesystem())->glob("{$path}/module.json");
-
-        if (!is_array($manifests)) {
-            $manifests = [];
-        }
 
         foreach ($manifests as $manifest) {
             $name = Json::make($manifest)->get('name');

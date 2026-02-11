@@ -3,15 +3,20 @@
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
+use App\Models\Aircraft;
 use App\Models\Airline;
+use App\Models\Airport;
 use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
+use App\Models\Subfleet;
 use App\Services\FinanceService;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
  * Process all of the daily expenses and charge them
@@ -27,7 +32,7 @@ class RecurringFinanceService extends Service
      * to every airline journal
      *
      *
-     * @return Journal[]
+     * @return Collection<int, Journal>
      */
     protected function findJournals(Expense $expense)
     {
@@ -51,26 +56,19 @@ class RecurringFinanceService extends Service
      */
     protected function getMemoAndGroup(Expense $expense): array
     {
-        $klass = 'Expense';
-        if ($expense->ref_model) {
-            $ref = explode('\\', $expense->ref_model);
-            $klass = end($ref);
-            $obj = $expense->getReferencedObject();
-        }
-
-        if (empty($obj)) {
+        if (!$expense->ref_model && $expense->ref_model_type !== Expense::class) {
             return [null, null];
         }
 
-        if ($klass === 'Airport') {
+        if ($expense->ref_model instanceof Airport) {
             $memo = "Airport Expense: {$expense->name} ({$expense->ref_model_id})";
             $transaction_group = "Airport: {$expense->ref_model_id}";
-        } elseif ($klass === 'Subfleet') {
+        } elseif ($expense->ref_model instanceof Subfleet) {
             $memo = "Subfleet Expense: {$expense->name}";
             $transaction_group = "Subfleet: {$expense->name}";
-        } elseif ($klass === 'Aircraft') {
-            $memo = "Aircraft Expense: {$expense->name} ({$obj->name})";
-            $transaction_group = "Aircraft: {$expense->name} ({$obj->name}-{$obj->registration})";
+        } elseif ($expense->ref_model instanceof Aircraft) {
+            $memo = "Aircraft Expense: {$expense->name} ({$expense->ref_model->name})";
+            $transaction_group = "Aircraft: {$expense->name} ({$expense->ref_model->name}-{$expense->ref_model->registration})";
         } else {
             $memo = "Expense: {$expense->name}";
             $transaction_group = "Expense: {$expense->name}";
@@ -83,7 +81,7 @@ class RecurringFinanceService extends Service
      * Run all of the daily expense/financials
      *
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function processExpenses(string $type = ExpenseType::DAILY): void
     {
@@ -97,7 +95,7 @@ class RecurringFinanceService extends Service
         }
 
         /**
-         * @var $expenses Expense[]
+         * @var Collection<int, Expense> $expenses
          */
         foreach ($expenses as $expense) {
             // Apply the expenses to the appropriate journals
@@ -108,9 +106,9 @@ class RecurringFinanceService extends Service
                 // Has this expense already been charged? Check
                 // against this specific journal, on today
                 $w = [
-                    'journal_id'   => $journal->id,
-                    'ref_model'    => Expense::class,
-                    'ref_model_id' => $expense->id,
+                    'journal_id'     => $journal->id,
+                    'ref_model_type' => Expense::class,
+                    'ref_model_id'   => $expense->id,
                 ];
 
                 $ref = explode('\\', $expense->ref_model);
@@ -118,7 +116,7 @@ class RecurringFinanceService extends Service
 
                 $found = JournalTransaction::where($w)
                     ->whereDate('post_date', '=', Carbon::now('UTC')->toDateString())
-                    ->count(['id']);
+                    ->count('id');
 
                 if ($found > 0) {
                     Log::info('Expense "'.$expense->name.'" already charged for today, skipping');
@@ -133,6 +131,7 @@ class RecurringFinanceService extends Service
 
                 // Determine if this object actually belongs to this airline or not
                 if ($type === 'Subfleet' || $type === 'Aircraft') {
+                    /** @var Aircraft|Subfleet|null $ref_model */
                     $ref_model = $expense->ref_model()->with('airline')->first();
                     if ($ref_model?->airline?->id !== $journal->morphed_id) {
                         Log::info(

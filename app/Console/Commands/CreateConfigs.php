@@ -5,9 +5,8 @@ namespace App\Console\Commands;
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
 use App\Services\Installer\MigrationService;
-use App\Services\Installer\SeederService;
-use DatabaseSeeder;
 use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * Create the config files
@@ -19,8 +18,6 @@ class CreateConfigs extends Command
     protected $description = 'Create the config files';
 
     public function __construct(
-        private readonly DatabaseSeeder $databaseSeeder,
-        private readonly SeederService $seederSvc,
         private readonly MigrationService $migrationSvc,
     ) {
         parent::__construct();
@@ -29,7 +26,7 @@ class CreateConfigs extends Command
     /**
      * Run dev related commands
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     public function handle()
     {
@@ -46,7 +43,7 @@ class CreateConfigs extends Command
     /**
      * Rewrite the configuration files
      *
-     * @throws \Symfony\Component\HttpFoundation\File\Exception\FileException
+     * @throws FileException
      */
     protected function writeConfigs()
     {
@@ -70,7 +67,7 @@ class CreateConfigs extends Command
 
         $this->info('Regenerating the config files');
         $cfgSvc->createConfigFiles([
-            'SITE_NAME'     => $this->argument('name'),
+            // 'SITE_NAME'     => $this->argument('name'),
             'DB_CONNECTION' => 'mysql',
             'DB_HOST'       => $this->argument('db_host'),
             'DB_DATABASE'   => $this->argument('db_name'),

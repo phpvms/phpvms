@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Models\Award;
 use App\Support\Database;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -85,16 +86,16 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
      *
      * @param array $award See \App\Models\Awardv
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function addAward(array $award)
     {
-        $validator = Validator::make($award, \App\Models\Award::$rules);
+        $validator = Validator::make($award, Award::$rules);
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
 
-        $awardModel = new \App\Models\Award($award);
+        $awardModel = new Award($award);
         $awardModel->save();
     }
 }

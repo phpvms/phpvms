@@ -26,10 +26,12 @@ class OAuthService extends Service
         $end_date = now()->addHours(25);
 
         $tokens = UserOAuthToken::where(function (Builder $query) use ($start_date, $end_date) {
+            /** @var Builder<UserOAuthToken> $query */
             return $query->whereNot('provider', 'ivao')
                 ->whereBetween('expires_at', [$start_date, $end_date]);
         })
             ->orWhere(function (Builder $query) {
+                /** @var Builder<UserOAuthToken> $query */
                 return $query->where('provider', 'ivao')
                     ->whereBetween('expires_at', [now()->subDays(8), now()->subDays(6)]);
             })
@@ -43,7 +45,10 @@ class OAuthService extends Service
     public function refreshToken(UserOAuthToken $token): UserOAuthToken
     {
         try {
-            $updatedToken = Socialite::driver($token->provider)->refreshToken($token->refresh_token);
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver($token->provider);
+
+            $updatedToken = $driver->refreshToken($token->refresh_token);
 
             $token->update([
                 'token'         => $updatedToken->token,
@@ -60,6 +65,6 @@ class OAuthService extends Service
 
     public function refreshTokenIfExpired(UserOAuthToken $token): UserOAuthToken
     {
-        return ($token->isExpired) ? $this->refreshToken($token) : $token;
+        return ($token->is_expired) ? $this->refreshToken($token) : $token;
     }
 }

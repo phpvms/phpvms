@@ -3,6 +3,8 @@
 namespace App\Contracts;
 
 use Arrilot\Widgets\AbstractWidget;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
 
 /**
  * Class Widget
@@ -15,7 +17,7 @@ abstract class Widget extends AbstractWidget
      * Render the template
      *
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function view(string $template, array $vars = [])
     {

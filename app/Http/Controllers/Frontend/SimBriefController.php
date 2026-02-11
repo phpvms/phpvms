@@ -42,11 +42,11 @@ class SimBriefController
      * Show the main OFP form
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function generate(Request $request): RedirectResponse|View
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->simbrief_username) {
@@ -58,7 +58,7 @@ class SimBriefController
         $flight_id = $request->input('flight_id');
         $aircraft_id = $request->input('aircraft_id');
 
-        /** @var Flight $flight */
+        /** @var ?Flight $flight */
         $flight = $this->flightRepo->with(['airline', 'arr_airport', 'dpt_airport', 'fares', 'subfleets'])->find($flight_id);
 
         if (!$flight) {
@@ -306,7 +306,7 @@ class SimBriefController
         /** @var User $user */
         $user = Auth::user();
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');
@@ -341,7 +341,7 @@ class SimBriefController
      * or if no pirep_id is attached to the briefing delete it completely
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function generate_new(Request $request): RedirectResponse
     {
@@ -388,7 +388,7 @@ class SimBriefController
     public function cancel(Request $request): RedirectResponse
     {
         $sb = SimBrief::find($request->id);
-        if (!$sb) {
+        if ($sb) {
             $sb->delete();
         }
 
@@ -410,7 +410,7 @@ class SimBriefController
         $fares = $request->session()->get('simbrief_fares', []);
 
         $simbrief = $this->simBriefSvc->downloadOfp($user, $static_id, $ofp_id, $flight_id, $aircraft_id, $fares);
-        if ($simbrief === null) {
+        if (!$simbrief instanceof \App\Models\SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();
@@ -437,8 +437,8 @@ class SimBriefController
         $sb_static_id = $request->input('sb_static_id');
         $fares = [];
 
-        $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares, $sb_userid, $sb_static_id);
-        if ($simbrief === null) {
+        $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares, $sb_userid);
+        if (!$simbrief instanceof \App\Models\SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();
@@ -451,7 +451,7 @@ class SimBriefController
      * Generate the API code
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function api_code(Request $request): RedirectResponse|JsonResponse
     {

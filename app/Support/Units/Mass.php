@@ -3,6 +3,8 @@
 namespace App\Support\Units;
 
 use App\Contracts\Unit;
+use PhpUnitsOfMeasure\Exception\NonNumericValue;
+use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\PhysicalQuantity\Mass as MassUnit;
 
 class Mass extends Unit
@@ -13,12 +15,12 @@ class Mass extends Unit
     ];
 
     /**
-     * @param float $value
+     * @param float|self $value
      *
-     * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
-     * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
+     * @throws NonNumericValue
+     * @throws NonStringUnitName
      */
-    public function __construct($value, string $unit)
+    public function __construct(mixed $value, string $unit)
     {
         if (empty($value)) {
             $value = 0;

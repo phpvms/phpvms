@@ -21,14 +21,14 @@ class ClearCaches extends Command
 
     public static function clearCaches()
     {
-        self::clearBootstrapCache();
+        // self::clearBootstrapCache();
         self::clearModuleCache();
     }
 
     /**
      * Clear the bootstrap/cache dir
      */
-    private static function clearBootstrapCache() {}
+    // private static function clearBootstrapCache() {}
 
     /**
      * Rescan for new modules

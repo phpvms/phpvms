@@ -4,6 +4,8 @@ namespace App\Widgets;
 
 use App\Contracts\Widget;
 use App\Repositories\NewsRepository;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
 
 /**
  * Show the latest news in a view
@@ -15,7 +17,7 @@ class LatestNews extends Widget
     ];
 
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function run()
     {

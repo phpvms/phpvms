@@ -23,7 +23,9 @@ class VaCentralLookup extends AirportLookup
     {
         try {
             $airport = $this->client->getAirport($icao);
+            // @phpstan-ignore-next-line
             $airport->location = $airport->city;
+            // @phpstan-ignore-next-line
             $airport->timezone = $airport->tz;
 
             return $airport;

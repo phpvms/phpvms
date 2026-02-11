@@ -6,6 +6,7 @@ use App\Contracts\Listener;
 use App\Events\CronHourly;
 use App\Models\Bid;
 use Carbon\Carbon;
+use Exception;
 
 /**
  * Remove expired bids
@@ -16,7 +17,7 @@ class RemoveExpiredBids extends Listener
      * Remove expired bids
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(CronHourly $event): void
     {

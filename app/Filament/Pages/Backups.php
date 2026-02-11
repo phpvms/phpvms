@@ -2,19 +2,21 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Enums\NavigationGroup;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Support\Icons\Heroicon;
 use ShuvroRoy\FilamentSpatieLaravelBackup\Pages\Backups as BaseBackups;
 
 class Backups extends BaseBackups
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 4;
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): \UnitEnum
     {
-        return 'Config';
+        return NavigationGroup::Developers;
     }
 }

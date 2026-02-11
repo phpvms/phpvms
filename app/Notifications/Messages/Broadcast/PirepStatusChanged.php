@@ -126,7 +126,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
             $fields['Distance'][] = $pirep->planned_distance->local(2);
         }
 
-        if (isset($fields['Distance']) && $fields['Distance'] !== []) {
+        if ($fields['Distance'] !== []) {
             $fields['Distance'] = implode('/', $fields['Distance']);
             $fields['Distance'] .= ' '.setting('units.distance');
         }

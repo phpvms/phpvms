@@ -5,6 +5,8 @@ namespace App\Widgets;
 use App\Contracts\Widget;
 use App\Models\Enums\UserState;
 use App\Repositories\UserRepository;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
 
 /**
  * Show the latest pilots in a view
@@ -16,7 +18,7 @@ class LatestPilots extends Widget
     ];
 
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function run()
     {

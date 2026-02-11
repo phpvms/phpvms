@@ -446,12 +446,14 @@ final class ImporterTest extends TestCase
         $catering = $expenses->firstWhere('name', 'Catering Staff');
         $this->assertEquals(1000, $catering->amount);
         $this->assertEquals(ExpenseType::DAILY, $catering->type);
-        $this->assertEquals(Subfleet::class, $catering->ref_model);
+        $this->assertInstanceOf(Subfleet::class, $catering->ref_model);
+        $this->assertEquals($subfleet->id, $catering->ref_model->id);
         $this->assertEquals($subfleet->id, $catering->ref_model_id);
 
         $mnt = $expenses->firstWhere('name', 'Maintenance');
-        $this->assertEquals(Aircraft::class, $mnt->ref_model);
+        $this->assertInstanceOf(Aircraft::class, $mnt->ref_model);
         $this->assertEquals($aircraft->id, $mnt->ref_model_id);
+        $this->assertEquals($aircraft->id, $mnt->ref_model->id);
     }
 
     /**

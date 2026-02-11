@@ -3,6 +3,8 @@
 namespace App\Widgets;
 
 use App\Contracts\Widget;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
 
 /**
  * Show the live map in a view
@@ -17,7 +19,7 @@ class AirspaceMap extends Widget
     ];
 
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function run()
     {

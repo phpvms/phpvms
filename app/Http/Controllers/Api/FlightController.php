@@ -17,8 +17,10 @@ use App\Services\FareService;
 use App\Services\FlightService;
 use App\Services\UserService;
 use Exception;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
@@ -42,7 +44,7 @@ class FlightController extends Controller
 
     public function get(string $id): FlightResource
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         /** @var \App\Models\Flight $flight */
@@ -67,7 +69,7 @@ class FlightController extends Controller
      */
     public function search(Request $request)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $where = [
@@ -76,7 +78,7 @@ class FlightController extends Controller
         ];
 
         // Allow the option to bypass some of these restrictions for the searches
-        if (!$request->filled('ignore_restrictions') || $request->get('ignore_restrictions') === '0') {
+        if (!$request->filled('ignore_restrictions') || $request->input('ignore_restrictions') === '0') {
             if (setting('pilots.restrict_to_company')) {
                 $where['airline_id'] = $user->airline_id;
             }
@@ -144,8 +146,8 @@ class FlightController extends Controller
     /**
      * Output the flight briefing from simbrief or whatever other format
      *
-     * @param  string                                                                  $id The flight ID
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     * @param  string                   $id The flight ID
+     * @return ResponseFactory|Response
      */
     public function briefing(string $id)
     {
@@ -155,7 +157,7 @@ class FlightController extends Controller
             'id' => $id,
         ];
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::where($w)->first();
 
         if ($simbrief === null) {

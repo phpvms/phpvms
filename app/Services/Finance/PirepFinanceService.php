@@ -24,7 +24,12 @@ use App\Services\FareService;
 use App\Services\FinanceService;
 use App\Support\Math;
 use App\Support\Money;
+use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Prettus\Validator\Exceptions\ValidatorException;
+use UnexpectedValueException;
 
 class PirepFinanceService extends Service
 {
@@ -45,10 +50,10 @@ class PirepFinanceService extends Service
      *
      * @return mixed
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     * @throws \Exception
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
+     * @throws Exception
      */
     public function processFinancesForPirep(Pirep $pirep)
     {
@@ -96,9 +101,9 @@ class PirepFinanceService extends Service
      * the costs for each seat and post it to the journal
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payFaresForPirep($pirep): void
     {
@@ -133,9 +138,9 @@ class PirepFinanceService extends Service
      * Collect all of the fares from listeners and apply those to the journal
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payFaresEventsForPirep(Pirep $pirep): void
     {
@@ -180,7 +185,7 @@ class PirepFinanceService extends Service
      * Calculate the fuel used by the PIREP and add those costs in
      *
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function payFuelCosts(Pirep $pirep): void
     {
@@ -248,9 +253,9 @@ class PirepFinanceService extends Service
      * in this subfleet, as-per the block time
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payExpensesForSubfleet(Pirep $pirep): void
     {
@@ -264,13 +269,8 @@ class PirepFinanceService extends Service
         // Convert to cost per-minute
         $cost_per_min = round($sf->cost_block_hour / 60, 2);
 
-        // Time to use - use the block time if it's there, actual
-        // flight time if that hasn't been used
-        $block_time = $pirep->block_time;
-        if (!filled($block_time)) {
-            Log::info('Finance: No block time, using PIREP flight time');
-            $block_time = $pirep->flight_time;
-        }
+        // Time to use - use the flight time
+        $block_time = $pirep->flight_time;
 
         $debit = Money::createFromAmount($cost_per_min * $block_time);
         Log::info('Finance: Subfleet Block Hourly, D='.$debit->getAmount());
@@ -289,8 +289,8 @@ class PirepFinanceService extends Service
      * Collect all of the expenses and apply those to the journal
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function payExpensesForPirep(Pirep $pirep): void
     {
@@ -304,7 +304,7 @@ class PirepFinanceService extends Service
          */
         $expenses->map(function (Expense $expense, $i) use ($pirep) {
             // Airport expenses are paid out separately
-            if ($expense->ref_model === Airport::class) {
+            if ($expense->ref_model instanceof Airport) {
                 return;
             }
 
@@ -312,7 +312,7 @@ class PirepFinanceService extends Service
 
             // Check to see if there is a certain fleet or flight type set on this expense
             // if there is and it doesn't match up the flight type for the PIREP, skip it
-            if ($expense->ref_model === Expense::class && (is_array($expense->flight_type) && $expense->flight_type !== []) && !in_array($pirep->flight_type, $expense->flight_type, true)) {
+            if ($expense->ref_model_type === Expense::class && (is_array($expense->flight_type) && $expense->flight_type !== []) && !in_array($pirep->flight_type, $expense->flight_type, true)) {
                 return;
             }
 
@@ -320,20 +320,20 @@ class PirepFinanceService extends Service
             // This way it can be more dynamic and don't have to add special
             // tables or specific expense calls to accomodate all of these
             $klass = 'Expense';
-            if ($expense->ref_model) {
-                $ref = explode('\\', $expense->ref_model);
+            if ($expense->ref_model_type) {
+                $ref = explode('\\', $expense->ref_model_type);
                 $klass = end($ref);
             }
 
             // Form the memo, with some specific ones depending on the group
-            if ($expense->ref_model === Subfleet::class) {
+            if ($expense->ref_model_type === Subfleet::class) {
                 if ((int) $expense->ref_model_id === $pirep->aircraft->subfleet->id) {
                     $memo = "Subfleet Expense: $expense->name ({$pirep->aircraft->subfleet->name}) dd";
                     $transaction_group = "Subfleet: $expense->name ({$pirep->aircraft->subfleet->name})";
                 } else { // Skip any subfleets that weren't used for this flight
                     return;
                 }
-            } elseif ($expense->ref_model === Aircraft::class) {
+            } elseif ($expense->ref_model_type === Aircraft::class) {
                 if ((int) $expense->ref_model_id === $pirep->aircraft->id) {
                     $memo = "Aircraft Expense: $expense->name ({$pirep->aircraft->name})";
                     $transaction_group = "Aircraft: $expense->name "
@@ -355,7 +355,7 @@ class PirepFinanceService extends Service
                 // force into percent mode
                 $multiplier = $pirep->aircraft->subfleet->ground_handling_multiplier.'%';
                 // do the math and calculate the amount
-                $expense->amount = Math::applyAmountOrPercent($expense->amount, $multiplier);
+                $expense->amount = (int) Math::applyAmountOrPercent($expense->amount, $multiplier);
             }
 
             $debit = Money::createFromAmount($expense->amount);
@@ -418,9 +418,9 @@ class PirepFinanceService extends Service
      * Collect all of the expenses from the listeners and apply those to the journal
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payExpensesEventsForPirep(Pirep $pirep): void
     {
@@ -472,9 +472,9 @@ class PirepFinanceService extends Service
      * Collect and apply the ground handling cost
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payGroundHandlingForPirep(Pirep $pirep): void
     {
@@ -508,9 +508,9 @@ class PirepFinanceService extends Service
      * But also reference the PIREP
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function payPilotForPirep(Pirep $pirep): void
     {
@@ -551,7 +551,7 @@ class PirepFinanceService extends Service
      * Return all of the fares for the PIREP
      *
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getFaresForPirep($pirep)
     {
@@ -587,7 +587,7 @@ class PirepFinanceService extends Service
      *
      * @return float
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getPilotPayRateForPirep(Pirep $pirep)
     {
@@ -634,8 +634,8 @@ class PirepFinanceService extends Service
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function getPilotPay(Pirep $pirep)
     {

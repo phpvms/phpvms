@@ -2,13 +2,8 @@
 
 namespace $CLASS_NAMESPACE$;
 
-use App\Contracts\Controller;
+use Illuminate\Routing\Controller;
 
-/**
- * Class $CLASS$
- * @package $CLASS_NAMESPACE$
- */
 class $CLASS$ extends Controller
 {
-
 }

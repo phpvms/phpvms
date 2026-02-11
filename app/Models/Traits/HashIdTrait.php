@@ -3,13 +3,14 @@
 namespace App\Models\Traits;
 
 use App\Support\Utils;
+use Hashids\HashidsException;
 
 trait HashIdTrait
 {
     /**
-     * @throws \Hashids\HashidsException
+     * @throws HashidsException
      */
-    final protected static function createNewHashId(): string
+    final public static function createNewHashId(): string
     {
         return Utils::generateNewId();
     }
@@ -17,7 +18,7 @@ trait HashIdTrait
     /**
      * Register callbacks
      *
-     * @throws \Hashids\HashidsException
+     * @throws HashidsException
      */
     final protected static function bootHashIdTrait(): void
     {

@@ -9,6 +9,7 @@ use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
 use App\Models\Pirep;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -20,7 +21,7 @@ class RemoveExpiredLiveFlights extends Listener
      * Remove expired live flights that haven't had an update in the live time
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(CronHourly $event): void
     {

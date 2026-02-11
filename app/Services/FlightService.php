@@ -17,18 +17,15 @@ use App\Repositories\FlightRepository;
 use App\Repositories\NavdataRepository;
 use App\Repositories\PirepRepository;
 use App\Support\Units\Time;
+use Exception;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 class FlightService extends Service
 {
-    /**
-     * FlightService constructor.
-     *
-     *
-     * @parma PirepRepository   $pirepRepo
-     */
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly FareService $fareSvc,
         private readonly FlightRepository $flightRepo,
         private readonly NavdataRepository $navDataRepo,
         private readonly PirepRepository $pirepRepo,
@@ -38,10 +35,10 @@ class FlightService extends Service
     /**
      * Create a new flight
      *
-     * @param  array                             $fields
-     * @return \Illuminate\Http\RedirectResponse
+     * @param  array            $fields
+     * @return RedirectResponse
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function createFlight($fields)
     {
@@ -65,11 +62,11 @@ class FlightService extends Service
     /**
      * Update a flight with values from the given fields
      *
-     * @param  Flight                   $flight
-     * @param  array                    $fields
-     * @return \App\Models\Flight|mixed
+     * @param  Flight       $flight
+     * @param  array        $fields
+     * @return Flight|mixed
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function updateFlight($flight, $fields)
     {
@@ -142,29 +139,27 @@ class FlightService extends Service
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
-
-        /** @var \Illuminate\Support\Collection $subfleets */
         $subfleets = $flight->subfleets;
 
         // If no subfleets assigned and airline subfleets are forced, get airline subfleets
-        if (($subfleets === null || $subfleets->count() === 0) && setting('flights.only_company_aircraft', false)) {
+        if ($subfleets->count() === 0 && setting('flights.only_company_aircraft', false)) {
             $subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->get();
         }
 
         // If no subfleets assigned to a flight get users allowed subfleets
-        if ($subfleets === null || $subfleets->count() === 0) {
+        if ($subfleets->count() === 0) {
             $subfleets = $this->userSvc->getAllowableSubfleets($user);
         }
 
         // If subfleets are still empty return the flight
-        if ($subfleets === null || $subfleets->count() === 0) {
+        if ($subfleets->count() === 0) {
             return $flight;
         }
 
         // Only allow aircraft that the user has access to by their rank or type rating
         if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
-            $subfleets = $subfleets->filter(function ($subfleet, $i) use ($allowed_subfleets) {
+            $subfleets = $subfleets->filter(function (Subfleet $subfleet, $i) use ($allowed_subfleets) {
                 return $allowed_subfleets->contains($subfleet->id);
             });
         }
@@ -179,6 +174,8 @@ class FlightService extends Service
             $subfleets->loadMissing('aircraft');
 
             foreach ($subfleets as $subfleet) {
+                /** @var Subfleet $subfleet */
+                // @phpstan-ignore-next-line
                 $subfleet->aircraft = $subfleet->aircraft->filter(
                     function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
                         if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
@@ -197,6 +194,7 @@ class FlightService extends Service
             }
         }
 
+        /** @phpstan-ignore-next-line  */
         $flight->subfleets = $subfleets;
 
         return $flight;
@@ -240,7 +238,7 @@ class FlightService extends Service
      * Delete a flight, and all the user bids, etc associated with it
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function deleteFlight(Flight $flight): void
     {
@@ -271,7 +269,7 @@ class FlightService extends Service
      * Return all of the navaid points as a collection
      *
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getRoute(Flight $flight)
     {
@@ -294,6 +292,7 @@ class FlightService extends Service
 
     public function removeExpiredRepositionFlights(): void
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<Flight> $flights */
         $flights = $this->flightRepo->where('route_code', PirepStatus::DIVERTED)->get();
 
         foreach ($flights as $flight) {

@@ -2,6 +2,9 @@
 
 namespace App\Support\Units;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Time implements Arrayable
@@ -10,10 +13,7 @@ class Time implements Arrayable
 
     public $minutes;
 
-    /**
-     * @return static
-     */
-    public static function init($minutes, $hours)
+    public static function init($minutes, $hours): self
     {
         return new self($minutes, $hours);
     }
@@ -74,13 +74,13 @@ class Time implements Arrayable
     /**
      * Get the instance as an array.
      */
-    public function toArray()
+    public function toArray(): float|int|array
     {
         return $this->getMinutes();
     }
 
     /**
-     * @param string $minutes
+     * @param int $minutes
      */
     public static function minutesToTimeParts($minutes): array
     {
@@ -100,15 +100,15 @@ class Time implements Arrayable
     /**
      * Convert seconds to an array of hours, minutes, seconds
      *
-     * @param int $seconds
-     * @return array['h', 'm', 's']
+     * @param  int                                 $seconds
+     * @return array{'h': int, 'm': int, 's': int}
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function secondsToTimeParts($seconds): array
     {
-        $dtF = new \DateTimeImmutable('@0', new \DateTimeZone('UTC'));
-        $dtT = new \DateTimeImmutable("@$seconds", new \DateTimeZone('UTC'));
+        $dtF = new DateTimeImmutable('@0', new DateTimeZone('UTC'));
+        $dtT = new DateTimeImmutable("@$seconds", new DateTimeZone('UTC'));
 
         $t = $dtF->diff($dtT);
 
@@ -126,7 +126,7 @@ class Time implements Arrayable
      * @param int  $seconds
      * @param bool $incl_sec
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function secondsToTimeString($seconds, $incl_sec = false): string
     {
@@ -169,11 +169,7 @@ class Time implements Arrayable
         return $minutes / 60;
     }
 
-    /**
-     * @param  null      $minutes
-     * @return float|int
-     */
-    public static function hoursToMinutes($hours, $minutes = null)
+    public static function hoursToMinutes(int|float $hours, int|float|null $minutes = null): int
     {
         $total = (int) $hours * 60;
         if ($minutes) {

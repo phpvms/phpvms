@@ -3,11 +3,12 @@
 namespace App\Contracts;
 
 use ArrayAccess;
+use Exception;
 
 /**
  * Abstract unit wrapper
  */
-class Unit implements ArrayAccess
+abstract class Unit implements ArrayAccess
 {
     /**
      * The localized unit the user wants it displayed in
@@ -34,15 +35,17 @@ class Unit implements ArrayAccess
      */
     public array $responseUnits = [];
 
+    abstract public function __construct(mixed $value, string $unit);
+
     /**
      * Factory method for creating a new unit type
      *
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function make(mixed $value, string $unit): self
+    public static function make(mixed $value, string $unit): static
     {
-        if ($value instanceof self) {
+        if ($value instanceof static) {
             return $value;
         }
 

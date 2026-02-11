@@ -133,6 +133,7 @@ return [
         'importing_legacy' => '/installation/importing',
         'load_factor'      => '/operations/flights#load-factor',
         'subfleets'        => '/concepts/basics#subfleets-and-aircraft',
+        'installation'     => '/installation',
     ],
 
     /*
@@ -141,4 +142,14 @@ return [
     'registration' => [
         'email_verification' => env('EMAIL_VERIFICATION_REQUIRED', true),
     ],
+
+    /*
+     * Whether to use prefetching in the admin panel (can use a lot of bandwidth)
+     */
+    'use_prefetching_in_admin' => env('USE_PREFETCHING_IN_ADMIN', false),
+
+    /**
+     * Whether to use the built-in filament import system (relies on laravel queue worker)
+     */
+    'use_queued_filament_imports' => env('USE_QUEUED_FILAMENT_IMPORTS', false),
 ];

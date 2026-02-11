@@ -6,7 +6,6 @@ use App\Contracts\Service;
 use App\Repositories\KvpRepository;
 use DateTime;
 use DateTimeZone;
-use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\PhpExecutableFinder;
 
@@ -78,14 +77,18 @@ class CronService extends Service
             return true;
         }
 
-        try {
-            $dt = DateTime::createFromFormat(DateTime::ISO8601, $last_run);
-            $dt_now = new DateTime('now', new DateTimeZone('UTC'));
-        } catch (Exception $e) {
-            Log::error('Error checking for cron problem: '.$e->getMessage());
+        $dt = DateTime::createFromFormat(DateTime::ISO8601, $last_run);
+
+        // Check if the date creation failed
+        if ($dt === false) {
+            // You can get more detailed error information if needed
+            $errors = DateTime::getLastErrors();
+            Log::error('Error parsing last_run date: '.print_r($errors, true));
 
             return true;
         }
+
+        $dt_now = new DateTime('now', new DateTimeZone('UTC'));
 
         // More than 5 minutes... there's a problem
         $diff = $dt_now->diff($dt);

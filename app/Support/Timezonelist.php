@@ -22,7 +22,9 @@
 
 namespace App\Support;
 
+use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -78,8 +80,8 @@ class Timezonelist
     public static function formatTimezone($timezone, $continent, $htmlencode = true)
     {
         try {
-            $time = new \DateTimeImmutable('now', new DateTimeZone($timezone));
-        } catch (\Exception $e) {
+            $time = new DateTimeImmutable('now', new DateTimeZone($timezone));
+        } catch (Exception $e) {
             Log::error($e->getMessage());
 
             return '';
@@ -104,7 +106,7 @@ class Timezonelist
      * @param  bool   $htmlencode
      * @return string
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function create($name, $selected = '', $attr = '', $htmlencode = true)
     {

@@ -2,6 +2,10 @@
 
 namespace App\Contracts;
 
+use BadMethodCallException;
+use ReflectionClass;
+use ReflectionException;
+
 /**
  * Borrowed some ideas from myclabs/php-enum after this was created
  */
@@ -18,7 +22,7 @@ abstract class Enum
     /**
      * Create an instance of this Enum
      */
-    public function __construct($val)
+    final public function __construct($val)
     {
         $this->value = $val;
     }
@@ -26,7 +30,7 @@ abstract class Enum
     /**
      * Return the value that's been set if this is an instance
      */
-    final public function getValue(): ?int
+    final public function getValue(): int
     {
         return $this->value;
     }
@@ -112,13 +116,13 @@ abstract class Enum
      *
      * @return array Constant name in key, constant value in value
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function toArray(): array
     {
         $class = static::class;
         if (!array_key_exists($class, static::$cache)) {
-            $reflection = new \ReflectionClass($class);
+            $reflection = new ReflectionClass($class);
             static::$cache[$class] = $reflection->getConstants();
         }
 
@@ -138,8 +142,8 @@ abstract class Enum
      * @param  array  $arguments
      * @return static
      *
-     * @throws \BadMethodCallException
-     * @throws \ReflectionException
+     * @throws BadMethodCallException
+     * @throws ReflectionException
      */
     public static function __callStatic($name, $arguments)
     {
@@ -148,7 +152,7 @@ abstract class Enum
             return new static($array[$name]);
         }
 
-        throw new \BadMethodCallException(
+        throw new BadMethodCallException(
             "No static method or enum constant '$name' in class ".static::class
         );
     }

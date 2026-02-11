@@ -9,6 +9,7 @@ use App\Models\UserField;
 use App\Repositories\Criteria\WhereCriteria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserRepository extends Repository
 {
@@ -31,9 +32,9 @@ class UserRepository extends Repository
     /**
      * Get all of the fields which has the mapped values
      *
-     * @param  bool                                                                                            $only_public_fields   Only include the user's public fields
-     * @param  mixed                                                                                           $with_internal_fields
-     * @return \App\Models\UserField[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection
+     * @param  bool                                                            $only_public_fields   Only include the user's public fields
+     * @param  mixed                                                           $with_internal_fields
+     * @return UserField[]|\Illuminate\Database\Eloquent\Collection|Collection
      */
     public function getUserFields(User $user, $only_public_fields = null, $with_internal_fields = false): Collection
     {
@@ -80,7 +81,7 @@ class UserRepository extends Repository
      *
      * @return $this
      *
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function searchCriteria(Request $request, bool $only_active = true)
     {

@@ -7,6 +7,9 @@ use App\Events\CronMonthly;
 use App\Models\Enums\ExpenseType;
 use App\Services\Finance\RecurringFinanceService;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Prettus\Validator\Exceptions\ValidatorException;
+use UnexpectedValueException;
 
 /**
  * Go through and apply any finances that are daily
@@ -27,9 +30,9 @@ class ApplyExpenses extends Listener
      * Apply all of the expenses for a month
      *
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws ValidatorException
      */
     public function handle(CronMonthly $event): void
     {

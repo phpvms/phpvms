@@ -12,6 +12,7 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -43,7 +44,7 @@ class BidService extends Service
             'flight.subfleets.fares',
         ];
 
-        /** @var Bid $bid */
+        /** @var ?Bid $bid */
         $bid = Bid::with($with)->where(['id' => $bid_id])->first();
         if ($bid === null) {
             return null;
@@ -54,9 +55,11 @@ class BidService extends Service
         if (!empty($bid->aircraft)) {
             $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
         } else {
+            // @phpstan-ignore-next-line
             $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
         }
 
+        // @phpstan-ignore-next-line
         $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
 
         return $bid;
@@ -105,9 +108,11 @@ class BidService extends Service
                 if ($bid->aircraft) {
                     $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
                 } else {
+                    // @phpstan-ignore-next-line
                     $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
                 }
 
+                // @phpstan-ignore-next-line
                 $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
             }
         }
@@ -121,7 +126,7 @@ class BidService extends Service
      *
      * @return mixed
      *
-     * @throws \App\Exceptions\BidExistsForFlight
+     * @throws BidExistsForFlight
      */
     public function addBid(Flight $flight, User $user, ?Aircraft $aircraft = null)
     {
@@ -221,10 +226,9 @@ class BidService extends Service
     /**
      * If the setting is enabled, remove the bid
      *
-     *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function removeBidForPirep(Pirep $pirep)
+    public function removeBidForPirep(Pirep $pirep): void
     {
         $flight = $pirep->flight;
         if (!$flight) {
@@ -234,7 +238,7 @@ class BidService extends Service
         $bid = Bid::where([
             'user_id'   => $pirep->user->id,
             'flight_id' => $flight->id,
-        ]);
+        ])->first();
 
         if ($bid) {
             Log::info('Bid for user: '.$pirep->user->ident.' on flight '.$flight->ident);

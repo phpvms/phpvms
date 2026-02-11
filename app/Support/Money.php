@@ -4,6 +4,9 @@ namespace App\Support;
 
 use Akaunting\Money\Currency;
 use Akaunting\Money\Money as MoneyBase;
+use InvalidArgumentException;
+use OutOfBoundsException;
+use UnexpectedValueException;
 
 /**
  * Compositional wrapper to MoneyPHP with some helpers
@@ -24,8 +27,7 @@ class Money
      * @param  mixed     $amount The amount, in pennies
      * @return MoneyBase
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public static function create($amount)
     {
@@ -38,8 +40,8 @@ class Money
      * @param  mixed $amount The amount in dollar
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public static function createFromAmount($amount)
     {
@@ -67,13 +69,13 @@ class Money
      *
      * @return Currency
      *
-     * @throws \OutOfBoundsException
+     * @throws OutOfBoundsException
      */
     public static function currency()
     {
         try {
             return new Currency(setting('units.currency', 'USD'));
-        } catch (\OutOfBoundsException $e) {
+        } catch (OutOfBoundsException $e) {
             return new Currency('USD');
         }
     }
@@ -83,8 +85,7 @@ class Money
      *
      * @param mixed $amount
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public function __construct($amount)
     {
@@ -93,10 +94,8 @@ class Money
 
     /**
      * Return the amount of currency in smallest denomination
-     *
-     * @return string
      */
-    public function getAmount()
+    public function getAmount(): float|int
     {
         return $this->money->getAmount();
     }
@@ -158,8 +157,8 @@ class Money
      * @param  mixed $amount
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function add($amount)
     {
@@ -176,8 +175,8 @@ class Money
      * @param  mixed $percent
      * @return $this
      *
-     * @throws \OutOfBoundsException
-     * @throws \InvalidArgumentException
+     * @throws OutOfBoundsException
+     * @throws InvalidArgumentException
      */
     public function addPercent($percent)
     {
@@ -197,8 +196,8 @@ class Money
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function subtract($amount)
     {
@@ -217,17 +216,13 @@ class Money
      *
      * @return Money
      *
-     * @throws \UnexpectedValueException
-     * @throws \OutOfBoundsException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws OutOfBoundsException
+     * @throws InvalidArgumentException
      */
-    public function multiply($amount)
+    public function multiply(int|float $amount)
     {
-        if (!($amount instanceof self)) {
-            $amount = static::createFromAmount($amount);
-        }
-
-        $this->money = $this->money->multiply($amount->money);
+        $this->money = $this->money->multiply($amount);
 
         return $this;
     }
@@ -238,8 +233,8 @@ class Money
      *
      * @return Money
      *
-     * @throws \OutOfBoundsException
-     * @throws \InvalidArgumentException
+     * @throws OutOfBoundsException
+     * @throws InvalidArgumentException
      */
     public function divide($amount)
     {
@@ -251,8 +246,8 @@ class Money
     /**
      * @return bool
      *
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
+     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function equals($money)
     {

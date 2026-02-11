@@ -7,17 +7,18 @@ use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
 use App\Http\Middleware\SetActiveTheme;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException as SymfonyHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
-use Whoops\Handler\HandlerInterface;
 
 /**
  * Class Handler
@@ -61,7 +62,7 @@ class Handler extends ExceptionHandler
      * Handle errors in the API
      *
      *
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @return JsonResponse|Response
      */
     private function handleApiError($request, Throwable $exception)
     {
@@ -101,10 +102,10 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * Convert an authentication exception into an unauthenticated response.
+     * Convert an authentication exception into a response.
      *
-     * @param  Request                   $request
-     * @return \Illuminate\Http\Response
+     * @param  Request                                $request
+     * @return Response|JsonResponse|RedirectResponse
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
@@ -115,17 +116,5 @@ class Handler extends ExceptionHandler
         }
 
         return redirect()->guest('login');
-    }
-
-    /**
-     * Ignition error page integration
-     */
-    protected function whoopsHandler()
-    {
-        try {
-            return app(HandlerInterface::class);
-        } catch (BindingResolutionException $e) {
-            return parent::whoopsHandler();
-        }
     }
 }

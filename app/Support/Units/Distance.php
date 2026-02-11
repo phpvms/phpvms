@@ -3,6 +3,8 @@
 namespace App\Support\Units;
 
 use App\Contracts\Unit;
+use PhpUnitsOfMeasure\Exception\NonNumericValue;
+use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
 
 class Distance extends Unit
@@ -20,8 +22,8 @@ class Distance extends Unit
      * @param Distance|float $value
      * @param string         $unit  The unit of $value
      *
-     * @throws \PhpUnitsOfMeasure\Exception\NonNumericValue
-     * @throws \PhpUnitsOfMeasure\Exception\NonStringUnitName
+     * @throws NonNumericValue
+     * @throws NonStringUnitName
      */
     public function __construct(mixed $value, string $unit)
     {
