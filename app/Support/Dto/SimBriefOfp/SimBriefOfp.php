@@ -15,7 +15,6 @@ final class SimBriefOfp extends Dto
      * @param array<string, SimBriefOfpImpact|array{}> $impacts
      * @param SimBriefOfpFirNotam[]                    $notams
      * @param SimBriefOfpSigmet[]                      $sigmets
-     * @param SimBriefOfpTracks[]                      $tracks
      * @param array<string, string>                    $links
      */
     public function __construct(
@@ -30,7 +29,7 @@ final class SimBriefOfp extends Dto
         public array $enroute_altn,
         public array $enroute_station,
         public array $navlog,
-        public SimBriefOfpEtops $etops,
+        public SimBriefOfpEtops|array $etops,
         public SimBriefOfpTlr $tlr,
         public SimBriefOfpAtc $atc,
         public SimBriefOfpAircraft $aircraft,
@@ -44,7 +43,7 @@ final class SimBriefOfp extends Dto
         public SimBriefOfpWeather $weather,
         public array $sigmets,
         public SimBriefOfpText $text,
-        public SimBriefOfpTracks $tracks,
+        public SimBriefOfpTracks|array $tracks,
         public SimBriefOfpDatabaseUpdates $database_updates,
         public SimBriefOfpFiles $files,
         public SimBriefOfpFmsDownloads $fms_downloads,
