@@ -7,15 +7,15 @@ use Spatie\LaravelData\Dto;
 final class SimBriefOfpEtops extends Dto
 {
     /**
-     * @param SimbriefOfpEtopsSuitableAirport[] $suitable_airport
-     * @param SimbriefOfpEtopsEqualTimePoint[]  $equal_time_point
+     * @param SimBriefOfpEtopsSuitableAirport[] $suitable_airport
+     * @param SimBriefOfpEtopsEqualTimePoint[]  $equal_time_point
      */
     public function __construct(
         public int $rule,
-        public SimbriefOfpEtopsEntryExitPoint $entry,
-        public SimbriefOfpEtopsEntryExitPoint $exit,
+        public SimBriefOfpEtopsEntryExitPoint $entry,
+        public SimBriefOfpEtopsEntryExitPoint $exit,
         public array $suitable_airport,
         public array $equal_time_point,
-        public SimbriefOfpEtopsCriticalPoint $critical_point
+        public SimBriefOfpEtopsCriticalPoint $critical_point
     ) {}
 }

@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-final class SimbriefOfpEtopsCriticalPoint extends Dto
+final class SimBriefOfpEtopsCriticalPoint extends Dto
 {
     public function __construct(
         public string $fix_type,

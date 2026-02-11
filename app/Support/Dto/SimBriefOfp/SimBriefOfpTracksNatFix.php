@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-final class SimbriefOfpTracksNatFix extends Dto
+final class SimBriefOfpTracksNatFix extends Dto
 {
     public function __construct(
         public string $ident,

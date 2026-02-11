@@ -7,7 +7,7 @@ use Spatie\LaravelData\Dto;
 final class SimBriefOfp extends Dto
 {
     /**
-     * @param SimbriefOfpAlternate[]                   $alternate
+     * @param SimBriefOfpAlternate[]                   $alternate
      * @param list<SimBriefOfpNavlog[]>                $alternate_navlog
      * @param SimBriefOfpAirport[]                     $takeoff_altn
      * @param SimBriefOfpAirport[]                     $enroute_altn

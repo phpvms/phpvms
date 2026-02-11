@@ -7,10 +7,10 @@ use Spatie\LaravelData\Dto;
 final class SimBriefOfpTracks extends Dto
 {
     /**
-     * @param SimbriefOfpTracksNat[] $nat
+     * @param SimBriefOfpTracksNat[] $nat
      */
     public function __construct(
-        public SimbriefOfpTracksNatNotams $nat_notams,
+        public SimBriefOfpTracksNatNotams $nat_notams,
         public array $nat
     ) {}
 }

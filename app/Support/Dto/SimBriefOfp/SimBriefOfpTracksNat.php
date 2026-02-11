@@ -6,10 +6,10 @@ use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Dto;
 
-final class SimbriefOfpTracksNat extends Dto
+final class SimBriefOfpTracksNat extends Dto
 {
     /**
-     * @param SimbriefOfpTracksNatFix[] $fixes
+     * @param SimBriefOfpTracksNatFix[] $fixes
      */
     public function __construct(
         public string $id,

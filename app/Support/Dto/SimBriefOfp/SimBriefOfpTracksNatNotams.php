@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-final class SimbriefOfpTracksNatNotams extends Dto
+final class SimBriefOfpTracksNatNotams extends Dto
 {
     public function __construct(
         public string $eggx,

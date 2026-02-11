@@ -4,10 +4,10 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-final class SimbriefOfpEtopsEqualTimePoint extends Dto
+final class SimBriefOfpEtopsEqualTimePoint extends Dto
 {
     /**
-     * @param SimbriefOfpEtopsDivAirport[] $div_airport
+     * @param SimBriefOfpEtopsDivAirport[] $div_airport
      */
     public function __construct(
         public float $pos_lat,
