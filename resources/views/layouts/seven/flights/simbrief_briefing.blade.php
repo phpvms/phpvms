@@ -131,8 +131,7 @@
 
                 <div class="col-4 text-center">
                   <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Est. Enroute Time</p>
-                    <p class="border rounded p-1 small text-monospace">
-                      @minutestotime($simbrief->ofp->times->est_time_enroute / 60)</p>
+                    <p class="border rounded p-1 small text-monospace">{{ \Carbon\Carbon::createFromFormat('H:i:s', $simbrief->ofp->times->est_time_enroute)->format('H\h i\m') }}</p>
                   </div>
                 </div>
 
@@ -152,7 +151,10 @@
                   <div class="col-12">
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Dispatcher Remarks</p>
                       <p class="border rounded p-1 small text-monospace">
-                        {{ $simbrief->ofp->general->dx_rmk  }}</p>
+                        @foreach($simbrief->ofp->general->dx_rmk as $rmk)
+                          {{ $rmk }}<br />
+                        @endforeach
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -209,14 +211,18 @@
                       class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->dest_taf }}</p>
                   </div>
                   <hr/>
-                  <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate METAR</p>
-                    <p
-                      class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_metar }}</p>
-                  </div>
-                  <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate TAF</p>
-                    <p
-                      class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_taf }}</p>
-                  </div>
+                  @if(count($simbrief->ofp->weather->altn_metar) > 1)
+                    <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate METAR</p>
+                      <p
+                        class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_metar[0] }}</p>
+                    </div>
+                  @endif
+                  @if(count($simbrief->ofp->weather->altn_taf) > 1)
+                    <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate TAF</p>
+                      <p
+                        class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_taf[0] }}</p>
+                    </div>
+                  @endif
                 </div>
               </div>
             </div>
