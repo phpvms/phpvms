@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string                          $acars_flightplan_url
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read SimBriefOfp $ofp
+ * @property-read ?SimBriefOfp $ofp
  * @property-read \App\Models\Pirep|null $pirep
  *
  * @method static \Database\Factories\SimBriefFactory                    factory($count = null, $state = [])
@@ -67,7 +67,7 @@ class SimBrief extends Model
     {
         return Attribute::make(get: function () {
             if (empty($this->attributes['ofp_json_path'])) {
-                return [];
+                return null;
             }
 
             $ofp = Storage::json($this->attributes['ofp_json_path']);

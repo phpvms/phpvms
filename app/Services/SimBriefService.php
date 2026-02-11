@@ -121,7 +121,12 @@ class SimBriefService extends Service
 
         // Create the flight route
         $order = 1;
-        foreach ($simBrief->xml->getRoute() as $fix) {
+
+        foreach ($simBrief->ofp?->navlog as $fix) {
+            if ($fix->type === 'apt' || $fix->ident === 'TOC' || $fix->ident === 'TOD') {
+                continue;
+            }
+
             $position = [
                 'name'     => $fix->ident,
                 'pirep_id' => $pirep->id,

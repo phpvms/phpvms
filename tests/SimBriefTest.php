@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\SimBriefService;
 use App\Support\Utils;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 final class SimBriefTest extends TestCase
 {
@@ -67,15 +68,14 @@ final class SimBriefTest extends TestCase
      */
     protected function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     {
-        $this->mockXmlResponse([
-            'simbrief/briefing.xml',
-            'simbrief/acars_briefing.xml',
+        Http::fake([
+            'simbrief.com/*' => Http::response(file_get_contents(__DIR__.'/data/simbrief/briefing.json'), 200),
         ]);
 
         /** @var SimBriefService $sb */
         $sb = app(SimBriefService::class);
 
-        return $sb->downloadOfp($user->id, Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
+        return $sb->downloadOfp($user, 'static_id', Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
     }
 
     /**
@@ -89,34 +89,23 @@ final class SimBriefTest extends TestCase
         $this->user = $userinfo['user'];
         $briefing = $this->loadSimBrief($this->user, $userinfo['aircraft']->first(), []);
 
-        $this->assertNotEmpty($briefing->ofp_xml);
-        $this->assertNotNull($briefing->xml);
+        $this->assertNotEmpty($briefing->ofp_json_path);
+        $this->assertNotNull($briefing->ofp);
 
         // Spot check reading of the files
         $files = $briefing->files;
-        $this->assertEquals(47, $files->count());
+        $this->assertEquals(67, $files->count());
         $this->assertEquals(
-            'http://www.simbrief.com/ofp/flightplans/OMAAOMDB_PDF_1584226092.pdf',
+            'https://www.simbrief.com/ofp/flightplans/OMAAOMDB_PDF_1584226092.pdf',
             $files->firstWhere('name', 'PDF Document')['url']
         );
 
         // Spot check reading of images
         $images = $briefing->images;
-        $this->assertEquals(5, $images->count());
+        $this->assertEquals(6, $images->count());
         $this->assertEquals(
-            'http://www.simbrief.com/ofp/uads/OMAAOMDB_1584226092_ROUTE.gif',
+            'https://www.simbrief.com/ofp/uads/OMAAOMDB_UAD_1584226092_ROUTE.gif',
             $images->firstWhere('name', 'Route')['url']
-        );
-
-        $level = $briefing->xml->getFlightLevel();
-        $this->assertEquals('380', $level);
-
-        // Read the flight route
-        $routeStr = $briefing->xml->getRouteString();
-        $this->assertEquals(
-            'DCT BOMUP DCT LOVIM DCT RESIG DCT NODVI DCT OBMUK DCT LORID DCT '.
-            'ORGUR DCT PEBUS DCT EMOPO DCT LOTUK DCT LAGTA DCT LOVOL DCT',
-            $routeStr
         );
     }
 
@@ -160,11 +149,12 @@ final class SimBriefTest extends TestCase
         $response = $this->get('/api/flights/'.$briefing->id.'/briefing', [], $this->user);
         $response->assertOk();
 
-        $xml = simplexml_load_string($response->content());
-        $this->assertNotNull($xml);
+        $this->assertEquals('application/json', $response->headers->get('Content-Type'));
 
-        $this->assertEquals('VMSAcars', $xml->getName());
-        $this->assertEquals('FlightPlan', $xml->attributes()->Type);
+        $ofp = $response->json();
+        $expected = json_decode($this->readDataFile('simbrief/briefing.json'), true);
+
+        $this->assertEquals($expected, $ofp);
     }
 
     /**

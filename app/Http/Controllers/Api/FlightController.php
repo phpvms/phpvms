@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -168,8 +169,14 @@ class FlightController extends Controller
             throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
         }*/
 
-        return response($simbrief->acars_xml, 200, [
-            'Content-Type' => 'application/xml',
+        if (!$simbrief->ofp_json_path && !Storage::exists($simbrief->ofp_json_path)) {
+            throw new AssetNotFound(new Exception('Flight briefing not found'));
+        }
+
+        $json = Storage::get($simbrief->ofp_json_path);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json',
         ]);
     }
 

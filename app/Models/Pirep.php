@@ -297,8 +297,8 @@ class Pirep extends Model
             'route_leg'      => $simbrief->flight->route_leg,
             'dpt_airport_id' => $simbrief->flight->dpt_airport_id,
             'arr_airport_id' => $simbrief->flight->arr_airport_id,
-            'route'          => $simbrief->xml->getRouteString(),
-            'level'          => $simbrief->xml->getFlightLevel(),
+            'route'          => $simbrief->ofp?->general->route,
+            'level'          => $simbrief->ofp?->general->initial_altitude,
         ]);
     }
 
