@@ -7,16 +7,15 @@ use Spatie\LaravelData\Dto;
 final class SimBriefOfp extends Dto
 {
     /**
-     * @param SimBriefOfpAirport[]                     $alternate
+     * @param SimbriefOfpAlternate[]                   $alternate
      * @param list<SimBriefOfpNavlog[]>                $alternate_navlog
      * @param SimBriefOfpAirport[]                     $takeoff_altn
      * @param SimBriefOfpAirport[]                     $enroute_altn
      * @param SimBriefOfpNavlog[]                      $navlog
-     * @param SimBriefOfpEtops[]                       $etops
      * @param array<string, SimBriefOfpImpact|array{}> $impacts
      * @param SimBriefOfpFirNotam[]                    $notams
      * @param SimBriefOfpSigmet[]                      $sigmets
-     * @param SimBriefOfpTrack[]                       $tracks
+     * @param SimBriefOfpTracks[]                      $tracks
      * @param array<string, string>                    $links
      */
     public function __construct(
@@ -29,8 +28,9 @@ final class SimBriefOfp extends Dto
         public array $alternate_navlog,
         public array $takeoff_altn,
         public array $enroute_altn,
+        public array $enroute_station,
         public array $navlog,
-        public array $etops,
+        public SimBriefOfpEtops $etops,
         public SimBriefOfpTlr $tlr,
         public SimBriefOfpAtc $atc,
         public SimBriefOfpAircraft $aircraft,
@@ -44,7 +44,7 @@ final class SimBriefOfp extends Dto
         public SimBriefOfpWeather $weather,
         public array $sigmets,
         public SimBriefOfpText $text,
-        public array $tracks,
+        public SimBriefOfpTracks $tracks,
         public SimBriefOfpDatabaseUpdates $database_updates,
         public SimBriefOfpFiles $files,
         public SimBriefOfpFmsDownloads $fms_downloads,

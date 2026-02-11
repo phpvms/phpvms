@@ -4,10 +4,11 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use App\Support\Casts\CarbonImmutableOrFalseCast;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Dto;
 
-final class SimBriefOfpAirport extends Dto
+final class SimbriefOfpEtopsSuitableAirport extends Dto
 {
     /**
      * @param SimBriefOfpAtis[]  $atis
@@ -18,14 +19,20 @@ final class SimBriefOfpAirport extends Dto
         public string $iata_code,
         public string $faa_code,
         public string $icao_region,
-        public int $elevation,
+        public string $name,
         public float $pos_lat,
         public float $pos_long,
-        public string $name,
+        public int $elevation,
         public float $timezone,
+        public int $fcst_cig,
+        public int $fcst_vis,
         public string $plan_rwy,
         public int $trans_alt,
         public int $trans_level,
+        #[Date]
+        public CarbonImmutable $suitability_start,
+        #[Date]
+        public CarbonImmutable $suitability_end,
         public string $metar,
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $metar_time,

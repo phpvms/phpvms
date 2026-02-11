@@ -7,7 +7,7 @@ use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Dto;
 
-final class SimBriefOfpAirport extends Dto
+final class SimbriefOfpAlternate extends Dto
 {
     /**
      * @param SimBriefOfpAtis[]  $atis
@@ -26,6 +26,23 @@ final class SimBriefOfpAirport extends Dto
         public string $plan_rwy,
         public int $trans_alt,
         public int $trans_level,
+        public int $cruise_altitude,
+        public int $distance,
+        public int $gc_distance,
+        public int $air_distance,
+        public int $track_true,
+        public int $track_mag,
+        public int $tas,
+        public int $gs,
+        public string $avg_wind_comp,
+        public int $avg_wind_dir,
+        public int $avg_wind_spd,
+        public int $avg_tropopause,
+        public string $avg_tdv,
+        public string $ete,
+        public int $burn,
+        public string $route,
+        public string $route_ifps,
         public string $metar,
         #[WithCast(CarbonImmutableOrFalseCast::class)]
         public false|CarbonImmutable $metar_time,
