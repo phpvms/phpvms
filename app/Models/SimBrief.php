@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Models\Observers\SimBriefObserver;
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUserId($value)
  */
+#[ObservedBy(SimBriefObserver::class)]
 class SimBrief extends Model
 {
     use HasFactory;
