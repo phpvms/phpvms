@@ -8,7 +8,7 @@ final class SimBriefOfp extends Dto
 {
     /**
      * @param SimBriefOfpAirport[]                     $alternate
-     * @param SimBriefOfpNavlog[]                      $alternate_navlog
+     * @param list<SimBriefOfpNavlog[]>                $alternate_navlog
      * @param SimBriefOfpAirport[]                     $takeoff_altn
      * @param SimBriefOfpAirport[]                     $enroute_altn
      * @param SimBriefOfpNavlog[]                      $navlog
