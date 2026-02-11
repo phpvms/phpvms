@@ -130,7 +130,10 @@
                   <div class="col-12">
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">System Remarks</p>
                       <p class="border border-dark rounded p-1 small text-monospace">
-                        {{ $simbrief->ofp->general->sys_rmk  }}</p>
+                        @foreach($simbrief->ofp->general->sys_rmk as $rmk)
+                          {{ $rmk }}<br />
+                        @endforeach
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -146,7 +149,7 @@
               <div class="row">
                 <div class="col-12">
                   <p class="border border-dark rounded p-1 small text-monospace">
-                    {!!  str_replace("\n", "<br>", $simbrief->ofp->atc->flightplan_text) !!}
+                    {!! nl2br(e($simbrief->ofp->atc->flightplan_text)) !!}
                   </p>
                 </div>
               </div>
@@ -176,13 +179,13 @@
                       class="border border-dark rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->dest_taf }}</p>
                   </div>
                   <hr/>
-                  @if(count($simbrief->ofp->weather->altn_metar) > 0)
+                  @if(!empty($simbrief->ofp->weather->altn_metar))
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate METAR</p>
                       <p
                         class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_metar[0] }}</p>
                     </div>
                   @endif
-                  @if(count($simbrief->ofp->weather->altn_taf) > 0)
+                  @if(!empty($simbrief->ofp->weather->altn_taf))
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate TAF</p>
                       <p
                         class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_taf[0] }}</p>

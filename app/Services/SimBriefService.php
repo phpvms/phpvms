@@ -59,7 +59,7 @@ class SimBriefService extends Service
 
         $json = $response->json();
 
-        if (empty($json) || $json['fetch']['status'] !== 'Success') {
+        if (empty($json) || data_get($json, 'fetch.status') !== 'Success') {
             Log::error('Simbrief | No data returned for user: '.$user->id.' static_id: '.$static_id);
 
             return null;
@@ -123,7 +123,7 @@ class SimBriefService extends Service
         // Create the flight route
         $order = 1;
 
-        foreach ($simBrief->ofp?->navlog as $fix) {
+        foreach ($simBrief->ofp?->navlog ?? [] as $fix) {
             if ($fix->type === 'apt' || $fix->ident === 'TOC' || $fix->ident === 'TOD') {
                 continue;
             }
