@@ -169,7 +169,7 @@ class FlightController extends Controller
             throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
         }*/
 
-        if (!$simbrief->ofp_json_path && !Storage::exists($simbrief->ofp_json_path)) {
+        if (!$simbrief->ofp_json_path || !Storage::exists($simbrief->ofp_json_path)) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));
         }
 

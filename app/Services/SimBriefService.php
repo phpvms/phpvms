@@ -40,7 +40,7 @@ class SimBriefService extends Service
         array $fares = []
     ): ?SimBrief {
         try {
-            $response = Http::connectTimeout(2)
+            $response = Http::timeout(30)
                 ->withoutRedirecting()
                 ->get('https://www.simbrief.com/api/xml.fetcher.php', [
                     'username'  => $user->simbrief_username,

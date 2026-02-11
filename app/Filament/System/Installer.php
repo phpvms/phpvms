@@ -208,7 +208,7 @@ class Installer extends Page
                 }
 
                 $output .= __('installer.migrations_completed').PHP_EOL;
-                $this->stream($this->stream, __('installer.migrations_completed').PHP_EOL);
+                $this->stream(content: __('installer.migrations_completed').PHP_EOL, to: $this->stream);
 
                 // Let's generate a new key if the app is still using the one from the .env.example
                 if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=' || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {

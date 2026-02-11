@@ -203,7 +203,7 @@ class UserController extends Controller
         ]);
 
         // Now let's see if the simbrief username is valid
-        $response = Http::get('https://www.simbrief.com/api/xml.fetcher.php', [
+        $response = Http::timeout(20)->get('https://www.simbrief.com/api/xml.fetcher.php', [
             'username' => $validated['simbrief_username'],
             'json'     => 'v2',
         ]);

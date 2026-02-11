@@ -116,7 +116,7 @@ class Updater extends Page
                     app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
                     app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
                 } else {
-                    $this->stream($this->stream, PHP_EOL.__('installer.cache_build_background').PHP_EOL);
+                    $this->stream(content: PHP_EOL.__('installer.cache_build_background').PHP_EOL, to: $this->stream);
 
                     // Clearing the cache immediately sends the response, thus killing the request. So we defer it, it's executed at the end of the request in the background.
                     defer(function () {
@@ -133,7 +133,7 @@ class Updater extends Page
                     });
                 }
 
-                $this->stream($this->stream, PHP_EOL.__('installer.update_completed').PHP_EOL);
+                $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
                 sleep(10);
                 $this->redirect(Filament::getDefaultPanel()->getUrl());
             });

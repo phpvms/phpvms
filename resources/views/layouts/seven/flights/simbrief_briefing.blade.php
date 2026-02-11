@@ -211,13 +211,13 @@
                       class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->dest_taf }}</p>
                   </div>
                   <hr/>
-                  @if(count($simbrief->ofp->weather->altn_metar) > 1)
+                  @if(count($simbrief->ofp->weather->altn_metar) > 0)
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate METAR</p>
                       <p
                         class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_metar[0] }}</p>
                     </div>
                   @endif
-                  @if(count($simbrief->ofp->weather->altn_taf) > 1)
+                  @if(count($simbrief->ofp->weather->altn_taf) > 0)
                     <div><p class="small text-uppercase pb-sm-0 mb-sm-1">Alternate TAF</p>
                       <p
                         class="border  rounded p-1 small text-monospace">{{ $simbrief->ofp->weather->altn_taf[0] }}</p>
