@@ -47,7 +47,8 @@ class SimBriefService extends Service
                     'static_id' => $static_id,
                     'json'      => 'v2',
                 ]);
-            if ($response->getStatusCode() !== 200) {
+
+            if ($response->status() !== 200) {
                 return null;
             }
         } catch (ConnectionException $e) {
