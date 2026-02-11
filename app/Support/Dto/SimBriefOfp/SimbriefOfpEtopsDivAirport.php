@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-class SimbriefOfpEtopsDivAirport extends Dto
+final class SimbriefOfpEtopsDivAirport extends Dto
 {
     public function __construct(
         public string $icao_code,

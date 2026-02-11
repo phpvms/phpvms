@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-class SimBriefOfpTlr extends Dto
+final class SimBriefOfpTlr extends Dto
 {
     public function __construct(
         public SimBriefOfpTlrTakeoff $takeoff,

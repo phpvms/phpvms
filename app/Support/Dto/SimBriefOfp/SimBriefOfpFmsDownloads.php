@@ -4,7 +4,7 @@ namespace App\Support\Dto\SimBriefOfp;
 
 use Spatie\LaravelData\Dto;
 
-class SimBriefOfpFmsDownloads extends Dto
+final class SimBriefOfpFmsDownloads extends Dto
 {
     /**
      * @param SimBriefOfpFile[] $files
