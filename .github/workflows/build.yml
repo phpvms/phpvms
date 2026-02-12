@@ -25,7 +25,6 @@ jobs:
     env:
       extensions: intl, pcov, mbstring
       key: cache-v1
-      MYSQL_ROOT_PASSWORD: root
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -74,28 +73,9 @@ jobs:
         coverage: xdebug
         tools: php-cs-fixer, phpunit
 
-    - name: Shutdown Ubuntu MySQL
-      run: sudo service mysql stop
-
-    - name: Install MySQL
-      uses: mirromutth/mysql-action@v1.1
-      with:
-        mysql version: '8.0'
-        mysql database: 'phpvms'
-        mysql root password: $MYSQL_ROOT_PASSWORD
-        mysql user: ''
-        mysql password: ''
-
-    - name: Wait for MySQL
-      run: |
-        while ! mysqladmin ping -h127.0.0.1 --silent; do
-          sleep 1
-        done
-
     - name: Configure Environment
       run: |
         php --version
-        mysql --version
         composer install --dev --no-interaction --verbose
         composer global require laravel/pint
         composer dump-autoload
