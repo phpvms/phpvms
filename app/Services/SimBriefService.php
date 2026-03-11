@@ -42,7 +42,7 @@ class SimBriefService extends Service
         try {
             $response = Http::timeout(30)
                 ->withoutRedirecting()
-                ->get('https://www.simbrief.com/api/xml.fetcher.php', [
+                ->get(config('phpvms.simbrief_ofp_url'), [
                     'username'  => $user->simbrief_username,
                     'static_id' => $static_id,
                     'json'      => 'v2',

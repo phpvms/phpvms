@@ -68,6 +68,11 @@ return [
     'simbrief_layouts_url' => 'http://www.simbrief.com/api/inputs.list.json',
 
     /*
+     * URL for fetching SimBrief OFP
+     */
+    'simbrief_ofp_url' => 'https://www.simbrief.com/api/xml.fetcher.php',
+
+    /*
      * Your vaCentral API key
      */
     'vacentral_api_key' => env('VACENTRAL_API_KEY', ''),
