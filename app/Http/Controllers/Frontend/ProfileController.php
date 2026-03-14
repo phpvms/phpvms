@@ -163,6 +163,20 @@ class ProfileController extends Controller
         }
 
         $req_data = $request->all();
+
+        // Check for any additional technical fields added to the form
+        if (isset($req_data['rank_id']) || isset($req_data['flights']) || isset($req_data['flight_time']) || isset($req_data['transfer_time'])) {
+            Log::warning('FORM CHECK | '.$user->name_private.' trying to manipulate profile details...', ['id' => $id, 'ident' => $user->ident, 'name' => $user->name]);
+        }
+
+        // Unset technical fields which should not be editable by the user
+        unset($req_data['rank_id']);
+        unset($req_data['flights']);
+        unset($req_data['flight_time']);
+        unset($req_data['transfer_time']);
+        unset($req_data['status']);
+        unset($req_data['state']);
+        
         if (!$request->filled('password')) {
             unset($req_data['password']);
         } else {
