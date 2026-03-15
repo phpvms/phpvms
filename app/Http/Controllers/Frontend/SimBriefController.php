@@ -410,7 +410,7 @@ class SimBriefController
         $fares = $request->session()->get('simbrief_fares', []);
 
         $simbrief = $this->simBriefSvc->downloadOfp($user, $static_id, $ofp_id, $flight_id, $aircraft_id, $fares);
-        if (!$simbrief instanceof \App\Models\SimBrief) {
+        if (!$simbrief instanceof SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();
@@ -438,7 +438,7 @@ class SimBriefController
         $fares = [];
 
         $simbrief = $this->simBriefSvc->downloadOfp($user, $sb_static_id, $ofp_id, $flight_id, $aircraft_id, $fares);
-        if (!$simbrief instanceof \App\Models\SimBrief) {
+        if (!$simbrief instanceof SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();

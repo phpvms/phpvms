@@ -9,27 +9,28 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @property string                          $id                   The Simbrief OFP ID
- * @property int                             $user_id              The user that generated this
- * @property string                          $flight_id            Optional, if attached to a flight, removed if attached to PIREP
- * @property string                          $pirep_id             Optional, if attached to a PIREP, removed if attached to flight
- * @property string                          $aircraft_id          The aircraft this is for
- * @property string                          $ofp_json_path
- * @property string                          $fare_data            JSON string of the fare data that was generated
- * @property Collection                      $images
- * @property Collection                      $files
- * @property Flight                          $flight
- * @property User                            $user
- * @property Aircraft                        $aircraft
- * @property string                          $acars_flightplan_url
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string      $id                   The Simbrief OFP ID
+ * @property int         $user_id              The user that generated this
+ * @property string      $flight_id            Optional, if attached to a flight, removed if attached to PIREP
+ * @property string      $pirep_id             Optional, if attached to a PIREP, removed if attached to flight
+ * @property string      $aircraft_id          The aircraft this is for
+ * @property string      $ofp_json_path
+ * @property string      $fare_data            JSON string of the fare data that was generated
+ * @property Collection  $images
+ * @property Collection  $files
+ * @property Flight      $flight
+ * @property User        $user
+ * @property Aircraft    $aircraft
+ * @property string      $acars_flightplan_url
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read ?SimBriefOfp $ofp
- * @property-read \App\Models\Pirep|null $pirep
+ * @property-read Pirep|null $pirep
  *
  * @method static \Database\Factories\SimBriefFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newModelQuery()
