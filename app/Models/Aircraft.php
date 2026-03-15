@@ -226,7 +226,15 @@ class Aircraft extends Model
         return LogOptions::defaults()
             ->logOnly($this->fillable)
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            // Bypass custom casts to log only internal DB changes (internal unit)
+            ->useAttributeRawValues([
+                'fuel_onboard',
+                'dow',
+                'mlw',
+                'mtow',
+                'zfw',
+            ]);
     }
 
     /**

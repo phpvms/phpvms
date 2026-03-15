@@ -313,7 +313,11 @@ class Flight extends Model
             ->logOnly($this->fillable)
             ->logExcept(['visible'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            // Bypass custom casts to log only internal DB changes (internal unit)
+            ->useAttributeRawValues([
+                'distance',
+            ]);
     }
 
     /*

@@ -436,7 +436,17 @@ class Pirep extends Model
             ->logOnly($this->fillable)
             ->logExcept(['created_at', 'updated_at'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            // Bypass custom casts to log only internal DB changes (internal unit)
+            ->useAttributeRawValues([
+                'distance',
+                'planned_distance',
+                'block_off_time',
+                'block_on_time',
+                'block_fuel',
+                'fuel_used',
+                'submitted_at',
+            ]);
     }
 
     /**
