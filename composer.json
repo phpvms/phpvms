@@ -29,8 +29,6 @@
         "symfony/polyfill-intl-idn": "*",
         "symfony/polyfill-util": "*",
         "symfony/polyfill-mbstring": "*",
-        "symfony/polyfill-php82": "*",
-        "symfony/polyfill-php83": "*",
         "symfony/polyfill-php84": "*",
         "symfony/polyfill-php85": "*",
         "symfony/deprecation-contracts": "~v3.2.0",
