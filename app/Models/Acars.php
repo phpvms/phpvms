@@ -9,35 +9,36 @@ use App\Models\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property string                          $id
- * @property string                          $pirep_id
- * @property int                             $type
- * @property int|null                        $nav_type
- * @property int                             $order
- * @property string|null                     $name
- * @property string                          $status
- * @property string|null                     $log
- * @property float|null                      $lat
- * @property float|null                      $lon
- * @property mixed|null                      $distance
- * @property int|null                        $heading
- * @property float|null                      $altitude_agl
- * @property float|null                      $altitude_msl
- * @property float|null                      $vs
- * @property int|null                        $gs
- * @property int|null                        $ias
- * @property int|null                        $transponder
- * @property string|null                     $autopilot
- * @property mixed|null                      $fuel
- * @property float|null                      $fuel_flow
- * @property string|null                     $sim_time
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null                     $source
- * @property mixed|null                      $altitude
- * @property-read \App\Models\Pirep|null $pirep
+ * @property string      $id
+ * @property string      $pirep_id
+ * @property int         $type
+ * @property int|null    $nav_type
+ * @property int         $order
+ * @property string|null $name
+ * @property string      $status
+ * @property string|null $log
+ * @property float|null  $lat
+ * @property float|null  $lon
+ * @property mixed|null  $distance
+ * @property int|null    $heading
+ * @property float|null  $altitude_agl
+ * @property float|null  $altitude_msl
+ * @property float|null  $vs
+ * @property int|null    $gs
+ * @property int|null    $ias
+ * @property int|null    $transponder
+ * @property string|null $autopilot
+ * @property mixed|null  $fuel
+ * @property float|null  $fuel_flow
+ * @property string|null $sim_time
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property string|null $source
+ * @property mixed|null  $altitude
+ * @property-read Pirep|null $pirep
  *
  * @method static \Database\Factories\AcarsFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars newModelQuery()

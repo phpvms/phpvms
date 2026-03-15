@@ -169,7 +169,7 @@ final class BidTest extends TestCase
         $this->user = User::factory()->create();
         $user2 = User::factory()->create();
 
-        /** @var \App\Models\Flight $flight */
+        /** @var Flight $flight */
         $flight = $this->addFlight($this->user);
 
         $uri = '/api/user/bids';

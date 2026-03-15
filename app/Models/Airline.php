@@ -7,44 +7,47 @@ use App\Models\Enums\JournalType;
 use App\Models\Traits\FilesTrait;
 use App\Models\Traits\JournalTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int                             $id
- * @property string                          $icao
- * @property string|null                     $iata
- * @property string                          $name
- * @property string|null                     $callsign
- * @property string|null                     $country
- * @property string|null                     $logo
- * @property bool                            $active
- * @property int|null                        $total_flights
- * @property int|null                        $total_time
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property int         $id
+ * @property string      $icao
+ * @property string|null $iata
+ * @property string      $name
+ * @property string|null $callsign
+ * @property string|null $country
+ * @property string|null $logo
+ * @property bool        $active
+ * @property int|null    $total_flights
+ * @property int|null    $total_time
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
  * @property-read mixed $code
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read Collection<int, File> $files
  * @property-read int|null $files_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $flights
+ * @property-read Collection<int, Flight> $flights
  * @property-read int|null $flights_count
- * @property-read \App\Models\Journal|null $journal
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pirep> $pireps
+ * @property-read Journal|null $journal
+ * @property-read Collection<int, Pirep> $pireps
  * @property-read int|null $pireps_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read Collection<int, Subfleet> $subfleets
  * @property-read int|null $subfleets_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AirlineFactory                    factory($count = null, $state = [])

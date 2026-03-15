@@ -24,6 +24,7 @@ use App\Services\ImportExport\AirportExporter;
 use App\Services\ImportExport\FlightExporter;
 use App\Services\ImportService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use League\Csv\CannotInsertRecord;
 
 final class ImporterTest extends TestCase
@@ -258,7 +259,7 @@ final class ImporterTest extends TestCase
     /**
      * Test exporting all the flights to a file
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      * @throws CannotInsertRecord
      */
     public function test_aircraft_exporter(): void
@@ -402,7 +403,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function test_expense_exporter(): void
     {
@@ -416,7 +417,7 @@ final class ImporterTest extends TestCase
     /**
      * Test the importing of expenses
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_expense_importer(): void
     {
@@ -457,7 +458,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_fare_importer(): void
     {
@@ -509,7 +510,7 @@ final class ImporterTest extends TestCase
     /**
      * Test the flight importer
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_flight_importer(): void
     {
@@ -592,7 +593,7 @@ final class ImporterTest extends TestCase
     /**
      * Test the flight importer
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_flight_importer_empty_custom_fields(): void
     {
@@ -623,7 +624,7 @@ final class ImporterTest extends TestCase
     /**
      * Test the flight importer with "core" argument
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_flight_importer_core(): void
     {
@@ -641,7 +642,7 @@ final class ImporterTest extends TestCase
     /**
      * Test the flight importer with "all" argument
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_flight_importer_all(): void
     {
@@ -657,7 +658,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_aircraft_importer(): void
     {
@@ -701,7 +702,7 @@ final class ImporterTest extends TestCase
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_airport_importer(): void
     {
@@ -769,7 +770,7 @@ final class ImporterTest extends TestCase
     /**
      * Test importing the subfleets
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function test_subfleet_importer(): void
     {

@@ -55,7 +55,7 @@ trait TestData
      * @param array $user_attrs  Additional attributes for the user
      * @param array $pirep_attrs Additional attributes for the PIREP
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function createPirep(array $user_attrs = [], array $pirep_attrs = []): Pirep
     {

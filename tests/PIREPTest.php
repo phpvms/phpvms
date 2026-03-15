@@ -478,7 +478,7 @@ final class PIREPTest extends TestCase
      */
     public function test_pilot_status_change(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = User::factory()->create([
             'state' => UserState::ON_LEAVE,
         ]);

@@ -4,16 +4,17 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property string|null                     $email
- * @property string                          $token
- * @property int                             $usage_count
- * @property int|null                        $usage_limit
- * @property \Illuminate\Support\Carbon|null $expires_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int         $id
+ * @property string|null $email
+ * @property string      $token
+ * @property int         $usage_count
+ * @property int|null    $usage_limit
+ * @property Carbon|null $expires_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read mixed $link
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newModelQuery()

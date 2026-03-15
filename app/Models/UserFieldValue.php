@@ -5,17 +5,18 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property int                             $user_field_id
- * @property string                          $user_id
- * @property string|null                     $value
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\UserField|null $field
+ * @property int         $id
+ * @property int         $user_field_id
+ * @property string      $user_id
+ * @property string|null $value
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read UserField|null $field
  * @property-read mixed $name
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newQuery()

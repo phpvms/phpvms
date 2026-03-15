@@ -7,50 +7,53 @@ use App\Models\Enums\AircraftStatus;
 use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int                             $id
- * @property int|null                        $airline_id
- * @property string|null                     $hub_id
- * @property string                          $type
- * @property string|null                     $simbrief_type
- * @property string                          $name
- * @property float|null                      $cost_block_hour
- * @property float|null                      $cost_delay_minute
- * @property int|null                        $fuel_type
- * @property float|null                      $ground_handling_multiplier
- * @property float|null                      $cargo_capacity
- * @property float|null                      $fuel_capacity
- * @property float|null                      $gross_weight
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property int         $id
+ * @property int|null    $airline_id
+ * @property string|null $hub_id
+ * @property string      $type
+ * @property string|null $simbrief_type
+ * @property string      $name
+ * @property float|null  $cost_block_hour
+ * @property float|null  $cost_delay_minute
+ * @property int|null    $fuel_type
+ * @property float|null  $ground_handling_multiplier
+ * @property float|null  $cargo_capacity
+ * @property float|null  $fuel_capacity
+ * @property float|null  $gross_weight
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
- * @property-read \App\Models\Airline|null $airline
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read Airline|null $airline
+ * @property-read Collection<int, Expense> $expenses
  * @property-read int|null $expenses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Fare> $fares
+ * @property-read Collection<int, Fare> $fares
  * @property-read int|null $fares_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read Collection<int, File> $files
  * @property-read int|null $files_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $flights
+ * @property-read Collection<int, Flight> $flights
  * @property-read int|null $flights_count
- * @property-read \App\Models\Airport|null $home
- * @property-read \App\Models\Airport|null $hub
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Rank> $ranks
+ * @property-read Airport|null $home
+ * @property-read Airport|null $hub
+ * @property-read Collection<int, Rank> $ranks
  * @property-read int|null $ranks_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Typerating> $typeratings
+ * @property-read Collection<int, Typerating> $typeratings
  * @property-read int|null $typeratings_count
  *
  * @method static \Database\Factories\SubfleetFactory                    factory($count = null, $state = [])

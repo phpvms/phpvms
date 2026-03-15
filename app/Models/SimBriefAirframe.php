@@ -4,18 +4,19 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property string                          $icao
- * @property string                          $name
- * @property string|null                     $airframe_id
- * @property int|null                        $source
- * @property string|null                     $details
- * @property string|null                     $options
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\SimBriefAircraft|null $sbaircraft
+ * @property int         $id
+ * @property string      $icao
+ * @property string      $name
+ * @property string|null $airframe_id
+ * @property int|null    $source
+ * @property string|null $details
+ * @property string|null $options
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read SimBriefAircraft|null $sbaircraft
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAirframe newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAirframe newQuery()

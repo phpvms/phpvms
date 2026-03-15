@@ -10,22 +10,23 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property string                          $id
- * @property string|null                     $transaction_group
- * @property int                             $journal_id
- * @property int|null                        $credit
- * @property int|null                        $debit
- * @property string                          $currency
- * @property string|null                     $memo
- * @property array<array-key, mixed>|null    $tags
- * @property string|null                     $ref_model_type
- * @property string|null                     $ref_model_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon      $post_date
- * @property-read \App\Models\Journal|null $journal
+ * @property string                       $id
+ * @property string|null                  $transaction_group
+ * @property int                          $journal_id
+ * @property int|null                     $credit
+ * @property int|null                     $debit
+ * @property string                       $currency
+ * @property string|null                  $memo
+ * @property array<array-key, mixed>|null $tags
+ * @property string|null                  $ref_model_type
+ * @property string|null                  $ref_model_id
+ * @property Carbon|null                  $created_at
+ * @property Carbon|null                  $updated_at
+ * @property Carbon                       $post_date
+ * @property-read Journal|null $journal
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction newQuery()

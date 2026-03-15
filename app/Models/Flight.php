@@ -8,69 +8,72 @@ use App\Models\Enums\Days;
 use App\Models\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string                          $id
- * @property int                             $airline_id
- * @property int                             $flight_number
- * @property string|null                     $callsign
- * @property string|null                     $route_code
- * @property int|null                        $route_leg
- * @property string                          $dpt_airport_id
- * @property string                          $arr_airport_id
- * @property string|null                     $alt_airport_id
- * @property string|null                     $dpt_time
- * @property string|null                     $arr_time
- * @property int|null                        $level
- * @property mixed|null                      $distance
- * @property int|null                        $flight_time
- * @property string                          $flight_type
- * @property float|null                      $load_factor
- * @property float|null                      $load_factor_variance
- * @property string|null                     $route
- * @property float|null                      $pilot_pay
- * @property string|null                     $notes
- * @property int|null                        $scheduled
- * @property int|null                        $days
- * @property \Illuminate\Support\Carbon|null $start_date
- * @property \Illuminate\Support\Carbon|null $end_date
- * @property bool                            $has_bid
- * @property bool                            $active
- * @property bool                            $visible
- * @property int|null                        $event_id
- * @property int|null                        $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property string|null                     $owner_type
- * @property string|null                     $owner_id
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property string      $id
+ * @property int         $airline_id
+ * @property int         $flight_number
+ * @property string|null $callsign
+ * @property string|null $route_code
+ * @property int|null    $route_leg
+ * @property string      $dpt_airport_id
+ * @property string      $arr_airport_id
+ * @property string|null $alt_airport_id
+ * @property string|null $dpt_time
+ * @property string|null $arr_time
+ * @property int|null    $level
+ * @property mixed|null  $distance
+ * @property int|null    $flight_time
+ * @property string      $flight_type
+ * @property float|null  $load_factor
+ * @property float|null  $load_factor_variance
+ * @property string|null $route
+ * @property float|null  $pilot_pay
+ * @property string|null $notes
+ * @property int|null    $scheduled
+ * @property int|null    $days
+ * @property Carbon|null $start_date
+ * @property Carbon|null $end_date
+ * @property bool        $has_bid
+ * @property bool        $active
+ * @property bool        $visible
+ * @property int|null    $event_id
+ * @property int|null    $user_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property string|null $owner_type
+ * @property string|null $owner_id
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \App\Models\Airline|null $airline
- * @property-read \App\Models\Airport|null $alt_airport
- * @property-read \App\Models\Airport|null $arr_airport
+ * @property-read Airline|null $airline
+ * @property-read Airport|null $alt_airport
+ * @property-read Airport|null $arr_airport
  * @property-read mixed $atc
- * @property-read \App\Models\Airport|null $dpt_airport
- * @property-read \App\Models\Event|null $event
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Fare> $fares
+ * @property-read Airport|null $dpt_airport
+ * @property-read Event|null $event
+ * @property-read Collection<int, Fare> $fares
  * @property-read int|null $fares_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FlightFieldValue> $field_values
+ * @property-read Collection<int, FlightFieldValue> $field_values
  * @property-read int|null $field_values_count
  * @property-read mixed $ident
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $owner
- * @property-read \App\Models\SimBrief|null $simbrief
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read SimBrief|null $simbrief
+ * @property-read Collection<int, Subfleet> $subfleets
  * @property-read int|null $subfleets_count
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
  * @method static Builder<static>|Flight            newModelQuery()

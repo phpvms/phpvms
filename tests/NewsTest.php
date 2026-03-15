@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\Messages\NewsAdded;
 use App\Services\NewsService;
 use Illuminate\Support\Facades\Notification;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 final class NewsTest extends TestCase
 {
@@ -21,7 +22,7 @@ final class NewsTest extends TestCase
     /**
      * Tests that news is added but mainly that notifications are sent out to all users
      *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function test_news_notifications(): void
     {

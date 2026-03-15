@@ -13,85 +13,90 @@ use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepState;
 use App\Models\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Kleemans\AttributeEvents;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string                          $id
- * @property int                             $user_id
- * @property int                             $airline_id
- * @property int|null                        $aircraft_id
- * @property int|null                        $event_id
- * @property string|null                     $flight_id
- * @property string|null                     $flight_number
- * @property string|null                     $route_code
- * @property string|null                     $route_leg
- * @property string                          $flight_type
- * @property string                          $dpt_airport_id
- * @property string                          $arr_airport_id
- * @property string|null                     $alt_airport_id
- * @property int|null                        $level
- * @property mixed|null                      $distance
- * @property mixed|null                      $planned_distance
- * @property int|null                        $flight_time
- * @property int|null                        $planned_flight_time
- * @property float|null                      $zfw
- * @property mixed|null                      $block_fuel
- * @property mixed|null                      $fuel_used
- * @property float|null                      $landing_rate
- * @property int|null                        $score
- * @property string|null                     $route
- * @property string|null                     $notes
- * @property int|null                        $source
- * @property string|null                     $source_name
- * @property int                             $state
- * @property string                          $status
- * @property mixed|null                      $submitted_at
- * @property mixed|null                      $block_off_time
- * @property mixed|null                      $block_on_time
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Acars> $acars
+ * @property string      $id
+ * @property int         $user_id
+ * @property int         $airline_id
+ * @property int|null    $aircraft_id
+ * @property int|null    $event_id
+ * @property string|null $flight_id
+ * @property string|null $flight_number
+ * @property string|null $route_code
+ * @property string|null $route_leg
+ * @property string      $flight_type
+ * @property string      $dpt_airport_id
+ * @property string      $arr_airport_id
+ * @property string|null $alt_airport_id
+ * @property int|null    $level
+ * @property mixed|null  $distance
+ * @property mixed|null  $planned_distance
+ * @property int|null    $flight_time
+ * @property int|null    $planned_flight_time
+ * @property float|null  $zfw
+ * @property mixed|null  $block_fuel
+ * @property mixed|null  $fuel_used
+ * @property float|null  $landing_rate
+ * @property int|null    $score
+ * @property string|null $route
+ * @property string|null $notes
+ * @property int|null    $source
+ * @property string|null $source_name
+ * @property int         $state
+ * @property string      $status
+ * @property mixed|null  $submitted_at
+ * @property mixed|null  $block_off_time
+ * @property mixed|null  $block_on_time
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Acars> $acars
  * @property-read int|null $acars_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Acars> $acars_logs
+ * @property-read Collection<int, Acars> $acars_logs
  * @property-read int|null $acars_logs_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Acars> $acars_route
+ * @property-read Collection<int, Acars> $acars_route
  * @property-read int|null $acars_route_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \App\Models\Aircraft|null $aircraft
- * @property-read \App\Models\Airline|null $airline
- * @property-read \App\Models\Airport|null $alt_airport
- * @property-read \App\Models\Airport|null $arr_airport
+ * @property-read Aircraft|null $aircraft
+ * @property-read Airline|null $airline
+ * @property-read Airport|null $alt_airport
+ * @property-read Airport|null $arr_airport
  * @property-read mixed $cancelled
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PirepComment> $comments
+ * @property-read Collection<int, PirepComment> $comments
  * @property-read int|null $comments_count
- * @property-read \App\Models\Airport|null $dpt_airport
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PirepFare> $fares
+ * @property-read Airport|null $dpt_airport
+ * @property-read Collection<int, PirepFare> $fares
  * @property-read int|null $fares_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PirepFieldValue> $field_values
+ * @property-read Collection<int, PirepFieldValue> $field_values
  * @property-read int|null $field_values_count
  * @property-read mixed $fields
- * @property-read \App\Models\Flight|null $flight
+ * @property-read Flight|null $flight
  * @property-read mixed $ident
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \App\Models\Acars|null $position
+ * @property-read Acars|null $position
  * @property-read mixed $progress_percent
  * @property-read mixed $read_only
- * @property-read \App\Models\SimBrief|null $simbrief
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JournalTransaction> $transactions
+ * @property-read SimBrief|null $simbrief
+ * @property-read Collection<int, JournalTransaction> $transactions
  * @property-read int|null $transactions_count
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\PirepFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep newModelQuery()

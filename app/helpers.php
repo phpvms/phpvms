@@ -131,7 +131,7 @@ if (!function_exists('skin_view')) {
      * Render a skin
      *
      *
-     * @return Factory|\Illuminate\View\View
+     * @return Factory|Illuminate\View\View
      */
     function skin_view($template, array $vars = [], array $merge_data = [])
     {

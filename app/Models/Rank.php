@@ -4,34 +4,37 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int                             $id
- * @property string                          $name
- * @property string|null                     $image_url
- * @property int                             $hours
- * @property string|null                     $acars_base_pay_rate
- * @property string|null                     $manual_base_pay_rate
- * @property bool|null                       $auto_approve_acars
- * @property bool|null                       $auto_approve_manual
- * @property bool|null                       $auto_promote
- * @property int|null                        $auto_approve_above_score
- * @property int|null                        $auto_approve_score
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $image_url
+ * @property int         $hours
+ * @property string|null $acars_base_pay_rate
+ * @property string|null $manual_base_pay_rate
+ * @property bool|null   $auto_approve_acars
+ * @property bool|null   $auto_approve_manual
+ * @property bool|null   $auto_promote
+ * @property int|null    $auto_approve_above_score
+ * @property int|null    $auto_approve_score
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Subfleet> $subfleets
+ * @property-read Collection<int, Subfleet> $subfleets
  * @property-read int|null $subfleets_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\RankFactory                    factory($count = null, $state = [])

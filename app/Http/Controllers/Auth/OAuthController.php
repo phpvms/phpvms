@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 
 class OAuthController extends Controller
 {
@@ -37,14 +38,14 @@ class OAuthController extends Controller
                 $envScopes = config('services.discord.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                /** @var AbstractProvider $driver */
                 $driver = Socialite::driver('discord');
 
                 return $driver->scopes($scopes)->redirect();
             case 'ivao':
                 $scopes = config('services.ivao.scopes', []);
 
-                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                /** @var AbstractProvider $driver */
                 $driver = Socialite::driver('ivao');
 
                 return $driver->scopes($scopes)->redirect();
@@ -53,7 +54,7 @@ class OAuthController extends Controller
                 $envScopes = config('services.vatsim.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                /** @var AbstractProvider $driver */
                 $driver = Socialite::driver('vatsim');
 
                 return $driver->scopes($scopes)->redirect();
@@ -74,7 +75,7 @@ class OAuthController extends Controller
             abort(404);
         }
 
-        /** @var ?\Laravel\Socialite\Two\AbstractProvider $driver */
+        /** @var ?AbstractProvider $driver */
         $driver = Socialite::driver($provider);
         /** @var ?\Laravel\Socialite\Two\User $providerUser */
         $providerUser = $driver->user();

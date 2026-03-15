@@ -5,7 +5,34 @@
  * IF YOU DO, YOU NEED TO RESTORE THOSE CHANGES AFTER AN UPDATE
  */
 
+use App\Models\Enums\ActiveState;
+use App\Models\Enums\PirepSource;
+use App\Models\Enums\PirepState;
+use App\Models\Enums\PirepStatus;
+use App\Models\Enums\UserState;
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\BindServiceProviders;
+use App\Providers\BroadcastServiceProvider;
+use App\Providers\CronServiceProvider;
+use App\Providers\DirectiveServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\Filament\SystemPanelProvider;
+use App\Providers\MeasurementsProvider;
+use App\Providers\ModulesServiceProvider;
+use App\Providers\ObserverServiceProviders;
+use App\Providers\RouteServiceProvider;
+use App\Providers\ViewComposerServiceProvider;
 use Carbon\Carbon;
+use Igaster\LaravelTheme\Facades\Theme;
+use Igaster\LaravelTheme\themeServiceProvider;
+use Illuminate\Support\Facades\Facade;
+use Laracasts\Flash\Flash;
+use Laracasts\Flash\FlashServiceProvider;
+use Prettus\Repository\Providers\RepositoryServiceProvider;
+use SocialiteProviders\Manager\ServiceProvider;
+use Symfony\Component\Yaml\Yaml;
 
 return [
     'name'          => env('APP_NAME', 'phpvms'),
@@ -30,46 +57,46 @@ return [
     'key'    => env('APP_KEY', 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY='),
     'cipher' => 'AES-256-CBC',
 
-    'providers' => \Illuminate\Support\ServiceProvider::defaultProviders()->merge([
+    'providers' => Illuminate\Support\ServiceProvider::defaultProviders()->merge([
         /*
          * Package Service Providers...
          */
-        Laracasts\Flash\FlashServiceProvider::class,
-        Prettus\Repository\Providers\RepositoryServiceProvider::class,
-        Igaster\LaravelTheme\themeServiceProvider::class,
+        FlashServiceProvider::class,
+        RepositoryServiceProvider::class,
+        themeServiceProvider::class,
         // Nwidart\Modules\LaravelModulesServiceProvider::class,
-        SocialiteProviders\Manager\ServiceProvider::class,
+        ServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        App\Providers\BindServiceProviders::class,
-        App\Providers\BroadcastServiceProvider::class,
-        App\Providers\ViewComposerServiceProvider::class,
-        App\Providers\CronServiceProvider::class,
-        App\Providers\DirectiveServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\MeasurementsProvider::class,
-        App\Providers\ObserverServiceProviders::class,
-        App\Providers\ModulesServiceProvider::class,
-        App\Providers\Filament\AdminPanelProvider::class,
-        App\Providers\Filament\SystemPanelProvider::class,
-        App\Providers\RouteServiceProvider::class,
+        AppServiceProvider::class,
+        AuthServiceProvider::class,
+        BindServiceProviders::class,
+        BroadcastServiceProvider::class,
+        ViewComposerServiceProvider::class,
+        CronServiceProvider::class,
+        DirectiveServiceProvider::class,
+        EventServiceProvider::class,
+        MeasurementsProvider::class,
+        ObserverServiceProviders::class,
+        ModulesServiceProvider::class,
+        AdminPanelProvider::class,
+        SystemPanelProvider::class,
+        RouteServiceProvider::class,
     ])->toArray(),
 
-    'aliases' => \Illuminate\Support\Facades\Facade::defaultAliases()->merge([
+    'aliases' => Facade::defaultAliases()->merge([
         'Carbon' => Carbon::class,
-        'Flash'  => Laracasts\Flash\Flash::class,
-        'Theme'  => Igaster\LaravelTheme\Facades\Theme::class,
-        'Yaml'   => Symfony\Component\Yaml\Yaml::class,
+        'Flash'  => Flash::class,
+        'Theme'  => Theme::class,
+        'Yaml'   => Yaml::class,
 
         // ENUMS
-        'ActiveState' => App\Models\Enums\ActiveState::class,
-        'UserState'   => App\Models\Enums\UserState::class,
-        'PirepSource' => App\Models\Enums\PirepSource::class,
-        'PirepState'  => App\Models\Enums\PirepState::class,
-        'PirepStatus' => App\Models\Enums\PirepStatus::class,
+        'ActiveState' => ActiveState::class,
+        'UserState'   => UserState::class,
+        'PirepSource' => PirepSource::class,
+        'PirepState'  => PirepState::class,
+        'PirepStatus' => PirepStatus::class,
     ])->toArray(),
 ];

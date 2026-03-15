@@ -6,8 +6,10 @@ use App\Events\ProfileUpdated;
 use App\Exceptions\PilotIdNotFound;
 use App\Exceptions\UserPilotIdExists;
 use App\Models\Airline;
+use App\Models\Airport;
 use App\Models\Enums\UserState;
 use App\Models\Fare;
+use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\User;
 use App\Repositories\SettingRepository;
@@ -163,7 +165,7 @@ final class UserTest extends TestCase
     {
         // Add subfleets and aircraft, but also add another
         // set of subfleets
-        $airport = \App\Models\Airport::factory()->create();
+        $airport = Airport::factory()->create();
         $subfleetA = $this->createSubfleetWithAircraft(2, $airport->id);
         $subfleetB = $this->createSubfleetWithAircraft(2);
 
@@ -173,7 +175,7 @@ final class UserTest extends TestCase
             'rank_id'         => $rank->id,
         ]);
 
-        $flight = \App\Models\Flight::factory()->create([
+        $flight = Flight::factory()->create([
             'airline_id'     => $user->airline_id,
             'dpt_airport_id' => $airport->id,
         ]);

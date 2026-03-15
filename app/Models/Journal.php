@@ -11,6 +11,7 @@ use App\Contracts\Model;
 use App\Models\Casts\MoneyCast;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,9 +31,9 @@ use UnexpectedValueException;
  * @property int|null                        $morphed_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Ledger|null $ledger
+ * @property-read Ledger|null $ledger
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $morphed
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JournalTransaction> $transactions
+ * @property-read Collection<int, JournalTransaction> $transactions
  * @property-read int|null $transactions_count
  *
  * @method static \Database\Factories\JournalFactory                    factory($count = null, $state = [])

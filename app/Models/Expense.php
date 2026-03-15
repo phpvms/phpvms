@@ -8,22 +8,23 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property int|null                        $airline_id
- * @property string                          $name
- * @property int                             $amount
- * @property string                          $type
- * @property mixed|null                      $flight_type
- * @property int|null                        $charge_to_user
- * @property int|null                        $multiplier
- * @property int|null                        $active
- * @property string|null                     $ref_model_type
- * @property string|null                     $ref_model_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Airline|null $airline
+ * @property int         $id
+ * @property int|null    $airline_id
+ * @property string      $name
+ * @property int         $amount
+ * @property string      $type
+ * @property mixed|null  $flight_type
+ * @property int|null    $charge_to_user
+ * @property int|null    $multiplier
+ * @property int|null    $active
+ * @property string|null $ref_model_type
+ * @property string|null $ref_model_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Airline|null $airline
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $ref_model
  *
  * @method static \Database\Factories\ExpenseFactory factory($count = null, $state = [])

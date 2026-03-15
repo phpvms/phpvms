@@ -6,18 +6,19 @@ use App\Contracts\Model;
 use App\Models\Enums\PirepFieldSource;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @property int                             $id
- * @property string                          $pirep_id
- * @property string                          $name
- * @property string|null                     $slug
- * @property string|null                     $value
- * @property int                             $source
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Pirep|null $pirep
+ * @property int         $id
+ * @property string      $pirep_id
+ * @property string      $name
+ * @property string|null $slug
+ * @property string|null $value
+ * @property int         $source
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Pirep|null $pirep
  * @property-read mixed $read_only
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue newModelQuery()

@@ -13,6 +13,7 @@ use App\Http\Resources\Subfleet as SubfleetResource;
 use App\Http\Resources\User as UserResource;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
+use App\Models\User;
 use App\Repositories\AircraftRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
@@ -66,7 +67,7 @@ class UserController extends Controller
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
         $user = $this->userSvc->getUser($id, $with_subfleets);
-        if (!$user instanceof \App\Models\User) {
+        if (!$user instanceof User) {
             throw new UserNotFound();
         }
 
@@ -86,7 +87,7 @@ class UserController extends Controller
     {
         $user_id = $this->getUserId($request);
         $user = $this->userSvc->getUser($user_id, false);
-        if (!$user instanceof \App\Models\User) {
+        if (!$user instanceof User) {
             throw new UserNotFound();
         }
 
@@ -135,12 +136,12 @@ class UserController extends Controller
      */
     public function get_bid(int $bid_id, Request $request): BidResource
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         // Return the current bid
         $bid = $this->bidSvc->getBid($user, $bid_id);
-        if (!$bid instanceof \App\Models\Bid) {
+        if (!$bid instanceof Bid) {
             throw new BidNotFound($bid_id);
         }
 

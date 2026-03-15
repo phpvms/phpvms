@@ -5,19 +5,22 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Events\AwardAwarded;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
 
 /**
- * @property int                             $id
- * @property int                             $user_id
- * @property int                             $award_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Award|null $award
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property int         $id
+ * @property int         $user_id
+ * @property int         $award_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Award|null $award
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward newQuery()

@@ -189,7 +189,7 @@ class PirepController extends Controller
     public function prefile(PrefileRequest $request): PirepResource
     {
         /**
-         * @var \App\Models\User $user
+         * @var User $user
          */
         $user = Auth::user();
 

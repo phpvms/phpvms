@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null    $capacity
  * @property int|null    $type
  * @property string|null $deleted_at
- * @property-read \App\Models\Fare|null $fare
- * @property-read \App\Models\Pirep|null $pirep
+ * @property-read Fare|null $fare
+ * @property-read Pirep|null $pirep
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newQuery()

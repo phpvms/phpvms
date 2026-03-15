@@ -9,6 +9,7 @@ use App\Http\Resources\Navdata as NavdataResource;
 use App\Models\Aircraft;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
+use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Repositories\Criteria\WhereCriteria;
@@ -48,7 +49,7 @@ class FlightController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        /** @var \App\Models\Flight $flight */
+        /** @var Flight $flight */
         $flight = $this->flightRepo->with([
             'airline',
             'fares',

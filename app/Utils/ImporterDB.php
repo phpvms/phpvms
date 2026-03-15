@@ -63,7 +63,7 @@ class ImporterDB
 
     public function close()
     {
-        if ($this->conn instanceof \PDO) {
+        if ($this->conn instanceof PDO) {
             $this->conn = null;
         }
     }
@@ -174,7 +174,7 @@ class ImporterDB
 
         $rows = [];
         $result = $this->readRowsOffset($table, $this->batchSize, $offset, $order_by, $fields);
-        if (!$result instanceof \PDOStatement) {
+        if (!$result instanceof PDOStatement) {
             return [];
         }
 

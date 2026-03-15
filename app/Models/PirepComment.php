@@ -4,16 +4,17 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property string                          $pirep_id
- * @property int                             $user_id
- * @property string                          $comment
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Pirep|null $pirep
- * @property-read \App\Models\User|null $user
+ * @property int         $id
+ * @property string      $pirep_id
+ * @property int         $user_id
+ * @property string      $comment
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Pirep|null $pirep
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment newQuery()

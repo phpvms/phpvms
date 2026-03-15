@@ -117,7 +117,7 @@ class FareService extends Service
          * Check to see if there are any subfleet fares. This might only have fares on the
          * flight, no matter how rare that might be
          */
-        if (!$subfleet_fares instanceof \Illuminate\Support\Collection || count($subfleet_fares) === 0) {
+        if (!$subfleet_fares instanceof Collection || count($subfleet_fares) === 0) {
             return $flight_fares->map(function ($fare, $_) {
                 return $this->getFareWithPivot($fare, $fare->pivot);
             });

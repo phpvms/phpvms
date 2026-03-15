@@ -64,10 +64,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                \App\Models\Enums\NavigationGroup::Config->name,
-                \App\Models\Enums\NavigationGroup::Operations->name,
-                \App\Models\Enums\NavigationGroup::Modules->name,
-                \App\Models\Enums\NavigationGroup::Developers->name,
+                EnumsNavigationGroup::Config->name,
+                EnumsNavigationGroup::Operations->name,
+                EnumsNavigationGroup::Modules->name,
+                EnumsNavigationGroup::Developers->name,
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation

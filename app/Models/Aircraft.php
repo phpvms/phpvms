@@ -10,6 +10,7 @@ use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Znck\Eloquent\Relations\BelongsToThrough as ZnckBelongsToThrough;
 use Znck\Eloquent\Traits\BelongsToThrough;
@@ -47,26 +49,26 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read mixed $active
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \App\Models\Airport|null $airport
- * @property-read \App\Models\Bid|null $bid
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read Airport|null $airport
+ * @property-read Bid|null $bid
+ * @property-read Collection<int, Expense> $expenses
  * @property-read int|null $expenses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read Collection<int, File> $files
  * @property-read int|null $files_count
- * @property-read \App\Models\Airport|null $home
- * @property-read \App\Models\Airport|null $hub
+ * @property-read Airport|null $home
+ * @property-read Airport|null $hub
  * @property-read mixed $ident
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pirep> $pireps
+ * @property-read Collection<int, Pirep> $pireps
  * @property-read int|null $pireps_count
- * @property-read \App\Models\SimBriefAircraft|null $sbaircraft
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimBriefAirframe> $sbairframes
+ * @property-read SimBriefAircraft|null $sbaircraft
+ * @property-read Collection<int, SimBriefAirframe> $sbairframes
  * @property-read int|null $sbairframes_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimBrief> $simbriefs
+ * @property-read Collection<int, SimBrief> $simbriefs
  * @property-read int|null $simbriefs_count
- * @property-read \App\Models\Subfleet|null $subfleet
- * @property-read \App\Models\Airline|null $airline
+ * @property-read Subfleet|null $subfleet
+ * @property-read Airline|null $airline
  *
  * @method static \Database\Factories\AircraftFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft newModelQuery()

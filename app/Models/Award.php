@@ -5,27 +5,29 @@ namespace App\Models;
 use App\Contracts\Model;
 use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Kyslik\ColumnSortable\Sortable;
 
 /**
  * The Award model
  *
- * @property int                             $id
- * @property string                          $name
- * @property string|null                     $description
- * @property string|null                     $image_url
- * @property string|null                     $ref_model_type
- * @property string|null                     $ref_model_params
- * @property int|null                        $active
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $description
+ * @property string|null $image_url
+ * @property string|null $ref_model_type
+ * @property string|null $ref_model_params
+ * @property int|null    $active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read mixed $image
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AwardFactory                    factory($count = null, $state = [])

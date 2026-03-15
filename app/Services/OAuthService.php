@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 
 class OAuthService extends Service
 {
@@ -45,7 +46,7 @@ class OAuthService extends Service
     public function refreshToken(UserOAuthToken $token): UserOAuthToken
     {
         try {
-            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            /** @var AbstractProvider $driver */
             $driver = Socialite::driver($token->provider);
 
             $updatedToken = $driver->refreshToken($token->refresh_token);

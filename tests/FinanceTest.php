@@ -29,6 +29,7 @@ use App\Support\Math;
 use App\Support\Money;
 use Carbon\Carbon;
 use Exception;
+use Prettus\Validator\Exceptions\ValidatorException;
 
 final class FinanceTest extends TestCase
 {
@@ -96,7 +97,7 @@ final class FinanceTest extends TestCase
             'rank_id' => $rank->id,
         ];
 
-        if ($airline instanceof \App\Models\Airline) {
+        if ($airline instanceof Airline) {
             $u['airline_id'] = $airline->id;
         }
 
@@ -312,7 +313,7 @@ final class FinanceTest extends TestCase
         /** @var FareService $fare_svc */
         $fare_svc = app(FareService::class);
 
-        /** @var \App\Models\Fare $fare */
+        /** @var Fare $fare */
         $fare = Fare::factory()->create();
         $fare_svc->setForSubfleet($flight->subfleets[0], $fare, ['price' => 50]);
 
@@ -335,7 +336,7 @@ final class FinanceTest extends TestCase
         /** @var Flight $flight */
         $flight = Flight::factory()->create();
 
-        /** @var \App\Models\Fare $fare */
+        /** @var Fare $fare */
         $fare = Fare::factory()->create();
 
         // Subfleet needs to be attached to a flight
@@ -719,7 +720,7 @@ final class FinanceTest extends TestCase
     }
 
     /**
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
+     * @throws ValidatorException
      */
     public function test_journal_operations(): void
     {

@@ -126,11 +126,10 @@ final class FlightTest extends TestCase
      */
     public function test_search_flight(): void
     {
-        /** @var \App\Models\User user */
         $this->user = User::factory()->create();
         $flight = $this->addFlight($this->user);
 
-        /** @var \App\Services\FlightService $flightSvc */
+        /** @var FlightService $flightSvc */
         $flightSvc = app(FlightService::class);
         $flightSvc->updateCustomFields($flight, [
             ['name' => '0', 'value' => 'value'],
@@ -147,10 +146,10 @@ final class FlightTest extends TestCase
 
     public function test_search_flight_inactive_airline(): void
     {
-        /** @var \App\Models\Airline $airline_inactive */
+        /** @var Airline $airline_inactive */
         $airline_inactive = Airline::factory()->create(['active' => 0]);
 
-        /** @var \App\Models\Airline $airline_active */
+        /** @var Airline $airline_active */
         $airline_active = Airline::factory()->create(['active' => 1]);
         $this->user = User::factory()->create([
             'airline_id' => $airline_inactive->id,
@@ -506,10 +505,10 @@ final class FlightTest extends TestCase
     {
         $total_flights = 10;
 
-        /** @var \App\Models\User user */
+        /** @var User user */
         $this->user = User::factory()->create();
 
-        /** @var \App\Models\Flight $flights */
+        /** @var Flight $flights */
         $flights = Flight::factory()->count($total_flights)->create([
             'airline_id' => $this->user->airline_id,
         ]);

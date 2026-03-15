@@ -6,20 +6,21 @@ use App\Contracts\Model;
 use App\Exceptions\UnknownPageType;
 use App\Models\Enums\PageType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property string                          $name
- * @property string                          $slug
- * @property string|null                     $icon
- * @property int                             $type
- * @property bool                            $public
- * @property bool                            $enabled
- * @property string|null                     $body
- * @property string|null                     $link
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property bool                            $new_window
+ * @property int         $id
+ * @property string      $name
+ * @property string      $slug
+ * @property string|null $icon
+ * @property int         $type
+ * @property bool        $public
+ * @property bool        $enabled
+ * @property string|null $body
+ * @property string|null $link
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property bool        $new_window
  * @property-read mixed $url
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()

@@ -5,19 +5,20 @@ namespace App\Models;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * Class FlightFieldValue
  *
- * @property int                             $id
- * @property string                          $flight_id
- * @property string                          $name
- * @property string|null                     $slug
- * @property string|null                     $value
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Flight|null $flight
+ * @property int         $id
+ * @property string      $flight_id
+ * @property string      $name
+ * @property string|null $slug
+ * @property string|null $value
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Flight|null $flight
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newQuery()

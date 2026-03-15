@@ -674,7 +674,7 @@ final class AcarsTest extends TestCase
 
         // Post an ACARS update
         $acars = Acars::factory()->make(['pirep_id' => $pirep_id])->toArray();
-        $acars['sim_time'] = $dt->format(\DateTime::ATOM);
+        $acars['sim_time'] = $dt->format(DateTime::ATOM);
         unset($acars['altitude_agl']);
         unset($acars['altitude_msl']);
         $acars['altitude'] = 1000;

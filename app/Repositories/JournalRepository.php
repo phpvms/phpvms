@@ -231,7 +231,7 @@ class JournalRepository extends Repository implements CacheableInterface
             'ref_model_id'   => $object->id,
         ];
 
-        if ($journal instanceof \App\Models\Journal) {
+        if ($journal instanceof Journal) {
             $where['journal_id'] = $journal->id;
         }
 
@@ -262,7 +262,7 @@ class JournalRepository extends Repository implements CacheableInterface
             'ref_model_id'   => $object->id,
         ];
 
-        if ($journal instanceof \App\Models\Journal) {
+        if ($journal instanceof Journal) {
             $where['journal_id'] = $journal->id;
         }
 

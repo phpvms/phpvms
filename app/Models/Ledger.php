@@ -9,20 +9,22 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use UnexpectedValueException;
 
 /**
  * Class Ledger
  *
- * @property int                             $id
- * @property string                          $name
- * @property string                          $type
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JournalTransaction> $journal_transctions
+ * @property int         $id
+ * @property string      $name
+ * @property string      $type
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, JournalTransaction> $journal_transctions
  * @property-read int|null $journal_transctions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Journal> $journals
+ * @property-read Collection<int, Journal> $journals
  * @property-read int|null $journals_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger newModelQuery()

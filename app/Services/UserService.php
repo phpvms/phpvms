@@ -29,6 +29,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -298,7 +299,7 @@ class UserService extends Service
      * based on their current Rank and/or by Type Rating
      *
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Subfleet>
+     * @return Collection<int, Subfleet>
      */
     public function getAllowableSubfleets($user, bool $paginate = false)
     {
