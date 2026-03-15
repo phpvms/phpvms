@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/phpvms/phpvms/actions/workflows/build.yml/badge.svg)](https://github.com/phpvms/phpvms/actions/workflows/build.yml)  ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
 
-phpVMS is a PHP based application to run and simulate and airline. It allowed users to register, 
+phpVMS is a PHP application to run and simulate an airline. It allowed users to register, 
 view flight schedules that you create, and file flight reports, built on the Laravel framework. 
 The latest documentation, with installation instructions is available on the
 [phpVMS documentation](https://docs.phpvms.net/) site.
@@ -22,11 +22,8 @@ A full distribution, with all the composer dependencies, is available at this
   - openssl
   - pdo
   - tokenizer
-  - bcmath
   - intl
   - zip
-  - pdo_sqlite
-  - sqlite3
 - Database:
   - MySQL 5.7+ (or MySQL variant, including MariaDB and Percona)
 
