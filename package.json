@@ -48,7 +48,7 @@
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.21.5",
     "laravel-vite-plugin": "^2.0.0",
-    "node-gyp": "~9.1.0",
+    "node-gyp": "~12.2.0",
     "sass": "^1.54.5",
     "sass-loader": "^12.1.0",
     "tailwindcss": "^4.1.11",
