@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
-    "eslint": "9.26.0",
+    "eslint": "^9.39.4",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.21.5",
