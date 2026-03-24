@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Models\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -45,6 +46,7 @@ use Illuminate\Support\Str;
  */
 class File extends Model
 {
+    use HasFactory;
     use HashIdTrait;
 
     public $table = 'files';

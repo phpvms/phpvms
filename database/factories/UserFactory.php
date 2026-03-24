@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Contracts\Factory;
 use App\Models\Airline;
 use App\Models\Enums\UserState;
+use App\Models\Rank;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -43,7 +44,7 @@ class UserFactory extends Factory
             'password'          => self::$password,
             'api_key'           => fake()->sha1,
             'airline_id'        => fn () => Airline::factory()->create()->id,
-            'rank_id'           => 1,
+            'rank_id'           => Rank::factory()->create()->id,
             'flights'           => fake()->numberBetween(0, 1000),
             'flight_time'       => fake()->numberBetween(0, 10000),
             'transfer_time'     => fake()->numberBetween(0, 10000),

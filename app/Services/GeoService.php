@@ -6,12 +6,12 @@ use App\Contracts\Service;
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Flight;
-use App\Models\GeoJson;
-use App\Models\GeoJson\Feature\FeatureCollection;
 use App\Models\Pirep;
 use App\Repositories\AcarsRepository;
 use App\Repositories\NavdataRepository;
+use App\Support\GeoJson;
 use Exception;
+use GeoJson\Feature\FeatureCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -239,7 +239,7 @@ class GeoService extends Service
      *
      * @param \Illuminate\Database\Eloquent\Collection<int, Pirep> $pireps
      */
-    public function getFeatureForLiveFlights(\Illuminate\Database\Eloquent\Collection $pireps): \GeoJson\Feature\FeatureCollection
+    public function getFeatureForLiveFlights(\Illuminate\Database\Eloquent\Collection $pireps): FeatureCollection
     {
         $flight = new GeoJson();
 

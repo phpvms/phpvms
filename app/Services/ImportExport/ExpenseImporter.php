@@ -9,6 +9,7 @@ use App\Models\Expense;
 use App\Models\Subfleet;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Import expenses
@@ -85,7 +86,7 @@ class ExpenseImporter extends ImportExport
 
         // class from import is being saved as the name of the model only
         // prepend the full class path so we can search it out
-        if ($row['ref_model_type'] !== '') {
+        if ($row['ref_model_type'] !== '' && !Str::contains($row['ref_model_type'], 'Expense')) {
             if (substr_count($row['ref_model_type'], 'App\Models\\') === 0) {
                 $row['ref_model_type'] = 'App\Models\\'.$row['ref_model_type'];
             }

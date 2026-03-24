@@ -21,10 +21,10 @@ class ListSubfleets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            OldExportAction::make('export')
+            OldExportAction::make('old-export')
                 ->arguments(['resourceTitle' => 'subfleets', 'exportType' => ImportExportType::SUBFLEETS]),
 
-            OldImportAction::make('import')
+            OldImportAction::make('old-import')
                 ->arguments(['resourceTitle' => 'subfleets', 'importType' => ImportExportType::SUBFLEETS]),
 
             ImportAction::make('import')

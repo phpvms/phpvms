@@ -1,17 +1,20 @@
-# phpVMS <sup>7</sup>
+# phpVMS <sup>8</sup>
 
 [![Build](https://github.com/phpvms/phpvms/actions/workflows/build.yml/badge.svg)](https://github.com/phpvms/phpvms/actions/workflows/build.yml)  ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
 
-phpVMS is a PHP based application to run and simulate and airline. It allowed users to register, view flight schedules that you create, and file flight reports, built on the Laravel framework. The latest documentation, with installation instructions is available [on the phpVMS documentation](https://docs.phpvms.net/) page.
+phpVMS is a PHP application to run and simulate an airline. It allowed users to register, 
+view flight schedules that you create, and file flight reports, built on the Laravel framework. 
+The latest documentation, with installation instructions is available on the
+[phpVMS documentation](https://docs.phpvms.net/) site.
 
 ## Installation
 
-A full distribution, with all of the composer dependencies, is available at this 
+A full distribution, with all the composer dependencies, is available at this 
 [GitHub Releases](https://github.com/nabeelio/phpvms/releases) link. 
 
 ### Requirements
 
-- PHP 8.2+, extensions:
+- PHP 8.3+, extensions:
   - cURL
   - JSON
   - fileinfo
@@ -19,11 +22,8 @@ A full distribution, with all of the composer dependencies, is available at this
   - openssl
   - pdo
   - tokenizer
-  - bcmath
   - intl
   - zip
-  - pdo_sqlite
-  - sqlite3
 - Database:
   - MySQL 5.7+ (or MySQL variant, including MariaDB and Percona)
 
@@ -32,13 +32,14 @@ A full distribution, with all of the composer dependencies, is available at this
 ### Installer
 
 1. Upload to your server
-1. Visit the site, and follow the link to the installer
+2. Visit the site, and follow the link to the installer
 
 [View installation details](https://docs.phpvms.net/installation)
 
 ## Development Environment with Docker
 
-A full development environment can be brought up using Docker and [Laravel Sail](https://laravel.com/docs/10.x/sail), without having to install composer/npm locally
+A full development environment can be brought up using Docker and 
+[Laravel Sail](https://laravel.com/docs/10.x/sail), without having to install composer/npm locally
 
 ```bash
 make docker-test
@@ -58,12 +59,15 @@ docker run --rm \
 
 Then go to `http://localhost`. 
 
-Instead of repeatedly typing vendor/bin/sail to execute Sail commands, you may wish to configure a shell alias that allows you to execute Sail's commands more easily:
+Instead of repeatedly typing vendor/bin/sail to execute Sail commands, you may wish to configure a 
+shell alias that allows you to execute Sail's commands more easily:
+
 ```bash
 alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
 ```
 
 Then you can execute php, artisan, composer, npm, etc. commands using the sail prefix:
+
 ```bash
 # PHP commands within Laravel Sail...
 sail php --version
@@ -88,11 +92,13 @@ Yarn is required, run:
 make build-assets
 ```
 
-This will build all of the assets according to the webpack file.
+This will build all the assets according to the webpack file.
 
 ### Laravel Boost
 
-If you want to use AI agents for your development workflow, please ensure you install [Laravel Boost](https://laravel.com/ai/boost) by running the following command:
+If you want to use AI agents for your development workflow, please ensure you install 
+[Laravel Boost](https://laravel.com/ai/boost) by running the following command:
+
 ```bash
 php artisan boost:install
 ```
@@ -104,5 +110,5 @@ php artisan boost:install
 Thank you to everyone who've contributed to phpVMS!
 
 <a href="https://github.com/phpvms/phpvms/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=phpvms/phpvms" />
+  <img src="https://contrib.rocks/image?repo=phpvms/phpvms"  alt="contributors images"/>
 </a>

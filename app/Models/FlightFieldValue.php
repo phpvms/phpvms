@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -35,6 +36,8 @@ use Illuminate\Support\Str;
  */
 class FlightFieldValue extends Model
 {
+    use HasFactory;
+
     public $table = 'flight_field_values';
 
     protected $fillable = [

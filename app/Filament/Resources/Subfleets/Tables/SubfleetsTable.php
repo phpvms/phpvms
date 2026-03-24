@@ -16,6 +16,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -52,6 +53,8 @@ class SubfleetsTable
                     ->sortable(),
             ])
             ->filters([
+                TrashedFilter::make(),
+
                 SelectFilter::make('airline')
                     ->relationship('airline', 'name')
                     ->label(__('common.airline'))

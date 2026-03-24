@@ -21,10 +21,10 @@ class ListAirports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            OldExportAction::make('export')
+            OldExportAction::make('old-export')
                 ->arguments(['resourceTitle' => 'airports', 'exportType' => ImportExportType::AIRPORT]),
 
-            OldImportAction::make('import')
+            OldImportAction::make('old-import')
                 ->arguments(['resourceTitle' => 'airports', 'importType' => ImportExportType::AIRPORT]),
 
             ImportAction::make('import')

@@ -22,7 +22,7 @@ class Utils
             $length = Model::ID_MAX_LENGTH;
         }
 
-        $hashids = new Hashids(uniqid(), $length);
+        $hashids = new Hashids(bin2hex(random_bytes(8)), $length);
         $mt = str_replace('.', '', (string) microtime(true));
 
         return $hashids->encode($mt);
@@ -33,7 +33,7 @@ class Utils
      */
     public static function generateApiKey(): string
     {
-        return substr(sha1(time().mt_rand()), 0, 20);
+        return substr(sha1(time().random_int(PHP_INT_MIN, PHP_INT_MAX)), 0, 20);
     }
 
     /**

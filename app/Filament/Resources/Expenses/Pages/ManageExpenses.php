@@ -21,10 +21,10 @@ class ManageExpenses extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            OldExportAction::make('export')
+            OldExportAction::make('old-export')
                 ->arguments(['resourceTitle' => 'expenses', 'exportType' => ImportExportType::EXPENSES]),
 
-            OldImportAction::make('import')
+            OldImportAction::make('old-import')
                 ->arguments(['resourceTitle' => 'expenses', 'importType' => ImportExportType::EXPENSES]),
 
             ImportAction::make('import')

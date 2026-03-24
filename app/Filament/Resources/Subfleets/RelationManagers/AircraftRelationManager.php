@@ -26,13 +26,13 @@ class AircraftRelationManager extends RelationManager
     {
         return AircraftTable::configure($table)
             ->headerActions([
-                OldExportAction::make('export')
+                OldExportAction::make('old-export')
                     ->arguments([
                         'resourceTitle' => 'aircraft',
                         'exportType'    => ImportExportType::AIRCRAFT,
                     ]),
 
-                OldImportAction::make('import')
+                OldImportAction::make('old-import')
                     ->arguments([
                         'resourceTitle' => 'aircraft',
                         'importType'    => ImportExportType::AIRCRAFT,

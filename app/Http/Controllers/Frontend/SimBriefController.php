@@ -202,7 +202,7 @@ class SimBriefController
             }
 
             $acd_maxpax += $fare->capacity;
-            $count = floor(($fare->capacity * rand($loadmin, $loadmax)) / 100);
+            $count = floor(($fare->capacity * random_int($loadmin, $loadmax)) / 100);
             $tpaxfig += $count;
             $pax_load_sheet[] = [
                 'id'       => $fare->id,
@@ -233,7 +233,7 @@ class SimBriefController
                 continue;
             }
 
-            $count = ceil((($fare->capacity - $tbagload) * rand($cgoloadmin, $cgoloadmax)) / 100);
+            $count = ceil((($fare->capacity - $tbagload) * random_int($cgoloadmin, $cgoloadmax)) / 100);
             $tcargoload += $count;
             $cargo_load_sheet[] = [
                 'id'       => $fare->id,

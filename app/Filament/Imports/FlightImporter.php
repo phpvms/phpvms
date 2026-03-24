@@ -112,9 +112,7 @@ class FlightImporter extends Importer
 
             ImportColumn::make('days')
                 ->fillRecordUsing(function (Flight $record, ?string $state) {
-                    if ($state) {
-                        $record->days = self::setDays($state);
-                    }
+                    $record->days = self::setDays($state);
                 }),
 
             ImportColumn::make('start_date')
@@ -185,22 +183,22 @@ class FlightImporter extends Importer
 
     protected function afterSave(): void
     {
-        if (array_key_exists('subfleets', $this->data) && $this->data['subfleets'] !== '') {
+        if (array_key_exists('subfleets', $this->data) && $this->data['subfleets'] != '') {
             $this->processSubfleets($this->record, $this->data['subfleets']);
         }
 
-        if (array_key_exists('fares', $this->data) && $this->data['fares'] !== '') {
+        if (array_key_exists('fares', $this->data) && $this->data['fares'] != '') {
             $this->processFares($this->record, $this->data['fares']);
         }
 
-        if (array_key_exists('fields', $this->data) && $this->data['fields'] !== '') {
+        if (array_key_exists('fields', $this->data) && $this->data['fields'] != '') {
             $this->processFields($this->record, $this->data['fields']);
         }
     }
 
-    private static function setDays(string $state): int
+    private static function setDays(?string $state): int
     {
-        if ($state === '' || $state === '0') {
+        if (in_array($state, [null, '', '0'], true)) {
             return 0;
         }
 

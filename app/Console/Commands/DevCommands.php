@@ -312,7 +312,5 @@ class DevCommands extends Command
     {
         $acarsRepo = app(AcarsRepository::class);
         $flights = $acarsRepo->getPositions(setting('acars.live_time'))->toArray();
-
-        dd($flights);
     }
 }

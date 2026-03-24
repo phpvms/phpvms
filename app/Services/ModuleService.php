@@ -166,7 +166,7 @@ class ModuleService extends Service
             throw new ModuleInvalidFileType();
         }
 
-        $new_dir = rand();
+        $new_dir = random_int(PHP_INT_MIN, PHP_INT_MAX);
         File::makeDirectory(
             storage_path('app/tmp/modules/'.$new_dir),
             0777,

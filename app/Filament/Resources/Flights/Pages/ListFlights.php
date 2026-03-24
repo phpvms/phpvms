@@ -21,10 +21,10 @@ class ListFlights extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            OldExportAction::make('export')
+            OldExportAction::make('old-export')
                 ->arguments(['resourceTitle' => 'flights', 'exportType' => ImportExportType::FLIGHTS]),
 
-            OldImportAction::make('import')
+            OldImportAction::make('old-import')
                 ->arguments(['resourceTitle' => 'flights', 'importType' => ImportExportType::FLIGHTS]),
 
             ImportAction::make('import')

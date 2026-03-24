@@ -21,10 +21,10 @@ class ListFares extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            OldExportAction::make('export')
+            OldExportAction::make('old-export')
                 ->arguments(['resourceTitle' => 'fares', 'exportType' => ImportExportType::FARES]),
 
-            OldImportAction::make('import')
+            OldImportAction::make('old-import')
                 ->arguments(['resourceTitle' => 'fares', 'importType' => ImportExportType::FARES]),
 
             ImportAction::make('import')

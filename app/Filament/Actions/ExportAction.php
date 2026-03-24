@@ -82,10 +82,6 @@ class ExportAction extends Action
 
         $this->successNotificationTitle('Data exported successfully');
 
-        $this->modalHeading('Export to CSV');
-
-        $this->modalSubmitActionLabel('Export');
-
         $this->icon('heroicon-o-document-arrow-down');
 
         $this->groupedIcon('heroicon-m-document-arrow-down');

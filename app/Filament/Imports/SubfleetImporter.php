@@ -71,11 +71,11 @@ class SubfleetImporter extends Importer
 
     protected function afterSave(): void
     {
-        if (array_key_exists('fares', $this->data) && $this->data['fares'] !== '') {
+        if (array_key_exists('fares', $this->data) && $this->data['fares'] != '') {
             $this->processFares($this->record, $this->data['fares']);
         }
 
-        if (array_key_exists('ranks', $this->data) && $this->data['ranks'] !== '') {
+        if (array_key_exists('ranks', $this->data) && $this->data['ranks'] != '') {
             $this->processRanks($this->record, $this->data['ranks']);
         }
     }

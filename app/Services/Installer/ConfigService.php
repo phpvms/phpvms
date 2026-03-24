@@ -207,7 +207,7 @@ class ConfigService extends Service
     {
         // Set the cache prefix
         $prefix = substr(Str::slug($opts['SITE_NAME'], '_'), 0, 8);
-        $opts['CACHE_PREFIX'] = strtolower(uniqid($prefix.'_'));
+        $opts['CACHE_PREFIX'] = strtolower($prefix.'_'.bin2hex(random_bytes(8)));
 
         // Figure out what cache driver to initially use, depending on
         // what is installed. It won't detect redis or anything, though

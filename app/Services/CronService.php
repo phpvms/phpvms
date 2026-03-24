@@ -83,7 +83,7 @@ class CronService extends Service
         if ($dt === false) {
             // You can get more detailed error information if needed
             $errors = DateTime::getLastErrors();
-            Log::error('Error parsing last_run date: '.print_r($errors, true));
+            Log::error('Error parsing last_run date', ['errors' => $errors]);
 
             return true;
         }
