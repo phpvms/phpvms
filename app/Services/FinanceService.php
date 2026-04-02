@@ -83,7 +83,7 @@ class FinanceService extends Service
             null,
             $reference,
             $memo,
-            null,
+            $post_date,
             $transaction_group,
             $tag
         );
