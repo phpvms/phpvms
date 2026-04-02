@@ -500,7 +500,8 @@ class PirepFinanceService extends Service
             $pirep,
             'Ground Handling (Departure)',
             'Ground Handling',
-            'ground_handling'
+            'ground_handling',
+            $pirep->submitted_at
         );
 
         $ground_handling_cost = $this->getGroundHandlingCost($pirep, $pirep->arr_airport);
@@ -512,7 +513,8 @@ class PirepFinanceService extends Service
             $pirep,
             'Ground Handling (Arrival)',
             'Ground Handling',
-            'ground_handling'
+            'ground_handling',
+            $pirep->submitted_at
         );
     }
 
@@ -547,7 +549,8 @@ class PirepFinanceService extends Service
             $pirep,
             $memo,
             'Pilot Pay',
-            'pilot_pay'
+            'pilot_pay',
+            $pirep->submitted_at
         );
 
         $this->financeSvc->creditToJournal(
@@ -556,7 +559,8 @@ class PirepFinanceService extends Service
             $pirep,
             $memo,
             'Pilot Pay',
-            'pilot_pay'
+            'pilot_pay',
+            $pirep->submitted_at
         );
     }
 
