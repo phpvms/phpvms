@@ -83,7 +83,7 @@ class FinanceService extends Service
             null,
             $reference,
             $memo,
-            null,
+            $post_date,
             $transaction_group,
             $tag
         );
@@ -168,7 +168,7 @@ class FinanceService extends Service
                          SUM(debit) as sum_debits'
             )
             ->where(['journal_id' => $airline->journal->id])
-            ->whereBetween('created_at', [$start_date, $end_date], 'AND')
+            ->whereBetween('post_date', [$start_date, $end_date], 'AND')
             ->orderBy('sum_credits', 'desc')
             ->orderBy('sum_debits', 'desc')
             ->orderBy('transaction_group', 'asc')
