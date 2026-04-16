@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
@@ -41,7 +40,6 @@ class RegisterController extends Controller
      */
     public function __construct(
         private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly HttpClient $httpClient,
         private readonly UserService $userService,
     ) {
@@ -61,8 +59,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== $request->get('token')) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== $request->input('token')) {
                 abort(403, 'Invalid invite');
             }
 
@@ -161,8 +159,8 @@ class RegisterController extends Controller
                 abort(403, 'Registrations are invite only');
             }
 
-            $invite = Invite::find($request->get('invite'));
-            if (!$invite || $invite->token !== base64_decode($request->get('invite_token'))) {
+            $invite = Invite::find($request->input('invite'));
+            if (!$invite || $invite->token !== base64_decode($request->input('invite_token'))) {
                 abort(403, 'Invalid invite');
             }
 
@@ -174,7 +172,7 @@ class RegisterController extends Controller
                 abort(403, 'Invite has expired');
             }
 
-            if ($invite->email && $invite->email !== $request->get('email')) {
+            if ($invite->email && $invite->email !== $request->input('email')) {
                 abort(403, 'Invite is for a different email address');
             }
 

@@ -29,10 +29,9 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-
-use function is_array;
 
 class UserService extends Service
 {
@@ -101,7 +100,7 @@ class UserService extends Service
         $user->save();
 
         // Attach any additional roles
-        if ($roles !== [] && is_array($roles)) {
+        if ($roles !== []) {
             foreach ($roles as $role) {
                 $this->addUserToRole($user, $role);
             }
@@ -300,7 +299,7 @@ class UserService extends Service
      * based on their current Rank and/or by Type Rating
      *
      *
-     * @return \Illuminate\Database\Eloquent\Collection<Subfleet>
+     * @return Collection<int, Subfleet>
      */
     public function getAllowableSubfleets($user, bool $paginate = false)
     {

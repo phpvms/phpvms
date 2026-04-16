@@ -30,7 +30,7 @@ abstract class Enum
     /**
      * Return the value that's been set if this is an instance
      */
-    final public function getValue(): ?int
+    final public function getValue(): int
     {
         return $this->value;
     }

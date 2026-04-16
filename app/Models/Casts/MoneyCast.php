@@ -26,17 +26,13 @@ class MoneyCast implements CastsAttributes
 
     /**
      * Transform the attribute to its underlying model values.
-     *
-     * @param  Model $model
-     * @param  mixed $value
-     * @return mixed
      */
-    public function set($model, string $key, $value, array $attributes)
+    public function set(Model $model, string $key, mixed $value, array $attributes): float|int
     {
         $value = ($value instanceof Money)
             ? $value
             : new Money($value);
 
-        return $value ? $value->getAmount() : null;
+        return $value->getAmount();
     }
 }

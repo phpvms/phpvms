@@ -1,7 +1,10 @@
 <?php
 
 use App\Contracts\Migration;
+use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Expense;
+use App\Models\Subfleet;
 
 /**
  * Update the expenses to add the airline ID
@@ -22,23 +25,16 @@ return new class() extends Migration
      */
     public function getAirlineId(Expense $expense): void
     {
-        $klass = 'Expense';
-        if ($expense->ref_model) {
-            $ref = explode('\\', $expense->ref_model);
-            $klass = end($ref);
-            $obj = $expense->getReferencedObject();
-        }
-
-        if (empty($obj)) {
+        if (!$expense->ref_model) {
             return;
         }
 
-        if ($klass === 'Airport') {
+        if ($expense->ref_model instanceof Airport) {
             // TODO: Get an airline ID?
-        } elseif ($klass === 'Subfleet') {
-            $expense->airline_id = $obj->airline_id;
-        } elseif ($klass === 'Aircraft') {
-            $expense->airline_id = $obj->airline->id;
+        } elseif ($expense->ref_model instanceof Subfleet) {
+            $expense->airline_id = $expense->ref_model->airline_id;
+        } elseif ($expense->ref_model instanceof Aircraft) {
+            $expense->airline_id = $expense->ref_model->airline->id;
         }
 
         $expense->save();

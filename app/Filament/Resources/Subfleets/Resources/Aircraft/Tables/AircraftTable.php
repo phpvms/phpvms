@@ -122,6 +122,7 @@ class AircraftTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                        /** @var Collection<int, Aircraft> $records */
                         $records->each(fn (Aircraft $record) => $record->files()->each(function (File $file) {
                             app(FileService::class)->removeFile($file);
                         }));

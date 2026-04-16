@@ -23,7 +23,7 @@ class FareImporter extends ImportExport
         'type'     => 'required',
         'price'    => 'nullable|numeric',
         'cost'     => 'nullable|numeric',
-        'capacity' => 'required|integer',
+        'capacity' => 'nullable|integer',
         'notes'    => 'nullable',
         'active'   => 'nullable|boolean',
     ];

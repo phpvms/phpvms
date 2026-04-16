@@ -51,6 +51,7 @@ class FlightForm
                             TextInput::make('flight_number')
                                 ->label(__('flights.flightnumber'))
                                 ->integer()
+                                ->maxLength(4)
                                 ->required(),
 
                             TextInput::make('route_code')

@@ -36,7 +36,7 @@ class UserResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return User::where('state', UserState::PENDING)->count() > 0
-            ? User::where('state', UserState::PENDING)->count()
+            ? (string) User::where('state', UserState::PENDING)->count()
             : null;
     }
 

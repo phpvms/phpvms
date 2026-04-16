@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 
 class OAuthService extends Service
 {
@@ -26,10 +27,12 @@ class OAuthService extends Service
         $end_date = now()->addHours(25);
 
         $tokens = UserOAuthToken::where(function (Builder $query) use ($start_date, $end_date) {
+            /** @var Builder<UserOAuthToken> $query */
             return $query->whereNot('provider', 'ivao')
                 ->whereBetween('expires_at', [$start_date, $end_date]);
         })
             ->orWhere(function (Builder $query) {
+                /** @var Builder<UserOAuthToken> $query */
                 return $query->where('provider', 'ivao')
                     ->whereBetween('expires_at', [now()->subDays(8), now()->subDays(6)]);
             })
@@ -43,7 +46,7 @@ class OAuthService extends Service
     public function refreshToken(UserOAuthToken $token): UserOAuthToken
     {
         try {
-            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            /** @var AbstractProvider $driver */
             $driver = Socialite::driver($token->provider);
 
             $updatedToken = $driver->refreshToken($token->refresh_token);

@@ -1,6 +1,9 @@
 <?php
 
 use App\Bootstrap\LoadConfiguration;
+use App\Exceptions\Handler;
+use App\Http\Kernel;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -36,7 +39,7 @@ class application extends Illuminate\Foundation\Application
      */
     public function bootstrapWith(array $bootstrappers)
     {
-        $find = \Illuminate\Foundation\Bootstrap\LoadConfiguration::class;
+        $find = Illuminate\Foundation\Bootstrap\LoadConfiguration::class;
         $replace = LoadConfiguration::class;
 
         $bootstrappers = array_replace(
@@ -54,7 +57,7 @@ class application extends Illuminate\Foundation\Application
     {
         $this->singleton(
             Illuminate\Contracts\Http\Kernel::class,
-            App\Http\Kernel::class
+            Kernel::class
         );
 
         $this->singleton(
@@ -63,8 +66,8 @@ class application extends Illuminate\Foundation\Application
         );
 
         $this->singleton(
-            Illuminate\Contracts\Debug\ExceptionHandler::class,
-            App\Exceptions\Handler::class
+            ExceptionHandler::class,
+            Handler::class
         );
     }
 

@@ -12,5 +12,8 @@
       "align": "vertical"
     },
     "spaces_inside_parentheses": false
-  }
+  },
+  "exclude": [
+    "modules/"
+  ]
 }

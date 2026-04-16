@@ -29,6 +29,8 @@ class ExportAction extends Action
 
         $this->label('Export to CSV');
 
+        $this->visible(!config('phpvms.use_queued_filament_imports'));
+
         $this->action(function (array $arguments): ?BinaryFileResponse {
             if (!isset($arguments['resourceTitle']) || !$arguments['exportType']) {
                 $this->failure();
@@ -79,10 +81,6 @@ class ExportAction extends Action
         });
 
         $this->successNotificationTitle('Data exported successfully');
-
-        $this->modalHeading('Export to CSV');
-
-        $this->modalSubmitActionLabel('Export');
 
         $this->icon('heroicon-o-document-arrow-down');
 

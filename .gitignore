@@ -78,15 +78,15 @@ error_log
 /config.bak.php
 /VERSION
 sync.sh
-
-###> friendsofphp/php-cs-fixer ###
-/.php-cs-fixer.php
-/.php-cs-fixer.cache
-###< friendsofphp/php-cs-fixer ###
-
 ###> phpunit/phpunit ###
 /phpunit.xml
 ###< phpunit/phpunit ###
 
 copy-from.sh
 copy-to.sh
+
+# Laravel boost
+.ai
+.junie
+.vscode
+boost.json

@@ -3,18 +3,20 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int                             $id
- * @property int                             $user_id
- * @property string                          $flight_id
- * @property int|null                        $aircraft_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Aircraft|null $aircraft
- * @property-read \App\Models\Flight|null $flight
- * @property-read \App\Models\User|null $user
+ * @property int         $id
+ * @property int         $user_id
+ * @property string      $flight_id
+ * @property int|null    $aircraft_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Aircraft|null $aircraft
+ * @property-read Flight|null $flight
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newQuery()
@@ -30,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Bid extends Model
 {
+    use HasFactory;
+
     public $table = 'bids';
 
     protected $fillable = [

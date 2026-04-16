@@ -4,24 +4,27 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string                          $id
- * @property int                             $offset
- * @property int                             $order
- * @property string                          $key
- * @property string                          $name
- * @property string                          $value
- * @property string|null                     $default
- * @property string|null                     $group
- * @property string|null                     $type
- * @property string|null                     $options
- * @property string|null                     $description
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property string      $id
+ * @property int         $offset
+ * @property int         $order
+ * @property string      $key
+ * @property string      $name
+ * @property string      $value
+ * @property string|null $default
+ * @property string|null $group
+ * @property string|null $type
+ * @property string|null $options
+ * @property string|null $description
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting newModelQuery()

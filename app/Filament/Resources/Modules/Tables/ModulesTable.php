@@ -53,6 +53,7 @@ class ModulesTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->before(function (Collection $records) {
+                            /** @var Collection<int, Module> $records */
                             $records->each(function (Module $record) {
                                 try {
                                     File::deleteDirectory(base_path().'/modules/'.$record->name);

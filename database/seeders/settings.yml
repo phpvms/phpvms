@@ -453,12 +453,19 @@
   type: boolean
   description: 'Pilots can only select hubs as their home airport'
 - key: pilots.only_flights_from_current
-  name: 'Flights from Current'
+  name: 'Only allow flights from Current'
   group: pilots
   value: false
   options: ''
   type: boolean
-  description: 'Only show/allow flights from their current location'
+  description: 'Only allow flights from their current location'
+- key: pilots.only_show_flights_from_current
+  name: 'Only show flights from Current'
+  group: pilots
+  value: false
+  options: ''
+  type: boolean
+  description: 'Only show flights from their current location'
 - key: pilots.auto_leave_days
   name: 'Pilot to ON LEAVE days'
   group: pilots

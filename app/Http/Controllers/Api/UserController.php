@@ -13,6 +13,7 @@ use App\Http\Resources\Subfleet as SubfleetResource;
 use App\Http\Resources\User as UserResource;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
+use App\Models\User;
 use App\Repositories\AircraftRepository;
 use App\Repositories\Criteria\WhereCriteria;
 use App\Repositories\FlightRepository;
@@ -22,9 +23,11 @@ use App\Services\BidService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -40,12 +43,12 @@ class UserController extends Controller
 
     protected function getUserId(Request $request): mixed
     {
-        $id = $request->get('id');
+        $id = $request->input('id');
         if ($id === null || $id === 'me') {
             return Auth::user()->id;
         }
 
-        return $request->get('id');
+        return $request->input('id');
     }
 
     /**
@@ -64,7 +67,7 @@ class UserController extends Controller
     public function get(int $id, bool $with_subfleets = true): UserResource
     {
         $user = $this->userSvc->getUser($id, $with_subfleets);
-        if (!$user instanceof \App\Models\User) {
+        if (!$user instanceof User) {
             throw new UserNotFound();
         }
 
@@ -84,7 +87,7 @@ class UserController extends Controller
     {
         $user_id = $this->getUserId($request);
         $user = $this->userSvc->getUser($user_id, false);
-        if (!$user instanceof \App\Models\User) {
+        if (!$user instanceof User) {
             throw new UserNotFound();
         }
 
@@ -133,12 +136,12 @@ class UserController extends Controller
      */
     public function get_bid(int $bid_id, Request $request): BidResource
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         // Return the current bid
         $bid = $this->bidSvc->getBid($user, $bid_id);
-        if (!$bid instanceof \App\Models\Bid) {
+        if (!$bid instanceof Bid) {
             throw new BidNotFound($bid_id);
         }
 
@@ -189,5 +192,36 @@ class UserController extends Controller
             ->paginate();
 
         return PirepResource::collection($pireps);
+    }
+
+    /**
+     * Update the SimBrief username for the currently authenticated user
+     */
+    public function simbrief_username(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'simbrief_username' => 'required|string',
+        ]);
+
+        // Now let's see if the simbrief username is valid
+        $response = Http::timeout(20)->get(config('phpvms.simbrief_ofp_url'), [
+            'username' => $validated['simbrief_username'],
+            'json'     => 'v2',
+        ]);
+
+        if ($response->serverError() || $response->json('fetch.status') === 'Error: Unknown UserID') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid SimBrief username provided.',
+            ], 422);
+        }
+
+        // Finally, update the user's SimBrief username
+        $user = Auth::user();
+        $user->update([
+            'simbrief_username' => $validated['simbrief_username'],
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

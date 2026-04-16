@@ -78,6 +78,18 @@
             </div>
         </div>
         <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="simbrief_username" class="form-label">{{ __('profile.simbrief_username') }}</label>
+            <input type="text" name="simbrief_username" id="simbrief_username"
+                   placeholder="{{ __('profile.simbrief_username') }}"
+                   class="form-control {{ $errors->has('simbrief_username') ? ' is-invalid' : ' ' }}"
+                   value="{{ $user->simbrief_username }}" />
+            @if ($errors->has('simbrief_username'))
+              <div id="simbrief_usernameFeedback" class="invalid-feedback">{{ $errors->first('simbrief_username') }}</div>
+            @endif
+          </div>
+        </div>
+        <div class="row mb-3">
             <div class="col-md-12">
                 <label for="avatar" class="form-label">{{ __('profile.avatar') }}</label>
                 <input type="file" name="avatar" id="avatar"

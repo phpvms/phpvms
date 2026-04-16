@@ -24,15 +24,8 @@ use Prettus\Validator\Exceptions\ValidatorException;
 
 class FlightService extends Service
 {
-    /**
-     * FlightService constructor.
-     *
-     *
-     * @parma PirepRepository   $pirepRepo
-     */
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly FareService $fareSvc,
         private readonly FlightRepository $flightRepo,
         private readonly NavdataRepository $navDataRepo,
         private readonly PirepRepository $pirepRepo,
@@ -146,21 +139,20 @@ class FlightService extends Service
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
-        /** @var \Illuminate\Database\Eloquent\Collection<Subfleet> $subfleets */
         $subfleets = $flight->subfleets;
 
         // If no subfleets assigned and airline subfleets are forced, get airline subfleets
-        if (($subfleets === null || $subfleets->count() === 0) && setting('flights.only_company_aircraft', false)) {
+        if ($subfleets->count() === 0 && setting('flights.only_company_aircraft', false)) {
             $subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->get();
         }
 
         // If no subfleets assigned to a flight get users allowed subfleets
-        if ($subfleets === null || $subfleets->count() === 0) {
+        if ($subfleets->count() === 0) {
             $subfleets = $this->userSvc->getAllowableSubfleets($user);
         }
 
         // If subfleets are still empty return the flight
-        if ($subfleets === null || $subfleets->count() === 0) {
+        if ($subfleets->count() === 0) {
             return $flight;
         }
 

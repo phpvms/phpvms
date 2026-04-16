@@ -1,47 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="bootstrap/autoload.php" colors="true" processIsolation="false" stopOnFailure="true" beStrictAboutOutputDuringTests="false" beStrictAboutTestsThatDoNotTestAnything="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" cacheDirectory=".phpunit.cache">
-  <testsuites>
-    <testsuite name="Application Test Suite">
-      <directory suffix="Test.php">./tests</directory>
-    </testsuite>
-  </testsuites>
-  <!--<listeners>
-        <listener class="NunoMaduro\Collision\Adapters\Phpunit\Listener"/>
-    </listeners>-->
-  <php>
-    <ini name="error_reporting" value="E_ALL"/>
-    <ini name="display_errors" value="On"/>
-    <ini name="display_startup_errors" value="On"/>
-    <ini name="memory_limit" value="-1"/>
-    <server name="APP_ENV" value="testing"/>
-    <server name="APP_KEY" value="base64:ve66Z5Kt/zTN3p++0zOPu854PHfZkwJE5VuoFAlzHtI="/>
-    <server name="APP_DEBUG" value="true"/>
-    <server name="APP_LOG_LEVEL" value="error"/>
-    <server name="APP_URL" value="http://localhost"/>
-    <server name="BCRYPT_ROUNDS" value="4"/>
-    <server name="CACHE_DRIVER" value="array"/>
-    <server name="DB_CONNECTION" value="memory"/>
-    <server name="DB_PREFIX" value=""/>
-    <server name="MAIL_MAILER" value="array"/>
-    <server name="QUEUE_DRIVER" value="sync"/>
-    <server name="SESSION_DRIVER" value="array"/>
-    <server name="TELESCOPE_ENABLED" value="false"/>
-    <server name="APP_CONFIG_CACHE" value="bootstrap/cache/config.phpunit.php"/>
-    <server name="APP_SERVICES_CACHE" value="bootstrap/cache/services.phpunit.php"/>
-    <server name="APP_PACKAGES_CACHE" value="bootstrap/cache/packages.phpunit.php"/>
-    <server name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.phpunit.php"/>
-    <server name="APP_EVENTS_CACHE" value="bootstrap/cache/events.phpunit.php"/>
-   <!-- ###+ symfony/mailer ### -->
-   <!-- MAILER_DSN=smtp://localhost -->
-   <!-- ###- symfony/mailer ### -->
-
-   <!-- ###+ symfony/postmark-mailer ### -->
-   <!-- MAILER_DSN=postmark://ID@default -->
-   <!-- ###- symfony/postmark-mailer ### -->
-  </php>
-  <source>
-    <include>
-      <directory suffix=".php">./app</directory>
-    </include>
-  </source>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Arch">
+            <file>tests/ArchTest.php</file>
+            <directory>tests/Arch</directory>
+        </testsuite>
+        <testsuite name="Components">
+            <directory suffix=".test.php">resources/views</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
 </phpunit>

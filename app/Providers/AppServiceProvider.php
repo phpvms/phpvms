@@ -26,13 +26,13 @@ class AppServiceProvider extends ServiceProvider
         activity()->disableLogging();
 
         // TODO: See if Filament Shield changes the way they do this by default since Filament 4 because of the new structure. If not, leave it as is
-        FilamentShield::configurePermissionIdentifierUsing(
-            fn ($resource) => str($resource)
-                ->afterLast('\\')
-                ->beforeLast('Resource')
-                ->lower()
-                ->toString()
-        );
+        // FilamentShield::configurePermissionIdentifierUsing(
+        //    fn ($resource) => str($resource)
+        //        ->afterLast('\\')
+        //        ->beforeLast('Resource')
+        //        ->lower()
+        //        ->toString()
+        // );
 
         Notification::extend('discord_webhook', function ($app) {
             return app(DiscordWebhook::class);

@@ -6,7 +6,7 @@ use App\Contracts\Service;
 use App\Support\Database;
 use Carbon\Carbon;
 use Exception;
-use Webpatser\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 class DatabaseService extends Service
 {
@@ -57,7 +57,7 @@ class DatabaseService extends Service
         // if no ID is specified
         /* @noinspection NestedPositiveIfStatementsInspection */
         if (\in_array($table, $this->uuid_tables, true) && !array_key_exists('id', $row)) {
-            $row['id'] = Uuid::generate()->string;
+            $row['id'] = Str::uuid();
         }
 
         return Database::insert_row($table, $row);

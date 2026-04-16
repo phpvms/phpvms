@@ -64,10 +64,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                \App\Models\Enums\NavigationGroup::Config->name,
-                \App\Models\Enums\NavigationGroup::Operations->name,
-                \App\Models\Enums\NavigationGroup::Modules->name,
-                \App\Models\Enums\NavigationGroup::Developers->name,
+                EnumsNavigationGroup::Config->name,
+                EnumsNavigationGroup::Operations->name,
+                EnumsNavigationGroup::Modules->name,
+                EnumsNavigationGroup::Developers->name,
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
@@ -86,7 +86,10 @@ class AdminPanelProvider extends PanelProvider
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup(EnumsNavigationGroup::Config)
+                    ->navigationSort(1),
+
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),
@@ -100,6 +103,7 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()
+            ->databaseNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
 

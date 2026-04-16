@@ -25,12 +25,12 @@ class FileService extends Service
     public function saveFile($file, $folder, array $attrs)
     {
         $attrs = array_merge([
-            'name'         => '',
-            'description'  => '',
-            'public'       => false,
-            'ref_model'    => '',
-            'ref_model_id' => '',
-            'disk'         => config('filesystems.public_files'),
+            'name'           => '',
+            'description'    => '',
+            'public'         => false,
+            'ref_model_type' => '',
+            'ref_model_id'   => '',
+            'disk'           => config('filesystems.public_files'),
         ], $attrs);
 
         $id = File::createNewHashId();

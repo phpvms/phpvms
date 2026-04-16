@@ -51,7 +51,7 @@ class AwardForm
 
                         Grid::make()
                             ->schema([
-                                Select::make('ref_model')
+                                Select::make('ref_model_type')
                                     ->label(__('filament.award_class'))
                                     ->required()
                                     ->searchable()

@@ -1,5 +1,7 @@
 <?php
 
+use League\Fractal\Serializer\DataArraySerializer;
+
 return [
     'pagination' => [
         'limit' => 20,
@@ -21,7 +23,7 @@ return [
         'params' => [
             'include' => 'include',
         ],
-        'serializer' => League\Fractal\Serializer\DataArraySerializer::class,
+        'serializer' => DataArraySerializer::class,
     ],
 
     /*

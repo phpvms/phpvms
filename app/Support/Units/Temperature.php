@@ -18,12 +18,12 @@ class Temperature extends Unit
     ];
 
     /**
-     * @param float $value
+     * @param float|self $value
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    public function __construct($value, string $unit)
+    public function __construct(mixed $value, string $unit)
     {
         if (empty($value)) {
             $value = 0;

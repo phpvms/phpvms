@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 /**
@@ -24,6 +25,8 @@ use Illuminate\Support\Str;
  */
 class FlightField extends Model
 {
+    use HasFactory;
+
     public $table = 'flight_fields';
 
     public $timestamps = false;

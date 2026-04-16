@@ -9,6 +9,7 @@ use App\Http\Resources\Navdata as NavdataResource;
 use App\Models\Aircraft;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\AircraftStatus;
+use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Repositories\Criteria\WhereCriteria;
@@ -22,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -47,7 +49,7 @@ class FlightController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        /** @var \App\Models\Flight $flight */
+        /** @var Flight $flight */
         $flight = $this->flightRepo->with([
             'airline',
             'fares',
@@ -78,7 +80,7 @@ class FlightController extends Controller
         ];
 
         // Allow the option to bypass some of these restrictions for the searches
-        if (!$request->filled('ignore_restrictions') || $request->get('ignore_restrictions') === '0') {
+        if (!$request->filled('ignore_restrictions') || $request->input('ignore_restrictions') === '0') {
             if (setting('pilots.restrict_to_company')) {
                 $where['airline_id'] = $user->airline_id;
             }
@@ -157,7 +159,7 @@ class FlightController extends Controller
             'id' => $id,
         ];
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::where($w)->first();
 
         if ($simbrief === null) {
@@ -168,8 +170,14 @@ class FlightController extends Controller
             throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
         }*/
 
-        return response($simbrief->acars_xml, 200, [
-            'Content-Type' => 'application/xml',
+        if (!$simbrief->ofp_json_path || !Storage::exists($simbrief->ofp_json_path)) {
+            throw new AssetNotFound(new Exception('Flight briefing not found'));
+        }
+
+        $json = Storage::get($simbrief->ofp_json_path);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json',
         ]);
     }
 

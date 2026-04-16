@@ -104,7 +104,9 @@ class HttpClient
         $response = $this->httpClient->request('GET', $uri, $opts);
 
         $body = $response->getBody()->getContents();
-        if ($response->getHeader('content-type') === 'application/json') {
+        $content_type = $response->getHeaderLine('content-type');
+
+        if (str_contains($content_type, 'application/json')) {
             $body = json_decode($body);
         }
 

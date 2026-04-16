@@ -50,7 +50,7 @@ class FareService extends Service
             /**
              * See if there's match with the provided fares, so we can copy the information over
              *
-             * @var PirepFare $pirep_fare
+             * @var ?PirepFare $pirep_fare
              */
             $pirep_fare = $fares->where('fare_id', $fare->id)->first();
 
@@ -117,7 +117,7 @@ class FareService extends Service
          * Check to see if there are any subfleet fares. This might only have fares on the
          * flight, no matter how rare that might be
          */
-        if (!$subfleet_fares instanceof \Illuminate\Support\Collection || count($subfleet_fares) === 0) {
+        if (!$subfleet_fares instanceof Collection || count($subfleet_fares) === 0) {
             return $flight_fares->map(function ($fare, $_) {
                 return $this->getFareWithPivot($fare, $fare->pivot);
             });
@@ -232,9 +232,9 @@ class FareService extends Service
 
         if (filled($pivot->capacity)) {
             if (strpos($pivot->capacity, '%', -1) !== false) {
-                $fare->capacity = floor(Math::getPercent($fare->capacity, $pivot->capacity));
+                $fare->capacity = (int) floor(Math::getPercent($fare->capacity, $pivot->capacity));
             } else {
-                $fare->capacity = floor($pivot->capacity);
+                $fare->capacity = (int) floor($pivot->capacity);
             }
         }
 

@@ -18,7 +18,7 @@ trait ExpensableTrait
         return $this->morphMany(
             Expense::class,
             'expenses',  // overridden by the next two anyway
-            'ref_model',
+            'ref_model_type',
             'ref_model_id'
         );
     }

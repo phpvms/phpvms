@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App;
 use App\Contracts\Command;
 use App\Services\Installer\ConfigService;
-use Database\Seeders\DatabaseSeeder;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
@@ -16,15 +15,6 @@ class DevInstall extends Command
     protected $signature = 'phpvms:dev-install {--reset-db} {--reset-configs}';
 
     protected $description = 'Run a developer install and run the sample migration';
-
-    private DatabaseSeeder $databaseSeeder;
-
-    public function __construct(DatabaseSeeder $databaseSeeder)
-    {
-        parent::__construct();
-
-        $this->databaseSeeder = $databaseSeeder;
-    }
 
     /**
      * Run dev related commands

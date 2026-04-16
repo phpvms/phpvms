@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pireps\RelationManagers;
 
+use App\Models\Pirep;
 use App\Services\Finance\PirepFinanceService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -55,6 +56,8 @@ class TransactionsRelationManager extends RelationManager
                 Action::make('recalculate_finances')
                     ->label(__('filament.recalculate_finances'))
                     ->action(function () {
+                        assert($this->getOwnerRecord() instanceof Pirep);
+
                         app(PirepFinanceService::class)->processFinancesForPirep($this->getOwnerRecord());
 
                         Notification::make()

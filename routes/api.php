@@ -113,4 +113,6 @@ Route::group(['middleware' => ['api.auth']], function () {
     Route::get('users/{id}/bids', [UserController::class, 'bids']);
     Route::put('users/{id}/bids', [UserController::class, 'bids']);
     Route::post('users/{id}/bids', [UserController::class, 'bids']);
+
+    Route::post('users/simbrief_username', [UserController::class, 'simbrief_username'])->name('users.simbrief_username');
 });

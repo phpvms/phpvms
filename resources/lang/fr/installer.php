@@ -41,6 +41,7 @@ return [
     'legacy_importer'                   => 'Importateur phpVMS v5 Legacy',
     'super_admin_informations'          => 'Informations de l\'utilisateur Super Admin',
     'lets_rebuild_cache'                => 'Reconstruction du cache.',
+    'cache_build_background'            => 'Vous n\'avez pas la fonction proc_open. Le cache sera reconstruit en arrière-plan, consultez les logs pour plus de détails.',
     'update_completed'                  => 'Mise à jour terminée avec succès. Vous allez être redirigé dans quelques secondes',
     'update_phpvms'                     => 'Mettre à jour phpVMS',
 ];

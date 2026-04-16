@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
 use Prettus\Validator\Exceptions\ValidatorException;
 
@@ -118,14 +119,14 @@ class PirepService extends Service
         }
 
         // See if this aircraft is valid
-        /** @var Aircraft $aircraft */
+        /** @var ?Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
         if ($aircraft === null) {
             throw new AircraftInvalid($aircraft);
         }
 
         // See if this aircraft is available for flight
-        /** @var Aircraft $aircraft */
+        /** @var ?Aircraft $aircraft */
         $aircraft = $this->aircraftRepo->where('id', $pirep->aircraft_id)->where('state', AircraftState::PARKED)->first();
         if ($aircraft === null) {
             throw new AircraftNotAvailable($pirep->aircraft);
@@ -166,7 +167,7 @@ class PirepService extends Service
         // Check if there is a simbrief_id, update it to have the pirep_id
         // Keep the flight_id until the end of flight (pirep file)
         if (array_key_exists('simbrief_id', $attrs)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief, true);
@@ -276,7 +277,7 @@ class PirepService extends Service
         // Check if there is a simbrief_id, change it to be set to the PIREP
         // at the end of the flight when it's been filed
         if (array_key_exists('simbrief_id', $attrs)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($attrs['simbrief_id']);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief);
@@ -421,7 +422,7 @@ class PirepService extends Service
         // visible at pireps.show blade uses this function so Simbrief also needs to
         // checked here too (to remove the flight_id and release the aircraft)
         if (!empty($pirep->simbrief)) {
-            /** @var SimBrief $simbrief */
+            /** @var ?SimBrief $simbrief */
             $simbrief = SimBrief::find($pirep->simbrief->id);
             if ($simbrief) {
                 $this->simBriefSvc->attachSimbriefToPirep($pirep, $simbrief);
@@ -524,7 +525,7 @@ class PirepService extends Service
      */
     public function updateCustomFields(string $pirep_id, array $field_values): void
     {
-        if (!$field_values || $field_values === []) {
+        if ($field_values === []) {
             return;
         }
 
@@ -707,9 +708,12 @@ class PirepService extends Service
 
         event(new PirepDiverted($pirep));
 
+        /** @var ?\Nwidart\Modules\Module $has_vmsacars */
         $has_vmsacars = Module::find('VMSAcars');
 
-        if ($has_vmsacars && $flight) {
+        $has_vmsacars_config = Schema::hasTable('vmsacars_config');
+
+        if ($has_vmsacars && $has_vmsacars_config && $flight) {
             /** @var ?object $query */
             $query = DB::table('vmsacars_config')->find('disable_free_flights');
             $free_flights_disabled = $query?->value;

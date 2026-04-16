@@ -6,52 +6,55 @@ use App\Contracts\Model;
 use App\Models\Traits\ExpensableTrait;
 use App\Models\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Class Airport
  *
- * @property string                          $id
- * @property string|null                     $iata
- * @property string                          $icao
- * @property string                          $name
- * @property string|null                     $location
- * @property string|null                     $region
- * @property string|null                     $country
- * @property string|null                     $timezone
- * @property bool                            $hub
- * @property string|null                     $notes
- * @property float|null                      $lat
- * @property float|null                      $lon
- * @property int|null                        $elevation
- * @property float|null                      $ground_handling_cost
- * @property float|null                      $fuel_100ll_cost
- * @property float|null                      $fuel_jeta_cost
- * @property float|null                      $fuel_mogas_cost
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property string      $id
+ * @property string|null $iata
+ * @property string      $icao
+ * @property string      $name
+ * @property string|null $location
+ * @property string|null $region
+ * @property string|null $country
+ * @property string|null $timezone
+ * @property bool        $hub
+ * @property string|null $notes
+ * @property float|null  $lat
+ * @property float|null  $lon
+ * @property int|null    $elevation
+ * @property float|null  $ground_handling_cost
+ * @property float|null  $fuel_100ll_cost
+ * @property float|null  $fuel_jeta_cost
+ * @property float|null  $fuel_mogas_cost
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Aircraft> $aircraft
+ * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $arrivals
+ * @property-read Collection<int, Flight> $arrivals
  * @property-read int|null $arrivals_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight> $departures
+ * @property-read Collection<int, Flight> $departures
  * @property-read int|null $departures_count
  * @property-read mixed $description
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expense> $expenses
+ * @property-read Collection<int, Expense> $expenses
  * @property-read int|null $expenses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
+ * @property-read Collection<int, File> $files
  * @property-read int|null $files_count
  * @property-read mixed $full_name
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $pilots
+ * @property-read Collection<int, User> $pilots
  * @property-read int|null $pilots_count
  * @property mixed $tz
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AirportFactory                    factory($count = null, $state = [])

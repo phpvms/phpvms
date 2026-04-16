@@ -30,7 +30,7 @@ trait JournalTrait
      * Initialize a journal for a given model object
      *
      *
-     * @return Journal
+     * @return ?Journal
      *
      * @throws Exception
      */

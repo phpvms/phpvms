@@ -368,7 +368,7 @@
                   <div class="float-end">
                     <div class="form-group">
                       <input type="button"
-                         onclick="simbriefsubmit('{{ $flight->id }}', '{{ $aircraft->id }}', '{{ route('frontend.simbrief.briefing', ['id' => '/']) }}');"
+                         onclick="simbriefsubmit('{{ $flight->id }}', '{{ $aircraft->id }}', '{{ $static_id }}', '{{ url(route('frontend.simbrief.briefing', ['/'])) }}');"
                          class="btn btn-primary" value="Generate">
                     </div>
                   </div>

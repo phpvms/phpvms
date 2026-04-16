@@ -28,14 +28,13 @@ class SimBriefFactory extends Factory
     public function definition()
     {
         return [
-            'id'         => fake()->unique()->numberBetween(10, 10000000),
-            'user_id'    => null,
-            'flight_id'  => null,
-            'pirep_id'   => null,
-            'acars_xml'  => '',
-            'ofp_xml'    => '',
-            'created_at' => Carbon::now('UTC')->toDateTimeString(),
-            'updated_at' => fn (array $sb) => $sb['created_at'],
+            'id'            => fake()->unique()->numberBetween(10, 10000000),
+            'user_id'       => null,
+            'flight_id'     => null,
+            'pirep_id'      => null,
+            'ofp_json_path' => '',
+            'created_at'    => Carbon::now('UTC')->toDateTimeString(),
+            'updated_at'    => fn (array $sb) => $sb['created_at'],
         ];
     }
 }

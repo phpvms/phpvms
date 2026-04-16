@@ -36,7 +36,7 @@ class PirepDiverted extends Notification
         $fields = $this->createFields($pirep);
 
         // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = $pirep->user->avatar?->url ?? $pirep->user->gravatar(256);
+        $user_avatar = $pirep->user->avatar->url ?? $pirep->user->gravatar(256);
 
         $dm = new DiscordMessage();
 
@@ -60,7 +60,7 @@ class PirepDiverted extends Notification
             '__Flight #__'  => $pirep->ident,
             '__Orig__'      => $pirep->dpt_airport_id,
             '__Dest__'      => $pirep->arr_airport_id,
-            '__Equipment__' => $pirep->aircraft?->ident ?? 'Not Reported',
+            '__Equipment__' => $pirep->aircraft->ident ?? 'Not Reported',
             '__Diverted__'  => $diversion_apt,
             '__Reason__'    => $diversion_reason,
         ];

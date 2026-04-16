@@ -30,7 +30,7 @@ class AwardFactory extends Factory
             'id'               => null,
             'name'             => fake()->name,
             'description'      => fake()->text(10),
-            'ref_model'        => null,
+            'ref_model_type'   => null,
             'ref_model_params' => null,
         ];
     }

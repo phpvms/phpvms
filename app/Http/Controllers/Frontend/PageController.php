@@ -22,7 +22,7 @@ class PageController extends Controller
      */
     public function show(string $slug): View
     {
-        /** @var Page $page */
+        /** @var ?Page $page */
         $page = $this->pageRepo->findWhere(['slug' => $slug])->first();
         if (!$page) {
             throw new PageNotFound(new Exception('Page not found'));

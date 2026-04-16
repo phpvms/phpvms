@@ -10,6 +10,7 @@ airlines:
 
 users:
   - id: 1
+    pilot_id: 1
     name: Admin User
     email: admin@phpvms.net
     password: admin

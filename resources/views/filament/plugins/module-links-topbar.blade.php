@@ -1,4 +1,4 @@
-@can('view_module')
+@can('View:Module')
   <ul class="fi-topbar-nav-groups">
     <x-filament-panels::topbar.item
       :active="$current_panel->getId() === 'admin'"

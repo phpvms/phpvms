@@ -35,7 +35,7 @@ class AirportController extends Controller
     {
         $where = [];
         if ($request->filled('hub')) {
-            $where['hub'] = $request->get('hub');
+            $where['hub'] = $request->input('hub');
         }
 
         $this->airportRepo->pushCriteria(new RequestCriteria($request));
@@ -103,7 +103,7 @@ class AirportController extends Controller
         $this->airportRepo->pushCriteria(app(RequestCriteria::class));
 
         // Restrict search to hubs only?
-        if (get_truth_state($request->get('hubs', false)) === true) {
+        if (get_truth_state($request->input('hubs', false)) === true) {
             $this->airportRepo->pushCriteria(new WhereCriteria($request, ['hub' => true]));
         }
 

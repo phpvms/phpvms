@@ -5,27 +5,29 @@ namespace App\Models;
 use App\Contracts\Model;
 use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Kyslik\ColumnSortable\Sortable;
 
 /**
  * The Award model
  *
- * @property int                             $id
- * @property string                          $name
- * @property string|null                     $description
- * @property string|null                     $image_url
- * @property string|null                     $ref_model
- * @property string|null                     $ref_model_params
- * @property int|null                        $active
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $description
+ * @property string|null $image_url
+ * @property string|null $ref_model_type
+ * @property string|null $ref_model_params
+ * @property int|null    $active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read mixed $image
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AwardFactory                    factory($count = null, $state = [])
@@ -41,8 +43,8 @@ use Kyslik\ColumnSortable\Sortable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereImageUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelParams($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
@@ -61,7 +63,7 @@ class Award extends Model
         'name',
         'description',
         'image_url',
-        'ref_model',
+        'ref_model_type',
         'ref_model_params',
         'active',
     ];
@@ -70,7 +72,7 @@ class Award extends Model
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',
-        'ref_model'        => 'required',
+        'ref_model_type'   => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
     ];
@@ -87,16 +89,16 @@ class Award extends Model
      * Get the referring object
      *
      *
-     * @return null
+     * @return ?object
      */
     public function getReference(?self $award = null, ?User $user = null)
     {
-        if (!$this->ref_model) {
+        if (!$this->ref_model_type) {
             return null;
         }
 
         try {
-            return new $this->ref_model($award, $user);
+            return new $this->ref_model_type($award, $user);
         } catch (Exception $e) {
             return null;
         }

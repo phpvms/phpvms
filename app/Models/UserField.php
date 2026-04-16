@@ -4,19 +4,20 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @property int                             $id
- * @property string                          $name
- * @property string|null                     $description
- * @property bool|null                       $show_on_registration
- * @property bool|null                       $required
- * @property bool|null                       $private
- * @property bool                            $internal
- * @property bool|null                       $active
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int         $id
+ * @property string      $name
+ * @property string|null $description
+ * @property bool|null   $show_on_registration
+ * @property bool|null   $required
+ * @property bool|null   $private
+ * @property bool        $internal
+ * @property bool|null   $active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read mixed $slug
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField newModelQuery()

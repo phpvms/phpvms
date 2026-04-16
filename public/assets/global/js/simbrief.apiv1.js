@@ -30,6 +30,7 @@ let SBloop;
 let ofp_id;
 let flight_id;
 let aircraft_id;
+let static_id;
 
 let outputpage_save;
 let outputpage_calc;
@@ -39,9 +40,10 @@ let timestamp;
 let api_code;
 
 
-function simbriefsubmit(_flight_id, _aircraft_id, outputpage) {
+function simbriefsubmit(_flight_id, _aircraft_id, _static_id, outputpage) {
   flight_id = _flight_id;
   aircraft_id = _aircraft_id;
+  static_id = _static_id;
 
   if (sbworker) {
     sbworker.close();
@@ -58,6 +60,7 @@ function simbriefsubmit(_flight_id, _aircraft_id, outputpage) {
   outputpage_save = null;
   outputpage_calc = null;
 
+  console.log('Static ID', static_id);
   console.log('Flight ID', _flight_id);
   console.log('Aircraft ID', _aircraft_id);
   console.log('Output Page', outputpage);
@@ -91,9 +94,7 @@ async function do_simbriefsubmit(outputpage) {
         method: 'POST',
         url: '/simbrief/apicode',
         data: {
-          api_req,
-          flight_id,
-          aircraft_id,
+          api_req
         }
       });
     } catch (e) {
@@ -193,6 +194,7 @@ async function Redirect_caller(nbAttemps = 1) {
         aircraft_id,
         flight_id,
         ofp_id,
+        static_id,
       }
     });
   } catch (e) {
@@ -202,7 +204,7 @@ async function Redirect_caller(nbAttemps = 1) {
         Redirect_caller(nbAttemps + 1);
       }, 1500);
     } else {
-      alert(`There was an error while generating an OFP. Please try reloading the page or contact your administrator. Error : ${e}`)
+      alert(`There was an error while generating an OFP. Please check your simbrief username and try reloading the page or contact your administrator. Error : ${e}`)
     }
 
     return;

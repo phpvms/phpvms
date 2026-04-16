@@ -49,10 +49,16 @@ class SimBriefController
         /** @var User $user */
         $user = Auth::user();
 
+        if (!$user->simbrief_username) {
+            return view('flights.simbrief_username', [
+                'user' => $user,
+            ]);
+        }
+
         $flight_id = $request->input('flight_id');
         $aircraft_id = $request->input('aircraft_id');
 
-        /** @var Flight $flight */
+        /** @var ?Flight $flight */
         $flight = $this->flightRepo->with(['airline', 'arr_airport', 'dpt_airport', 'fares', 'subfleets'])->find($flight_id);
 
         if (!$flight) {
@@ -196,7 +202,7 @@ class SimBriefController
             }
 
             $acd_maxpax += $fare->capacity;
-            $count = floor(($fare->capacity * rand($loadmin, $loadmax)) / 100);
+            $count = floor(($fare->capacity * random_int($loadmin, $loadmax)) / 100);
             $tpaxfig += $count;
             $pax_load_sheet[] = [
                 'id'       => $fare->id,
@@ -227,7 +233,7 @@ class SimBriefController
                 continue;
             }
 
-            $count = ceil((($fare->capacity - $tbagload) * rand($cgoloadmin, $cgoloadmax)) / 100);
+            $count = ceil((($fare->capacity - $tbagload) * random_int($cgoloadmin, $cgoloadmax)) / 100);
             $tcargoload += $count;
             $cargo_load_sheet[] = [
                 'id'       => $fare->id,
@@ -300,7 +306,7 @@ class SimBriefController
         /** @var User $user */
         $user = Auth::user();
 
-        /** @var SimBrief $simbrief */
+        /** @var ?SimBrief $simbrief */
         $simbrief = SimBrief::with(['flight.airline', 'pirep.airline'])->find($id);
         if (!$simbrief) {
             flash()->error('SimBrief briefing not found');
@@ -308,7 +314,7 @@ class SimBriefController
             return redirect(route('frontend.flights.index'));
         }
 
-        $str = $simbrief->xml->aircraft->equip;
+        $str = $simbrief->ofp->aircraft->equip;
         $wc = stripos($str, '-');
         $tr = stripos($str, '/');
         $wakecat = substr($str, 0, $wc);
@@ -397,13 +403,14 @@ class SimBriefController
     {
         /** @var User $user */
         $user = Auth::user();
+        $static_id = $request->input('static_id');
         $ofp_id = $request->input('ofp_id');
         $flight_id = $request->input('flight_id');
         $aircraft_id = $request->input('aircraft_id');
         $fares = $request->session()->get('simbrief_fares', []);
 
-        $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares);
-        if ($simbrief === null) {
+        $simbrief = $this->simBriefSvc->downloadOfp($user, $static_id, $ofp_id, $flight_id, $aircraft_id, $fares);
+        if (!$simbrief instanceof SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();
@@ -430,8 +437,8 @@ class SimBriefController
         $sb_static_id = $request->input('sb_static_id');
         $fares = [];
 
-        $simbrief = $this->simBriefSvc->downloadOfp($user->id, $ofp_id, $flight_id, $aircraft_id, $fares, $sb_userid, $sb_static_id);
-        if ($simbrief === null) {
+        $simbrief = $this->simBriefSvc->downloadOfp($user, $sb_static_id, $ofp_id, $flight_id, $aircraft_id, $fares);
+        if (!$simbrief instanceof SimBrief) {
             $error = new AssetNotFound(new Exception('Simbrief OFP not found'));
 
             return $error->getResponse();

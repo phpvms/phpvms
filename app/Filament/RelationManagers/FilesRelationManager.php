@@ -99,6 +99,7 @@ class FilesRelationManager extends RelationManager
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->before(function (Collection $records) {
+                        /** @var Collection<int, File> $records */
                         $records->each(function (File $record) {
                             if ($record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
                                 Storage::disk($record->disk)->delete($record->path);
