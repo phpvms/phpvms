@@ -28,27 +28,8 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapWebRoutes();
         $this->mapAdminRoutes();
         $this->mapApiRoutes();
-        $this->mapImporterRoutes();
         $this->mapInstallerRoutes();
         $this->mapUpdaterRoutes();
-    }
-
-    private function mapImporterRoutes()
-    {
-        Route::group([
-            'as'         => 'importer.',
-            'prefix'     => 'importer',
-            'middleware' => ['web'],
-            'namespace'  => 'App\Http\Controllers\System',
-        ], function () {
-            Route::get('/', 'ImporterController@index')->name('index');
-            Route::post('/config', 'ImporterController@config')->name('config');
-            Route::post('/dbtest', 'ImporterController@dbtest')->name('dbtest');
-
-            // Run the actual importer process. Additional middleware
-            Route::post('/run', 'ImporterController@run')->middleware('api')->name('run');
-            Route::post('/complete', 'ImporterController@complete')->name('complete');
-        });
     }
 
     private function mapInstallerRoutes()

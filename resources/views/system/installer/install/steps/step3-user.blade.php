@@ -10,12 +10,6 @@
                     <table class="table" width="25%">
 
                         <tr>
-                            <td colspan="2" style="text-align: right">
-                                <a href="{{ route('importer.index') }}">Importing from a legacy install?</a>
-                            </td>
-                        </tr>
-
-                        <tr>
                             <td colspan="2">
                                 <h4>Airline Information</h4>
                             </td>

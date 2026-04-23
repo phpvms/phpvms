@@ -1,0 +1,11 @@
+[tools]
+php = '8.4'
+
+[settings]
+# keep downloaded archive/source files for debugging
+always_keep_download = false        # deleted after install; not a cache
+always_keep_install = false         # deleted on failure by default
+
+trusted_config_paths = [
+    '.',
+]
