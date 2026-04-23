@@ -114,6 +114,10 @@ class InstallerController extends Controller
      */
     public function step1(): View
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         $php_version = $this->reqSvc->checkPHPVersion();
         $extensions = $this->reqSvc->checkExtensions();
         $directories = $this->reqSvc->checkPermissions();
@@ -141,6 +145,10 @@ class InstallerController extends Controller
      */
     public function step2(): View
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         $db_types = ['mysql' => 'mysql', 'sqlite' => 'sqlite'];
 
         return view('system.installer.install.steps.step2-db', [
@@ -153,6 +161,10 @@ class InstallerController extends Controller
      */
     public function envsetup(Request $request): RedirectResponse
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         $log_str = $request->post();
         $log_str['db_pass'] = '';
 
@@ -210,6 +222,10 @@ class InstallerController extends Controller
      */
     public function dbsetup(): RedirectResponse|View
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         $console_out = '';
 
         try {
@@ -237,6 +253,10 @@ class InstallerController extends Controller
      */
     public function step3(): View
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         return view('system.installer.install.steps.step3-user', [
             'countries' => Countries::getSelectList(),
         ]);
@@ -251,6 +271,10 @@ class InstallerController extends Controller
      */
     public function usersetup(Request $request): RedirectResponse|View
     {
+        if (Schema::hasTable('users') && User::count() > 0) {
+            return view('system.installer.errors.already-installed');
+        }
+
         $validator = Validator::make($request->all(), [
             'airline_name'    => 'required',
             'airline_icao'    => 'required|size:3|unique:airlines,icao',
