@@ -4,8 +4,8 @@ use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\SettingRepository;
 use App\Services\DatabaseService;
+use App\Services\SettingService;
 use App\Services\UserService;
 
 /**
@@ -22,7 +22,7 @@ function loadYamlIntoDb(string $file): void
  */
 function updateSetting(string $key, $value): void
 {
-    app(SettingRepository::class)->store($key, $value);
+    app(SettingService::class)->store($key, $value);
 }
 
 /**
