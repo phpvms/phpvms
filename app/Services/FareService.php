@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -232,9 +234,9 @@ class FareService extends Service
 
         if (filled($pivot->capacity)) {
             if (strpos($pivot->capacity, '%', -1) !== false) {
-                $fare->capacity = (int) floor(Math::getPercent($fare->capacity, $pivot->capacity));
+                $fare->capacity = (int) floor((float) Math::getPercent($fare->capacity, $pivot->capacity));
             } else {
-                $fare->capacity = (int) floor($pivot->capacity);
+                $fare->capacity = (int) floor((float) $pivot->capacity);
             }
         }
 

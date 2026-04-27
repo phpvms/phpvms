@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
@@ -121,7 +123,7 @@ class RecurringFinanceService extends Service
                     'ref_model_id'   => $expense->id,
                 ];
 
-                $ref = explode('\\', $expense->ref_model);
+                $ref = explode('\\', (string) $expense->ref_model);
                 $type = end($ref);
 
                 $found = JournalTransaction::where($w)

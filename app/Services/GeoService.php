@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -89,7 +91,7 @@ class GeoService extends Service
             try {
                 $points = Navdata::where('id', $route_point)->get();
             } catch (Exception $e) {
-                Log::error($e);
+                Log::error($e->getMessage());
 
                 continue;
             }
