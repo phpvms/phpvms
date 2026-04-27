@@ -26,6 +26,7 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 
@@ -97,12 +98,18 @@ class Settings extends Page
 
             $data = Arr::dot($data);
 
-            $settingService = app(SettingService::class);
-            foreach ($data as $key => $value) {
-                $settingService->store($key, $value);
-            }
+            // Wrap the settings write + journal-currency migration in a single
+            // transaction so a partial failure rolls back BOTH halves rather
+            // than leaving the DB with half-saved settings or a half-migrated
+            // journal.
+            DB::transaction(function () use ($data) {
+                $settingService = app(SettingService::class);
+                foreach ($data as $key => $value) {
+                    $settingService->store($key, $value);
+                }
 
-            app(FinanceService::class)->changeJournalCurrencies();
+                app(FinanceService::class)->changeJournalCurrencies();
+            });
 
             Notification::make()
                 ->success()
