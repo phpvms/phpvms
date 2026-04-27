@@ -48,9 +48,8 @@ test('setting() returns true bool for value 1', function () {
 
 test('setting() returns false bool for value 0', function () {
     // SettingObserver::creating normalizes the id (dots → underscores), so
-    // direct queries must use the formatted key. Phase 5 Task 2 adds the
-    // Setting::byKey() scope; until then we use formatKey() inline.
-    Setting::where('id', Setting::formatKey('general.use_x'))->update(['value' => '0']);
+    // direct queries must use the formatted key (or the Setting::byKey scope).
+    Setting::byKey('general.use_x')->update(['value' => '0']);
     expect(setting('general.use_x'))->toBeFalse();
 });
 
