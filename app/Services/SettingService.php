@@ -42,11 +42,11 @@ class SettingService extends Service
         }
 
         return match ($setting->type) {
-            'bool', 'boolean' => in_array($setting->value, ['true', '1', 1], true),
-            'date' => Carbon::parse($setting->value),
+            'bool', 'boolean'          => in_array($setting->value, ['true', '1', 1], true),
+            'date'                     => Carbon::parse($setting->value),
             'int', 'integer', 'number' => (int) $setting->value,
-            'float' => (float) $setting->value,
-            default => $setting->value,
+            'float'                    => (float) $setting->value,
+            default                    => $setting->value,
         };
     }
 
