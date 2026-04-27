@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Casts\CommaDelimitedCast;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -66,18 +67,6 @@ class Expense extends Model
         'active',
     ];
 
-    public $casts = [
-        'flight_type' => CommaDelimitedCast::class,
-    ];
-
-    public static array $rules = [
-        'active'         => 'bool',
-        'airline_id'     => 'integer',
-        'amount'         => 'float',
-        'multiplier'     => 'bool',
-        'charge_to_user' => 'bool',
-    ];
-
     /**
      * Relationships
      */
@@ -89,5 +78,62 @@ class Expense extends Model
     public function ref_model(): MorphTo
     {
         return $this->morphTo('ref_model', 'ref_model_type', 'ref_model_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'flight_type' => CommaDelimitedCast::class,
+        ];
+    }
+
+    /**
+     * Filter to active expenses (active = true).
+     */
+    #[Scope]
+    protected function active(Builder $q): Builder
+    {
+        return $q->where('active', true);
+    }
+
+    /**
+     * Filter by expense type (FLIGHT / DAILY / MONTHLY).
+     */
+    #[Scope]
+    protected function ofType(Builder $q, string $type): Builder
+    {
+        return $q->where('type', $type);
+    }
+
+    /**
+     * Filter to expenses belonging to a specific airline.
+     */
+    #[Scope]
+    protected function forAirline(Builder $q, int $airlineId): Builder
+    {
+        return $q->where('airline_id', $airlineId);
+    }
+
+    /**
+     * Filter to "global" expenses with no airline (airline_id IS NULL).
+     */
+    #[Scope]
+    protected function forGlobalAirline(Builder $q): Builder
+    {
+        return $q->whereNull('airline_id');
+    }
+
+    /**
+     * Filter by ref_model_type, optionally narrowing by ref_model_id.
+     */
+    #[Scope]
+    protected function forRefModel(Builder $q, string $type, mixed $id = null): Builder
+    {
+        $q->where('ref_model_type', $type);
+        if ($id !== null) {
+            $q->where('ref_model_id', $id);
+        }
+
+        return $q;
     }
 }

@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Models\Observers\SettingObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -46,6 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[ObservedBy(SettingObserver::class)]
 class Setting extends Model
 {
     use LogsActivity;
@@ -64,12 +69,6 @@ class Setting extends Model
         'type',
         'options',
         'description',
-    ];
-
-    public static array $rules = [
-        'name'  => 'required',
-        'key'   => 'required',
-        'group' => 'required',
     ];
 
     public static function formatKey($key): string
@@ -95,6 +94,16 @@ class Setting extends Model
         return Attribute::make(
             set: fn ($key) => strtolower($key)
         );
+    }
+
+    /**
+     * Filter by setting key, applying the same `formatKey` normalization
+     * that the id() accessor applies. Equivalent to find($formattedKey).
+     */
+    #[Scope]
+    protected function byKey(Builder $q, string $key): Builder
+    {
+        return $q->where('id', self::formatKey($key));
     }
 
     public function getActivitylogOptions(): LogOptions
