@@ -123,8 +123,7 @@ class RecurringFinanceService extends Service
                     'ref_model_id'   => $expense->id,
                 ];
 
-                $ref = explode('\\', (string) $expense->ref_model);
-                $type = end($ref);
+                $type = class_basename($expense->ref_model_type);
 
                 $found = JournalTransaction::where($w)
                     ->whereDate('post_date', '=', Carbon::now('UTC')->toDateString())
