@@ -1,8 +1,8 @@
 <?php
 
 use App\Exceptions\SettingNotFound;
-use App\Repositories\SettingRepository;
 use App\Services\KvpService;
+use App\Services\SettingService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Facades\Auth;
@@ -159,18 +159,18 @@ if (!function_exists('setting')) {
      */
     function setting($key, $default = null)
     {
-        /** @var SettingRepository $settingRepo */
-        $settingRepo = app(SettingRepository::class);
+        /** @var SettingService $settingService */
+        $settingService = app(SettingService::class);
 
         try {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.SETTINGS');
 
-                $value = Cache::remember($cache['key'].$key, $cache['time'], function () use ($key, $settingRepo) {
-                    return $settingRepo->retrieve($key);
+                $value = Cache::remember($cache['key'].$key, $cache['time'], function () use ($key, $settingService) {
+                    return $settingService->retrieve($key);
                 });
             } else {
-                $value = $settingRepo->retrieve($key);
+                $value = $settingService->retrieve($key);
             }
         } catch (SettingNotFound $e) {
             return $default;
@@ -188,9 +188,9 @@ if (!function_exists('setting')) {
 if (!function_exists('setting_save')) {
     function setting_save($key, $value)
     {
-        /** @var SettingRepository $settingRepo */
-        $settingRepo = app(SettingRepository::class);
-        $settingRepo->save($key, $value);
+        /** @var SettingService $settingService */
+        $settingService = app(SettingService::class);
+        $settingService->save($key, $value);
 
         return $value;
     }
