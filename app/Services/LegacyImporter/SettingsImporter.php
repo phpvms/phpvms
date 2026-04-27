@@ -20,6 +20,7 @@ class SettingsImporter extends BaseImporter
         foreach ($rows as $row) {
             if ($row->name === 'ADMIN_EMAIL') {
                 $settingService->store('general.admin_email', $row->value);
+                $count++;
             }
         }
 
