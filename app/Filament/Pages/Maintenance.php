@@ -20,7 +20,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
@@ -137,10 +136,6 @@ class Maintenance extends Page
                 setting_save('cron.random_id', $id);
                 $this->cron['random_id'] = url(route('api.maintenance.cron', $id));
 
-                // Remove the webcron id from cache
-                $cache = config('cache.keys.SETTINGS');
-                Cache::forget($cache['key'].'cron.random_id');
-
                 Notification::make()
                     ->title(__('filament.maintenance_cron_web_updated'))
                     ->success()
@@ -157,10 +152,6 @@ class Maintenance extends Page
                 setting_save('cron.random_id', '');
 
                 $this->cron['random_id'] = __('common.disabled');
-
-                // Remove the webcron id from cache
-                $cache = config('cache.keys.SETTINGS');
-                Cache::forget($cache['key'].'cron.random_id');
 
                 Notification::make()
                     ->title(__('filament.maintenance_cron_web_updated'))
