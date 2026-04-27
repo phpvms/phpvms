@@ -14,6 +14,7 @@ use App\Repositories\JournalRepository;
 use App\Support\Dates;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Prettus\Validator\Exceptions\ValidatorException;
 
 class FinanceService extends Service
@@ -49,6 +50,65 @@ class FinanceService extends Service
         $expense->save();
 
         return $expense;
+    }
+
+    /**
+     * Get all active expenses for a given expense type. The result combines:
+     *   - "Global" expenses (airline_id IS NULL)
+     *   - Expenses for the given $airline_id (when one is supplied)
+     *
+     * Optionally filtered by ref_model_type (class string OR object — its class
+     * is used) and ref_model_id.
+     *
+     * Replaces the deleted ExpenseRepository::getAllForType().
+     *
+     * Note: $ref_model_id narrows only the global lane; the airline-specific lane
+     * filters on $ref_model type alone (preserves legacy behavior).
+     *
+     * @param  string                   $type         An ExpenseType constant (FLIGHT/DAILY/MONTHLY).
+     * @param  int|null                 $airline_id   When set, also include this airline's expenses.
+     * @param  object|string|null       $ref_model    Either a model instance or a class string.
+     * @param  int|string|null          $ref_model_id Optional id to narrow the ref_model match (global lane only).
+     * @return Collection<int, Expense>
+     */
+    public function getExpensesForType(
+        string $type,
+        ?int $airline_id = null,
+        object|string|null $ref_model = null,
+        int|string|null $ref_model_id = null,
+    ): Collection {
+        $ref_model_type = null;
+        if ($ref_model !== null) {
+            $ref_model_type = is_object($ref_model) ? get_class($ref_model) : $ref_model;
+        }
+
+        // Global lane: airline_id IS NULL
+        $globalQuery = Expense::with('ref_model')
+            ->active()
+            ->ofType($type)
+            ->forGlobalAirline();
+
+        if ($ref_model_type !== null) {
+            $globalQuery->forRefModel($ref_model_type, $ref_model_id);
+        }
+
+        $expenses = $globalQuery->get();
+
+        // Airline-specific lane: airline_id = $airline_id
+        if ($airline_id !== null) {
+            $airlineQuery = Expense::with('ref_model')
+                ->active()
+                ->ofType($type)
+                ->forAirline($airline_id);
+
+            if ($ref_model_type !== null) {
+                $airlineQuery->forRefModel($ref_model_type);
+            }
+
+            $expenses = $expenses->concat($airlineQuery->get());
+        }
+
+        return $expenses;
     }
 
     /**
