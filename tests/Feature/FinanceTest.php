@@ -15,7 +15,6 @@ use App\Models\PirepFare;
 use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\ExpenseRepository;
 use App\Repositories\JournalRepository;
 use App\Services\BidService;
 use App\Services\FareService;
@@ -741,7 +740,7 @@ test('pirep fares', function () {
 });
 
 test('pirep expenses', function () {
-    $expenseRepo = app(ExpenseRepository::class);
+    $financeSvc = app(FinanceService::class);
 
     $airline = Airline::factory()->create();
 
@@ -759,7 +758,7 @@ test('pirep expenses', function () {
         'airline_id' => null,
     ]);
 
-    $expenses = $expenseRepo->getAllForType(
+    $expenses = $financeSvc->getExpensesForType(
         ExpenseType::FLIGHT,
         $airline->id,
         Expense::class
@@ -786,7 +785,7 @@ test('pirep expenses', function () {
         'ref_model_id'   => $subfleet->id,
     ]);
 
-    $expenses = $expenseRepo->getAllForType(
+    $expenses = $financeSvc->getExpensesForType(
         ExpenseType::FLIGHT,
         $airline->id,
         $subfleet
@@ -800,7 +799,7 @@ test('pirep expenses', function () {
 });
 
 test('airport expenses', function () {
-    $expenseRepo = app(ExpenseRepository::class);
+    $financeSvc = app(FinanceService::class);
 
     $apt1 = Airport::factory()->create();
     $apt2 = Airport::factory()->create();
@@ -824,7 +823,7 @@ test('airport expenses', function () {
         'ref_model_id'   => $apt3->id,
     ]);
 
-    $expenses = $expenseRepo->getAllForType(
+    $expenses = $financeSvc->getExpensesForType(
         ExpenseType::FLIGHT,
         null,
         Airport::class
