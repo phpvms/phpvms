@@ -29,6 +29,7 @@ use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
+use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\PirepComment;
@@ -37,7 +38,6 @@ use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
-use App\Repositories\FlightRepository;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Exception;
@@ -54,7 +54,6 @@ class PirepService extends Service
     public function __construct(
         private readonly AirportService $airportSvc,
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly GeoService $geoSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
@@ -722,7 +721,7 @@ class PirepService extends Service
 
             if (get_truth_state($free_flights_disabled) == true) {
                 // Lookup for flights from diversion airport to original destination airport
-                $reposition_flights_count = $this->flightRepo->where([
+                $reposition_flights_count = Flight::where([
                     'dpt_airport_id' => $diversion_airport->id,
                     'arr_airport_id' => $pirep->arr_airport_id,
                     'airline_id'     => $pirep->airline_id,
@@ -732,7 +731,7 @@ class PirepService extends Service
 
                 // Create a reposition flight if there is no flight
                 if ($reposition_flights_count == 0) {
-                    $reposition_flight = $this->flightRepo->create([
+                    $reposition_flight = Flight::create([
                         'airline_id'     => $flight->airline_id,
                         'flight_number'  => $flight->flight_number,
                         'callsign'       => $flight->callsign,

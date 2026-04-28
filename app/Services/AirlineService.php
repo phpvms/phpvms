@@ -6,29 +6,18 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\Airline;
+use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\Subfleet;
-use App\Repositories\AirlineRepository;
-use App\Repositories\FlightRepository;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class AirlineService extends Service
 {
-    public function __construct(
-        private readonly AirlineRepository $airlineRepo,
-        private readonly FlightRepository $flightRepo,
-    ) {}
-
     /**
      * Create a new airline, and initialize the journal
-     *
-     *
-     * @throws ValidatorException
      */
     public function createAirline(array $attr): Airline
     {
-        /** @var Airline $airline */
-        $airline = $this->airlineRepo->create($attr);
+        $airline = Airline::create($attr);
         $airline->refresh();
 
         return $airline;
@@ -39,13 +28,11 @@ class AirlineService extends Service
      */
     public function canDeleteAirline(Airline $airline): bool
     {
-        $w = ['airline_id' => $airline->id];
-
-        if (Pirep::where('airline_id', $airline->id)->count() > 0) {
+        if (Pirep::where('airline_id', $airline->id)->exists()) {
             return false;
         }
 
-        if ($this->flightRepo->count($w) > 0) {
+        if (Flight::where('airline_id', $airline->id)->exists()) {
             return false;
         }
 

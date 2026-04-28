@@ -25,6 +25,9 @@ class FlightSearchQuery
      * @param SearchFlightsRequest $request    Validated query string.
      * @param bool                 $onlyActive When true, restricts to active=true AND visible=true.
      */
+    /**
+     * @return Builder<Flight>
+     */
     public function build(SearchFlightsRequest $request, bool $onlyActive = true): Builder
     {
         $query = Flight::query();
@@ -42,6 +45,9 @@ class FlightSearchQuery
         return $query;
     }
 
+    /**
+     * @param Builder<Flight> $query
+     */
     private function applyExactFilters(Builder $query, SearchFlightsRequest $request): void
     {
         $query
@@ -57,6 +63,9 @@ class FlightSearchQuery
         }
     }
 
+    /**
+     * @param Builder<Flight> $query
+     */
     private function applyAirportFilters(Builder $query, SearchFlightsRequest $request): void
     {
         // dep_icao is an alias for dpt_airport_id; both uppercased.
@@ -72,6 +81,9 @@ class FlightSearchQuery
         }
     }
 
+    /**
+     * @param Builder<Flight> $query
+     */
     private function applyRangeFilters(Builder $query, SearchFlightsRequest $request): void
     {
         $query
@@ -81,6 +93,9 @@ class FlightSearchQuery
             ->when($request->filled('tlt'), fn (Builder $q) => $q->flightTimeAtMost((int) $request->input('tlt')));
     }
 
+    /**
+     * @param Builder<Flight> $query
+     */
     private function applyRelationFilters(Builder $query, SearchFlightsRequest $request): void
     {
         $query
@@ -89,6 +104,9 @@ class FlightSearchQuery
             ->when($request->filled('icao_type'), fn (Builder $q) => $q->withIcaoType((string) $request->input('icao_type')));
     }
 
+    /**
+     * @param Builder<Flight> $query
+     */
     private function applyOrdering(Builder $query, SearchFlightsRequest $request): void
     {
         $orderBy = $request->input('orderBy');

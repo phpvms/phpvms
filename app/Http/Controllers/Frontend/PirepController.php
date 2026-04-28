@@ -8,18 +8,18 @@ use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Requests\UpdatePirepRequest;
 use App\Models\Aircraft;
+use App\Models\Airline;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Fare;
+use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Queries\PirepSearchQuery;
-use App\Repositories\AirlineRepository;
-use App\Repositories\FlightRepository;
 use App\Services\FareService;
 use App\Services\GeoService;
 use App\Services\PirepService;
@@ -41,9 +41,7 @@ use Prettus\Validator\Exceptions\ValidatorException;
 class PirepController extends Controller
 {
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly GeoService $geoSvc,
         private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
@@ -253,7 +251,7 @@ class PirepController extends Controller
         // See if request has a ?flight_id, so we can pre-populate the fields from the flight
         // Makes filing easier, but we can also more easily find a bid and close it
         if ($request->has('flight_id')) {
-            $flight = $this->flightRepo->find($request->input('flight_id'));
+            $flight = Flight::find($request->input('flight_id'));
             $pirep = Pirep::fromFlight($flight);
         }
 
@@ -305,7 +303,7 @@ class PirepController extends Controller
             'aircraft'      => $aircraft,
             'pirep'         => $pirep,
             'read_only'     => false,
-            'airline_list'  => $this->airlineRepo->selectBoxList(true),
+            'airline_list'  => Airline::selectList(addBlank: true),
             'aircraft_list' => $aircraft_list,
             'airport_list'  => $airports,
             'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep_source, PirepFieldSource::BOTH])->get(),
@@ -512,7 +510,7 @@ class PirepController extends Controller
             'pirep'         => $pirep,
             'aircraft'      => $pirep->aircraft,
             'aircraft_list' => $this->aircraftList(true),
-            'airline_list'  => $this->airlineRepo->selectBoxList(),
+            'airline_list'  => Airline::selectList(),
             'airport_list'  => $airports,
             'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep->source, PirepFieldSource::BOTH])->get(),
             'simbrief_id'   => $simbrief_id,

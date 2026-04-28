@@ -22,7 +22,6 @@ use App\Models\Typerating;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
-use App\Repositories\AirlineRepository;
 use App\Support\Units\Time;
 use App\Support\Utils;
 use Carbon\Carbon;
@@ -38,7 +37,6 @@ use Illuminate\Support\Facades\Log;
 class UserService extends Service
 {
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
         private readonly FareService $fareSvc,
     ) {}
 
@@ -273,7 +271,7 @@ class UserService extends Service
             throw new PilotIdNotFound('');
         }
 
-        $airlines = $this->airlineRepo->all(['id', 'icao', 'iata']);
+        $airlines = Airline::all(['id', 'icao', 'iata']);
 
         $ident_str = null;
         $pilot_id = strtoupper($pilot_id);

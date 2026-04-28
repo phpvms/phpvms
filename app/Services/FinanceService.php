@@ -11,7 +11,6 @@ use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Models\User;
-use App\Repositories\AirlineRepository;
 use App\Repositories\JournalRepository;
 use App\Support\Dates;
 use App\Support\Money;
@@ -22,7 +21,6 @@ use Prettus\Validator\Exceptions\ValidatorException;
 class FinanceService extends Service
 {
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
         private readonly JournalRepository $journalRepo
     ) {}
 
@@ -184,7 +182,7 @@ class FinanceService extends Service
         $between = Dates::getMonthBoundary($month);
 
         $transaction_groups = [];
-        $airlines = $this->airlineRepo->orderBy('icao')->all();
+        $airlines = Airline::orderBy('icao')->get();
 
         // group by the airline
         foreach ($airlines as $airline) {

@@ -53,6 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AirlineFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline active()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline onlyTrashed()
@@ -204,5 +205,26 @@ class Airline extends Model
     protected function active(Builder $query): Builder
     {
         return $query->where('active', true);
+    }
+
+    /**
+     * Return a list of airlines as `[id => name]` for use in form select boxes.
+     *
+     * Mirrors the previous AirlineRepository::selectBoxList contract.
+     */
+    public static function selectList(bool $addBlank = false, bool $onlyActive = true, string $orderBy = 'id'): array
+    {
+        $query = static::orderBy($orderBy);
+        if ($onlyActive) {
+            $query->where('active', true);
+        }
+
+        $list = $query->pluck('name', 'id')->toArray();
+
+        if ($addBlank) {
+            return ['' => ''] + $list;
+        }
+
+        return $list;
     }
 }

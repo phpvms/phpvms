@@ -16,7 +16,6 @@ use App\Models\SimBrief;
 use App\Models\SimBriefLayout;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\FlightRepository;
 use App\Services\FareService;
 use App\Services\ModuleService;
 use App\Services\SimBriefService;
@@ -32,7 +31,6 @@ class SimBriefController
 {
     public function __construct(
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
@@ -59,7 +57,7 @@ class SimBriefController
         $aircraft_id = $request->input('aircraft_id');
 
         /** @var ?Flight $flight */
-        $flight = $this->flightRepo->with(['airline', 'arr_airport', 'dpt_airport', 'fares', 'subfleets'])->find($flight_id);
+        $flight = Flight::with(['airline', 'arr_airport', 'dpt_airport', 'fares', 'subfleets'])->find($flight_id);
 
         if (!$flight) {
             flash()->error('Unknown flight');

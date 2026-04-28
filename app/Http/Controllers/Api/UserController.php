@@ -15,9 +15,9 @@ use App\Http\Resources\User as UserResource;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
+use App\Models\Flight;
 use App\Models\User;
 use App\Queries\PirepSearchQuery;
-use App\Repositories\FlightRepository;
 use App\Services\BidService;
 use App\Services\UserService;
 use Exception;
@@ -32,7 +32,6 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly BidService $bidSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly UserService $userSvc
     ) {}
 
@@ -93,7 +92,7 @@ class UserController extends Controller
                 $aircraft_id = $request->input('aircraft_id');
                 $aircraft = Aircraft::find($aircraft_id);
             }
-            $flight = $this->flightRepo->find($flight_id);
+            $flight = Flight::find($flight_id);
             $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
 
             return new BidResource($bid);
@@ -107,7 +106,7 @@ class UserController extends Controller
                 $flight_id = $request->input('flight_id');
             }
 
-            $flight = $this->flightRepo->find($flight_id);
+            $flight = Flight::find($flight_id);
             $this->bidSvc->removeBid($flight, $user);
         }
 

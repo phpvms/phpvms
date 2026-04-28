@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
+use App\Models\Airline;
 use App\Models\Enums\UserState;
 use App\Models\Invite;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
-use App\Repositories\AirlineRepository;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\HttpClient;
@@ -39,7 +39,6 @@ class RegisterController extends Controller
      * RegisterController constructor.
      */
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
         private readonly HttpClient $httpClient,
         private readonly UserService $userService,
     ) {
@@ -73,7 +72,7 @@ class RegisterController extends Controller
             }
         }
 
-        $airlines = $this->airlineRepo->selectBoxList();
+        $airlines = Airline::selectList();
         $userFields = UserField::where(['show_on_registration' => true, 'active' => true, 'internal' => false])->get();
 
         return view('auth.register', [

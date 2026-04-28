@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
+use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
+use App\Models\Airline;
 use App\Models\Bid;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Models\Typerating;
 use App\Models\User;
-use App\Repositories\AirlineRepository;
-use App\Repositories\Criteria\WhereCriteria;
-use App\Repositories\FlightRepository;
+use App\Queries\FlightSearchQuery;
 use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
@@ -22,38 +22,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Criteria\RequestCriteria;
-use Prettus\Repository\Exceptions\RepositoryException;
 
 class FlightController extends Controller
 {
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
-        private readonly FlightRepository $flightRepo,
+        private readonly FlightSearchQuery $flightSearchQuery,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
         private readonly ModuleService $moduleSvc,
         private readonly UserService $userSvc
     ) {}
 
-    /**
-     * @throws RepositoryException
-     */
-    public function index(Request $request): View
+    public function index(SearchFlightsRequest $request): View
     {
         return $this->search($request);
     }
 
     /**
-     * Make a search request using the Repository search
-     *
-     *
-     * @throws RepositoryException
+     * Build the flight search using FlightSearchQuery.
      */
-    public function search(Request $request): View
+    public function search(SearchFlightsRequest $request): View
     {
         $where = [
             'active'  => true,
@@ -71,19 +61,6 @@ class FlightController extends Controller
         // default restrictions on the flights shown. Handle search differently
         if (setting('pilots.only_show_flights_from_current')) {
             $where['dpt_airport_id'] = $user->curr_airport_id;
-        }
-
-        $this->flightRepo->resetCriteria();
-
-        try {
-            $this->flightRepo->searchCriteria($request);
-            $this->flightRepo->pushCriteria(new WhereCriteria($request, $where, [
-                'airline' => ['active' => true],
-            ]));
-
-            $this->flightRepo->pushCriteria(new RequestCriteria($request));
-        } catch (RepositoryException $e) {
-            Log::emergency($e);
         }
 
         // Filter flights according to user capabilities (by rank or by type rating etc)
@@ -130,22 +107,32 @@ class FlightController extends Controller
             $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
         }
 
-        $flights = $this->flightRepo->searchCriteria($request)
+        $query = $this->flightSearchQuery->build($request)
+            ->whereHas('airline', function ($q) {
+                $q->where('active', true);
+            });
+
+        // Apply controller-owned restrictions (previous WhereCriteria $where)
+        foreach ($where as $col => $val) {
+            $query->where($col, $val);
+        }
+
+        $flights = $query
             ->with([
                 'airline',
                 'alt_airport',
                 'arr_airport',
                 'dpt_airport',
                 'subfleets.airline',
-                'simbrief' => function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
+                'simbrief' => function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
                 },
             ])
-            ->when($filter_by_user, function ($query) use ($allowed_flights) {
-                return $query->whereIn('id', $allowed_flights);
+            ->when($filter_by_user, function ($q) use ($allowed_flights) {
+                return $q->whereIn('id', $allowed_flights);
             })
             ->sortable('flight_number')->orderBy('route_code')->orderBy('route_leg')
-            ->paginate();
+            ->paginate($request->integer('limit') ?: null);
 
         $saved_flights = [];
         $bids = Bid::where('user_id', Auth::id())->get();
@@ -161,7 +148,7 @@ class FlightController extends Controller
 
         return view('flights.index', [
             'user'          => $user,
-            'airlines'      => $this->airlineRepo->selectBoxList(true),
+            'airlines'      => Airline::selectList(addBlank: true),
             'airports'      => [],
             'flights'       => $flights,
             'saved'         => $saved_flights,
@@ -203,7 +190,7 @@ class FlightController extends Controller
 
         return view('flights.bids', [
             'user'          => $user,
-            'airlines'      => $this->airlineRepo->selectBoxList(true),
+            'airlines'      => Airline::selectList(addBlank: true),
             'airports'      => [],
             'flights'       => $flights,
             'saved'         => $saved_flights,
@@ -240,7 +227,7 @@ class FlightController extends Controller
             },
         ];
 
-        $flight = $this->flightRepo->with($with_flight)->find($id);
+        $flight = Flight::with($with_flight)->find($id);
         if (empty($flight)) {
             Flash::error('Flight not found!');
 

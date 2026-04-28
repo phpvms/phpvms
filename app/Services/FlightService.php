@@ -17,28 +17,22 @@ use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\FlightRepository;
 use App\Support\Units\Time;
 use Exception;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class FlightService extends Service
 {
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly UserService $userSvc
     ) {}
 
     /**
      * Create a new flight
      *
-     * @param  array            $fields
-     * @return RedirectResponse
-     *
-     * @throws ValidatorException
+     * @param  array  $fields
+     * @return Flight
      */
     public function createFlight($fields)
     {
@@ -54,9 +48,8 @@ class FlightService extends Service
         $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->create($fields);
 
-        return $flight;
+        return Flight::create($fields);
     }
 
     /**
@@ -65,13 +58,11 @@ class FlightService extends Service
      * @param  Flight       $flight
      * @param  array        $fields
      * @return Flight|mixed
-     *
-     * @throws ValidatorException
      */
     public function updateFlight($flight, $fields)
     {
         // apply the updates here temporarily, don't save
-        // the repo->update() call will actually do it
+        // the duplicate check uses the in-memory state
         $flight->fill($fields);
 
         if ($this->isFlightDuplicate($flight)) {
@@ -79,9 +70,9 @@ class FlightService extends Service
         }
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->update($fields, $flight->id);
+        $flight->update($fields);
 
-        return $flight;
+        return $flight->refresh();
     }
 
     /**
@@ -208,14 +199,12 @@ class FlightService extends Service
      */
     public function isFlightDuplicate(Flight $flight)
     {
-        $where = [
-            ['id', '<>', $flight->id],
-            'airline_id'    => $flight->airline_id,
-            'flight_number' => $flight->flight_number,
-            'owner_type'    => null,
-        ];
+        $found_flights = Flight::where('id', '<>', $flight->id)
+            ->where('airline_id', $flight->airline_id)
+            ->where('flight_number', $flight->flight_number)
+            ->whereNull('owner_type')
+            ->get();
 
-        $found_flights = $this->flightRepo->findWhere($where);
         if ($found_flights->count() === 0) {
             return false;
         }
@@ -292,8 +281,8 @@ class FlightService extends Service
 
     public function removeExpiredRepositionFlights(): void
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<Flight> $flights */
-        $flights = $this->flightRepo->where('route_code', PirepStatus::DIVERTED)->get();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Flight> $flights */
+        $flights = Flight::where('route_code', PirepStatus::DIVERTED)->get();
 
         foreach ($flights as $flight) {
             $diverted_pirep = Pirep::with('aircraft')

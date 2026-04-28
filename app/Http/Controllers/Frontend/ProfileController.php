@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
+use App\Models\Airline;
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
-use App\Repositories\AirlineRepository;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Timezonelist;
@@ -33,7 +33,6 @@ class ProfileController extends Controller
      * ProfileController constructor.
      */
     public function __construct(
-        private readonly AirlineRepository $airlineRepo,
         private readonly UserService $userSvc,
     ) {}
 
@@ -111,7 +110,7 @@ class ProfileController extends Controller
 
         $airports = $user->home_airport ? [$user->home_airport->id => $user->home_airport->description] : ['' => ''];
 
-        $airlines = $this->airlineRepo->selectBoxList();
+        $airlines = Airline::selectList();
         $userFields = $this->userSvc->getUserFields($user);
 
         return view('profile.edit', [

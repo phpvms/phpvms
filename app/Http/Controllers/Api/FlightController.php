@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Exceptions\AssetNotFound;
+use App\Http\Requests\SearchFlightsRequest;
 use App\Http\Resources\Flight as FlightResource;
 use App\Http\Resources\Navdata as NavdataResource;
 use App\Models\Aircraft;
@@ -12,8 +13,7 @@ use App\Models\Enums\AircraftStatus;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;
-use App\Repositories\Criteria\WhereCriteria;
-use App\Repositories\FlightRepository;
+use App\Queries\FlightSearchQuery;
 use App\Services\FareService;
 use App\Services\FlightService;
 use App\Services\UserService;
@@ -24,14 +24,12 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Prettus\Repository\Criteria\RequestCriteria;
-use Prettus\Repository\Exceptions\RepositoryException;
 
 class FlightController extends Controller
 {
     public function __construct(
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
+        private readonly FlightSearchQuery $flightSearchQuery,
         private readonly FlightService $flightSvc,
         private readonly UserService $userSvc
     ) {}
@@ -39,7 +37,7 @@ class FlightController extends Controller
     /**
      * Return all the flights, paginated
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(SearchFlightsRequest $request): AnonymousResourceCollection
     {
         return $this->search($request);
     }
@@ -50,7 +48,7 @@ class FlightController extends Controller
         $user = Auth::user();
 
         /** @var Flight $flight */
-        $flight = $this->flightRepo->with([
+        $flight = Flight::with([
             'airline',
             'fares',
             'subfleets' => ['aircraft.bid', 'fares'],
@@ -58,7 +56,7 @@ class FlightController extends Controller
             'simbrief' => function ($query) use ($user) {
                 return $query->with('aircraft')->where('user_id', $user->id);
             },
-        ])->find($id);
+        ])->findOrFail($id);
 
         $flight = $this->flightSvc->filterSubfleets($user, $flight);
         $flight = $this->fareSvc->getReconciledFaresForFlight($flight);
@@ -66,72 +64,55 @@ class FlightController extends Controller
         return new FlightResource($flight);
     }
 
-    /**
-     * @return mixed
-     */
-    public function search(Request $request)
+    public function search(SearchFlightsRequest $request): AnonymousResourceCollection
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $where = [
-            'active'  => true,
-            'visible' => true,
-        ];
+        $query = $this->flightSearchQuery->build($request)
+            ->whereHas('airline', function ($q) {
+                $q->where('active', true);
+            });
 
         // Allow the option to bypass some of these restrictions for the searches
         if (!$request->filled('ignore_restrictions') || $request->input('ignore_restrictions') === '0') {
             if (setting('pilots.restrict_to_company')) {
-                $where['airline_id'] = $user->airline_id;
+                $query->where('airline_id', $user->airline_id);
             }
 
             if (setting('pilots.only_flights_from_current')) {
-                $where['dpt_airport_id'] = $user->curr_airport_id;
+                $query->where('dpt_airport_id', $user->curr_airport_id);
             }
         }
 
-        try {
-            $this->flightRepo->resetCriteria();
-            $this->flightRepo->searchCriteria($request);
-            $this->flightRepo->pushCriteria(new WhereCriteria($request, $where, [
-                'airline' => ['active' => true],
-            ]));
+        $with = [
+            'airline',
+            'fares',
+            'field_values',
+            'simbrief' => function ($q) use ($user) {
+                return $q->with('aircraft')->where('user_id', $user->id);
+            },
+        ];
 
-            $this->flightRepo->pushCriteria(new RequestCriteria($request));
-
-            $with = [
-                'airline',
-                'fares',
-                'field_values',
-                'simbrief' => function ($query) use ($user) {
-                    return $query->with('aircraft')->where('user_id', $user->id);
-                },
-            ];
-
-            $relations = [
-                'subfleets',
-            ];
-
-            if ($request->has('with')) {
-                $relations = explode(',', $request->input('with', ''));
-            }
-
-            foreach ($relations as $relation) {
-                $with = array_merge($with, match ($relation) {
-                    'subfleets' => [
-                        'subfleets',
-                        'subfleets.aircraft',
-                        'subfleets.aircraft.bid',
-                        'subfleets.fares',
-                    ],
-                    default => [],
-                });
-            }
-
-            $flights = $this->flightRepo->with($with)->paginate();
-        } catch (RepositoryException $e) {
-            return response($e, 503);
+        $relations = ['subfleets'];
+        if ($request->has('with')) {
+            $relations = explode(',', $request->input('with', ''));
         }
+
+        foreach ($relations as $relation) {
+            $with = array_merge($with, match ($relation) {
+                'subfleets' => [
+                    'subfleets',
+                    'subfleets.aircraft',
+                    'subfleets.aircraft.bid',
+                    'subfleets.fares',
+                ],
+                default => [],
+            });
+        }
+
+        $perPage = $request->integer('limit') ?: null;
+        $flights = $query->with($with)->paginate($perPage);
 
         // TODO: Remove any flights here that a user doesn't have permissions to
         foreach ($flights as $flight) {
@@ -153,22 +134,12 @@ class FlightController extends Controller
      */
     public function briefing(string $id)
     {
-        /** @var User $user */
-        $user = Auth::user();
-        $w = [
-            'id' => $id,
-        ];
-
         /** @var ?SimBrief $simbrief */
-        $simbrief = SimBrief::where($w)->first();
+        $simbrief = SimBrief::where('id', $id)->first();
 
         if ($simbrief === null) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));
         }
-
-        /*if ($simbrief->user_id !== $user->id) {
-            throw new Unauthorized(new Exception('User cannot access another user\'s simbrief'));
-        }*/
 
         if (!$simbrief->ofp_json_path || !Storage::exists($simbrief->ofp_json_path)) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));
@@ -186,7 +157,7 @@ class FlightController extends Controller
      */
     public function route(string $id, Request $request): AnonymousResourceCollection
     {
-        $flight = $this->flightRepo->find($id);
+        $flight = Flight::findOrFail($id);
         $route = $this->flightSvc->getRoute($flight);
 
         return NavdataResource::collection($route);
@@ -197,7 +168,8 @@ class FlightController extends Controller
      */
     public function aircraft(string $id, Request $request)
     {
-        $flight = $this->flightRepo->with('subfleets')->find($id);
+        /** @var Flight $flight */
+        $flight = Flight::with('subfleets')->findOrFail($id);
 
         $user_subfleets = $this->userSvc->getAllowableSubfleets(Auth::user())->pluck('id')->toArray();
         $flight_subfleets = $flight->subfleets->pluck('id')->toArray();

@@ -7,8 +7,8 @@ use App\Models\Airport;
 use App\Models\Enums\ImportExportType;
 use App\Models\Expense;
 use App\Models\Fare;
+use App\Models\Flight;
 use App\Models\Subfleet;
-use App\Repositories\FlightRepository;
 use App\Services\ExportService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
@@ -60,7 +60,7 @@ class ExportAction extends Action
                     $path = $exportSvc->exportFares($data);
                     break;
                 case ImportExportType::FLIGHTS:
-                    $data = app(FlightRepository::class)->orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')->get();
+                    $data = Flight::orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')->get();
                     $path = $exportSvc->exportFlights($data);
                     break;
                 case ImportExportType::SUBFLEETS:
