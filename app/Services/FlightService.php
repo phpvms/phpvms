@@ -20,7 +20,6 @@ use App\Models\User;
 use App\Support\Units\Time;
 use Exception;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class FlightService extends Service
 {
@@ -112,11 +111,11 @@ class FlightService extends Service
     {
         $userSubfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->all();
 
-        $userFlights = DB::table('flight_subfleet')
-            ->select('flight_id')
-            ->whereIn('subfleet_id', $userSubfleets)
-            ->groupBy('flight_id')
-            ->pluck('flight_id')
+        $userFlights = Flight::query()
+            ->whereHas('subfleets', static function ($query) use ($userSubfleets): void {
+                $query->whereIn('subfleets.id', $userSubfleets);
+            })
+            ->pluck('id')
             ->map(static fn ($flightId): int => (int) $flightId)
             ->all();
 

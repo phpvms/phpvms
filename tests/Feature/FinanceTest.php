@@ -1208,7 +1208,7 @@ test('get all airline transactions between loads journals in one query', functio
 
     $journalQueries = collect(DB::getQueryLog())
         ->pluck('query')
-        ->filter(fn (string $query): bool => str_contains(strtolower($query), 'from "journals"'))
+        ->filter(fn (string $query): bool => preg_match('/\bfrom\s+[`"]?journals[`"]?\b/i', $query) === 1)
         ->values();
 
     expect($journalQueries)->toHaveCount(1);

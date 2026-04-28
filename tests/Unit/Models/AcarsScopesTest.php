@@ -6,12 +6,12 @@ use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 
 test('Acars::forPirep returns only matching pirep rows', function () {
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-1',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::FLIGHT_PATH,
     ]);
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-2',
         'pirep_id' => 'PIREP-B',
         'type'     => AcarsType::FLIGHT_PATH,
@@ -23,12 +23,12 @@ test('Acars::forPirep returns only matching pirep rows', function () {
 });
 
 test('Acars::ofType returns only matching ACARS entry types', function () {
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-3',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::LOG,
     ]);
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-4',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::ROUTE,
@@ -40,19 +40,19 @@ test('Acars::ofType returns only matching ACARS entry types', function () {
 });
 
 test('Acars::orderedBySimTime sorts rows in ascending sim time order', function () {
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-5',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::FLIGHT_PATH,
         'sim_time' => '10:05:00',
     ]);
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-6',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::FLIGHT_PATH,
         'sim_time' => '10:00:00',
     ]);
-    Acars::create([
+    Acars::factory()->create([
         'id'       => 'ACARS-7',
         'pirep_id' => 'PIREP-A',
         'type'     => AcarsType::FLIGHT_PATH,
