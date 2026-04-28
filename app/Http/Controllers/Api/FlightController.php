@@ -139,7 +139,7 @@ class FlightController extends Controller
     public function briefing(string $id)
     {
         /** @var ?SimBrief $simbrief */
-        $simbrief = SimBrief::where('id', $id)->first();
+        $simbrief = SimBrief::where('flight_id', $id)->first();
 
         if ($simbrief === null) {
             throw new AssetNotFound(new Exception('Flight briefing not found'));

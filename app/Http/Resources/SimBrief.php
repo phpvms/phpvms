@@ -17,7 +17,7 @@ class SimBrief extends Resource
         $data = [
             'id'          => $this->id,
             'aircraft_id' => $this->aircraft_id,
-            'url'         => url(route('api.flights.briefing', ['id' => $this->id])),
+            'url'         => url(route('api.flights.briefing', ['id' => $this->flight_id])),
         ];
 
         $fares = collect();

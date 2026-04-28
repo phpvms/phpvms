@@ -30,14 +30,10 @@ class FlightService extends Service
 
     /**
      * Create a new flight
-     *
-     * @param  array  $fields
-     * @return Flight
      */
-    public function createFlight($fields)
+    public function createFlight(array $fields): Flight
     {
-        $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
-        $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        $fields = $this->normalizeAirportIds($fields);
 
         $flightTmp = new Flight($fields);
         if ($this->isFlightDuplicate($flightTmp)) {
@@ -54,13 +50,14 @@ class FlightService extends Service
 
     /**
      * Update a flight with values from the given fields
-     *
-     * @param  Flight       $flight
-     * @param  array        $fields
-     * @return Flight|mixed
      */
-    public function updateFlight($flight, $fields)
+    public function updateFlight(Flight $flight, array $fields): Flight
     {
+        // Normalize airport IDs the same way createFlight does so the
+        // in-memory duplicate check sees normalized values and we don't
+        // persist mixed-case IDs.
+        $fields = $this->normalizeAirportIds($fields);
+
         // apply the updates here temporarily, don't save
         // the duplicate check uses the in-memory state
         $flight->fill($fields);
@@ -73,6 +70,25 @@ class FlightService extends Service
         $flight->update($fields);
 
         return $flight->refresh();
+    }
+
+    /**
+     * Uppercase departure/arrival airport IDs if present.
+     *
+     * @param  array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function normalizeAirportIds(array $fields): array
+    {
+        if (array_key_exists('dpt_airport_id', $fields) && is_string($fields['dpt_airport_id'])) {
+            $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
+        }
+
+        if (array_key_exists('arr_airport_id', $fields) && is_string($fields['arr_airport_id'])) {
+            $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        }
+
+        return $fields;
     }
 
     /**
@@ -220,35 +236,34 @@ class FlightService extends Service
     }
 
     /**
-     * Check if this flight has a duplicate already
+     * Check if this flight has a duplicate already.
      *
-     *
-     * @return bool
+     * Same airline + flight_number + route_code + route_leg + departure +
+     * arrival + days is treated as a duplicate. Resolved at the DB layer to
+     * avoid pulling matching rows into memory just to answer a boolean.
+     * route_code / route_leg / days are nullable, so null-vs-null matches
+     * are handled explicitly (SQL `=` returns null when either side is null).
      */
-    public function isFlightDuplicate(Flight $flight)
+    public function isFlightDuplicate(Flight $flight): bool
     {
-        $found_flights = Flight::where('id', '<>', $flight->id)
+        $query = Flight::query()
+            ->where('id', '<>', $flight->id)
             ->where('airline_id', $flight->airline_id)
             ->where('flight_number', $flight->flight_number)
             ->whereNull('owner_type')
-            ->get();
+            ->where('dpt_airport_id', $flight->dpt_airport_id)
+            ->where('arr_airport_id', $flight->arr_airport_id);
 
-        if ($found_flights->count() === 0) {
-            return false;
+        foreach (['route_code', 'route_leg', 'days'] as $column) {
+            $value = $flight->{$column};
+            if ($value === null) {
+                $query->whereNull($column);
+            } else {
+                $query->where($column, $value);
+            }
         }
 
-        // Find within all the flights with the same flight number
-        // Return any flights that have the same route code and leg
-        // If this list is > 0, then this has a duplicate
-        $found_flights = $found_flights->filter(function ($value, $key) use ($flight) {
-            return $flight->route_code === $value->route_code
-                && $flight->route_leg === $value->route_leg
-                && $flight->dpt_airport_id === $value->dpt_airport_id
-                && $flight->arr_airport_id === $value->arr_airport_id
-                && $flight->days === $value->days;
-        });
-
-        return $found_flights->count() !== 0;
+        return $query->exists();
     }
 
     /**

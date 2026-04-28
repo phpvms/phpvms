@@ -123,6 +123,33 @@ class SearchFlightsRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'search.max'         => 'The search field must not exceed 255 characters.',
+            'flight_number.max'  => 'The flight number must not exceed 32 characters.',
+            'callsign.max'       => 'The callsign must not exceed 32 characters.',
+            'flight_type.max'    => 'The flight type must not exceed 8 characters.',
+            'route_code.max'     => 'The route code must not exceed 8 characters.',
+            'dpt_airport_id.max' => 'The departure airport ID must not exceed 8 characters.',
+            'dep_icao.max'       => 'The departure ICAO must not exceed 8 characters.',
+            'arr_airport_id.max' => 'The arrival airport ID must not exceed 8 characters.',
+            'arr_icao.max'       => 'The arrival ICAO must not exceed 8 characters.',
+            'icao_type.max'      => 'The ICAO type must not exceed 8 characters.',
+            'dgt.min'            => 'The minimum distance must be 0 or greater.',
+            'dlt.min'            => 'The maximum distance must be 0 or greater.',
+            'tgt.min'            => 'The minimum flight time must be 0 or greater.',
+            'tlt.min'            => 'The maximum flight time must be 0 or greater.',
+            'orderBy.max'        => 'The orderBy field must not exceed 255 characters.',
+            'sortedBy.max'       => 'The sortedBy field must not exceed 255 characters.',
+            'page.min'           => 'The page must be at least 1.',
+            'limit.min'          => 'The limit must be at least 1.',
+        ];
+    }
+
     private function validateDelimitedValues(
         string $attribute,
         mixed $value,

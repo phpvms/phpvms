@@ -129,14 +129,11 @@ test('api calls', function () {
 
     $url = str_replace('http://', 'https://', $flight['simbrief']['url']);
 
-    /*$this->assertEquals(
-          'https://localhost/api/flights/'.$briefing->id.'/briefing',
-          $url
-      );*/
-    expect(str_ends_with($url, $briefing->id.'/briefing'))->toBeTrue();
+    // The briefing URL is keyed by the flight ID, not the SimBrief primary key
+    expect(str_ends_with($url, $briefing->flight_id.'/briefing'))->toBeTrue();
 
     // Retrieve the briefing via API, and then check the doctype
-    $response = $this->get('/api/flights/'.$briefing->id.'/briefing');
+    $response = $this->get('/api/flights/'.$briefing->flight_id.'/briefing');
     $response->assertOk();
 
     $json = $response->json();
