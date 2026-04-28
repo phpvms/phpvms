@@ -42,6 +42,7 @@ use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -720,38 +721,48 @@ class PirepService extends Service
             // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
             if (get_truth_state($free_flights_disabled) == true) {
-                // Lookup for flights from diversion airport to original destination airport
-                $reposition_flights_count = Flight::where([
+                $repositionAttributes = [
+                    'airline_id'     => $flight->airline_id,
+                    'flight_number'  => $flight->flight_number,
+                    'callsign'       => $flight->callsign,
+                    'route_code'     => PirepStatus::DIVERTED,
                     'dpt_airport_id' => $diversion_airport->id,
                     'arr_airport_id' => $pirep->arr_airport_id,
-                    'airline_id'     => $pirep->airline_id,
-                ])->whereHas('subfleets', function ($query) use ($aircraft) {
-                    $query->where('subfleet_id', $aircraft->subfleet_id);
-                })->count();
+                    'user_id'        => $user->id,
+                ];
 
-                // Create a reposition flight if there is no flight
-                if ($reposition_flights_count == 0) {
-                    $reposition_flight = Flight::create([
-                        'airline_id'     => $flight->airline_id,
-                        'flight_number'  => $flight->flight_number,
-                        'callsign'       => $flight->callsign,
-                        'route_code'     => PirepStatus::DIVERTED,
-                        'dpt_airport_id' => $diversion_airport->id,
-                        'arr_airport_id' => $pirep->arr_airport_id,
-                        'distance'       => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
-                        'flight_time'    => 1,
-                        'flight_type'    => $flight->flight_type,
-                        'notes'          => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
-                        'visible'        => true,
-                        'active'         => true,
-                        'user_id'        => $user->id,
-                    ]);
+                $lockKey = implode(':', [
+                    'diversion-flight',
+                    $flight->airline_id,
+                    $flight->flight_number,
+                    $diversion_airport->id,
+                    $pirep->arr_airport_id,
+                    $user->id,
+                ]);
 
-                    $reposition_flight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
+                /** @var Flight $repositionFlight */
+                $repositionFlight = Cache::lock($lockKey, 10)->block(5, function () use ($aircraft, $diversion_airport, $flight, $pirep, $repositionAttributes) {
+                    $repositionFlight = Flight::query()->firstOrCreate(
+                        $repositionAttributes,
+                        [
+                            'distance'    => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
+                            'flight_time' => 1,
+                            'flight_type' => $flight->flight_type,
+                            'notes'       => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
+                            'visible'     => true,
+                            'active'      => true,
+                        ]
+                    );
 
-                    Log::info('Diversion repositioning flight '.$reposition_flight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
+                    $repositionFlight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
+
+                    return $repositionFlight;
+                });
+
+                if ($repositionFlight->wasRecentlyCreated) {
+                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
                 } else {
-                    Log::info('Diversion repositioning flight NOT created, '.$reposition_flights_count.' flights found between '.$diversion_airport->id.' and '.$pirep->arr_airport_id);
+                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' reused');
                 }
             }
         }

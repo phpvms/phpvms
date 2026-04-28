@@ -182,7 +182,7 @@ class FinanceService extends Service
         $between = Dates::getMonthBoundary($month);
 
         $transaction_groups = [];
-        $airlines = Airline::orderBy('icao')->get();
+        $airlines = Airline::query()->with('journal')->orderBy('icao')->get();
 
         // group by the airline
         foreach ($airlines as $airline) {

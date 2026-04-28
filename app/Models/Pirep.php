@@ -455,26 +455,25 @@ class Pirep extends Model
      */
     public function acars(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where(
-            'type',
-            AcarsType::FLIGHT_PATH
-        )->orderBy('created_at', 'asc')->orderBy('sim_time', 'asc');
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->flightPath()
+            ->orderedByCreatedAt()
+            ->orderedBySimTime();
     }
 
     public function acars_logs(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where('type', AcarsType::LOG)->orderBy(
-            'created_at',
-            'desc'
-        )->orderBy('sim_time', 'asc');
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->ofType(AcarsType::LOG)
+            ->orderedByCreatedAt('desc')
+            ->orderedBySimTime();
     }
 
     public function acars_route(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where('type', AcarsType::ROUTE)->orderBy(
-            'order',
-            'asc'
-        );
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->ofType(AcarsType::ROUTE)
+            ->orderedByOrder();
     }
 
     public function aircraft(): BelongsTo
@@ -549,10 +548,10 @@ class Pirep extends Model
      */
     public function position(): HasOne
     {
-        return $this->hasOne(Acars::class, 'pirep_id')->where(
-            'type',
-            AcarsType::FLIGHT_PATH
-        )->latest();
+        return $this->hasOne(Acars::class, 'pirep_id')
+            ->flightPath()
+            ->latest('created_at')
+            ->latest('sim_time');
     }
 
     public function simbrief(): BelongsTo

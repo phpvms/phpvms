@@ -170,6 +170,22 @@ test('add bid api', function () {
     expect($body)->toHaveCount(0);
 });
 
+test('add bid api returns not found for missing flight', function () {
+    $user = User::factory()->create();
+    apiAs($user);
+
+    $this->put('/api/user/bids', ['flight_id' => 'INVALID'])
+        ->assertNotFound();
+});
+
+test('delete bid api returns not found for missing flight', function () {
+    $user = User::factory()->create();
+    apiAs($user);
+
+    $this->delete('/api/user/bids', ['flight_id' => 'INVALID'])
+        ->assertNotFound();
+});
+
 test('delete flight with bids', function () {
     $user = User::factory()->create();
     apiAs($user);

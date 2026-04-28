@@ -5,7 +5,10 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Models\Casts\DistanceCast;
 use App\Models\Casts\FuelCast;
+use App\Models\Enums\AcarsType;
 use App\Models\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -111,29 +114,28 @@ class Acars extends Model
 
     public $incrementing = false;
 
-    public $casts = [
-        'type'         => 'integer',
-        'order'        => 'integer',
-        'nav_type'     => 'integer',
-        'lat'          => 'float',
-        'lon'          => 'float',
-        'distance'     => DistanceCast::class,
-        'heading'      => 'integer',
-        'altitude_agl' => 'float',
-        'altitude_msl' => 'float',
-        'vs'           => 'float',
-        'gs'           => 'integer',
-        'ias'          => 'integer',
-        'transponder'  => 'integer',
-        'fuel'         => FuelCast::class,
-        'fuel_flow'    => 'float',
-    ];
-
-    public static array $rules = [
-        'pirep_id' => 'required',
-    ];
-
     protected $appends = ['altitude'];
+
+    protected function casts(): array
+    {
+        return [
+            'type'         => 'integer',
+            'order'        => 'integer',
+            'nav_type'     => 'integer',
+            'lat'          => 'float',
+            'lon'          => 'float',
+            'distance'     => DistanceCast::class,
+            'heading'      => 'integer',
+            'altitude_agl' => 'float',
+            'altitude_msl' => 'float',
+            'vs'           => 'float',
+            'gs'           => 'integer',
+            'ias'          => 'integer',
+            'transponder'  => 'integer',
+            'fuel'         => FuelCast::class,
+            'fuel_flow'    => 'float',
+        ];
+    }
 
     /**
      * This keeps things backwards compatible with previous versions
@@ -156,6 +158,42 @@ class Acars extends Model
                 return $ret;
             }
         );
+    }
+
+    #[Scope]
+    protected function flightPath(Builder $query): void
+    {
+        $query->where('type', AcarsType::FLIGHT_PATH);
+    }
+
+    #[Scope]
+    protected function forPirep(Builder $query, string $pirepId): void
+    {
+        $query->where('pirep_id', $pirepId);
+    }
+
+    #[Scope]
+    protected function ofType(Builder $query, int $type): void
+    {
+        $query->where('type', $type);
+    }
+
+    #[Scope]
+    protected function orderedByCreatedAt(Builder $query, string $direction = 'asc'): void
+    {
+        $query->orderBy('created_at', $direction === 'desc' ? 'desc' : 'asc');
+    }
+
+    #[Scope]
+    protected function orderedByOrder(Builder $query, string $direction = 'asc'): void
+    {
+        $query->orderBy('order', $direction === 'desc' ? 'desc' : 'asc');
+    }
+
+    #[Scope]
+    protected function orderedBySimTime(Builder $query, string $direction = 'asc'): void
+    {
+        $query->orderBy('sim_time', $direction === 'desc' ? 'desc' : 'asc');
     }
 
     /**

@@ -92,7 +92,7 @@ class UserController extends Controller
                 $aircraft_id = $request->input('aircraft_id');
                 $aircraft = Aircraft::find($aircraft_id);
             }
-            $flight = Flight::find($flight_id);
+            $flight = Flight::findOrFail($flight_id);
             $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
 
             return new BidResource($bid);
@@ -106,7 +106,7 @@ class UserController extends Controller
                 $flight_id = $request->input('flight_id');
             }
 
-            $flight = Flight::find($flight_id);
+            $flight = Flight::findOrFail($flight_id);
             $this->bidSvc->removeBid($flight, $user);
         }
 

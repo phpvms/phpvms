@@ -86,6 +86,13 @@ class Airline extends Model
     use SoftDeletes;
     use Sortable;
 
+    private const SELECT_LIST_ORDER_COLUMNS = [
+        'id',
+        'name',
+        'icao',
+        'iata',
+    ];
+
     public $table = 'airlines';
 
     /**
@@ -207,6 +214,12 @@ class Airline extends Model
         return $query->where('active', true);
     }
 
+    #[Scope]
+    protected function byIcao(Builder $query, string $icao): void
+    {
+        $query->where('icao', strtoupper(trim($icao)));
+    }
+
     /**
      * Return a list of airlines as `[id => name]` for use in form select boxes.
      *
@@ -214,7 +227,7 @@ class Airline extends Model
      */
     public static function selectList(bool $addBlank = false, bool $onlyActive = true, string $orderBy = 'id'): array
     {
-        $query = static::orderBy($orderBy);
+        $query = static::orderBy(self::sanitizeSelectListOrderBy($orderBy));
         if ($onlyActive) {
             $query->where('active', true);
         }
@@ -226,5 +239,10 @@ class Airline extends Model
         }
 
         return $list;
+    }
+
+    private static function sanitizeSelectListOrderBy(string $orderBy): string
+    {
+        return in_array($orderBy, self::SELECT_LIST_ORDER_COLUMNS, true) ? $orderBy : 'id';
     }
 }

@@ -76,6 +76,44 @@ test('filter by dep icao uppercases and filters', function () {
         ->and($first->dpt_airport_id)->toEqual('KLAX');
 });
 
+test('filter by dep icao falls back when primary param is blank', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create(['dpt_airport_id' => 'KLAX']);
+    Flight::factory()->create(['dpt_airport_id' => 'KJFK']);
+
+    $results = flightSearchRun([
+        'dpt_airport_id' => '',
+        'dep_icao'       => 'klax',
+    ]);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
+});
+
+test('filter by arr icao falls back when primary param is blank', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create(['arr_airport_id' => 'KJFK']);
+    Flight::factory()->create(['arr_airport_id' => 'KLAX']);
+
+    $results = flightSearchRun([
+        'arr_airport_id' => '',
+        'arr_icao'       => 'kjfk',
+    ]);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
+});
+
 test('filter by distance range dgt and dlt', function () {
     Flight::factory()->create(['distance' => 500]);
     /** @var Flight $middle */
@@ -167,6 +205,62 @@ test('filter by icao type joins through aircraft', function () {
     /** @var Flight $first */
     $first = $results->first();
     expect($first->id)->toEqual($attached->id);
+});
+
+test('filter by icao type normalizes case', function () {
+    /** @var Subfleet $subfleet */
+    $subfleet = Subfleet::factory()->create();
+    Aircraft::factory()->create([
+        'subfleet_id' => $subfleet->id,
+        'icao'        => 'B738',
+    ]);
+
+    /** @var Flight $attached */
+    $attached = Flight::factory()->create();
+    $attached->subfleets()->attach($subfleet->id);
+
+    $results = flightSearchRun(['icao_type' => 'b738']);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($attached->id);
+});
+
+test('plain search matches free text columns', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create([
+        'dpt_airport_id' => 'KLAX',
+        'callsign'       => 'SEARCHME',
+    ]);
+    Flight::factory()->create([
+        'dpt_airport_id' => 'KJFK',
+        'callsign'       => 'IGNOREME',
+    ]);
+
+    $results = flightSearchRun(['search' => 'LAX']);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
+});
+
+test('honors legacy multi-column orderBy syntax', function () {
+    Flight::factory()->create(['flight_number' => '100', 'route_code' => 'B']);
+    Flight::factory()->create(['flight_number' => '100', 'route_code' => 'A']);
+    Flight::factory()->create(['flight_number' => '200', 'route_code' => 'A']);
+
+    $results = flightSearchRun([
+        'orderBy'  => 'flight_number;route_code',
+        'sortedBy' => 'asc;desc',
+    ], only_active: false);
+
+    expect($results->pluck('route_code')->all())->toBe(['B', 'A', 'A'])
+        ->and($results->pluck('flight_number')->all())->toBe([100, 100, 200]);
 });
 
 test('only active true excludes inactive flights', function () {

@@ -42,6 +42,19 @@ class FlightSearchQuery
     ];
 
     /**
+     * @var list<string>
+     */
+    private const FREE_TEXT_COLUMNS = [
+        'flight_number',
+        'route_code',
+        'callsign',
+        'dpt_airport_id',
+        'arr_airport_id',
+        'route',
+        'notes',
+    ];
+
+    /**
      * @return Builder<Flight>
      */
     public function build(SearchFlightsRequest $request, bool $onlyActive = true): Builder
@@ -71,37 +84,45 @@ class FlightSearchQuery
     private function applySearch(Builder $query, SearchFlightsRequest $request): void
     {
         $search = trim((string) $request->input('search', ''));
-        if ($search === '' || !str_contains($search, ':')) {
+        if ($search === '') {
             return;
         }
 
-        $clauses = [];
-        foreach (explode(';', $search) as $pair) {
-            if (trim($pair) === '') {
-                continue;
-            }
-            [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
-            $field = trim($field);
-            $value = trim($value);
-
-            if ($field === '' || $value === '' || !array_key_exists($field, self::FIELD_SEARCH)) {
-                continue;
-            }
-
-            $clauses[] = [$field, $value, self::FIELD_SEARCH[$field]];
-        }
-
-        if ($clauses === []) {
-            return;
-        }
-
-        $query->where(function (Builder $q) use ($clauses): void {
-            foreach ($clauses as [$field, $value, $mode]) {
-                if ($mode === 'like') {
-                    $q->orWhere($field, 'like', '%'.$value.'%');
-                } else {
-                    $q->orWhere($field, '=', $value);
+        if (str_contains($search, ':')) {
+            $clauses = [];
+            foreach (explode(';', $search) as $pair) {
+                if (trim($pair) === '') {
+                    continue;
                 }
+                [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
+                $field = trim($field);
+                $value = trim($value);
+
+                if ($field === '' || $value === '' || !array_key_exists($field, self::FIELD_SEARCH)) {
+                    continue;
+                }
+
+                $clauses[] = [$field, $value, self::FIELD_SEARCH[$field]];
+            }
+
+            if ($clauses !== []) {
+                $query->where(function (Builder $q) use ($clauses): void {
+                    foreach ($clauses as [$field, $value, $mode]) {
+                        if ($mode === 'like') {
+                            $q->orWhere($field, 'like', '%'.$value.'%');
+                        } else {
+                            $q->orWhere($field, '=', $value);
+                        }
+                    }
+                });
+
+                return;
+            }
+        }
+
+        $query->where(function (Builder $q) use ($search): void {
+            foreach (self::FREE_TEXT_COLUMNS as $column) {
+                $q->orWhere($column, 'like', '%'.$search.'%');
             }
         });
     }
@@ -130,13 +151,17 @@ class FlightSearchQuery
     private function applyAirportFilters(Builder $query, SearchFlightsRequest $request): void
     {
         // dep_icao is an alias for dpt_airport_id; both uppercased.
-        $departure = $request->input('dpt_airport_id') ?? $request->input('dep_icao');
+        $departure = $request->filled('dpt_airport_id')
+            ? $request->input('dpt_airport_id')
+            : $request->input('dep_icao');
         if (filled($departure)) {
             $query->fromAirport((string) $departure);
         }
 
         // arr_icao is an alias for arr_airport_id; both uppercased.
-        $arrival = $request->input('arr_airport_id') ?? $request->input('arr_icao');
+        $arrival = $request->filled('arr_airport_id')
+            ? $request->input('arr_airport_id')
+            : $request->input('arr_icao');
         if (filled($arrival)) {
             $query->toAirport((string) $arrival);
         }
@@ -172,14 +197,32 @@ class FlightSearchQuery
     {
         $orderBy = $request->input('orderBy');
         if (!$orderBy) {
+            $query->orderBy('flight_number', 'asc');
+
             return;
         }
 
-        $direction = strtolower((string) $request->input('sortedBy', 'asc'));
-        if (!in_array($direction, ['asc', 'desc'], true)) {
-            $direction = 'asc';
-        }
+        $columns = $this->splitDelimitedValues((string) $orderBy);
+        $directions = $this->splitDelimitedValues(strtolower((string) $request->input('sortedBy', 'asc')));
 
-        $query->orderBy($orderBy, $direction);
+        foreach ($columns as $index => $column) {
+            $direction = $directions[$index] ?? $directions[0] ?? 'asc';
+            if (!in_array($direction, ['asc', 'desc'], true)) {
+                $direction = 'asc';
+            }
+
+            $query->orderBy($column, $direction);
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function splitDelimitedValues(string $value): array
+    {
+        return array_map(
+            static fn (string $part): string => trim($part),
+            explode(';', $value)
+        );
     }
 }

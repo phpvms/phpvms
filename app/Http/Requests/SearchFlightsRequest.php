@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
+use Closure;
 
 /**
  * Validates query string for the Flight list/search endpoints:
@@ -36,6 +37,7 @@ use App\Contracts\FormRequest;
  *   icao_type        Filter via Aircraft -> subfleets relation
  *
  * Pagination + sort:
+ *   search    Free-text or `field:value[;field:value...]` (max 255 chars)
  *   orderBy   One of ORDERABLE_FIELDS
  *   sortedBy  asc | desc
  *   page      Pagination page number (min 1)
@@ -51,7 +53,9 @@ class SearchFlightsRequest extends FormRequest
         'route_code',
         'route_leg',
         'dpt_airport_id',
+        'dpt_time',
         'arr_airport_id',
+        'arr_time',
         'distance',
         'flight_time',
         'flight_type',
@@ -66,10 +70,6 @@ class SearchFlightsRequest extends FormRequest
      *
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
-     *
-     * After merging, unset ?sort and ?direction so kyslik's sortable() trait
-     * (which still reads them directly from the request) doesn't double-apply
-     * the same ordering on top of FlightSearchQuery::applyOrdering().
      */
     protected function prepareForValidation(): void
     {
@@ -83,19 +83,12 @@ class SearchFlightsRequest extends FormRequest
         if ($merge !== []) {
             $this->merge($merge);
         }
-
-        // Strip the legacy aliases regardless of whether we merged them; once
-        // they're translated (or already superseded by an explicit orderBy),
-        // kyslik shouldn't see them.
-        $this->request->remove('sort');
-        $this->request->remove('direction');
-        $this->query->remove('sort');
-        $this->query->remove('direction');
     }
 
     public function rules(): array
     {
         return [
+            'search'         => ['sometimes', 'string', 'max:255'],
             'flight_id'      => ['sometimes', 'string'],
             'airline_id'     => ['sometimes', 'integer'],
             'flight_number'  => ['sometimes', 'string', 'max:32'],
@@ -113,10 +106,49 @@ class SearchFlightsRequest extends FormRequest
             'subfleet_id'    => ['sometimes', 'integer'],
             'type_rating_id' => ['sometimes', 'integer'],
             'icao_type'      => ['sometimes', 'string', 'max:8'],
-            'orderBy'        => ['sometimes', 'string', 'in:'.implode(',', self::ORDERABLE_FIELDS)],
-            'sortedBy'       => ['sometimes', 'string', 'in:'.implode(',', self::SORT_DIRECTIONS)],
-            'page'           => ['sometimes', 'integer', 'min:1'],
-            'limit'          => ['sometimes', 'integer', 'min:1'],
+            'orderBy'        => [
+                'sometimes',
+                'string',
+                'max:255',
+                fn (string $attribute, mixed $value, Closure $fail) => $this->validateDelimitedValues($attribute, $value, $fail, self::ORDERABLE_FIELDS),
+            ],
+            'sortedBy' => [
+                'sometimes',
+                'string',
+                'max:255',
+                fn (string $attribute, mixed $value, Closure $fail) => $this->validateDelimitedValues($attribute, $value, $fail, self::SORT_DIRECTIONS, lowercase: true),
+            ],
+            'page'  => ['sometimes', 'integer', 'min:1'],
+            'limit' => ['sometimes', 'integer', 'min:1'],
         ];
+    }
+
+    private function validateDelimitedValues(
+        string $attribute,
+        mixed $value,
+        Closure $fail,
+        array $allowed,
+        bool $lowercase = false,
+    ): void {
+        foreach ($this->splitDelimitedValues((string) $value) as $part) {
+            $candidate = $lowercase ? strtolower($part) : $part;
+
+            if (!in_array($candidate, $allowed, true)) {
+                $fail("The {$attribute} field is invalid.");
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function splitDelimitedValues(string $value): array
+    {
+        return array_map(
+            static fn (string $part): string => trim($part),
+            explode(';', $value)
+        );
     }
 }

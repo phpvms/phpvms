@@ -21,7 +21,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
 
@@ -69,17 +68,7 @@ class FlightController extends Controller
         if ($filter_by_user) {
             // Get allowed subfleets for the user
             $user_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->toArray();
-            // Get flight_id's from relationships (group by flight id to reduce the array size)
-            $user_flights = DB::table('flight_subfleet')
-                ->select('flight_id')
-                ->whereIn('subfleet_id', $user_subfleets)
-                ->groupBy('flight_id')
-                ->pluck('flight_id')
-                ->toArray();
-            // Get flight_id's of open (non restricted) flights
-            // Each flight must have at least one subfleet assigned to it
-            $open_flights = Flight::whereNull('user_id')->has('subfleets')->pluck('id')->toArray();
-            $allowed_flights = array_merge($user_flights, $open_flights);
+            $allowed_flights = $this->flightSvc->getAccessibleFlightIds($user);
             // Build aircraft icao codes by considering allowed subfleets
             $icao_codes = Aircraft::whereIn('subfleet_id', $user_subfleets)->groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
             // Build type ratings collection by considering user's capabilities
@@ -134,7 +123,7 @@ class FlightController extends Controller
             ->when($filter_by_user, function ($q) use ($allowed_flights) {
                 return $q->whereIn('id', $allowed_flights);
             })
-            ->sortable('flight_number')->orderBy('route_code')->orderBy('route_leg')
+            ->orderBy('route_code')->orderBy('route_leg')
             ->paginate($request->integer('limit') ?: null);
 
         $saved_flights = [];

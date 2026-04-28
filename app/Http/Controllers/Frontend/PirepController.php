@@ -251,7 +251,7 @@ class PirepController extends Controller
         // See if request has a ?flight_id, so we can pre-populate the fields from the flight
         // Makes filing easier, but we can also more easily find a bid and close it
         if ($request->has('flight_id')) {
-            $flight = Flight::find($request->input('flight_id'));
+            $flight = Flight::findOrFail($request->input('flight_id'));
             $pirep = Pirep::fromFlight($flight);
         }
 

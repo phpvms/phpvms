@@ -499,7 +499,7 @@ class Flight extends Model
     #[Scope]
     protected function withIcaoType(Builder $query, string $icao): Builder
     {
-        $subfleetIds = Aircraft::where('icao', $icao)
+        $subfleetIds = Aircraft::where('icao', strtoupper(trim($icao)))
             ->groupBy('subfleet_id')
             ->pluck('subfleet_id')
             ->all();

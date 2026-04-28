@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Support\Units\Time;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class FlightService extends Service
 {
@@ -99,6 +100,34 @@ class FlightService extends Service
         }
 
         return $fields;
+    }
+
+    /**
+     * Return flight IDs a user may see when aircraft restrictions are active.
+     * Includes flights with at least one allowed subfleet and true open flights.
+     *
+     * @return list<int>
+     */
+    public function getAccessibleFlightIds(User $user): array
+    {
+        $userSubfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->all();
+
+        $userFlights = DB::table('flight_subfleet')
+            ->select('flight_id')
+            ->whereIn('subfleet_id', $userSubfleets)
+            ->groupBy('flight_id')
+            ->pluck('flight_id')
+            ->map(static fn ($flightId): int => (int) $flightId)
+            ->all();
+
+        $openFlights = Flight::query()
+            ->whereNull('user_id')
+            ->doesntHave('subfleets')
+            ->pluck('id')
+            ->map(static fn ($flightId): int => (int) $flightId)
+            ->all();
+
+        return array_values(array_unique(array_merge($userFlights, $openFlights)));
     }
 
     /**

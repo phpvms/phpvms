@@ -26,6 +26,7 @@ use App\Services\PirepService;
 use App\Support\Math;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     loadYamlIntoDb('fleet');
@@ -1194,4 +1195,21 @@ test('daily expenses are applied', function () {
         'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
         'post_date'      => Carbon::getTestNow(),
     ]);
+});
+
+test('get all airline transactions between loads journals in one query', function () {
+    Airline::factory()->create(['icao' => 'BBBBB', 'iata' => 'BB']);
+    Airline::factory()->create(['icao' => 'AAAAA', 'iata' => 'AA']);
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    app(FinanceService::class)->getAllAirlineTransactionsBetween(now()->format('Y-m'));
+
+    $journalQueries = collect(DB::getQueryLog())
+        ->pluck('query')
+        ->filter(fn (string $query): bool => str_contains(strtolower($query), 'from "journals"'))
+        ->values();
+
+    expect($journalQueries)->toHaveCount(1);
 });

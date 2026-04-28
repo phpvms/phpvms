@@ -203,6 +203,54 @@ test('get aircraft allowed from flight', function () {
     expect($body[0]['subfleets'])->toHaveCount(1);
 });
 
+test('api flight list excludes flights without allowable subfleets', function () {
+    updateSetting('pilots.restrict_to_company', false);
+    updateSetting('pilots.only_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+
+    $airline = Airline::factory()->create();
+    $allowedSubfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $restrictedSubfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $rank = Rank::factory()->hasAttached($allowedSubfleet)->create();
+
+    /** @var User $user */
+    $user = User::factory()->create([
+        'airline_id' => $airline->id,
+        'rank_id'    => $rank->id,
+    ]);
+
+    apiAs($user);
+
+    $allowedFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+    $allowedFlight->subfleets()->syncWithoutDetaching([$allowedSubfleet->id]);
+
+    $restrictedFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+    $restrictedFlight->subfleets()->syncWithoutDetaching([$restrictedSubfleet->id]);
+
+    $openFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+
+    $response = $this->get('/api/flights');
+    $response->assertOk();
+
+    $flightIds = collect($response->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+    expect($flightIds)
+        ->toContain($allowedFlight->id)
+        ->toContain($openFlight->id)
+        ->not->toContain($restrictedFlight->id);
+
+    $searchResponse = $this->get('/api/flights/search?flight_id='.$restrictedFlight->id);
+    $searchResponse->assertOk();
+    expect($searchResponse->json('data'))->toHaveCount(0);
+});
+
 test('user pilot id change already exists', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();

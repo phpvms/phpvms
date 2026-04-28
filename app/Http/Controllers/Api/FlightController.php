@@ -85,6 +85,11 @@ class FlightController extends Controller
             }
         }
 
+        $filterByUser = setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false);
+        if ($filterByUser) {
+            $query->whereIn('id', $this->flightSvc->getAccessibleFlightIds($user));
+        }
+
         $with = [
             'airline',
             'fares',
@@ -114,7 +119,6 @@ class FlightController extends Controller
         $perPage = $request->integer('limit') ?: null;
         $flights = $query->with($with)->paginate($perPage);
 
-        // TODO: Remove any flights here that a user doesn't have permissions to
         foreach ($flights as $flight) {
             if (in_array('subfleets', $relations)) {
                 $this->flightSvc->filterSubfleets($user, $flight);
