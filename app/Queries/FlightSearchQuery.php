@@ -20,11 +20,27 @@ use Illuminate\Database\Eloquent\Builder;
 class FlightSearchQuery
 {
     /**
-     * Build the search query.
+     * Field-specific search allowlist. Mirrors the old
+     * FlightRepository::$fieldSearchable + RequestCriteria's
+     * `?search=field:value;...` syntax. The 'like' entries match the
+     * legacy LIKE behavior; everything else is exact match.
      *
-     * @param SearchFlightsRequest $request    Validated query string.
-     * @param bool                 $onlyActive When true, restricts to active=true AND visible=true.
+     * @var array<string, 'exact'|'like'>
      */
+    private const FIELD_SEARCH = [
+        'arr_airport_id' => 'exact',
+        'callsign'       => 'exact',
+        'distance'       => 'exact',
+        'dpt_airport_id' => 'exact',
+        'flight_time'    => 'exact',
+        'flight_type'    => 'exact',
+        'flight_number'  => 'like',
+        'route_code'     => 'like',
+        'route_leg'      => 'like',
+        'route'          => 'like',
+        'notes'          => 'like',
+    ];
+
     /**
      * @return Builder<Flight>
      */
@@ -36,6 +52,7 @@ class FlightSearchQuery
             $query->active()->visible();
         }
 
+        $this->applySearch($query, $request);
         $this->applyExactFilters($query, $request);
         $this->applyAirportFilters($query, $request);
         $this->applyRangeFilters($query, $request);
@@ -43,6 +60,50 @@ class FlightSearchQuery
         $this->applyOrdering($query, $request);
 
         return $query;
+    }
+
+    /**
+     * Restore the legacy `?search=field:value;field:value` syntax.
+     * Mirrors PirepSearchQuery / UserSearchQuery from earlier phases.
+     *
+     * @param Builder<Flight> $query
+     */
+    private function applySearch(Builder $query, SearchFlightsRequest $request): void
+    {
+        $search = trim((string) $request->input('search', ''));
+        if ($search === '' || !str_contains($search, ':')) {
+            return;
+        }
+
+        $clauses = [];
+        foreach (explode(';', $search) as $pair) {
+            if (trim($pair) === '') {
+                continue;
+            }
+            [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
+            $field = trim($field);
+            $value = trim($value);
+
+            if ($field === '' || $value === '' || !array_key_exists($field, self::FIELD_SEARCH)) {
+                continue;
+            }
+
+            $clauses[] = [$field, $value, self::FIELD_SEARCH[$field]];
+        }
+
+        if ($clauses === []) {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($clauses): void {
+            foreach ($clauses as [$field, $value, $mode]) {
+                if ($mode === 'like') {
+                    $q->orWhere($field, 'like', '%'.$value.'%');
+                } else {
+                    $q->orWhere($field, '=', $value);
+                }
+            }
+        });
     }
 
     /**

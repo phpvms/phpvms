@@ -39,7 +39,7 @@ use App\Contracts\FormRequest;
  *   orderBy   One of ORDERABLE_FIELDS
  *   sortedBy  asc | desc
  *   page      Pagination page number (min 1)
- *   limit     Page size (1-100)
+ *   limit     Page size (min 1)
  */
 class SearchFlightsRequest extends FormRequest
 {
@@ -66,6 +66,10 @@ class SearchFlightsRequest extends FormRequest
      *
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
+     *
+     * After merging, unset ?sort and ?direction so kyslik's sortable() trait
+     * (which still reads them directly from the request) doesn't double-apply
+     * the same ordering on top of FlightSearchQuery::applyOrdering().
      */
     protected function prepareForValidation(): void
     {
@@ -79,6 +83,14 @@ class SearchFlightsRequest extends FormRequest
         if ($merge !== []) {
             $this->merge($merge);
         }
+
+        // Strip the legacy aliases regardless of whether we merged them; once
+        // they're translated (or already superseded by an explicit orderBy),
+        // kyslik shouldn't see them.
+        $this->request->remove('sort');
+        $this->request->remove('direction');
+        $this->query->remove('sort');
+        $this->query->remove('direction');
     }
 
     public function rules(): array
@@ -104,7 +116,7 @@ class SearchFlightsRequest extends FormRequest
             'orderBy'        => ['sometimes', 'string', 'in:'.implode(',', self::ORDERABLE_FIELDS)],
             'sortedBy'       => ['sometimes', 'string', 'in:'.implode(',', self::SORT_DIRECTIONS)],
             'page'           => ['sometimes', 'integer', 'min:1'],
-            'limit'          => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'limit'          => ['sometimes', 'integer', 'min:1'],
         ];
     }
 }

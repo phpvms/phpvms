@@ -56,7 +56,7 @@ class Finances extends Page
                     ->native(false)
                     ->label(__('common.airline'))
                     ->searchable()
-                    ->options(Airline::orderBy('name')->pluck('name', 'id')->toArray()),
+                    ->options(Airline::selectList(orderBy: 'name')),
             ])
                 ->columnSpanFull()
                 ->columns(3),

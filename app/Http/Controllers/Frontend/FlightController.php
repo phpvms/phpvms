@@ -45,10 +45,10 @@ class FlightController extends Controller
      */
     public function search(SearchFlightsRequest $request): View
     {
-        $where = [
-            'active'  => true,
-            'visible' => true,
-        ];
+        // FlightSearchQuery::build() already applies active+visible via
+        // model scopes when $onlyActive=true (the default). $where here is
+        // strictly for caller-owned per-user restrictions on top of that.
+        $where = [];
 
         /** @var User $user */
         $user = Auth::user();
@@ -93,8 +93,11 @@ class FlightController extends Controller
         }
 
         // Get only used Flight Types for the search form
-        // And filter according to settings
+        // And filter according to settings (active/visible apply here too —
+        // we don't want flight_type options surfacing from hidden flights).
         $usedtypes = Flight::select('flight_type')
+            ->active()
+            ->visible()
             ->where($where)
             ->groupby('flight_type')
             ->orderby('flight_type')
