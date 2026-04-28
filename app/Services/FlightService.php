@@ -247,17 +247,31 @@ class FlightService extends Service
     public function isFlightDuplicate(Flight $flight): bool
     {
         $query = Flight::query()
-            ->where('id', '<>', $flight->id)
             ->where('airline_id', $flight->airline_id)
             ->where('flight_number', $flight->flight_number)
             ->whereNull('owner_type')
             ->where('dpt_airport_id', $flight->dpt_airport_id)
             ->where('arr_airport_id', $flight->arr_airport_id);
 
+        // Exclude self only when the input flight is persisted; for an unsaved
+        // model, $flight->id is null and `id <> NULL` matches nothing in SQL.
+        if ($flight->exists) {
+            $query->where('id', '<>', $flight->id);
+        }
+
+        // Match nullable scalar columns including legacy empty-string values.
+        // Stored values may be NULL, '', or an actual scalar; treat empty as
+        // equivalent to null so casts that coerce '' to 0 (e.g. integer cast
+        // on route_leg) still resolve correctly.
         foreach (['route_code', 'route_leg', 'days'] as $column) {
             $value = $flight->{$column};
-            if ($value === null) {
-                $query->whereNull($column);
+
+            if (in_array($value, [null, '', 0, '0'], true)) {
+                $query->where(function ($q) use ($column) {
+                    $q->whereNull($column)
+                        ->orWhere($column, '')
+                        ->orWhere($column, 0);
+                });
             } else {
                 $query->where($column, $value);
             }
