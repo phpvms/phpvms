@@ -2,12 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Flight;
 use App\Models\FlightField;
 use App\Models\FlightFieldValue;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
-use App\Models\Observers\FlightObserver;
 use App\Models\Observers\JournalObserver;
 use App\Models\Observers\JournalTransactionObserver;
 use App\Models\Observers\Sluggable;
@@ -23,7 +21,6 @@ class ObserverServiceProviders extends ServiceProvider
         Journal::observe(JournalObserver::class);
         JournalTransaction::observe(JournalTransactionObserver::class);
 
-        Flight::observe(FlightObserver::class);
         FlightField::observe(Sluggable::class);
         FlightFieldValue::observe(Sluggable::class);
 

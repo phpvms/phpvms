@@ -6,6 +6,8 @@ use App\Contracts\Model;
 use App\Models\Enums\JournalType;
 use App\Models\Traits\FilesTrait;
 use App\Models\Traits\JournalTrait;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -102,18 +104,6 @@ class Airline extends Model
         'active',
     ];
 
-    /**
-     * Validation rules
-     */
-    public static array $rules = [
-        'callsign' => 'nullable',
-        'country'  => 'nullable',
-        'iata'     => 'nullable|max:5',
-        'icao'     => 'required|max:5',
-        'logo'     => 'nullable',
-        'name'     => 'required',
-    ];
-
     public $sortable = [
         'id',
         'name',
@@ -205,5 +195,14 @@ class Airline extends Model
             'total_time'    => 'int',
             'active'        => 'boolean',
         ];
+    }
+
+    /*
+     * Query scopes
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->where('active', true);
     }
 }
