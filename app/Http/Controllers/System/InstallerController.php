@@ -114,7 +114,7 @@ class InstallerController extends Controller
      */
     public function step1(): View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
@@ -145,7 +145,7 @@ class InstallerController extends Controller
      */
     public function step2(): View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
@@ -161,7 +161,7 @@ class InstallerController extends Controller
      */
     public function envsetup(Request $request): RedirectResponse
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
@@ -222,7 +222,7 @@ class InstallerController extends Controller
      */
     public function dbsetup(): RedirectResponse|View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
