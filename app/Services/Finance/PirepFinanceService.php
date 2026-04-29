@@ -27,6 +27,7 @@ use App\Support\Math;
 use App\Support\Money;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use UnexpectedValueException;
@@ -63,21 +64,27 @@ class PirepFinanceService extends Service
             $pirep->user->journal = $pirep->user->initJournal(setting('units.currency', 'USD'));
         }
 
-        // Clean out the expenses first
-        $this->deleteFinancesForPirep($pirep);
+        // Wrap delete + re-pay in a single transaction so that a partial
+        // failure can't leave a journal half-cleared with new entries
+        // posted on top. recalculateBalance still runs after the rollback
+        // boundary so the cached balance reflects the final committed set.
+        DB::transaction(function () use ($pirep) {
+            // Clean out the expenses first
+            $this->deleteFinancesForPirep($pirep);
 
-        Log::info('Finance: Starting PIREP pay for '.$pirep->id);
+            Log::info('Finance: Starting PIREP pay for '.$pirep->id);
 
-        // Now start and pay from scratch
-        $this->payFuelCosts($pirep);
-        $this->payFaresForPirep($pirep);
-        $this->payFaresEventsForPirep($pirep);
-        $this->payExpensesForSubfleet($pirep);
-        $this->payExpensesForPirep($pirep);
-        $this->payAirportExpensesForPirep($pirep);
-        $this->payExpensesEventsForPirep($pirep);
-        $this->payGroundHandlingForPirep($pirep);
-        $this->payPilotForPirep($pirep);
+            // Now start and pay from scratch
+            $this->payFuelCosts($pirep);
+            $this->payFaresForPirep($pirep);
+            $this->payFaresEventsForPirep($pirep);
+            $this->payExpensesForSubfleet($pirep);
+            $this->payExpensesForPirep($pirep);
+            $this->payAirportExpensesForPirep($pirep);
+            $this->payExpensesEventsForPirep($pirep);
+            $this->payGroundHandlingForPirep($pirep);
+            $this->payPilotForPirep($pirep);
+        });
 
         $pirep->airline->journal->refresh();
         $pirep->user->journal->refresh();

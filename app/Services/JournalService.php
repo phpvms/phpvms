@@ -54,7 +54,7 @@ class JournalService extends Service
             'journal_id'        => $journal->id,
             'credit'            => $credit instanceof Money ? $credit->getAmount() : null,
             'debit'             => $debit instanceof Money ? $debit->getAmount() : null,
-            'currency'          => setting('units.currency', 'USD'),
+            'currency'          => $journal->currency ?? setting('units.currency', 'USD'),
             'memo'              => $memo,
             'post_date'         => $post_date,
             'transaction_group' => $transaction_group,

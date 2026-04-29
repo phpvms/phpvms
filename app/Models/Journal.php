@@ -217,6 +217,11 @@ class Journal extends Model
      * use whereDate so the boundary days are inclusive (matches the
      * legacy repository behavior used by FinanceService balance views).
      *
+     * Note: this is day-precision (whereDate). getCreditBalanceOn uses
+     * datetime-precision (where '<=' $date). They will return different
+     * sums for transactions posted on the boundary day at non-midnight
+     * times.
+     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
@@ -256,6 +261,11 @@ class Journal extends Model
      * Sums credits and debits across all transactions on this journal,
      * persists the resulting balance, and returns $this so callers can
      * fluent-chain. Replaces JournalRepository::recalculateBalance.
+     *
+     * Note: this sum is unfiltered by post_date — future-dated rows are
+     * included. getCurrentBalance() filters by Carbon::now() and will
+     * therefore disagree with the stored balance whenever there are
+     * future-dated transactions on the journal.
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException

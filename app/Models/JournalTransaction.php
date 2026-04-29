@@ -87,7 +87,7 @@ class JournalTransaction extends Model
     protected function casts(): array
     {
         return [
-            'credits'   => 'integer',
+            'credit'    => 'integer',
             'debit'     => 'integer',
             'post_date' => 'datetime',
             'tags'      => 'array',

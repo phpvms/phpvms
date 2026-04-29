@@ -39,7 +39,10 @@ class JournalTransactionQuery
         }
 
         if ($date instanceof Carbon) {
-            $query->where('post_date', '=', $date->setTimezone('UTC')->toDateString());
+            // post_date is a datetime column; whereDate compares the date
+            // portion only. The legacy where('=') against a Y-m-d string
+            // would silently match nothing for non-midnight rows.
+            $query->whereDate('post_date', $date->setTimezone('UTC'));
         }
 
         $transactions = $query
