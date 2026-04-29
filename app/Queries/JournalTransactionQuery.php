@@ -32,17 +32,18 @@ class JournalTransactionQuery
     ): array {
         $query = JournalTransaction::query()
             ->where('ref_model_type', \get_class($refModel))
-            ->where('ref_model_id', $refModel->id);
+            ->where('ref_model_id', $refModel->getKey());
 
         if ($journal instanceof Journal) {
             $query->where('journal_id', $journal->id);
         }
 
         if ($date instanceof Carbon) {
-            // post_date is a datetime column; whereDate compares the date
-            // portion only. The legacy where('=') against a Y-m-d string
-            // would silently match nothing for non-midnight rows.
-            $query->whereDate('post_date', $date->setTimezone('UTC'));
+            // post_date is a DATE column (no time portion). A direct equals
+            // against the Y-m-d string keeps the index seek; whereDate()
+            // would wrap DATE() and disable it. Carbon::copy() prevents
+            // mutating the caller's instance.
+            $query->where('post_date', '=', $date->copy()->setTimezone('UTC')->toDateString());
         }
 
         $transactions = $query

@@ -48,13 +48,11 @@ class PirepFinanceService extends Service
      * from a listener (FinanceEvents)
      *
      *
-     * @return mixed
-     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      * @throws Exception
      */
-    public function processFinancesForPirep(Pirep $pirep)
+    public function processFinancesForPirep(Pirep $pirep): Pirep
     {
         if (!$pirep->airline->journal) {
             $pirep->airline->journal = $pirep->airline->initJournal(setting('units.currency', 'USD'));

@@ -505,20 +505,23 @@ class PirepService extends Service
     {
         $user_id = $pirep->user_id;
 
-        // Drop journal entries first so they don't dangle. ref_model_id
-        // is polymorphic (no FK), so a cascading database delete won't
-        // catch them; without this the nightly recalc would still see
-        // them and skew journal balances.
-        $this->pirepFinanceSvc->deleteFinancesForPirep($pirep);
+        DB::transaction(function () use ($pirep): void {
+            // Drop journal entries first so they don't dangle. ref_model_id
+            // is polymorphic (no FK), so a cascading database delete won't
+            // catch them; without this the nightly recalc would still see
+            // them and skew journal balances.
+            $this->pirepFinanceSvc->deleteFinancesForPirep($pirep);
 
-        $w = ['pirep_id' => $pirep->id];
-        PirepComment::where($w)->forceDelete();
-        PirepFare::where($w)->forceDelete();
-        PirepFieldValue::where($w)->forceDelete();
-        SimBrief::where($w)->forceDelete();
-        $pirep->forceDelete();
+            $w = ['pirep_id' => $pirep->id];
+            PirepComment::where($w)->forceDelete();
+            PirepFare::where($w)->forceDelete();
+            PirepFieldValue::where($w)->forceDelete();
+            SimBrief::where($w)->forceDelete();
+            $pirep->forceDelete();
+        });
 
-        // Update the user's last PIREP
+        // Update the user's last PIREP (outside transaction — independent
+        // of the delete cascade and safe to retry if it fails).
         $last_pirep = Pirep::where(['user_id' => $user_id, 'state' => PirepState::ACCEPTED])
             ->latest('submitted_at')
             ->first();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -92,8 +94,10 @@ class JournalService extends Service
 
         // Iterate to fire observer events (mass delete would skip them,
         // and the observer is what keeps Journal->balance current).
-        foreach ($query->get() as $transaction) {
+        // lazyById streams in chunks so callers with thousands of rows
+        // (e.g. cleaning up an old airline) don't load everything at once.
+        $query->lazyById()->each(function (JournalTransaction $transaction): void {
             $transaction->delete();
-        }
+        });
     }
 }

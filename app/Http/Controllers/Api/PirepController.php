@@ -381,7 +381,7 @@ class PirepController extends Controller
      */
     public function finances_get(string $id): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
         $transactions = $this->journalTransactions->build($pirep);
 
         return JournalTransactionResource::collection($transactions['transactions']);
@@ -394,7 +394,7 @@ class PirepController extends Controller
      */
     public function finances_recalculate(string $id, Request $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
         $this->financeSvc->processFinancesForPirep($pirep);
 
         $pirep->refresh();
