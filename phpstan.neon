@@ -15,9 +15,6 @@ parameters:
         # PHPStan is not able to understand the pivot attributes at the moment
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z]+#'
 
-        # Eloquent Builder methods are not documented on repositories
-        - '#Call to an undefined method App\\Repositories\\[a-zA-Z]+Repository::[a-zA-Z]+\(\)#'
-
         # FilesTrait::files() defines a morphMany via traits — larastan's relationExistence
         # rule can't statically resolve trait-defined polymorphic relations even though they
         # work at runtime. Models using FilesTrait: Aircraft, Airline, Airport, Subfleet.
