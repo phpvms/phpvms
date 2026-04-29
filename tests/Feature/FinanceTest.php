@@ -15,13 +15,14 @@ use App\Models\PirepFare;
 use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\JournalRepository;
+use App\Queries\JournalTransactionQuery;
 use App\Services\BidService;
 use App\Services\FareService;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\Finance\RecurringFinanceService;
 use App\Services\FinanceService;
 use App\Services\FleetService;
+use App\Services\JournalService;
 use App\Services\PirepService;
 use App\Support\Math;
 use App\Support\Money;
@@ -663,48 +664,52 @@ test('get pirep pilot pay with fixed price', function () {
 });
 
 test('journal operations', function () {
-    $journalRepo = app(JournalRepository::class);
+    $journalSvc = app(JournalService::class);
+    $journalQuery = app(JournalTransactionQuery::class);
 
     $user = User::factory()->create();
     $journal = Journal::factory()->create();
 
-    $journalRepo->post(
+    $journalSvc->post(
         $journal,
         Money::createFromAmount(100.5),
         null,
         $user
     );
 
-    $balance = $journalRepo->getBalance($journal);
+    $journal->refresh();
+    $balance = $journal->getCurrentBalance();
     expect($balance->getValue())->toEqual(100.5)
         ->and($journal->balance->getValue())->toEqual(100.5);
 
     // add another transaction
-    $journalRepo->post(
+    $journalSvc->post(
         $journal,
         Money::createFromAmount(24.5),
         null,
         $user
     );
 
-    $balance = $journalRepo->getBalance($journal);
+    $journal->refresh();
+    $balance = $journal->getCurrentBalance();
     expect($balance->getValue())->toEqual(125)
         ->and($journal->balance->getValue())->toEqual(125);
 
     // debit an amount
-    $journalRepo->post(
+    $journalSvc->post(
         $journal,
         null,
         Money::createFromAmount(25),
         $user
     );
 
-    $balance = $journalRepo->getBalance($journal);
+    $journal->refresh();
+    $balance = $journal->getCurrentBalance();
     expect($balance->getValue())->toEqual(100)
         ->and($journal->balance->getValue())->toEqual(100);
 
     // find all transactions
-    $transactions = $journalRepo->getAllForObject($user);
+    $transactions = $journalQuery->build($user);
 
     expect($transactions['transactions'])->toHaveCount(3)
         ->and($transactions['credits']->getValue())->toEqual(125)
@@ -834,7 +839,7 @@ test('airport expenses', function () {
 });
 
 test('pirep finances', function () {
-    $journalRepo = app(JournalRepository::class);
+    $journalQuery = app(JournalTransactionQuery::class);
     $fareSvc = app(FareService::class);
     $pirepSvc = app(PirepService::class);
 
@@ -858,7 +863,7 @@ test('pirep finances', function () {
     // This should process all of the
     $pirep = $pirepSvc->accept($pirep);
 
-    $transactions = $journalRepo->getAllForObject($pirep);
+    $transactions = $journalQuery->build($pirep);
 
     /** @var Money $credits */
     $credits = $transactions['credits'];
@@ -889,7 +894,7 @@ test('pirep finances', function () {
 });
 
 test('pirep finances specific expense', function () {
-    $journalRepo = app(JournalRepository::class);
+    $journalQuery = app(JournalTransactionQuery::class);
     $fareSvc = app(FareService::class);
     $pirepSvc = app(PirepService::class);
 
@@ -917,7 +922,7 @@ test('pirep finances specific expense', function () {
     // This should process all of the
     $pirep = $pirepSvc->accept($pirep);
 
-    $transactions = $journalRepo->getAllForObject($pirep);
+    $transactions = $journalQuery->build($pirep);
 
     //        $this->assertCount(9, $transactions['transactions']);
     expect($transactions['credits']->getValue())->toEqual(3020)
@@ -986,7 +991,7 @@ test('pirep finances specific expense', function () {
     $saved_fares = PirepFare::where('pirep_id', $pirep2->id)->get();
     expect($saved_fares)->toHaveCount(3);
 
-    $transactions = $journalRepo->getAllForObject($pirep2);
+    $transactions = $journalQuery->build($pirep2);
     expect($transactions['credits']->getValue())->toEqual(3020)
         ->and($transactions['debits']->getValue())->toEqual(2150.4);
 
@@ -1011,8 +1016,8 @@ test('pirep finances specific expense', function () {
 test('pirep finances expenses multi airline', function () {
     $airline = Airline::factory()->create();
 
-    /** @var JournalRepository $journalRepo */
-    $journalRepo = app(JournalRepository::class);
+    /** @var JournalTransactionQuery $journalQuery */
+    $journalQuery = app(JournalTransactionQuery::class);
 
     // Add an expense that's only for a cargo flight
     Expense::factory()->create(
@@ -1069,7 +1074,7 @@ test('pirep finances expenses multi airline', function () {
     // This should process all of the
     $pirep = $pirepSvc->accept($pirep);
 
-    $transactions = $journalRepo->getAllForObject($pirep);
+    $transactions = $journalQuery->build($pirep);
 
     /** @var JournalTransaction $transaction */
     /*foreach ($transactions['transactions'] as $transaction) {
@@ -1098,7 +1103,7 @@ test('pirep finances expenses multi airline', function () {
 });
 
 test('pirep expenses nightly', function () {
-    $journalRepo = app(JournalRepository::class);
+    $journalQuery = app(JournalTransactionQuery::class);
     $pirepSvc = app(PirepService::class);
 
     $airline = Airline::factory()->create();
@@ -1143,16 +1148,16 @@ test('pirep expenses nightly', function () {
     [$user, $pirep, $fares] = createFullPirep();
     $pirep = $pirepSvc->accept($pirep);
 
-    // $transactions = $journalRepo->getAllForObject($pirep);
-    $txn_airline1 = $journalRepo->getAllForObject($airline);
-    $txn_airline2 = $journalRepo->getAllForObject($airline2);
+    // $transactions = $journalQuery->build($pirep);
+    $txn_airline1 = $journalQuery->build($airline);
+    $txn_airline2 = $journalQuery->build($airline2);
 
     /** @var RecurringFinanceService $recurringFService */
     $recurringFService = app(RecurringFinanceService::class);
     $recurringFService->processExpenses(ExpenseType::DAILY);
 
-    $txn_airline1 = $journalRepo->getAllForObject($airline);
-    $txn_airline2 = $journalRepo->getAllForObject($airline2);
+    $txn_airline1 = $journalQuery->build($airline);
+    $txn_airline2 = $journalQuery->build($airline2);
 
     expect($txn_airline1)->toHaveCount(3)
         ->and($txn_airline2)->toHaveCount(3);

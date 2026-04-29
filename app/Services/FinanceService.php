@@ -11,17 +11,15 @@ use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Models\User;
-use App\Repositories\JournalRepository;
 use App\Support\Dates;
 use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class FinanceService extends Service
 {
     public function __construct(
-        private readonly JournalRepository $journalRepo
+        private readonly JournalService $journalSvc
     ) {}
 
     /**
@@ -117,10 +115,6 @@ class FinanceService extends Service
      * for a pirep:
      *
      * creditToJournal($user->journal, new Money(1000), $pirep, 'Payment', 'pirep', 'payment');
-     *
-     * @return mixed
-     *
-     * @throws ValidatorException
      */
     public function creditToJournal(
         Journal $journal,
@@ -129,9 +123,9 @@ class FinanceService extends Service
         string $memo,
         string $transaction_group,
         string|array $tag,
-        Carbon|string|null $post_date = null
-    ) {
-        return $this->journalRepo->post(
+        ?Carbon $post_date = null
+    ): JournalTransaction {
+        return $this->journalSvc->post(
             $journal,
             $amount,
             null,
@@ -146,10 +140,6 @@ class FinanceService extends Service
     /**
      * Charge some expense for a given PIREP to the airline its file against
      * E.g, some amount for expenses or ground handling fees, etc.
-     *
-     * @return mixed
-     *
-     * @throws ValidatorException
      */
     public function debitFromJournal(
         Journal $journal,
@@ -158,9 +148,9 @@ class FinanceService extends Service
         string $memo,
         string $transaction_group,
         string|array $tag,
-        string|Carbon|null $post_date = null
-    ) {
-        return $this->journalRepo->post(
+        ?Carbon $post_date = null
+    ): JournalTransaction {
+        return $this->journalSvc->post(
             $journal,
             null,
             $amount,

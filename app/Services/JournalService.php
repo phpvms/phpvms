@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Contracts\Model;
 use App\Contracts\Service;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
 use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use UnexpectedValueException;
 
@@ -63,7 +63,7 @@ class JournalService extends Service
 
         if ($reference instanceof Model) {
             $attrs['ref_model_type'] = \get_class($reference);
-            $attrs['ref_model_id'] = $reference->id;
+            $attrs['ref_model_id'] = $reference->getKey();
         }
 
         $transaction = JournalTransaction::create($attrs);
@@ -84,7 +84,7 @@ class JournalService extends Service
     {
         $query = JournalTransaction::query()
             ->where('ref_model_type', \get_class($object))
-            ->where('ref_model_id', $object->id);
+            ->where('ref_model_id', $object->getKey());
 
         if ($journal instanceof Journal) {
             $query->where('journal_id', $journal->id);
