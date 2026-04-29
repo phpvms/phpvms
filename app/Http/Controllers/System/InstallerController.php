@@ -114,7 +114,7 @@ class InstallerController extends Controller
      */
     public function step1(): View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
@@ -145,7 +145,7 @@ class InstallerController extends Controller
      */
     public function step2(): View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
@@ -159,9 +159,9 @@ class InstallerController extends Controller
     /**
      * Step 2a. Create the .env
      */
-    public function envsetup(Request $request): RedirectResponse
+    public function envsetup(Request $request): RedirectResponse|View
     {
-        if (Schema::hasTable('users') && User::count() > 0) {
+        if (file_exists(base_path('.env'))) {
             return view('system.installer.errors.already-installed');
         }
 
