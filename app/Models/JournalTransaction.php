@@ -8,6 +8,8 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Models\Observers\JournalTransactionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -47,6 +49,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[ObservedBy(JournalTransactionObserver::class)]
 class JournalTransaction extends Model
 {
     use HasFactory;
