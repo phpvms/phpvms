@@ -171,7 +171,7 @@ class PirepController extends Controller
             $query->orderBy('submitted_at', 'desc');
         }
 
-        $perPage = $request->integer('limit') ?: config('phpvms.pagination.limit', 50);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
         $pireps = $query->paginate($perPage);
 
         return view('pireps.index', [

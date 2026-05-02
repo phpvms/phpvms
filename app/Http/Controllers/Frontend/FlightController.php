@@ -124,7 +124,7 @@ class FlightController extends Controller
                 return $q->whereIn('id', $allowed_flights);
             })
             ->orderBy('route_code')->orderBy('route_leg')
-            ->paginate($request->integer('limit') ?: null);
+            ->paginate(paginate_limit($request->integer('limit') ?: null));
 
         $saved_flights = [];
         $bids = Bid::where('user_id', Auth::id())->get();

@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index(SearchUsersRequest $request): View
     {
-        $perPage = $request->integer('limit') ?: config('phpvms.pagination.limit', 20);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
 
         $pilots = $this->userSearchQuery
             ->build($request)

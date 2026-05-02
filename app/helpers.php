@@ -443,3 +443,24 @@ if (!function_exists('decode_days')) {
         return implode(', ', $days);
     }
 }
+
+if (!function_exists('paginate_limit')) {
+    /**
+     * Resolve a `?limit=` query value to a safe per-page integer.
+     *
+     * Falls back to `phpvms.pagination.limit` when no limit is provided
+     * and clamps the result to `[1, phpvms.pagination.max]` so the API
+     * cannot be coerced into oversized result sets.
+     *
+     * @param  int|null $requested Raw `?limit=` from the request (post integer cast)
+     * @return int      Sanitized per-page value
+     */
+    function paginate_limit(?int $requested = null): int
+    {
+        $default = (int) config('phpvms.pagination.limit', 50);
+        $max = (int) config('phpvms.pagination.max', 100);
+        $value = $requested ?: $default;
+
+        return min(max($value, 1), $max);
+    }
+}

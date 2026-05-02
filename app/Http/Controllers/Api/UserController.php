@@ -156,9 +156,7 @@ class UserController extends Controller
             throw new UserNotFound();
         }
 
-        $perPage = $request->query('limit')
-            ? (int) $request->query('limit')
-            : config('phpvms.pagination.limit', 50);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
 
         $subfleets = $this->userSvc->getAllowableSubfleets($user, true, $perPage)
             ->appends($request->except(['page', 'user']));
@@ -186,7 +184,7 @@ class UserController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $perPage = $request->integer('limit') ?: config('phpvms.pagination.limit', 50);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
 
         return PirepResource::collection($query->paginate($perPage));
     }

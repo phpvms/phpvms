@@ -164,10 +164,14 @@ return [
     /*
      * Default pagination limits for paginated endpoints. Replaces the
      * removed `config/repository.php` (Prettus l5-repository) defaults.
-     * Limit value matches the historical Prettus default to preserve
-     * page-size behavior across all paginated endpoints.
+     *
+     * `limit` is the default page size when `?limit=` is not provided.
+     * `max`   is the hard cap on `?limit=` query input across every
+     *         paginated controller; values above this are clamped to
+     *         protect the API from oversized result sets.
      */
     'pagination' => [
-        'limit' => 20,
+        'limit' => 50,
+        'max'   => 100,
     ],
 ];

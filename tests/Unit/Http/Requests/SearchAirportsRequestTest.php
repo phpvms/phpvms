@@ -81,8 +81,12 @@ test('SearchAirportsRequest rejects non-positive limit values', function () {
         ->and(validateSearchAirports(['limit' => '-1'])->fails())->toBeTrue();
 });
 
-test('SearchAirportsRequest rejects limit above configured page size', function () {
-    $tooLarge = (string) (config('phpvms.pagination.limit') + 1);
+test('SearchAirportsRequest rejects limit above configured max page size', function () {
+    $tooLarge = (string) (config('phpvms.pagination.max') + 1);
 
     expect(validateSearchAirports(['limit' => $tooLarge])->fails())->toBeTrue();
+});
+
+test('SearchAirportsRequest passes with limit at configured max page size', function () {
+    expect(validateSearchAirports(['limit' => (string) config('phpvms.pagination.max')])->passes())->toBeTrue();
 });

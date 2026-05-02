@@ -116,7 +116,7 @@ class FlightController extends Controller
             });
         }
 
-        $perPage = $request->integer('limit') ?: null;
+        $perPage = paginate_limit($request->integer('limit') ?: null);
         $flights = $query->with($with)->paginate($perPage);
 
         foreach ($flights as $flight) {
