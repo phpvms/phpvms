@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Frontend;
 use App\Contracts\Controller;
 use App\Models\Aircraft;
 use App\Models\Bid;
+use App\Models\Enums\AircraftStatus;
+use App\Models\Enums\AircraftState;
 use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Typerating;
@@ -147,6 +149,10 @@ class FlightController extends Controller
             ->sortable('flight_number')->orderBy('route_code')->orderBy('route_leg')
             ->paginate();
 
+        // Count available aircraft for each flight in the result set
+        $ac_counts = $this->CountAvailableAircraftForFlights($flights);
+
+        // Get the user's saved flights (bids)
         $saved_flights = [];
         $bids = Bid::where('user_id', Auth::id())->get();
         foreach ($bids as $bid) {
@@ -161,6 +167,7 @@ class FlightController extends Controller
 
         return view('flights.index', [
             'user'          => $user,
+            'ac_counts'     => $ac_counts,
             'airlines'      => $this->airlineRepo->selectBoxList(true),
             'airports'      => [],
             'flights'       => $flights,
@@ -267,5 +274,85 @@ class FlightController extends Controller
             'bid'          => $bid,
             'acars_plugin' => $this->moduleSvc->isModuleActive('VMSAcars'),
         ]);
+    }
+
+    private function CountAvailableAircraftForFlights($flights): array
+    {
+        $counts = [];
+        $batchSize = 50;
+
+        foreach ($flights->chunk($batchSize) as $batch) {
+            // Collect unique airports and subfleets
+            $airportIds = $batch->pluck('dpt_airport_id')->unique()->toArray();
+            $subfleetIds = collect($batch)->flatMap(fn($f) => $f->subfleets->pluck('id'))->unique()->toArray();
+
+            // Get airline IDs for this batch
+            $airlineIds = collect($batch)->pluck('airline_id')->unique()->toArray();
+
+            // Query aircraft for this batch
+            $aircraftQuery = Aircraft::query()
+                ->where('status', AircraftStatus::ACTIVE)
+                ->where('state', AircraftState::PARKED)
+                ->whereIn('airport_id', $airportIds);
+
+            // Only add subfleet filter if we have subfleets
+            if (!empty($subfleetIds)) {
+                $aircraftQuery->whereIn('subfleet_id', $subfleetIds);
+            }
+
+            $aircraftData = $aircraftQuery
+                ->select(
+                    'airport_id',
+                    'subfleet_id',
+                    DB::raw('COUNT(*) as count'),
+                )
+                ->groupBy('airport_id', 'subfleet_id')
+                ->get()
+                ->groupBy('airport_id')
+                ->map(
+                    fn($airportAircrafts) => $airportAircrafts
+                        ->groupBy('subfleet_id')
+                        ->map(
+                            fn($subfleetGroup) => collect($subfleetGroup)->sum(
+                                'count',
+                            ),
+                        ),
+                )
+                ->toArray();
+
+            // For each flight
+            foreach ($batch as $flight) {
+                if ($flight->subfleets->isEmpty()) {
+                    // NO subfleets assigned, count ALL aircraft for this airline at departure airport
+                    // or check all aircraft according to settings
+                    // Get all subfleets for this airline
+                    $airlineSubfleetIds = DB::table("subfleets")
+                        ->when(setting('flights.only_company_aircraft', false), function ($query) use ($flight) {
+                            return $query->where('airline_id', $flight->airline_id);
+                        })
+                        ->select('id')
+                        ->pluck('id')
+                        ->toArray();
+
+                    // Sum all aircraft counts for these subfleets at this airport
+                    $count = 0;
+                    foreach ($airlineSubfleetIds as $sfId) {
+                        $count += $aircraftData[$flight->dpt_airport_id][$sfId] ?? 0;
+                    }
+                } else {
+                    // HAS subfleets, count only the members of the assigned subfleets for this flight at departure airport
+                    $count = 0;
+                    foreach ($flight->subfleets as $subfleet) {
+                        $subfleetCount =
+                            $aircraftData[$flight->dpt_airport_id][$subfleet->id] ?? 0;
+                        $count += $subfleetCount;
+                    }
+                }
+
+                $counts[$flight->id] = $count;
+            }
+        }
+
+        return $counts;
     }
 }
