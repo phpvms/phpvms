@@ -111,6 +111,7 @@ class FlightController extends Controller
             // Build type ratings collection by considering user's capabilities
             $type_ratings = $user->typeratings;
         } else {
+            $user_subfleets = null;
             $allowed_flights = [];
             // Build aircraft icao codes array from complete fleet
             $icao_codes = Aircraft::groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
@@ -150,7 +151,7 @@ class FlightController extends Controller
             ->paginate();
 
         // Count available aircraft for each flight in the result set
-        $ac_counts = $this->CountAvailableAircraftForFlights($flights);
+        $ac_counts = $this->CountAvailableAircraftForFlights($flights, $user_subfleets);
 
         // Get the user's saved flights (bids)
         $saved_flights = [];
@@ -276,7 +277,7 @@ class FlightController extends Controller
         ]);
     }
 
-    private function CountAvailableAircraftForFlights($flights): array
+    private function CountAvailableAircraftForFlights($flights, $user_subfleets = null): array
     {
         $counts = [];
         $batchSize = 50;
@@ -286,8 +287,13 @@ class FlightController extends Controller
             $airportIds = $batch->pluck('dpt_airport_id')->unique()->toArray();
             $subfleetIds = collect($batch)->flatMap(fn($f) => $f->subfleets->pluck('id'))->unique()->toArray();
 
+            if ($user_subfleets !== null) {
+                // If we have user subfleet restrictions, intersect with flight subfleets
+                $subfleetIds = array_intersect($subfleetIds, $user_subfleets);
+            }
+
             // Get airline IDs for this batch
-            $airlineIds = collect($batch)->pluck('airline_id')->unique()->toArray();
+            // $airlineIds = collect($batch)->pluck('airline_id')->unique()->toArray();
 
             // Query aircraft for this batch
             $aircraftQuery = Aircraft::query()
