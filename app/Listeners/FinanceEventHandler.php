@@ -10,7 +10,6 @@ use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use InvalidArgumentException;
-use Prettus\Validator\Exceptions\ValidatorException;
 use UnexpectedValueException;
 
 /**
@@ -33,11 +32,9 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
     /**
      * Kick off the finance events when a PIREP is accepted
      *
-     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      * @throws Exception
-     * @throws ValidatorException
      */
     public function onPirepAccept(PirepAccepted $event): void
     {
@@ -46,7 +43,6 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
 
     /**
      * Delete all finances in the journal for a given PIREP
-     *
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException

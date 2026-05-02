@@ -18,7 +18,6 @@ use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
  * Process all of the daily expenses and charge them
@@ -81,9 +80,6 @@ class RecurringFinanceService extends Service
 
     /**
      * Run all of the daily expense/financials
-     *
-     *
-     * @throws ValidatorException
      */
     public function processExpenses(string $type = ExpenseType::DAILY): void
     {

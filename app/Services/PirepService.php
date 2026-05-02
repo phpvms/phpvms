@@ -49,7 +49,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepService extends Service
 {
@@ -228,7 +227,6 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws ValidatorException
      * @throws Exception
      */
     public function update(string $pirep_id, array $attrs, array $fields = [], array $fares = []): Pirep
@@ -466,9 +464,6 @@ class PirepService extends Service
 
     /**
      * Cancel a PIREP
-     *
-     *
-     * @throws ValidatorException
      */
     public function cancel(Pirep $pirep): Pirep
     {

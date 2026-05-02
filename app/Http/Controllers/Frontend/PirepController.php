@@ -36,7 +36,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepController extends Controller
 {
@@ -172,7 +171,7 @@ class PirepController extends Controller
             $query->orderBy('submitted_at', 'desc');
         }
 
-        $perPage = $request->integer('limit') ?: config('repository.pagination.limit', 50);
+        $perPage = $request->integer('limit') ?: config('phpvms.pagination.limit', 50);
         $pireps = $query->paginate($perPage);
 
         return view('pireps.index', [
@@ -519,7 +518,6 @@ class PirepController extends Controller
 
     /**
      * @throws Exception
-     * @throws ValidatorException
      */
     public function update(string $id, UpdatePirepRequest $request): RedirectResponse
     {

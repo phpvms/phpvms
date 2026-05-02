@@ -36,7 +36,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
  * @property-read FilamentSchema $form
@@ -224,8 +223,6 @@ class Installer extends Page
 
     /**
      * Create first user and airline
-     *
-     * @throws ValidatorException
      */
     private function airlineAndUserSetup(): void
     {
@@ -265,8 +262,6 @@ class Installer extends Page
 
     /**
      * Called when the form is filed
-     *
-     * @throws ValidatorException
      */
     public function save(): void
     {

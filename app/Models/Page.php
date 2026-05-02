@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Exceptions\UnknownPageType;
 use App\Models\Enums\PageType;
+use App\Models\Observers\Sluggable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -43,6 +45,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[ObservedBy(Sluggable::class)]
 class Page extends Model
 {
     public $table = 'pages';

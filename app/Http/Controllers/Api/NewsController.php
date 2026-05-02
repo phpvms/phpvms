@@ -17,7 +17,7 @@ class NewsController extends Controller
     {
         $limit = $request->query('limit')
             ? (int) $request->query('limit')
-            : config('repository.pagination.limit', 50);
+            : config('phpvms.pagination.limit', 50);
 
         $news = News::with('user')
             ->latest()

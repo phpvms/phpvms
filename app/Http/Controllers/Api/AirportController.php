@@ -97,7 +97,7 @@ class AirportController extends Controller
      */
     private function perPage(Request $request): int
     {
-        $max = (int) config('repository.pagination.limit', 50);
+        $max = (int) config('phpvms.pagination.limit', 50);
         $limit = (int) $request->query('limit', $max);
 
         return min(max($limit, 1), $max);

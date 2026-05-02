@@ -23,7 +23,7 @@ class FleetController extends Controller
     {
         $limit = $request->query('limit')
             ? (int) $request->query('limit')
-            : config('repository.pagination.limit', 50);
+            : config('phpvms.pagination.limit', 50);
 
         $subfleets = Subfleet::with(['aircraft', 'airline', 'fares', 'ranks'])
             ->paginate($limit)

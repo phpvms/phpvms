@@ -25,7 +25,6 @@ use Illuminate\View\View;
 use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
 use Nwidart\Modules\Facades\Module;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class ProfileController extends Controller
 {
@@ -124,9 +123,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * @throws ValidatorException
-     */
     public function update(Request $request): RedirectResponse
     {
         $id = Auth::user()->id;

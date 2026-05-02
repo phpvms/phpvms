@@ -160,4 +160,14 @@ return [
      * Whether to use the built-in filament import system (relies on laravel queue worker)
      */
     'use_queued_filament_imports' => env('USE_QUEUED_FILAMENT_IMPORTS', false),
+
+    /*
+     * Default pagination limits for paginated endpoints. Replaces the
+     * removed `config/repository.php` (Prettus l5-repository) defaults.
+     * Limit value matches the historical Prettus default to preserve
+     * page-size behavior across all paginated endpoints.
+     */
+    'pagination' => [
+        'limit' => 20,
+    ],
 ];

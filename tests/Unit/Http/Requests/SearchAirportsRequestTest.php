@@ -49,7 +49,7 @@ test('SearchAirportsRequest passes with legacy multi-column orderBy', function (
 });
 
 test('SearchAirportsRequest passes with limit inside configured page size', function () {
-    expect(validateSearchAirports(['limit' => (string) config('repository.pagination.limit')])->passes())->toBeTrue();
+    expect(validateSearchAirports(['limit' => (string) config('phpvms.pagination.limit')])->passes())->toBeTrue();
 });
 
 test('SearchAirportsRequest passes with additional legacy sortable columns', function () {
@@ -82,7 +82,7 @@ test('SearchAirportsRequest rejects non-positive limit values', function () {
 });
 
 test('SearchAirportsRequest rejects limit above configured page size', function () {
-    $tooLarge = (string) (config('repository.pagination.limit') + 1);
+    $tooLarge = (string) (config('phpvms.pagination.limit') + 1);
 
     expect(validateSearchAirports(['limit' => $tooLarge])->fails())->toBeTrue();
 });
