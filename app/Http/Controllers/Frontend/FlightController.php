@@ -285,15 +285,33 @@ class FlightController extends Controller
         foreach ($flights->chunk($batchSize) as $batch) {
             // Collect unique airports and subfleets
             $airportIds = $batch->pluck('dpt_airport_id')->unique()->toArray();
-            $subfleetIds = collect($batch)->flatMap(fn($f) => $f->subfleets->pluck('id'))->unique()->toArray();
+            // Get airline IDs for this batch
+            $airlineIds = collect($batch)->pluck('airline_id')->unique()->toArray();
+
+            // Subfleets explicitly assigned to flights in this batch
+            $explicitSubfleetIds = collect($batch)
+                ->flatMap(fn($f) => $f->subfleets->pluck('id'))
+                ->unique()
+                ->toArray();
+
+            // Subfleets eligible for open flights (those with no assigned subfleets)
+            $hasOpenFlights = collect($batch)->contains(fn($f) => $f->subfleets->isEmpty());
+            $fallbackSubfleetIds = [];
+            if ($hasOpenFlights) {
+                $fallbackSubfleetIds = DB::table('subfleets')
+                    ->when(setting('flights.only_company_aircraft', false), function ($query) use ($airlineIds) {
+                        return $query->whereIn('airline_id', $airlineIds);
+                    })
+                    ->pluck('id')
+                    ->toArray();
+            }
+
+            $subfleetIds = array_unique(array_merge($explicitSubfleetIds, $fallbackSubfleetIds));
 
             if ($user_subfleets !== null) {
                 // If we have user subfleet restrictions, intersect with flight subfleets
                 $subfleetIds = array_intersect($subfleetIds, $user_subfleets);
             }
-
-            // Get airline IDs for this batch
-            // $airlineIds = collect($batch)->pluck('airline_id')->unique()->toArray();
 
             // Query aircraft for this batch
             $aircraftQuery = Aircraft::query()
@@ -326,19 +344,29 @@ class FlightController extends Controller
                 )
                 ->toArray();
 
+            // Build the subfleetIDs cache for this batch to avoid repeated queries
+            $onlyCompanyAircraft = setting('flights.only_company_aircraft', false);
+            $airlineSubfleetIdsCache = [];
+
+            $uniqueAirlineIds = $batch->pluck('airline_id')->unique()->toArray();
+            $subfleetRows = DB::table('subfleets')
+                ->when($onlyCompanyAircraft, fn($q) => $q->whereIn('airline_id', $uniqueAirlineIds))
+                ->select('id', 'airline_id')
+                ->get();
+
+            foreach ($uniqueAirlineIds as $airlineId) {
+                $airlineSubfleetIdsCache[$airlineId] = $onlyCompanyAircraft
+                    ? $subfleetRows->where('airline_id', $airlineId)->pluck('id')->toArray()
+                    : $subfleetRows->pluck('id')->toArray();
+            }
+
             // For each flight
             foreach ($batch as $flight) {
                 if ($flight->subfleets->isEmpty()) {
                     // NO subfleets assigned, count ALL aircraft for this airline at departure airport
                     // or check all aircraft according to settings
                     // Get all subfleets for this airline
-                    $airlineSubfleetIds = DB::table("subfleets")
-                        ->when(setting('flights.only_company_aircraft', false), function ($query) use ($flight) {
-                            return $query->where('airline_id', $flight->airline_id);
-                        })
-                        ->select('id')
-                        ->pluck('id')
-                        ->toArray();
+                    $airlineSubfleetIds = $airlineSubfleetIdsCache[$flight->airline_id] ?? [];
 
                     // Sum all aircraft counts for these subfleets at this airport
                     $count = 0;
