@@ -152,6 +152,17 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            withoutRole($roles, $guard = null)
  * @method static Builder<static>|User            withoutTrashed()
  *
+ * @property-read Collection<int, Permission> $teams
+ * @property-read int|null $teams_count
+ *
+ * @method static Builder<static>|User active()
+ * @method static Builder<static>|User forAirline(int $airlineId)
+ * @method static Builder<static>|User inState(int $state)
+ * @method static Builder<static>|User notRejected()
+ * @method static Builder<static>|User pending()
+ * @method static Builder<static>|User team($teams, bool $without = false)
+ * @method static Builder<static>|User withoutTeam($teams)
+ *
  * @mixin \Eloquent
  */
 #[ObservedBy(UserObserver::class)]

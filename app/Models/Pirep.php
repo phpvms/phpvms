@@ -142,6 +142,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereZfw($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep withoutTrashed()
+ * @method static Builder<static>|Pirep                               activeFlights(int $liveTime = 0)
  *
  * @mixin \Eloquent
  */

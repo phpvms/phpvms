@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Collection;
@@ -32,6 +34,12 @@ use Spatie\Permission\Models\Role;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutRole($roles, $guard = null)
+ *
+ * @property-read Collection<int, SpatiePermission> $teams
+ * @property-read int|null $teams_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission team($teams, bool $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutTeam($teams)
  *
  * @mixin \Eloquent
  */

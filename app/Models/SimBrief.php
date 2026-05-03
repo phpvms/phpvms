@@ -45,6 +45,8 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief wherePirepId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUserId($value)
+ *
+ * @mixin \Eloquent
  */
 #[ObservedBy(SimBriefObserver::class)]
 class SimBrief extends Model

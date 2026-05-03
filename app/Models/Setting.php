@@ -47,6 +47,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereValue($value)
+ * @method static Builder<static>|Setting                               byKey(string $key)
  *
  * @mixin \Eloquent
  */

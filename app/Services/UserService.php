@@ -102,6 +102,7 @@ class UserService extends Service
         return $fields->map(function ($field, $_) use ($user) {
             foreach ($user->fields as $userFieldValue) {
                 if ($userFieldValue->field->slug === $field->slug) {
+                    // @phpstan-ignore-next-line
                     $field->value = $userFieldValue->value;
                 }
             }

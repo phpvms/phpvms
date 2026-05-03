@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereSlug($value)
+ * @method static \Database\Factories\FlightFieldFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

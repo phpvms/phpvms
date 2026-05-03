@@ -42,6 +42,11 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
  *
+ * @property string|null $ref_model
+ *
+ * @method static \Database\Factories\FileFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModel($value)
+ *
  * @mixin \Eloquent
  */
 class File extends Model

@@ -39,6 +39,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @method static Builder<static>|Role                               whereName($value)
  * @method static Builder<static>|Role                               whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role withoutPermission($permissions)
+ * @method static Builder<static>|Role                               byName(string $name)
  *
  * @mixin \Eloquent
  */

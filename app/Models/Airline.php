@@ -74,6 +74,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withoutTrashed()
+ * @method static Builder<static>|Airline                               byIcao(string $icao)
  *
  * @mixin \Eloquent
  */

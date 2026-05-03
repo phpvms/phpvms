@@ -87,6 +87,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airport withoutTrashed()
+ * @method static Builder<static>|Airport                               active()
+ * @method static Builder<static>|Airport                               byHub()
+ * @method static Builder<static>|Airport                               orderByIcao()
  *
  * @mixin \Eloquent
  */

@@ -72,6 +72,12 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereVs($value)
+ * @method static Builder<static>|Acars                               flightPath()
+ * @method static Builder<static>|Acars                               forPirep(string $pirepId)
+ * @method static Builder<static>|Acars                               ofType(int $type)
+ * @method static Builder<static>|Acars                               orderedByCreatedAt(string $direction = 'asc')
+ * @method static Builder<static>|Acars                               orderedByOrder(string $direction = 'asc')
+ * @method static Builder<static>|Acars                               orderedBySimTime(string $direction = 'asc')
  *
  * @mixin \Eloquent
  */

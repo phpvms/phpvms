@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Contracts\Model;
@@ -29,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereUpdatedAt($value)
+ * @method static \Database\Factories\EventFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */
