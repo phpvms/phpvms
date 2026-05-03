@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laracasts\Flash\FlashNotifier;
-use Madnest\Madzipper\Madzipper;
+// use Madnest\Madzipper\Madzipper;
 use Nwidart\Modules\Json;
 use PharData;
 
@@ -185,7 +185,7 @@ class ModuleService extends Service
             $zipper->decompress();
         }
 
-        if ($file_ext === 'zip') {
+        /*if ($file_ext === 'zip') {
             $madZipper = new Madzipper();
 
             try {
@@ -193,7 +193,7 @@ class ModuleService extends Service
             } catch (Exception $e) {
                 throw new ModuleInstallationError();
             }
-        }
+        }*/
 
         try {
             $zipper->extractTo($temp);
