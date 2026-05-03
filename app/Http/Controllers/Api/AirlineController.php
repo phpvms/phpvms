@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
-use App\Http\Resources\Airline as AirlineResource;
+use App\Http\Resources\AirlineResource;
 use App\Models\Airline;
 use Illuminate\Http\Request;
 

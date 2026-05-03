@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Observers\SettingObserver;
+use App\Observers\SettingObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

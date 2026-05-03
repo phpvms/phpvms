@@ -7,9 +7,9 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Contracts\Model;
-use App\Models\Casts\MoneyCast;
-use App\Models\Observers\JournalObserver;
+use App\Observers\JournalObserver;
 use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;

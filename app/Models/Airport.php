@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Observers\AirportObserver;
-use App\Models\Traits\ExpensableTrait;
-use App\Models\Traits\FilesTrait;
+use App\Observers\AirportObserver;
+use App\Traits\ExpensableTrait;
+use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
-use App\Http\Resources\Aircraft as AircraftResource;
-use App\Http\Resources\Subfleet as SubfleetResource;
+use App\Http\Resources\AircraftResource;
+use App\Http\Resources\SubfleetResource;
 use App\Models\Aircraft;
 use App\Models\Subfleet;
 use Illuminate\Http\Request;

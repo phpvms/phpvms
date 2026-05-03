@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Observers\SimBriefObserver;
+use App\Observers\SimBriefObserver;
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Enums\JournalType;
-use App\Models\Traits\FilesTrait;
-use App\Models\Traits\JournalTrait;
+use App\Traits\FilesTrait;
+use App\Traits\JournalTrait;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
-use App\Http\Resources\News as NewsResource;
+use App\Http\Resources\NewsResource;
 use App\Models\News;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;

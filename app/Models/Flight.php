@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Casts\DistanceCast;
 use App\Contracts\Model;
-use App\Models\Casts\DistanceCast;
 use App\Models\Enums\Days;
-use App\Models\Observers\FlightObserver;
-use App\Models\Traits\HashIdTrait;
+use App\Observers\FlightObserver;
+use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Http\Requests\SearchAirportsRequest;
-use App\Http\Resources\Airport as AirportResource;
-use App\Http\Resources\AirportDistance as AirportDistanceResource;
+use App\Http\Resources\AirportDistanceResource;
+use App\Http\Resources\AirportResource;
 use App\Models\Airport;
 use App\Queries\AirportSearchQueryV1;
 use App\Services\AirportService;

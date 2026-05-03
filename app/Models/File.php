@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Traits\HashIdTrait;
+use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;

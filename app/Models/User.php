@@ -4,8 +4,8 @@ namespace App\Models;
 
 use App\Models\Enums\JournalType;
 use App\Models\Enums\UserState;
-use App\Models\Observers\UserObserver;
-use App\Models\Traits\JournalTrait;
+use App\Observers\UserObserver;
+use App\Traits\JournalTrait;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;

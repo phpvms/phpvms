@@ -1,6 +1,9 @@
 <?php
 
 // use Swagger\Serializer;
+use App\Http\Resources\AirlineResource;
+use App\Http\Resources\AirportResource;
+use App\Http\Resources\NewsResource;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
@@ -71,7 +74,7 @@ it('can retrieve news', function () {
     $news = News::factory()->create();
     $response = $this->get('/api/news');
 
-    $expected = App\Http\Resources\News::collection([$news])->resolve();
+    $expected = NewsResource::collection([$news])->resolve();
 
     $response->assertSuccessful();
 
@@ -97,7 +100,7 @@ it('can retrieve airlines', function () {
     $res->assertSuccessful()
         ->assertJsonCount($size, 'data');
 
-    $expected = App\Http\Resources\Airline::collection($airlines)->resolve();
+    $expected = AirlineResource::collection($airlines)->resolve();
     expect($res->json('data'))->toEqualCanonicalizing($expected);
 
     $airline = $airlines->random();
@@ -105,7 +108,7 @@ it('can retrieve airlines', function () {
 
     $response->assertSuccessful();
 
-    $expected = App\Http\Resources\Airline::make($airline)->resolve();
+    $expected = AirlineResource::make($airline)->resolve();
     expect($response->json('data'))->toEqual($expected);
 
 });
@@ -142,7 +145,7 @@ test('get airlines chinese chars', function () {
     $res->assertSuccessful()
         ->assertJsonCount(4, 'data');
 
-    $expected = App\Http\Resources\Airline::collection($airlines)->resolve();
+    $expected = AirlineResource::collection($airlines)->resolve();
     expect($res->json('data'))->toEqualCanonicalizing($expected);
 });
 
@@ -263,7 +266,7 @@ it('can retrieve an airport', function () {
 
     $response->assertSuccessful();
 
-    $expected = App\Http\Resources\Airport::make($airport)->resolve();
+    $expected = AirportResource::make($airport)->resolve();
 
     expect($response->json('data'))->toMatchArray(Arr::except($expected, ['deleted_at']));
 

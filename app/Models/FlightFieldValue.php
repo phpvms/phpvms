@@ -3,8 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Observers\Sluggable;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,10 +36,10 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-#[ObservedBy(Sluggable::class)]
 class FlightFieldValue extends Model
 {
     use HasFactory;
+    use HasSlug;
 
     public $table = 'flight_field_values';
 

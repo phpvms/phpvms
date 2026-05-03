@@ -4,8 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Enums\PirepFieldSource;
-use App\Models\Observers\Sluggable;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -37,9 +36,10 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-#[ObservedBy(Sluggable::class)]
 class PirepFieldValue extends Model
 {
+    use HasSlug;
+
     public $table = 'pirep_field_values';
 
     protected $fillable = [

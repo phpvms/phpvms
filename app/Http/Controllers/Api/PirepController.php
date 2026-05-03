@@ -15,11 +15,11 @@ use App\Http\Requests\Acars\FileRequest;
 use App\Http\Requests\Acars\PrefileRequest;
 use App\Http\Requests\Acars\RouteRequest;
 use App\Http\Requests\Acars\UpdateRequest;
-use App\Http\Resources\AcarsRoute as AcarsRouteResource;
-use App\Http\Resources\JournalTransaction as JournalTransactionResource;
-use App\Http\Resources\Pirep as PirepResource;
-use App\Http\Resources\PirepComment as PirepCommentResource;
-use App\Http\Resources\PirepFieldCollection;
+use App\Http\Resources\AcarsRouteResource;
+use App\Http\Resources\JournalTransactionResource;
+use App\Http\Resources\PirepCommentResource;
+use App\Http\Resources\PirepFieldCollectionResource;
+use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
@@ -354,25 +354,25 @@ class PirepController extends Controller
     /**
      * Get all of the fields for a PIREP
      */
-    public function fields_get(string $pirep_id): PirepFieldCollection
+    public function fields_get(string $pirep_id): PirepFieldCollectionResource
     {
-        $pirep = Pirep::find($pirep_id);
+        $pirep = Pirep::findOrFail($pirep_id);
 
-        return new PirepFieldCollection($pirep->fields);
+        return new PirepFieldCollectionResource($pirep->fields);
     }
 
     /**
      * Set any fields for a PIREP
      */
-    public function fields_post(string $pirep_id, FieldsRequest $request): PirepFieldCollection
+    public function fields_post(string $pirep_id, FieldsRequest $request): PirepFieldCollectionResource
     {
-        $pirep = Pirep::find($pirep_id);
+        $pirep = Pirep::findOrFail($pirep_id);
         $this->checkCancelled($pirep);
 
         $fields = $this->getFields($request);
         $this->pirepSvc->updateCustomFields($pirep_id, $fields);
 
-        return new PirepFieldCollection($pirep->fields);
+        return new PirepFieldCollectionResource($pirep->fields);
     }
 
     /**

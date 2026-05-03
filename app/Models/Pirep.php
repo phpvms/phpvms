@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Casts\CarbonCast;
+use App\Casts\DistanceCast;
+use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
-use App\Models\Casts\CarbonCast;
-use App\Models\Casts\DistanceCast;
-use App\Models\Casts\FuelCast;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepState;
-use App\Models\Traits\HashIdTrait;
+use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;

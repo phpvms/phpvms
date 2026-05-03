@@ -4,9 +4,9 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Models\Enums\AircraftStatus;
-use App\Models\Observers\SubfleetObserver;
-use App\Models\Traits\ExpensableTrait;
-use App\Models\Traits\FilesTrait;
+use App\Observers\SubfleetObserver;
+use App\Traits\ExpensableTrait;
+use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
