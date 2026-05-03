@@ -6,7 +6,7 @@ ranks:
   ignore_if_exists: true
   data:
     - id: 1
-      name: 'New Pilot'
+      name: "New Pilot"
       hours: 0
       acars_base_pay_rate: 50
       manual_base_pay_rate: 25

@@ -8,6 +8,7 @@ use App\Models\Enums\Days;
 use App\Observers\FlightObserver;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -78,6 +79,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read User|null $user
  *
  * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Flight            active()
+ * @method static Builder<static>|Flight            visible()
+ * @method static Builder<static>|Flight            forAirline(int $airlineId)
+ * @method static Builder<static>|Flight            fromAirport(string $icao)
+ * @method static Builder<static>|Flight            toAirport(string $icao)
+ * @method static Builder<static>|Flight            withFlightType(string $type)
+ * @method static Builder<static>|Flight            distanceAtLeast(int $distance)
+ * @method static Builder<static>|Flight            distanceAtMost(int $distance)
+ * @method static Builder<static>|Flight            flightTimeAtLeast(int $minutes)
+ * @method static Builder<static>|Flight            flightTimeAtMost(int $minutes)
+ * @method static Builder<static>|Flight            withSubfleet(int $subfleetId)
+ * @method static Builder<static>|Flight            forTypeRating(int $typeRatingId)
+ * @method static Builder<static>|Flight            withIcaoType(string $icao)
  * @method static Builder<static>|Flight            newModelQuery()
  * @method static Builder<static>|Flight            newQuery()
  * @method static Builder<static>|Flight            onlyTrashed()
@@ -173,21 +187,6 @@ class Flight extends Model
         'user_id',
         'owner_type',
         'owner_id',
-    ];
-
-    public static array $rules = [
-        'airline_id'           => 'required|exists:airlines,id',
-        'flight_number'        => 'required|integer|max_digits:4',
-        'callsign'             => 'string|max:4|nullable',
-        'route_code'           => 'nullable',
-        'route_leg'            => 'nullable',
-        'dpt_airport_id'       => 'required|exists:airports,id',
-        'arr_airport_id'       => 'required|exists:airports,id',
-        'load_factor'          => 'nullable|numeric',
-        'load_factor_variance' => 'nullable|numeric',
-        'level'                => 'nullable',
-        'event_id'             => 'nullable|numeric',
-        'user_id'              => 'nullable|numeric',
     ];
 
     public array $sortable = [
@@ -401,5 +400,113 @@ class Flight extends Model
             'event_id'             => 'integer',
             'user_id'              => 'integer',
         ];
+    }
+
+    /*
+     * Query scopes
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->where('active', true);
+    }
+
+    #[Scope]
+    protected function visible(Builder $query): Builder
+    {
+        return $query->where('visible', true);
+    }
+
+    #[Scope]
+    protected function forAirline(Builder $query, int $airlineId): Builder
+    {
+        return $query->where('airline_id', $airlineId);
+    }
+
+    #[Scope]
+    protected function fromAirport(Builder $query, string $icao): Builder
+    {
+        return $query->where('dpt_airport_id', strtoupper($icao));
+    }
+
+    #[Scope]
+    protected function toAirport(Builder $query, string $icao): Builder
+    {
+        return $query->where('arr_airport_id', strtoupper($icao));
+    }
+
+    #[Scope]
+    protected function withFlightType(Builder $query, string $type): Builder
+    {
+        return $query->where('flight_type', $type);
+    }
+
+    #[Scope]
+    protected function distanceAtLeast(Builder $query, int $distance): Builder
+    {
+        return $query->where('distance', '>=', $distance);
+    }
+
+    #[Scope]
+    protected function distanceAtMost(Builder $query, int $distance): Builder
+    {
+        return $query->where('distance', '<=', $distance);
+    }
+
+    #[Scope]
+    protected function flightTimeAtLeast(Builder $query, int $minutes): Builder
+    {
+        return $query->where('flight_time', '>=', $minutes);
+    }
+
+    #[Scope]
+    protected function flightTimeAtMost(Builder $query, int $minutes): Builder
+    {
+        return $query->where('flight_time', '<=', $minutes);
+    }
+
+    #[Scope]
+    protected function withSubfleet(Builder $query, int $subfleetId): Builder
+    {
+        return $query->whereHas(
+            'subfleets',
+            fn (Builder $sq) => $sq->where('subfleets.id', $subfleetId)
+        );
+    }
+
+    /**
+     * Filter to flights whose subfleets are part of the given type rating.
+     */
+    #[Scope]
+    protected function forTypeRating(Builder $query, int $typeRatingId): Builder
+    {
+        $subfleetIds = Typerating::with('subfleets')
+            ->where('id', $typeRatingId)
+            ->first()
+            ?->subfleets
+            ->pluck('id')
+            ->all() ?? [];
+
+        return $query->whereHas(
+            'subfleets',
+            fn (Builder $sq) => $sq->whereIn('subfleets.id', $subfleetIds)
+        );
+    }
+
+    /**
+     * Filter to flights flown by aircraft of a given ICAO type code.
+     */
+    #[Scope]
+    protected function withIcaoType(Builder $query, string $icao): Builder
+    {
+        $subfleetIds = Aircraft::where('icao', strtoupper(trim($icao)))
+            ->groupBy('subfleet_id')
+            ->pluck('subfleet_id')
+            ->all();
+
+        return $query->whereHas(
+            'subfleets',
+            fn (Builder $sq) => $sq->whereIn('subfleets.id', $subfleetIds)
+        );
     }
 }

@@ -17,9 +17,4 @@ import "leaflet-rotatedmarker";
 
 window.L = L;
 
-export {
-  render_airspace_map,
-  render_live_map,
-  render_route_map,
-  render_base_map,
-};
+export { render_airspace_map, render_live_map, render_route_map, render_base_map };

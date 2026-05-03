@@ -5,22 +5,19 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
-use App\Repositories\UserRepository;
+use App\Services\UserService;
 
 /*
- * Locks in current UserRepository::getUserFields behavior.
+ * Exercises UserService::getUserFields semantics.
  *
- * Purpose: Phase 0 safety net for the repository-removal refactor.
- * Phase 4 will absorb this method into UserService::getUserFields().
- * Assertions must stay identical.
- *
- * Delete this file in Phase 4 after UserService is in production and
- * these same assertions have been migrated into the UserService tests.
+ * Originated as a Phase 0 safety net before the method was absorbed
+ * out of UserRepository into UserService. Assertions are unchanged
+ * from the repository-era contract.
  */
 
-function userFieldsRepo(): UserRepository
+function userFieldsService(): UserService
 {
-    return app(UserRepository::class);
+    return app(UserService::class);
 }
 
 /**
@@ -51,7 +48,7 @@ test('returns only public fields when only public true', function () {
 
     $user = userFieldsMakeUserWithFields();
 
-    $results = userFieldsRepo()->getUserFields($user, true);
+    $results = userFieldsService()->getUserFields($user, true);
 
     expect($results)->toHaveCount(1);
     /** @var UserField $first */
@@ -74,7 +71,7 @@ test('returns only private fields when only public false', function () {
 
     $user = userFieldsMakeUserWithFields();
 
-    $results = userFieldsRepo()->getUserFields($user, false);
+    $results = userFieldsService()->getUserFields($user, false);
 
     expect($results)->toHaveCount(1);
     /** @var UserField $first */
@@ -101,7 +98,7 @@ test('returns all non internal fields when only public null', function () {
 
     $user = userFieldsMakeUserWithFields();
 
-    $results = userFieldsRepo()->getUserFields($user);
+    $results = userFieldsService()->getUserFields($user);
 
     // Both non-internal fields (one public, one private) regardless of `private`.
     expect($results)->toHaveCount(2);
@@ -124,7 +121,7 @@ test('with internal fields true includes internal', function () {
 
     $user = userFieldsMakeUserWithFields();
 
-    $results = userFieldsRepo()->getUserFields($user, null, true);
+    $results = userFieldsService()->getUserFields($user, null, true);
 
     expect($results)->toHaveCount(2);
 });
@@ -150,7 +147,7 @@ test('populates field value from user field values', function () {
     // doesn't trip on $user->fields or $userFieldValue->field.
     $user = $user->fresh(['fields.field']);
 
-    $results = userFieldsRepo()->getUserFields($user, true);
+    $results = userFieldsService()->getUserFields($user, true);
 
     expect($results)->toHaveCount(1);
     /** @var UserField $first */

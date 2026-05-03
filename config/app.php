@@ -29,7 +29,6 @@ use Igaster\LaravelTheme\themeServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Laracasts\Flash\Flash;
 use Laracasts\Flash\FlashServiceProvider;
-use Prettus\Repository\Providers\RepositoryServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 use Symfony\Component\Yaml\Yaml;
 
@@ -61,7 +60,6 @@ return [
          * Package Service Providers...
          */
         FlashServiceProvider::class,
-        RepositoryServiceProvider::class,
         themeServiceProvider::class,
         // Nwidart\Modules\LaravelModulesServiceProvider::class,
         ServiceProvider::class,

@@ -202,6 +202,92 @@ test('find all flights', function () {
     $res->assertJsonCount(5, 'data');
 });
 
+test('frontend flight list hides restricted flights and keeps open flights', function () {
+    updateSetting('pilots.restrict_to_company', false);
+    updateSetting('pilots.only_show_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', true);
+    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+
+    $airline = Airline::factory()->create();
+    $allowedSubfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $restrictedSubfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $rank = Rank::factory()->hasAttached($allowedSubfleet)->create();
+
+    /** @var User $user */
+    $user = User::factory()->create([
+        'airline_id' => $airline->id,
+        'rank_id'    => $rank->id,
+    ]);
+
+    $allowedFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+    $allowedFlight->subfleets()->syncWithoutDetaching([$allowedSubfleet->id]);
+
+    $restrictedFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+    $restrictedFlight->subfleets()->syncWithoutDetaching([$restrictedSubfleet->id]);
+
+    $openFlight = Flight::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/flights');
+    $response->assertOk();
+
+    $flights = collect($response->viewData('flights')->items());
+    $flightIds = $flights->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+    expect($flightIds)
+        ->toContain($allowedFlight->id)
+        ->toContain($openFlight->id)
+        ->not->toContain($restrictedFlight->id);
+});
+
+test('frontend flight list prefers explicit ordering over sortable aliases', function () {
+    updateSetting('pilots.restrict_to_company', false);
+    updateSetting('pilots.only_show_flights_from_current', false);
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+
+    $airline = Airline::factory()->create();
+
+    /** @var User $user */
+    $user = User::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+
+    Flight::factory()->create([
+        'airline_id'     => $airline->id,
+        'flight_number'  => 200,
+        'dpt_time'       => '23:00:00',
+        'route_code'     => 'A',
+        'route_leg'      => 1,
+        'dpt_airport_id' => Airport::factory()->create()->id,
+        'arr_airport_id' => Airport::factory()->create()->id,
+    ]);
+    Flight::factory()->create([
+        'airline_id'     => $airline->id,
+        'flight_number'  => 100,
+        'dpt_time'       => '01:00:00',
+        'route_code'     => 'A',
+        'route_leg'      => 1,
+        'dpt_airport_id' => Airport::factory()->create()->id,
+        'arr_airport_id' => Airport::factory()->create()->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/flights?sort=dpt_time&direction=desc&orderBy=flight_number&sortedBy=asc');
+    $response->assertOk();
+
+    $flightNumbers = collect($response->viewData('flights')->items())
+        ->pluck('flight_number')
+        ->map(fn ($flightNumber) => (int) $flightNumber)
+        ->all();
+
+    expect($flightNumbers)->toBe([100, 200]);
+});
+
 test('search flight by subfleet', function () {
     $airline = Airline::factory()->create();
     $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);

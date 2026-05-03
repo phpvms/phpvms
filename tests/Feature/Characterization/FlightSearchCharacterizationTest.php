@@ -2,47 +2,40 @@
 
 declare(strict_types=1);
 
+use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Models\Typerating;
-use App\Repositories\FlightRepository;
+use App\Queries\FlightSearchQuery;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 /*
- * Locks in current FlightRepository::searchCriteria behavior.
+ * Locks in flight-search behavior across the Phase 6 refactor.
  *
- * Purpose: Phase 0 safety net for the repository-removal refactor.
- * In Phase 6, the arrange section using $repo->searchCriteria will be
- * swapped for `(new FlightSearchQuery($request))->build()`. Assertions
- * must stay identical.
- *
- * Delete this file in Phase 6 after FlightSearchQuery is in production
- * and these same assertions have been migrated into FlightTest.php.
+ * Same assertions ran against FlightRepository::searchCriteria (legacy)
+ * and now against FlightSearchQuery::build (current). Identical results
+ * across the swap = behavior preserved.
  */
 
 /**
- * Run a search through the repo and return the full result collection.
+ * Run a search through FlightSearchQuery and return the full result collection.
  *
- * Uses ->all() rather than ->paginate() for simpler assertions — the
- * underlying WhereCriteria application is identical either way.
+ * Uses ->get() rather than ->paginate() for simpler assertions — the
+ * underlying query is identical either way.
  */
 function flightSearchRun(array $params, bool $only_active = true): Collection
 {
-    /** @var FlightRepository $repo */
-    $repo = app(FlightRepository::class);
+    $base = Request::create('/api/flights/search', 'GET', $params);
 
-    $request = Request::create('/api/flights/search', 'GET', $params);
+    $request = SearchFlightsRequest::createFrom($base);
+    $request->setContainer(app())->setRedirector(app('redirect'));
+    $request->validateResolved();
 
-    $repo->resetCriteria();
-
-    /** @var Collection $results */
-    $results = $repo->searchCriteria($request, $only_active)->all();
-
-    return $results;
+    return (new FlightSearchQuery())->build($request, $only_active)->get();
 }
 
 test('filter by airline id only', function () {
@@ -81,6 +74,44 @@ test('filter by dep icao uppercases and filters', function () {
     $first = $results->first();
     expect($first->id)->toEqual($target->id)
         ->and($first->dpt_airport_id)->toEqual('KLAX');
+});
+
+test('filter by dep icao falls back when primary param is blank', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create(['dpt_airport_id' => 'KLAX']);
+    Flight::factory()->create(['dpt_airport_id' => 'KJFK']);
+
+    $results = flightSearchRun([
+        'dpt_airport_id' => '',
+        'dep_icao'       => 'klax',
+    ]);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
+});
+
+test('filter by arr icao falls back when primary param is blank', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create(['arr_airport_id' => 'KJFK']);
+    Flight::factory()->create(['arr_airport_id' => 'KLAX']);
+
+    $results = flightSearchRun([
+        'arr_airport_id' => '',
+        'arr_icao'       => 'kjfk',
+    ]);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
 });
 
 test('filter by distance range dgt and dlt', function () {
@@ -174,6 +205,62 @@ test('filter by icao type joins through aircraft', function () {
     /** @var Flight $first */
     $first = $results->first();
     expect($first->id)->toEqual($attached->id);
+});
+
+test('filter by icao type normalizes case', function () {
+    /** @var Subfleet $subfleet */
+    $subfleet = Subfleet::factory()->create();
+    Aircraft::factory()->create([
+        'subfleet_id' => $subfleet->id,
+        'icao'        => 'B738',
+    ]);
+
+    /** @var Flight $attached */
+    $attached = Flight::factory()->create();
+    $attached->subfleets()->attach($subfleet->id);
+
+    $results = flightSearchRun(['icao_type' => 'b738']);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($attached->id);
+});
+
+test('plain search matches free text columns', function () {
+    Airport::factory()->create(['id' => 'KLAX']);
+    Airport::factory()->create(['id' => 'KJFK']);
+
+    /** @var Flight $target */
+    $target = Flight::factory()->create([
+        'dpt_airport_id' => 'KLAX',
+        'callsign'       => 'SEARCHME',
+    ]);
+    Flight::factory()->create([
+        'dpt_airport_id' => 'KJFK',
+        'callsign'       => 'IGNOREME',
+    ]);
+
+    $results = flightSearchRun(['search' => 'LAX']);
+
+    expect($results)->toHaveCount(1);
+    /** @var Flight $first */
+    $first = $results->first();
+    expect($first->id)->toEqual($target->id);
+});
+
+test('honors legacy multi-column orderBy syntax', function () {
+    Flight::factory()->create(['flight_number' => '100', 'route_code' => 'B']);
+    Flight::factory()->create(['flight_number' => '100', 'route_code' => 'A']);
+    Flight::factory()->create(['flight_number' => '200', 'route_code' => 'A']);
+
+    $results = flightSearchRun([
+        'orderBy'  => 'flight_number;route_code',
+        'sortedBy' => 'asc;desc',
+    ], only_active: false);
+
+    expect($results->pluck('route_code')->all())->toBe(['B', 'A', 'A'])
+        ->and($results->pluck('flight_number')->all())->toBe([100, 100, 200]);
 });
 
 test('only active true excludes inactive flights', function () {

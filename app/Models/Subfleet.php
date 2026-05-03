@@ -112,25 +112,6 @@ class Subfleet extends Model
 
     public $table = 'subfleets';
 
-    public $casts = [
-        'airline_id'                 => 'integer',
-        'turn_time'                  => 'integer',
-        'cost_block_hour'            => 'float',
-        'cost_delay_minute'          => 'float',
-        'fuel_type'                  => 'integer',
-        'ground_handling_multiplier' => 'float',
-        'cargo_capacity'             => 'float',
-        'fuel_capacity'              => 'float',
-        'gross_weight'               => 'float',
-    ];
-
-    public static array $rules = [
-        'type'                       => 'required',
-        'name'                       => 'required',
-        'hub_id'                     => 'nullable',
-        'ground_handling_multiplier' => 'nullable|numeric',
-    ];
-
     public $sortable = [
         'id',
         'airline_id',
@@ -211,5 +192,23 @@ class Subfleet extends Model
             'subfleet_id',
             'typerating_id'
         );
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'airline_id'                 => 'integer',
+            'turn_time'                  => 'integer',
+            'cost_block_hour'            => 'float',
+            'cost_delay_minute'          => 'float',
+            'fuel_type'                  => 'integer',
+            'ground_handling_multiplier' => 'float',
+            'cargo_capacity'             => 'float',
+            'fuel_capacity'              => 'float',
+            'gross_weight'               => 'float',
+        ];
     }
 }

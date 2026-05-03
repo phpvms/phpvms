@@ -1,8 +1,8 @@
 <?php
 
 use App\Exceptions\SettingNotFound;
-use App\Repositories\SettingRepository;
 use App\Services\KvpService;
+use App\Services\SettingService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Facades\Auth;
@@ -159,18 +159,18 @@ if (!function_exists('setting')) {
      */
     function setting($key, $default = null)
     {
-        /** @var SettingRepository $settingRepo */
-        $settingRepo = app(SettingRepository::class);
+        /** @var SettingService $settingService */
+        $settingService = app(SettingService::class);
 
         try {
             if (app()->environment('production')) {
                 $cache = config('cache.keys.SETTINGS');
 
-                $value = Cache::remember($cache['key'].$key, $cache['time'], function () use ($key, $settingRepo) {
-                    return $settingRepo->retrieve($key);
+                $value = Cache::remember($cache['key'].$key, $cache['time'], function () use ($key, $settingService) {
+                    return $settingService->retrieve($key);
                 });
             } else {
-                $value = $settingRepo->retrieve($key);
+                $value = $settingService->retrieve($key);
             }
         } catch (SettingNotFound $e) {
             return $default;
@@ -188,9 +188,9 @@ if (!function_exists('setting')) {
 if (!function_exists('setting_save')) {
     function setting_save($key, $value)
     {
-        /** @var SettingRepository $settingRepo */
-        $settingRepo = app(SettingRepository::class);
-        $settingRepo->save($key, $value);
+        /** @var SettingService $settingService */
+        $settingService = app(SettingService::class);
+        $settingService->save($key, $value);
 
         return $value;
     }
@@ -441,5 +441,26 @@ if (!function_exists('decode_days')) {
         }
 
         return implode(', ', $days);
+    }
+}
+
+if (!function_exists('paginate_limit')) {
+    /**
+     * Resolve a `?limit=` query value to a safe per-page integer.
+     *
+     * Falls back to `phpvms.pagination.limit` when no limit is provided
+     * and clamps the result to `[1, phpvms.pagination.max]` so the API
+     * cannot be coerced into oversized result sets.
+     *
+     * @param  int|null $requested Raw `?limit=` from the request (post integer cast)
+     * @return int      Sanitized per-page value
+     */
+    function paginate_limit(?int $requested = null): int
+    {
+        $default = (int) config('phpvms.pagination.limit', 50);
+        $max = (int) config('phpvms.pagination.max', 100);
+        $value = $requested ?: $default;
+
+        return min(max($value, 1), $max);
     }
 }

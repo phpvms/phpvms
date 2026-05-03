@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\AirportLookup;
 
 use App\Contracts\AirportLookup;
@@ -30,7 +32,7 @@ class VaCentralLookup extends AirportLookup
 
             return $airport;
         } catch (HttpException $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
 
             return [];
         }

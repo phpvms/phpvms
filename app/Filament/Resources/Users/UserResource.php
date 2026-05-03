@@ -12,8 +12,8 @@ use App\Filament\Resources\Users\RelationManagers\TypeRatingsRelationManager;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\Enums\NavigationGroup;
-use App\Models\Enums\UserState;
 use App\Models\User;
+use App\Services\UserService;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -35,9 +35,9 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return User::where('state', UserState::PENDING)->count() > 0
-            ? (string) User::where('state', UserState::PENDING)->count()
-            : null;
+        $count = app(UserService::class)->getPendingCount();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function form(Schema $schema): Schema

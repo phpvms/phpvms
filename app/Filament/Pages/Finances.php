@@ -4,8 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
+use App\Models\Airline;
 use App\Models\Enums\NavigationGroup;
-use App\Repositories\AirlineRepository;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -56,7 +56,7 @@ class Finances extends Page
                     ->native(false)
                     ->label(__('common.airline'))
                     ->searchable()
-                    ->options(app(AirlineRepository::class)->selectBoxList(order_by: 'name')),
+                    ->options(Airline::selectList(orderBy: 'name')),
             ])
                 ->columnSpanFull()
                 ->columns(3),

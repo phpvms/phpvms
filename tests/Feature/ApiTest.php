@@ -193,6 +193,69 @@ it('should paginate results', function () {
     $this->assertNotEquals($id_first, $id_third);
 });
 
+it('preserves ?limit= in /api/fleet pagination metadata', function () {
+    $user = User::factory()->create(['airline_id' => 0]);
+    apiAs($user);
+
+    Subfleet::factory()->count(5)->create();
+
+    $res = $this->get('/api/fleet?limit=2');
+    $res->assertSuccessful();
+
+    // The codebase wraps paginators with CustomPaginatedResourceResponse,
+    // which moves the next-page URL onto meta.next_page. Both the page
+    // size AND the next-page URL must carry ?limit= forward so clients
+    // can follow pagination without losing page size.
+    expect($res->json('meta.per_page'))->toEqual(2);
+
+    $next = $res->json('meta.next_page');
+    expect($next)->not->toBeNull()
+        ->and($next)->toContain('limit=2');
+});
+
+it('preserves ?limit= in /api/news pagination metadata', function () {
+    $user = User::factory()->create(['airline_id' => 0]);
+    apiAs($user);
+
+    News::factory()->count(5)->create();
+
+    $res = $this->get('/api/news?limit=2');
+    $res->assertSuccessful();
+
+    expect($res->json('meta.per_page'))->toEqual(2);
+
+    $next = $res->json('meta.next_page');
+    expect($next)->not->toBeNull()
+        ->and($next)->toContain('limit=2');
+});
+
+it('returns a real paginator on /api/user/fleet', function () {
+    $user = User::factory()->create(['airline_id' => 0]);
+    apiAs($user);
+
+    // Without rank restriction the endpoint exposes all subfleets,
+    // which is the simplest setup that exercises pagination here.
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+
+    Subfleet::factory()->count(5)->create();
+
+    $res = $this->get('/api/user/fleet?limit=2');
+    $res->assertSuccessful()
+        ->assertJsonStructure([
+            'data',
+            'meta' => ['current_page', 'per_page', 'total', 'next_page'],
+        ]);
+
+    // The migration prior to this test caused getAllowableSubfleets() to
+    // unwrap the paginator via transform(); now it preserves it via
+    // through(), so meta.next_page must be a real URL with ?limit= intact.
+    expect($res->json('meta.per_page'))->toEqual(2);
+
+    $next = $res->json('meta.next_page');
+    expect($next)->not->toBeNull()
+        ->and($next)->toContain('limit=2');
+});
+
 it('can retrieve an airport', function () {
     $user = User::factory()->create();
     apiAs($user);

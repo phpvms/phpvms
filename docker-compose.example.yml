@@ -34,7 +34,7 @@ services:
       PHP_OPCACHE_ENABLE: 1
     healthcheck:
       # This is our native healthcheck script for the scheduler
-      test: [ "CMD", "healthcheck-schedule" ]
+      test: ["CMD", "healthcheck-schedule"]
       start_period: 10s
     env_file: .env
     volumes:
@@ -49,12 +49,12 @@ services:
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     image: ghcr.io/phpvms/phpvms:main
     restart: unless-stopped
-    command: [ "php", "/var/www/html/artisan", "queue:work", "--tries=3" ]
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
       PHP_OPCACHE_ENABLE: 1
     healthcheck:
       # This is our native healthcheck script for the queue
-      test: [ "CMD", "healthcheck-queue" ]
+      test: ["CMD", "healthcheck-queue"]
       start_period: 10s
     env_file: .env
     volumes:
@@ -88,13 +88,13 @@ services:
     restart: unless-stopped
     # If someone need to access db from the outside
     ports:
-      - '${FORWARD_DB_PORT:-3306}:3306'
+      - "${FORWARD_DB_PORT:-3306}:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-      MYSQL_DATABASE: '${DB_DATABASE}'
-      MYSQL_USER: '${DB_USERNAME}'
-      MYSQL_PASSWORD: '${DB_PASSWORD}'
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
     volumes:
       - mariadb:/var/lib/mysql
     networks:
@@ -115,7 +115,7 @@ services:
     networks:
       - phpvms
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       retries: 3
       timeout: 5s
 

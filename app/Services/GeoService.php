@@ -1,18 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Flight;
+use App\Models\Navdata;
 use App\Models\Pirep;
-use App\Repositories\AcarsRepository;
-use App\Repositories\NavdataRepository;
 use App\Support\GeoJson;
 use Exception;
 use GeoJson\Feature\FeatureCollection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use League\Geotools\Coordinate\Coordinate;
@@ -26,10 +26,7 @@ class GeoService extends Service
     /**
      * GeoService constructor.
      */
-    public function __construct(
-        private readonly AcarsRepository $acarsRepo,
-        private readonly NavdataRepository $navRepo
-    ) {}
+    public function __construct() {}
 
     /**
      * Determine the closest set of coordinates from the starting position
@@ -89,11 +86,9 @@ class GeoService extends Service
             Log::debug('Looking for '.$route_point);
 
             try {
-                $points = $this->navRepo->findWhere(['id' => $route_point]);
-            } catch (ModelNotFoundException $e) {
-                continue;
+                $points = Navdata::where('id', $route_point)->get();
             } catch (Exception $e) {
-                Log::error($e);
+                Log::error($e->getMessage());
 
                 continue;
             }
@@ -201,7 +196,10 @@ class GeoService extends Service
 
         $route = new GeoJson();
 
-        $actual_route = $this->acarsRepo->forPirep($pirep->id, AcarsType::FLIGHT_PATH);
+        $actual_route = Acars::query()
+            ->where(['pirep_id' => $pirep->id, 'type' => AcarsType::FLIGHT_PATH])
+            ->orderBy('created_at', 'asc')
+            ->get();
         foreach ($actual_route as $point) {
             $route->addPoint($point->lat, $point->lon, [
                 'pirep_id' => $pirep->id,
@@ -322,7 +320,10 @@ class GeoService extends Service
             'popup' => optional($pirep->dpt_airport)->full_name ?? $pirep->dpt_airport_id,
         ]);
 
-        $planned_route = $this->acarsRepo->forPirep($pirep->id, AcarsType::ROUTE);
+        $planned_route = Acars::query()
+            ->where(['pirep_id' => $pirep->id, 'type' => AcarsType::ROUTE])
+            ->orderBy('order', 'asc')
+            ->get();
         foreach ($planned_route as $point) {
             $planned->addPoint($point->lat, $point->lon, [
                 'name'  => $point->name,
@@ -339,7 +340,10 @@ class GeoService extends Service
         /**
          * ACTUAL ROUTE
          */
-        $actual_route = $this->acarsRepo->forPirep($pirep->id, AcarsType::FLIGHT_PATH);
+        $actual_route = Acars::query()
+            ->where(['pirep_id' => $pirep->id, 'type' => AcarsType::FLIGHT_PATH])
+            ->orderBy('created_at', 'asc')
+            ->get();
         foreach ($actual_route as $point) {
             $actual->addPoint($point->lat, $point->lon, [
                 'pirep_id' => $pirep->id,

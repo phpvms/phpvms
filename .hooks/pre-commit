@@ -1,34 +1,56 @@
 #!/bin/bash
 
-# This script will run Laravel Pint and Rector on newly staged PHP Files.
+# This script will run Laravel Pint and Rector on PHP files, and oxlint on supported files
 
-files=$(git diff --cached --name-only --diff-filter=AMCR | grep "\.php$")
-if echo "$files" | grep --quiet "\.php$"; then
-    # Detect PHP binary
-    PHP_BINARY=$(command -v php)
+# Get all staged files
+all_files=$(git diff --cached --name-only --diff-filter=AMCR)
+# Get PHP files only (excluding .blade.php)
+php_files=$(echo "$all_files" | grep "\.php$" | grep -v "\.blade\.php$")
+# Get files for oxlint (including .blade.php)
+oxlint_files=$(echo "$all_files" | grep -E "\.(js|jsx|ts|tsx|css|scss|json|html|vue|yaml|yml|md|blade\.php)$")
 
-    if [ -x "$PHP_BINARY" ]; then
-        echo "Running pre-commit hooks on host..."
-        ./vendor/bin/pint --parallel $files
-        ./vendor/bin/rector process $files
-        git add $files
+# Detect PHP binary
+PHP_BINARY=$(command -v php)
+
+if [ -x "$PHP_BINARY" ]; then
+    echo "Running pre-commit hooks on host..."
+    if [ -n "$php_files" ]; then
+        echo "Running PHP tools..."
+        ./vendor/bin/rector process $php_files
+        ./vendor/bin/pint --parallel $php_files
+        git add $php_files
+    fi
+    if [ -n "$oxlint_files" ]; then
+        echo "Running oxlint and oxfmt..."
+        npm run lint -- $oxlint_files
+        npm run fmt -- $oxlint_files
+        git add $oxlint_files
+    fi
+else
+    # Detect Docker binary
+    DOCKER_BINARY=$(command -v docker)
+
+    # Check if Sail is running (only if Docker is available)
+    SAIL_RUNNING=""
+    if [ -x "$DOCKER_BINARY" ]; then
+        SAIL_RUNNING=$(docker ps --filter "name=laravel.test" --format "{{.Names}}" | grep -w "laravel.test")
+    fi
+
+    if [ -n "$SAIL_RUNNING" ]; then
+        echo "Running pre-commit hooks in laravel sail..."
+        if [ -n "$php_files" ]; then
+            echo "Running PHP tools..."
+            ./vendor/bin/sail bin rector process $php_files
+            ./vendor/bin/sail pint --parallel $php_files
+            git add $php_files
+        fi
+        if [ -n "$oxlint_files" ]; then
+            echo "Running oxlint and oxfmt..."
+            ./vendor/bin/sail npm run lint -- $oxlint_files
+            ./vendor/bin/sail npm run fmt -- $oxlint_files
+            git add $oxlint_files
+        fi
     else
-        # Detect Docker binary
-        DOCKER_BINARY=$(command -v docker)
-
-        # Check if Sail is running (only if Docker is available)
-        SAIL_RUNNING=""
-        if [ -x "$DOCKER_BINARY" ]; then
-            SAIL_RUNNING=$(docker ps --filter "name=laravel.test" --format "{{.Names}}" | grep -w "laravel.test")
-        fi
-
-        if [ -n "$SAIL_RUNNING" ]; then
-            echo "Running pre-commit hooks in laravel sail..."
-            ./vendor/bin/sail pint --parallel $files
-            ./vendor/bin/sail bin rector process $files
-            git add $files
-        else
-            echo "Skipping pre-commit hooks (no PHP or running Sail detected)."
-        fi
+        echo "Skipping pre-commit hooks (no PHP or running Sail detected)."
     fi
 fi

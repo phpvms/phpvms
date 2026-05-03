@@ -8,7 +8,6 @@ use App\Models\Airline;
 use App\Models\Pirep;
 use App\Models\User;
 use App\Notifications\Messages\UserRegistered;
-use App\Repositories\AcarsRepository;
 use App\Services\AirportService;
 use App\Services\AwardService;
 use App\Services\DatabaseService;
@@ -310,7 +309,6 @@ class DevCommands extends Command
 
     public function liveFlights(): void
     {
-        $acarsRepo = app(AcarsRepository::class);
-        $flights = $acarsRepo->getPositions(setting('acars.live_time'))->toArray();
+        $flights = Pirep::activeFlights(setting('acars.live_time'))->get()->toArray();
     }
 }

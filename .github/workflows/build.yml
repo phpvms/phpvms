@@ -1,4 +1,4 @@
-name: 'Build'
+name: "Build"
 on:
   pull_request:
   push:
@@ -20,100 +20,106 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['8.3', '8.4', '8.5']
+        php-versions: ["8.3", "8.4", "8.5"]
     name: PHP ${{ matrix.php-versions }}
     env:
       extensions: intl, pcov, mbstring
       key: cache-v1
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # https://github.com/marketplace/actions/nerdbank-gitversioning
-    - name: Nerdbank.GitVersioning
-      uses: dotnet/nbgv@v0.4.2
-      with:
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
+        with:
           setAllVars: true
 
-    # Configure Caching
-    - name: Setup cache environment
-      id: cache-env
-      uses: shivammathur/cache-extensions@v1
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.extensions }}
-        key: ${{ env.key }}
+      # Configure Caching
+      - name: Setup cache environment
+        id: cache-env
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.extensions }}
+          key: ${{ env.key }}
 
-    - name: Cache extensions
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.cache-env.outputs.dir }}
-        key: ${{ steps.cache-env.outputs.key }}
-        restore-keys: ${{ steps.cache-env.outputs.key }}
+      - name: Cache extensions
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.cache-env.outputs.dir }}
+          key: ${{ steps.cache-env.outputs.key }}
+          restore-keys: ${{ steps.cache-env.outputs.key }}
 
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
 
-    # Configure PHP
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.extensions }}
-        ini-values: post_max_size=256M, short_open_tag=On
-        coverage: xdebug
-        tools: php-cs-fixer, phpunit
+      # Configure PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.extensions }}
+          ini-values: post_max_size=256M, short_open_tag=On
+          coverage: xdebug
+          tools: php-cs-fixer, phpunit
 
-    - name: Configure Environment
-      run: |
-        php --version
-        composer install --dev --no-interaction --verbose
-        composer global require laravel/pint
-        composer dump-autoload -o
-        cp .github/scripts/env.test .env
-        cp .github/scripts/phpunit.xml phpunit.xml
-        .github/scripts/version.sh
+      - name: Configure Environment
+        run: |
+          php --version
+          composer install --dev --no-interaction --verbose
+          composer global require laravel/pint
+          composer dump-autoload -o
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          .github/scripts/version.sh
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
 
-    - name: Install NPM dependencies
-      run: npm install
+      - name: Install NPM dependencies
+        run: |
+          npm install
+          npm run fmt config/version.yml
+        # Need to lint version.yml since it’s updated in CI
 
-    - name: Compile assets
-      run: npm run build
+      - name: Lint & Format Check
+        run: npm run lint && npm run fmt:check
 
-    - name: Run Pint
-      run: pint --test --parallel
+      - name: Compile assets
+        run: npm run build
 
-    - name: Run Tests
-      run: |
-        export PHP_CS_FIXER_IGNORE_ENV=1
-        vendor/bin/pest --parallel --ci
+      - name: Run Pint
+        run: pint --test --parallel
 
-    - name: Run PHPStan
-      run: vendor/bin/phpstan analyse --memory-limit=2G
+      - name: Run Tests
+        run: |
+          export PHP_CS_FIXER_IGNORE_ENV=1
+          vendor/bin/pest --parallel --ci
 
-#     - name: Run Rector
-#       run: |
-#         vendor/bin/rector --dry-run
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=2G
+
+  #     - name: Run Rector
+  #       run: |
+  #         vendor/bin/rector --dry-run
 
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
   artifacts:
-    name: 'Create release package'
+    name: "Create release package"
     permissions:
       contents: write
       packages: write
@@ -123,84 +129,84 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # https://github.com/marketplace/actions/nerdbank-gitversioning
-    - name: Nerdbank.GitVersioning
-      uses: dotnet/nbgv@v0.4.2
-      with:
+      # https://github.com/marketplace/actions/nerdbank-gitversioning
+      - name: Nerdbank.GitVersioning
+        uses: dotnet/nbgv@v0.4.2
+        with:
           setAllVars: true
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.3'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
 
-    - uses: olegtarasov/get-tag@v2.1.2
-      id: tagName
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: tagName
 
-    # Configure Caching
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      # Configure Caching
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: ${{ runner.os }}-composer-
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
-      # Dependencies
-    - name: 'Install Release Dependencies'
-      run: |
-        rm -rf vendor
-        composer install --no-dev --prefer-dist --no-interaction --verbose
-        composer dump-autoload
-        sudo chmod +x ./.github/scripts/*
+        # Dependencies
+      - name: "Install Release Dependencies"
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --verbose
+          composer dump-autoload
+          sudo chmod +x ./.github/scripts/*
 
-    - name: Install NPM dependencies
-      run: npm install
+      - name: Install NPM dependencies
+        run: npm install
 
-    - name: Compile assets
-      run: npm run build
+      - name: Compile assets
+        run: npm run build
 
-    - id: version
-      name: Get version
-      run: .github/scripts/version.sh
+      - id: version
+        name: Get version
+        run: .github/scripts/version.sh
 
-    - name: Build Distro
-      run: .github/scripts/build.sh
+      - name: Build Distro
+        run: .github/scripts/build.sh
 
-    - uses: BetaHuhn/do-spaces-action@v2
-      id: spaces
-      with:
-        access_key: ${{ secrets.SPACE_ACCESS_KEY}}
-        secret_key: ${{ secrets.SPACE_SECRET_KEY }}
-        space_name: ${{ secrets.SPACE_NAME }}
-        space_region: ${{ secrets.SPACE_REGION }}
-        source: dist
-        cdn_domain: phpvms.cdn.vmslabs.net
-        permission: public-read
+      - uses: BetaHuhn/do-spaces-action@v2
+        id: spaces
+        with:
+          access_key: ${{ secrets.SPACE_ACCESS_KEY}}
+          secret_key: ${{ secrets.SPACE_SECRET_KEY }}
+          space_name: ${{ secrets.SPACE_NAME }}
+          space_region: ${{ secrets.SPACE_REGION }}
+          source: dist
+          cdn_domain: phpvms.cdn.vmslabs.net
+          permission: public-read
 
-    - name: Discord notification
-      uses: Ilshidur/action-discord@0.3.2
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
-      with:
-        args: ${{ steps.version.outputs.discord_msg }}
+      - name: Discord notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.V8_DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.version.outputs.discord_msg }}
 
-    - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v4
-      with:
-        name: phpvms-package
-        path: 'dist/*'
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpvms-package
+          path: "dist/*"
 
   docker:
-    name: 'Create docker image'
+    name: "Create docker image"
     permissions:
       contents: write
       packages: write
@@ -228,7 +234,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
         # Dependencies
-      - name: 'Install Release Dependencies'
+      - name: "Install Release Dependencies"
         run: |
           rm -rf vendor
           composer install --no-dev --prefer-dist --no-interaction --verbose
@@ -239,7 +245,7 @@ jobs:
       - name: Nerdbank.GitVersioning
         uses: dotnet/nbgv@v0.4.2
         with:
-            setAllVars: true
+          setAllVars: true
 
       - id: version
         name: Get version

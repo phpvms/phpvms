@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\LegacyImporter;
 
 use App\Models\Airline;
 use App\Models\Expense;
 use App\Services\FinanceService;
 use App\Support\Money;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class ExpenseLogImporter extends BaseImporter
 {
@@ -14,8 +15,6 @@ class ExpenseLogImporter extends BaseImporter
 
     /**
      * {@inheritdoc}
-     *
-     * @throws ValidatorException
      */
     public function run($start = 0)
     {

@@ -32,7 +32,7 @@ export default async (_opts) => {
         "X-CSRF-TOKEN": config.csrf_token,
       },
     },
-    _opts
+    _opts,
   );
 
   // console.log(opts);

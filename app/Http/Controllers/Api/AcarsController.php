@@ -14,8 +14,6 @@ use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 use App\Models\Pirep;
-use App\Repositories\AcarsRepository;
-use App\Repositories\PirepRepository;
 use App\Services\GeoService;
 use Carbon\Carbon;
 use DateTime;
@@ -31,9 +29,7 @@ class AcarsController extends Controller
      * AcarsController constructor.
      */
     public function __construct(
-        private readonly AcarsRepository $acarsRepo,
-        private readonly GeoService $geoSvc,
-        private readonly PirepRepository $pirepRepo
+        private readonly GeoService $geoSvc
     ) {}
 
     /**
@@ -49,6 +45,17 @@ class AcarsController extends Controller
         }
     }
 
+    protected function findPirepOrFail(string $id): Pirep
+    {
+        $pirep = Pirep::find($id);
+
+        if (empty($pirep)) {
+            throw new PirepNotFound($id);
+        }
+
+        return $pirep;
+    }
+
     /**
      * Get all the active PIREPs
      *
@@ -56,7 +63,7 @@ class AcarsController extends Controller
      */
     public function live_flights()
     {
-        $pireps = $this->acarsRepo->getPositions(setting('acars.live_time'))->filter(
+        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get()->filter(
             fn (Pirep $pirep) => $pirep->position !== null
         );
 
@@ -68,7 +75,7 @@ class AcarsController extends Controller
      */
     public function pireps_geojson(Request $request): JsonResponse
     {
-        $pireps = $this->acarsRepo->getPositions(setting('acars.live_time'));
+        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get();
         $positions = $this->geoSvc->getFeatureForLiveFlights($pireps);
 
         return response()->json([
@@ -81,10 +88,7 @@ class AcarsController extends Controller
      */
     public function acars_geojson(string $pirep_id, Request $request): JsonResponse
     {
-        $pirep = Pirep::find($pirep_id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($pirep_id);
-        }
+        $pirep = $this->findPirepOrFail($pirep_id);
 
         $geodata = $this->geoSvc->getFeatureFromAcars($pirep);
 
@@ -98,17 +102,13 @@ class AcarsController extends Controller
      */
     public function acars_get(string $id, Request $request): AcarsRouteResource
     {
-        $pirep = $this->pirepRepo->find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        $this->findPirepOrFail($id);
 
-        $acars = Acars::with(['pirep'])
-            ->where([
-                'pirep_id' => $id,
-                'type'     => AcarsType::FLIGHT_PATH,
-            ])
-            ->orderBy('sim_time', 'asc')
+        $acars = Acars::query()
+            ->with('pirep')
+            ->forPirep($id)
+            ->flightPath()
+            ->orderedBySimTime()
             ->get();
 
         return new AcarsRouteResource($acars);
@@ -124,10 +124,7 @@ class AcarsController extends Controller
     public function acars_store(string $id, PositionRequest $request): JsonResponse
     {
         // Check if the status is cancelled...
-        $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        $pirep = $this->findPirepOrFail($id);
 
         $this->checkCancelled($pirep);
 
@@ -211,10 +208,7 @@ class AcarsController extends Controller
     public function acars_logs(string $id, LogRequest $request): JsonResponse
     {
         // Check if the status is cancelled...
-        $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        $pirep = $this->findPirepOrFail($id);
 
         $this->checkCancelled($pirep);
 
@@ -265,10 +259,7 @@ class AcarsController extends Controller
     public function acars_events(string $id, EventRequest $request): JsonResponse
     {
         // Check if the status is cancelled...
-        $pirep = Pirep::find($id);
-        if (empty($pirep)) {
-            throw new PirepNotFound($id);
-        }
+        $pirep = $this->findPirepOrFail($id);
 
         $this->checkCancelled($pirep);
 

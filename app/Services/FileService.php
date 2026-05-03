@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -16,13 +18,12 @@ class FileService extends Service
     /**
      * Save a file to disk and return a File asset
      *
-     * @param  UploadedFile $file
-     * @param  string       $folder
-     * @return File
+     * @param UploadedFile $file
+     * @param string       $folder
      *
      * @throws HashidsException
      */
-    public function saveFile($file, $folder, array $attrs)
+    public function saveFile($file, $folder, array $attrs): File
     {
         $attrs = array_merge([
             'name'           => '',
@@ -58,7 +59,7 @@ class FileService extends Service
      *
      * @throws Exception
      */
-    public function removeFile($file)
+    public function removeFile($file): void
     {
         if (!Str::startsWith($file->path, 'http')) {
             Storage::disk(config('filesystems.public_files'))

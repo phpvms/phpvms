@@ -2,13 +2,13 @@
 
 namespace App\Filament\Actions;
 
+use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Enums\ImportExportType;
+use App\Models\Expense;
 use App\Models\Fare;
-use App\Repositories\AircraftRepository;
-use App\Repositories\AirportRepository;
-use App\Repositories\ExpenseRepository;
-use App\Repositories\FlightRepository;
-use App\Repositories\SubfleetRepository;
+use App\Models\Flight;
+use App\Models\Subfleet;
 use App\Services\ExportService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
@@ -44,15 +44,15 @@ class ExportAction extends Action
 
             switch ($arguments['exportType']) {
                 case ImportExportType::AIRCRAFT:
-                    $data = app(AircraftRepository::class)->orderBy('registration')->get();
+                    $data = Aircraft::orderBy('registration')->get();
                     $path = $exportSvc->exportAircraft($data);
                     break;
                 case ImportExportType::AIRPORT:
-                    $data = app(AirportRepository::class)->all();
+                    $data = Airport::all();
                     $path = $exportSvc->exportAirports($data);
                     break;
                 case ImportExportType::EXPENSES:
-                    $data = app(ExpenseRepository::class)->all();
+                    $data = Expense::all();
                     $path = $exportSvc->exportExpenses($data);
                     break;
                 case ImportExportType::FARES:
@@ -60,11 +60,11 @@ class ExportAction extends Action
                     $path = $exportSvc->exportFares($data);
                     break;
                 case ImportExportType::FLIGHTS:
-                    $data = app(FlightRepository::class)->orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')->get();
+                    $data = Flight::orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')->get();
                     $path = $exportSvc->exportFlights($data);
                     break;
                 case ImportExportType::SUBFLEETS:
-                    $data = app(SubfleetRepository::class)->all();
+                    $data = Subfleet::all();
                     $path = $exportSvc->exportSubfleets($data);
                     break;
             }

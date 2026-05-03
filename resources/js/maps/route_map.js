@@ -8,7 +8,6 @@
 import leaflet from "leaflet";
 import draw_base_map from "./base_map";
 import { addWMSLayer } from "./helpers";
-import request from "../request";
 
 import { ACTUAL_ROUTE_COLOR, CIRCLE_COLOR, PLAN_ROUTE_COLOR } from "./config";
 
@@ -50,7 +49,7 @@ export default (_opts) => {
         params: {},
       },
     },
-    _opts
+    _opts,
   );
 
   /**
@@ -69,14 +68,7 @@ export default (_opts) => {
       fillOpacity: 0.8,
     });
 
-  const aircraftIcon = leaflet.icon({
-    iconUrl: opts.aircraft_icon,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21],
-  });
-
   const map = draw_base_map(opts);
-  let layerLiveFlight;
 
   if (opts.metar_wms.url !== "") {
     addWMSLayer(map, opts.metar_wms);
@@ -117,10 +109,7 @@ export default (_opts) => {
    * draw the actual route
    */
 
-  if (
-    opts.actual_route_line !== null &&
-    opts.actual_route_line.features.length > 0
-  ) {
+  if (opts.actual_route_line !== null && opts.actual_route_line.features.length > 0) {
     const actualRouteLayer = new L.Geodesic([], {
       weight: 3,
       opacity: 0.9,
@@ -138,10 +127,7 @@ export default (_opts) => {
     }
   }
 
-  if (
-    opts.actual_route_points !== null &&
-    opts.actual_route_points.features.length > 0
-  ) {
+  if (opts.actual_route_points !== null && opts.actual_route_points.features.length > 0) {
     const route_points = leaflet.geoJSON(opts.actual_route_points, {
       onEachFeature: onFeaturePointClick,
       pointToLayer,

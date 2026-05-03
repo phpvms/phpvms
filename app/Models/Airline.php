@@ -6,6 +6,8 @@ use App\Contracts\Model;
 use App\Models\Enums\JournalType;
 use App\Traits\FilesTrait;
 use App\Traits\JournalTrait;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,6 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\AirlineFactory                    factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline active()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline onlyTrashed()
@@ -83,6 +86,13 @@ class Airline extends Model
     use SoftDeletes;
     use Sortable;
 
+    private const SELECT_LIST_ORDER_COLUMNS = [
+        'id',
+        'name',
+        'icao',
+        'iata',
+    ];
+
     public $table = 'airlines';
 
     /**
@@ -100,18 +110,6 @@ class Airline extends Model
         'total_flights',
         'total_time',
         'active',
-    ];
-
-    /**
-     * Validation rules
-     */
-    public static array $rules = [
-        'callsign' => 'nullable',
-        'country'  => 'nullable',
-        'iata'     => 'nullable|max:5',
-        'icao'     => 'required|max:5',
-        'logo'     => 'nullable',
-        'name'     => 'required',
     ];
 
     public $sortable = [
@@ -205,5 +203,46 @@ class Airline extends Model
             'total_time'    => 'int',
             'active'        => 'boolean',
         ];
+    }
+
+    /*
+     * Query scopes
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->where('active', true);
+    }
+
+    #[Scope]
+    protected function byIcao(Builder $query, string $icao): void
+    {
+        $query->where('icao', strtoupper(trim($icao)));
+    }
+
+    /**
+     * Return a list of airlines as `[id => name]` for use in form select boxes.
+     *
+     * Mirrors the previous AirlineRepository::selectBoxList contract.
+     */
+    public static function selectList(bool $addBlank = false, bool $onlyActive = true, string $orderBy = 'id'): array
+    {
+        $query = static::orderBy(self::sanitizeSelectListOrderBy($orderBy));
+        if ($onlyActive) {
+            $query->where('active', true);
+        }
+
+        $list = $query->pluck('name', 'id')->toArray();
+
+        if ($addBlank) {
+            return ['' => ''] + $list;
+        }
+
+        return $list;
+    }
+
+    private static function sanitizeSelectListOrderBy(string $orderBy): string
+    {
+        return in_array($orderBy, self::SELECT_LIST_ORDER_COLUMNS, true) ? $orderBy : 'id';
     }
 }

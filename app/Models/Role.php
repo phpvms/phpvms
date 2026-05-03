@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,19 +54,22 @@ class Role extends SpatieRole
         'disable_activity_checks',
     ];
 
-    /**
-     * Validation rules
-     */
-    public static array $rules = [
-        'name'       => 'required',
-        'guard_name' => 'required',
-    ];
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly($this->fillable)
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /**
+     * Filter by exact role name. Case-sensitivity follows the database
+     * collation (case-sensitive on SQLite default; case-insensitive on
+     * MySQL `utf8mb4_unicode_ci`).
+     */
+    #[Scope]
+    protected function byName(Builder $q, string $name): Builder
+    {
+        return $q->where('name', $name);
     }
 }

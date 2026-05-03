@@ -7,6 +7,8 @@ use App\Observers\AirportObserver;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -127,25 +129,6 @@ class Airport extends Model
         'notes',
     ];
 
-    /**
-     * Validation rules
-     */
-    public static array $rules = [
-        'icao'                 => 'required',
-        'iata'                 => 'sometimes|nullable',
-        'name'                 => 'required',
-        'location'             => 'sometimes',
-        'region'               => 'sometimes',
-        'country'              => 'sometimes',
-        'lat'                  => 'required|numeric',
-        'lon'                  => 'required|numeric',
-        'elevation'            => 'nullable|numeric',
-        'ground_handling_cost' => 'nullable|numeric',
-        'fuel_100ll_cost'      => 'nullable|numeric',
-        'fuel_jeta_cost'       => 'nullable|numeric',
-        'fuel_mogas_cost'      => 'nullable|numeric',
-    ];
-
     public $sortable = [
         'id',
         'iata',
@@ -256,6 +239,49 @@ class Airport extends Model
     {
         // Users based at this airport
         return $this->hasMany(User::class, 'home_airport_id');
+    }
+
+    /**
+     * Marker scope. Airport has no `status`/`active` column, so this is
+     * equivalent to the SoftDeletes default (excludes trashed).
+     *
+     * Reserved for cross-model consistency — Phase 4 (User domain) and
+     * Phase 6 (Flight domain) will add `active()` scopes to `User`,
+     * `Airline`, and other models, at which point reading
+     * `Airport::active()` will match the convention naturally.
+     */
+    #[Scope]
+    protected function active(Builder $q): Builder
+    {
+        return $q->whereNull('deleted_at');
+    }
+
+    /**
+     * Filter to hub airports only.
+     */
+    #[Scope]
+    protected function byHub(Builder $q): Builder
+    {
+        return $q->where('hub', true);
+    }
+
+    /**
+     * Order results by ICAO ascending.
+     */
+    #[Scope]
+    protected function orderByIcao(Builder $q): Builder
+    {
+        return $q->orderBy('icao', 'asc');
+    }
+
+    /**
+     * URLs typically use a lowercase ICAO (e.g. /api/airports/kjfk) but
+     * the table stores ICAO uppercased. Override the default Eloquent
+     * route binding so case-insensitive lookups resolve correctly.
+     */
+    public function resolveRouteBinding($value, $field = null): ?\Illuminate\Database\Eloquent\Model
+    {
+        return $this->resolveRouteBindingQuery($this, strtoupper((string) $value), $field)->first();
     }
 
     protected function casts(): array

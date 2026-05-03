@@ -1,6 +1,5 @@
 simbrief:
-  -
-    id: 1585669688_A07496CE59
+  - id: 1585669688_A07496CE59
     user_id: 1
     flight_id: flightid_6
     pirep_id: null
@@ -10,8 +9,7 @@ simbrief:
     fare_data: null
     created_at: now
     updated_at: now
-  -
-    id: 1643306916_2EDF51C628
+  - id: 1643306916_2EDF51C628
     user_id: 1
     flight_id: flightid_1
     pirep_id: null

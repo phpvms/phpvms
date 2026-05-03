@@ -28,7 +28,7 @@ export function addWMSLayer(map, opts) {
       maxZoom: 14,
       minZoom: 4,
     },
-    opts.params
+    opts.params,
   );
 
   const mlayer = leaflet.tileLayer.wms(opts.url, opts.params);

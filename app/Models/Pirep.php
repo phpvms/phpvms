@@ -12,6 +12,7 @@ use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepState;
 use App\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -454,26 +455,25 @@ class Pirep extends Model
      */
     public function acars(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where(
-            'type',
-            AcarsType::FLIGHT_PATH
-        )->orderBy('created_at', 'asc')->orderBy('sim_time', 'asc');
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->flightPath()
+            ->orderedByCreatedAt()
+            ->orderedBySimTime();
     }
 
     public function acars_logs(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where('type', AcarsType::LOG)->orderBy(
-            'created_at',
-            'desc'
-        )->orderBy('sim_time', 'asc');
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->ofType(AcarsType::LOG)
+            ->orderedByCreatedAt('desc')
+            ->orderedBySimTime();
     }
 
     public function acars_route(): HasMany
     {
-        return $this->hasMany(Acars::class, 'pirep_id')->where('type', AcarsType::ROUTE)->orderBy(
-            'order',
-            'asc'
-        );
+        return $this->hasMany(Acars::class, 'pirep_id')
+            ->ofType(AcarsType::ROUTE)
+            ->orderedByOrder();
     }
 
     public function aircraft(): BelongsTo
@@ -548,10 +548,10 @@ class Pirep extends Model
      */
     public function position(): HasOne
     {
-        return $this->hasOne(Acars::class, 'pirep_id')->where(
-            'type',
-            AcarsType::FLIGHT_PATH
-        )->latest();
+        return $this->hasOne(Acars::class, 'pirep_id')
+            ->flightPath()
+            ->latest('created_at')
+            ->latest('sim_time');
     }
 
     public function simbrief(): BelongsTo
@@ -596,5 +596,25 @@ class Pirep extends Model
             'state'               => 'integer',
             'submitted_at'        => CarbonCast::class,
         ];
+    }
+
+    /**
+     * Scope: PIREPs with state = IN_PROGRESS, optionally constrained to those
+     * updated within the last $liveTime hours, ordered by updated_at desc, with
+     * the relations needed by the live-map / live-flights endpoints eager-loaded.
+     *
+     * Replaces the previously-misnamed AcarsRepository::getPositions() method.
+     */
+    public function scopeActiveFlights(Builder $query, int $liveTime = 0): Builder
+    {
+        $query
+            ->with(['aircraft', 'airline', 'arr_airport', 'dpt_airport', 'position', 'user'])
+            ->where('state', PirepState::IN_PROGRESS);
+
+        if ($liveTime > 0) {
+            $query->where('updated_at', '>=', Carbon::now()->subHours($liveTime));
+        }
+
+        return $query->orderBy('updated_at', 'desc');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -11,39 +13,27 @@ use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
+use App\Models\Navdata;
+use App\Models\Pirep;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Repositories\FlightRepository;
-use App\Repositories\NavdataRepository;
-use App\Repositories\PirepRepository;
 use App\Support\Units\Time;
 use Exception;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class FlightService extends Service
 {
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly FlightRepository $flightRepo,
-        private readonly NavdataRepository $navDataRepo,
-        private readonly PirepRepository $pirepRepo,
         private readonly UserService $userSvc
     ) {}
 
     /**
      * Create a new flight
-     *
-     * @param  array            $fields
-     * @return RedirectResponse
-     *
-     * @throws ValidatorException
      */
-    public function createFlight($fields)
+    public function createFlight(array $fields): Flight
     {
-        $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
-        $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        $fields = $this->normalizeAirportIds($fields);
 
         $flightTmp = new Flight($fields);
         if ($this->isFlightDuplicate($flightTmp)) {
@@ -54,24 +44,22 @@ class FlightService extends Service
         $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->create($fields);
 
-        return $flight;
+        return Flight::create($fields);
     }
 
     /**
      * Update a flight with values from the given fields
-     *
-     * @param  Flight       $flight
-     * @param  array        $fields
-     * @return Flight|mixed
-     *
-     * @throws ValidatorException
      */
-    public function updateFlight($flight, $fields)
+    public function updateFlight(Flight $flight, array $fields): Flight
     {
+        // Normalize airport IDs the same way createFlight does so the
+        // in-memory duplicate check sees normalized values and we don't
+        // persist mixed-case IDs.
+        $fields = $this->normalizeAirportIds($fields);
+
         // apply the updates here temporarily, don't save
-        // the repo->update() call will actually do it
+        // the duplicate check uses the in-memory state
         $flight->fill($fields);
 
         if ($this->isFlightDuplicate($flight)) {
@@ -79,9 +67,28 @@ class FlightService extends Service
         }
 
         $fields = $this->transformFlightFields($fields);
-        $flight = $this->flightRepo->update($fields, $flight->id);
+        $flight->update($fields);
 
-        return $flight;
+        return $flight->refresh();
+    }
+
+    /**
+     * Uppercase departure/arrival airport IDs if present.
+     *
+     * @param  array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function normalizeAirportIds(array $fields): array
+    {
+        if (array_key_exists('dpt_airport_id', $fields) && is_string($fields['dpt_airport_id'])) {
+            $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
+        }
+
+        if (array_key_exists('arr_airport_id', $fields) && is_string($fields['arr_airport_id'])) {
+            $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        }
+
+        return $fields;
     }
 
     /**
@@ -108,6 +115,34 @@ class FlightService extends Service
         }
 
         return $fields;
+    }
+
+    /**
+     * Return flight IDs a user may see when aircraft restrictions are active.
+     * Includes flights with at least one allowed subfleet and true open flights.
+     *
+     * @return list<int>
+     */
+    public function getAccessibleFlightIds(User $user): array
+    {
+        $userSubfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->all();
+
+        $userFlights = Flight::query()
+            ->whereHas('subfleets', static function ($query) use ($userSubfleets): void {
+                $query->whereIn('subfleets.id', $userSubfleets);
+            })
+            ->pluck('id')
+            ->map(static fn ($flightId): int => (int) $flightId)
+            ->all();
+
+        $openFlights = Flight::query()
+            ->whereNull('user_id')
+            ->doesntHave('subfleets')
+            ->pluck('id')
+            ->map(static fn ($flightId): int => (int) $flightId)
+            ->all();
+
+        return array_values(array_unique(array_merge($userFlights, $openFlights)));
     }
 
     /**
@@ -201,37 +236,48 @@ class FlightService extends Service
     }
 
     /**
-     * Check if this flight has a duplicate already
+     * Check if this flight has a duplicate already.
      *
-     *
-     * @return bool
+     * Same airline + flight_number + route_code + route_leg + departure +
+     * arrival + days is treated as a duplicate. Resolved at the DB layer to
+     * avoid pulling matching rows into memory just to answer a boolean.
+     * route_code / route_leg / days are nullable, so null-vs-null matches
+     * are handled explicitly (SQL `=` returns null when either side is null).
      */
-    public function isFlightDuplicate(Flight $flight)
+    public function isFlightDuplicate(Flight $flight): bool
     {
-        $where = [
-            ['id', '<>', $flight->id],
-            'airline_id'    => $flight->airline_id,
-            'flight_number' => $flight->flight_number,
-            'owner_type'    => null,
-        ];
+        $query = Flight::query()
+            ->where('airline_id', $flight->airline_id)
+            ->where('flight_number', $flight->flight_number)
+            ->whereNull('owner_type')
+            ->where('dpt_airport_id', $flight->dpt_airport_id)
+            ->where('arr_airport_id', $flight->arr_airport_id);
 
-        $found_flights = $this->flightRepo->findWhere($where);
-        if ($found_flights->count() === 0) {
-            return false;
+        // Exclude self only when the input flight is persisted; for an unsaved
+        // model, $flight->id is null and `id <> NULL` matches nothing in SQL.
+        if ($flight->exists) {
+            $query->where('id', '<>', $flight->id);
         }
 
-        // Find within all the flights with the same flight number
-        // Return any flights that have the same route code and leg
-        // If this list is > 0, then this has a duplicate
-        $found_flights = $found_flights->filter(function ($value, $key) use ($flight) {
-            return $flight->route_code === $value->route_code
-                && $flight->route_leg === $value->route_leg
-                && $flight->dpt_airport_id === $value->dpt_airport_id
-                && $flight->arr_airport_id === $value->arr_airport_id
-                && $flight->days === $value->days;
-        });
+        // Match nullable scalar columns including legacy empty-string values.
+        // Stored values may be NULL, '', or an actual scalar; treat empty as
+        // equivalent to null so casts that coerce '' to 0 (e.g. integer cast
+        // on route_leg) still resolve correctly.
+        foreach (['route_code', 'route_leg', 'days'] as $column) {
+            $value = $flight->{$column};
 
-        return $found_flights->count() !== 0;
+            if (in_array($value, [null, '', 0, '0'], true)) {
+                $query->where(function ($q) use ($column) {
+                    $q->whereNull($column)
+                        ->orWhere($column, '')
+                        ->orWhere($column, 0);
+                });
+            } else {
+                $query->where($column, $value);
+            }
+        }
+
+        return $query->exists();
     }
 
     /**
@@ -279,7 +325,7 @@ class FlightService extends Service
 
         $route_points = array_map('strtoupper', explode(' ', $flight->route));
 
-        $route = $this->navDataRepo->findWhereIn('id', $route_points);
+        $route = Navdata::whereIn('id', $route_points)->get();
 
         // Put it back into the original order the route is in
         $return_points = [];
@@ -292,12 +338,11 @@ class FlightService extends Service
 
     public function removeExpiredRepositionFlights(): void
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<Flight> $flights */
-        $flights = $this->flightRepo->where('route_code', PirepStatus::DIVERTED)->get();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Flight> $flights */
+        $flights = Flight::where('route_code', PirepStatus::DIVERTED)->get();
 
         foreach ($flights as $flight) {
-            $diverted_pirep = $this->pirepRepo
-                ->with('aircraft')
+            $diverted_pirep = Pirep::with('aircraft')
                 ->where([
                     'user_id'        => $flight->user_id,
                     'arr_airport_id' => $flight->dpt_airport_id,

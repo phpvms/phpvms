@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\LegacyImporter;
 
 use App\Services\Installer\LoggerTrait;
@@ -126,6 +128,7 @@ abstract class BaseImporter
      */
     protected function convertDuration($duration)
     {
+        $duration = (string) ($duration ?? '');
         if (strpos($duration, '.') !== false) {
             $delim = '.';
         } elseif (strpos($duration, ':')) {

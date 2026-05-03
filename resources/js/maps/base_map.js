@@ -20,7 +20,7 @@ export default (_opts) => {
       set_marker: false,
       leafletOptions: {},
     },
-    _opts
+    _opts,
   );
 
   const leafletOptions = Object.assign(
@@ -30,7 +30,7 @@ export default (_opts) => {
       scrollWheelZoom: false,
       providers: {},
     },
-    opts.leafletOptions
+    opts.leafletOptions,
   );
 
   // Check if any providers are listed; if not, set the default

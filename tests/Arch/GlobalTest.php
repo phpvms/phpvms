@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Repository;
 use App\Filament\System\Updater;
 
 arch('globals')
@@ -20,5 +19,4 @@ arch('http helpers')
         'App\Filament',
         'App\Livewire',
         'App\Providers\Filament',
-        Repository::class,
     ]);

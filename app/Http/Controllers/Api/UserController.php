@@ -7,18 +7,17 @@ use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\BidNotFound;
 use App\Exceptions\Unauthorized;
 use App\Exceptions\UserNotFound;
+use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Resources\BidResource;
 use App\Http\Resources\PirepResource;
 use App\Http\Resources\SubfleetResource;
 use App\Http\Resources\UserResource;
+use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Enums\PirepState;
+use App\Models\Flight;
 use App\Models\User;
-use App\Repositories\AircraftRepository;
-use App\Repositories\Criteria\WhereCriteria;
-use App\Repositories\FlightRepository;
-use App\Repositories\PirepRepository;
-use App\Repositories\UserRepository;
+use App\Queries\PirepSearchQuery;
 use App\Services\BidService;
 use App\Services\UserService;
 use Exception;
@@ -28,16 +27,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Prettus\Repository\Criteria\RequestCriteria;
-use Prettus\Repository\Exceptions\RepositoryException;
 
 class UserController extends Controller
 {
     public function __construct(
         private readonly BidService $bidSvc,
-        private readonly FlightRepository $flightRepo,
-        private readonly PirepRepository $pirepRepo,
-        private readonly UserRepository $userRepo,
         private readonly UserService $userSvc
     ) {}
 
@@ -96,9 +90,9 @@ class UserController extends Controller
             $flight_id = $request->input('flight_id');
             if (setting('bids.block_aircraft')) {
                 $aircraft_id = $request->input('aircraft_id');
-                $aircraft = app(AircraftRepository::class)->findWithoutFail($aircraft_id);
+                $aircraft = Aircraft::find($aircraft_id);
             }
-            $flight = $this->flightRepo->find($flight_id);
+            $flight = Flight::findOrFail($flight_id);
             $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
 
             return new BidResource($bid);
@@ -112,7 +106,7 @@ class UserController extends Controller
                 $flight_id = $request->input('flight_id');
             }
 
-            $flight = $this->flightRepo->find($flight_id);
+            $flight = Flight::findOrFail($flight_id);
             $this->bidSvc->removeBid($flight, $user);
         }
 
@@ -157,41 +151,42 @@ class UserController extends Controller
      */
     public function fleet(Request $request): AnonymousResourceCollection
     {
-        $user = $this->userRepo->find($this->getUserId($request));
+        $user = User::find($this->getUserId($request));
         if ($user === null) {
             throw new UserNotFound();
         }
 
-        $subfleets = $this->userSvc->getAllowableSubfleets($user, true);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
+
+        $subfleets = $this->userSvc->getAllowableSubfleets($user, true, $perPage)
+            ->appends($request->except(['page', 'user']));
 
         return SubfleetResource::collection($subfleets);
     }
 
-    /**
-     * @throws RepositoryException
-     */
-    public function pireps(Request $request): AnonymousResourceCollection
+    public function pireps(SearchPirepsRequest $request, PirepSearchQuery $searchQuery): AnonymousResourceCollection
     {
-        $this->pirepRepo->pushCriteria(new RequestCriteria($request));
-
-        $where = [
-            'user_id' => $this->getUserId($request),
-        ];
+        $query = $searchQuery->build($request)
+            ->where('user_id', $this->getUserId($request));
 
         if (filled($request->query('state'))) {
-            $where['state'] = $request->query('state');
+            $query->where('state', $request->query('state'));
         } else {
-            $where[] = ['state', '!=', PirepState::CANCELLED];
+            $query->where('state', '!=', PirepState::CANCELLED);
         }
 
-        $this->pirepRepo->pushCriteria(new WhereCriteria($request, $where));
+        if (filled($request->query('status'))) {
+            $query->where('status', $request->query('status'));
+        }
 
-        $pireps = $this->pirepRepo
-            ->with(['aircraft', 'airline', 'dpt_airport', 'arr_airport'])
-            ->orderBy('created_at', 'desc')
-            ->paginate();
+        // Default ordering when no orderBy supplied — matches legacy behavior.
+        if (!$request->filled('orderBy')) {
+            $query->orderBy('created_at', 'desc');
+        }
 
-        return PirepResource::collection($pireps);
+        $perPage = paginate_limit($request->integer('limit') ?: null);
+
+        return PirepResource::collection($query->paginate($perPage));
     }
 
     /**

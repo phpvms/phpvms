@@ -159,91 +159,86 @@ airports:
     ground_handling_cost: 50
 #
 aircraft:
-  -
-    id: 1
+  - id: 1
     subfleet_id: 1
     icao: B744
     iata: 744
     airport_id: KJFK
-    landing_time: '2020-10-23 07:50:16'
-    name: 'Boeing 747-438'
+    landing_time: "2020-10-23 07:50:16"
+    name: "Boeing 747-438"
     registration: 001Z
     hex_code: null
-    mtow: '0.00'
-    zfw: '0.00'
+    mtow: "0.00"
+    zfw: "0.00"
     flight_time: 540
     status: A
     state: 0
     created_at: null
-    updated_at: '2020-10-23 07:50:16'
-  -
-    id: 2
+    updated_at: "2020-10-23 07:50:16"
+  - id: 2
     subfleet_id: 2
     icao: B777
     iata: 777
     airport_id: LGRP
     landing_time: null
-    name: 'Boeing 777-200'
+    name: "Boeing 777-200"
     registration: C202
     hex_code: null
-    mtow: '0.00'
-    zfw: '0.00'
+    mtow: "0.00"
+    zfw: "0.00"
     flight_time: 260
     status: A
     state: 0
     created_at: null
     updated_at: null
-  -
-    id: 3
+  - id: 3
     subfleet_id: 1
     icao: B744
     iata: 744
     airport_id: KAUS
-    landing_time: '2020-10-24 08:50:13'
-    name: 'Boeing 747-412'
+    landing_time: "2020-10-24 08:50:13"
+    name: "Boeing 747-412"
     registration: S2333
     hex_code: null
-    mtow: '0.00'
-    zfw: '0.00'
+    mtow: "0.00"
+    zfw: "0.00"
     flight_time: 180
     status: A
     state: 0
     created_at: null
-    updated_at: '2020-10-24 08:50:13'
-  -
-    id: 4
+    updated_at: "2020-10-24 08:50:13"
+  - id: 4
     subfleet_id: 1
     icao: B744
     iata: 744
     airport_id: KAUS
     landing_time: null
-    name: 'Boeing 747-436 RETIRED'
+    name: "Boeing 747-436 RETIRED"
     registration: null
     hex_code: null
-    mtow: '0.00'
-    zfw: '0.00'
+    mtow: "0.00"
+    zfw: "0.00"
     flight_time: 45
     status: R
     state: 0
     created_at: null
     updated_at: null
-  -
-    id: 5
+  - id: 5
     subfleet_id: 4
-    icao: 'A320'
-    iata: '320'
+    icao: "A320"
+    iata: "320"
     airport_id: EGLL
     landing_time: null
-    name: 'Airbus A320'
+    name: "Airbus A320"
     registration: N786DL
     hex_code: b47165dd
-    mtow: '78800.00'
-    zfw: '62500.00'
+    mtow: "78800.00"
+    zfw: "62500.00"
     flight_time: 0
     status: A
     state: 0
-    created_at: '2020-10-22 13:38:50'
-    updated_at: '2020-10-22 13:38:50'
+    created_at: "2020-10-22 13:38:50"
+    updated_at: "2020-10-22 13:38:50"
 
 expenses:
   - name: Per-Flight (no muliplier)
@@ -300,36 +295,33 @@ expenses:
     updated_at: now
 
 fares:
-  -
-    id: 1
-    code: 'Y'
+  - id: 1
+    code: "Y"
     name: Economy
-    price: '100.00'
-    cost: '0.00'
+    price: "100.00"
+    cost: "0.00"
     capacity: 200
     type: 0
     notes: null
     active: 1
     created_at: null
     updated_at: null
-  -
-    id: 2
+  - id: 2
     code: B
     name: Business
-    price: '500.00'
-    cost: '0.00'
+    price: "500.00"
+    cost: "0.00"
     capacity: 10
     type: 0
     notes: null
     active: 1
     created_at: null
     updated_at: null
-  -
-    id: 3
+  - id: 3
     code: F
     name: First-Class
-    price: '800.00'
-    cost: '0.00'
+    price: "800.00"
+    cost: "0.00"
     capacity: 5
     type: 0
     notes: null
@@ -338,151 +330,134 @@ fares:
     updated_at: null
 
 subfleets:
-  -
-    id: 1
+  - id: 1
     airline_id: 1
     type: 744-3X-RB211
-    name: '747-43X RB211-524G'
-    cost_block_hour: '1000.00'
-    cost_delay_minute: '0.00'
+    name: "747-43X RB211-524G"
+    cost_block_hour: "1000.00"
+    cost_delay_minute: "0.00"
     fuel_type: null
-    ground_handling_multiplier: '200.00'
+    ground_handling_multiplier: "200.00"
     cargo_capacity: null
     fuel_capacity: null
     gross_weight: null
     created_at: null
     updated_at: null
-  -
-    id: 2
+  - id: 2
     airline_id: 1
     type: 772-22ER-GE90-76B
-    name: '777-222ER GE90-76B'
-    cost_block_hour: '500.00'
-    cost_delay_minute: '0.00'
+    name: "777-222ER GE90-76B"
+    cost_block_hour: "500.00"
+    cost_delay_minute: "0.00"
     fuel_type: null
-    ground_handling_multiplier: '150.00'
+    ground_handling_multiplier: "150.00"
     cargo_capacity: null
     fuel_capacity: null
     gross_weight: null
     created_at: null
     updated_at: null
-  -
-    id: 3
+  - id: 3
     airline_id: 1
     type: 772-36ER-GE90-115B
-    name: '777-367 ER GE90-115B'
-    cost_block_hour: '100.00'
-    cost_delay_minute: '0.00'
+    name: "777-367 ER GE90-115B"
+    cost_block_hour: "100.00"
+    cost_delay_minute: "0.00"
     fuel_type: null
-    ground_handling_multiplier: '150.00'
+    ground_handling_multiplier: "150.00"
     cargo_capacity: null
     fuel_capacity: null
     gross_weight: null
     created_at: null
     updated_at: null
-  -
-    id: 4
+  - id: 4
     airline_id: 1
     type: A320
     name: A320
-    cost_block_hour: '2300.00'
+    cost_block_hour: "2300.00"
     cost_delay_minute: null
     fuel_type: 1
-    ground_handling_multiplier: '100.00'
+    ground_handling_multiplier: "100.00"
     cargo_capacity: null
     fuel_capacity: null
     gross_weight: null
-    created_at: '2020-10-22 13:36:49'
-    updated_at: '2020-10-22 13:36:49'
+    created_at: "2020-10-22 13:36:49"
+    updated_at: "2020-10-22 13:36:49"
 
 subfleet_fare:
-  -
-    subfleet_id: 1
+  - subfleet_id: 1
     fare_id: 1
-    price: '200'
+    price: "200"
     cost: null
-    capacity: '400'
+    capacity: "400"
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 1
+  - subfleet_id: 1
     fare_id: 2
     price: 120%
     cost: null
     capacity: null
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 1
+  - subfleet_id: 1
     fare_id: 3
-    price: '1000'
+    price: "1000"
     cost: null
     capacity: 110%
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 2
+  - subfleet_id: 2
     fare_id: 1
     price: null
     cost: null
     capacity: null
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 2
+  - subfleet_id: 2
     fare_id: 3
     price: null
     cost: null
-    capacity: '10'
+    capacity: "10"
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 4
+  - subfleet_id: 4
     fare_id: 1
     price: null
     cost: null
-    capacity: '123'
+    capacity: "123"
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 4
+  - subfleet_id: 4
     fare_id: 2
     price: null
     cost: null
-    capacity: '8'
+    capacity: "8"
     created_at: null
     updated_at: null
-  -
-    subfleet_id: 4
+  - subfleet_id: 4
     fare_id: 3
     price: null
     cost: null
-    capacity: '2'
+    capacity: "2"
     created_at: null
     updated_at: null
 subfleet_rank:
-  -
-    rank_id: 1
+  - rank_id: 1
     subfleet_id: 1
     acars_pay: null
     manual_pay: null
-  -
-    rank_id: 1
+  - rank_id: 1
     subfleet_id: 4
     acars_pay: null
     manual_pay: null
-  -
-    rank_id: 2
+  - rank_id: 2
     subfleet_id: 4
     acars_pay: null
     manual_pay: null
-  -
-    rank_id: 3
+  - rank_id: 3
     subfleet_id: 4
     acars_pay: null
     manual_pay: null
-  -
-    rank_id: 4
+  - rank_id: 4
     subfleet_id: 4
     acars_pay: null
     manual_pay: null
@@ -556,11 +531,11 @@ flights:
     dpt_airport_id: MKJP
     arr_airport_id: MWCR
     flight_time: 70
-    flight_type: 'J'
+    flight_type: "J"
     load_factor: 80
-    dpt_time: '0800'
-    arr_time: '0900'
-    route: 'MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3'
+    dpt_time: "0800"
+    arr_time: "0900"
+    route: "MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3"
     created_at: NOW
     updated_at: NOW
   - id: flightid_5
@@ -571,11 +546,11 @@ flights:
     dpt_airport_id: OMAA
     arr_airport_id: OMDB
     flight_time: 30
-    flight_type: 'J'
+    flight_type: "J"
     load_factor:
-    dpt_time: '0800'
-    arr_time: '0900'
-    route: 'MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3'
+    dpt_time: "0800"
+    arr_time: "0900"
+    route: "MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3"
     created_at: NOW
     updated_at: NOW
   - id: flightid_6
@@ -586,15 +561,14 @@ flights:
     dpt_airport_id: OMDB
     arr_airport_id: OMAA
     flight_time: 30
-    flight_type: 'J'
+    flight_type: "J"
     load_factor: 100
-    dpt_time: '0800'
-    arr_time: '0900'
-    route: 'MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3'
+    dpt_time: "0800"
+    arr_time: "0900"
+    route: "MLY5 KEMBO UG442 SIA UG633 OTEKO UR640 NALRO GUBEL3"
     created_at: NOW
     updated_at: NOW
-  -
-    id: q8mvZ5vdExoy0mQG
+  - id: q8mvZ5vdExoy0mQG
     airline_id: 1
     flight_number: 3003
     route_code: null
@@ -602,10 +576,10 @@ flights:
     dpt_airport_id: KSEA
     arr_airport_id: KPAE
     alt_airport_id: null
-    dpt_time: '8:00'
-    arr_time: '8:45'
+    dpt_time: "8:00"
+    arr_time: "8:45"
     level: null
-    distance: '27.51'
+    distance: "27.51"
     flight_time: 45
     flight_type: J
     load_factor: null
@@ -667,20 +641,17 @@ flight_subfleet:
     flight_id: flightid_4
 
 bids:
-  -
-    id: 100
+  - id: 100
     user_id: 1
     flight_id: flightid_1
     created_at: now
     updated_at: now
-  -
-    id: 101
+  - id: 101
     user_id: 1
     flight_id: flightid_3
     created_at: now
     updated_at: now
-  -
-    id: 102
+  - id: 102
     user_id: 1
     flight_id: q8mvZ5vdExoy0mQG
     created_at: now
@@ -696,7 +667,7 @@ pireps:
     arr_airport_id: KJFK
     block_off_time: 2018-04-04T12:42:36+00:00
     block_on_time: 2018-04-04T16:42:36+00:00
-    flight_time: 180  # 6 hours
+    flight_time: 180 # 6 hours
     block_fuel: 20000
     fuel_used: 10000
     state: 1 # accepted
@@ -715,7 +686,7 @@ pireps:
     aircraft_id: 3
     dpt_airport_id: KJFK
     arr_airport_id: KAUS
-    flight_time: 180  # 6 hours
+    flight_time: 180 # 6 hours
     block_fuel: 20000
     fuel_used: 15000
     state: 5 # draft
@@ -727,28 +698,28 @@ pireps:
     created_at: NOW
     updated_at: NOW
   - id: b68R5gwVzpVe
-    user_id: '1'
-    airline_id: '1'
-    aircraft_id: '1'
-    flight_number: '13'
+    user_id: "1"
+    airline_id: "1"
+    aircraft_id: "1"
+    flight_number: "13"
     route_code: null
     route_leg: null
     flight_type: J
     dpt_airport_id: MKJP
     arr_airport_id: MWCR
-    level: '320'
-    distance: '249.63'
-    planned_distance: '273.09'
-    flight_time: '0'
-    planned_flight_time: '0'
+    level: "320"
+    distance: "249.63"
+    planned_distance: "273.09"
+    flight_time: "0"
+    planned_flight_time: "0"
     zfw: null
-    block_fuel: '21500.25390625'
+    block_fuel: "21500.25390625"
     fuel_used: 20000
-    landing_rate: '0'
-    score: '0'
-    route: ''
+    landing_rate: "0"
+    score: "0"
+    route: ""
     notes: null
-    source: '1'
+    source: "1"
     source_name: vmsacars
     state: 0
     status: ENR
@@ -768,7 +739,7 @@ pireps:
     block_on_time: 2018-04-04T16:42:36+00:00
     block_fuel: 100000
     fuel_used: 20000
-    flight_time: 180  # 6 hours
+    flight_time: 180 # 6 hours
     state: 0
     status: 0
     source: 1
@@ -783,7 +754,7 @@ pirep_fares:
   - id: 1
     pirep_id: pirepid_1
     fare_id: 1
-    code: 'Y'
+    code: "Y"
     name: Economy
     count: 300
     price: 100
@@ -807,7 +778,7 @@ pirep_fares:
   - id: 4
     pirep_id: pirepid_2
     fare_id:
-    code: 'Y'
+    code: "Y"
     name: Economy
     count: 200
     price: 800
@@ -862,162 +833,150 @@ pirep_comments:
     updated_at: now
 
 journals:
-  -
-    id: 1
+  - id: 1
     ledger_id: null
     type: 0
     balance: 7870000
     currency: USD
     morphed_type: App\Models\Airline
     morphed_id: 1
-    created_at: '2018-03-06 12:33:45'
-    updated_at: '2018-03-06 12:34:15'
-  -
-    id: 2
+    created_at: "2018-03-06 12:33:45"
+    updated_at: "2018-03-06 12:34:15"
+  - id: 2
     ledger_id: null
     type: 1
     balance: 15000
     currency: USD
     morphed_type: App\Models\User
     morphed_id: 1
-    created_at: '2018-03-06 12:33:45'
-    updated_at: '2018-03-06 12:34:15'
+    created_at: "2018-03-06 12:33:45"
+    updated_at: "2018-03-06 12:34:15"
 
 journal_transactions:
-  -
-    id: 2cbb5990-c70c-40a8-8381-05b6402a96b4
-    transaction_group: 'Pilot Pay'
+  - id: 2cbb5990-c70c-40a8-8381-05b6402a96b4
+    transaction_group: "Pilot Pay"
     journal_id: 2
     credit: 15000
     debit: null
     currency: USD
-    memo: 'Pilot Payment @ 50'
+    memo: "Pilot Payment @ 50"
     tags: "pilot_pay"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: 3471fb16-0afd-4815-8b0c-f92771274063
-    transaction_group: 'Expense: Per-Flight (no muliplier)'
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: 3471fb16-0afd-4815-8b0c-f92771274063
+    transaction_group: "Expense: Per-Flight (no muliplier)"
     journal_id: 1
     credit: null
     debit: 10000
     currency: USD
-    memo: 'Expense: Per-Flight (no muliplier)'
+    memo: "Expense: Per-Flight (no muliplier)"
     tags: "expense"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: 37f21468-ebad-4850-8557-db310ca45eb4
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: 37f21468-ebad-4850-8557-db310ca45eb4
     transaction_group: Fares
     journal_id: 1
     credit: 6000000
     debit: 0
     currency: USD
-    memo: 'Fares Y300; price: 200, cost: 0'
+    memo: "Fares Y300; price: 200, cost: 0"
     tags: "fare"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: 3e933972-07ef-4bb2-b1e1-90ef7e8871c6
-    transaction_group: 'Expense: Per-Flight (multiplier, on airline)'
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: 3e933972-07ef-4bb2-b1e1-90ef7e8871c6
+    transaction_group: "Expense: Per-Flight (multiplier, on airline)"
     journal_id: 1
     credit: null
     debit: 20000
     currency: USD
-    memo: 'Expense: Per-Flight (multiplier, on airline)'
+    memo: "Expense: Per-Flight (multiplier, on airline)"
     tags: "expense"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: 522d8032-4ca0-4d6d-b7af-613be4bf281c
-    transaction_group: 'Expense: Per-Flight (multiplier)'
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: 522d8032-4ca0-4d6d-b7af-613be4bf281c
+    transaction_group: "Expense: Per-Flight (multiplier)"
     journal_id: 1
     credit: null
     debit: 10000
     currency: USD
-    memo: 'Expense: Per-Flight (multiplier)'
+    memo: "Expense: Per-Flight (multiplier)"
     tags: "expense"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: a9bca611-c251-4fde-9f28-206d4debeb01
-    transaction_group: 'Subfleet: Catering (747-43X RB211-524G)'
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: a9bca611-c251-4fde-9f28-206d4debeb01
+    transaction_group: "Subfleet: Catering (747-43X RB211-524G)"
     journal_id: 1
     credit: null
     debit: 100000
     currency: USD
-    memo: 'Subfleet Expense: Catering (747-43X RB211-524G)'
+    memo: "Subfleet Expense: Catering (747-43X RB211-524G)"
     tags: "subfleet"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: c3ff6a6d-03d0-4744-8678-e27329462dcb
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: c3ff6a6d-03d0-4744-8678-e27329462dcb
     transaction_group: Fares
     journal_id: 1
     credit: 1000000
     debit: 0
     currency: USD
-    memo: 'Fares F10; price: 1000, cost: 0'
+    memo: "Fares F10; price: 1000, cost: 0"
     tags: "fare"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
-    created_at: '2018-03-06 12:34:15'
-    updated_at: '2018-03-06 12:34:15'
-    post_date: '2018-03-06 12:34:15'
-  -
-    id: c4e05ec1-530f-4897-92e8-787bdec8a0a1
-    transaction_group: 'Pilot Pay'
+    created_at: "2018-03-06 12:34:15"
+    updated_at: "2018-03-06 12:34:15"
+    post_date: "2018-03-06 12:34:15"
+  - id: c4e05ec1-530f-4897-92e8-787bdec8a0a1
+    transaction_group: "Pilot Pay"
     journal_id: 1
     credit: null
     debit: 15000
     currency: USD
-    memo: 'Pilot Payment @ 50'
+    memo: "Pilot Payment @ 50"
     tags: "pilot_pay"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
     created_at: now
     updated_at: now
     post_date: now
-  -
-    id: ed516367-eeb9-4a09-bfb7-531ec4be2f93
+  - id: ed516367-eeb9-4a09-bfb7-531ec4be2f93
     transaction_group: Fares
     journal_id: 1
     credit: 1100000
     debit: 0
     currency: USD
-    memo: 'Fares B10; price: 1100, cost: 0'
+    memo: "Fares B10; price: 1100, cost: 0"
     tags: "fare"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
     created_at: now
     updated_at: now
     post_date: now
-  -
-    id: f3f8585e-894c-4491-b19b-d07b6ad20208
-    transaction_group: 'Ground Handling'
+  - id: f3f8585e-894c-4491-b19b-d07b6ad20208
+    transaction_group: "Ground Handling"
     journal_id: 1
     credit: null
     debit: 75000
     currency: USD
-    memo: 'Ground Handling'
+    memo: "Ground Handling"
     tags: "ground_handling"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1
@@ -1025,14 +984,13 @@ journal_transactions:
     updated_at: now
     post_date: now
 
-  -
-    id: 1bd1616c-eaa4-4ab9-b5c1-441004ceef14
-    transaction_group: 'Subfleet 744-3X-RB211'
+  - id: 1bd1616c-eaa4-4ab9-b5c1-441004ceef14
+    transaction_group: "Subfleet 744-3X-RB211"
     journal_id: 1
     credit: null
     debit: 300000
     currency: USD
-    memo: 'Subfleet 744-3X-RB211: Block Time Cost'
+    memo: "Subfleet 744-3X-RB211: Block Time Cost"
     tags: "subfleet"
     ref_model: App\Models\Pirep
     ref_model_id: pirepid_1

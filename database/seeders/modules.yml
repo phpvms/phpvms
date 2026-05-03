@@ -1,6 +1,6 @@
-- name: 'Awards'
+- name: "Awards"
   enabled: 1
-- name: 'Vacentral'
+- name: "Vacentral"
   enabled: 1
-- name: 'VMSAcars'
+- name: "VMSAcars"
   enabled: 1

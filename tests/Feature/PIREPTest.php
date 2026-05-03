@@ -2,16 +2,19 @@
 
 use App\Models\Acars;
 use App\Models\Aircraft;
+use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Bid;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepState;
+use App\Models\Enums\PirepStatus;
 use App\Models\Enums\UserState;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\Rank;
+use App\Models\Subfleet;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Notifications\Messages\Broadcast\PirepPrefiled;
@@ -24,7 +27,11 @@ use App\Services\PirepService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Database\Seeders\ShieldSeeder;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
+use Nwidart\Modules\Facades\Module;
 
 use function Pest\Laravel\seed;
 
@@ -558,6 +565,14 @@ test('pirep bid removed', function () {
     expect($user_bid)->toBeNull();
 });
 
+test('pirep create returns not found for missing flight', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/pireps/create?flight_id=INVALID')
+        ->assertNotFound();
+});
+
 test('pirep progress percent', function () {
     updateSetting('units.distance', 'km');
 
@@ -660,4 +675,87 @@ test('diversion handler', function () {
         ->and($aircraft->airport_id)->toEqual($diversionAirport->id);
 
     Notification::assertSentTo([$pirep], PirepDiverted::class);
+});
+
+test('diversion handler reuses matching reposition flight and attaches subfleet', function () {
+    updateSetting('pireps.handle_diversion', true);
+
+    Schema::create('vmsacars_config', function (Blueprint $table) {
+        $table->string('id')->primary();
+        $table->string('value')->nullable();
+    });
+
+    DB::table('vmsacars_config')->insert([
+        'id'    => 'disable_free_flights',
+        'value' => '1',
+    ]);
+
+    Module::shouldReceive('find')->andReturn(Mockery::mock(Nwidart\Modules\Module::class));
+
+    $pirepSvc = app(PirepService::class);
+
+    $airline = Airline::factory()->create();
+    $departureAirport = Airport::factory()->create();
+    $originalArrivalAirport = Airport::factory()->create();
+    $diversionAirport = Airport::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $aircraft = Aircraft::factory()->create([
+        'subfleet_id' => $subfleet->id,
+        'airport_id'  => $departureAirport->id,
+    ]);
+    $user = User::factory()->create([
+        'airline_id'      => $airline->id,
+        'curr_airport_id' => $departureAirport->id,
+    ]);
+    $flight = Flight::factory()->create([
+        'airline_id'     => $airline->id,
+        'dpt_airport_id' => $departureAirport->id,
+        'arr_airport_id' => $originalArrivalAirport->id,
+        'callsign'       => 'TEST6000',
+        'flight_number'  => 6000,
+    ]);
+    $flight->subfleets()->syncWithoutDetaching([$subfleet->id]);
+
+    $repositionFlight = Flight::factory()->create([
+        'airline_id'     => $airline->id,
+        'flight_number'  => $flight->flight_number,
+        'callsign'       => $flight->callsign,
+        'route_code'     => PirepStatus::DIVERTED,
+        'dpt_airport_id' => $diversionAirport->id,
+        'arr_airport_id' => $originalArrivalAirport->id,
+        'user_id'        => $user->id,
+    ]);
+
+    $pirep = Pirep::factory()->create([
+        'airline_id'     => $airline->id,
+        'user_id'        => $user->id,
+        'aircraft_id'    => $aircraft->id,
+        'flight_id'      => $flight->id,
+        'flight_number'  => $flight->flight_number,
+        'dpt_airport_id' => $departureAirport->id,
+        'arr_airport_id' => $originalArrivalAirport->id,
+    ]);
+
+    $pirepSvc->create($pirep, [
+        [
+            'name'   => 'Diversion Airport',
+            'value'  => $diversionAirport->id,
+            'source' => PirepFieldSource::ACARS,
+        ],
+    ]);
+
+    $pirepSvc->submit($pirep);
+
+    $matchingFlights = Flight::query()->where([
+        'airline_id'     => $airline->id,
+        'flight_number'  => $flight->flight_number,
+        'callsign'       => $flight->callsign,
+        'route_code'     => PirepStatus::DIVERTED,
+        'dpt_airport_id' => $diversionAirport->id,
+        'arr_airport_id' => $originalArrivalAirport->id,
+        'user_id'        => $user->id,
+    ])->get();
+
+    expect($matchingFlights)->toHaveCount(1)
+        ->and($repositionFlight->fresh()->subfleets->pluck('id')->all())->toBe([$subfleet->id]);
 });

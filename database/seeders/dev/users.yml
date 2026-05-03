@@ -89,13 +89,13 @@ model_has_roles:
 
 user_fields:
   - id: 1
-    name: 'VATSIM ID'
+    name: "VATSIM ID"
     show_on_registration: true
     required: false
     private: false
   - id: 2
-    name: 'Referral'
-    description: 'Who referred you'
+    name: "Referral"
+    description: "Who referred you"
     show_on_registration: true
     required: false
     private: true
@@ -104,11 +104,11 @@ user_field_values:
   - id: 1
     user_field_id: 1
     user_id: 1
-    value: 'my vatsim id'
+    value: "my vatsim id"
   - id: 2
     user_field_id: 2
     user_id: 1
-    value: 'Nobody did'
+    value: "Nobody did"
 
 user_awards:
   - id: 1

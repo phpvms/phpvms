@@ -29,8 +29,7 @@ use App\Models\PirepComment;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
 use App\Models\User;
-use App\Repositories\JournalRepository;
-use App\Repositories\PirepRepository;
+use App\Queries\JournalTransactionQuery;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\PirepService;
 use App\Services\UserService;
@@ -43,7 +42,6 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use Prettus\Validator\Exceptions\ValidatorException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use UnexpectedValueException;
 
@@ -51,8 +49,7 @@ class PirepController extends Controller
 {
     public function __construct(
         private readonly PirepFinanceService $financeSvc,
-        private readonly JournalRepository $journalRepo,
-        private readonly PirepRepository $pirepRepo,
+        private readonly JournalTransactionQuery $journalTransactions,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
     ) {}
@@ -167,9 +164,7 @@ class PirepController extends Controller
             'user',
         ];
 
-        $pirep = $this->pirepRepo
-            ->with($with)
-            ->find($id);
+        $pirep = Pirep::with($with)->findOrFail($id);
 
         return new PirepResource($pirep);
     }
@@ -213,7 +208,6 @@ class PirepController extends Controller
      *
      * @throws PirepCancelled
      * @throws AircraftPermissionDenied
-     * @throws ValidatorException
      * @throws Exception
      */
     public function update(string $pirep_id, UpdateRequest $request): PirepResource
@@ -312,8 +306,6 @@ class PirepController extends Controller
      *
      *
      * @return mixed
-     *
-     * @throws ValidatorException
      */
     public function cancel(string $pirep_id, Request $request)
     {
@@ -389,8 +381,8 @@ class PirepController extends Controller
      */
     public function finances_get(string $id): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
-        $transactions = $this->journalRepo->getAllForObject($pirep);
+        $pirep = Pirep::findOrFail($id);
+        $transactions = $this->journalTransactions->build($pirep);
 
         return JournalTransactionResource::collection($transactions['transactions']);
     }
@@ -399,16 +391,15 @@ class PirepController extends Controller
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      * @throws Exception
-     * @throws ValidatorException
      */
     public function finances_recalculate(string $id, Request $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        $pirep = Pirep::findOrFail($id);
         $this->financeSvc->processFinancesForPirep($pirep);
 
         $pirep->refresh();
 
-        $transactions = $this->journalRepo->getAllForObject($pirep);
+        $transactions = $this->journalTransactions->build($pirep);
 
         return JournalTransactionResource::collection($transactions['transactions']);
     }

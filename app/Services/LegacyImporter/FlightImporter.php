@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\LegacyImporter;
 
 use App\Models\Flight;
@@ -54,7 +56,7 @@ class FlightImporter extends BaseImporter
                 // $flight = Flight::updateOrCreate($w, $attrs);
                 $flight = Flight::create(array_merge($w, $attrs));
             } catch (Exception $e) {
-                $this->error($e);
+                $this->error($e->getMessage());
 
                 continue;
             }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\AirportLookup;
@@ -7,7 +9,6 @@ use App\Contracts\Metar as MetarProvider;
 use App\Contracts\Service;
 use App\Exceptions\AirportNotFound;
 use App\Models\Airport;
-use App\Repositories\AirportRepository;
 use App\Support\Metar;
 use App\Support\Units\Distance;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +21,6 @@ class AirportService extends Service
 {
     public function __construct(
         private readonly AirportLookup $lookupProvider,
-        private readonly AirportRepository $airportRepo,
         private readonly MetarProvider $metarProvider
     ) {}
 
@@ -108,7 +108,7 @@ class AirportService extends Service
     public function lookupAirportIfNotFound($icao): ?Airport
     {
         $icao = strtoupper($icao);
-        $airport = $this->airportRepo->findWithoutFail($icao);
+        $airport = Airport::find($icao);
         if ($airport !== null) {
             return $airport;
         }
@@ -144,8 +144,8 @@ class AirportService extends Service
      */
     public function calculateDistance(string $fromIcao, string $toIcao): ?Distance
     {
-        $from = $this->airportRepo->find($fromIcao, ['lat', 'lon']);
-        $to = $this->airportRepo->find($toIcao, ['lat', 'lon']);
+        $from = Airport::find($fromIcao, ['lat', 'lon']);
+        $to = Airport::find($toIcao, ['lat', 'lon']);
 
         if (!$from) {
             throw new AirportNotFound($fromIcao);

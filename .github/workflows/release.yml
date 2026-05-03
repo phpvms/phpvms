@@ -34,7 +34,7 @@ jobs:
       id-token: write
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,12 +44,12 @@ jobs:
       - name: Nerdbank.GitVersioning
         uses: dotnet/nbgv@v0.4.2
         with:
-            setAllVars: true
+          setAllVars: true
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: "8.3"
 
       - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
@@ -67,7 +67,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
         # Dependencies
-      - name: 'Install Release Dependencies'
+      - name: "Install Release Dependencies"
         run: |
           rm -rf vendor
           composer install --no-dev --prefer-dist --no-interaction --verbose
@@ -87,7 +87,7 @@ jobs:
         run: .github/scripts/build.sh
 
       # Dependencies
-      - name: 'List files'
+      - name: "List files"
         run: |
           find . -maxdepth 2  -type f
 

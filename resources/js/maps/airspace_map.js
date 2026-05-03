@@ -32,7 +32,7 @@ export default (_opts) => {
         params: {},
       },
     },
-    _opts
+    _opts,
   );
 
   const map = draw_base_map(opts);

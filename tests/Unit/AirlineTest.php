@@ -4,6 +4,7 @@ use App\Models\Airline;
 use App\Models\Flight;
 use App\Models\Journal;
 use App\Models\Pirep;
+use App\Models\Subfleet;
 use App\Services\AirlineService;
 
 it('can add an airline', function () {
@@ -46,4 +47,19 @@ it('cannot delete airline with pirep', function () {
     ]);
 
     expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeFalse();
+});
+
+it('cannot delete airline with subfleet', function () {
+    $airline = Airline::factory()->create();
+    Subfleet::factory()->create([
+        'airline_id' => $airline->id,
+    ]);
+
+    expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeFalse();
+});
+
+it('can delete airline with no associations', function () {
+    $airline = Airline::factory()->create();
+
+    expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeTrue();
 });

@@ -42,7 +42,7 @@ export default (_opts) => {
       flown_route_color: ACTUAL_ROUTE_COLOR,
       units: "nmi",
     },
-    _opts
+    _opts,
   );
 
   const map = draw_base_map(opts);
@@ -110,13 +110,10 @@ export default (_opts) => {
    * @param layer
    */
   function onFlightClick(feature, layer) {
-    const pirep_uri = opts.pirep_uri.replace(
-      "{id}",
-      feature.properties.pirep_id
-    );
+    const pirep_uri = opts.pirep_uri.replace("{id}", feature.properties.pirep_id);
     const geojson_uri = `${opts.pirep_uri.replace(
       "{id}",
-      feature.properties.pirep_id
+      feature.properties.pirep_id,
     )}/acars/geojson`;
 
     /*
@@ -210,17 +207,14 @@ export default (_opts) => {
 
       // Reload the clicked-flight information
       if (layerSelFlight !== null) {
-        liveMapController.controller.onFlightClick(
-          layerSelFlightFeature,
-          layerSelFlightLayer
-        );
+        liveMapController.controller.onFlightClick(layerSelFlightFeature, layerSelFlightLayer);
       } else {
         // Center on active flights
         // eslint-disable-next-line no-lonely-if
         if (!pannedToFlight) {
           try {
             map.panTo(layerFlights.getBounds().getCenter());
-          } catch (e) {
+          } catch {
             map.panTo(centerCoords);
           }
         }

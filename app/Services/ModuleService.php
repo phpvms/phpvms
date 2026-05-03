@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -179,7 +181,7 @@ class ModuleService extends Service
         $zipper = null;
 
         if ($file_ext === 'tar' || $file_ext === 'gz') {
-            $zipper = new PharData($file);
+            $zipper = new PharData($file->getRealPath());
             $zipper->decompress();
         }
 
@@ -187,7 +189,7 @@ class ModuleService extends Service
             $madZipper = new Madzipper();
 
             try {
-                $zipper = $madZipper->make($file);
+                $zipper = $madZipper->make($file->getRealPath());
             } catch (Exception $e) {
                 throw new ModuleInstallationError();
             }

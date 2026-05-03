@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\LegacyImporter;
 
-use App\Repositories\SettingRepository;
+use App\Services\SettingService;
 
 class SettingsImporter extends BaseImporter
 {
@@ -12,14 +14,15 @@ class SettingsImporter extends BaseImporter
     {
         $this->comment('--- SETTINGS IMPORT ---');
 
-        /** @var SettingRepository $settingsRepo */
-        $settingsRepo = app(SettingRepository::class);
+        /** @var SettingService $settingService */
+        $settingService = app(SettingService::class);
 
         $count = 0;
         $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
             if ($row->name === 'ADMIN_EMAIL') {
-                $settingsRepo->store('general.admin_email', $row->value);
+                $settingService->store('general.admin_email', $row->value);
+                $count++;
             }
         }
 

@@ -143,23 +143,6 @@ class Aircraft extends Model
         'simbrief_type',
     ];
 
-    /**
-     * Validation rules
-     */
-    public static array $rules = [
-        'name'          => 'required',
-        'registration'  => 'required',
-        'fin'           => 'nullable|unique:aircraft',
-        'selcal'        => 'nullable',
-        'status'        => 'required',
-        'subfleet_id'   => 'required',
-        'dow'           => 'nullable|numeric',
-        'zfw'           => 'nullable|numeric',
-        'mtow'          => 'nullable|numeric',
-        'mlw'           => 'nullable|numeric',
-        'simbrief_type' => 'nullable',
-    ];
-
     public $sortable = [
         'subfleet_id',
         'airport_id',

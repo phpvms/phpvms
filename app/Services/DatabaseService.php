@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -23,7 +25,7 @@ class DatabaseService extends Service
 
     protected function time(): string
     {
-        return Carbon::now('UTC'); // ->format('Y-m-d H:i:s');
+        return (string) Carbon::now('UTC'); // ->format('Y-m-d H:i:s');
     }
 
     /**

@@ -87,10 +87,13 @@ class JournalTransaction extends Model
     protected function casts(): array
     {
         return [
-            'credits'   => 'integer',
+            'credit'    => 'integer',
             'debit'     => 'integer',
             'post_date' => 'datetime',
-            'tags'      => 'array',
+            // tags is stored as a comma-separated string (post() implodes
+            // arrays before insert). The previous 'array' cast tried to
+            // JSON-decode that CSV and silently returned null on read.
+            'tags' => 'string',
         ];
     }
 }

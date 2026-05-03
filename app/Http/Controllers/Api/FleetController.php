@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Contracts\Controller;
 use App\Http\Resources\AircraftResource;
 use App\Http\Resources\SubfleetResource;
-use App\Repositories\AircraftRepository;
-use App\Repositories\SubfleetRepository;
+use App\Models\Aircraft;
+use App\Models\Subfleet;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Class FleetController
@@ -15,22 +16,16 @@ use Illuminate\Http\Request;
 class FleetController extends Controller
 {
     /**
-     * FleetController constructor.
-     */
-    public function __construct(
-        private readonly AircraftRepository $aircraftRepo,
-        private readonly SubfleetRepository $subfleetRepo
-    ) {}
-
-    /**
      * Return all the subfleets and the aircraft and any other associated data
      * Paginated
      */
-    public function index()
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $subfleets = $this->subfleetRepo
-            ->with(['aircraft', 'airline', 'fares', 'ranks'])
-            ->paginate();
+        $limit = paginate_limit($request->integer('limit') ?: null);
+
+        $subfleets = Subfleet::with(['aircraft', 'airline', 'fares', 'ranks'])
+            ->paginate($limit)
+            ->appends($request->except(['page', 'user']));
 
         return SubfleetResource::collection($subfleets);
     }
@@ -48,9 +43,8 @@ class FleetController extends Controller
             $where['id'] = $id;
         }
 
-        $aircraft = $this->aircraftRepo
-            ->with('subfleet.fares')
-            ->findWhere($where)
+        $aircraft = Aircraft::with('subfleet.fares')
+            ->where($where)
             ->first();
 
         return new AircraftResource($aircraft);

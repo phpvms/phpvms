@@ -1,9 +1,9 @@
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
-tag-prefix: '[vV]?'
+tag-prefix: "[vV]?"
 mode: ManualDeployment
 workflow: GitHubFlow/v1
-label: ''
+label: ""
 version-in-branch-pattern: (?<version>[vV]?\d+(\.\d+)?(\.\d+)?).*
 major-version-bump-message: \+semver:\s?(breaking|major)
 minor-version-bump-message: \+semver:\s?(feature|minor)
@@ -14,15 +14,15 @@ merge-message-formats: {}
 update-build-number: true
 semantic-version-format: Strict
 strategies:
-- Fallback
-- ConfiguredNextVersion
-- MergeMessage
-- TaggedCommit
-- TrackReleaseBranches
-- VersionInBranchName
+  - Fallback
+  - ConfiguredNextVersion
+  - MergeMessage
+  - TaggedCommit
+  - TrackReleaseBranches
+  - VersionInBranchName
 branches:
   main:
-    label: 'dev'
+    label: "dev"
     mode: ContinuousDelivery
     increment: Patch
     prevent-increment:
@@ -38,7 +38,7 @@ branches:
     pre-release-weight: 55000
   release:
     mode: ContinuousDelivery
-    label: 'alpha'
+    label: "alpha"
     increment: Patch
     prevent-increment:
       of-merged-branch: false
@@ -48,7 +48,7 @@ branches:
     track-merge-message: true
     regex: ^releases?[/-](?<BranchName>.+)
     source-branches:
-    - main
+      - main
     is-source-branch-for: []
     tracks-release-branches: false
     is-release-branch: true
@@ -56,15 +56,15 @@ branches:
     pre-release-weight: 30000
   feature:
     mode: ManualDeployment
-    label: '{BranchName}'
+    label: "{BranchName}"
     increment: Inherit
     prevent-increment:
       when-current-commit-tagged: false
     track-merge-message: true
     regex: ^features?[/-](?<BranchName>.+)
     source-branches:
-    - main
-    - release
+      - main
+      - release
     is-source-branch-for: []
     is-main-branch: false
     pre-release-weight: 30000
@@ -79,9 +79,9 @@ branches:
     track-merge-message: true
     regex: ^(pull|pull\-requests|pr)[/-]
     source-branches:
-    - main
-    - release
-    - feature
+      - main
+      - release
+      - feature
     is-source-branch-for: []
     pre-release-weight: 30000
 ignore:
@@ -94,7 +94,7 @@ prevent-increment:
 track-merge-target: false
 track-merge-message: true
 commit-message-incrementing: Enabled
-regex: ''
+regex: ""
 source-branches: []
 is-source-branch-for: []
 tracks-release-branches: false

@@ -1,16 +1,16 @@
 # phpVMS <sup>8</sup>
 
-[![Build](https://github.com/phpvms/phpvms/actions/workflows/build.yml/badge.svg)](https://github.com/phpvms/phpvms/actions/workflows/build.yml)  ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
+[![Build](https://github.com/phpvms/phpvms/actions/workflows/build.yml/badge.svg)](https://github.com/phpvms/phpvms/actions/workflows/build.yml) ![StyleCI](https://github.styleci.io/repos/93688482/shield?branch=dev) [![License](https://poser.pugx.org/nabeel/phpvms/license)](https://packagist.org/packages/nabeel/phpvms)
 
-phpVMS is a PHP application to run and simulate an airline. It allowed users to register, 
-view flight schedules that you create, and file flight reports, built on the Laravel framework. 
+phpVMS is a PHP application to run and simulate an airline. It allowed users to register,
+view flight schedules that you create, and file flight reports, built on the Laravel framework.
 The latest documentation, with installation instructions is available on the
 [phpVMS documentation](https://docs.phpvms.net/) site.
 
 ## Installation
 
-A full distribution, with all the composer dependencies, is available at this 
-[GitHub Releases](https://github.com/nabeelio/phpvms/releases) link. 
+A full distribution, with all the composer dependencies, is available at this
+[GitHub Releases](https://github.com/nabeelio/phpvms/releases) link.
 
 ### Requirements
 
@@ -38,7 +38,7 @@ A full distribution, with all the composer dependencies, is available at this
 
 ## Development Environment with Docker
 
-A full development environment can be brought up using Docker and 
+A full development environment can be brought up using Docker and
 [Laravel Sail](https://laravel.com/docs/10.x/sail), without having to install composer/npm locally
 
 ```bash
@@ -52,14 +52,14 @@ docker run --rm \
     -w /var/www/html \
     laravelsail/php84-composer:latest \
     composer install --ignore-platform-reqs
-    
+
 # Then you can start sail
 ./vendor/bin/sail up
 ```
 
-Then go to `http://localhost`. 
+Then go to `http://localhost`.
 
-Instead of repeatedly typing vendor/bin/sail to execute Sail commands, you may wish to configure a 
+Instead of repeatedly typing vendor/bin/sail to execute Sail commands, you may wish to configure a
 shell alias that allows you to execute Sail's commands more easily:
 
 ```bash
@@ -96,7 +96,7 @@ This will build all the assets according to the webpack file.
 
 ### Laravel Boost
 
-If you want to use AI agents for your development workflow, please ensure you install 
+If you want to use AI agents for your development workflow, please ensure you install
 [Laravel Boost](https://laravel.com/ai/boost) by running the following command:
 
 ```bash

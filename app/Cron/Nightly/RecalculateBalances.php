@@ -5,7 +5,6 @@ namespace App\Cron\Nightly;
 use App\Contracts\Listener;
 use App\Events\CronNightly;
 use App\Models\Journal;
-use App\Repositories\JournalRepository;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use UnexpectedValueException;
@@ -15,19 +14,8 @@ use UnexpectedValueException;
  */
 class RecalculateBalances extends Listener
 {
-    private JournalRepository $journalRepo;
-
-    /**
-     * Nightly constructor.
-     */
-    public function __construct(JournalRepository $journalRepo)
-    {
-        $this->journalRepo = $journalRepo;
-    }
-
     /**
      * Recalculate all the balances for the different ledgers
-     *
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
@@ -36,19 +24,20 @@ class RecalculateBalances extends Listener
     {
         Log::info('Nightly: Recalculating balances');
 
-        $journals = Journal::all();
-        foreach ($journals as $journal) {
-            $old_balance = $journal->balance;
+        // chunkById keeps memory bounded as the journal table grows.
+        Journal::query()->chunkById(500, function ($journals): void {
+            foreach ($journals as $journal) {
+                $old_balance = $journal->balance;
 
-            $this->journalRepo->recalculateBalance($journal);
-            $journal->refresh();
+                $journal->recalculateBalance();
 
-            if (!$journal->balance->equals($old_balance)) {
-                Log::info('Adjusting balance on '.
-                    $journal->morphed_type.':'.$journal->morphed_id
-                    .' from '.$old_balance.' to '.$journal->balance);
+                if (!$journal->balance->equals($old_balance)) {
+                    Log::info('Adjusting balance on '
+                        .$journal->morphed_type.':'.$journal->morphed_id
+                        .' from '.$old_balance.' to '.$journal->balance);
+                }
             }
-        }
+        });
 
         Log::info('Done calculating balances');
     }

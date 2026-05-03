@@ -13,7 +13,5 @@
     },
     "spaces_inside_parentheses": false
   },
-  "exclude": [
-    "modules/"
-  ]
+  "exclude": ["modules/"]
 }

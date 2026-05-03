@@ -37,7 +37,7 @@ Route::group(['middleware' => ['api.auth']], function () {
     Route::get('airlines/{id}', [AirlineController::class, 'get']);
 
     Route::get('airports', [AirportController::class, 'index']);
-    Route::get('airports/{id}', [AirportController::class, 'get']);
+    Route::get('airports/{airport}', [AirportController::class, 'get']);
     Route::get('airports/{id}/lookup', [AirportController::class, 'lookup']);
     Route::get('airports/{id}/distance/{to}', [AirportController::class, 'distance']);
 

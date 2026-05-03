@@ -5,22 +5,21 @@ namespace App\Http\Controllers\Frontend;
 use App\Contracts\Controller;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Http\Requests\CreatePirepRequest;
+use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Requests\UpdatePirepRequest;
+use App\Models\Aircraft;
+use App\Models\Airline;
 use App\Models\Enums\PirepFieldSource;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Fare;
+use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
 use App\Models\SimBrief;
 use App\Models\User;
-use App\Repositories\AircraftRepository;
-use App\Repositories\AirlineRepository;
-use App\Repositories\AirportRepository;
-use App\Repositories\Criteria\WhereCriteria;
-use App\Repositories\FlightRepository;
-use App\Repositories\PirepRepository;
+use App\Queries\PirepSearchQuery;
 use App\Services\FareService;
 use App\Services\GeoService;
 use App\Services\PirepService;
@@ -37,19 +36,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Prettus\Repository\Exceptions\RepositoryException;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepController extends Controller
 {
     public function __construct(
-        private readonly AircraftRepository $aircraftRepo,
-        private readonly AirlineRepository $airlineRepo,
-        private readonly AirportRepository $airportRepo,
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly GeoService $geoSvc,
-        private readonly PirepRepository $pirepRepo,
+        private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
         private readonly UserService $userSvc
     ) {}
@@ -139,15 +132,14 @@ class PirepController extends Controller
         $this->fareSvc->saveToPirep($pirep, $fares);
     }
 
-    /**
-     * @throws RepositoryException
-     */
-    public function index(Request $request): View
+    public function index(SearchPirepsRequest $request): View
     {
         $user = Auth::user();
 
-        $where = [['user_id', $user->id]];
-        $where[] = ['state', '<>', PirepState::CANCELLED];
+        $where = [
+            ['user_id', '=', $user->id],
+            ['state', '<>', PirepState::CANCELLED],
+        ];
 
         // Support retrieval of deleted relationships
         $with = [
@@ -167,8 +159,20 @@ class PirepController extends Controller
             'fares',
         ];
 
-        $this->pirepRepo->with($with)->pushCriteria(new WhereCriteria($request, $where));
-        $pireps = $this->pirepRepo->sortable(['submitted_at' => 'desc'])->paginate();
+        $query = $this->pirepSearchQuery->build($request)->with($with);
+
+        // Apply controller-owned filters (the previous $where array).
+        foreach ($where as [$col, $op, $val]) {
+            $query->where($col, $op, $val);
+        }
+
+        // Default ordering: legacy sortable() fallback was submitted_at desc.
+        if (!$request->filled('orderBy')) {
+            $query->orderBy('submitted_at', 'desc');
+        }
+
+        $perPage = paginate_limit($request->integer('limit') ?: null);
+        $pireps = $query->paginate($perPage);
 
         return view('pireps.index', [
             'user'   => $user,
@@ -206,7 +210,7 @@ class PirepController extends Controller
             },
         ];
 
-        $pirep = $this->pirepRepo->with($with)->find($id);
+        $pirep = Pirep::with($with)->find($id);
         if (empty($pirep)) {
             Flash::error('Pirep not found');
 
@@ -228,7 +232,7 @@ class PirepController extends Controller
     public function fares(Request $request): View
     {
         $aircraft_id = $request->input('aircraft_id');
-        $aircraft = $this->aircraftRepo->find($aircraft_id);
+        $aircraft = Aircraft::findOrFail($aircraft_id);
 
         return view('pireps.fares', [
             'aircraft'  => $aircraft,
@@ -246,7 +250,7 @@ class PirepController extends Controller
         // See if request has a ?flight_id, so we can pre-populate the fields from the flight
         // Makes filing easier, but we can also more easily find a bid and close it
         if ($request->has('flight_id')) {
-            $flight = $this->flightRepo->find($request->input('flight_id'));
+            $flight = Flight::findOrFail($request->input('flight_id'));
             $pirep = Pirep::fromFlight($flight);
         }
 
@@ -283,14 +287,24 @@ class PirepController extends Controller
         }
 
         $pirep_source = filled(optional($pirep)->source) ? $pirep->source : PirepSource::MANUAL;
+        $airports = ['' => ''];
+
+        if ($pirep instanceof Pirep) {
+            $airports[$pirep->arr_airport->id] = $pirep->arr_airport->full_name;
+            $airports[$pirep->dpt_airport->id] = $pirep->dpt_airport->full_name;
+
+            if ($pirep->alt_airport_id) {
+                $airports[$pirep->alt_airport->id] = $pirep->alt_airport->full_name;
+            }
+        }
 
         return view('pireps.create', [
             'aircraft'      => $aircraft,
             'pirep'         => $pirep,
             'read_only'     => false,
-            'airline_list'  => $this->airlineRepo->selectBoxList(true),
+            'airline_list'  => Airline::selectList(addBlank: true),
             'aircraft_list' => $aircraft_list,
-            'airport_list'  => [], // $this->airportRepo->selectBoxList(true),
+            'airport_list'  => $airports,
             'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep_source, PirepFieldSource::BOTH])->get(),
             'field_values'  => [],
             'fare_values'   => $fare_values,
@@ -343,7 +357,7 @@ class PirepController extends Controller
             // is the aircraft in the right place?
             /* @noinspection NotOptimalIfConditionsInspection */
             // Get the aircraft
-            $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
+            $aircraft = Aircraft::find($pirep->aircraft_id);
             if ($aircraft === null) {
                 Log::error('Aircraft for PIREP not found, id='.$pirep->aircraft_id);
 
@@ -437,9 +451,7 @@ class PirepController extends Controller
     public function edit(string $id): RedirectResponse|View
     {
         /** @var ?Pirep $pirep */
-        $pirep = $this->pirepRepo
-            ->with(['dpt_airport', 'arr_airport', 'alt_airport'])
-            ->findWithoutFail($id);
+        $pirep = Pirep::with(['dpt_airport', 'arr_airport', 'alt_airport'])->find($id);
 
         if (!$pirep) {
             Flash::error('Pirep not found');
@@ -497,7 +509,7 @@ class PirepController extends Controller
             'pirep'         => $pirep,
             'aircraft'      => $pirep->aircraft,
             'aircraft_list' => $this->aircraftList(true),
-            'airline_list'  => $this->airlineRepo->selectBoxList(),
+            'airline_list'  => Airline::selectList(),
             'airport_list'  => $airports,
             'pirep_fields'  => PirepField::whereIn('pirep_source', [$pirep->source, PirepFieldSource::BOTH])->get(),
             'simbrief_id'   => $simbrief_id,
@@ -506,7 +518,6 @@ class PirepController extends Controller
 
     /**
      * @throws Exception
-     * @throws ValidatorException
      */
     public function update(string $id, UpdatePirepRequest $request): RedirectResponse
     {
@@ -514,7 +525,7 @@ class PirepController extends Controller
         $user = Auth::user();
 
         /** @var ?Pirep $pirep */
-        $pirep = $this->pirepRepo->findWithoutFail($id);
+        $pirep = Pirep::find($id);
         if (!$pirep) {
             Flash::error('Pirep not found');
 
@@ -538,7 +549,8 @@ class PirepController extends Controller
         $attrs['block_fuel'] = Fuel::make((float) $attrs['block_fuel'], setting('units.fuel'));
         $attrs['fuel_used'] = Fuel::make((float) $attrs['fuel_used'], setting('units.fuel'));
 
-        $pirep = $this->pirepRepo->update($attrs, $id);
+        $pirep->update($attrs);
+        $pirep->refresh();
 
         // A route change in the PIREP, so update the saved points in the ACARS table
         if ($pirep->route !== $orig_route) {
@@ -572,7 +584,7 @@ class PirepController extends Controller
      */
     public function submit(string $id, Request $request): RedirectResponse
     {
-        $pirep = $this->pirepRepo->findWithoutFail($id);
+        $pirep = Pirep::find($id);
         if (empty($pirep)) {
             Flash::error('PIREP not found');
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\Service;
@@ -20,12 +22,14 @@ use App\Exceptions\PirepError;
 use App\Exceptions\UserNotAtAirport;
 use App\Models\Acars;
 use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\AircraftState;
 use App\Models\Enums\FlightType;
 use App\Models\Enums\PirepSource;
 use App\Models\Enums\PirepState;
 use App\Models\Enums\PirepStatus;
+use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\PirepComment;
@@ -34,31 +38,25 @@ use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
-use App\Repositories\AircraftRepository;
-use App\Repositories\AirportRepository;
-use App\Repositories\FlightRepository;
-use App\Repositories\PirepRepository;
+use App\Services\Finance\PirepFinanceService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 class PirepService extends Service
 {
     public function __construct(
-        private readonly AirportRepository $airportRepo,
         private readonly AirportService $airportSvc,
-        private readonly AircraftRepository $aircraftRepo,
         private readonly FareService $fareSvc,
-        private readonly FlightRepository $flightRepo,
         private readonly GeoService $geoSvc,
-        private readonly PirepRepository $pirepRepo,
+        private readonly PirepFinanceService $pirepFinanceSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
     ) {}
@@ -94,12 +92,12 @@ class PirepService extends Service
             $this->airportSvc->lookupAirportIfNotFound($pirep->dpt_airport_id);
             $this->airportSvc->lookupAirportIfNotFound($pirep->arr_airport_id);
         } else {
-            $dptApt = $this->airportRepo->findWithoutFail($pirep->dpt_airport_id);
+            $dptApt = Airport::find($pirep->dpt_airport_id);
             if (!$dptApt) {
                 throw new AirportNotFound($pirep->dpt_airport_id);
             }
 
-            $arrApt = $this->airportRepo->findWithoutFail($pirep->arr_airport_id);
+            $arrApt = Airport::find($pirep->arr_airport_id);
             if (!$arrApt) {
                 throw new AirportNotFound($pirep->arr_airport_id);
             }
@@ -120,14 +118,14 @@ class PirepService extends Service
 
         // See if this aircraft is valid
         /** @var ?Aircraft $aircraft */
-        $aircraft = $this->aircraftRepo->findWithoutFail($pirep->aircraft_id);
+        $aircraft = Aircraft::find($pirep->aircraft_id);
         if ($aircraft === null) {
             throw new AircraftInvalid($aircraft);
         }
 
         // See if this aircraft is available for flight
         /** @var ?Aircraft $aircraft */
-        $aircraft = $this->aircraftRepo->where('id', $pirep->aircraft_id)->where('state', AircraftState::PARKED)->first();
+        $aircraft = Aircraft::where('id', $pirep->aircraft_id)->where('state', AircraftState::PARKED)->first();
         if ($aircraft === null) {
             throw new AircraftNotAvailable($pirep->aircraft);
         }
@@ -229,12 +227,14 @@ class PirepService extends Service
      * @param PirepFieldValue[] $fields
      * @param PirepFare[]       $fares
      *
-     * @throws ValidatorException
      * @throws Exception
      */
     public function update(string $pirep_id, array $attrs, array $fields = [], array $fares = []): Pirep
     {
-        $pirep = $this->pirepRepo->update($attrs, $pirep_id);
+        $pirep = Pirep::findOrFail($pirep_id);
+        $pirep->update($attrs);
+        $pirep->refresh();
+
         $this->updateCustomFields($pirep_id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
 
@@ -271,7 +271,7 @@ class PirepService extends Service
         $attrs['status'] = PirepStatus::ARRIVED;
         $attrs['submitted_at'] = Carbon::now('UTC');
 
-        $this->pirepRepo->update($attrs, $pirep->id);
+        $pirep->update($attrs);
         $pirep->refresh();
 
         // Check if there is a simbrief_id, change it to be set to the PIREP
@@ -464,9 +464,6 @@ class PirepService extends Service
 
     /**
      * Cancel a PIREP
-     *
-     *
-     * @throws ValidatorException
      */
     public function cancel(Pirep $pirep): Pirep
     {
@@ -476,10 +473,11 @@ class PirepService extends Service
             throw new PirepCancelNotAllowed($pirep);
         }
 
-        $pirep = $this->pirepRepo->update([
+        $pirep->update([
             'state'  => PirepState::CANCELLED,
             'status' => PirepStatus::CANCELLED,
-        ], $pirep->id);
+        ]);
+        $pirep->refresh();
 
         event(new PirepCancelled($pirep));
 
@@ -492,6 +490,7 @@ class PirepService extends Service
      *
      * acars
      * bids
+     * journal_transactions (polymorphic, no FK constraint)
      * pirep_comments
      * pirep_fares
      * pirep_field_values
@@ -501,14 +500,23 @@ class PirepService extends Service
     {
         $user_id = $pirep->user_id;
 
-        $w = ['pirep_id' => $pirep->id];
-        PirepComment::where($w)->forceDelete();
-        PirepFare::where($w)->forceDelete();
-        PirepFieldValue::where($w)->forceDelete();
-        SimBrief::where($w)->forceDelete();
-        $pirep->forceDelete();
+        DB::transaction(function () use ($pirep): void {
+            // Drop journal entries first so they don't dangle. ref_model_id
+            // is polymorphic (no FK), so a cascading database delete won't
+            // catch them; without this the nightly recalc would still see
+            // them and skew journal balances.
+            $this->pirepFinanceSvc->deleteFinancesForPirep($pirep);
 
-        // Update the user's last PIREP
+            $w = ['pirep_id' => $pirep->id];
+            PirepComment::where($w)->forceDelete();
+            PirepFare::where($w)->forceDelete();
+            PirepFieldValue::where($w)->forceDelete();
+            SimBrief::where($w)->forceDelete();
+            $pirep->forceDelete();
+        });
+
+        // Update the user's last PIREP (outside transaction — independent
+        // of the delete cascade and safe to retry if it fails).
         $last_pirep = Pirep::where(['user_id' => $user_id, 'state' => PirepState::ACCEPTED])
             ->latest('submitted_at')
             ->first();
@@ -685,7 +693,7 @@ class PirepService extends Service
             return;
         }
 
-        $diversion_airport = $this->airportRepo->findWithoutFail($diversion_airport_id);
+        $diversion_airport = Airport::find($diversion_airport_id);
 
         // Return if diversion airport not found and airport lookup is disabled
         if (!$diversion_airport && !setting('general.auto_airport_lookup', false)) {
@@ -720,38 +728,48 @@ class PirepService extends Service
             // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
             if (get_truth_state($free_flights_disabled) == true) {
-                // Lookup for flights from diversion airport to original destination airport
-                $reposition_flights_count = $this->flightRepo->where([
+                $repositionAttributes = [
+                    'airline_id'     => $flight->airline_id,
+                    'flight_number'  => $flight->flight_number,
+                    'callsign'       => $flight->callsign,
+                    'route_code'     => PirepStatus::DIVERTED,
                     'dpt_airport_id' => $diversion_airport->id,
                     'arr_airport_id' => $pirep->arr_airport_id,
-                    'airline_id'     => $pirep->airline_id,
-                ])->whereHas('subfleets', function ($query) use ($aircraft) {
-                    $query->where('subfleet_id', $aircraft->subfleet_id);
-                })->count();
+                    'user_id'        => $user->id,
+                ];
 
-                // Create a reposition flight if there is no flight
-                if ($reposition_flights_count == 0) {
-                    $reposition_flight = $this->flightRepo->create([
-                        'airline_id'     => $flight->airline_id,
-                        'flight_number'  => $flight->flight_number,
-                        'callsign'       => $flight->callsign,
-                        'route_code'     => PirepStatus::DIVERTED,
-                        'dpt_airport_id' => $diversion_airport->id,
-                        'arr_airport_id' => $pirep->arr_airport_id,
-                        'distance'       => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
-                        'flight_time'    => 1,
-                        'flight_type'    => $flight->flight_type,
-                        'notes'          => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
-                        'visible'        => true,
-                        'active'         => true,
-                        'user_id'        => $user->id,
-                    ]);
+                $lockKey = implode(':', [
+                    'diversion-flight',
+                    $flight->airline_id,
+                    $flight->flight_number,
+                    $diversion_airport->id,
+                    $pirep->arr_airport_id,
+                    $user->id,
+                ]);
 
-                    $reposition_flight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
+                /** @var Flight $repositionFlight */
+                $repositionFlight = Cache::lock($lockKey, 10)->block(5, function () use ($aircraft, $diversion_airport, $flight, $pirep, $repositionAttributes) {
+                    $repositionFlight = Flight::query()->firstOrCreate(
+                        $repositionAttributes,
+                        [
+                            'distance'    => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
+                            'flight_time' => 1,
+                            'flight_type' => $flight->flight_type,
+                            'notes'       => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
+                            'visible'     => true,
+                            'active'      => true,
+                        ]
+                    );
 
-                    Log::info('Diversion repositioning flight '.$reposition_flight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
+                    $repositionFlight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
+
+                    return $repositionFlight;
+                });
+
+                if ($repositionFlight->wasRecentlyCreated) {
+                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
                 } else {
-                    Log::info('Diversion repositioning flight NOT created, '.$reposition_flights_count.' flights found between '.$diversion_airport->id.' and '.$pirep->arr_airport_id);
+                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' reused');
                 }
             }
         }

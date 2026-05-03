@@ -4,8 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\Enums\NavigationGroup;
 use App\Models\Setting;
-use App\Repositories\SettingRepository;
 use App\Services\FinanceService;
+use App\Services\SettingService;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -26,7 +26,7 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 
@@ -75,7 +75,7 @@ class Settings extends Page
 
     protected function fillForm(): void
     {
-        $settings = app(SettingRepository::class)->where('type', '!=', 'hidden')->orderBy('order')->get();
+        $settings = Setting::where('type', '!=', 'hidden')->orderBy('order')->get();
 
         $data = $settings->toArray();
         $formattedData = [];
@@ -98,14 +98,18 @@ class Settings extends Page
 
             $data = Arr::dot($data);
 
-            foreach ($data as $key => $value) {
-                app(SettingRepository::class)->store($key, $value);
+            // Wrap the settings write + journal-currency migration in a single
+            // transaction so a partial failure rolls back BOTH halves rather
+            // than leaving the DB with half-saved settings or a half-migrated
+            // journal.
+            DB::transaction(function () use ($data) {
+                $settingService = app(SettingService::class);
+                foreach ($data as $key => $value) {
+                    $settingService->store($key, $value);
+                }
 
-                $cache = config('cache.keys.SETTINGS');
-                Cache::forget($cache['key'].$key);
-            }
-
-            app(FinanceService::class)->changeJournalCurrencies();
+                app(FinanceService::class)->changeJournalCurrencies();
+            });
 
             Notification::make()
                 ->success()
@@ -150,8 +154,7 @@ class Settings extends Page
     {
         $tabs = [];
 
-        $grouped_settings = app(SettingRepository::class)
-            ->where('type', '!=', 'hidden')
+        $grouped_settings = Setting::where('type', '!=', 'hidden')
             ->orderBy('order')
             ->get();
 

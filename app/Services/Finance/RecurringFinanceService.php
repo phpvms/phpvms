@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
@@ -16,7 +18,6 @@ use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
-use Prettus\Validator\Exceptions\ValidatorException;
 
 /**
  * Process all of the daily expenses and charge them
@@ -79,9 +80,6 @@ class RecurringFinanceService extends Service
 
     /**
      * Run all of the daily expense/financials
-     *
-     *
-     * @throws ValidatorException
      */
     public function processExpenses(string $type = ExpenseType::DAILY): void
     {
@@ -121,8 +119,7 @@ class RecurringFinanceService extends Service
                     'ref_model_id'   => $expense->id,
                 ];
 
-                $ref = explode('\\', $expense->ref_model);
-                $type = end($ref);
+                $type = class_basename($expense->ref_model_type);
 
                 $found = JournalTransaction::where($w)
                     ->whereDate('post_date', '=', Carbon::now('UTC')->toDateString())

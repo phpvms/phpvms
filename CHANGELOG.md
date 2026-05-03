@@ -8,7 +8,7 @@
 
 - Move currency selection to admin settings [\#671](https://github.com/nabeelio/phpvms/issues/671)
 - Center live map to custom location [\#661](https://github.com/nabeelio/phpvms/issues/661)
-- Pilot Names -  Pilots ID [\#656](https://github.com/nabeelio/phpvms/issues/656)
+- Pilot Names - Pilots ID [\#656](https://github.com/nabeelio/phpvms/issues/656)
 - Simbrief sample data [\#651](https://github.com/nabeelio/phpvms/issues/651)
 - Simbrief only available for bids [\#642](https://github.com/nabeelio/phpvms/issues/642)
 - PIREP prefile download [\#634](https://github.com/nabeelio/phpvms/issues/634)
@@ -43,7 +43,7 @@
 - \(Importer\) Set the pay rate for the ranks \#443 [\#586](https://github.com/nabeelio/phpvms/pull/586)
 - Fix rowmapper generator, check for fields, map users \#443 [\#583](https://github.com/nabeelio/phpvms/pull/583)
 - Add bcmath to the required extensions list \#558 [\#564](https://github.com/nabeelio/phpvms/pull/564)
-- Add the argc\_argv flag for the cgi exec \#553 [\#556](https://github.com/nabeelio/phpvms/pull/556)
+- Add the argc_argv flag for the cgi exec \#553 [\#556](https://github.com/nabeelio/phpvms/pull/556)
 - Add logo to the flights page if its set \#417 [\#550](https://github.com/nabeelio/phpvms/pull/550)
 - Add additional events for PIREP states \#436 [\#548](https://github.com/nabeelio/phpvms/pull/548)
 - Cleanup Utils \#467 [\#547](https://github.com/nabeelio/phpvms/pull/547)
@@ -87,7 +87,7 @@
 - Fares not appearing in API response for user/subfleets [\#608](https://github.com/nabeelio/phpvms/issues/608)
 - Not selecting active for aircraft shows nullable error [\#603](https://github.com/nabeelio/phpvms/issues/603)
 - Airports page repeats airport name \(infinite loop\) [\#599](https://github.com/nabeelio/phpvms/issues/599)
-- Calculate Distance button not working  [\#595](https://github.com/nabeelio/phpvms/issues/595)
+- Calculate Distance button not working [\#595](https://github.com/nabeelio/phpvms/issues/595)
 - Support Seaports with 3 letter IATA/ID codes [\#590](https://github.com/nabeelio/phpvms/issues/590)
 - Hubs only show for registration [\#580](https://github.com/nabeelio/phpvms/issues/580)
 - Error when updating user in admin [\#576](https://github.com/nabeelio/phpvms/issues/576)
@@ -127,7 +127,7 @@
 - METAR parsing infinite loop bugfix \#599 [\#600](https://github.com/nabeelio/phpvms/pull/600)
 - Table prefixes not being added to indexes [\#597](https://github.com/nabeelio/phpvms/pull/597)
 - Import expense and ledger entries \#443 [\#588](https://github.com/nabeelio/phpvms/pull/588)
-- User country mapping; ignore unused groups \#443  [\#584](https://github.com/nabeelio/phpvms/pull/584)
+- User country mapping; ignore unused groups \#443 [\#584](https://github.com/nabeelio/phpvms/pull/584)
 - Change fuel used to optional \#512 [\#582](https://github.com/nabeelio/phpvms/pull/582)
 - Respect home hubs setting for registration \#580 [\#581](https://github.com/nabeelio/phpvms/pull/581)
 - Upstream null version; build version tags not being saved properly \#575 [\#578](https://github.com/nabeelio/phpvms/pull/578)
@@ -143,7 +143,7 @@
 - PIREPS resource except for show [\#536](https://github.com/nabeelio/phpvms/pull/536)
 - Fix import during flight cron \#532 [\#535](https://github.com/nabeelio/phpvms/pull/535)
 - Fix PIREP edit endpoint [\#534](https://github.com/nabeelio/phpvms/pull/534)
-- Add a public\_url\(\) helper \#513 [\#519](https://github.com/nabeelio/phpvms/pull/519)
+- Add a public_url\(\) helper \#513 [\#519](https://github.com/nabeelio/phpvms/pull/519)
 - Correct text for no subfleets \#507 [\#518](https://github.com/nabeelio/phpvms/pull/518)
 - Error page not showing when database isn't configured [\#517](https://github.com/nabeelio/phpvms/pull/517)
 - Check user permissions on the routes \#508 [\#516](https://github.com/nabeelio/phpvms/pull/516)
@@ -152,7 +152,7 @@
 - Importing not updating existing items \#486 [\#503](https://github.com/nabeelio/phpvms/pull/503)
 - Set a default model value for airports on PIREP [\#500](https://github.com/nabeelio/phpvms/pull/500)
 - Fix GeoService errors when viewing PIREP \#498 [\#499](https://github.com/nabeelio/phpvms/pull/499)
-- Properly set the distance/planned\_distance [\#497](https://github.com/nabeelio/phpvms/pull/497)
+- Properly set the distance/planned_distance [\#497](https://github.com/nabeelio/phpvms/pull/497)
 - 491 Installation Error [\#495](https://github.com/nabeelio/phpvms/pull/495)
 - Return the flight fares if there are no subfleet fares \#488 [\#489](https://github.com/nabeelio/phpvms/pull/489)
 - Error if there are no roles when editing a user \#480 [\#483](https://github.com/nabeelio/phpvms/pull/483)
@@ -161,7 +161,7 @@
 - Fix BindingResolutionError when debug toolbar isn't present [\#465](https://github.com/nabeelio/phpvms/pull/465)
 - Fix CSV imports giving Storage class not found \#454 [\#462](https://github.com/nabeelio/phpvms/pull/462)
 - Use PhpExecutableFinder\(\) closes \#457 \#458 [\#460](https://github.com/nabeelio/phpvms/pull/460)
-- Avoid proc\_open use \#455 [\#456](https://github.com/nabeelio/phpvms/pull/456)
+- Avoid proc_open use \#455 [\#456](https://github.com/nabeelio/phpvms/pull/456)
 - Stricter checks on ACARS API data [\#451](https://github.com/nabeelio/phpvms/pull/451)
 - Remove bootstrap cache [\#448](https://github.com/nabeelio/phpvms/pull/448)
 
@@ -239,7 +239,7 @@
 - Flights CSV import fails if no distance stipulated [\#478](https://github.com/nabeelio/phpvms/issues/478)
 - Subfleet CSV import [\#476](https://github.com/nabeelio/phpvms/issues/476)
 - Cron - DateTime::construct\(\) expects parameter 2 to be DateTimeZone, int given [\#461](https://github.com/nabeelio/phpvms/issues/461)
-- if PHP\_CLI not found in cron maintenance, put generic `php` exec there [\#457](https://github.com/nabeelio/phpvms/issues/457)
+- if PHP_CLI not found in cron maintenance, put generic `php` exec there [\#457](https://github.com/nabeelio/phpvms/issues/457)
 - Importing schedule bug [\#454](https://github.com/nabeelio/phpvms/issues/454)
 - The updater/installer should clear all caches [\#408](https://github.com/nabeelio/phpvms/issues/408)
 
@@ -264,7 +264,7 @@
 
 **Implemented enhancements:**
 
-- CSS Love needed for the Flights Page  [\#418](https://github.com/nabeelio/phpvms/issues/418)
+- CSS Love needed for the Flights Page [\#418](https://github.com/nabeelio/phpvms/issues/418)
 - Add Subfleet, Custom Fields and Fares during initial schedule entry [\#410](https://github.com/nabeelio/phpvms/issues/410)
 - PIREP from flight/bid; orig: Bid not removed after flight accepted [\#406](https://github.com/nabeelio/phpvms/issues/406)
 - Auto airport lookup [\#404](https://github.com/nabeelio/phpvms/issues/404)
@@ -279,7 +279,7 @@
 - Allow URL for downloads [\#229](https://github.com/nabeelio/phpvms/issues/229)
 - Move settings into database seeder [\#224](https://github.com/nabeelio/phpvms/issues/224)
 - Allow specifying transfer hours on registration [\#129](https://github.com/nabeelio/phpvms/issues/129)
-- Backend changes separating id from pilot\_id [\#324](https://github.com/nabeelio/phpvms/pull/324)
+- Backend changes separating id from pilot_id [\#324](https://github.com/nabeelio/phpvms/pull/324)
 
 **Fixed bugs:**
 
@@ -300,7 +300,7 @@
 - Error when viewing profile or trying to add flights [\#291](https://github.com/nabeelio/phpvms/issues/291)
 - "Hubs as home airport" doesn't work [\#288](https://github.com/nabeelio/phpvms/issues/288)
 - Undocumented Extension Required - PHP 7.2 GMP [\#285](https://github.com/nabeelio/phpvms/issues/285)
-- ErrorException  Trying to get property 'name' of non-object [\#281](https://github.com/nabeelio/phpvms/issues/281)
+- ErrorException Trying to get property 'name' of non-object [\#281](https://github.com/nabeelio/phpvms/issues/281)
 
 **Closed issues:**
 
@@ -342,12 +342,12 @@
 - Profile picture distorted [\#309](https://github.com/nabeelio/phpvms/issues/309)
 - Implement cachable in models [\#307](https://github.com/nabeelio/phpvms/issues/307)
 - update [\#305](https://github.com/nabeelio/phpvms/issues/305)
-- Error with installer - Permission  denied [\#298](https://github.com/nabeelio/phpvms/issues/298)
+- Error with installer - Permission denied [\#298](https://github.com/nabeelio/phpvms/issues/298)
 - No Staff Groups/ Authorised Permissions [\#296](https://github.com/nabeelio/phpvms/issues/296)
 - .css and .js 404 [\#294](https://github.com/nabeelio/phpvms/issues/294)
 - Error on Install [\#292](https://github.com/nabeelio/phpvms/issues/292)
 - Ability to change interval of cron jobs [\#289](https://github.com/nabeelio/phpvms/issues/289)
-- ACARS  api add response [\#287](https://github.com/nabeelio/phpvms/issues/287)
+- ACARS api add response [\#287](https://github.com/nabeelio/phpvms/issues/287)
 - No bids returned in json [\#286](https://github.com/nabeelio/phpvms/issues/286)
 - Importing \*.csv with special characters [\#282](https://github.com/nabeelio/phpvms/issues/282)
 - laravel-theme doesn't seem to be respecting the theme.json extends [\#279](https://github.com/nabeelio/phpvms/issues/279)
@@ -471,7 +471,7 @@
 - Suggestion: button to copy aircraft [\#267](https://github.com/nabeelio/phpvms/issues/267)
 - Combine aircraft and subfleet import/export into one [\#256](https://github.com/nabeelio/phpvms/issues/256)
 - cron - recalculate hours [\#254](https://github.com/nabeelio/phpvms/issues/254)
-- Install Directory is missing from git repo  [\#251](https://github.com/nabeelio/phpvms/issues/251)
+- Install Directory is missing from git repo [\#251](https://github.com/nabeelio/phpvms/issues/251)
 - Warning: require\(C:\xampp\Virtual Airline Website\bootstrap/../vendor/autoload.php\): failed to open stream: No such file or directory in C:\xampp\Virtual Airline Website\bootstrap\autoload.php on line 17 [\#248](https://github.com/nabeelio/phpvms/issues/248)
 - Settings [\#239](https://github.com/nabeelio/phpvms/issues/239)
 - HTTP caching [\#237](https://github.com/nabeelio/phpvms/issues/237)
@@ -540,7 +540,7 @@
 - Get user PIREPs [\#192](https://github.com/nabeelio/phpvms/issues/192)
 - Use time conversion class [\#190](https://github.com/nabeelio/phpvms/issues/190)
 - Require inputs in Imperial units [\#189](https://github.com/nabeelio/phpvms/issues/189)
-- Make planned\_distance in prefile optional [\#185](https://github.com/nabeelio/phpvms/issues/185)
+- Make planned_distance in prefile optional [\#185](https://github.com/nabeelio/phpvms/issues/185)
 - If there's no /pirep/route calls, when it's filed, write the route [\#184](https://github.com/nabeelio/phpvms/issues/184)
 - Create a /api/flight/{id}/route call [\#183](https://github.com/nabeelio/phpvms/issues/183)
 - Make all APIs behind auth [\#173](https://github.com/nabeelio/phpvms/issues/173)
@@ -553,14 +553,14 @@
 
 - Volume units to lbs/kg, not gal/liter [\#193](https://github.com/nabeelio/phpvms/issues/193)
 - Add country to airline missing [\#191](https://github.com/nabeelio/phpvms/issues/191)
-- SKIN\_NAME missing on error pages [\#187](https://github.com/nabeelio/phpvms/issues/187)
+- SKIN_NAME missing on error pages [\#187](https://github.com/nabeelio/phpvms/issues/187)
 - Airport timezone not being saved [\#182](https://github.com/nabeelio/phpvms/issues/182)
 - Rank checkboxes not being saved [\#181](https://github.com/nabeelio/phpvms/issues/181)
 - Make sure cancelled PIREPs don't show [\#180](https://github.com/nabeelio/phpvms/issues/180)
 - Ignore cancelled PIREPs in duplicate check [\#179](https://github.com/nabeelio/phpvms/issues/179)
 - Make sure all fields are returned in PIREP object [\#178](https://github.com/nabeelio/phpvms/issues/178)
 - autopopulate SOURCE field in ACARS [\#177](https://github.com/nabeelio/phpvms/issues/177)
-- Make sure pireps.restrict\_aircraft\_to\_rank is respected [\#170](https://github.com/nabeelio/phpvms/issues/170)
+- Make sure pireps.restrict_aircraft_to_rank is respected [\#170](https://github.com/nabeelio/phpvms/issues/170)
 - Don't change rank if current rank is non-auto promoting [\#168](https://github.com/nabeelio/phpvms/issues/168)
 - PIREP hours can't be changed [\#167](https://github.com/nabeelio/phpvms/issues/167)
 - Changing a flight status does not save [\#150](https://github.com/nabeelio/phpvms/issues/150)
@@ -569,7 +569,7 @@
 **Closed issues:**
 
 - Cleanup icons [\#195](https://github.com/nabeelio/phpvms/issues/195)
-- remove raw\_data field from pirep table [\#188](https://github.com/nabeelio/phpvms/issues/188)
+- remove raw_data field from pirep table [\#188](https://github.com/nabeelio/phpvms/issues/188)
 - Remove Resource::withoutWrapping\(\) to follow jsonapi spec [\#186](https://github.com/nabeelio/phpvms/issues/186)
 - Add an `artisan phpvms:dev-install` command [\#176](https://github.com/nabeelio/phpvms/issues/176)
 - Pagination settings [\#175](https://github.com/nabeelio/phpvms/issues/175)
@@ -665,7 +665,7 @@
 - Events system [\#43](https://github.com/nabeelio/phpvms/issues/43)
 - add fuel costs types to the airports table [\#40](https://github.com/nabeelio/phpvms/issues/40)
 - adjust "created" date for airline [\#39](https://github.com/nabeelio/phpvms/issues/39)
-- add gross\_weight to PIREPs [\#38](https://github.com/nabeelio/phpvms/issues/38)
+- add gross_weight to PIREPs [\#38](https://github.com/nabeelio/phpvms/issues/38)
 - subfleet to flight pivot values [\#37](https://github.com/nabeelio/phpvms/issues/37)
 - API authentication/middleware [\#36](https://github.com/nabeelio/phpvms/issues/36)
 - REST API [\#35](https://github.com/nabeelio/phpvms/issues/35)
@@ -676,7 +676,7 @@
 - forgot password [\#27](https://github.com/nabeelio/phpvms/issues/27)
 - rankings [\#23](https://github.com/nabeelio/phpvms/issues/23)
 - module system [\#22](https://github.com/nabeelio/phpvms/issues/22)
-- pireps  [\#21](https://github.com/nabeelio/phpvms/issues/21)
+- pireps [\#21](https://github.com/nabeelio/phpvms/issues/21)
 - admin user management [\#20](https://github.com/nabeelio/phpvms/issues/20)
 - modify DatabaseSeeder to look at env [\#19](https://github.com/nabeelio/phpvms/issues/19)
 - look at flarum method of install [\#18](https://github.com/nabeelio/phpvms/issues/18)
@@ -693,7 +693,7 @@
 - rebuild tables [\#5](https://github.com/nabeelio/phpvms/issues/5)
 - front-end template [\#4](https://github.com/nabeelio/phpvms/issues/4)
 - Laravel 5.4 [\#3](https://github.com/nabeelio/phpvms/issues/3)
-- look up role-based permissions  [\#2](https://github.com/nabeelio/phpvms/issues/2)
+- look up role-based permissions [\#2](https://github.com/nabeelio/phpvms/issues/2)
 - installer [\#1](https://github.com/nabeelio/phpvms/issues/1)
 
 **Merged pull requests:**
@@ -701,6 +701,4 @@
 - Fixed a few field entries [\#116](https://github.com/nabeelio/phpvms/pull/116)
 - Remove unique email entry [\#115](https://github.com/nabeelio/phpvms/pull/115)
 
-
-
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
+\* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_

@@ -3,7 +3,7 @@
 namespace App\Widgets;
 
 use App\Contracts\Widget;
-use App\Repositories\AcarsRepository;
+use App\Models\Pirep;
 use App\Services\GeoService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;
@@ -25,9 +25,8 @@ class LiveMap extends Widget
     public function run()
     {
         $geoSvc = app(GeoService::class);
-        $acarsRepo = app(AcarsRepository::class);
 
-        $pireps = $acarsRepo->getPositions(setting('acars.live_time', 0));
+        $pireps = Pirep::activeFlights(setting('acars.live_time', 0))->get();
         $positions = $geoSvc->getFeatureForLiveFlights($pireps);
 
         $center_coords = setting('acars.center_coords', '0,0');

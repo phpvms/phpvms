@@ -4,7 +4,7 @@ namespace App\Widgets;
 
 use App\Contracts\Widget;
 use App\Models\Enums\PirepState;
-use App\Repositories\PirepRepository;
+use App\Models\Pirep;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;
 
@@ -23,9 +23,7 @@ class LatestPireps extends Widget
      */
     public function run()
     {
-        $pirepRepo = app(PirepRepository::class);
-
-        $pireps = $pirepRepo
+        $pireps = Pirep::query()
             ->with(['airline', 'aircraft', 'user'])
             ->whereNotIn('state', [
                 PirepState::DRAFT,

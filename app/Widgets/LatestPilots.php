@@ -4,7 +4,7 @@ namespace App\Widgets;
 
 use App\Contracts\Widget;
 use App\Models\Enums\UserState;
-use App\Repositories\UserRepository;
+use App\Models\User;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;
 
@@ -22,12 +22,15 @@ class LatestPilots extends Widget
      */
     public function run()
     {
-        $userRepo = app(UserRepository::class);
-        $userRepo = $userRepo->with(['airline', 'home_airport'])->where('state', '!=', UserState::DELETED)->orderby('created_at', 'desc')->take($this->config['count'])->get();
+        $pilots = User::with(['airline', 'home_airport'])
+            ->where('state', '!=', UserState::DELETED)
+            ->orderByDesc('created_at')
+            ->take($this->config['count'])
+            ->get();
 
         return view('widgets.latest_pilots', [
             'config' => $this->config,
-            'users'  => $userRepo,
+            'users'  => $pilots,
         ]);
     }
 }
