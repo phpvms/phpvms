@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Resources\Setting as SettingResource;
+use App\Http\Resources\SettingResource;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 
