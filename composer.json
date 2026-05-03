@@ -37,10 +37,10 @@
     "symfony/polyfill-php85": "*",
     "symfony/deprecation-contracts": "~v3.2.0",
     "symfony/event-dispatcher-contracts": "^3.5.0",
-    "symfony/mailgun-mailer": "^8.0",
-    "symfony/console": "^8.0",
-    "symfony/http-client": "^8.0",
-    "symfony/yaml": "^8.0",
+    "symfony/mailgun-mailer": "^7.4",
+    "symfony/console": "^7.4",
+    "symfony/http-client": "^7.4",
+    "symfony/yaml": "^7.4",
     "psr/container": "1.1.1",
     "composer/composer": "^2.9.3",
     "composer/installers": "^2.3.0",
@@ -85,7 +85,7 @@
     "shuvroroy/filament-spatie-laravel-backup": "^3.4",
     "laravel/socialite": "^5.27",
     "socialiteproviders/discord": "^4.2",
-    "symfony/postmark-mailer": "^8.0",
+    "symfony/postmark-mailer": "^7.4",
     "league/html-to-markdown": "^5.1",
     "league/flysystem-aws-s3-v3": "^3.29.0",
     "league/flysystem-sftp-v3": "^3.0",
@@ -144,7 +144,7 @@
     },
     "module-dir": "modules",
     "symfony": {
-      "require": "^7.0"
+      "require": "^7.4"
     }
   },
   "scripts": {
