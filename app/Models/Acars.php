@@ -6,6 +6,7 @@ use App\Casts\DistanceCast;
 use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Models\Enums\AcarsType;
+use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;

@@ -356,7 +356,7 @@ class PirepController extends Controller
      */
     public function fields_get(string $pirep_id): PirepFieldCollectionResource
     {
-        $pirep = Pirep::find($pirep_id);
+        $pirep = Pirep::findOrFail($pirep_id);
 
         return new PirepFieldCollectionResource($pirep->fields);
     }
@@ -366,7 +366,7 @@ class PirepController extends Controller
      */
     public function fields_post(string $pirep_id, FieldsRequest $request): PirepFieldCollectionResource
     {
-        $pirep = Pirep::find($pirep_id);
+        $pirep = Pirep::findOrFail($pirep_id);
         $this->checkCancelled($pirep);
 
         $fields = $this->getFields($request);
