@@ -28,27 +28,6 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
     public function down() {}
 
     /**
-     * Add a module and enable it
-     */
-    public function addModule(array $attrs)
-    {
-        $module = array_merge([
-            'enabled'    => true,
-            'created_at' => DB::raw('NOW()'),
-            'updated_at' => DB::raw('NOW()'),
-        ], $attrs);
-
-        try {
-            DB::table('modules')->insert($module);
-        } catch (Exception $e) {
-            // setting already exists, just ignore it
-            if ($e->getCode() === 23000) {
-                return;
-            }
-        }
-    }
-
-    /**
      * Seed a YAML file into the database
      *
      * @param string $file Full path to yml file to seed
