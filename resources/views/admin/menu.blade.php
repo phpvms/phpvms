@@ -94,7 +94,7 @@
         </li>
       @endcan
 
-      @can('view-any:module')
+      @can('view:modules')
         <li><a href="{!! \App\Filament\Resources\Modules\ModuleResource::getUrl() !!}"><i class="pe-7s-box2"></i>addons/modules</a>
         </li>
       @endcan
@@ -121,7 +121,7 @@
 
   <div class="collapse" id="addons_menu" aria-expanded="true">
     <ul class="nav">
-      @can('view:module')
+      @can('view:modules')
         @foreach($moduleSvc->getAdminLinks() as &$link)
           <li><a href="{{ url($link['url']) }}"><i class="{{ $link['icon'] }}"></i>{{ $link['title'] }}</a></li>
         @endforeach

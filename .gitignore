@@ -94,3 +94,6 @@ boost.json
 # Local agent instructions / index (personal, not repo)
 /AGENTS.md
 /.serena/
+
+# Modules
+modules_statuses.json

@@ -514,18 +514,6 @@ return new class() extends Migration
             });
         }
 
-        if (!Schema::hasTable('modules')) {
-            Schema::create('modules', function (Blueprint $table) {
-                $table->collation = 'utf8mb4_unicode_ci';
-                $table->charset = 'utf8mb4';
-
-                $table->increments('id');
-                $table->string('name');
-                $table->boolean('enabled')->default(true);
-                $table->timestamps();
-            });
-        }
-
         if (!Schema::hasTable('navdata')) {
             Schema::create('navdata', function (Blueprint $table) {
                 $table->collation = 'utf8mb4_unicode_ci';

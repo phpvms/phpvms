@@ -446,7 +446,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         }
 
         // For modules panels
-        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('view', Module::class);
+        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('view:modules');
     }
 
     public function hasAdminAccess(): bool

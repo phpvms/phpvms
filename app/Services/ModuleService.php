@@ -8,18 +8,15 @@ use App\Contracts\Service;
 use App\Exceptions\ModuleExistsException;
 use App\Exceptions\ModuleInstallationError;
 use App\Exceptions\ModuleInvalidFileType;
-use App\Models\Module;
 use Exception;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Laracasts\Flash\FlashNotifier;
 use Madnest\Madzipper\Madzipper;
+use Nwidart\Modules\Facades\Module;
 use Nwidart\Modules\Json;
 use PharData;
 
@@ -80,23 +77,7 @@ class ModuleService extends Service
      */
     public function getAllModules(): array
     {
-        $modules = [];
-        $moduleList = Module::all();
-
-        /** @var Module $module */
-        foreach ($moduleList as $module) {
-            /** @var ?\Nwidart\Modules\Module $moduleInstance */
-            $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-            if (!$moduleInstance) {
-                continue;
-            }
-
-            if (file_exists($moduleInstance->getPath())) {
-                $modules[] = $module;
-            }
-        }
-
-        return $modules;
+        return Module::all();
     }
 
     /**
@@ -104,62 +85,27 @@ class ModuleService extends Service
      */
     public function isModuleActive(string $name): bool
     {
-        $module = Module::where('name', $name)->first();
-        if (empty($module)) {
+        /** @var ?\Nwidart\Modules\Module $module */
+        $module = Module::find($name);
+
+        if (!$module) {
             return false;
         }
 
-        /** @var ?\Nwidart\Modules\Module $moduleInstance */
-        $moduleInstance = \Nwidart\Modules\Facades\Module::find($module->name);
-        if (!$moduleInstance) {
+        if (!file_exists($module->getPath())) {
             return false;
         }
 
-        if (!file_exists($moduleInstance->getPath())) {
-            return false;
-        }
-
-        return $moduleInstance->isEnabled();
-    }
-
-    /**
-     * Get Module Information from Database.
-     */
-    public function getModule($id): Module
-    {
-        return Module::find($id);
-    }
-
-    /**
-     * Adding installed module to the database
-     */
-    public function addModule($module_name): bool
-    {
-        /* Check if module already exists */
-        $module = Module::where('name', $module_name);
-        if (!$module->exists()) {
-            Module::create([
-                'name'    => $module_name,
-                'enabled' => 1,
-            ]);
-
-            try {
-                Artisan::call('module:migrate', ['module' => $module_name, '--force' => true]);
-            } catch (Exception $e) {
-                Log::error('Error running migration for '.$module_name.'; error='.$e);
-            }
-
-            return true;
-        }
-
-        return false;
+        return $module->isEnabled();
     }
 
     /**
      * User's uploaded file is passed into this method
      * to install module in the Storage.
+     *
+     * Will be re added in the future (new zip library + marketplace implementation)
      */
-    public function installModule(UploadedFile $file): FlashNotifier
+    /*public function installModule(UploadedFile $file): FlashNotifier
     {
         $file_ext = strtolower($file->getClientOriginalExtension());
         $allowed_extensions = ['zip', 'tar', 'gz'];
@@ -210,121 +156,82 @@ class ModuleService extends Service
 
         if (File::exists($json_file)) {
             $json = json_decode(file_get_contents($json_file), true);
-            $module = $json['name'];
+            $name = $json['name'];
         } else {
             File::deleteDirectory($temp_ext_folder);
 
             return flash()->error('Module Structure Not Correct!');
         }
 
-        if (!$module) {
+        if (!$name) {
             File::deleteDirectory($temp_ext_folder);
 
             return flash()->error('Not a Valid Module File.');
         }
 
-        $toCopy = base_path().'/modules/'.$module;
+        $toCopy = base_path().'/modules/'.$name;
 
         if (File::exists($toCopy)) {
             File::deleteDirectory($temp_ext_folder);
 
-            throw new ModuleExistsException($module);
+            throw new ModuleExistsException($name);
         }
 
         File::moveDirectory($temp, $toCopy);
         File::deleteDirectory($temp_ext_folder);
 
         try {
-            $this->addModule($module);
+            $module = Module::find($name);
+            $module->enable();
         } catch (Exception $e) {
-            throw new ModuleExistsException($module);
+            throw new ModuleExistsException($name);
         }
 
         Artisan::call('config:cache');
-        Artisan::call('module:migrate', ['module' => $module, '--force' => true]);
+        Artisan::call('module:migrate', ['module' => $name, '--force' => true]);
 
         return flash()->success('Module Installed');
-    }
+    }*/
 
     /**
      * Update module with the status passed by user.
      */
-    public function updateModule($id, $status): bool
+    public function updateModule(string $name, bool $enabled): void
     {
-        $module = Module::find($id);
+        /** @var ?\Nwidart\Modules\Module $module */
+        $module = Module::find($name);
 
-        $cache = config('cache.keys.MODULES');
-        Cache::forget($cache['key']);
+        if (!$module) {
+            return;
+        }
 
-        $module->update([
-            'enabled' => $status,
-        ]);
+        $module->setActive($enabled);
 
-        if ($status === true) {
-            Artisan::call('module:migrate', ['module' => $module->name, '--force' => true]);
+        if ($enabled) {
+            Artisan::call('module:migrate', ['module' => $name, '--force' => true]);
         }
 
         if (file_exists(base_path('bootstrap/cache/modules.php'))) {
             unlink(base_path('bootstrap/cache/modules.php'));
         }
-
-        return true;
     }
 
     /**
      * Delete Module from the Storage & Database.
      */
-    public function deleteModule($id, $data): bool
+    public function deleteModule(string $name): void
     {
-        $module = Module::find($id);
-        if ($data['verify'] === strtoupper($module->name)) {
-            try {
-                $module->delete();
-            } catch (Exception $e) {
-                Log::emergency('Cannot Delete Module!');
-            }
-            $moduleDir = base_path().'/modules/'.$module->name;
+        /** @var ?\Nwidart\Modules\Module $module */
+        $module = Module::find($name);
 
-            try {
-                File::deleteDirectory($moduleDir);
-
-                if (file_exists(base_path('bootstrap/cache/modules.php'))) {
-                    unlink(base_path('bootstrap/cache/modules.php'));
-                }
-            } catch (Exception $e) {
-                Log::info('Folder Deleted Manually for Module : '.$module->name);
-
-                return true;
-            }
-
-            return true;
+        if (!$module) {
+            return;
         }
 
-        return false;
-    }
+        $module->delete();
 
-    /**
-     * Get & scan all modules.
-     *
-     * @return array
-     */
-    public function scan()
-    {
-        $modules_path = base_path('modules/*');
-        $path = Str::endsWith($modules_path, '/*') ? $modules_path : Str::finish($modules_path, '/*');
-
-        $modules = [];
-
-        $manifests = (new Filesystem())->glob("{$path}/module.json");
-
-        foreach ($manifests as $manifest) {
-            $name = Json::make($manifest)->get('name');
-            $module = Module::where('name', $name);
-            if (!$module->exists()) {
-                $modules[] = $name;
-            }
+        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
+            unlink(base_path('bootstrap/cache/modules.php'));
         }
-
-        return $modules;
     }
 }
