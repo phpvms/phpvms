@@ -87,7 +87,9 @@ class SeederService extends Service
         $data = file_get_contents(database_path('/seeders/modules.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $module) {
-            Module::find($module['name'])?->setActive((bool) $module['enabled']);
+            /** @var ?\Nwidart\Modules\Module $moduleInstance */
+            $moduleInstance = Module::find($module['name']);
+            $moduleInstance?->setActive((bool) $module['enabled']);
         }
     }
 
