@@ -52,7 +52,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
                 Action::make('enable')
                     ->label(__('common.enable'))
                     ->color('success')
-                    ->icon('heroicon-o-check-circle')
+                    ->icon(Heroicon::OutlinedCheckCircle)
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->action(function (array $record): void {
                         app(ModuleService::class)->updateModule($record['name'], true);
@@ -62,7 +62,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
                 Action::make('disable')
                     ->label(__('common.disable'))
                     ->color('warning')
-                    ->icon('heroicon-o-minus-circle')
+                    ->icon(Heroicon::OutlinedMinusCircle)
                     ->visible(fn (array $record): bool => $record['enabled'])
                     ->action(function (array $record): void {
                         app(ModuleService::class)->updateModule($record['name'], false);
@@ -71,7 +71,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
 
                 Action::make('delete')
                     ->label(__('filament-actions::delete.single.label'))
-                    ->icon('heroicon-o-trash')
+                    ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->requiresConfirmation()

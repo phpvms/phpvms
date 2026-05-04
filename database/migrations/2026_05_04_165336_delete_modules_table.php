@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Nwidart\Modules\Facades\Module;
 
 return new class() extends Migration
 {
@@ -10,7 +12,7 @@ return new class() extends Migration
         if (Schema::hasTable('modules')) {
             $modules = DB::table('modules')->get();
             foreach ($modules as $module) {
-                app(ModuleService::class)->updateModule($module->name, $module->enabled);
+                Module::find($module->name)?->setActive((bool) $module->enabled);
             }
         }
 
