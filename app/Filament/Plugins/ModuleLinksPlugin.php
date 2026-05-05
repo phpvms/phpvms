@@ -10,6 +10,7 @@ use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\Factory;
 
 class ModuleLinksPlugin implements Plugin
 {
@@ -26,19 +27,15 @@ class ModuleLinksPlugin implements Plugin
     public function register(Panel $panel): void
     {
         // Render in the topbar (wide screen)
-        $panel->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, function () {
-            return view('filament.plugins.module-links-topbar', [
-                'current_panel' => Filament::getCurrentOrDefaultPanel(),
-                'group'         => $this->getGroup(),
-            ]);
-        });
+        $panel->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): Factory|\Illuminate\Contracts\View\View => view('filament.plugins.module-links-topbar', [
+            'current_panel' => Filament::getCurrentOrDefaultPanel(),
+            'group'         => $this->getGroup(),
+        ]));
 
         // Render in the sidebar (mobile)
-        $panel->renderHook(PanelsRenderHook::SIDEBAR_NAV_END, function () {
-            return view('filament.plugins.module-links-sidebar', [
-                'group' => $this->getGroup(),
-            ]);
-        });
+        $panel->renderHook(PanelsRenderHook::SIDEBAR_NAV_END, fn (): Factory|\Illuminate\Contracts\View\View => view('filament.plugins.module-links-sidebar', [
+            'group' => $this->getGroup(),
+        ]));
     }
 
     public function boot(Panel $panel): void
@@ -52,7 +49,11 @@ class ModuleLinksPlugin implements Plugin
 
         $panels = Filament::getPanels();
         foreach ($panels as $panel) {
-            if ($panel->getId() === 'admin' || $panel->getId() === 'system') {
+            if ($panel->getId() === 'admin') {
+                continue;
+            }
+
+            if ($panel->getId() === 'system') {
                 continue;
             }
 
@@ -62,7 +63,7 @@ class ModuleLinksPlugin implements Plugin
                 ->url(url($panel->getPath()));
         }
 
-        $old_links = array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains($link['title'], 'Sample'));
+        $old_links = array_filter(app(ModuleService::class)->getAdminLinks(), static fn (array $link): bool => !str_contains((string) $link['title'], 'Sample'));
         foreach ($old_links as $link) {
             $items[] = NavigationItem::make($link['title'])
                 ->url($link['url'])

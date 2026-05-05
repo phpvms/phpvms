@@ -20,16 +20,10 @@ class DashboardController extends Controller
     {
         // Support retrieval of deleted relationships
         $with_pirep = [
-            'aircraft' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'aircraft'    => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
             'comments',
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
         ];
 
         /** @var User $user */

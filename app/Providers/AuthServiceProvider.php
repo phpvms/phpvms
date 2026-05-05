@@ -22,26 +22,20 @@ class AuthServiceProvider extends ServiceProvider
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Gate::define('access_admin', function (?User $user): Response {
-            return $user?->hasAdminAccess()
-                ? Response::allow()
-                : Response::deny('You do not have permission to access this page.');
-        });
+        Gate::define('access_admin', fn (?User $user): Response => $user?->hasAdminAccess()
+            ? Response::allow()
+            : Response::deny('You do not have permission to access this page.'));
 
-        Gate::define('viewLogViewer', function (?User $user): Response {
-            return $user?->can('view-logs')
-                ? Response::allow()
-                : Response::deny('You do not have permission to access this page.');
-        });
+        Gate::define('viewLogViewer', fn (?User $user): Response => $user?->can('view-logs')
+            ? Response::allow()
+            : Response::deny('You do not have permission to access this page.'));
 
         Gate::policy(Activity::class, ActivityPolicy::class);
 
-        Gate::guessPolicyNamesUsing(function (string $modelClass) {
+        Gate::guessPolicyNamesUsing(function (string $modelClass): ?string {
             if (filament()->isServing()) {
                 // try to resolve policies under Filament
                 $targetPolicy = str_replace('Models', 'Policies\\Filament', $modelClass).'Policy';
@@ -51,6 +45,7 @@ class AuthServiceProvider extends ServiceProvider
                     return $targetPolicy;
                 }
             }
+
             // follow the same namespace as the model
             $targetPolicy = str_replace('Models', 'Policies', $modelClass).'Policy';
 

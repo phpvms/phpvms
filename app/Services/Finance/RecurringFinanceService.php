@@ -62,17 +62,17 @@ class RecurringFinanceService extends Service
         }
 
         if ($expense->ref_model instanceof Airport) {
-            $memo = "Airport Expense: {$expense->name} ({$expense->ref_model_id})";
-            $transaction_group = "Airport: {$expense->ref_model_id}";
+            $memo = sprintf('Airport Expense: %s (%s)', $expense->name, $expense->ref_model_id);
+            $transaction_group = 'Airport: '.$expense->ref_model_id;
         } elseif ($expense->ref_model instanceof Subfleet) {
-            $memo = "Subfleet Expense: {$expense->name}";
-            $transaction_group = "Subfleet: {$expense->name}";
+            $memo = 'Subfleet Expense: '.$expense->name;
+            $transaction_group = 'Subfleet: '.$expense->name;
         } elseif ($expense->ref_model instanceof Aircraft) {
-            $memo = "Aircraft Expense: {$expense->name} ({$expense->ref_model->name})";
-            $transaction_group = "Aircraft: {$expense->name} ({$expense->ref_model->name}-{$expense->ref_model->registration})";
+            $memo = sprintf('Aircraft Expense: %s (%s)', $expense->name, $expense->ref_model->name);
+            $transaction_group = sprintf('Aircraft: %s (%s-%s)', $expense->name, $expense->ref_model->name, $expense->ref_model->registration);
         } else {
-            $memo = "Expense: {$expense->name}";
-            $transaction_group = "Expense: {$expense->name}";
+            $memo = 'Expense: '.$expense->name;
+            $transaction_group = 'Expense: '.$expense->name;
         }
 
         return [$memo, $transaction_group];
@@ -87,7 +87,7 @@ class RecurringFinanceService extends Service
         // targets (Subfleet, Aircraft) in one go, so the per-expense lookup
         // at line ~135 doesn't re-query for $ref_model->airline.
         $expenses = Expense::with([
-            'ref_model' => function ($morphTo) {
+            'ref_model' => function ($morphTo): void {
                 $morphTo->morphWith([
                     Subfleet::class => ['airline'],
                     Aircraft::class => ['airline'],
@@ -132,7 +132,11 @@ class RecurringFinanceService extends Service
                 }
 
                 [$memo, $ta_group] = $this->getMemoAndGroup($expense);
-                if (empty($memo) || empty($ta_group)) {
+                if (empty($memo)) {
+                    continue;
+                }
+
+                if (empty($ta_group)) {
                     continue;
                 }
 

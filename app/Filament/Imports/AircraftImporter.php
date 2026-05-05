@@ -84,6 +84,7 @@ class AircraftImporter extends Importer
         ];
     }
 
+    #[\Override]
     public function resolveRecord(): Aircraft
     {
         return Aircraft::withTrashed()->firstOrNew([

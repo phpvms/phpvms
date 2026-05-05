@@ -71,20 +71,24 @@ class SearchFlightsRequest extends FormRequest
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
      */
+    #[\Override]
     protected function prepareForValidation(): void
     {
         $merge = [];
         if (!$this->filled('orderBy') && $this->filled('sort')) {
             $merge['orderBy'] = $this->input('sort');
         }
+
         if (!$this->filled('sortedBy') && $this->filled('direction')) {
             $merge['sortedBy'] = $this->input('direction');
         }
+
         if ($merge !== []) {
             $this->merge($merge);
         }
     }
 
+    #[\Override]
     public function rules(): array
     {
         return [
@@ -126,6 +130,7 @@ class SearchFlightsRequest extends FormRequest
     /**
      * @return array<string, string>
      */
+    #[\Override]
     public function messages(): array
     {
         return [
@@ -161,7 +166,7 @@ class SearchFlightsRequest extends FormRequest
             $candidate = $lowercase ? strtolower($part) : $part;
 
             if (!in_array($candidate, $allowed, true)) {
-                $fail("The {$attribute} field is invalid.");
+                $fail(sprintf('The %s field is invalid.', $attribute));
 
                 return;
             }
@@ -174,7 +179,7 @@ class SearchFlightsRequest extends FormRequest
     private function splitDelimitedValues(string $value): array
     {
         return array_map(
-            static fn (string $part): string => trim($part),
+            trim(...),
             explode(';', $value)
         );
     }

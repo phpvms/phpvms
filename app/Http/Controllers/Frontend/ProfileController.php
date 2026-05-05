@@ -45,7 +45,7 @@ class ProfileController extends Controller
         /** @var ?\Nwidart\Modules\Module $acars */
         $acars = Module::find('VMSAcars');
         if ($acars) {
-            $acars_enabled = $acars->isEnabled();
+            return $acars->isEnabled();
         }
 
         return $acars_enabled;
@@ -170,7 +170,7 @@ class ProfileController extends Controller
 
             $avatar = $request->file('avatar');
             $file_name = $user->ident.'.'.$avatar->getClientOriginalExtension();
-            $path = "avatars/$file_name";
+            $path = 'avatars/'.$file_name;
 
             // Create the avatar, resizing it and keeping the aspect ratio.
             // https://stackoverflow.com/a/26892028
@@ -178,7 +178,7 @@ class ProfileController extends Controller
             $h = config('phpvms.avatar.height');
 
             $canvas = Image::canvas($w, $h);
-            $image = Image::make($avatar)->resize($w, $h, static function ($constraint) {
+            $image = Image::make($avatar)->resize($w, $h, static function ($constraint): void {
                 $constraint->aspectRatio();
             });
 

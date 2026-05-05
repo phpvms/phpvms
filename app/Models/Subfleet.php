@@ -125,7 +125,7 @@ class Subfleet extends Model
     public function type(): Attribute
     {
         return Attribute::make(
-            set: fn ($type) => str_replace([' ', ','], ['-', ''], $type)
+            set: fn ($type): string|array => str_replace([' ', ','], ['-', ''], $type)
         );
     }
 
@@ -199,6 +199,7 @@ class Subfleet extends Model
     /**
      * The attributes that should be cast to native types.
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

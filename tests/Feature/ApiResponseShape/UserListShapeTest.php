@@ -20,7 +20,7 @@ use App\Models\User;
  * contract test for the public API.
  */
 
-test('user resource returns expected json structure', function () {
+test('user resource returns expected json structure', function (): void {
     /** @var User $user */
     $user = User::factory()->create();
 

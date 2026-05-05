@@ -28,9 +28,7 @@ class ExpenseExporter extends Exporter
             ExportColumn::make('active'),
 
             ExportColumn::make('ref_model_type')
-                ->formatStateUsing(function (Expense $record): string {
-                    return $record->ref_model ? $record->ref_model_type : '';
-                }),
+                ->formatStateUsing(fn (Expense $record): string => $record->ref_model ? $record->ref_model_type : ''),
 
             ExportColumn::make('ref_model_id')
                 ->formatStateUsing(function (Expense $record): string {

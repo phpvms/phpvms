@@ -15,12 +15,13 @@ class EditAircraft extends EditRecord
 {
     protected static string $resource = AircraftResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make(),
-            ForceDeleteAction::make()->before(function (Aircraft $record) {
-                $record->files()->each(function (File $file) {
+            ForceDeleteAction::make()->before(function (Aircraft $record): void {
+                $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),
@@ -28,6 +29,7 @@ class EditAircraft extends EditRecord
         ];
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['fuel_onboard'] = $data['fuel_onboard']->toUnit(setting('units.fuel'));

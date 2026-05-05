@@ -13,12 +13,7 @@ use function GuzzleHttp\json_decode;
  */
 class HttpClient
 {
-    private GuzzleClient $httpClient;
-
-    public function __construct(GuzzleClient $httpClient)
-    {
-        $this->httpClient = $httpClient;
-    }
+    public function __construct(private readonly GuzzleClient $httpClient) {}
 
     /**
      * Download a URI. If a file is given, it will save the downloaded
@@ -39,8 +34,8 @@ class HttpClient
 
         $body = $response->getBody()->getContents();
         $content_type = $response->getHeaderLine('content-type');
-        if (strpos($content_type, 'application/json') !== false) {
-            $body = json_decode($body, true);
+        if (str_contains($content_type, 'application/json')) {
+            return json_decode($body, true);
         }
 
         return $body;
@@ -61,7 +56,7 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = json_decode($content, true);
+            return json_decode($content, true);
         }
 
         return $content;
@@ -82,7 +77,7 @@ class HttpClient
         $content = $response->getBody()->getContents();
 
         if (str_contains($content_type, 'application/json')) {
-            $content = json_decode($content, true);
+            return json_decode($content, true);
         }
 
         return $content;
@@ -107,7 +102,7 @@ class HttpClient
         $content_type = $response->getHeaderLine('content-type');
 
         if (str_contains($content_type, 'application/json')) {
-            $body = json_decode($body);
+            return json_decode($body);
         }
 
         return $body;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'newflightreport'      => 'Yeni Uçuş Raporu',
     'editflightreport'     => 'Uçuş Raporunu Güncelle',

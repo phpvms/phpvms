@@ -12,20 +12,9 @@ class AirportImporter extends BaseImporter
 {
     protected $table = 'airports';
 
-    public function run($start = 0)
+    public function run($start = 0): bool
     {
         $this->comment('--- AIRPORT IMPORT ---');
-
-        $fields = [
-            'icao',
-            'name',
-            'country',
-            'lat',
-            'lng',
-            'hub',
-            'ground_handling_cost',
-            'fuel_jeta_cost',
-        ];
 
         // Legacy name to current name
         $set_if_exists = [
@@ -42,8 +31,8 @@ class AirportImporter extends BaseImporter
         $rows = $this->db->readRows($this->table, $this->idField, $start);
         foreach ($rows as $row) {
             $attrs = [
-                'id'      => trim($row->icao),
-                'icao'    => trim($row->icao),
+                'id'      => trim((string) $row->icao),
+                'icao'    => trim((string) $row->icao),
                 'name'    => $row->name,
                 'country' => $row->country,
                 'lat'     => $row->lat,

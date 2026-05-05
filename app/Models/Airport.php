@@ -151,9 +151,9 @@ class Airport extends Model
     public function icao(): Attribute
     {
         return Attribute::make(
-            set: fn ($icao) => [
-                'id'   => strtoupper($icao),
-                'icao' => strtoupper($icao),
+            set: fn ($icao): array => [
+                'id'   => strtoupper((string) $icao),
+                'icao' => strtoupper((string) $icao),
             ]
         );
     }
@@ -164,7 +164,7 @@ class Airport extends Model
     public function iata(): Attribute
     {
         return Attribute::make(
-            set: fn ($iata) => strtoupper($iata)
+            set: fn ($iata) => strtoupper((string) $iata)
         );
     }
 
@@ -175,7 +175,7 @@ class Airport extends Model
     public function fullName(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => $this->icao.' - '.$this->name
+            get: fn ($_, $attrs): string => $this->icao.' - '.$this->name
         );
     }
 
@@ -186,7 +186,7 @@ class Airport extends Model
     public function description(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => $attrs['icao']
+            get: fn ($_, $attrs): string => $attrs['icao']
                 .(empty($attrs['iata']) ? '' : '/'.$attrs['iata'])
                 .' - '.$attrs['name']
                 .($attrs['hub'] ? ' (hub)' : '')
@@ -200,7 +200,7 @@ class Airport extends Model
     {
         return Attribute::make(
             get: fn ($_, $attrs) => $attrs['timezone'],
-            set: fn ($value) => [
+            set: fn ($value): array => [
                 'timezone' => $value,
             ]
         );
@@ -282,11 +282,13 @@ class Airport extends Model
      * the table stores ICAO uppercased. Override the default Eloquent
      * route binding so case-insensitive lookups resolve correctly.
      */
+    #[\Override]
     public function resolveRouteBinding($value, $field = null): ?\Illuminate\Database\Eloquent\Model
     {
         return $this->resolveRouteBindingQuery($this, strtoupper((string) $value), $field)->first();
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

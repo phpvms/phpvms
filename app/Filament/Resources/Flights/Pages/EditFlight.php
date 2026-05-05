@@ -13,6 +13,7 @@ class EditFlight extends EditRecord
 {
     protected static string $resource = FlightResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -22,6 +23,7 @@ class EditFlight extends EditRecord
         ];
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['distance'] = $data['distance']->toUnit('nmi');
@@ -35,6 +37,7 @@ class EditFlight extends EditRecord
         return $data;
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $flt_time = Carbon::parse($data['flight_time']);

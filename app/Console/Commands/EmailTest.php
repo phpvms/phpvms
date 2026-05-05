@@ -19,7 +19,7 @@ class EmailTest extends Command
      *
      * @throws FileException
      */
-    public function handle()
+    public function handle(): void
     {
         /** @var NotificationEventsHandler $eventHandler */
         $eventHandler = app(NotificationEventsHandler::class);

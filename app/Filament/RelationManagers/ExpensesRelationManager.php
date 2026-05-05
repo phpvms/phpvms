@@ -23,6 +23,7 @@ class ExpensesRelationManager extends RelationManager
 {
     protected static string $relationship = 'expenses';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -103,11 +104,13 @@ class ExpensesRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return __('expenses.expense');
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('expenses.expense'))

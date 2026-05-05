@@ -33,6 +33,7 @@ class TrustProxies extends Middleware
      *
      * @return mixed
      */
+    #[\Override]
     public function handle(Request $request, Closure $next)
     {
         $request->setTrustedProxies([$request->getClientIp()], $this->getTrustedHeaderNames());

@@ -68,6 +68,7 @@ class AirportImporter extends Importer
         ];
     }
 
+    #[\Override]
     public function resolveRecord(): Airport
     {
         return Airport::withTrashed()->firstOrNew([

@@ -18,7 +18,7 @@ use App\Models\News;
  * contract test for the public API.
  */
 
-test('news list returns expected json structure', function () {
+test('news list returns expected json structure', function (): void {
     // 3 items so the eager load (->with('user') in NewsController) is
     // genuinely exercised. Single-item tests previously masked an N+1
     // because preventLazyLoading didn't trip on count == 1.

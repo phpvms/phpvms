@@ -19,7 +19,7 @@ function userSearchRequest(array $params): SearchUsersRequest
     return $req;
 }
 
-test('UserSearchQuery returns all users when no params given', function () {
+test('UserSearchQuery returns all users when no params given', function (): void {
     updateSetting('pilots.hide_inactive', false);
     User::factory()->count(3)->create(['state' => UserState::ACTIVE]);
 
@@ -29,7 +29,7 @@ test('UserSearchQuery returns all users when no params given', function () {
     expect($query->count())->toBe(3);
 });
 
-test('UserSearchQuery filters by free-text search across name and email', function () {
+test('UserSearchQuery filters by free-text search across name and email', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'John Doe',  'email' => 'a@b.com', 'state' => UserState::ACTIVE]);
@@ -42,7 +42,7 @@ test('UserSearchQuery filters by free-text search across name and email', functi
     expect($names)->toBe(['Bob', 'John Doe']); // John Doe by name, Bob by email
 });
 
-test('UserSearchQuery filters by field-specific search', function () {
+test('UserSearchQuery filters by field-specific search', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'John Doe',  'email' => 'a@b.com',     'state' => UserState::ACTIVE]);
@@ -54,7 +54,7 @@ test('UserSearchQuery filters by field-specific search', function () {
     expect($names)->toBe(['John Doe']);
 });
 
-test('UserSearchQuery joins multi-pair field-specific search with OR', function () {
+test('UserSearchQuery joins multi-pair field-specific search with OR', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'John Doe',   'email' => 'unrelated@x.com', 'state' => UserState::ACTIVE]);
@@ -68,7 +68,7 @@ test('UserSearchQuery joins multi-pair field-specific search with OR', function 
     expect($names)->toBe(['John Doe', 'Other']);
 });
 
-test('UserSearchQuery falls back to free-text when colon search has no allowlisted fields', function () {
+test('UserSearchQuery falls back to free-text when colon search has no allowlisted fields', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     // Search payload `8:30` contains a colon but no field key matches FIELD_SEARCH allowlist.
@@ -82,7 +82,7 @@ test('UserSearchQuery falls back to free-text when colon search has no allowlist
     expect($names)->toBe(['foo 8:30 bar']);
 });
 
-test('UserSearchQuery applies pilots.hide_inactive setting', function () {
+test('UserSearchQuery applies pilots.hide_inactive setting', function (): void {
     updateSetting('pilots.hide_inactive', true);
 
     User::factory()->create(['name' => 'a', 'state' => UserState::ACTIVE]);
@@ -95,7 +95,7 @@ test('UserSearchQuery applies pilots.hide_inactive setting', function () {
     expect($names)->toBe(['a']);
 });
 
-test('UserSearchQuery filters by explicit state param', function () {
+test('UserSearchQuery filters by explicit state param', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'a', 'state' => UserState::ACTIVE]);
@@ -107,7 +107,7 @@ test('UserSearchQuery filters by explicit state param', function () {
     expect($names)->toBe(['p']);
 });
 
-test('UserSearchQuery filters by airline_id', function () {
+test('UserSearchQuery filters by airline_id', function (): void {
     updateSetting('pilots.hide_inactive', false);
     $airline = Airline::factory()->create();
     $other = Airline::factory()->create();
@@ -121,7 +121,7 @@ test('UserSearchQuery filters by airline_id', function () {
     expect($names)->toBe(['a']);
 });
 
-test('UserSearchQuery applies orderBy + sortedBy', function () {
+test('UserSearchQuery applies orderBy + sortedBy', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'Charlie', 'state' => UserState::ACTIVE]);
@@ -134,7 +134,7 @@ test('UserSearchQuery applies orderBy + sortedBy', function () {
     expect($names)->toBe(['Alice', 'Bob', 'Charlie']);
 });
 
-test('UserSearchQuery returns a Builder, not a collection', function () {
+test('UserSearchQuery returns a Builder, not a collection', function (): void {
     updateSetting('pilots.hide_inactive', false);
     User::factory()->create(['state' => UserState::ACTIVE]);
 
@@ -144,7 +144,7 @@ test('UserSearchQuery returns a Builder, not a collection', function () {
     expect($result)->toBeInstanceOf(Builder::class);
 });
 
-test('UserSearchQuery includes default eager loads (airline, current_airport, fields, home_airport, rank, awards count)', function () {
+test('UserSearchQuery includes default eager loads (airline, current_airport, fields, home_airport, rank, awards count)', function (): void {
     updateSetting('pilots.hide_inactive', false);
     User::factory()->create(['state' => UserState::ACTIVE]);
 

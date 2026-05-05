@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
 use Exception;
@@ -13,7 +15,6 @@ class ICAO
      * Create a random hex code. Eventually this may follow the format in:
      * ICAO Aeronautical Telecommunications, Annex 10, Vol. III, chapter 9
      *
-     * @param null $country
      *
      * @throws Exception
      */

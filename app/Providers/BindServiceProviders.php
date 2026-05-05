@@ -30,7 +30,7 @@ class BindServiceProviders extends ServiceProvider
 
         $this->app->bind(
             IVaCentral::class,
-            function ($app) {
+            function ($app): VaCentral {
                 $client = new VaCentral();
 
                 // Set API if exists

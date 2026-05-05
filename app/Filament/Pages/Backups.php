@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Pages;
 
 use App\Models\Enums\NavigationGroup;
@@ -15,6 +17,7 @@ class Backups extends BaseBackups
 
     protected static ?int $navigationSort = 4;
 
+    #[\Override]
     public static function getNavigationGroup(): \UnitEnum
     {
         return NavigationGroup::Developers;

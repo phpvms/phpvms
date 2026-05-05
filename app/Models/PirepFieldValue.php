@@ -60,7 +60,7 @@ class PirepFieldValue extends Model
     public function name(): Attribute
     {
         return Attribute::make(
-            set: fn ($name) => [
+            set: fn ($name): array => [
                 'name' => $name,
                 'slug' => Str::slug($name),
             ]
@@ -73,7 +73,7 @@ class PirepFieldValue extends Model
     public function readOnly(): Attribute
     {
         return Attribute::make(
-            get: fn ($_, $attrs) => $this->source === PirepFieldSource::ACARS
+            get: fn ($_, $attrs): bool => $this->source === PirepFieldSource::ACARS
         );
     }
 
@@ -85,6 +85,7 @@ class PirepFieldValue extends Model
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

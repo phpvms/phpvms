@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
@@ -14,10 +16,10 @@ class NewsResource extends Resource
     /**
      * Transform the resource into an array.
      *
-     * @param  Request $request
      * @return array
      */
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
         $res['user'] = [

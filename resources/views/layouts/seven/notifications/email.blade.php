@@ -60,7 +60,7 @@ $style = [
 ];
 ?>
 
-<?php $fontFamily = 'font-family: Arial, \'Helvetica Neue\', Helvetica, sans-serif;'; ?>
+<?php $fontFamily = "font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;"; ?>
 
 <body style="{{ $style['body'] }}">
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -107,16 +107,11 @@ $style = [
                       <tr>
                         <td align="center">
                           <?php
-                          switch ($level) {
-                            case 'success':
-                              $actionColor = 'button--green';
-                              break;
-                            case 'error':
-                              $actionColor = 'button--red';
-                              break;
-                            default:
-                              $actionColor = 'button--blue';
-                          }
+                          $actionColor = match ($level) {
+    'success' => 'button--green',
+    'error' => 'button--red',
+    default => 'button--blue',
+};
                           ?>
 
                           <a href="{{ $actionUrl }}"

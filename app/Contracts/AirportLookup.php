@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Contracts;
 
-use App\Models\Airport;
+use VaCentral\Models\Airport;
 
 abstract class AirportLookup
 {
@@ -19,8 +21,8 @@ abstract class AirportLookup
      *
      * @example App\Services\AirportLookup\VaCentralLookup
      *
-     * @param  string       $icao
-     * @return Airport|null
+     * @param  string        $icao
+     * @return Airport|array
      */
     abstract public function getAirport($icao);
 }

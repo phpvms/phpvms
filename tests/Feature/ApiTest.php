@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Services\FareService;
 use App\Support\Utils;
 
-test('api authentication', function () {
+test('api authentication', function (): void {
     $user = User::factory()->create();
 
     $uri = '/api/user';
@@ -46,7 +46,7 @@ test('api authentication', function () {
         ->assertJson(['data' => ['id' => $user->id]]);
 });
 
-it('should deny a non active user', function () {
+it('should deny a non active user', function (): void {
     $uri = '/api/user';
 
     $user = User::factory()->create([
@@ -70,7 +70,7 @@ it('should deny a non active user', function () {
     $this->withHeader('Authorization', $user->api_key)->get($uri)->assertStatus(401);
 });
 
-it('can retrieve news', function () {
+it('can retrieve news', function (): void {
     $news = News::factory()->create();
     $response = $this->get('/api/news');
 
@@ -82,7 +82,7 @@ it('can retrieve news', function () {
         ->and($response->json('data'))->toEqual($expected);
 });
 
-it('can retrieve airlines', function () {
+it('can retrieve airlines', function (): void {
     // Clear out base data
     Airline::truncate();
 
@@ -113,7 +113,7 @@ it('can retrieve airlines', function () {
 
 });
 
-test('get airlines chinese chars', function () {
+test('get airlines chinese chars', function (): void {
     // Clear out base data
     Airline::truncate();
 
@@ -149,7 +149,7 @@ test('get airlines chinese chars', function () {
     expect($res->json('data'))->toEqualCanonicalizing($expected);
 });
 
-it('should paginate results', function () {
+it('should paginate results', function (): void {
     $size = random_int(5, 10);
     $user = User::factory()->create([
         'airline_id' => 0,
@@ -193,7 +193,7 @@ it('should paginate results', function () {
     $this->assertNotEquals($id_first, $id_third);
 });
 
-it('preserves ?limit= in /api/fleet pagination metadata', function () {
+it('preserves ?limit= in /api/fleet pagination metadata', function (): void {
     $user = User::factory()->create(['airline_id' => 0]);
     apiAs($user);
 
@@ -213,7 +213,7 @@ it('preserves ?limit= in /api/fleet pagination metadata', function () {
         ->and($next)->toContain('limit=2');
 });
 
-it('preserves ?limit= in /api/news pagination metadata', function () {
+it('preserves ?limit= in /api/news pagination metadata', function (): void {
     $user = User::factory()->create(['airline_id' => 0]);
     apiAs($user);
 
@@ -229,7 +229,7 @@ it('preserves ?limit= in /api/news pagination metadata', function () {
         ->and($next)->toContain('limit=2');
 });
 
-it('returns a real paginator on /api/user/fleet', function () {
+it('returns a real paginator on /api/user/fleet', function (): void {
     $user = User::factory()->create(['airline_id' => 0]);
     apiAs($user);
 
@@ -256,7 +256,7 @@ it('returns a real paginator on /api/user/fleet', function () {
         ->and($next)->toContain('limit=2');
 });
 
-it('can retrieve an airport', function () {
+it('can retrieve an airport', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -273,7 +273,7 @@ it('can retrieve an airport', function () {
     $this->get('/api/airports/UNK')->assertStatus(404);
 });
 
-test('airport request5 char', function () {
+test('airport request5 char', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -288,7 +288,7 @@ test('airport request5 char', function () {
     $this->get('/api/airports/UNK')->assertStatus(404);
 });
 
-test('get all airports', function () {
+test('get all airports', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -301,7 +301,7 @@ test('get all airports', function () {
     expect($body)->toHaveKeys(['data', 'links', 'meta']);
 });
 
-test('get all airports hubs', function () {
+test('get all airports hubs', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -313,7 +313,7 @@ test('get all airports hubs', function () {
         ->assertJsonCount(1, 'data');
 });
 
-test('get subfleets', function () {
+test('get subfleets', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -337,6 +337,7 @@ test('get subfleets', function () {
 
     $response = $this->get('/api/fleet');
     $response->assertStatus(200);
+
     $body = $response->json()['data'];
 
     foreach ($body as $subfleet) {
@@ -349,7 +350,7 @@ test('get subfleets', function () {
     }
 });
 
-test('get aircraft', function () {
+test('get aircraft', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -405,7 +406,7 @@ test('get aircraft', function () {
     // $this->assertEquals($body['zfw'], $aircraft->zfw->local(0));
 });
 
-test('get user', function () {
+test('get user', function (): void {
     $user = User::factory()->create([
         'avatar' => '/assets/avatar.jpg',
     ]);
@@ -415,7 +416,7 @@ test('get user', function () {
     $res = $this->get('/api/user')->assertStatus(200);
     $user = $res->json('data');
     expect($user)->not->toBeNull();
-    $this->assertNotSame(-1, strpos($user['avatar'], 'http'));
+    $this->assertNotSame(-1, strpos((string) $user['avatar'], 'http'));
 
     // Should go to gravatar
     $user = User::factory()->create();
@@ -423,10 +424,10 @@ test('get user', function () {
     $res = $this->get('/api/user')->assertStatus(200);
     $user = $res->json('data');
     expect($user)->not->toBeNull();
-    $this->assertNotSame(-1, strpos($user['avatar'], 'gravatar'));
+    $this->assertNotSame(-1, strpos((string) $user['avatar'], 'gravatar'));
 });
 
-test('web cron', function () {
+test('web cron', function (): void {
     updateSetting('cron.random_id', '');
 
     $this->get('/api/cron/sdf')->assertStatus(400);
@@ -440,7 +441,7 @@ test('web cron', function () {
     $res->assertStatus(200);
 });
 
-test('status', function () {
+test('status', function (): void {
     $res = $this->get('/api/status');
     $status = $res->json();
 

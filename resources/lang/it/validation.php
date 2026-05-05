@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
      * Validation Language Lines
@@ -32,7 +34,7 @@ return [
     'exists'         => 'Il/la :attribute selezionato non è valido.',
     'file'           => ':attribute deve essere un file.',
     'filled'         => '":attribute" è obbligatorio.',
-    'image'          => ':attribute deve essere un\'immagine.',
+    'image'          => ":attribute deve essere un'immagine.",
     'in'             => 'Il/la :attribute selezionato non è valido.',
     'in_array'       => 'Il campo :attribute non esiste in :other.',
     'integer'        => ':attribute deve essere un intero.',
@@ -85,7 +87,7 @@ return [
         ],
         'aircraft_id' => [
             'required' => 'Un aereo è obbligatorio',
-            'exists'   => 'L\'aereo non esiste',
+            'exists'   => "L'aereo non esiste",
         ],
         'arr_airport_id' => [
             'required' => 'Un aeroporto di arrivo è obbligatorio',

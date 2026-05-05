@@ -29,7 +29,7 @@ class UserSearchQuery
      *
      * @var array<string,string> column => operator ('like' or '=')
      */
-    private const FIELD_SEARCH = [
+    private const array FIELD_SEARCH = [
         'name'            => 'like',
         'email'           => 'like',
         'home_airport_id' => '=',
@@ -42,7 +42,7 @@ class UserSearchQuery
      *
      * @var list<string>
      */
-    private const FREE_TEXT_COLUMNS = ['name', 'email'];
+    private const array FREE_TEXT_COLUMNS = ['name', 'email'];
 
     public function build(SearchUsersRequest $request): Builder
     {
@@ -93,11 +93,19 @@ class UserSearchQuery
                 if (trim($pair) === '') {
                     continue;
                 }
+
                 [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
                 $field = trim($field);
                 $value = trim($value);
+                if ($field === '') {
+                    continue;
+                }
 
-                if ($field === '' || $value === '' || !isset(self::FIELD_SEARCH[$field])) {
+                if ($value === '') {
+                    continue;
+                }
+
+                if (!isset(self::FIELD_SEARCH[$field])) {
                     continue;
                 }
 

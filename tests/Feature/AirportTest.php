@@ -7,7 +7,7 @@ use App\Services\AirportService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 
-it('can create an airport from api response', function () {
+it('can create an airport from api response', function (): void {
     // This is the response from the API
     $airportResponse = [
         'icao'    => 'KJFK',
@@ -25,7 +25,7 @@ it('can create an airport from api response', function () {
         ->and($airport->timezone)->toEqual($airportResponse['tz']);
 });
 
-it('can search airports', function () {
+it('can search airports', function (): void {
     foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
         Airport::factory()->create(['id' => $a, 'icao' => $a]);
     }
@@ -45,7 +45,7 @@ it('can search airports', function () {
         ->and($airports[0]['icao'])->toEqual('KJFK');
 });
 
-it('can search airports with multi letter', function () {
+it('can search airports with multi letter', function (): void {
     foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
         Airport::factory()->create(['id' => $a, 'icao' => $a]);
     }
@@ -58,7 +58,7 @@ it('can search airports with multi letter', function () {
         ->and($airports[0]['icao'])->toEqual('KJFK');
 });
 
-test('airport search missing', function () {
+test('airport search missing', function (): void {
     foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
         Airport::factory()->create(['id' => $a, 'icao' => $a]);
     }
@@ -70,7 +70,7 @@ test('airport search missing', function () {
     expect($airports)->toHaveCount(0);
 });
 
-it('returns cached data if available', function () {
+it('returns cached data if available', function (): void {
     Config::set('cache.keys.AIRPORT_VACENTRAL_LOOKUP.key', 'air_');
     Cache::shouldReceive('get')->with('air_KJFK')->andReturn(['name' => 'Kennedy']);
 
@@ -80,7 +80,7 @@ it('returns cached data if available', function () {
     expect($result)->toBe(['name' => 'Kennedy']);
 });
 
-it('creates a generic airport if auto_lookup is disabled', function () {
+it('creates a generic airport if auto_lookup is disabled', function (): void {
     Config::set('general.auto_airport_lookup', false);
 
     // KORD does not exist in DB; lookupAirportIfNotFound returns null from
@@ -93,7 +93,7 @@ it('creates a generic airport if auto_lookup is disabled', function () {
     $this->assertDatabaseHas('airports', ['icao' => 'KORD']);
 });
 
-it('calculates distance between two known points', function () {
+it('calculates distance between two known points', function (): void {
     Airport::factory()->create([
         'id'   => 'KJFK',
         'icao' => 'KJFK',
@@ -112,13 +112,13 @@ it('calculates distance between two known points', function () {
     expect($distance->toUnit('mi'))->toBeBetween(2472, 2473);
 });
 
-it('throws exception when origin airport is missing', function () {
+it('throws exception when origin airport is missing', function (): void {
     // No airports in DB → Airport::find returns null → throws AirportNotFound.
     expect(fn () => app(AirportService::class)->calculateDistance('KJFK', 'KLAX'))
         ->toThrow(AirportNotFound::class);
 });
 
-test('airport list filters to hubs when ?hub=true', function () {
+test('airport list filters to hubs when ?hub=true', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -134,7 +134,7 @@ test('airport list filters to hubs when ?hub=true', function () {
         ->and(count($icaos))->toBe(2);
 });
 
-test('airport search filters to hubs when ?hubs=true', function () {
+test('airport search filters to hubs when ?hubs=true', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -148,7 +148,7 @@ test('airport search filters to hubs when ?hubs=true', function () {
     expect($hubs)->toEqual(['KORD']);
 });
 
-test('airport list filters to non-hubs when ?hub=0', function () {
+test('airport list filters to non-hubs when ?hub=0', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -162,7 +162,7 @@ test('airport list filters to non-hubs when ?hub=0', function () {
     expect(collect($response->json('data'))->pluck('icao')->all())->toBe(['KLAX', 'KORD']);
 });
 
-test('airport search respects legacy searchFields param', function () {
+test('airport search respects legacy searchFields param', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -176,7 +176,7 @@ test('airport search respects legacy searchFields param', function () {
     expect(collect($response->json('data'))->pluck('icao')->all())->toBe(['KJFK']);
 });
 
-test('airport search defaults multi-field search to OR', function () {
+test('airport search defaults multi-field search to OR', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -190,7 +190,7 @@ test('airport search defaults multi-field search to OR', function () {
     expect(collect($response->json('data'))->pluck('icao')->all())->toBe(['EGLL', 'KJFK', 'KORD']);
 });
 
-test('airport search supports searchJoin=and', function () {
+test('airport search supports searchJoin=and', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -204,7 +204,7 @@ test('airport search supports searchJoin=and', function () {
     expect(collect($response->json('data'))->pluck('icao')->all())->toBe(['KJFK']);
 });
 
-test('airport list honors legacy multi-column sort syntax', function () {
+test('airport list honors legacy multi-column sort syntax', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -218,7 +218,7 @@ test('airport list honors legacy multi-column sort syntax', function () {
     expect(collect($response->json('data'))->pluck('icao')->all())->toBe(['EGLL', 'EGAA', 'KJFK']);
 });
 
-test('airport list orders by icao ascending by default', function () {
+test('airport list orders by icao ascending by default', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -233,7 +233,7 @@ test('airport list orders by icao ascending by default', function () {
     expect($order)->toBe(['KAAA', 'KMMM', 'KZZZ']);
 });
 
-test('airport list honors ?limit query param', function () {
+test('airport list honors ?limit query param', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -246,7 +246,7 @@ test('airport list honors ?limit query param', function () {
         ->and($response->json('meta.per_page'))->toBe(3);
 });
 
-test('airport list rejects invalid non-positive limits', function () {
+test('airport list rejects invalid non-positive limits', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -257,7 +257,7 @@ test('airport list rejects invalid non-positive limits', function () {
     $response->assertStatus(400);
 });
 
-test('airport hubs list rejects invalid non-positive limits', function () {
+test('airport hubs list rejects invalid non-positive limits', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -268,7 +268,7 @@ test('airport hubs list rejects invalid non-positive limits', function () {
     $response->assertStatus(400);
 });
 
-test('GET /api/airports/{airport} resolves lowercase ICAO via route binding', function () {
+test('GET /api/airports/{airport} resolves lowercase ICAO via route binding', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -277,10 +277,11 @@ test('GET /api/airports/{airport} resolves lowercase ICAO via route binding', fu
     $response = $this->get('/api/airports/kjfk');
 
     $response->assertOk();
+
     expect($response->json('data.icao'))->toBe('KJFK');
 });
 
-it('preserves ?limit= and ?hub= in /api/airports pagination metadata', function () {
+it('preserves ?limit= and ?hub= in /api/airports pagination metadata', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -301,7 +302,7 @@ it('preserves ?limit= and ?hub= in /api/airports pagination metadata', function 
         ->and($next)->toContain('hub=1');
 });
 
-it('preserves ?search= in /api/airports/search pagination metadata', function () {
+it('preserves ?search= in /api/airports/search pagination metadata', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -320,7 +321,7 @@ it('preserves ?search= in /api/airports/search pagination metadata', function ()
         ->and($next)->toContain('search=icao%3AK');  // URL-encoded colon
 });
 
-it('preserves ?limit= in /api/airports/hubs pagination metadata', function () {
+it('preserves ?limit= in /api/airports/hubs pagination metadata', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 

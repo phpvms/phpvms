@@ -23,7 +23,7 @@ class Resource extends JsonResource
      * Iterate through the list of $fields and check if they're a "Unit"
      * If they are, then add the response
      */
-    public function checkUnitFields(&$response, array $fields): void
+    public function checkUnitFields(array &$response, array $fields): void
     {
         foreach ($fields as $f) {
             $response[$f] = $this->{$f} instanceof Unit ? $this->{$f}->getResponseUnits() : $this->{$f};
@@ -37,6 +37,7 @@ class Resource extends JsonResource
      * @param  Request      $request
      * @return JsonResponse
      */
+    #[\Override]
     public function toResponse($request)
     {
         return $this->resource instanceof AbstractPaginator
@@ -44,9 +45,10 @@ class Resource extends JsonResource
                     : parent::toResponse($request);
     }
 
+    #[\Override]
     public static function collection($resource)
     {
-        return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection) {
+        return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection): void {
             if (property_exists(static::class, 'preserveKeys')) {
                 // TODO: figure out what is this preserveKeys thing and whether we still need this
                 // @phpstan-ignore-next-line

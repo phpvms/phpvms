@@ -87,7 +87,7 @@ class Airline extends Model
     use SoftDeletes;
     use Sortable;
 
-    private const SELECT_LIST_ORDER_COLUMNS = [
+    private const array SELECT_LIST_ORDER_COLUMNS = [
         'id',
         'name',
         'icao',
@@ -197,6 +197,7 @@ class Airline extends Model
     /**
      * The attributes that should be casted to native types.
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

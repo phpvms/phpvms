@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Enums\NavaidType;
+use Illuminate\Http\Request;
 
 class NavdataResource extends Resource
 {
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
 

@@ -16,7 +16,7 @@ class VerifyEmailAction
             ->label(__('filament.user_verify_email'))
             ->visible(fn (User $record): bool => !$record->hasVerifiedEmail())
             ->color('danger')
-            ->action(function (User $record) {
+            ->action(function (User $record): void {
                 if ($record->markEmailAsVerified()) {
                     event(new Verified($record));
                 }

@@ -18,6 +18,7 @@ class ListFares extends ListRecords
 {
     protected static string $resource = FareResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

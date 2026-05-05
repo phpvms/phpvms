@@ -12,7 +12,7 @@ class AirportObserver
     public function creating(Airport $airport): void
     {
         if (filled($airport->iata)) {
-            $airport->iata = strtoupper(trim($airport->iata));
+            $airport->iata = strtoupper(trim((string) $airport->iata));
         }
 
         $airport->icao = strtoupper(trim($airport->icao));
@@ -22,7 +22,7 @@ class AirportObserver
     public function updating(Airport $airport): void
     {
         if (filled($airport->iata)) {
-            $airport->iata = strtoupper(trim($airport->iata));
+            $airport->iata = strtoupper(trim((string) $airport->iata));
         }
 
         $airport->icao = strtoupper(trim($airport->icao));

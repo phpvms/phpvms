@@ -27,7 +27,7 @@ class FlightSearchQuery
      *
      * @var array<string, 'exact'|'like'>
      */
-    private const FIELD_SEARCH = [
+    private const array FIELD_SEARCH = [
         'arr_airport_id' => 'exact',
         'callsign'       => 'exact',
         'distance'       => 'exact',
@@ -44,7 +44,7 @@ class FlightSearchQuery
     /**
      * @var list<string>
      */
-    private const FREE_TEXT_COLUMNS = [
+    private const array FREE_TEXT_COLUMNS = [
         'flight_number',
         'route_code',
         'callsign',
@@ -94,11 +94,19 @@ class FlightSearchQuery
                 if (trim($pair) === '') {
                     continue;
                 }
+
                 [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
                 $field = trim($field);
                 $value = trim($value);
+                if ($field === '') {
+                    continue;
+                }
 
-                if ($field === '' || $value === '' || !array_key_exists($field, self::FIELD_SEARCH)) {
+                if ($value === '') {
+                    continue;
+                }
+
+                if (!array_key_exists($field, self::FIELD_SEARCH)) {
                     continue;
                 }
 
@@ -221,7 +229,7 @@ class FlightSearchQuery
     private function splitDelimitedValues(string $value): array
     {
         return array_map(
-            static fn (string $part): string => trim($part),
+            trim(...),
             explode(';', $value)
         );
     }

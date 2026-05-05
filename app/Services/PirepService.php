@@ -193,7 +193,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
+            $pirep->block_on_time = $pirep->submitted_at ?: Carbon::now('UTC');
         }
 
         // If the depart time isn't set, then try to calculate it by
@@ -288,7 +288,7 @@ class PirepService extends Service
         // specified, then use the time that it was submitted. It won't
         // be the most accurate, but that might be OK
         if (!$pirep->block_on_time) {
-            $pirep->block_on_time = $pirep->submitted_at ? $pirep->submitted_at : Carbon::now('UTC');
+            $pirep->block_on_time = $pirep->submitted_at ?: Carbon::now('UTC');
         }
 
         // Check that there's a submit time
@@ -350,7 +350,7 @@ class PirepService extends Service
             }
 
             return $found_pireps[0];
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return false;
         }
     }
@@ -414,7 +414,7 @@ class PirepService extends Service
      *
      * @throws Exception
      */
-    public function submit(Pirep $pirep)
+    public function submit(Pirep $pirep): void
     {
         // Check if there is a simbrief_id, change it to be set to the PIREP
         // at the end of the flight when it's been submitted finally.
@@ -468,7 +468,7 @@ class PirepService extends Service
     public function cancel(Pirep $pirep): Pirep
     {
         if (in_array($pirep->state, Pirep::$cancel_states, true)) {
-            Log::info('PIREP '.$pirep->id.' can\'t be cancelled, state='.$pirep->state);
+            Log::info('PIREP '.$pirep->id." can't be cancelled, state=".$pirep->state);
 
             throw new PirepCancelNotAllowed($pirep);
         }
@@ -608,6 +608,7 @@ class PirepService extends Service
         $this->userSvc->adjustFlightTime($pilot, $ft);
         $this->userSvc->adjustFlightCount($pilot, +1);
         $this->userSvc->calculatePilotRank($pilot);
+
         $pirep->user->refresh();
 
         // Change the status
@@ -665,7 +666,7 @@ class PirepService extends Service
         return $pirep;
     }
 
-    public function setPilotState(User $pilot, Pirep $pirep)
+    public function setPilotState(User $pilot, Pirep $pirep): void
     {
         $pilot->refresh();
 
@@ -727,7 +728,7 @@ class PirepService extends Service
             $free_flights_disabled = $query?->value;
             // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
 
-            if (get_truth_state($free_flights_disabled) == true) {
+            if (get_truth_state($free_flights_disabled)) {
                 $repositionAttributes = [
                     'airline_id'     => $flight->airline_id,
                     'flight_number'  => $flight->flight_number,

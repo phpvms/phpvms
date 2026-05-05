@@ -61,7 +61,7 @@ class PirepField extends Model
     public function name(): Attribute
     {
         return Attribute::make(
-            set: fn ($name) => [
+            set: fn ($name): array => [
                 'name' => $name,
                 'slug' => Str::slug($name),
             ]
@@ -76,6 +76,7 @@ class PirepField extends Model
             ->dontSubmitEmptyLogs();
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -8,42 +8,30 @@ use App\Contracts\Service;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use PDO;
-use PDOException;
 
 class DatabaseService extends Service
 {
     /**
      * Check the PHP version that it meets the minimum requirement
-     *
-     *
-     * @return bool
      */
-    public function checkDbConnection($driver, $host, $port, $name, $user, $pass)
+    public function checkDbConnection(string $driver, string $host, string $port, string $name, string $user, $pass): bool
     {
         Log::info('Testing Connection: '.$driver.'::'.$user.':<hidden>@'.$host.':'.$port.';'.$name);
 
         // TODO: Needs testing
         if ($driver === 'postgres') {
-            $dsn = "pgsql:host=$host;port=$port;dbname=$name";
+            $dsn = sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $name);
 
-            try {
-                $conn = new PDO($dsn, $user, $pass);
-            } catch (PDOException $e) {
-                throw $e;
-            }
+            $conn = new PDO($dsn, $user, $pass);
 
             return true;
         }
 
         // Default MySQL
-        $dsn = "mysql:host=$host;port=$port;dbname=$name";
+        $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s', $host, $port, $name);
         Log::info('Connection string: '.$dsn);
 
-        try {
-            $conn = new PDO($dsn, $user, $pass);
-        } catch (PDOException $e) {
-            throw $e;
-        }
+        new PDO($dsn, $user, $pass);
 
         return true;
     }
@@ -53,7 +41,7 @@ class DatabaseService extends Service
      * Only run the setup for sqlite, otherwise, we're assuming
      * that the MySQL database has already been created
      */
-    public function setupDB()
+    public function setupDB(): string
     {
         $output = '';
 

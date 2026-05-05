@@ -61,7 +61,7 @@ class CronService extends Service
     /**
      * Update the last time the cron was run in the kvp repo
      */
-    public function updateLastRunTime()
+    public function updateLastRunTime(): void
     {
         $dt = new DateTime('now', new DateTimeZone('UTC'));
         $this->kvpRepo->save('cron_last_run', $dt->format(DateTime::ISO8601));

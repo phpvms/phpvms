@@ -19,7 +19,7 @@ class CarbonImmutableOrFalseCast implements Cast
 
         try {
             return CarbonImmutable::parse($value);
-        } catch (Exception $e) {
+        } catch (Exception) {
             // Fallback: if it's an empty string or invalid, decide if you want false or an error
             return false;
         }

@@ -13,12 +13,12 @@ beforeEach(function (): void {
     loadYamlIntoDb('fleet');
 });
 
-test('get awards classes', function () {
+test('get awards classes', function (): void {
     $classes = app(AwardService::class)->findAllAwardClasses();
     expect($classes)->toBeGreaterThanOrEqual(2);
 });
 
-test('awards given', function () {
+test('awards given', function (): void {
     // Create one award that's given out with one flight
     $award = Award::factory()->create([
         'ref_model_type'   => PilotFlightAwards::class,
@@ -50,7 +50,7 @@ test('awards given', function () {
     expect($found_award)->not->toBeNull();
 });
 
-test('flight route award', function () {
+test('flight route award', function (): void {
     /** @var User $user */
     $user = User::factory()->create([
         'flights' => 0,

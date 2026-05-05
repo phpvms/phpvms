@@ -26,7 +26,7 @@ class PirepSearchQuery
      *
      * @var list<string>
      */
-    private const FIELD_SEARCH = ['user_id', 'status', 'state'];
+    private const array FIELD_SEARCH = ['user_id', 'status', 'state'];
 
     /**
      * Free-text search columns (when search has no `field:` prefix).
@@ -35,7 +35,7 @@ class PirepSearchQuery
      *
      * @var list<string>
      */
-    private const FREE_TEXT_COLUMNS = ['id', 'flight_number'];
+    private const array FREE_TEXT_COLUMNS = ['id', 'flight_number'];
 
     public function build(SearchPirepsRequest $request): Builder
     {
@@ -61,11 +61,19 @@ class PirepSearchQuery
                 if (trim($pair) === '') {
                     continue;
                 }
+
                 [$field, $value] = array_pad(explode(':', $pair, 2), 2, '');
                 $field = trim($field);
                 $value = trim($value);
+                if ($field === '') {
+                    continue;
+                }
 
-                if ($field === '' || $value === '' || !in_array($field, self::FIELD_SEARCH, true)) {
+                if ($value === '') {
+                    continue;
+                }
+
+                if (!in_array($field, self::FIELD_SEARCH, true)) {
                     continue;
                 }
 

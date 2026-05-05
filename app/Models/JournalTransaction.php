@@ -83,11 +83,12 @@ class JournalTransaction extends Model
     /**
      * @param string $currency
      */
-    public function setCurrency($currency)
+    public function setCurrency($currency): void
     {
         $this->currency = $currency;
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

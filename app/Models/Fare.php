@@ -103,6 +103,7 @@ class Fare extends Model
         return $this->belongsToMany(Flight::class, 'flight_fare')->withPivot('price', 'cost', 'capacity');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

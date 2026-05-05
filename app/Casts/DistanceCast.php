@@ -25,8 +25,8 @@ class DistanceCast implements CastsAttributes
 
         try {
             return new Distance($value, config('phpvms.internal_units.distance'));
-        } catch (NonNumericValue $e) {
-        } catch (NonStringUnitName $e) {
+        } catch (NonNumericValue) {
+        } catch (NonStringUnitName) {
             return $value;
         }
 

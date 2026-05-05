@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     401 => [
         'title'   => 'Non Autorizzato',

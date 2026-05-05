@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Opcodes\LogViewer\Http\Middleware\AuthorizeLogViewer;
 use Opcodes\LogViewer\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
@@ -93,7 +95,7 @@ return [
         AuthorizeLogViewer::class,
     ],
 
-    'api_stateful_domains' => env('LOG_VIEWER_API_STATEFUL_DOMAINS') ? explode(',', env('LOG_VIEWER_API_STATEFUL_DOMAINS')) : null,
+    'api_stateful_domains' => env('LOG_VIEWER_API_STATEFUL_DOMAINS') ? explode(',', (string) env('LOG_VIEWER_API_STATEFUL_DOMAINS')) : null,
 
     /*
     |--------------------------------------------------------------------------
@@ -107,7 +109,7 @@ return [
 
     'hosts' => [
         'local' => [
-            'name' => ucfirst(env('APP_ENV', 'local')),
+            'name' => ucfirst((string) env('APP_ENV', 'local')),
         ],
 
         // 'staging' => [
@@ -208,7 +210,7 @@ return [
     |
     */
 
-    'cache_driver' => env('LOG_VIEWER_CACHE_DRIVER', null),
+    'cache_driver' => env('LOG_VIEWER_CACHE_DRIVER'),
 
     /*
     |--------------------------------------------------------------------------

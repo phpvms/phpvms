@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use App\Models\User;
@@ -13,8 +15,14 @@ class ProfileUpdated
     use InteractsWithSockets;
     use SerializesModels;
 
+    /**
+     * @var User
+     */
     public $user;
 
+    /**
+     * @var bool
+     */
     public $avatarUpdated;
 
     /**

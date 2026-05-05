@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Messages;
 
 use App\Contracts\Notification;
@@ -26,7 +28,7 @@ class PirepFiled extends Notification implements ShouldQueue
         );
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
@@ -34,10 +36,9 @@ class PirepFiled extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'pirep_id' => $this->pirep->id,

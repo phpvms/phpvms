@@ -23,6 +23,7 @@ class ActivityLogResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -31,16 +32,19 @@ class ActivityLogResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function infolist(Schema $schema): Schema
     {
         return ActivityLogInfolist::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return ActivityLogsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -48,6 +52,7 @@ class ActivityLogResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -56,6 +61,7 @@ class ActivityLogResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('activities.activity');

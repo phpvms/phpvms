@@ -18,21 +18,15 @@ class ImporterDB
      */
     public $batchSize;
 
-    private ?PDO $conn;
+    private ?PDO $conn = null;
+
+    private readonly string $dsn;
 
     /**
-     * @var string
+     * @param mixed[] $creds
      */
-    private $dsn;
-
-    /**
-     * @var array
-     */
-    private $creds;
-
-    public function __construct($creds)
+    public function __construct(private $creds)
     {
-        $this->creds = $creds;
         $this->dsn = 'mysql:'.implode(';', [
             'host='.$this->creds['host'],
             'port='.$this->creds['port'],
@@ -49,19 +43,19 @@ class ImporterDB
         $this->close();
     }
 
-    public function connect()
+    public function connect(): void
     {
         try {
             $this->conn = new PDO($this->dsn, $this->creds['user'], $this->creds['pass']);
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            Log::error($e);
+        } catch (PDOException $pdoException) {
+            Log::error($pdoException);
 
-            throw $e;
+            throw $pdoException;
         }
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->conn instanceof PDO) {
             $this->conn = null;
@@ -70,11 +64,8 @@ class ImporterDB
 
     /**
      * Return the table name with the prefix
-     *
-     *
-     * @return string
      */
-    public function tableName($table)
+    public function tableName(string $table): string
     {
         if ($this->creds['table_prefix'] !== false) {
             return $this->creds['table_prefix'].$table;
@@ -87,7 +78,7 @@ class ImporterDB
      * Does a table exist? Try to get the column information on it.
      * The result will be 'false' if that table isn't there
      */
-    public function tableExists($table): bool
+    public function tableExists(string $table): bool
     {
         $this->connect();
 
@@ -101,9 +92,9 @@ class ImporterDB
      * Get the names of the columns for a particular table
      *
      *
-     * @return mixed
+     * @return mixed[]
      */
-    public function getColumns($table)
+    public function getColumns(string $table): array
     {
         $this->connect();
 
@@ -118,10 +109,7 @@ class ImporterDB
         return $rows;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getTotalRows($table)
+    public function getTotalRows(string $table): int
     {
         $this->connect();
 
@@ -136,16 +124,15 @@ class ImporterDB
     /**
      * Read rows from a table with a given assoc array. Simple
      *
-     * @param  string             $table
      * @return false|PDOStatement
      */
-    public function findBy($table, array $attrs)
+    public function findBy(string $table, array $attrs)
     {
         $this->connect();
 
         $where = [];
         foreach ($attrs as $col => $value) {
-            $where[] = $col.'=\''.$value.'\'';
+            $where[] = $col."='".$value."'";
         }
 
         $where = implode(' AND ', $where);
@@ -182,8 +169,8 @@ class ImporterDB
             foreach ($result as $row) {
                 $rows[] = $row;
             }
-        } catch (Exception $e) {
-            Log::error('foreach rows error: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('foreach rows error: '.$exception->getMessage());
         }
 
         return $rows;
@@ -216,11 +203,11 @@ class ImporterDB
             }
 
             return $result;
-        } catch (PDOException $e) {
+        } catch (PDOException $pdoException) {
             // Without incrementing the offset, it should re-run the same query
-            Log::error('Error readRowsOffset: '.$e->getMessage());
+            Log::error('Error readRowsOffset: '.$pdoException->getMessage());
 
-            if (strpos($e->getMessage(), 'server has gone away') !== false) {
+            if (str_contains($pdoException->getMessage(), 'server has gone away')) {
                 $this->connect();
             }
         }

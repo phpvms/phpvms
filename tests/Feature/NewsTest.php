@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\User;
 use App\Notifications\Messages\NewsAdded;
 use App\Services\NewsService;
 use Illuminate\Support\Facades\Notification;
 
-test('news notifications', function () {
+test('news notifications', function (): void {
     Notification::fake();
 
     $users_opt_in = User::factory()->count(5)->create(['opt_in' => true]);

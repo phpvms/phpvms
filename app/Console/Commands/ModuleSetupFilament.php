@@ -34,17 +34,17 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
 
     private string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
 
-    public function handle()
+    public function handle(): void
     {
         $moduleName = $this->argument('module');
         $this->module = app('modules')->find($moduleName);
 
         if (!$this->module instanceof Module) {
-            $this->fail("Module {$moduleName} not found, are you sure it's installed and enabled?");
+            $this->fail(sprintf("Module %s not found, are you sure it's installed and enabled?", $moduleName));
         }
 
         // The provider file path
-        $path = str($this->module->getExtraPath("{$this->basePath}/{$this->className}"))
+        $path = str($this->module->getExtraPath(sprintf('%s/%s', $this->basePath, $this->className)))
             ->replace('\\', '/')
             ->append('.php')->toString();
 
@@ -59,11 +59,11 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
             'MODULE_NAMESPACE' => $this->laravel['modules']->config('namespace'),
         ]);
 
-        $this->info("The {$this->className} has been created at {$path}");
+        $this->info(sprintf('The %s has been created at %s', $this->className, $path));
 
-        $this->info("Adding {$this->className} to module.json and composer.json");
+        $this->info(sprintf('Adding %s to module.json and composer.json', $this->className));
 
-        $provider = "{$namespace}\\{$this->className}";
+        $provider = sprintf('%s\%s', $namespace, $this->className);
 
         $moduleJson = json_decode($this->readFile(module_path($this->module->getName(), 'module.json')), true);
         $providers = collect($moduleJson['providers']);
@@ -81,7 +81,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
             $this->writeFile(module_path($this->module->getName(), 'composer.json'), json_encode($composerJson, JSON_PRETTY_PRINT));
         }
 
-        $this->info("Module {$this->module->getName()} is now ready for Filament!");
+        $this->info(sprintf('Module %s is now ready for Filament!', $this->module->getName()));
     }
 
     protected function copyPanelStubToApp(string $targetPath, ?array $replacements = []): void
@@ -91,13 +91,13 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
         $panelStubPath = base_path($this->panelStub);
 
         if (!$this->fileExists($panelStubPath)) {
-            $this->fail("The panel stub file does not exist at {$panelStubPath}");
+            $this->fail('The panel stub file does not exist at '.$panelStubPath);
         }
 
         $stub = str($filesystem->get($panelStubPath));
 
         foreach ($replacements as $key => $replacement) {
-            $stub = $stub->replace("{{ {$key} }}", $replacement);
+            $stub = $stub->replace(sprintf('{{ %s }}', $key), $replacement);
             $stub = $stub->replace('$'.$key.'$', $replacement);
         }
 
@@ -118,7 +118,7 @@ class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Conso
         $filesystem = app(Filesystem::class);
 
         if (!$this->fileExists($path)) {
-            $this->fail("The file does not exist at {$path}");
+            $this->fail('The file does not exist at '.$path);
         }
 
         return $filesystem->get($path);

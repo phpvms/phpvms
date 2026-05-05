@@ -3,7 +3,7 @@
 use App\Services\KvpService;
 use App\Services\VersionService;
 
-test('greater than version strings', function () {
+test('greater than version strings', function (): void {
     $test = [
         ['7.0.0' => '6.0.0'],
         ['7.0.0+1231s' => '6.0.0'],
@@ -19,11 +19,11 @@ test('greater than version strings', function () {
         $newVersion = array_key_first($set);
         $currentVersion = $set[$newVersion];
 
-        expect($versionSvc->isGreaterThan($newVersion, $currentVersion))->toBeTrue("$newVersion not greater than $currentVersion");
+        expect($versionSvc->isGreaterThan($newVersion, $currentVersion))->toBeTrue(sprintf('%s not greater than %s', $newVersion, $currentVersion));
     }
 });
 
-test('get latest version', function () {
+test('get latest version', function (): void {
     setting('general.check_prerelease_version', false);
 
     mockGuzzleResponse('releases.json', 'application/json; charset=utf-8');
@@ -35,7 +35,7 @@ test('get latest version', function () {
         ->and(app(KvpService::class)->get('latest_version_tag'))->toEqual('7.0.0-alpha2');
 });
 
-test('get latest prerelease version', function () {
+test('get latest prerelease version', function (): void {
     updateSetting('general.check_prerelease_version', true);
 
     mockGuzzleResponse('releases.json', 'application/json; charset=utf-8');
@@ -47,7 +47,7 @@ test('get latest prerelease version', function () {
         ->and(app(KvpService::class)->get('latest_version_tag'))->toEqual('7.0.0-beta');
 });
 
-test('new version not available', function () {
+test('new version not available', function (): void {
     updateSetting('general.check_prerelease_version', false);
 
     $versions = [
@@ -65,7 +65,7 @@ test('new version not available', function () {
     }
 });
 
-test('new version is available', function () {
+test('new version is available', function (): void {
     updateSetting('general.check_prerelease_version', true);
 
     $versions = [

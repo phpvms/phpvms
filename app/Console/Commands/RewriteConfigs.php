@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
@@ -17,7 +19,7 @@ class RewriteConfigs extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         /** @var ConfigService $configSvc */
         $configSvc = app(ConfigService::class);

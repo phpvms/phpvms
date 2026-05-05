@@ -52,6 +52,7 @@ class News extends BaseWidget
         ];
     }
 
+    #[\Override]
     public function table(Table $table): Table
     {
         return $table
@@ -86,7 +87,7 @@ class News extends BaseWidget
 
                             return $data;
                         })
-                        ->after(function (array $data, NewsModel $record) {
+                        ->after(function (array $data, NewsModel $record): void {
                             if (get_truth_state($data['send_notifications'])) {
                                 event(new NewsUpdated($record));
                             }
@@ -106,7 +107,7 @@ class News extends BaseWidget
 
                         return $data;
                     })
-                    ->after(function (array $data, NewsModel $record) {
+                    ->after(function (array $data, NewsModel $record): void {
                         if (get_truth_state($data['send_notifications'])) {
                             event(new NewsAdded($record));
                         }

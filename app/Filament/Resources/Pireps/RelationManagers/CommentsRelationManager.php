@@ -18,6 +18,7 @@ class CommentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'comments';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -50,7 +51,7 @@ class CommentsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->mutateDataUsing(function (array $data) {
+                    ->mutateDataUsing(function (array $data): array {
                         $data['user_id'] = auth()->id();
 
                         return $data;
@@ -67,11 +68,13 @@ class CommentsRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.comment', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.comment', 2);

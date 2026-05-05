@@ -56,7 +56,7 @@ class ExpenseImporter extends Importer
             return;
         }
 
-        if (!str_contains($this->data['ref_model_type'], 'App\Models\\')) {
+        if (!str_contains((string) $this->data['ref_model_type'], 'App\Models\\')) {
             $this->data['ref_model_type'] = 'App\Models\\'.$this->data['ref_model_type'];
         }
 
@@ -92,6 +92,7 @@ class ExpenseImporter extends Importer
         $this->data['ref_model_id'] = $obj->id;
     }
 
+    #[\Override]
     public function resolveRecord(): Expense
     {
         return Expense::firstOrNew([

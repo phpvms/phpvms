@@ -15,16 +15,12 @@ class YamlImport extends Command
 
     protected $description = 'Developer commands';
 
-    protected DatabaseService $dbSvc;
-
     /**
      * YamlImport constructor.
      */
-    public function __construct(DatabaseService $dbSvc)
+    public function __construct(protected DatabaseService $dbSvc)
     {
         parent::__construct();
-
-        $this->dbSvc = $dbSvc;
     }
 
     /**
@@ -32,7 +28,7 @@ class YamlImport extends Command
      *
      * @throws Exception
      */
-    public function handle()
+    public function handle(): void
     {
         $files = $this->argument('files');
         if (empty($files)) {
@@ -44,7 +40,7 @@ class YamlImport extends Command
 
         foreach ($files as $file) {
             if (!file_exists($file)) {
-                $this->error('File '.$file.' doesn\'t exist');
+                $this->error('File '.$file." doesn't exist");
                 exit;
             }
 

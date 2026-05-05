@@ -34,16 +34,19 @@ class SubfleetResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return SubfleetForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return SubfleetsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -56,6 +59,7 @@ class SubfleetResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -65,6 +69,7 @@ class SubfleetResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -73,6 +78,7 @@ class SubfleetResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'type'];
@@ -81,16 +87,19 @@ class SubfleetResource extends Resource
     /**
      * @param Subfleet $record
      */
+    #[\Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->type.' - '.$record->name;
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('common.subfleet');
     }
 
+    #[\Override]
     public static function getNavigationLabel(): string
     {
         return __('common.fleet');

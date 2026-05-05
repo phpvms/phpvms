@@ -260,13 +260,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function ident(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, array $attrs): string {
                 $length = setting('pilots.id_length');
                 $ident_code = filled(setting('pilots.id_code')) ? setting(
                     'pilots.id_code'
                 ) : optional($this->airline)->icao;
 
-                return $ident_code.str_pad($attrs['pilot_id'], $length, '0', STR_PAD_LEFT);
+                return $ident_code.str_pad((string) $attrs['pilot_id'], $length, '0', STR_PAD_LEFT);
             }
         );
     }
@@ -277,11 +277,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function atc(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, array $attrs): string {
                 $ident_code = filled(setting('pilots.id_code')) ? setting('pilots.id_code') : optional($this->airline)->icao;
-                $atc = filled($attrs['callsign']) ? $ident_code.$attrs['callsign'] : $ident_code.$attrs['pilot_id'];
 
-                return $atc;
+                return filled($attrs['callsign']) ? $ident_code.$attrs['callsign'] : $ident_code.$attrs['pilot_id'];
             }
         );
     }
@@ -292,8 +291,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function namePrivate(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
-                $name_parts = explode(' ', $attrs['name']);
+            get: function ($_, array $attrs): string {
+                $name_parts = explode(' ', (string) $attrs['name']);
                 $count = count($name_parts);
                 if ($count === 1) {
                     return $name_parts[0];
@@ -322,7 +321,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return Attribute::make(
             get: fn ($_, $attrs) => $attrs['timezone'],
-            set: fn ($value) => [
+            set: fn ($value): array => [
                 'timezone' => $value,
             ]
         );
@@ -334,7 +333,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function avatar(): Attribute
     {
         return Attribute::make(
-            get: function (mixed $value) {
+            get: function (mixed $value): ?File {
                 if (!$value) {
                     return null;
                 }
@@ -345,14 +344,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
-     * @param  mixed  $size Size of the gravatar, in pixels
-     * @return string
+     * @param mixed $size Size of the gravatar, in pixels
      */
-    public function gravatar($size = null)
+    public function gravatar($size = null): string
     {
         $default = config('gravatar.default');
 
-        $uri = config('gravatar.url').md5(strtolower(trim($this->email))).'?d='.urlencode($default);
+        $uri = config('gravatar.url').md5(strtolower(trim($this->email))).'?d='.urlencode((string) $default);
 
         if ($size !== null) {
             $uri .= '&s='.$size;
@@ -457,12 +455,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         }
 
         // For modules panels
-        return $this->hasRole(Utils::getSuperAdminName()) || $this->can('view:modules');
+        if ($this->hasRole(Utils::getSuperAdminName())) {
+            return true;
+        }
+
+        return $this->can('view:modules');
     }
 
     public function hasAdminAccess(): bool
     {
-        return $this->hasRole(Utils::getSuperAdminName().'|admin') || $this->can('view:dashboard');
+        if ($this->hasRole(Utils::getSuperAdminName().'|admin')) {
+            return true;
+        }
+
+        return $this->can('view:dashboard');
     }
 
     public function getFilamentAvatarUrl(): ?string
@@ -516,6 +522,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $q->where('state', '!=', UserState::REJECTED);
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

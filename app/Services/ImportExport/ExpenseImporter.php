@@ -59,8 +59,8 @@ class ExpenseImporter extends ImportExport
             $expense = Expense::updateOrCreate([
                 'name' => $row['name'],
             ], $row);
-        } catch (Exception $e) {
-            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->errorLog('Error in row '.($index + 1).': '.$exception->getMessage());
 
             return false;
         }
@@ -72,16 +72,13 @@ class ExpenseImporter extends ImportExport
 
     /**
      * See if this expense refers to a ref_model
-     *
-     *
-     * @return array
      */
-    protected function getRefClassInfo(array $row)
+    protected function getRefClassInfo(array $row): array
     {
         if (array_key_exists('ref_model_type', $row)) {
-            $row['ref_model_type'] = trim($row['ref_model_type']);
+            $row['ref_model_type'] = trim((string) $row['ref_model_type']);
         } elseif (array_key_exists('ref_model', $row)) {
-            $row['ref_model_type'] = trim($row['ref_model']);
+            $row['ref_model_type'] = trim((string) $row['ref_model']);
         } else {
             $row['ref_model_type'] = '';
         }

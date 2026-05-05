@@ -111,8 +111,8 @@ class AircraftTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make()->before(function (Aircraft $record) {
-                    $record->files()->each(function (File $file) {
+                ForceDeleteAction::make()->before(function (Aircraft $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -121,9 +121,9 @@ class AircraftTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                    ForceDeleteBulkAction::make()->before(function (Collection $records): void {
                         /** @var Collection<int, Aircraft> $records */
-                        $records->each(fn (Aircraft $record) => $record->files()->each(function (File $file) {
+                        $records->each(fn (Aircraft $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

@@ -1,11 +1,9 @@
 <?php
 
-use App\Services\DatabaseService;
 use App\Support\Database;
 use Symfony\Component\Yaml\Yaml;
 
-test('seeder', function () {
-    /** @var DatabaseService $dbSvc */
+test('seeder', function (): void {
     $file = file_get_contents(base_path('tests/data/seed.yml'));
     $yml = Yaml::parse($file);
 
@@ -28,8 +26,7 @@ test('seeder', function () {
     expect($value)->toEqual('changed');
 });
 
-test('seeder value ignore value', function () {
-    /** @var DatabaseService $dbSvc */
+test('seeder value ignore value', function (): void {
     $file = file_get_contents(base_path('tests/data/seed.yml'));
     $yml = Yaml::parse($file);
 
@@ -46,8 +43,7 @@ test('seeder value ignore value', function () {
     expect($value)->toEqual('default');
 });
 
-test('seeder dont ignore value', function () {
-    /** @var DatabaseService $dbSvc */
+test('seeder dont ignore value', function (): void {
     $file = file_get_contents(base_path('tests/data/seed.yml'));
     $yml = Yaml::parse($file);
 

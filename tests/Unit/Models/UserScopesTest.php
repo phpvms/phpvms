@@ -6,7 +6,7 @@ use App\Models\Airline;
 use App\Models\Enums\UserState;
 use App\Models\User;
 
-test('User scopes compose with each other', function () {
+test('User scopes compose with each other', function (): void {
     $airline = Airline::factory()->create();
     User::factory()->create(['name' => 'match',          'state' => UserState::ACTIVE,  'airline_id' => $airline->id]);
     User::factory()->create(['name' => 'wrong-state',    'state' => UserState::PENDING, 'airline_id' => $airline->id]);

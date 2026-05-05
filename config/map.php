@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Configuration for mapping URLs and stuff
  */
-
 return [
     /*
      * This can really be any METAR service, as long as it returns GeoJSON

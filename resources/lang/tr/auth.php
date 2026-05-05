@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'failed'                   => 'Girilen bilgiler sistem kayıtları ile uyumlu değil.',
     'throttle'                 => 'Çok fazla giriş denemesi yapıldı. Lütfen :seconds saniye sonra yeniden deneyin.',

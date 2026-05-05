@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -16,6 +18,6 @@ return [
     'reset'    => 'Votre mot de passe a été réinitialisé!',
     'sent'     => 'Nous vous avons envoyé par email votre lien de réinitialisation de mot de passe!',
     'token'    => 'Ce jeton de réinitialisation de mot de passe est invalide.',
-    'user'     => 'Nous ne trouvons pas d\'utilisateurs avec cette adresse email.',
+    'user'     => "Nous ne trouvons pas d'utilisateurs avec cette adresse email.",
     'confirm'  => 'Confirmer votre mot de passe.',
 ];

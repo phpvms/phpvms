@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author      José Lorente <jose.lorente.martin@gmail.com>
  * @license     The MIT License (MIT)

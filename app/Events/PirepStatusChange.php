@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use App\Contracts\Event;
@@ -10,10 +12,5 @@ use App\Models\Pirep;
  */
 class PirepStatusChange extends Event
 {
-    public Pirep $pirep;
-
-    public function __construct(Pirep $pirep)
-    {
-        $this->pirep = $pirep;
-    }
+    public function __construct(public Pirep $pirep) {}
 }

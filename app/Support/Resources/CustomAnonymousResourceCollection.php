@@ -7,6 +7,7 @@ use Illuminate\Pagination\AbstractPaginator;
 
 class CustomAnonymousResourceCollection extends AnonymousResourceCollection
 {
+    #[\Override]
     public function toResponse($request)
     {
         return $this->resource instanceof AbstractPaginator

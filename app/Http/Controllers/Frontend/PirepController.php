@@ -69,9 +69,7 @@ class PirepController extends Controller
 
         foreach ($subfleets as $subfleet) {
             $tmp = [];
-            foreach ($subfleet->aircraft->when($location_check, function ($query) use ($user_loc) {
-                return $query->where('airport_id', $user_loc);
-            }) as $ac) {
+            foreach ($subfleet->aircraft->when($location_check, fn ($query) => $query->where('airport_id', $user_loc)) as $ac) {
                 $tmp[$ac->id] = $ac['name'].' - '.$ac['registration'];
             }
 
@@ -143,19 +141,11 @@ class PirepController extends Controller
 
         // Support retrieval of deleted relationships
         $with = [
-            'aircraft' => function ($query) {
-                return $query->withTrashed();
-            },
-            'airline' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'aircraft'    => fn ($query) => $query->withTrashed(),
+            'airline'     => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
             'comments',
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
             'fares',
         ];
 
@@ -185,29 +175,15 @@ class PirepController extends Controller
         // Support retrieval of deleted relationships
         $with = [
             'acars_logs',
-            'aircraft' => function ($query) {
-                return $query->withTrashed()->with(['airline' => function ($query) {
-                    return $query->withTrashed();
-                }]);
-            },
-            'airline' => function ($query) {
-                return $query->withTrashed()->with('journal');
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'aircraft'    => fn ($query) => $query->withTrashed()->with(['airline' => fn ($query) => $query->withTrashed()]),
+            'airline'     => fn ($query) => $query->withTrashed()->with('journal'),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
             'comments',
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
             'fares',
             'simbrief',
             'transactions',
-            'user' => function ($query) {
-                return $query->withTrashed()->with(['rank' => function ($query) {
-                    return $query->withTrashed();
-                }]);
-            },
+            'user' => fn ($query) => $query->withTrashed()->with(['rank' => fn ($query) => $query->withTrashed()]),
         ];
 
         $pirep = Pirep::with($with)->find($id);
@@ -272,15 +248,16 @@ class PirepController extends Controller
 
             // Convert the fare data into the expected output format
             if (!empty($simbrief->fare_data)) {
-                $fare_values = json_decode($simbrief->fare_data, true);
+                $fare_values = json_decode((string) $simbrief->fare_data, true);
                 $fares = [];
-                $fare_data = json_decode($simbrief->fare_data, true);
+                $fare_data = json_decode((string) $simbrief->fare_data, true);
                 foreach ($fare_data as $fare) {
                     $fares[] = new Fare($fare);
                 }
 
                 $aircraft->subfleet->fares = collect($fares);
             }
+
             // TODO: Set more fields from the Simbrief to the PIREP form
         } else {
             $aircraft_list = $this->aircraftList(true);
@@ -325,7 +302,7 @@ class PirepController extends Controller
         $pirep->user_id = $user->id;
 
         $attrs = $request->all();
-        $attrs['submit'] = strtolower($attrs['submit']);
+        $attrs['submit'] = strtolower((string) $attrs['submit']);
 
         if ($attrs['submit'] === 'submit') {
             // Are they allowed at this airport?
@@ -362,7 +339,7 @@ class PirepController extends Controller
                 Log::error('Aircraft for PIREP not found, id='.$pirep->aircraft_id);
 
                 return $this->flashError(
-                    'The aircraft for the PIREP hasn\'t been found',
+                    "The aircraft for the PIREP hasn't been found",
                     'frontend.pireps.create'
                 );
             }
@@ -460,7 +437,7 @@ class PirepController extends Controller
         }
 
         if ($pirep->user_id !== Auth::id()) {
-            Flash::error('Cannot edit someone else\'s PIREP!');
+            Flash::error("Cannot edit someone else's PIREP!");
 
             return redirect(PirepResource::getUrl());
         }
@@ -533,14 +510,14 @@ class PirepController extends Controller
         }
 
         if ($user->id !== $pirep->user_id) {
-            Flash::error('Cannot edit someone else\'s PIREP!');
+            Flash::error("Cannot edit someone else's PIREP!");
 
             return redirect(PirepResource::getUrl());
         }
 
         $orig_route = $pirep->route;
         $attrs = $request->all();
-        $attrs['submit'] = strtolower($attrs['submit']);
+        $attrs['submit'] = strtolower((string) $attrs['submit']);
 
         // Fix the time
         $attrs['flight_time'] = Time::init($attrs['minutes'], $attrs['hours'])->getMinutes();
@@ -592,7 +569,7 @@ class PirepController extends Controller
         }
 
         if ($pirep->user_id !== Auth::id()) {
-            Flash::error('Cannot edit someone else\'s PIREP!');
+            Flash::error("Cannot edit someone else's PIREP!");
 
             return redirect(PirepResource::getUrl());
         }

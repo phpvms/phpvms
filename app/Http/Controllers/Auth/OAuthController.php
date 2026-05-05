@@ -71,7 +71,7 @@ class OAuthController extends Controller
             abort(404);
         }
 
-        if (!in_array($provider, ['discord', 'ivao', 'vatsim'])) {
+        if (!in_array($provider, ['discord', 'ivao', 'vatsim'], true)) {
             abort(404);
         }
 
@@ -178,7 +178,7 @@ class OAuthController extends Controller
         }
 
         $user = Auth::user();
-        $otherProviders = UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
+        UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
 
         $user->update([
             $provider.'_id' => '',

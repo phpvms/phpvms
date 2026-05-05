@@ -24,7 +24,7 @@ use App\Services\ImportExport\FlightExporter;
 use App\Services\ImportService;
 use Illuminate\Support\Facades\Storage;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Storage::fake('local');
 });
 
@@ -58,7 +58,7 @@ function insertFlightsScaffoldData(): array
     return [$airline, $subfleet];
 }
 
-test('convert string to objects', function () {
+test('convert string to objects', function (): void {
     $tests = [
         [
             'input'    => '',
@@ -148,7 +148,7 @@ test('convert string to objects', function () {
     }
 });
 
-test('convert object to string', function () {
+test('convert object to string', function (): void {
     $tests = [
         [
             'input'    => '',
@@ -232,7 +232,7 @@ test('convert object to string', function () {
     }
 });
 
-test('aircraft exporter', function () {
+test('aircraft exporter', function (): void {
     $aircraft = Aircraft::factory()->create();
 
     $exporter = new AircraftExporter();
@@ -255,7 +255,7 @@ test('aircraft exporter', function () {
         ->and($status['errors'])->toHaveCount(0);
 });
 
-test('airport exporter', function () {
+test('airport exporter', function (): void {
     $airport_name = 'Adolfo Suárez Madrid–Barajas Airport';
 
     $airport = Airport::factory()->create([
@@ -278,7 +278,7 @@ test('airport exporter', function () {
         ->and($status['errors'])->toHaveCount(0);
 });
 
-test('flight exporter', function () {
+test('flight exporter', function (): void {
     $fareSvc = app(FareService::class);
 
     [$airline, $subfleet] = insertFlightsScaffoldData();
@@ -335,7 +335,7 @@ test('flight exporter', function () {
         ->and($status['errors'])->toHaveCount(0);
 });
 
-test('invalid file import', function () {
+test('invalid file import', function (): void {
     // $this->expectException(ValidationException::class);
     $file_path = base_path('tests/data/aircraft.csv');
     $importer = app(ImportService::class);
@@ -343,7 +343,7 @@ test('invalid file import', function () {
     expect($status['errors'])->toHaveCount(2);
 });
 
-test('empty cols', function () {
+test('empty cols', function (): void {
     $file_path = base_path('tests/data/expenses_empty_rows.csv');
     $importer = app(ImportService::class);
     $status = $importer->importExpenses($file_path);
@@ -351,7 +351,7 @@ test('empty cols', function () {
         ->and($status['errors'])->toHaveCount(0);
 });
 
-test('expense exporter', function () {
+test('expense exporter', function (): void {
     $expense = Expense::factory([
         'airline_id' => Airline::factory()->create()->id,
     ])->create();
@@ -373,7 +373,7 @@ test('expense exporter', function () {
         ->and($status['errors'])->toHaveCount(0);
 });
 
-test('expense importer', function () {
+test('expense importer', function (): void {
     $airline = Airline::firstWhere(['icao' => 'VMS']) ?? Airline::factory()->create(['icao' => 'VMS']);
     $subfleet = Subfleet::factory()->create(['type' => '744-3X-RB211']);
     $aircraft = Aircraft::factory()->create([
@@ -411,7 +411,7 @@ test('expense importer', function () {
         ->and($mnt->ref_model->id)->toEqual($aircraft->id);
 });
 
-test('fare importer', function () {
+test('fare importer', function (): void {
     $file_path = base_path('tests/data/fares.csv');
     $importer = app(ImportService::class);
     $status = $importer->importFares($file_path);
@@ -458,7 +458,7 @@ test('fare importer', function () {
         ->and($cargo->active)->toBeTrue();
 });
 
-test('flight importer', function () {
+test('flight importer', function (): void {
     [$airline, $subfleet] = insertFlightsScaffoldData();
 
     $importer = app(ImportService::class);
@@ -533,7 +533,7 @@ test('flight importer', function () {
         ->and($subfleets[1]->name)->toEqual('B737');
 });
 
-test('flight importer empty custom fields', function () {
+test('flight importer empty custom fields', function (): void {
     [$airline, $subfleet] = insertFlightsScaffoldData();
 
     $importer = app(ImportService::class);
@@ -559,7 +559,7 @@ test('flight importer empty custom fields', function () {
     expect($fields)->toHaveCount(0);
 });
 
-test('flight importer core', function () {
+test('flight importer core', function (): void {
     [$airline, $subfleet] = insertFlightsScaffoldData();
 
     $importer = app(ImportService::class);
@@ -572,7 +572,7 @@ test('flight importer core', function () {
     // Additional assertions for "core" argument can be added here
 });
 
-test('flight importer all', function () {
+test('flight importer all', function (): void {
     [$airline, $subfleet] = insertFlightsScaffoldData();
 
     $importer = app(ImportService::class);
@@ -585,7 +585,7 @@ test('flight importer all', function () {
     // Additional assertions for "all" argument can be added here
 });
 
-test('aircraft importer', function () {
+test('aircraft importer', function (): void {
     Airline::factory()->create();
 
     $importer = app(ImportService::class);
@@ -625,7 +625,7 @@ test('aircraft importer', function () {
     expect($aircraft->status)->toEqual(AircraftStatus::STORED);
 });
 
-test('airport importer', function () {
+test('airport importer', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports.csv');
     $status = $importer->importAirports($file_path);
@@ -665,7 +665,7 @@ test('airport importer', function () {
         ->and($airport->ground_handling_cost)->toEqual(setting('airports.default_ground_handling_cost'));
 });
 
-test('airport importer invalid inputs', function () {
+test('airport importer invalid inputs', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports_errors.csv');
     $status = $importer->importAirports($file_path);
@@ -687,7 +687,7 @@ test('airport importer invalid inputs', function () {
         ->and($airport->lon)->toEqual('-97.03250122');
 });
 
-test('subfleet importer', function () {
+test('subfleet importer', function (): void {
     $fare_economy = Fare::factory()->create(['code' => 'Y', 'capacity' => 150]);
     $fare_business = Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
     $rank_cpt = Rank::factory()->create(['id' => 99, 'name' => 'cpt']);
@@ -746,7 +746,7 @@ test('subfleet importer', function () {
 
 });
 
-test('airport special chars importer', function () {
+test('airport special chars importer', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports_special_chars.csv');
     $status = $importer->importAirports($file_path);

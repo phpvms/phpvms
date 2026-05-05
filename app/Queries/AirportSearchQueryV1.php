@@ -69,7 +69,11 @@ class AirportSearchQueryV1
 
             foreach ($fields as $field => $operator) {
                 $value = $searchData[$field] ?? $searchValue;
-                if ($value === null || $value === '') {
+                if ($value === null) {
+                    continue;
+                }
+
+                if ($value === '') {
                     continue;
                 }
 
@@ -119,7 +123,7 @@ class AirportSearchQueryV1
         }
 
         foreach ($searchDataKeys as $field) {
-            $resolvedFields[$field] = $resolvedFields[$field] ?? $defaultFields[$field];
+            $resolvedFields[$field] ??= $defaultFields[$field];
         }
 
         return $resolvedFields;
@@ -168,7 +172,7 @@ class AirportSearchQueryV1
     private function splitDelimitedValues(string $value): array
     {
         return array_map(
-            static fn (string $part): string => trim($part),
+            trim(...),
             explode(';', $value)
         );
     }

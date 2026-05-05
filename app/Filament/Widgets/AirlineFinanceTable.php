@@ -31,6 +31,7 @@ class AirlineFinanceTable extends TableWidget
         return $record->transaction_group;
     }
 
+    #[\Override]
     public function table(Table $table): Table
     {
         $filters = $this->pageFilters ?? [
@@ -87,9 +88,14 @@ class AirlineFinanceTable extends TableWidget
             ]);
     }
 
+    #[\Override]
     public static function canView(): bool
     {
         // Display if the page is finance or /livewire/update from finance
-        return request()->url() === Finances::getUrl() || (request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl()));
+        if (request()->url() === Finances::getUrl()) {
+            return true;
+        }
+
+        return request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl());
     }
 }

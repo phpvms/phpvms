@@ -1,12 +1,13 @@
 <?php
 
 use App\Models\Navdata;
+use App\Services\GeoService;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 uses(WithoutMiddleware::class);
 
-test('closest point', function () {
-    $geoSvc = app('\App\Services\GeoService');
+test('closest point', function (): void {
+    $geoSvc = app(GeoService::class);
 
     /**
      * [2017-12-21 00:54:10] dev.INFO: Looking for ATL
@@ -31,8 +32,8 @@ test('closest point', function () {
     expect($coords)->toEqual([52.15527, 22.200833]);
 });
 
-test('get coords', function () {
-    $geoSvc = app('\App\Services\GeoService');
+test('get coords', function (): void {
+    $geoSvc = app(GeoService::class);
 
     $route = [];
     $nav_count = random_int(5, 20);

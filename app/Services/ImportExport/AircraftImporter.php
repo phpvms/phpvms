@@ -80,7 +80,7 @@ class AircraftImporter extends ImportExport
         }
 
         // Set a default status
-        $row['status'] = trim($row['status']);
+        $row['status'] = trim((string) $row['status']);
         if (empty($row['status'])) {
             $row['status'] = AircraftStatus::ACTIVE;
         }
@@ -104,8 +104,8 @@ class AircraftImporter extends ImportExport
             Aircraft::updateOrCreate([
                 'registration' => $row['registration'],
             ], $row);
-        } catch (Exception $e) {
-            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->errorLog('Error in row '.($index + 1).': '.$exception->getMessage());
 
             return false;
         }
@@ -115,7 +115,7 @@ class AircraftImporter extends ImportExport
         return true;
     }
 
-    public function CorrectMassUnit($value)
+    public function CorrectMassUnit($value): ?Mass
     {
         if ($value > 0) {
             return Mass::make((float) $value, setting('units.weight'));

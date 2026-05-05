@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'ident'                       => 'Identification',
     'home'                        => 'Aéroport d\'Attache',

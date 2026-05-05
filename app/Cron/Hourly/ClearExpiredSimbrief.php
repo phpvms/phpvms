@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cron\Hourly;
 
 use App\Contracts\Listener;
@@ -12,12 +14,7 @@ use Illuminate\Support\Facades\Log;
  */
 class ClearExpiredSimbrief extends Listener
 {
-    private SimBriefService $simbriefSvc;
-
-    public function __construct(SimBriefService $simbriefSvc)
-    {
-        $this->simbriefSvc = $simbriefSvc;
-    }
+    public function __construct(private readonly SimBriefService $simbriefSvc) {}
 
     public function handle(CronHourly $event): void
     {

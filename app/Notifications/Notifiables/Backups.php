@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Notifiables;
 
 use Illuminate\Notifications\Notifiable;
@@ -18,7 +20,7 @@ class Backups
         return config('backup.notifications.slack.webhook_url');
     }
 
-    public function getKey()
+    public function getKey(): int
     {
         return 1;
     }

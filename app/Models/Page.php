@@ -91,6 +91,7 @@ class Page extends Model
         );
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

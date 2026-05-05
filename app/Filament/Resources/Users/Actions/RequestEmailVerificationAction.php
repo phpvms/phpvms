@@ -15,7 +15,7 @@ class RequestEmailVerificationAction
                 ->label(__('filament.user_request_email_verification'))
                 ->color('warning')
                 ->visible(fn (User $record): bool => $record->hasVerifiedEmail())
-                ->action(function (User $record) {
+                ->action(function (User $record): void {
                     $record->update([
                         'email_verified_at' => null,
                     ]);

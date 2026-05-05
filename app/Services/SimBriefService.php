@@ -53,8 +53,8 @@ class SimBriefService extends Service
             if ($response->status() !== 200) {
                 return null;
             }
-        } catch (ConnectionException $e) {
-            Log::error('Simbrief HTTP Error: '.$e->getMessage());
+        } catch (ConnectionException $connectionException) {
+            Log::error('Simbrief HTTP Error: '.$connectionException->getMessage());
 
             return null;
         }
@@ -126,7 +126,15 @@ class SimBriefService extends Service
         $order = 1;
 
         foreach ($simBrief->ofp->navlog ?? [] as $fix) {
-            if ($fix->type === 'apt' || $fix->ident === 'TOC' || $fix->ident === 'TOD') {
+            if ($fix->type === 'apt') {
+                continue;
+            }
+
+            if ($fix->ident === 'TOC') {
+                continue;
+            }
+
+            if ($fix->ident === 'TOD') {
                 continue;
             }
 
@@ -172,7 +180,7 @@ class SimBriefService extends Service
      * Get Aircraft and Airframe Data from SimBrief
      * Insert or Update relevant models, for proper and detailed flight planning
      */
-    public function getAircraftAndAirframes()
+    public function getAircraftAndAirframes(): void
     {
         $url = config('phpvms.simbrief_airframes_url');
         $sbdata = Http::get($url);
@@ -219,7 +227,7 @@ class SimBriefService extends Service
      * Get OFP Layouts from SimBrief
      * Insert or Update relevant model for proper flight planning
      */
-    public function GetBriefingLayouts()
+    public function GetBriefingLayouts(): void
     {
         $url = config('phpvms.simbrief_layouts_url');
         $sbdata = Http::get($url);

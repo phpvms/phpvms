@@ -67,11 +67,8 @@ class FlightExporter extends Exporter
 
     /**
      * Return the days string
-     *
-     *
-     * @return string
      */
-    private static function getDays(Flight $flight)
+    private static function getDays(Flight $flight): string
     {
         $days_str = '';
 

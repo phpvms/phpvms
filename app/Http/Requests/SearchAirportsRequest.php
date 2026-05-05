@@ -43,6 +43,7 @@ class SearchAirportsRequest extends FormRequest
 
     public const array SORT_DIRECTIONS = ['asc', 'desc'];
 
+    #[\Override]
     public function rules(): array
     {
         $maxLimit = (int) config('phpvms.pagination.max', 100);
@@ -86,19 +87,19 @@ class SearchAirportsRequest extends FormRequest
             [$field, $operator] = array_pad(explode(':', $part, 2), 2, null);
 
             if (!in_array($field, self::SEARCHABLE_FIELDS, true)) {
-                $fail("The {$attribute} field is invalid.");
+                $fail(sprintf('The %s field is invalid.', $attribute));
 
                 return;
             }
 
             if ($operator === '') {
-                $fail("The {$attribute} field is invalid.");
+                $fail(sprintf('The %s field is invalid.', $attribute));
 
                 return;
             }
 
             if ($operator !== null && !in_array(strtolower($operator), self::SEARCHABLE_OPERATORS, true)) {
-                $fail("The {$attribute} field is invalid.");
+                $fail(sprintf('The %s field is invalid.', $attribute));
 
                 return;
             }
@@ -108,7 +109,7 @@ class SearchAirportsRequest extends FormRequest
     private function validateSearchJoin(string $attribute, mixed $value, Closure $fail): void
     {
         if (!in_array(strtolower((string) $value), ['and', 'or'], true)) {
-            $fail("The {$attribute} field is invalid.");
+            $fail(sprintf('The %s field is invalid.', $attribute));
         }
     }
 
@@ -123,7 +124,7 @@ class SearchAirportsRequest extends FormRequest
             $candidate = $lowercase ? strtolower($part) : $part;
 
             if (!in_array($candidate, $allowed, true)) {
-                $fail("The {$attribute} field is invalid.");
+                $fail(sprintf('The %s field is invalid.', $attribute));
 
                 return;
             }
@@ -138,7 +139,7 @@ class SearchAirportsRequest extends FormRequest
     private function splitDelimitedValues(string $value): array
     {
         return array_map(
-            static fn (string $part): string => trim($part),
+            trim(...),
             explode(';', $value)
         );
     }

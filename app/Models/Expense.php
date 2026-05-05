@@ -86,6 +86,7 @@ class Expense extends Model
         return $this->morphTo('ref_model', 'ref_model_type', 'ref_model_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

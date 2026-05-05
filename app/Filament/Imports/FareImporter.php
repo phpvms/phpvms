@@ -45,6 +45,7 @@ class FareImporter extends Importer
         ];
     }
 
+    #[\Override]
     public function resolveRecord(): Fare
     {
         return Fare::withTrashed()->firstOrNew([

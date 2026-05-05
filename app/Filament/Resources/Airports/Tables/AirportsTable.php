@@ -78,7 +78,7 @@ class AirportsTable
 
                 SelectFilter::make('country')
                     ->label(label: __('common.country'))
-                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn (array $item, string $key) => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
+                    ->options(collect((new ISO3166())->all())->mapWithKeys(fn (array $item, string $key): array => [strtolower($item['alpha2']) => str_replace('&bnsp;', ' ', $item['name'])]))
                     ->searchable()
                     ->native(false),
 
@@ -87,8 +87,8 @@ class AirportsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make()->before(callback: function (Airport $record) {
-                    $record->files()->each(function (File $file) {
+                ForceDeleteAction::make()->before(callback: function (Airport $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -97,9 +97,9 @@ class AirportsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                    ForceDeleteBulkAction::make()->before(function (Collection $records): void {
                         /** @var Collection<int, Airport> $records */
-                        $records->each(fn (Airport $record) => $record->files()->each(function (File $file) {
+                        $records->each(fn (Airport $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

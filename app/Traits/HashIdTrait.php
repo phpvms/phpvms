@@ -22,7 +22,7 @@ trait HashIdTrait
      */
     final protected static function bootHashIdTrait(): void
     {
-        static::creating(function ($model) {
+        static::creating(function ($model): void {
             if (empty($model->id)) {
                 $model->id = static::createNewHashId();
             }

@@ -38,7 +38,7 @@ function flightSearchRun(array $params, bool $only_active = true): Collection
     return (new FlightSearchQuery())->build($request, $only_active)->get();
 }
 
-test('filter by airline id only', function () {
+test('filter by airline id only', function (): void {
     /** @var Airline $target_airline */
     $target_airline = Airline::factory()->create();
     /** @var Airline $noise_airline */
@@ -57,7 +57,7 @@ test('filter by airline id only', function () {
     expect($first->id)->toEqual($target->id);
 });
 
-test('filter by dep icao uppercases and filters', function () {
+test('filter by dep icao uppercases and filters', function (): void {
     // Create the target airport with a known ICAO id; factory normally creates random ICAOs.
     Airport::factory()->create(['id' => 'KLAX']);
     Airport::factory()->create(['id' => 'KJFK']);
@@ -76,7 +76,7 @@ test('filter by dep icao uppercases and filters', function () {
         ->and($first->dpt_airport_id)->toEqual('KLAX');
 });
 
-test('filter by dep icao falls back when primary param is blank', function () {
+test('filter by dep icao falls back when primary param is blank', function (): void {
     Airport::factory()->create(['id' => 'KLAX']);
     Airport::factory()->create(['id' => 'KJFK']);
 
@@ -95,7 +95,7 @@ test('filter by dep icao falls back when primary param is blank', function () {
     expect($first->id)->toEqual($target->id);
 });
 
-test('filter by arr icao falls back when primary param is blank', function () {
+test('filter by arr icao falls back when primary param is blank', function (): void {
     Airport::factory()->create(['id' => 'KLAX']);
     Airport::factory()->create(['id' => 'KJFK']);
 
@@ -114,7 +114,7 @@ test('filter by arr icao falls back when primary param is blank', function () {
     expect($first->id)->toEqual($target->id);
 });
 
-test('filter by distance range dgt and dlt', function () {
+test('filter by distance range dgt and dlt', function (): void {
     Flight::factory()->create(['distance' => 500]);
     /** @var Flight $middle */
     $middle = Flight::factory()->create(['distance' => 1000]);
@@ -128,7 +128,7 @@ test('filter by distance range dgt and dlt', function () {
     expect($first->id)->toEqual($middle->id);
 });
 
-test('filter by subfleet id via relation', function () {
+test('filter by subfleet id via relation', function (): void {
     /** @var Subfleet $subfleet */
     $subfleet = Subfleet::factory()->create();
 
@@ -147,7 +147,7 @@ test('filter by subfleet id via relation', function () {
     expect($first->id)->toEqual($attached->id);
 });
 
-test('filter by type rating id joins through subfleets', function () {
+test('filter by type rating id joins through subfleets', function (): void {
     /** @var Subfleet $subfleet */
     $subfleet = Subfleet::factory()->create();
 
@@ -176,7 +176,7 @@ test('filter by type rating id joins through subfleets', function () {
     expect($first->id)->toEqual($attached->id);
 });
 
-test('filter by icao type joins through aircraft', function () {
+test('filter by icao type joins through aircraft', function (): void {
     /** @var Subfleet $subfleet */
     $subfleet = Subfleet::factory()->create();
     Aircraft::factory()->create([
@@ -207,7 +207,7 @@ test('filter by icao type joins through aircraft', function () {
     expect($first->id)->toEqual($attached->id);
 });
 
-test('filter by icao type normalizes case', function () {
+test('filter by icao type normalizes case', function (): void {
     /** @var Subfleet $subfleet */
     $subfleet = Subfleet::factory()->create();
     Aircraft::factory()->create([
@@ -227,7 +227,7 @@ test('filter by icao type normalizes case', function () {
     expect($first->id)->toEqual($attached->id);
 });
 
-test('plain search matches free text columns', function () {
+test('plain search matches free text columns', function (): void {
     Airport::factory()->create(['id' => 'KLAX']);
     Airport::factory()->create(['id' => 'KJFK']);
 
@@ -249,7 +249,7 @@ test('plain search matches free text columns', function () {
     expect($first->id)->toEqual($target->id);
 });
 
-test('honors legacy multi-column orderBy syntax', function () {
+test('honors legacy multi-column orderBy syntax', function (): void {
     Flight::factory()->create(['flight_number' => '100', 'route_code' => 'B']);
     Flight::factory()->create(['flight_number' => '100', 'route_code' => 'A']);
     Flight::factory()->create(['flight_number' => '200', 'route_code' => 'A']);
@@ -263,7 +263,7 @@ test('honors legacy multi-column orderBy syntax', function () {
         ->and($results->pluck('flight_number')->all())->toBe([100, 100, 200]);
 });
 
-test('only active true excludes inactive flights', function () {
+test('only active true excludes inactive flights', function (): void {
     /** @var Flight $active_visible */
     $active_visible = Flight::factory()->create([
         'active'  => true,
@@ -286,7 +286,7 @@ test('only active true excludes inactive flights', function () {
     expect($first->id)->toEqual($active_visible->id);
 });
 
-test('only active false includes inactive flights', function () {
+test('only active false includes inactive flights', function (): void {
     /** @var Flight $active_visible */
     $active_visible = Flight::factory()->create([
         'active'  => true,
@@ -310,7 +310,7 @@ test('only active false includes inactive flights', function () {
     // Cast to string on both sides: Flight::$keyType === 'string', so
     // hydrated models return ids as strings, while factory-returned models
     // hold them as ints.
-    $ids = $results->pluck('id')->map(fn ($id) => (string) $id)->all();
+    $ids = $results->pluck('id')->map(fn ($id): string => (string) $id)->all();
     expect($ids)->toContain((string) $active_visible->id)
         ->and($ids)->toContain((string) $inactive_visible->id)
         ->and($ids)->toContain((string) $active_hidden->id);

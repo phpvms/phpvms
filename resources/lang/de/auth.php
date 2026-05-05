@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'failed'                   => 'Die angegebenen Anmeldedaten stimmen nicht mit unseren Daten überein.',
     'throttle'                 => 'Zu viele Anmeldeversuche. Bitte versuche es in :seconds Sekunden erneut.',

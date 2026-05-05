@@ -11,7 +11,7 @@ use UnexpectedValueException;
 /**
  * Compositional wrapper to MoneyPHP with some helpers
  */
-class Money
+class Money implements \Stringable
 {
     public MoneyBase $money;
 
@@ -24,12 +24,11 @@ class Money
     /**
      * Create a new Money instance, passing in the amount in the subunit, e.,g, $5, you pass in 500)
      *
-     * @param  mixed     $amount The amount, in pennies
-     * @return MoneyBase
+     * @param mixed $amount The amount, in pennies
      *
      * @throws UnexpectedValueException
      */
-    public static function create($amount)
+    public static function create($amount): MoneyBase
     {
         return new MoneyBase($amount, static::currency());
     }
@@ -37,13 +36,12 @@ class Money
     /**
      * Create from a whole amount (e.g, dollars and cents - 50.05)
      *
-     * @param  mixed $amount The amount in dollar
-     * @return Money
+     * @param mixed $amount The amount in dollar
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public static function createFromAmount($amount)
+    public static function createFromAmount($amount): self
     {
         return new self(
             static::convertToSubunit($amount)
@@ -53,10 +51,9 @@ class Money
     /**
      * Convert a whole unit into it's subunit, e,g: dollar to cents
      *
-     * @param  mixed $amount
-     * @return int
+     * @param mixed $amount
      */
-    public static function convertToSubunit($amount)
+    public static function convertToSubunit($amount): int
     {
         $currency = setting('units.currency', 'USD');
 
@@ -67,15 +64,14 @@ class Money
      * Create a new currency object using the currency setting
      * Fall back to USD if it's not valid
      *
-     * @return Currency
      *
      * @throws OutOfBoundsException
      */
-    public static function currency()
+    public static function currency(): Currency
     {
         try {
             return new Currency(setting('units.currency', 'USD'));
-        } catch (OutOfBoundsException $e) {
+        } catch (OutOfBoundsException) {
             return new Currency('USD');
         }
     }
@@ -103,7 +99,7 @@ class Money
     /**
      * Alias of getAmount()
      */
-    public function toAmount()
+    public function toAmount(): float|int
     {
         return $this->getAmount();
     }
@@ -111,10 +107,8 @@ class Money
     /**
      * Returns the value in whole amounts, e.g: 100.00
      * instead of returning in the smallest denomination
-     *
-     * @return float
      */
-    public function getValue()
+    public function getValue(): float
     {
         return $this->money->getValue();
     }
@@ -122,31 +116,22 @@ class Money
     /**
      * Alias of getValue()
      */
-    public function toValue()
+    public function toValue(): float
     {
         return $this->getValue();
     }
 
-    /**
-     * @return MoneyBase
-     */
-    public function getInstance()
+    public function getInstance(): MoneyBase
     {
         return $this->money;
     }
 
-    /**
-     * @return int
-     */
-    public function getPrecision()
+    public function getPrecision(): int
     {
         return $this->money->getCurrency()->getPrecision();
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->money->format();
     }
@@ -154,13 +139,12 @@ class Money
     /**
      * Add an amount
      *
-     * @param  mixed $amount
-     * @return Money
+     * @param mixed $amount
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function add($amount)
+    public function add($amount): static
     {
         if (!($amount instanceof self)) {
             $amount = static::createFromAmount($amount);
@@ -178,7 +162,7 @@ class Money
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      */
-    public function addPercent($percent)
+    public function addPercent($percent): static
     {
         if (!is_numeric($percent)) {
             $percent = (float) $percent;
@@ -194,12 +178,11 @@ class Money
      * Subtract an amount
      *
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function subtract($amount)
+    public function subtract($amount): static
     {
         if (!($amount instanceof self)) {
             $amount = static::createFromAmount($amount);
@@ -214,13 +197,12 @@ class Money
      * Multiply by an amount
      *
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      */
-    public function multiply(int|float $amount)
+    public function multiply(int|float $amount): static
     {
         $this->money = $this->money->multiply($amount);
 
@@ -231,12 +213,11 @@ class Money
      * Divide by an amount
      *
      *
-     * @return Money
      *
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
      */
-    public function divide($amount)
+    public function divide(int|float $amount): static
     {
         $this->money = $this->money->divide($amount, PHP_ROUND_HALF_EVEN);
 
@@ -244,12 +225,10 @@ class Money
     }
 
     /**
-     * @return bool
-     *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function equals($money)
+    public function equals($money): bool
     {
         if ($money instanceof self) {
             return $this->money->equals($money->money);

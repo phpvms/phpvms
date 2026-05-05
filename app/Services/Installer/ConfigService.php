@@ -76,7 +76,7 @@ class ConfigService extends Service
      *
      * This is called from the migrations which removes the old config.php file
      */
-    public function rewriteConfigFiles()
+    public function rewriteConfigFiles(): void
     {
         /*$cfg_file = App::environmentPath().'/config.php';
         if (!file_exists($cfg_file)) {
@@ -126,17 +126,14 @@ class ConfigService extends Service
 
     /**
      * Update the environment file and update certain keys/values
-     *
-     *
-     * @return void
      */
-    public function updateKeysInEnv(array $kvp)
+    public function updateKeysInEnv(array $kvp): void
     {
         $app = app();
 
         $env_file = file_get_contents($app->environmentFilePath());
         foreach ($kvp as $key => $value) {
-            $key = strtoupper($key);
+            $key = strtoupper((string) $key);
 
             // cast for any boolean values
             if (is_bool($value)) {
@@ -144,7 +141,7 @@ class ConfigService extends Service
             }
 
             // surround by quotes if there are any spaces in the value
-            if (strpos($value, ' ') !== false) {
+            if (str_contains((string) $value, ' ')) {
                 $value = '"'.$value.'"';
             }
 
@@ -171,21 +168,18 @@ class ConfigService extends Service
     /**
      * Change a few options within the PDO driver, depending on the version
      * of mysql/maria, etc used. ATM, only make a change for MariaDB
-     *
-     *
-     * @return mixed
      */
-    protected function determinePdoOptions($opts)
+    protected function determinePdoOptions(array $opts): array
     {
         if ($opts['DB_CONNECTION'] !== 'mysql') {
             return $opts;
         }
 
-        $dsn = "mysql:host=$opts[DB_HOST];port=$opts[DB_PORT];";
+        $dsn = sprintf('mysql:host=%s;port=%s;', $opts['DB_HOST'], $opts['DB_PORT']);
         Log::info('Connection string: '.$dsn);
 
         $conn = new PDO($dsn, $opts['DB_USERNAME'], $opts['DB_PASSWORD']);
-        $version = strtolower($conn->getAttribute(PDO::ATTR_SERVER_VERSION));
+        $version = strtolower((string) $conn->getAttribute(PDO::ATTR_SERVER_VERSION));
         Log::info('Detected DB Version: '.$version);
 
         // If it's mariadb, enable the emulation for prepared statements
@@ -201,11 +195,8 @@ class ConfigService extends Service
 
     /**
      * Determine is APC is installed, if so, then use it as a cache driver
-     *
-     *
-     * @return mixed
      */
-    protected function configCacheDriver($opts)
+    protected function configCacheDriver(array $opts): array
     {
         // Set the cache prefix
         $prefix = substr(Str::slug($opts['SITE_NAME'], '_'), 0, 8);
@@ -231,11 +222,8 @@ class ConfigService extends Service
     /**
      * Setup a queue driver that's not the default "sync"
      * driver, if a database is being used
-     *
-     *
-     * @return mixed
      */
-    protected function configQueueDriver($opts)
+    protected function configQueueDriver(array $opts): array
     {
         // If we're setting up a database, then also setup
         // the default queue driver to use the database
@@ -251,7 +239,7 @@ class ConfigService extends Service
     /**
      * Remove the config files
      */
-    public function removeConfigFiles()
+    public function removeConfigFiles(): void
     {
         $env_file = App::environmentFilePath();
         $config_file = App::environmentPath().'/config.php';
@@ -287,7 +275,7 @@ class ConfigService extends Service
         if (file_exists($env_file) && !is_writable($env_file)) {
             Log::error('Permissions on existing .env is not writable');
 
-            throw new FileException('Can\'t write to the .env file! Check the permissions');
+            throw new FileException("Can't write to the .env file! Check the permissions");
         }
 
         /*
@@ -297,8 +285,8 @@ class ConfigService extends Service
             $stub = new Stub('/env.stub', $opts);
             $stub->render();
             $stub->saveTo(App::environmentPath(), App::environmentFile());
-        } catch (Exception $e) {
-            throw new FileException('Couldn\'t write .env file. ('.$e.')');
+        } catch (Exception $exception) {
+            throw new FileException("Couldn't write .env file. (".$exception.')', $exception->getCode(), $exception);
         }
 
         /*

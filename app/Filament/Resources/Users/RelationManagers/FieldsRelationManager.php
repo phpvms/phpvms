@@ -21,6 +21,7 @@ class FieldsRelationManager extends RelationManager
 {
     protected static string $relationship = 'fields';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -55,7 +56,7 @@ class FieldsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->using(function (array $data, string $model) {
+                    ->using(function (array $data, string $model): void {
                         /** @var User $user */
                         $user = $this->getOwnerRecord();
 
@@ -76,11 +77,13 @@ class FieldsRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice('common.field', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.field', 2);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use App\Models\Pirep;
@@ -11,7 +13,7 @@ class PirepCancelNotAllowed extends AbstractHttpException
     ) {
         parent::__construct(
             400,
-            'This PIREP can\'t be cancelled'
+            "This PIREP can't be cancelled"
         );
     }
 

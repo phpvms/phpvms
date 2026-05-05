@@ -6,11 +6,12 @@ use App\Models\UserOAuthToken;
 use App\Services\OAuthService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery\LegacyMockInterface;
 use Mockery\MockInterface;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create a default user to prevent redirection to the installer
     User::factory()->create();
 
@@ -30,7 +31,7 @@ beforeEach(function () {
  */
 function getMockedProvider(): LegacyMockInterface|MockInterface
 {
-    $abstractUser = Mockery::mock('Laravel\Socialite\Two\User')
+    $abstractUser = Mockery::mock(Laravel\Socialite\Two\User::class)
         ->allows([
             'getId'     => 123456789,
             'getName'   => 'OAuth user',
@@ -42,14 +43,14 @@ function getMockedProvider(): LegacyMockInterface|MockInterface
     $abstractUser->refreshToken = 'refresh_token';
     $abstractUser->expiresIn = 3600 * 24 * 7;
 
-    return Mockery::mock('Laravel\Socialite\Contracts\Provider')
+    return Mockery::mock(Provider::class)
         ->allows([
             'refreshToken' => $abstractUser,
             'user'         => $abstractUser,
         ]);
 }
 
-test('link account from profile', function () {
+test('link account from profile', function (): void {
     $user = User::factory()->create([
         'name'  => 'OAuth user',
         'email' => 'oauth.user@phpvms.net',
@@ -74,7 +75,7 @@ test('link account from profile', function () {
     }
 });
 
-test('link account from login', function () {
+test('link account from login', function (): void {
     $now = now()->setMicro(0);
     Carbon::setTestNow($now);
 
@@ -104,7 +105,7 @@ test('link account from login', function () {
     }
 });
 
-test('login with linked account', function () {
+test('login with linked account', function (): void {
     $now = now()->setMicro(0);
     Carbon::setTestNow($now);
 
@@ -144,7 +145,7 @@ test('login with linked account', function () {
     }
 });
 
-test('login with pending account', function () {
+test('login with pending account', function (): void {
     $user = User::factory()->create([
         'name'  => 'OAuth user',
         'email' => 'oauth.user@phpvms.net',
@@ -159,7 +160,7 @@ test('login with pending account', function () {
     }
 });
 
-test('no account found', function () {
+test('no account found', function (): void {
     foreach ($this->drivers as $driver) {
         Socialite::shouldReceive('driver')->with($driver)->andReturn(getMockedProvider());
 
@@ -168,7 +169,7 @@ test('no account found', function () {
     }
 });
 
-test('unlink account', function () {
+test('unlink account', function (): void {
     $user = User::factory()->create([
         'name'  => 'OAuth user',
         'email' => 'oauth.user@phpvms.net',
@@ -189,7 +190,7 @@ test('unlink account', function () {
     }
 });
 
-test('non existing provider', function () {
+test('non existing provider', function (): void {
     $this->get(route('oauth.redirect', ['provider' => 'aze']))
         ->assertStatus(404);
 
@@ -197,7 +198,7 @@ test('non existing provider', function () {
         ->assertStatus(404);
 });
 
-test('disabled provider', function () {
+test('disabled provider', function (): void {
     $originalConfigValue = config('services.discord.enabled');
     Config::set('services.discord.enabled', false);
 
@@ -209,7 +210,7 @@ test('disabled provider', function () {
     Config::set('services.discord.enabled', $originalConfigValue);
 });
 
-test('refresh expired oauth token', function () {
+test('refresh expired oauth token', function (): void {
     $user = User::factory()->create([
         'name'  => 'OAuth user',
         'email' => 'oauth.user@phpvms.net',

@@ -30,7 +30,7 @@ class SimBriefAirframeForm
                 Hidden::make('source')
                     ->label(__('pireps.source'))
                     ->visibleOn('create')
-                    ->formatStateUsing(fn () => AirframeSource::INTERNAL),
+                    ->formatStateUsing(fn (): int => AirframeSource::INTERNAL),
             ])
             ->columns(3);
     }

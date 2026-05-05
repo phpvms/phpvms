@@ -35,7 +35,7 @@ class ModuleService extends Service
     /**
      * Add a module link in the frontend
      */
-    public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true)
+    public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true): void
     {
         self::$frontendLinks[$logged_in][] = [
             'title' => $title,
@@ -55,7 +55,7 @@ class ModuleService extends Service
     /**
      * Add a module link in the admin panel
      */
-    public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people')
+    public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people'): void
     {
         self::$adminLinks[] = [
             'title' => $title,

@@ -15,6 +15,7 @@ class EditPirep extends EditRecord
 {
     protected static string $resource = PirepResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -26,6 +27,7 @@ class EditPirep extends EditRecord
         ];
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['distance'] = $data['distance']->toUnit('nmi');
@@ -52,6 +54,7 @@ class EditPirep extends EditRecord
         return $data;
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if ($data['flight_time'] !== null) {

@@ -13,6 +13,7 @@ use Illuminate\Http\Resources\MissingValue;
  */
 class SimBriefResource extends Resource
 {
+    #[\Override]
     public function toArray($request)
     {
         $data = [
@@ -33,7 +34,7 @@ class SimBriefResource extends Resource
                     $fares->push($newFare);
                 }
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             // Invalid fare data
         }
 

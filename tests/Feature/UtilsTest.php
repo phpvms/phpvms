@@ -7,12 +7,12 @@ use App\Support\Units\Time;
 use App\Support\Utils;
 use Carbon\Carbon;
 
-test('dates', function () {
+test('dates', function (): void {
     $carbon = new Carbon('2018-04-28T12:55:40Z');
     expect($carbon)->not->toBeNull();
 });
 
-test('unit rounding', function () {
+test('unit rounding', function (): void {
     updateSetting('units.distance', 'km');
 
     $alt = new Distance(1065.3456, 'nmi');
@@ -51,7 +51,7 @@ test('unit rounding', function () {
     expect($int)->toEqualWithDelta(1065, 0.1);
 });
 
-test('kvp', function () {
+test('kvp', function (): void {
     /** @var KvpService $kvpRepo */
     $kvpRepo = app(KvpService::class);
     $kvpRepo->save('testkey', 'some value');
@@ -63,7 +63,7 @@ test('kvp', function () {
     expect($kvpRepo->get('intval'))->toEqual(1);
 });
 
-test('seconds to time parts', function () {
+test('seconds to time parts', function (): void {
     $t = Time::secondsToTimeParts(3600);
     expect($t)->toEqual(['h' => 1, 'm' => 0, 's' => 0]);
 
@@ -80,7 +80,7 @@ test('seconds to time parts', function () {
     expect($t)->toEqual(['h' => 0, 'm' => 1, 's' => 2]);
 });
 
-test('seconds to time', function () {
+test('seconds to time', function (): void {
     $t = Time::secondsToTimeString(3600);
     expect($t)->toEqual('1h 0m');
 
@@ -94,7 +94,7 @@ test('seconds to time', function () {
     expect($t)->toEqual('1h 2m 2s');
 });
 
-test('minutes to time', function () {
+test('minutes to time', function (): void {
     $t = Time::minutesToTimeParts(65);
     expect($t)->toEqual(['h' => 1, 'm' => 5]);
 
@@ -105,17 +105,17 @@ test('minutes to time', function () {
     expect($t)->toEqual('720h 0m');
 });
 
-test('api key', function () {
+test('api key', function (): void {
     $api_key = Utils::generateApiKey();
     expect($api_key)->not->toBeNull();
 });
 
-test('hex code', function () {
+test('hex code', function (): void {
     $hex_code = ICAO::createHexCode();
     expect($hex_code)->not->toBeNull();
 });
 
-test('get domain', function () {
+test('get domain', function (): void {
     $tests = [
         'http://phpvms.net',
         'https://phpvms.net',

@@ -3,18 +3,11 @@
 namespace App\Support;
 
 use Igaster\LaravelTheme\Facades\Theme;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 
 class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
 {
     public $themeEngine;
-
-    public function __construct(Filesystem $files, array $paths, ?array $extensions = null)
-    {
-        // $this->themeEngine = \App::make('igaster.themes');
-        parent::__construct($files, $paths, $extensions);
-    }
 
     /*
      * Override findNamespacedView() to add "Theme/vendor/..." paths
@@ -23,6 +16,7 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
      *
      * @return string
      */
+    #[\Override]
     protected function findNamespacedView($name): string
     {
         // Extract the $view and the $namespace parts
@@ -34,6 +28,7 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
         return $this->findInPaths($view, $paths);
     }
 
+    #[\Override]
     public function addThemeNamespacePaths($namespace)
     {
         // This rule will remap all paths starting with $key to $value.
@@ -57,17 +52,18 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
         // replace with the value of $pathsMap array
         $themeSubPaths = [];
         foreach ($paths as $path) {
-            $pathRelativeToApp = substr($path, strlen(base_path()) + 1);
+            $pathRelativeToApp = substr((string) $path, strlen(base_path()) + 1);
             $pathRelativeToApp = str_replace('\\', '/', $pathRelativeToApp);
             // Ignore paths in composer installed packages (paths inside vendor folder)
-            if (strpos($pathRelativeToApp, 'vendor') !== 0) {
+            if (!str_starts_with($pathRelativeToApp, 'vendor')) {
                 // Remap paths definded int $pathsMap array
                 foreach ($pathsMap as $key => $value) {
-                    if (strpos($pathRelativeToApp, $key) === 0) {
+                    if (str_starts_with($pathRelativeToApp, $key)) {
                         $pathRelativeToApp = str_replace($key, $value, $pathRelativeToApp);
                         break;
                     }
                 }
+
                 $themeSubPaths[] = $pathRelativeToApp;
             }
         }

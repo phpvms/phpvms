@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Composers;
 
 use App\Contracts\Composer;
@@ -12,7 +14,7 @@ class PageLinksComposer extends Composer
 {
     public static array $fields = ['id', 'name', 'slug', 'icon', 'type', 'link', 'new_window'];
 
-    public function compose(View $view)
+    public function compose(View $view): void
     {
         try {
             $w = [
@@ -25,7 +27,7 @@ class PageLinksComposer extends Composer
             }
 
             $pages = Page::where($w)->get(static::$fields);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $pages = [];
         }
 

@@ -10,6 +10,7 @@ class CreateFlight extends CreateRecord
 {
     protected static string $resource = FlightResource::class;
 
+    #[\Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $flt_time = Carbon::parse($data['flight_time']);

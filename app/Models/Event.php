@@ -63,6 +63,7 @@ class Event extends Model
     // Attributes may be defined later if necessary
 
     // Relationships may be defined later if necessary
+    #[\Override]
     protected function casts(): array
     {
         return [

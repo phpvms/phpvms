@@ -27,16 +27,19 @@ class TyperatingResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return TyperatingForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return TyperatingsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -44,6 +47,7 @@ class TyperatingResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -53,6 +57,7 @@ class TyperatingResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('common.typerating');

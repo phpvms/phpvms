@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'avatarresize' => 'This avatar will be resized to :width x :height pixels',
 
@@ -8,7 +10,7 @@ return [
     'your-awards'             => 'Your Awards',
     'apikey'                  => 'API Key',
     'apikey-show'             => 'Show key',
-    'dontshare'               => 'don\'t share this!',
+    'dontshare'               => "don't share this!",
     'changepassword'          => 'Change Password',
     'newpassword'             => 'New Password',
     'avatar'                  => 'Avatar',

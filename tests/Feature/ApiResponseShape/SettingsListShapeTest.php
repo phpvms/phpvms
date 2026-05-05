@@ -6,7 +6,7 @@ use App\Http\Resources\SettingResource;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 
-test('SettingResource exposes the documented JSON shape', function () {
+test('SettingResource exposes the documented JSON shape', function (): void {
     // `id` is not fillable on Setting, so `Setting::create(['id' => ...])`
     // drops it. Production seeds via raw insert (see SeederService::addSetting).
     DB::table('settings')->insert([

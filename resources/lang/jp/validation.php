@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
      * Validation Language Lines
@@ -81,11 +83,11 @@ return [
     'custom' => [
         'airline_id' => [
             'required' => 'An airline is required',
-            'exists'   => 'The airline doesn\'t exist',
+            'exists'   => "The airline doesn't exist",
         ],
         'aircraft_id' => [
             'required' => 'An aircraft is required',
-            'exists'   => 'The aircraft doesn\'t exist',
+            'exists'   => "The aircraft doesn't exist",
         ],
         'arr_airport_id' => [
             'required' => 'An arrival airport is required',

@@ -140,6 +140,7 @@ class Rank extends Model
         return $this->hasMany(User::class, 'rank_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'registration' => 'Immatriculation',
     'last_landing' => 'Dernier atterrissage',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
@@ -17,6 +19,7 @@ class RankResource extends Resource
      * @param  Request $request
      * @return array
      */
+    #[\Override]
     public function toArray($request)
     {
         return [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'totalhours'     => 'Heures Totales',
     'yourbalance'    => 'Votre Solde',

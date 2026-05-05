@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'flightnumber'     => 'Numero di Volo',
     'flighttime'       => 'Tempo di Volo',

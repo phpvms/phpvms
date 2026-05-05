@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'filenewpirep'         => 'Inserici Nuovo PIREP',
     'newpirep'             => 'Nuovo PIREP',
@@ -22,7 +24,7 @@ return [
     'codeoptional'         => 'Codice (facoltativo)',
     'legoptional'          => 'Leg (facoltativa)',
     'deparrinformations'   => 'Informazioni di Partenza/Arrivo',
-    'aircraftinformations' => 'Informazioni sull\'Aeromobile',
+    'aircraftinformations' => "Informazioni sull'Aeromobile",
     'dateflown'            => 'Volato in Data',
     'deletepirep'          => 'Cancella PIREP',
     'savepirep'            => 'Salva PIREP',

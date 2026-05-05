@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Based on https://github.com/scottlaurent/accounting
  * With modifications for phpVMS
@@ -74,7 +76,7 @@ class Ledger extends Model
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getCurrentBalanceInDollars()
+    public function getCurrentBalanceInDollars(): float
     {
         return $this->getCurrentBalance()->getValue();
     }

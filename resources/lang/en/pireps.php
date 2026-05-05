@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'newflightreport'      => 'New Flight Report',
     'editflightreport'     => 'Edit Flight Report',
@@ -81,5 +83,5 @@ return [
     'view_pirep'           => 'View PIREP',
     'pirep_accepted'       => 'PIREP Accepted',
     'pirep_rejected'       => 'PIREP Rejected',
-    'error_changing_state' => 'There was an unexpected error while changing the PIREP\'s state',
+    'error_changing_state' => "There was an unexpected error while changing the PIREP's state",
 ];

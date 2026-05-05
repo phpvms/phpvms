@@ -72,6 +72,7 @@ class PirepFare extends Model
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

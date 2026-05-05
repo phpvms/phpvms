@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'newflightreport'      => 'Nuevo informe de vuelo',
     'editflightreport'     => 'Editar informe de vuelo',

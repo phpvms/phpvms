@@ -21,10 +21,7 @@ use League\Csv\Writer;
 
 class ExportService extends Service
 {
-    /**
-     * @param string $path
-     */
-    public function openCsv($path): Writer
+    public function openCsv(string $path): Writer
     {
         $writer = Writer::createFromPath($path, 'w+');
         CharsetConverter::addTo($writer, 'utf-8', 'utf-8');
@@ -65,12 +62,10 @@ class ExportService extends Service
     /**
      * Export all of the aircraft
      *
-     * @param  Collection $aircraft
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportAircraft($aircraft)
+    public function exportAircraft(Collection $aircraft): string
     {
         return $this->runExport($aircraft, new AircraftExporter());
     }
@@ -78,12 +73,10 @@ class ExportService extends Service
     /**
      * Export all of the airports
      *
-     * @param  Collection $airports
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportAirports($airports)
+    public function exportAirports(Collection $airports): string
     {
         return $this->runExport($airports, new AirportExporter());
     }
@@ -91,12 +84,10 @@ class ExportService extends Service
     /**
      * Export all of the airports
      *
-     * @param  Collection $expenses
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportExpenses($expenses)
+    public function exportExpenses(Collection $expenses): string
     {
         return $this->runExport($expenses, new ExpenseExporter());
     }
@@ -104,12 +95,10 @@ class ExportService extends Service
     /**
      * Export all of the fares
      *
-     * @param  Collection $fares
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportFares($fares)
+    public function exportFares(Collection $fares): string
     {
         return $this->runExport($fares, new FareExporter());
     }
@@ -117,12 +106,10 @@ class ExportService extends Service
     /**
      * Export all of the flights
      *
-     * @param  Collection $flights
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportFlights($flights)
+    public function exportFlights(Collection $flights): string
     {
         return $this->runExport($flights, new FlightExporter());
     }
@@ -130,12 +117,10 @@ class ExportService extends Service
     /**
      * Export all of the flights
      *
-     * @param  Collection $subfleets
-     * @return mixed
      *
      * @throws CannotInsertRecord
      */
-    public function exportSubfleets($subfleets)
+    public function exportSubfleets(Collection $subfleets): string
     {
         return $this->runExport($subfleets, new SubfleetExporter());
     }

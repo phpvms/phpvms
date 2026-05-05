@@ -44,10 +44,11 @@ class Handler extends ExceptionHandler
      * @param  Request $request
      * @return mixed
      */
+    #[\Override]
     public function render($request, Throwable $exception)
     {
         if ($request->is('api/*')) {
-            return $this->handleApiError($request, $exception);
+            return $this->handleApiError($exception);
         }
 
         (new SetActiveTheme())->setTheme($request);
@@ -64,7 +65,7 @@ class Handler extends ExceptionHandler
      *
      * @return JsonResponse|Response
      */
-    private function handleApiError($request, Throwable $exception)
+    private function handleApiError(Throwable $exception)
     {
         Log::error('API Error: '.$exception->getMessage(), $exception->getTrace());
 
@@ -107,6 +108,7 @@ class Handler extends ExceptionHandler
      * @param  Request                                $request
      * @return Response|JsonResponse|RedirectResponse
      */
+    #[\Override]
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         if ($request->expectsJson() || $request->is('api/*')) {

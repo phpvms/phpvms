@@ -29,7 +29,7 @@ class MaintenanceController extends Controller
         $consoleKernel = app()->make(Kernel::class);
 
         // Run a null artisan thing just so Laravel internals can be setup properly
-        $status = $consoleKernel->handle(
+        $consoleKernel->handle(
             new ArgvInput(),
             new NullOutput()
         );

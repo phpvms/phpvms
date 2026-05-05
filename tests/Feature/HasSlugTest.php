@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\FlightField;
 use App\Models\Pirep;
 use App\Models\PirepFieldValue;
@@ -16,13 +18,13 @@ use App\Models\PirepFieldValue;
 |
 */
 
-it('generates a slug from the name on creation', function () {
+it('generates a slug from the name on creation', function (): void {
     $flightField = FlightField::create(['name' => 'Pest is Awesome']);
 
     expect($flightField->slug)->toBe('pest-is-awesome');
 });
 
-it('updates the slug when the name changes', function () {
+it('updates the slug when the name changes', function (): void {
     $flightField = FlightField::create(['name' => 'Old Title']);
 
     $flightField->update(['name' => 'New Title']);
@@ -30,7 +32,7 @@ it('updates the slug when the name changes', function () {
     expect($flightField->refresh()->slug)->toBe('new-title');
 });
 
-it('does not change the slug if the name is unchanged', function () {
+it('does not change the slug if the name is unchanged', function (): void {
     $pirep = Pirep::factory()->create();
     $pirepFieldValue = PirepFieldValue::create([
         'pirep_id' => $pirep->id,

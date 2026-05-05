@@ -50,6 +50,7 @@ class SearchUsersRequest extends FormRequest
 
     public const array SORT_DIRECTIONS = ['asc', 'desc'];
 
+    #[\Override]
     public function rules(): array
     {
         return [

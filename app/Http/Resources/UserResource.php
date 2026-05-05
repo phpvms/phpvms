@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
@@ -10,6 +12,7 @@ use App\Models\User;
  */
 class UserResource extends Resource
 {
+    #[\Override]
     public function toArray($request)
     {
         $res = [

@@ -46,8 +46,8 @@ class AirlinesTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make()->before(function (Airline $record) {
-                    $record->files()->each(function (File $file) {
+                ForceDeleteAction::make()->before(function (Airline $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -56,9 +56,9 @@ class AirlinesTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                    ForceDeleteBulkAction::make()->before(function (Collection $records): void {
                         /** @var Collection<int, Airline> $records */
-                        $records->each(fn (Airline $record) => $record->files()->each(function (File $file) {
+                        $records->each(fn (Airline $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

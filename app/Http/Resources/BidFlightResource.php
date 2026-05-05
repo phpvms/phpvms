@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Http\Resources\SimBriefResource as SimbriefResource;
@@ -14,13 +16,13 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 class BidFlightResource extends FlightResource
 {
     /**
-     * @param  Request $request
      * @return array
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
 

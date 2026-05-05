@@ -29,6 +29,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
 
+    #[\Override]
     public static function getNavigationLabel(): string
     {
         return Str::of(__('common.module'))->plural();
@@ -101,6 +102,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
             );
     }
 
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         return $schema

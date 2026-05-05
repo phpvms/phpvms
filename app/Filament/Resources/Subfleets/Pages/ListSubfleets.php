@@ -18,6 +18,7 @@ class ListSubfleets extends ListRecords
 {
     protected static string $resource = SubfleetResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

@@ -12,7 +12,7 @@ use App\Services\BidService;
 use App\Services\FareService;
 use App\Services\FlightService;
 
-test('bids', function () {
+test('bids', function (): void {
     updateSetting('bids.allow_multiple_bids', true);
     updateSetting('bids.disable_flight_on_bid', false);
 
@@ -48,6 +48,7 @@ test('bids', function () {
 
     // Refresh
     $flight = Flight::find($flight->id);
+
     expect($flight->has_bid)->toBeTrue();
 
     // Check the table and make sure the entry is there
@@ -108,11 +109,12 @@ test('bids', function () {
 
     $req = $this->get('/api/users/'.$user->id.'/bids');
     $req->assertStatus(200);
+
     $body = $req->json()['data'];
     expect($body)->toHaveCount(0);
 });
 
-test('multiple bids single flight', function () {
+test('multiple bids single flight', function (): void {
     updateSetting('bids.disable_flight_on_bid', true);
 
     $user1 = User::factory()->create();
@@ -133,7 +135,7 @@ test('multiple bids single flight', function () {
     $bidSvc->addBid($flight, $user2);
 })->throws(BidExistsForFlight::class);
 
-test('add bid api', function () {
+test('add bid api', function (): void {
     $user = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -166,11 +168,12 @@ test('add bid api', function () {
 
     // Try now deleting the bid from the user
     $response = $this->delete($uri, $data);
+
     $body = $response->json('data');
     expect($body)->toHaveCount(0);
 });
 
-test('add bid api returns not found for missing flight', function () {
+test('add bid api returns not found for missing flight', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -178,7 +181,7 @@ test('add bid api returns not found for missing flight', function () {
         ->assertNotFound();
 });
 
-test('delete bid api returns not found for missing flight', function () {
+test('delete bid api returns not found for missing flight', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -186,7 +189,7 @@ test('delete bid api returns not found for missing flight', function () {
         ->assertNotFound();
 });
 
-test('delete flight with bids', function () {
+test('delete flight with bids', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -226,7 +229,7 @@ test('delete flight with bids', function () {
     expect($body)->toHaveCount(0);
 });
 
-test('bid with aircraft', function () {
+test('bid with aircraft', function (): void {
     updateSetting('pireps.restrict_aircraft_to_rank', false);
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);
     updateSetting('bids.allow_multiple_bids', true);

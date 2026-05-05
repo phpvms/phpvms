@@ -7,7 +7,7 @@ use App\Models\Pirep;
 use App\Models\Subfleet;
 use App\Services\AirlineService;
 
-it('can add an airline', function () {
+it('can add an airline', function (): void {
     $attrs = Airline::factory()->make([
         'iata' => '',
     ])->toArray();
@@ -31,7 +31,7 @@ it('can add an airline', function () {
     expect($airline)->not->toBeNull();
 });
 
-it('cannot delete airline with flight', function () {
+it('cannot delete airline with flight', function (): void {
     $airline = Airline::factory()->create();
     Flight::factory()->create([
         'airline_id' => $airline->id,
@@ -40,7 +40,7 @@ it('cannot delete airline with flight', function () {
     expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeFalse();
 });
 
-it('cannot delete airline with pirep', function () {
+it('cannot delete airline with pirep', function (): void {
     $airline = Airline::factory()->create();
     Pirep::factory()->create([
         'airline_id' => $airline->id,
@@ -49,7 +49,7 @@ it('cannot delete airline with pirep', function () {
     expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeFalse();
 });
 
-it('cannot delete airline with subfleet', function () {
+it('cannot delete airline with subfleet', function (): void {
     $airline = Airline::factory()->create();
     Subfleet::factory()->create([
         'airline_id' => $airline->id,
@@ -58,7 +58,7 @@ it('cannot delete airline with subfleet', function () {
     expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeFalse();
 });
 
-it('can delete airline with no associations', function () {
+it('can delete airline with no associations', function (): void {
     $airline = Airline::factory()->create();
 
     expect(app(AirlineService::class)->canDeleteAirline($airline))->toBeTrue();

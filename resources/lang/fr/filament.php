@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'airline_informations'               => 'Informations sur la compagnie',
     'airport_informations'               => 'Informations sur l\'aéroport',
@@ -27,7 +29,7 @@ return [
     'module_method_autodiscover'         => 'Activer un nouveau module (déjà téléversé dans le dossier des modules).',
     'module_zip'                         => 'Fichier zip du module',
     'page_informations'                  => 'Information sur la page',
-    'should_open_in_new_tab'             => 'Doit s\'ouvrir dans un nouvel onglet',
+    'should_open_in_new_tab'             => "Doit s'ouvrir dans un nouvel onglet",
     'recalculate_finances'               => 'Recalculer les finances',
     'finances_recalculated'              => 'Finances recalculées',
     'basic_informations'                 => 'Informations de base',
@@ -47,11 +49,11 @@ return [
     'subfleet_informations'              => 'Informations sur la Sous-Flotte',
     'subfleet_description'               => 'Les sous-flottes sont des groupes d’avions. Le "type" est un nom court. Les compagnies aériennes regroupent toujours les avions selon leurs caractéristiques, par exemple les 737 avec winglets peuvent avoir un type "B.738-WL". Vous pouvez en créer autant que vous voulez, mais vous devez en avoir au moins une. Pour en savoir plus sur les sous-flottes, consultez la documentation.',
     'subfleet_expense_multiplier_hint'   => 'Ceci est le multiplicateur appliqué à toutes les dépenses (y compris les coûts au sol) pour les avions de cette sous-flotte, exprimé en pourcentage. La valeur par défaut est 100.',
-    'aircraft_informations'              => 'Informations sur l\'avion',
+    'aircraft_informations'              => "Informations sur l'avion",
     'certified_weights'                  => 'Masses certifiées',
     'typerating_informations'            => 'Informations sur la qualification de type',
     'user_field_private'                 => 'Privé (Visible seulements par les Admins)',
-    'user_field_show_on_registration'    => 'Afficher lors de l\'inscription',
+    'user_field_show_on_registration'    => "Afficher lors de l'inscription",
     'user_verify_email'                  => 'Vérifier l’e-mail',
     'user_email_verified'                => 'E-mail vérifié',
     'user_request_email_verification'    => 'Demander la vérification de l’e-mail',
@@ -84,7 +86,7 @@ return [
     'operations'                         => 'Opérations',
     'modules'                            => 'Modules',
     'developers'                         => 'Développeurs',
-    'today'                              => 'Aujourd\'hui',
+    'today'                              => "Aujourd'hui",
     'this_week'                          => 'Cette semaine',
     'this_month'                         => 'Ce mois-ci',
     'this_year'                          => 'Cette année',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\UserFields;
 
 use App\Filament\Resources\UserFields\Pages\ManageUserFields;
@@ -18,16 +20,19 @@ class UserFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return UserFieldForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return UserFieldsTable::configure($table);
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -35,6 +40,7 @@ class UserFieldResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.user_field', 1);

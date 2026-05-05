@@ -12,8 +12,8 @@ use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class ApiAuth implements Middleware
 {
@@ -26,9 +26,9 @@ class ApiAuth implements Middleware
     public function handle(Request $request, Closure $next)
     {
         // Check if Authorization header is in place
-        $api_key = $request->header('x-api-key', null);
+        $api_key = $request->header('x-api-key');
         if ($api_key === null) {
-            $api_key = $request->header('Authorization', null);
+            $api_key = $request->header('Authorization');
             if ($api_key === null) {
                 return $this->unauthorized('X-API-KEY header missing');
             }
@@ -47,9 +47,7 @@ class ApiAuth implements Middleware
         // Set the user to the request
         Auth::setUser($user);
         $request->merge(['user' => $user]);
-        $request->setUserResolver(function () use ($user) {
-            return $user;
-        });
+        $request->setUserResolver(fn () => $user);
 
         // Force english locale for API
         app()->setLocale('en');
@@ -59,11 +57,8 @@ class ApiAuth implements Middleware
 
     /**
      * Return an unauthorized message
-     *
-     * @param  mixed                    $details
-     * @return ResponseFactory|Response
      */
-    private function unauthorized($details = '')
+    private function unauthorized(string $details = ''): ResponseFactory|Response
     {
         return response([
             'error' => [

@@ -55,20 +55,24 @@ class SearchPirepsRequest extends FormRequest
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
      */
+    #[\Override]
     protected function prepareForValidation(): void
     {
         $merge = [];
         if (!$this->filled('orderBy') && $this->filled('sort')) {
             $merge['orderBy'] = $this->input('sort');
         }
+
         if (!$this->filled('sortedBy') && $this->filled('direction')) {
             $merge['sortedBy'] = $this->input('direction');
         }
+
         if ($merge !== []) {
             $this->merge($merge);
         }
     }
 
+    #[\Override]
     public function rules(): array
     {
         return [

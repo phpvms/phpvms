@@ -281,10 +281,10 @@ class PirepController extends Controller
             $fields = $this->getFields($request);
             $fares = $this->getFares($request);
             $pirep = $this->pirepSvc->file($pirep, $attrs, $fields, $fares);
-        } catch (Exception $e) {
-            Log::error($e);
+        } catch (Exception $exception) {
+            Log::error($exception);
 
-            throw $e;
+            throw $exception;
         }
 
         // See if there there is any route data posted
@@ -406,7 +406,7 @@ class PirepController extends Controller
 
     public function route_get(string $id, Request $request): AnonymousResourceCollection
     {
-        $pirep = Pirep::find($id);
+        Pirep::find($id);
 
         return AcarsRouteResource::collection(Acars::with('pirep')->where([
             'pirep_id' => $id,
@@ -464,7 +464,7 @@ class PirepController extends Controller
      */
     public function route_delete(string $id, Request $request): JsonResponse
     {
-        $pirep = Pirep::find($id);
+        Pirep::find($id);
 
         Acars::where([
             'pirep_id' => $id,

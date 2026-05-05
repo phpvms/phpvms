@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Users\RelationManagers;
 
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
@@ -12,6 +14,7 @@ class PirepsRelationManager extends RelationManager
 {
     protected static string $relationship = 'pireps';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -25,11 +28,13 @@ class PirepsRelationManager extends RelationManager
         return PirepsTable::configure($table);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice('common.pirep', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.pirep', 2);

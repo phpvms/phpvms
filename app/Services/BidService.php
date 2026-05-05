@@ -35,7 +35,7 @@ class BidService extends Service
             'aircraft.subfleet',
             'flight',
             'flight.fares',
-            'flight.simbrief' => function ($query) use ($user) {
+            'flight.simbrief' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             },
             'flight.simbrief.aircraft',
@@ -81,7 +81,7 @@ class BidService extends Service
             'flight.airline',
             'flight.fares',
             'flight.field_values',
-            'flight.simbrief' => function ($query) use ($user) {
+            'flight.simbrief' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             },
         ];
@@ -154,6 +154,7 @@ class BidService extends Service
                 $flight->has_bid = true;
                 $flight->save();
             }
+
             // Check all the bids for one of this user
             foreach ($bids as $bid) {
                 if ($bid->user_id === $user->id) {
@@ -162,10 +163,12 @@ class BidService extends Service
                     return $bid;
                 }
             }
+
             // Check if the flight should be blocked off
             if (setting('bids.disable_flight_on_bid') === true) {
                 throw new BidExistsForFlight($flight);
             }
+
             // This is already controlled above at line 114 with user bid count,
             // To prevent or allow multiple bids. Should not be here at all
             if (setting('bids.allow_multiple_bids') === false) {
@@ -198,7 +201,7 @@ class BidService extends Service
     /**
      * Remove a bid from a given flight
      */
-    public function removeBid(Flight $flight, User $user)
+    public function removeBid(Flight $flight, User $user): void
     {
         $bids = Bid::where([
             'flight_id' => $flight->id,

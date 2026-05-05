@@ -64,7 +64,7 @@ class AcarsController extends Controller
     public function live_flights()
     {
         $pireps = Pirep::activeFlights(setting('acars.live_time'))->get()->filter(
-            fn (Pirep $pirep) => $pirep->position !== null
+            fn (Pirep $pirep): bool => $pirep->position !== null
         );
 
         return PirepResource::collection($pireps);
@@ -189,7 +189,7 @@ class AcarsController extends Controller
             $pirep->status = PirepStatus::AIRBORNE;
         }*/
 
-        $saved = $pirep->save();
+        $pirep->save();
 
         // Post a new update for this ACARS position
         event(new AcarsUpdate($pirep, $pirep->position));

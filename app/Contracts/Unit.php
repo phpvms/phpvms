@@ -8,7 +8,7 @@ use Exception;
 /**
  * Abstract unit wrapper
  */
-abstract class Unit implements ArrayAccess
+abstract class Unit implements \Stringable, ArrayAccess
 {
     /**
      * The localized unit the user wants it displayed in
@@ -137,10 +137,7 @@ abstract class Unit implements ArrayAccess
         // $this->units[$offset] = null;
     }
 
-    /**
-     * @return mixed
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->offsetGet($this->localUnit);
     }

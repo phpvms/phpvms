@@ -20,7 +20,7 @@ class FlightResource extends Resource
     /**
      * Set the fields on the flight object
      */
-    protected function setFields()
+    protected function setFields(): stdClass
     {
         $return_values = new stdClass();
         /** @var Collection $field_values */
@@ -37,13 +37,13 @@ class FlightResource extends Resource
     }
 
     /**
-     * @param  Request $request
      * @return array
      *
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
 

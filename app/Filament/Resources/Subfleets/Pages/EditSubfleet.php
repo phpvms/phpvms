@@ -15,12 +15,13 @@ class EditSubfleet extends EditRecord
 {
     protected static string $resource = SubfleetResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make(),
-            ForceDeleteAction::make()->before(function (Subfleet $record) {
-                $record->files()->each(function (File $file) {
+            ForceDeleteAction::make()->before(function (Subfleet $record): void {
+                $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),

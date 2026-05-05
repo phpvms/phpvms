@@ -20,7 +20,7 @@ class LatestPilots extends Widget
     /**
      * @return Factory|View
      */
-    public function run()
+    public function run(): Factory|\Illuminate\Contracts\View\View
     {
         $pilots = User::with(['airline', 'home_airport'])
             ->where('state', '!=', UserState::DELETED)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'latestnews' => [
         'news'        => 'Actualités',
@@ -11,7 +13,7 @@ return [
         'altitude'    => 'Altitude',
         'heading'     => 'Cap',
         'distance'    => 'Distance',
-        'noflights'   => 'Il n\'y a pas de vols.',
+        'noflights'   => "Il n'y a pas de vols.",
         'gs'          => 'GS',
     ],
 

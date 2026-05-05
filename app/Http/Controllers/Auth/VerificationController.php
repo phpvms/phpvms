@@ -31,8 +31,6 @@ class VerificationController extends Controller
 
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -48,7 +46,7 @@ class VerificationController extends Controller
             throw new AuthorizationException();
         }
 
-        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+        if (!hash_equals((string) $request->route('hash'), sha1((string) $user->getEmailForVerification()))) {
             throw new AuthorizationException();
         }
 

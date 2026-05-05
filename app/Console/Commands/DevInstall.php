@@ -21,7 +21,7 @@ class DevInstall extends Command
      *
      * @throws FileException
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->option('reset-configs')) {
             $this->rewriteConfigs();

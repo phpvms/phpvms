@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'avatarresize'            => 'Cette avatar sera redimensionné en :width x :height pixels',
     'newapikey'               => 'Nouvelle clé d\'API',
@@ -17,6 +19,6 @@ return [
     'transferhours'           => 'Heures Transférées',
     'opt-in'                  => 'Opt-In',
     'opt-in-descrip'          => 'Oui, incluez-moi dans les emails non administratifs.',
-    'simbrief_username'       => 'Nom d\'utilisateur SimBrief',
-    'enter_simbrief_username' => 'Entrez votre nom d\'utilisateur SimBrief',
+    'simbrief_username'       => "Nom d'utilisateur SimBrief",
+    'enter_simbrief_username' => "Entrez votre nom d'utilisateur SimBrief",
 ];

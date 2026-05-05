@@ -24,6 +24,7 @@ class AirlineFinanceChart extends ChartWidget
 
     protected ?string $pollingInterval = null;
 
+    #[\Override]
     protected function getData(): array
     {
         $filters = $this->pageFilters ?? [
@@ -62,18 +63,18 @@ class AirlineFinanceChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => 'Debit',
-                    'data'            => $debit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
+                    'data'            => $debit->map(fn (TrendValue $value): float => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
                     'backgroundColor' => str(Color::Red[600])->replace(')', '/0.1)'),
                     'borderColor'     => Color::Red[600],
                 ],
                 [
                     'label'           => 'Credit',
-                    'data'            => $credit->map(fn (TrendValue $value) => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
+                    'data'            => $credit->map(fn (TrendValue $value): float => money($value->aggregate ?? 0, setting('units.currency'))->getValue()),
                     'backgroundColor' => str(Color::Green[600])->replace(')', '/0.1)'),
                     'borderColor'     => Color::Green[600],
                 ],
             ],
-            'labels' => $debit->map(fn (TrendValue $value) => $value->date),
+            'labels' => $debit->map(fn (TrendValue $value): string => $value->date),
         ];
     }
 
@@ -82,9 +83,14 @@ class AirlineFinanceChart extends ChartWidget
         return 'bar';
     }
 
+    #[\Override]
     public static function canView(): bool
     {
         // Display if the page is finance or /livewire/update from finance
-        return request()->url() === Finances::getUrl() || (request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl()));
+        if (request()->url() === Finances::getUrl()) {
+            return true;
+        }
+
+        return request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(Finances::getUrl());
     }
 }

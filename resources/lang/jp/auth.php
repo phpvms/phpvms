@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'failed'                   => '記録された情報に一致していません。',
     'throttle'                 => '多数のログイン、:seconds 秒後に再度ログインしてください。',

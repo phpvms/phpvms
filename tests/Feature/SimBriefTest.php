@@ -62,7 +62,7 @@ function loadSimBrief(User $user, Aircraft $aircraft, array $fares = [], ?string
 /**
  * Download an OFP file
  */
-function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
+function downloadOfp(User $user, $flight, $aircraft, array $fares): ?SimBrief
 {
 
     Illuminate\Support\Facades\Http::fake([
@@ -72,7 +72,7 @@ function downloadOfp($user, $flight, $aircraft, $fares): ?SimBrief
     return app(SimBriefService::class)->downloadOfp($user, 'static_id', Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
 }
 
-test('read simbrief', function () {
+test('read simbrief', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
     $briefing = loadSimBrief($user, $userinfo['aircraft']->first(), []);
@@ -101,7 +101,7 @@ test('read simbrief', function () {
     'ORGUR DCT PEBUS DCT EMOPO DCT LOTUK DCT LAGTA DCT LOVOL');
 });
 
-test('api calls', function () {
+test('api calls', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
 
@@ -122,6 +122,7 @@ test('api calls', function () {
     // Check the flight API response
     $response = $this->get('/api/flights/'.$briefing->flight_id);
     $response->assertOk();
+
     $flight = $response->json('data');
 
     expect($flight['simbrief'])->not->toBeNull()
@@ -141,7 +142,7 @@ test('api calls', function () {
     expect($json)->not->toBeEmpty();
 });
 
-test('user bid simbrief', function () {
+test('user bid simbrief', function (): void {
     $fares = [
         [
             'id'       => 100,
@@ -182,7 +183,7 @@ test('user bid simbrief', function () {
 
 });
 
-test('user bid simbrief doesnt leak', function () {
+test('user bid simbrief doesnt leak', function (): void {
     updateSetting('bids.disable_flight_on_bid', false);
     $fares = [
         [
@@ -235,7 +236,7 @@ test('user bid simbrief doesnt leak', function () {
         ->and($subfleet['fares'][0]['count'])->toEqual($fares[0]['count']);
 });
 
-test('attach to pirep', function () {
+test('attach to pirep', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
 
@@ -279,7 +280,7 @@ test('attach to pirep', function () {
         ->and($briefing->pirep_id)->toEqual($pirep->id);
 });
 
-test('simbrief create form preloads selected airports', function () {
+test('simbrief create form preloads selected airports', function (): void {
     Airport::factory()->create(['id' => 'OMAA', 'icao' => 'OMAA', 'name' => 'Abu Dhabi International']);
     Airport::factory()->create(['id' => 'OMDB', 'icao' => 'OMDB', 'name' => 'Dubai International']);
 
@@ -290,15 +291,13 @@ test('simbrief create form preloads selected airports', function () {
     $response = $this->actingAs($user)->get('/pireps/create?sb_id='.$briefing->id);
 
     $response->assertOk()
-        ->assertViewHas('airport_list', function (array $airportList): bool {
-            return ($airportList[''] ?? null) === ''
-                && ($airportList['OMAA'] ?? null) === 'OMAA - Abu Dhabi International'
-                && ($airportList['OMDB'] ?? null) === 'OMDB - Dubai International'
-                && count($airportList) === 3;
-        });
+        ->assertViewHas('airport_list', fn (array $airportList): bool => ($airportList[''] ?? null) === ''
+            && ($airportList['OMAA'] ?? null) === 'OMAA - Abu Dhabi International'
+            && ($airportList['OMDB'] ?? null) === 'OMDB - Dubai International'
+            && count($airportList) === 3);
 });
 
-test('clear expired briefs', function () {
+test('clear expired briefs', function (): void {
     $userinfo = createUserData();
     $user = $userinfo['user'];
 

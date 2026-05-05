@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Contracts\Modules;
 
 /**
@@ -36,6 +38,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * Deferred providers:
      * https://laravel.com/docs/7.x/providers#deferred-providers
      */
+    #[\Override]
     public function provides(): array
     {
         return [];

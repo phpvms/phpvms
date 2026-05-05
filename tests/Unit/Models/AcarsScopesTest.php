@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\Acars;
 use App\Models\Enums\AcarsType;
 
-test('Acars::forPirep returns only matching pirep rows', function () {
+test('Acars::forPirep returns only matching pirep rows', function (): void {
     Acars::factory()->create([
         'id'       => 'ACARS-1',
         'pirep_id' => 'PIREP-A',
@@ -22,7 +22,7 @@ test('Acars::forPirep returns only matching pirep rows', function () {
     expect($results)->toBe(['ACARS-1']);
 });
 
-test('Acars::ofType returns only matching ACARS entry types', function () {
+test('Acars::ofType returns only matching ACARS entry types', function (): void {
     Acars::factory()->create([
         'id'       => 'ACARS-3',
         'pirep_id' => 'PIREP-A',
@@ -39,7 +39,7 @@ test('Acars::ofType returns only matching ACARS entry types', function () {
     expect($results)->toBe(['ACARS-3']);
 });
 
-test('Acars::orderedBySimTime sorts rows in ascending sim time order', function () {
+test('Acars::orderedBySimTime sorts rows in ascending sim time order', function (): void {
     Acars::factory()->create([
         'id'       => 'ACARS-5',
         'pirep_id' => 'PIREP-A',

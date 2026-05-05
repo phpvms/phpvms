@@ -11,19 +11,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class AwardAwarded extends Notification implements ShouldQueue
 {
-    private $userAward;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(UserAward $userAward)
+    public function __construct(private readonly UserAward $userAward)
     {
         parent::__construct();
-
-        $this->userAward = $userAward;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['discord_webhook'];
     }
@@ -67,10 +63,9 @@ class AwardAwarded extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->userAward->user_id,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Cron\Nightly;
 
 use App\Contracts\Listener;
@@ -15,15 +17,10 @@ use UnexpectedValueException;
  */
 class ApplyExpenses extends Listener
 {
-    private RecurringFinanceService $financeSvc;
-
     /**
      * ApplyExpenses constructor.
      */
-    public function __construct(RecurringFinanceService $financeSvc)
-    {
-        $this->financeSvc = $financeSvc;
-    }
+    public function __construct(private readonly RecurringFinanceService $financeSvc) {}
 
     /**
      * Apply all of the expenses for a day

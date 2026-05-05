@@ -8,6 +8,7 @@ use App\Contracts\AirportLookup;
 use Illuminate\Support\Facades\Log;
 use VaCentral\Contracts\IVaCentral;
 use VaCentral\Exceptions\HttpException;
+use VaCentral\Models\Airport;
 
 class VaCentralLookup extends AirportLookup
 {
@@ -18,10 +19,9 @@ class VaCentralLookup extends AirportLookup
     /**
      * Lookup the information for an airport
      *
-     * @param  string $icao
-     * @return mixed
+     * @param string $icao
      */
-    public function getAirport($icao)
+    public function getAirport($icao): Airport|array
     {
         try {
             $airport = $this->client->getAirport($icao);
@@ -31,8 +31,8 @@ class VaCentralLookup extends AirportLookup
             $airport->timezone = $airport->tz;
 
             return $airport;
-        } catch (HttpException $e) {
-            Log::error($e->getMessage());
+        } catch (HttpException $httpException) {
+            Log::error($httpException->getMessage());
 
             return [];
         }

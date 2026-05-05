@@ -18,7 +18,7 @@ class YamlExport extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $tables = $this->argument('tables');
         if (empty($tables)) {

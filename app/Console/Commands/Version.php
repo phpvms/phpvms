@@ -13,13 +13,9 @@ class Version extends Command
 {
     protected $signature = 'phpvms:version {--write} {--base-only} {--write-full-version} {version?}';
 
-    private VersionService $versionSvc;
-
-    public function __construct(VersionService $versionSvc)
+    public function __construct(private readonly VersionService $versionSvc)
     {
         parent::__construct();
-
-        $this->versionSvc = $versionSvc;
     }
 
     /**
@@ -27,7 +23,7 @@ class Version extends Command
      *
      * @throws ParseException
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->option('write')) {
             // Write the updated build number out to the file

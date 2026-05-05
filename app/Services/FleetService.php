@@ -12,10 +12,7 @@ use App\Models\Typerating;
 
 class FleetService extends Service
 {
-    /**
-     * @return Subfleet
-     */
-    public function addSubfleetToRank(Subfleet $subfleet, Rank $rank, array $overrides = [])
+    public function addSubfleetToRank(Subfleet $subfleet, Rank $rank, array $overrides = []): Subfleet
     {
         $subfleet->ranks()->syncWithoutDetaching([$rank->id]);
 
@@ -29,7 +26,7 @@ class FleetService extends Service
         return $subfleet;
     }
 
-    public function removeSubfleetFromRank(Subfleet $subfleet, Rank $rank)
+    public function removeSubfleetFromRank(Subfleet $subfleet, Rank $rank): Subfleet
     {
         $subfleet->ranks()->detach($rank->id);
         $subfleet->save();
@@ -41,7 +38,7 @@ class FleetService extends Service
     /**
      * Add the subfleet to a type rating
      */
-    public function addSubfleetToTypeRating(Subfleet $subfleet, Typerating $typerating)
+    public function addSubfleetToTypeRating(Subfleet $subfleet, Typerating $typerating): Subfleet
     {
         $subfleet->typeratings()->syncWithoutDetaching([$typerating->id]);
         $subfleet->save();
@@ -53,7 +50,7 @@ class FleetService extends Service
     /**
      * Remove the subfleet from a type rating
      */
-    public function removeSubfleetFromTypeRating(Subfleet $subfleet, Typerating $typerating)
+    public function removeSubfleetFromTypeRating(Subfleet $subfleet, Typerating $typerating): Subfleet
     {
         $subfleet->typeratings()->detach($typerating->id);
         $subfleet->save();
@@ -65,7 +62,7 @@ class FleetService extends Service
     /**
      * Add the subfleet to a flight
      */
-    public function addSubfleetToFlight(Subfleet $subfleet, Flight $flight)
+    public function addSubfleetToFlight(Subfleet $subfleet, Flight $flight): void
     {
         $flight->subfleets()->syncWithoutDetaching([$subfleet->id]);
         $subfleet->save();
@@ -75,7 +72,7 @@ class FleetService extends Service
     /**
      * Remove the subfleet from a flight
      */
-    public function removeSubfleetFromFlight(Subfleet $subfleet, Flight $flight)
+    public function removeSubfleetFromFlight(Subfleet $subfleet, Flight $flight): void
     {
         $flight->subfleets()->detach($subfleet->id);
     }

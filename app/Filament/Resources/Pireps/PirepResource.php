@@ -40,16 +40,19 @@ class PirepResource extends Resource
             : null;
     }
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return PirepForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return PirepsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -60,6 +63,7 @@ class PirepResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -68,6 +72,7 @@ class PirepResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getWidgets(): array
     {
         return [
@@ -75,6 +80,7 @@ class PirepResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -83,6 +89,7 @@ class PirepResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['flight_number', 'route_code'];
@@ -91,6 +98,7 @@ class PirepResource extends Resource
     /**
      * @param Pirep $record
      */
+    #[\Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->airline->icao.$record->flight_number;
@@ -99,6 +107,7 @@ class PirepResource extends Resource
     /**
      * @param Pirep $record
      */
+    #[\Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -107,6 +116,7 @@ class PirepResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.pirep', 1);

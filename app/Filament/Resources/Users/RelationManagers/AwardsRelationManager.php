@@ -18,6 +18,7 @@ class AwardsRelationManager extends RelationManager
 {
     protected static string $relationship = 'awards';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -59,11 +60,13 @@ class AwardsRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return __('common.award');
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('common.award'))

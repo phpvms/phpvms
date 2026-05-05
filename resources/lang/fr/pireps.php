@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'newflightreport'      => 'Nouveau Rapport de vol',
     'editflightreport'     => 'Editer le Rapport de vol',
@@ -27,7 +29,7 @@ return [
     'codeoptional'         => 'Code (optionnel)',
     'legoptional'          => 'Etape (optionnel)',
     'deparrinformations'   => 'Information sur le Départ/l\'Arrivée',
-    'aircraftinformations' => 'Information sur l\'Avion',
+    'aircraftinformations' => "Information sur l'Avion",
     'dateflown'            => 'Date du vol',
     'deletepirep'          => 'Supprimer le PIREP',
     'submitted'            => 'Envoyé',
@@ -66,7 +68,7 @@ return [
         'landed'       => 'Atterrit',
         'arrived'      => 'Arrivé',
         'cancelled'    => 'Annulé',
-        'emerg_decent' => 'Descente d\'Urgence',
+        'emerg_decent' => "Descente d'Urgence",
         'paused'       => 'En pause',
     ],
     'fields'               => 'Champs des PIREPs',

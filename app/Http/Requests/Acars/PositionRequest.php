@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Acars;
 
 use App\Contracts\FormRequest;
@@ -11,6 +13,7 @@ class PositionRequest extends FormRequest
     /**
      * Is the user allowed to do this?
      */
+    #[\Override]
     public function authorize(): bool
     {
         $pirep = Pirep::findOrFail($this->route('pirep_id'), ['user_id']);
@@ -18,6 +21,7 @@ class PositionRequest extends FormRequest
         return $pirep->user_id === Auth::id();
     }
 
+    #[\Override]
     public function rules(): array
     {
         return [

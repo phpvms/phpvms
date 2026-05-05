@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use Illuminate\Log\Events\MessageLogged;
@@ -12,11 +14,11 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  */
 class MessageLoggedListener
 {
-    public function handle(MessageLogged $event)
+    public function handle(MessageLogged $event): void
     {
         if (app()->runningInConsole() && app()->environment() !== 'testing') {
             $output = new ConsoleOutput();
-            $output->writeln("<$event->level>$event->message</$event->level>");
+            $output->writeln(sprintf('<%s>%s</%s>', $event->level, $event->message, $event->level));
         }
     }
 }

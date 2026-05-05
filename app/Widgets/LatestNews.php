@@ -19,7 +19,7 @@ class LatestNews extends Widget
     /**
      * @return Factory|View
      */
-    public function run()
+    public function run(): Factory|\Illuminate\Contracts\View\View
     {
         return view('widgets.latest_news', [
             'config' => $this->config,
