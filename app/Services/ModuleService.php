@@ -139,7 +139,7 @@ class ModuleService extends Service
             } catch (Exception $e) {
                 throw new ModuleInstallationError();
             }
-        }*/
+        }
 
         try {
             $zipper->extractTo($temp);
