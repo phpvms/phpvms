@@ -7,11 +7,11 @@ namespace App\Services\Installer;
 use App\Contracts\Service;
 use App\Models\Setting;
 use App\Services\DatabaseService;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Nwidart\Modules\Facades\Module;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -87,16 +87,9 @@ class SeederService extends Service
         $data = file_get_contents(database_path('/seeders/modules.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $module) {
-            $module['updated_at'] = Carbon::now('UTC');
-            $count = DB::table('modules')->where('name', $module['name'])->count('name');
-            if ($count === 0) {
-                $module['created_at'] = Carbon::now('UTC');
-                DB::table('modules')->insert($module);
-            } else {
-                DB::table('modules')
-                    ->where('name', $module['name'])
-                    ->update($module);
-            }
+            /** @var ?\Nwidart\Modules\Module $moduleInstance */
+            $moduleInstance = Module::find($module['name']);
+            $moduleInstance?->setActive((bool) $module['enabled']);
         }
     }
 

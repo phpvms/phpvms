@@ -109,6 +109,7 @@ return [
     'disable'               => 'Désactiver',
     'disabled'              => 'Désactivé',
     'enabled'               => 'Activé',
+    'enable'                => 'Activer',
     'module'                => 'Module',
     'page'                  => 'Page',
     'icon'                  => 'Icône',
