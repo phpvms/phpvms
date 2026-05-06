@@ -1,6 +1,7 @@
 {
     "name": "$STUDLY_NAME$",
     "alias": "$LOWER_NAME$",
+    "registry_id": "",
     "description": "",
     "keywords": [],
     "priority": 0,
