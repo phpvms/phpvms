@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'status' => [
         'active'      => '使用可能',

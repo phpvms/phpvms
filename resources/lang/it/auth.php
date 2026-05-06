@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'failed'                   => 'Queste credenziali non sono presenti nei nostri archivi.',
     'throttle'                 => 'Troppi tentativi di login. Tenta di nuovo tra :seconds secondi per favore.',

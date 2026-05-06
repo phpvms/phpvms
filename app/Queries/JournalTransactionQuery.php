@@ -31,7 +31,7 @@ class JournalTransactionQuery
         ?Carbon $date = null
     ): array {
         $query = JournalTransaction::query()
-            ->where('ref_model_type', \get_class($refModel))
+            ->where('ref_model_type', $refModel::class)
             ->where('ref_model_id', $refModel->getKey());
 
         if ($journal instanceof Journal) {

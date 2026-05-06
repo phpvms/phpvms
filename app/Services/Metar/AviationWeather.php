@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Log;
  */
 class AviationWeather extends Metar
 {
-    private const METAR_URL = 'https://aviationweather.gov/api/data/metar?ids=';
+    private const string METAR_URL = 'https://aviationweather.gov/api/data/metar?ids=';
 
-    private const TAF_URL = 'https://aviationweather.gov/api/data/taf?ids=';
+    private const string TAF_URL = 'https://aviationweather.gov/api/data/taf?ids=';
 
     public function __construct(
         private readonly HttpClient $httpClient
@@ -42,8 +42,8 @@ class AviationWeather extends Metar
             $raw_metar = $this->httpClient->get($url);
 
             return trim($raw_metar);
-        } catch (Exception $e) {
-            Log::error('Error reading METAR: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Error reading METAR: '.$exception->getMessage());
 
             return '';
         }
@@ -68,8 +68,8 @@ class AviationWeather extends Metar
 
             // Remove " \n" to remove new lines from the metar content
             return trim(str_replace(" \n", '', $raw_taf));
-        } catch (Exception $e) {
-            Log::error('Error reading TAF: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Error reading TAF: '.$exception->getMessage());
 
             return '';
         }

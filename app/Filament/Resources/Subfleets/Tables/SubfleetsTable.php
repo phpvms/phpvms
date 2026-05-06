@@ -71,8 +71,8 @@ class SubfleetsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make()->before(function (Subfleet $record) {
-                    $record->files()->each(function (File $file) {
+                ForceDeleteAction::make()->before(function (Subfleet $record): void {
+                    $record->files()->each(function (File $file): void {
                         app(FileService::class)->removeFile($file);
                     });
                 }),
@@ -81,9 +81,9 @@ class SubfleetsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make()->before(function (Collection $records) {
+                    ForceDeleteBulkAction::make()->before(function (Collection $records): void {
                         /** @var Collection<int, Subfleet> $records */
-                        $records->each(fn (Subfleet $record) => $record->files()->each(function (File $file) {
+                        $records->each(fn (Subfleet $record) => $record->files()->each(function (File $file): void {
                             app(FileService::class)->removeFile($file);
                         }));
                     }),

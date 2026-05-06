@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     401 => [
         'title'   => 'Accès Non Autorisé',
@@ -11,6 +13,6 @@ return [
     ],
     503 => [
         'title'   => 'Erreur Interne',
-        'message' => 'Une Erreur s\'est Produite',
+        'message' => "Une Erreur s'est Produite",
     ],
 ];

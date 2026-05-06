@@ -64,8 +64,8 @@ class AirportImporter extends ImportExport
             Airport::updateOrCreate([
                 'id' => $row['icao'],
             ], $row);
-        } catch (Exception $e) {
-            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->errorLog('Error in row '.($index + 1).': '.$exception->getMessage());
 
             return false;
         }

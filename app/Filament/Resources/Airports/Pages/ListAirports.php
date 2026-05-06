@@ -18,6 +18,7 @@ class ListAirports extends ListRecords
 {
     protected static string $resource = AirportResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

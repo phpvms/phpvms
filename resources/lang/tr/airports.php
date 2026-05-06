@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'ident'     => 'Tanımlama',
     'home'      => 'Ana Üs Havalimanı',

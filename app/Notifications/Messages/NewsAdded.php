@@ -25,7 +25,7 @@ class NewsAdded extends Notification implements ShouldQueue
         );
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
@@ -33,10 +33,9 @@ class NewsAdded extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed $notifiable
-     * @return array
+     * @param mixed $notifiable
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'news_id' => $this->news->id,

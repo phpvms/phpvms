@@ -29,6 +29,7 @@ class ClearDatabase extends BaseImporter
     /**
      * Returns a default manifest just so this step gets run
      */
+    #[\Override]
     public function getManifest(): array
     {
         return [
@@ -41,7 +42,7 @@ class ClearDatabase extends BaseImporter
         ];
     }
 
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->cleanupDb();
     }

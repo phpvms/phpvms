@@ -16,7 +16,7 @@ use App\Models\User;
  * contract test for the public API.
  */
 
-test('airport list returns expected json structure', function () {
+test('airport list returns expected json structure', function (): void {
     /** @var User $user */
     $user = User::factory()->create();
     Airport::factory()->count(3)->create();

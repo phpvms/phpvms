@@ -26,11 +26,12 @@ class Updater extends Page
 
     private string $stream = 'console_output';
 
+    #[\Override]
     public function content(FilamentSchema $schema): FilamentSchema
     {
         return $schema->components([
             StreamEntry::make('output')
-                ->state(fn () => __('installer.click_update_to_run'))
+                ->state(fn (): string => __('installer.click_update_to_run'))
                 ->afterLabel($this->update())
                 ->label(__('installer.output'))
                 ->viewData([
@@ -76,7 +77,7 @@ class Updater extends Page
     {
         return Action::make('update')
             ->label(__('installer.update'))
-            ->action(function () {
+            ->action(function (): void {
                 $this->stream(content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL, to: $this->stream);
 
                 $migrationSvc = app(MigrationService::class);
@@ -85,7 +86,7 @@ class Updater extends Page
                 $migrationsPending = $migrationSvc->migrationsAvailable();
                 $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
 
-                $streamCallback = function (string $buffer) {
+                $streamCallback = function (string $buffer): void {
                     $this->stream(content: $buffer.PHP_EOL, to: $this->stream);
                 };
 
@@ -119,7 +120,7 @@ class Updater extends Page
                     $this->stream(content: PHP_EOL.__('installer.cache_build_background').PHP_EOL, to: $this->stream);
 
                     // Clearing the cache immediately sends the response, thus killing the request. So we defer it, it's executed at the end of the request in the background.
-                    defer(function () {
+                    defer(function (): void {
                         Artisan::call('optimize:clear');
                         $clearOutput = Artisan::output();
 
@@ -139,6 +140,7 @@ class Updater extends Page
             });
     }
 
+    #[\Override]
     public function getTitle(): string
     {
         return __('installer.update_phpvms');

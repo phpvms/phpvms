@@ -19,7 +19,7 @@ beforeEach(function (): void {
     User::factory()->create();
 });
 
-test('registration', function () {
+test('registration', function (): void {
     seed(ShieldSeeder::class);
     Notification::fake();
 
@@ -61,7 +61,7 @@ function getUserData(): array
     ];
 }
 
-test('access to registration when registration enabled', function () {
+test('access to registration when registration enabled', function (): void {
     Notification::fake();
 
     updateSetting('general.disable_registrations', false);
@@ -74,7 +74,7 @@ test('access to registration when registration enabled', function () {
         ->assertRedirect('/dashboard');
 });
 
-test('access to registration when registration disabled', function () {
+test('access to registration when registration disabled', function (): void {
     updateSetting('general.disable_registrations', true);
 
     $this->get('/register')
@@ -84,7 +84,7 @@ test('access to registration when registration disabled', function () {
         ->assertForbidden();
 });
 
-test('access without invite', function () {
+test('access without invite', function (): void {
     updateSetting('general.disable_registrations', false);
     updateSetting('general.invite_only_registrations', true);
 
@@ -95,7 +95,7 @@ test('access without invite', function () {
         ->assertForbidden();
 });
 
-test('access with valid invite', function () {
+test('access with valid invite', function (): void {
     Notification::fake();
 
     updateSetting('general.disable_registrations', false);
@@ -110,14 +110,14 @@ test('access with valid invite', function () {
 
     $userData = array_merge(getUserData(), [
         'invite'       => $invite->id,
-        'invite_token' => base64_encode($invite->token),
+        'invite_token' => base64_encode((string) $invite->token),
     ]);
 
     $this->post('/register', $userData)
         ->assertRedirect('/dashboard');
 });
 
-test('access with invalid invite', function () {
+test('access with invalid invite', function (): void {
     updateSetting('general.disable_registrations', false);
     updateSetting('general.invite_only_registrations', true);
 
@@ -129,7 +129,7 @@ test('access with invalid invite', function () {
 
     $expiredUserData = array_merge(getUserData(), [
         'invite'       => $expiredInvite->id,
-        'invite_token' => base64_encode($expiredInvite->token),
+        'invite_token' => base64_encode((string) $expiredInvite->token),
     ]);
 
     $this->get($expiredInvite->link)
@@ -159,7 +159,7 @@ test('access with invalid invite', function () {
 
     $tooUsedUserData = array_merge(getUserData(), [
         'invite'       => $tooUsedInvite->id,
-        'invite_token' => base64_encode($tooUsedInvite->token),
+        'invite_token' => base64_encode((string) $tooUsedInvite->token),
     ]);
 
     $this->get($tooUsedInvite->link)
@@ -169,7 +169,7 @@ test('access with invalid invite', function () {
         ->assertForbidden();
 });
 
-test('with invalid email', function () {
+test('with invalid email', function (): void {
     updateSetting('general.disable_registrations', false);
     updateSetting('general.invite_only_registrations', true);
 
@@ -180,7 +180,7 @@ test('with invalid email', function () {
 
     $userData = array_merge(getUserData(), [
         'invite'       => $invite->id,
-        'invite_token' => base64_encode($invite->token),
+        'invite_token' => base64_encode((string) $invite->token),
     ]);
 
     $this->get($invite->link)

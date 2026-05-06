@@ -29,17 +29,14 @@ class CreateDatabase extends Command
 
     /**
      * Create the mysql database
-     *
-     *
-     * @return bool
      */
-    protected function create_mysql_or_mariadb($dbkey)
+    protected function create_mysql_or_mariadb(string $dbkey): bool
     {
         $host = config($dbkey.'host');
         $port = config($dbkey.'port');
         $name = config($dbkey.'database');
-        $user = config($dbkey.'username');
-        $pass = config($dbkey.'password');
+        config($dbkey.'username');
+        config($dbkey.'password');
 
         $dbSvc = new Database();
         $dsn = $dbSvc->createDsn($host, $port);
@@ -47,14 +44,14 @@ class CreateDatabase extends Command
 
         try {
             $conn = DB::connection(config('database.default'))->getPdo();
-        } catch (PDOException $e) {
-            Log::error($e);
+        } catch (PDOException $pdoException) {
+            Log::error($pdoException);
 
             return false;
         }
 
         if ($this->option('reset') === true) {
-            $sql = "DROP DATABASE IF EXISTS `$name`";
+            $sql = sprintf('DROP DATABASE IF EXISTS `%s`', $name);
 
             try {
                 Log::info('Dropping database: '.$sql);
@@ -64,13 +61,13 @@ class CreateDatabase extends Command
             }
         }
 
-        $sql = "CREATE DATABASE IF NOT EXISTS `$name` CHARACTER SET UTF8MB4 COLLATE utf8mb4_unicode_ci";
+        $sql = sprintf('CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET UTF8MB4 COLLATE utf8mb4_unicode_ci', $name);
 
         try {
             Log::info('Creating database: '.$sql);
             $conn->exec($sql);
-        } catch (PDOException $e) {
-            Log::error($e);
+        } catch (PDOException $pdoException) {
+            Log::error($pdoException);
 
             return false;
         }
@@ -81,7 +78,7 @@ class CreateDatabase extends Command
     /**
      * Create the sqlite database
      */
-    protected function create_sqlite($dbkey)
+    protected function create_sqlite(string $dbkey)
     {
         $dbPath = config($dbkey.'database');
 
@@ -117,10 +114,8 @@ class CreateDatabase extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): void
     {
         /*if ($this->option('reset')) {
             if(!$this->confirm('The "reset" option will destroy the database, are you sure?')) {

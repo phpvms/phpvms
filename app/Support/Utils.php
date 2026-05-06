@@ -51,22 +51,22 @@ class Utils
     /**
      * Enable the debug toolbar
      */
-    public static function enableDebugToolbar()
+    public static function enableDebugToolbar(): void
     {
         try {
             app('debugbar')->enable();
-        } catch (BindingResolutionException $e) {
+        } catch (BindingResolutionException) {
         }
     }
 
     /**
      * Disable the debug toolbar
      */
-    public static function disableDebugToolbar()
+    public static function disableDebugToolbar(): void
     {
         try {
             app('debugbar')->disable();
-        } catch (BindingResolutionException $e) {
+        } catch (BindingResolutionException) {
         }
     }
 
@@ -151,7 +151,11 @@ class Utils
                 $children = [];
                 $kvp = explode('&', trim($query_str[1]));
                 foreach ($kvp as $items) {
-                    if ($items === '' || $items === '0') {
+                    if ($items === '') {
+                        continue;
+                    }
+
+                    if ($items === '0') {
                         continue;
                     }
 
@@ -197,7 +201,11 @@ class Utils
             $children = [];
             $kvp = explode('&', trim($query_str[1]));
             foreach ($kvp as $items) {
-                if ($items === '' || $items === '0') {
+                if ($items === '') {
+                    continue;
+                }
+
+                if ($items === '0') {
                     continue;
                 }
 
@@ -212,7 +220,7 @@ class Utils
 
     public static function kvpToArray($kvp_str, array &$arr): void
     {
-        $item = explode('=', $kvp_str);
+        $item = explode('=', (string) $kvp_str);
         if (\count($item) === 1) {  // just a list?
             $arr[] = trim($item[0]);
         } else {  // actually a key-value pair
@@ -236,19 +244,19 @@ class Utils
                 continue;
             }
 
-            $key = trim($key);
+            $key = trim((string) $key);
 
             if (!\is_array($val)) {
-                $val = trim($val);
-                $ret_list[] = "{$key}={$val}";
+                $val = trim((string) $val);
+                $ret_list[] = sprintf('%s=%s', $key, $val);
             } else {
                 $q = [];
                 foreach ($val as $subkey => $subval) {
-                    $q[] = is_numeric($subkey) ? $subval : "{$subkey}={$subval}";
+                    $q[] = is_numeric($subkey) ? $subval : sprintf('%s=%s', $subkey, $subval);
                 }
 
                 $q = implode('&', $q);
-                $ret_list[] = $q === '' || $q === '0' ? $key : "{$key}?{$q}";
+                $ret_list[] = $q === '' || $q === '0' ? $key : sprintf('%s?%s', $key, $q);
             }
         }
 

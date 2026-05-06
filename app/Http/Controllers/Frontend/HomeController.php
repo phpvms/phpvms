@@ -23,8 +23,8 @@ class HomeController extends Controller
                 )->orderBy('created_at', 'desc')
                 ->take(4)
                 ->get();
-        } catch (PDOException $e) {
-            Log::emergency($e);
+        } catch (PDOException $pdoException) {
+            Log::emergency($pdoException);
 
             return redirect('system/install');
         }

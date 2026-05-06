@@ -38,7 +38,11 @@ function allPointsInRoute(array $route, array $points, array $addtl_fields = [])
     foreach ($route as $idx => $point) {
         expect($points[$idx])->toHaveKeys($fields);
         foreach ($fields as $f) {
-            if ($f === 'lat' || $f === 'lon') {
+            if ($f === 'lat') {
+                continue;
+            }
+
+            if ($f === 'lon') {
                 continue;
             }
 
@@ -55,7 +59,7 @@ function getPirepFromApi(string $pirep_id): array
     return $resp->json()['data'];
 }
 
-it('should return a prefile error', function () {
+it('should return a prefile error', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -82,7 +86,7 @@ it('should return a prefile error', function () {
     $response->assertStatus(400);
 });
 
-it('should not start pirep if the aircraft is not at the departure airport', function () {
+it('should not start pirep if the aircraft is not at the departure airport', function (): void {
     updateSetting('pilots.only_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
     updateSetting('pireps.only_aircraft_at_dpt_airport', true);
@@ -117,7 +121,7 @@ it('should not start pirep if the aircraft is not at the departure airport', fun
         ->and($response->json('error.message'))->toEqual(AircraftNotAtAirport::MESSAGE);
 });
 
-it('should not start pirep without airports', function () {
+it('should not start pirep without airports', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -143,7 +147,7 @@ it('should not start pirep without airports', function () {
     expect($response->json('details'))->toEqual('A departure airport is required, An arrival airport is required');
 });
 
-it('should not start pirep if the pilot is not at the departure airport', function () {
+it('should not start pirep if the pilot is not at the departure airport', function (): void {
     updateSetting('pilots.only_flights_from_current', true);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
@@ -171,11 +175,12 @@ it('should not start pirep if the pilot is not at the departure airport', functi
 
     $response = $this->post($uri, $pirep);
     $response->assertStatus(400);
+
     $body = $response->json();
     expect($body['error']['message'])->toEqual(UserNotAtAirport::MESSAGE);
 });
 
-it('can prefile and update a pirep', function () {
+it('can prefile and update a pirep', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
     $fare = Fare::factory()->create();
@@ -218,13 +223,14 @@ it('can prefile and update a pirep', function () {
 
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $pirep = $response->json('data');
 
     expect($pirep['planned_distance']['nmi'])->toEqual(400)
         ->and($pirep['planned_distance']['mi'])->toEqual(460.31)
         ->and($pirep['planned_distance']['km'])->toEqual(740.8)
         ->and($pirep['planned_distance']['m'])->toEqual(740800)
-        ->and(str_ends_with($pirep['submitted_at'], 'Z'))->toBeTrue();
+        ->and(str_ends_with((string) $pirep['submitted_at'], 'Z'))->toBeTrue();
 
     // Are date times in UTC?
 
@@ -281,12 +287,13 @@ it('can prefile and update a pirep', function () {
     $uri = '/api/pireps/'.$pirep['id'];
     $response = $this->get($uri);
     $response->assertOk();
+
     $body = $response->json('data');
 
     expect(PirepState::CANCELLED)->toEqual($body['state']);
 });
 
-it('should validate updates', function () {
+it('should validate updates', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
 
@@ -315,6 +322,7 @@ it('should validate updates', function () {
 
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $pirep = $response->json('data');
 
     /**
@@ -327,12 +335,13 @@ it('should validate updates', function () {
 
     $response = $this->post($uri, $update);
     $response->assertStatus(400);
+
     $detail = $response->json('details');
 
     expect($detail)->toEqual('A departure airport is required');
 });
 
-it('can receive acars updates', function () {
+it('can receive acars updates', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
 
@@ -438,6 +447,7 @@ it('can receive acars updates', function () {
 
     $response = $this->get($uri);
     $response->assertStatus(200);
+
     $body = $response->json()['data'];
 
     expect($body)->not->toBeNull()
@@ -454,6 +464,7 @@ it('can receive acars updates', function () {
     ]);
 
     $response->assertStatus(200);
+
     $body = $response->json('data');
     expect($body['Departure Gate'])->toEqual('G26');
 
@@ -464,6 +475,7 @@ it('can receive acars updates', function () {
     $response = $this->get($uri);
 
     $response->assertStatus(200);
+
     $body = collect($response->json('data'));
     $body = $body->firstWhere('id', $pirep['id']);
 
@@ -489,6 +501,7 @@ it('can receive acars updates', function () {
     ]);
 
     $response->assertStatus(200);
+
     $body = $response->json();
 
     // Add a comment
@@ -498,12 +511,13 @@ it('can receive acars updates', function () {
 
     $response = $this->get($uri);
     $response->assertStatus(200);
+
     $comments = $response->json();
 
     expect($comments)->toHaveCount(1);
 });
 
-test('multiple altitudes', function () {
+test('multiple altitudes', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
 
@@ -590,7 +604,7 @@ test('multiple altitudes', function () {
         ->and($acars_data['altitude_msl'])->toEqualWithDelta($acars2['altitude_msl'], 0.1);
 });
 
-test('acars data instantitaion', function () {
+test('acars data instantitaion', function (): void {
     $acars = Acars::factory()->make(['pirep_id' => 'abc'])->toArray();
     $acars['altitude'] = 5000;
 
@@ -610,7 +624,7 @@ test('acars data instantitaion', function () {
         ->and($inst->altitude_msl)->toEqual($acars['altitude']);
 });
 
-it('can file a pirep via api', function () {
+it('can file a pirep via api', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
 
@@ -670,7 +684,7 @@ it('can file a pirep via api', function () {
     $response->assertStatus(400);
 });
 
-it('should check if the aircraft is allowed for flight', function () {
+it('should check if the aircraft is allowed for flight', function (): void {
     updateSetting('pireps.restrict_aircraft_to_rank', true);
 
     $airport = Airport::factory()->create();
@@ -713,7 +727,7 @@ it('should check if the aircraft is allowed for flight', function () {
     $response->assertStatus(200);
 });
 
-it('should ignore aircraft allowed', function () {
+it('should ignore aircraft allowed', function (): void {
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
     $airport = Airport::factory()->create();
@@ -751,7 +765,7 @@ it('should ignore aircraft allowed', function () {
     $response->assertStatus(200);
 });
 
-it('can receive multiple acars position updates', function () {
+it('can receive multiple acars position updates', function (): void {
     $pirep = createPirep();
 
     apiAs($pirep->user);
@@ -770,8 +784,8 @@ it('can receive multiple acars position updates', function () {
     // Post an ACARS update
     $acars_count = random_int(5, 10);
     $acars = Acars::factory()->count($acars_count)->make(['id' => ''])
-        ->map(function ($point) {
-            $point['id'] = Utils::generateNewId();
+        ->map(function (Acars $point): Acars {
+            $point->id = Utils::generateNewId();
 
             return $point;
         })
@@ -791,7 +805,7 @@ it('can receive multiple acars position updates', function () {
     $response->assertStatus(200)->assertJsonCount($acars_count, 'data');
 });
 
-it('should return a 404 on a non existent pirep get', function () {
+it('should return a 404 on a non existent pirep get', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -800,7 +814,7 @@ it('should return a 404 on a non existent pirep get', function () {
     $response->assertStatus(404);
 });
 
-it('should return a 404 on a non existent pirep store', function () {
+it('should return a 404 on a non existent pirep store', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -810,7 +824,7 @@ it('should return a 404 on a non existent pirep store', function () {
     $response->assertStatus(404);
 });
 
-it('should use acars iso date', function () {
+it('should use acars iso date', function (): void {
     $pirep = createPirep();
     apiAs($pirep->user);
     $pirep = $pirep->toArray();
@@ -819,6 +833,7 @@ it('should use acars iso date', function () {
     $uri = '/api/pireps/prefile';
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $pirep_id = $response->json()['data']['id'];
 
     $dt = date('c');
@@ -834,7 +849,7 @@ it('should use acars iso date', function () {
     $response->assertStatus(200);
 });
 
-it('refuses invalid route post', function () {
+it('refuses invalid route post', function (): void {
     $pirep = createPirep();
     apiAs($pirep->user);
     $pirep = $pirep->toArray();
@@ -865,7 +880,7 @@ it('refuses invalid route post', function () {
     $response->assertStatus(400);
 });
 
-it('can receive acars log', function () {
+it('can receive acars log', function (): void {
     $pirep = createPirep();
     apiAs($pirep->user);
     $pirep = $pirep->toArray();
@@ -885,6 +900,7 @@ it('can receive acars log', function () {
     $uri = '/api/pireps/'.$pirep_id.'/acars/logs';
     $response = $this->post($uri, $post_log);
     $response->assertStatus(200);
+
     $body = $response->json();
 
     expect($body['count'])->toEqual(1);
@@ -899,12 +915,13 @@ it('can receive acars log', function () {
     $uri = '/api/pireps/'.$pirep_id.'/acars/events';
     $response = $this->post($uri, $post_log);
     $response->assertStatus(200);
+
     $body = $response->json();
 
     expect($body['count'])->toEqual(1);
 });
 
-it('can receive acars route', function () {
+it('can receive acars route', function (): void {
     $pirep = createPirep();
     apiAs($pirep->user);
     $pirep = $pirep->toArray();
@@ -961,7 +978,7 @@ it('can receive acars route', function () {
     $response->assertStatus(200)->assertJsonCount(0, 'data');
 });
 
-it('handles duplicate pirep', function () {
+it('handles duplicate pirep', function (): void {
     $pirep = createPirep();
     apiAs($pirep->user);
     $pirep = $pirep->toArray();
@@ -970,11 +987,13 @@ it('handles duplicate pirep', function () {
     $uri = '/api/pireps/prefile';
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $pirep_id = $response->json()['data']['id'];
 
     // try readding
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $dupe_pirep_id = $response->json()['data']['id'];
 
     expect($dupe_pirep_id)->toEqual($pirep_id);

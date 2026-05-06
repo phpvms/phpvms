@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PirepFields;
 
 use App\Filament\Resources\PirepFields\Pages\ManagePirepFields;
@@ -18,16 +20,19 @@ class PirepFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return PirepFieldForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return PirepFieldsTable::configure($table);
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -35,6 +40,7 @@ class PirepFieldResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.pirep_field', 1);

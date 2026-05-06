@@ -45,6 +45,12 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Expense            whereRefModelType($value)
  * @method static Builder<static>|Expense            whereType($value)
  * @method static Builder<static>|Expense            whereUpdatedAt($value)
+ * @method static Builder<static>|Expense            active()
+ * @method static Builder<static>|Expense            forAirline(int $airlineId)
+ * @method static Builder<static>|Expense            forGlobalAirline()
+ * @method static Builder<static>|Expense            forRefModel(string $type, ?mixed $id = null)
+ * @method static Builder<static>|Expense            ofType(string $type)
+ * @method static Builder<static>|Expense            whereRefModel($value)
  *
  * @mixin \Eloquent
  */
@@ -80,6 +86,7 @@ class Expense extends Model
         return $this->morphTo('ref_model', 'ref_model_type', 'ref_model_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

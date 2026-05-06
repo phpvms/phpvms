@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
@@ -11,10 +13,11 @@ class CreatePirepRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    #[\Override]
     public function rules(): array
     {
         // Don't run validations if it's just being saved
-        $action = strtolower(request('submit', 'submit'));
+        $action = strtolower((string) request('submit', 'submit'));
         if ($action === 'save') {
             return [
                 'airline_id'     => 'required|exists:airlines,id',

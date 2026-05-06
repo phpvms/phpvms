@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'avatarresize' => 'This avatar will be resized to :width x :height pixels',
 

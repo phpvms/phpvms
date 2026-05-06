@@ -64,7 +64,7 @@ class MigrationService extends Service
 
         try {
             $runFiles = $migrator->getRepository()->getRan();
-        } catch (Exception $e) {
+        } catch (Exception) {
         } // Skip database run initialized
 
         $files = $migrator->getMigrationFiles(array_values($migration_dirs));
@@ -117,7 +117,7 @@ class MigrationService extends Service
 
         try {
             $runFiles = $migrator->getRepository()->getRan();
-        } catch (Exception $e) {
+        } catch (Exception) {
         } // Skip database run initialized
 
         $files = $migrator->getMigrationFiles(array_values($migration_dirs));

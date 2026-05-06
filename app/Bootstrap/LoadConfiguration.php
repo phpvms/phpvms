@@ -15,6 +15,7 @@ class LoadConfiguration extends \Illuminate\Foundation\Bootstrap\LoadConfigurati
      *
      * @throws Exception
      */
+    #[\Override]
     protected function loadConfigurationFiles(Application $app, RepositoryContract $repository)
     {
         parent::loadConfigurationFiles($app, $repository);

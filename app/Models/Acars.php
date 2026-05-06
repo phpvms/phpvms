@@ -72,6 +72,12 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Acars whereVs($value)
+ * @method static Builder<static>|Acars                               flightPath()
+ * @method static Builder<static>|Acars                               forPirep(string $pirepId)
+ * @method static Builder<static>|Acars                               ofType(int $type)
+ * @method static Builder<static>|Acars                               orderedByCreatedAt(string $direction = 'asc')
+ * @method static Builder<static>|Acars                               orderedByOrder(string $direction = 'asc')
+ * @method static Builder<static>|Acars                               orderedBySimTime(string $direction = 'asc')
  *
  * @mixin \Eloquent
  */
@@ -116,6 +122,7 @@ class Acars extends Model
 
     protected $appends = ['altitude'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -144,8 +151,8 @@ class Acars extends Model
     protected function altitude(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $_, array $attrs) => (float) $attrs['altitude_msl'],
-            set: function (mixed $value) {
+            get: fn (mixed $_, array $attrs): float => (float) $attrs['altitude_msl'],
+            set: function (mixed $value): array {
                 $ret = [];
                 if (!array_key_exists('altitude_agl', $this->attributes)) {
                     $ret['altitude_agl'] = (float) $value;

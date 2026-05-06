@@ -45,6 +45,8 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief wherePirepId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUserId($value)
+ *
+ * @mixin \Eloquent
  */
 #[ObservedBy(SimBriefObserver::class)]
 class SimBrief extends Model
@@ -69,7 +71,7 @@ class SimBrief extends Model
 
     protected function ofp(): Attribute
     {
-        return Attribute::make(get: function () {
+        return Attribute::make(get: function (): ?SimBriefOfp {
             if (empty($this->attributes['ofp_json_path'])) {
                 return null;
             }
@@ -85,7 +87,7 @@ class SimBrief extends Model
      */
     protected function images(): Attribute
     {
-        return Attribute::make(get: function () {
+        return Attribute::make(get: function (): Collection {
             $images = collect();
             $base_url = $this->ofp->images->directory;
             foreach ($this->ofp->images->map as $image) {
@@ -104,7 +106,7 @@ class SimBrief extends Model
      */
     protected function files(): Attribute
     {
-        return Attribute::make(get: function () {
+        return Attribute::make(get: function (): Collection {
             $flightplans = collect();
             $base_url = $this->ofp->fms_downloads->directory;
 
@@ -142,6 +144,7 @@ class SimBrief extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

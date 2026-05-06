@@ -65,6 +65,7 @@ class UserField extends Model
         );
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -47,6 +47,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereValue($value)
+ * @method static Builder<static>|Setting                               byKey(string $key)
  *
  * @mixin \Eloquent
  */
@@ -73,7 +74,7 @@ class Setting extends Model
 
     public static function formatKey($key): string
     {
-        return str_replace('.', '_', strtolower($key));
+        return str_replace('.', '_', strtolower((string) $key));
     }
 
     /**
@@ -82,7 +83,7 @@ class Setting extends Model
     public function id(): Attribute
     {
         return Attribute::make(
-            get: fn ($id, $attrs) => self::formatKey(strtolower($id))
+            get: fn ($id, $attrs): string => self::formatKey(strtolower((string) $id))
         );
     }
 
@@ -92,7 +93,7 @@ class Setting extends Model
     public function key(): Attribute
     {
         return Attribute::make(
-            set: fn ($key) => strtolower($key)
+            set: fn ($key) => strtolower((string) $key)
         );
     }
 

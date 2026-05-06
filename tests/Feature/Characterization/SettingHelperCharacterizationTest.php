@@ -29,7 +29,7 @@ function seedSetting(array $attrs): void
     DB::table('settings')->insert($row);
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Seed the 5 type branches.
     seedSetting(['id' => 'general.name',         'name' => 'Name',     'value' => 'phpvms',     'type' => 'string']);
     seedSetting(['id' => 'general.use_x',        'name' => 'UseX',     'value' => '1',          'type' => 'bool']);
@@ -38,59 +38,59 @@ beforeEach(function () {
     seedSetting(['id' => 'general.fuel_factor',  'name' => 'Fuel',     'value' => '1.5',        'type' => 'float']);
 });
 
-test('setting() returns string for string-typed setting', function () {
+test('setting() returns string for string-typed setting', function (): void {
     expect(setting('general.name'))->toBe('phpvms');
 });
 
-test('setting() returns true bool for value 1', function () {
+test('setting() returns true bool for value 1', function (): void {
     expect(setting('general.use_x'))->toBeTrue();
 });
 
-test('setting() returns false bool for value 0', function () {
+test('setting() returns false bool for value 0', function (): void {
     // SettingObserver::creating normalizes the id (dots → underscores), so
     // direct queries must use the formatted key (or the Setting::byKey scope).
     Setting::byKey('general.use_x')->update(['value' => '0']);
     expect(setting('general.use_x'))->toBeFalse();
 });
 
-test('setting() returns Carbon date for date-typed setting', function () {
+test('setting() returns Carbon date for date-typed setting', function (): void {
     $value = setting('general.opening_date');
     expect($value)->toBeInstanceOf(Carbon::class)
         ->and($value->format('Y-m-d'))->toBe('2024-06-01');
 });
 
-test('setting() returns int for int-typed setting', function () {
+test('setting() returns int for int-typed setting', function (): void {
     expect(setting('general.max_pireps'))->toBe(10);
 });
 
-test('setting() returns float for float-typed setting', function () {
+test('setting() returns float for float-typed setting', function (): void {
     expect(setting('general.fuel_factor'))->toBe(1.5);
 });
 
-test('setting() returns default when key is missing', function () {
+test('setting() returns default when key is missing', function (): void {
     expect(setting('general.nonexistent', 'fallback'))->toBe('fallback');
 });
 
-test('setting() returns null when key is missing and no default', function () {
+test('setting() returns null when key is missing and no default', function (): void {
     expect(setting('general.nonexistent'))->toBeNull();
 });
 
-test('setting_save() persists a new value and a subsequent setting() returns it', function () {
+test('setting_save() persists a new value and a subsequent setting() returns it', function (): void {
     setting_save('general.name', 'NewName');
     expect(setting('general.name'))->toBe('NewName');
 });
 
-test('setting_save() coerces a true bool to value 1', function () {
+test('setting_save() coerces a true bool to value 1', function (): void {
     setting_save('general.use_x', true);
     expect(Setting::find(Setting::formatKey('general.use_x'))->value)->toBe('1');
 });
 
-test('setting_save() coerces a false bool to value 0', function () {
+test('setting_save() coerces a false bool to value 0', function (): void {
     setting_save('general.use_x', false);
     expect(Setting::find(Setting::formatKey('general.use_x'))->value)->toBe('0');
 });
 
-test('setting_save() does not create new settings — silently no-ops on missing key', function () {
+test('setting_save() does not create new settings — silently no-ops on missing key', function (): void {
     setting_save('general.does_not_exist', 'x');
     expect(Setting::find(Setting::formatKey('general.does_not_exist')))->toBeNull();
 });

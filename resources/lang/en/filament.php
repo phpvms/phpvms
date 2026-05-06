@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'airline_informations'               => 'Airline Informations',
     'airport_informations'               => 'Airport Informations',
     'awards_informations'                => 'Awards Informations',
-    'awards_description'                 => 'These are the awards that pilots can earn. Each award is assigned an award class, which will be run whenever a pilot\'s stats are changed, including after a PIREP is accepted.',
+    'awards_description'                 => "These are the awards that pilots can earn. Each award is assigned an award class, which will be run whenever a pilot's stats are changed, including after a PIREP is accepted.",
     'award_class'                        => 'Award Class',
     'award_class_param'                  => 'Award Class parameters',
     'awarded'                            => 'Awarded',
@@ -43,7 +45,7 @@ return [
     'rank_auto_approve_acars'            => 'Auto Approve ACARS PIREPs',
     'rank_auto_approve_manual'           => 'Auto Approve Manual PIREPs',
     'rank_auto_promote'                  => 'Auto Promote',
-    'rank_auto_promote_hint'             => 'When a pilot reaches these hours, they\'ll be upgraded to this rank',
+    'rank_auto_promote_hint'             => "When a pilot reaches these hours, they'll be upgraded to this rank",
     'subfleet_informations'              => 'Subfleet Informations',
     'subfleet_description'               => 'Subfleets are aircraft groups. The "type" is a short name. Airlines always group aircraft together by feature, so 737s with winglets might have a type of "B.738-WL". You can create as many as you want, you need at least one, though. Read more about subfleets in the docs.',
     'subfleet_expense_multiplier_hint'   => 'This is the multiplier for all expenses (inc GH costs) being applied to aircraft in this subfleet, as a percentage. Defaults to 100.',
@@ -61,9 +63,9 @@ return [
     'maintenance_cron_setup'             => 'Cron Setup',
     'maintenance_cron_run_recently'      => 'Has the cron been run recently?',
     'maintenance_cron_command'           => 'Cron Command',
-    'maintenance_cron_command_hint'      => 'A cron must be created that runs every minute calling artisan. Here\'s an example command.',
+    'maintenance_cron_command_hint'      => "A cron must be created that runs every minute calling artisan. Here's an example command.",
     'maintenance_cron_web_url'           => 'Web Cron URL',
-    'maintenance_cron_web_url_hint'      => 'If you don\'t have cron access on your server, you can use a web-cron service to access this URL every minute. Keep it disabled if you\'re not using it. It\'s a unique ID that can be reset/changed if needed for security.',
+    'maintenance_cron_web_url_hint'      => "If you don't have cron access on your server, you can use a web-cron service to access this URL every minute. Keep it disabled if you're not using it. It's a unique ID that can be reset/changed if needed for security.",
     'maintenance_cron_change_id'         => 'Enable/Change ID',
     'maintenance_cron_web_updated'       => 'Web cron settings updated',
     'maintenance_check_update'           => 'Check for phpVMS updates',
@@ -72,7 +74,7 @@ return [
     'maintenance_current_version'        => 'Current version: :version',
     'maintenance_clear_cache'            => 'Clear cache',
     'maintenance_cache_cleared'          => 'Cache cleared',
-    'maintenance_recommend_optimize'     => 'We recommend using \'Optimize App\' in order to improve performance and rebuild the cache.',
+    'maintenance_recommend_optimize'     => "We recommend using 'Optimize App' in order to improve performance and rebuild the cache.",
     'maintenance_optimize_app'           => 'Optimize App',
     'maintenance_app_optimized'          => 'Application optimized',
     'maintenance_flush_failed_jobs'      => 'Flush failed jobs',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Airport;
 
-test('Airport::byHub returns only hubs', function () {
+test('Airport::byHub returns only hubs', function (): void {
     Airport::factory()->count(3)->create(['hub' => false]);
     Airport::factory()->create(['hub' => true, 'icao' => 'KORD']);
 
@@ -13,7 +13,7 @@ test('Airport::byHub returns only hubs', function () {
     expect($results->pluck('icao')->all())->toBe(['KORD']);
 });
 
-test('Airport::orderByIcao returns rows in ascending icao order', function () {
+test('Airport::orderByIcao returns rows in ascending icao order', function (): void {
     foreach (['KZZZ', 'KAAA', 'KMMM'] as $icao) {
         Airport::factory()->create(['id' => $icao, 'icao' => $icao]);
     }
@@ -23,7 +23,7 @@ test('Airport::orderByIcao returns rows in ascending icao order', function () {
     expect($results->pluck('icao')->all())->toBe(['KAAA', 'KMMM', 'KZZZ']);
 });
 
-test('Airport::active excludes soft-deleted airports', function () {
+test('Airport::active excludes soft-deleted airports', function (): void {
     Airport::factory()->create(['icao' => 'KAAA']);
     $trashed = Airport::factory()->create(['icao' => 'KBBB']);
     $trashed->delete();
@@ -33,7 +33,7 @@ test('Airport::active excludes soft-deleted airports', function () {
     expect($results->pluck('icao')->all())->toBe(['KAAA']);
 });
 
-test('Airport scopes compose with each other', function () {
+test('Airport scopes compose with each other', function (): void {
     Airport::factory()->create(['icao' => 'KZZZ', 'hub' => true]);
     Airport::factory()->create(['icao' => 'KAAA', 'hub' => true]);
     Airport::factory()->create(['icao' => 'KMMM', 'hub' => false]);
@@ -43,7 +43,7 @@ test('Airport scopes compose with each other', function () {
     expect($results->pluck('icao')->all())->toBe(['KAAA', 'KZZZ']);
 });
 
-test('Airport::resolveRouteBinding upcases the incoming ICAO', function () {
+test('Airport::resolveRouteBinding upcases the incoming ICAO', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK']);
 
     $resolved = (new Airport())->resolveRouteBinding('kjfk');
@@ -52,7 +52,7 @@ test('Airport::resolveRouteBinding upcases the incoming ICAO', function () {
         ->and($resolved->id)->toBe('KJFK');
 });
 
-test('Airport::resolveRouteBinding returns null for unknown ICAO', function () {
+test('Airport::resolveRouteBinding returns null for unknown ICAO', function (): void {
     $resolved = (new Airport())->resolveRouteBinding('XXXX');
 
     expect($resolved)->toBeNull();

@@ -23,29 +23,29 @@ function resolveSearchFlights(array $data): SearchFlightsRequest
     return $request;
 }
 
-test('SearchFlightsRequest accepts plain search string', function () {
+test('SearchFlightsRequest accepts plain search string', function (): void {
     expect(validateSearchFlights(['search' => 'JFK']))->toBe([]);
 });
 
-test('SearchFlightsRequest rejects search longer than 255 chars', function () {
+test('SearchFlightsRequest rejects search longer than 255 chars', function (): void {
     $errors = validateSearchFlights(['search' => str_repeat('a', 256)]);
 
     expect($errors)->toHaveKey('search');
 });
 
-test('SearchFlightsRequest accepts sortable time columns', function () {
+test('SearchFlightsRequest accepts sortable time columns', function (): void {
     expect(validateSearchFlights(['orderBy' => 'dpt_time']))->toBe([])
         ->and(validateSearchFlights(['orderBy' => 'arr_time']))->toBe([]);
 });
 
-test('SearchFlightsRequest accepts legacy multi-column orderBy syntax', function () {
+test('SearchFlightsRequest accepts legacy multi-column orderBy syntax', function (): void {
     expect(validateSearchFlights([
         'orderBy'  => 'flight_number;route_code',
         'sortedBy' => 'asc;desc',
     ]))->toBe([]);
 });
 
-test('SearchFlightsRequest preserves sortable aliases after validation', function () {
+test('SearchFlightsRequest preserves sortable aliases after validation', function (): void {
     $request = resolveSearchFlights([
         'sort'      => 'dpt_time',
         'direction' => 'desc',
@@ -57,7 +57,7 @@ test('SearchFlightsRequest preserves sortable aliases after validation', functio
         ->and($request->input('sortedBy'))->toBe('desc');
 });
 
-test('SearchFlightsRequest keeps explicit orderBy over sortable alias', function () {
+test('SearchFlightsRequest keeps explicit orderBy over sortable alias', function (): void {
     $request = resolveSearchFlights([
         'sort'      => 'dpt_time',
         'direction' => 'desc',

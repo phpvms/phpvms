@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'default' => env('CACHE_DRIVER', 'array'),
     'prefix'  => env('CACHE_PREFIX', ''),

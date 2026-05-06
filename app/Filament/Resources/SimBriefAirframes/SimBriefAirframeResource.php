@@ -24,16 +24,19 @@ class SimBriefAirframeResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return SimBriefAirframeForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return SimBriefAirframesTable::configure($table);
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -41,6 +44,7 @@ class SimBriefAirframeResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['icao', 'airframe_id'];
@@ -49,6 +53,7 @@ class SimBriefAirframeResource extends Resource
     /**
      * @param SimBriefAirframe $record
      */
+    #[\Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name;
@@ -57,6 +62,7 @@ class SimBriefAirframeResource extends Resource
     /**
      * @param SimBriefAirframe $record
      */
+    #[\Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -64,6 +70,7 @@ class SimBriefAirframeResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('common.simbrief_airframe');

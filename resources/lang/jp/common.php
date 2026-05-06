@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'dashboard'      => 'ホーム',
     'administration' => '管理員',

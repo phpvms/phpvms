@@ -18,6 +18,7 @@ class LatestPirepsChart extends ChartWidget
 
     public ?string $filter = 'week';
 
+    #[\Override]
     protected function getData(): array
     {
         $start_date = match ($this->filter) {
@@ -43,10 +44,10 @@ class LatestPirepsChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => __('filament.pireps_field'),
-                    'data'  => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'data'  => $data->map(fn (TrendValue $value): mixed => $value->aggregate),
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => $data->map(fn (TrendValue $value): string => $value->date),
         ];
     }
 
@@ -65,6 +66,7 @@ class LatestPirepsChart extends ChartWidget
         return 'line';
     }
 
+    #[\Override]
     public function getHeading(): string
     {
         return __('filament.pireps_field');

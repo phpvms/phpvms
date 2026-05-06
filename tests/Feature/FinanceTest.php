@@ -29,7 +29,7 @@ use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-beforeEach(function () {
+beforeEach(function (): void {
     loadYamlIntoDb('fleet');
 });
 
@@ -150,7 +150,7 @@ function createFullPirep(?Airline $airline = null): array
     return [$user, $pirep, $fares];
 }
 
-test('flight fares over api', function () {
+test('flight fares over api', function (): void {
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
@@ -218,7 +218,7 @@ test('flight fares over api', function () {
     // Fares, etc, should be adjusted, per-subfleet
 });
 
-test('flight fares over api on user bids', function () {
+test('flight fares over api on user bids', function (): void {
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
@@ -243,6 +243,7 @@ test('flight fares over api on user bids', function () {
     // set an override now (but on the flight)
     //
     $fareSvc->setForFlight($flight, $fare, ['price' => 50]);
+
     $bid = $bidSvc->addBid($flight, $user);
 
     $req = $this->get('/api/user/bids');
@@ -255,7 +256,7 @@ test('flight fares over api on user bids', function () {
         ->and($body[0]['flight']['fares'][0]['capacity'])->toEqual($fare->capacity);
 });
 
-test('subfleet fares over api', function () {
+test('subfleet fares over api', function (): void {
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
@@ -287,7 +288,7 @@ test('subfleet fares over api', function () {
         ->and($body['subfleets'][0]['fares'][0]['capacity'])->toEqual($fare->capacity);
 });
 
-test('flight fare override as percent', function () {
+test('flight fare override as percent', function (): void {
     $flight = Flight::factory()->create();
     $fare = Fare::factory()->create();
 
@@ -320,13 +321,14 @@ test('flight fare override as percent', function () {
         ->and($ac_fares[0]->capacity)->toEqual($new_capacity);
 });
 
-test('subfleet fares no override', function () {
+test('subfleet fares no override', function (): void {
     $subfleet = Subfleet::factory()->create();
     $fare = Fare::factory()->create();
 
     $fareSvc = app(FareService::class);
 
     $fareSvc->setForSubfleet($subfleet, $fare);
+
     $subfleet_fares = $fareSvc->getForSubfleet($subfleet);
 
     expect($subfleet_fares)->toHaveCount(1)
@@ -353,7 +355,7 @@ test('subfleet fares no override', function () {
     expect($fareSvc->getForSubfleet($subfleet))->toHaveCount(0);
 });
 
-test('subfleet fares override', function () {
+test('subfleet fares override', function (): void {
     $subfleet = Subfleet::factory()->create();
     $fare = Fare::factory()->create();
 
@@ -389,7 +391,7 @@ test('subfleet fares override', function () {
     expect($fareSvc->getForSubfleet($subfleet))->toHaveCount(0);
 });
 
-test('subfleet fare override as percent', function () {
+test('subfleet fare override as percent', function (): void {
     $subfleet = Subfleet::factory()->create();
     $fare = Fare::factory()->create();
 
@@ -417,7 +419,7 @@ test('subfleet fare override as percent', function () {
         ->and($ac_fares[0]->capacity)->toEqual($new_capacity);
 });
 
-test('get fares with overrides', function () {
+test('get fares with overrides', function (): void {
     $flight = Flight::factory()->create();
     $subfleet = Subfleet::factory()->create();
     [$fare1, $fare2, $fare3, $fare4] = Fare::factory()->count(4)->create();
@@ -472,7 +474,7 @@ test('get fares with overrides', function () {
     }
 });
 
-test('get fares no flight overrides', function () {
+test('get fares no flight overrides', function (): void {
     $subfleet = Subfleet::factory()->create();
     [$fare1, $fare2, $fare3] = Fare::factory()->count(3)->create();
 
@@ -514,7 +516,7 @@ test('get fares no flight overrides', function () {
     }
 });
 
-test('get pilot pay no override', function () {
+test('get pilot pay no override', function (): void {
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
     app(FleetService::class)->addSubfleetToRank($subfleet, $rank);
@@ -533,7 +535,7 @@ test('get pilot pay no override', function () {
     expect($rate)->toEqual($rank->acars_base_pay_rate);
 });
 
-test('get pilot pay with override', function () {
+test('get pilot pay with override', function (): void {
     $acars_pay_rate = 100;
 
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
@@ -584,7 +586,7 @@ test('get pilot pay with override', function () {
     expect($rate)->toEqual($acars_pay_rate);
 });
 
-test('get pirep pilot pay', function () {
+test('get pirep pilot pay', function (): void {
     $acars_pay_rate = 100;
 
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
@@ -621,7 +623,7 @@ test('get pirep pilot pay', function () {
     expect(150)->toEqual($payment->getValue());
 });
 
-test('get pirep pilot pay with fixed price', function () {
+test('get pirep pilot pay with fixed price', function (): void {
     $acars_pay_rate = 100;
 
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
@@ -663,7 +665,7 @@ test('get pirep pilot pay with fixed price', function () {
     expect(150)->toEqual($payment->getValue());
 });
 
-test('journal operations', function () {
+test('journal operations', function (): void {
     $journalSvc = app(JournalService::class);
     $journalQuery = app(JournalTransactionQuery::class);
 
@@ -716,7 +718,7 @@ test('journal operations', function () {
         ->and($transactions['debits']->getValue())->toEqual(25);
 });
 
-test('pirep fares', function () {
+test('pirep fares', function (): void {
     [$user, $pirep, $fares] = createFullPirep();
 
     // Override the fares
@@ -745,7 +747,7 @@ test('pirep fares', function () {
     }
 });
 
-test('pirep expenses', function () {
+test('pirep expenses', function (): void {
     $financeSvc = app(FinanceService::class);
 
     $airline = Airline::factory()->create();
@@ -772,7 +774,7 @@ test('pirep expenses', function () {
 
     expect($expenses)->toHaveCount(2);
 
-    $found = $expenses->where('airline_id', null);
+    $found = $expenses->where('airline_id');
     expect($found)->toHaveCount(1);
 
     $found = $expenses->where('airline_id', $airline->id);
@@ -804,7 +806,7 @@ test('pirep expenses', function () {
         ->and($expense->ref_model_id)->toEqual($expense->ref_model->id);
 });
 
-test('airport expenses', function () {
+test('airport expenses', function (): void {
     $financeSvc = app(FinanceService::class);
 
     $apt1 = Airport::factory()->create();
@@ -838,7 +840,7 @@ test('airport expenses', function () {
     expect($expenses)->toHaveCount(3);
 });
 
-test('pirep finances', function () {
+test('pirep finances', function (): void {
     $journalQuery = app(JournalTransactionQuery::class);
     $fareSvc = app(FareService::class);
     $pirepSvc = app(PirepService::class);
@@ -893,7 +895,7 @@ test('pirep finances', function () {
     }
 });
 
-test('pirep finances specific expense', function () {
+test('pirep finances specific expense', function (): void {
     $journalQuery = app(JournalTransactionQuery::class);
     $fareSvc = app(FareService::class);
     $pirepSvc = app(PirepService::class);
@@ -1013,7 +1015,7 @@ test('pirep finances specific expense', function () {
     }
 });
 
-test('pirep finances expenses multi airline', function () {
+test('pirep finances expenses multi airline', function (): void {
     $airline = Airline::factory()->create();
 
     /** @var JournalTransactionQuery $journalQuery */
@@ -1102,7 +1104,7 @@ test('pirep finances expenses multi airline', function () {
         ->and($transactions['debits']->getValue())->toEqual(2050.4);
 });
 
-test('pirep expenses nightly', function () {
+test('pirep expenses nightly', function (): void {
     $journalQuery = app(JournalTransactionQuery::class);
     $pirepSvc = app(PirepService::class);
 
@@ -1170,7 +1172,7 @@ test('pirep expenses nightly', function () {
         ->and($airline2->journal->transactions()->count())->toBeGreaterThan(0);
 });
 
-test('daily expenses are applied', function () {
+test('daily expenses are applied', function (): void {
     Carbon::setTestNow(now());
 
     /** @var Airline $airline */
@@ -1209,7 +1211,7 @@ test('daily expenses are applied', function () {
     ]);
 });
 
-test('get all airline transactions between loads journals in one query', function () {
+test('get all airline transactions between loads journals in one query', function (): void {
     Airline::factory()->create(['icao' => 'BBBBB', 'iata' => 'BB']);
     Airline::factory()->create(['icao' => 'AAAAA', 'iata' => 'AA']);
 

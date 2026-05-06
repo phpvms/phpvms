@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +28,7 @@ return [
     'lottery'         => [1, 100],
     'cookie'          => 'phpvms_session',
     'path'            => '/',
-    'domain'          => env('SESSION_DOMAIN', null),
-    'secure'          => env('SESSION_SECURE_COOKIE', null),
+    'domain'          => env('SESSION_DOMAIN'),
+    'secure'          => env('SESSION_SECURE_COOKIE'),
     'http_only'       => true,
 ];

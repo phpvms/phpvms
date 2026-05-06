@@ -10,14 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class DiscordWebhook
 {
-    private $httpClient;
+    public function __construct(private readonly HttpClient $httpClient) {}
 
-    public function __construct(HttpClient $httpClient)
-    {
-        $this->httpClient = $httpClient;
-    }
-
-    public function send($notifiable, Notification $notification)
+    public function send($notifiable, Notification $notification): void
     {
         if (!method_exists($notification, 'toDiscordChannel')) {
             return;
@@ -41,10 +36,10 @@ class DiscordWebhook
         try {
             $data = $message->toArray();
             $this->httpClient->post($webhook_url, $data);
-        } catch (RequestException $e) {
-            $request = Message::toString($e->getRequest());
-            $response = Message::toString($e->getResponse());
-            Log::error('Error sending Discord notification: request: '.$e->getMessage().', '.$request);
+        } catch (RequestException $requestException) {
+            $request = Message::toString($requestException->getRequest());
+            $response = Message::toString($requestException->getResponse());
+            Log::error('Error sending Discord notification: request: '.$requestException->getMessage().', '.$request);
             Log::error('Error sending Discord notification: response: '.$response);
         }
     }

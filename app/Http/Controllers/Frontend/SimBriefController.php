@@ -105,16 +105,14 @@ class SimBriefController
                 $where['airport_id'] = $flight->dpt_airport_id;
             }
 
-            $withCount = ['simbriefs' => function ($query) {
+            $withCount = ['simbriefs' => function ($query): void {
                 $query->whereNull('pirep_id');
             }];
 
             // Build proper aircraft collection considering all possible settings
             // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
             $aircraft = Aircraft::withCount($withCount)->with(['sbaircraft', 'sbairframes'])->where($where)
-                ->when(setting('simbrief.block_aircraft'), function ($query) {
-                    return $query->having('simbriefs_count', 0);
-                })->whereIn('subfleet_id', $subfleet_ids)
+                ->when(setting('simbrief.block_aircraft'), fn ($query) => $query->having('simbriefs_count', 0))->whereIn('subfleet_id', $subfleet_ids)
                 ->orderby('icao')->orderby('registration')
                 ->get();
 
@@ -195,7 +193,11 @@ class SimBriefController
 
         /** @var Fare $fare */
         foreach ($all_fares as $fare) {
-            if ($fare->type !== FareType::PASSENGER || empty($fare->capacity)) {
+            if ($fare->type !== FareType::PASSENGER) {
+                continue;
+            }
+
+            if (empty($fare->capacity)) {
                 continue;
             }
 
@@ -227,7 +229,11 @@ class SimBriefController
         $tcargoload = 0;
         $cargo_load_sheet = [];
         foreach ($all_fares as $fare) {
-            if ($fare->type !== FareType::CARGO || empty($fare->capacity)) {
+            if ($fare->type !== FareType::CARGO) {
+                continue;
+            }
+
+            if (empty($fare->capacity)) {
                 continue;
             }
 
@@ -265,7 +271,7 @@ class SimBriefController
         ];
 
         $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
-        $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode($aircraft->sbaircraft->details)) : null;
+        $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode((string) $aircraft->sbaircraft->details)) : null;
         $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', AirframeSource::INTERNAL) : $aircraft->sbairframes;
 
         // Show the main simbrief form
@@ -431,7 +437,7 @@ class SimBriefController
         $ofp_id = $request->input('ofp_id');
         $flight_id = $request->input('flight_id');
         $aircraft_id = $request->input('aircraft_id');
-        $sb_userid = $request->input('sb_userid');
+        $request->input('sb_userid');
         $sb_static_id = $request->input('sb_static_id');
         $fares = [];
 
@@ -453,7 +459,7 @@ class SimBriefController
      */
     public function api_code(Request $request): RedirectResponse|JsonResponse
     {
-        $apiKey = setting('simbrief.api_key', null);
+        $apiKey = setting('simbrief.api_key');
         if (empty($apiKey)) {
             flash()->error('Invalid SimBrief API key!');
 

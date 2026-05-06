@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'flightnumber'     => 'Flight Number',
     'flighttime'       => 'Flight Time',
@@ -56,7 +58,7 @@ return [
     'weather'          => 'Weather',
     'aircraftbooking'  => 'Aircraft Booking',
     'bookaircraft'     => 'Book Aircraft',
-    'dontbookaircraft' => 'Don\'t Book Aircraft',
+    'dontbookaircraft' => "Don't Book Aircraft",
     'routecode'        => 'Route Code',
     'routeleg'         => 'Route Leg',
     'pilotpay'         => 'Pilot Pay',

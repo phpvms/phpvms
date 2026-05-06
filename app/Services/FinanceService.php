@@ -35,7 +35,7 @@ class FinanceService extends Service
         $expense = new Expense($attrs);
 
         if ($model instanceof Model) {
-            $expense->ref_model_type = get_class($model);
+            $expense->ref_model_type = $model::class;
             $expense->ref_model_id = $model->id;
         } else {
             $expense->ref_model_type = Expense::class;
@@ -77,7 +77,7 @@ class FinanceService extends Service
     ): Collection {
         $ref_model_type = null;
         if ($ref_model !== null) {
-            $ref_model_type = is_object($ref_model) ? get_class($ref_model) : $ref_model;
+            $ref_model_type = is_object($ref_model) ? $ref_model::class : $ref_model;
         }
 
         // Global lane: airline_id IS NULL
@@ -167,7 +167,7 @@ class FinanceService extends Service
      *
      * @param string $month In Y-m format
      */
-    public function getAllAirlineTransactionsBetween($month): array
+    public function getAllAirlineTransactionsBetween(string $month): array
     {
         $between = Dates::getMonthBoundary($month);
 
@@ -191,12 +191,11 @@ class FinanceService extends Service
      * with `credits`, `debits` and `transactions` fields, where transactions contains the
      * grouped transactions (e.g, "Fares" and "Ground Handling", etc)
      *
-     * @param  Airline $airline
-     * @param  string  $start_date YYYY-MM-DD
-     * @param  string  $end_date   YYYY-MM-DD
-     * @return array
+     * @param Airline $airline
+     * @param string  $start_date YYYY-MM-DD
+     * @param string  $end_date   YYYY-MM-DD
      */
-    public function getAirlineTransactionsBetween($airline, $start_date, $end_date)
+    public function getAirlineTransactionsBetween($airline, $start_date, $end_date): array
     {
         // Return all the transactions, grouped by the transaction group
         $transactions = JournalTransaction::groupBy('transaction_group', 'currency')

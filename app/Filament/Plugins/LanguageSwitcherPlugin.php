@@ -65,8 +65,8 @@ final class LanguageSwitcherPlugin implements Plugin
         return view('filament.plugins.language-switcher', [
             'currentLocale' => $currentLocale,
             'locales'       => $locales,
-            'getLabel'      => fn (string $locale): string => $this->getLabel($locale),
-            'getFlag'       => fn (string $locale): string => $this->getFlag($locale),
+            'getLabel'      => $this->getLabel(...),
+            'getFlag'       => $this->getFlag(...),
         ]);
     }
 

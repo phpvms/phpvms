@@ -47,6 +47,10 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTransactionGroup($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereUpdatedAt($value)
  *
+ * @property string|null $ref_model
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModel($value)
+ *
  * @mixin \Eloquent
  */
 #[ObservedBy(JournalTransactionObserver::class)]
@@ -79,11 +83,12 @@ class JournalTransaction extends Model
     /**
      * @param string $currency
      */
-    public function setCurrency($currency)
+    public function setCurrency($currency): void
     {
         $this->currency = $currency;
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

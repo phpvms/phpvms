@@ -100,7 +100,7 @@ class FlightController extends Controller
         }
 
         $query = $this->flightSearchQuery->build($request)
-            ->whereHas('airline', function ($q) {
+            ->whereHas('airline', function ($q): void {
                 $q->where('active', true);
             });
 
@@ -116,13 +116,11 @@ class FlightController extends Controller
                 'arr_airport',
                 'dpt_airport',
                 'subfleets.airline',
-                'simbrief' => function ($q) use ($user) {
+                'simbrief' => function ($q) use ($user): void {
                     $q->where('user_id', $user->id);
                 },
             ])
-            ->when($filter_by_user, function ($q) use ($allowed_flights) {
-                return $q->whereIn('id', $allowed_flights);
-            })
+            ->when($filter_by_user, fn ($q) => $q->whereIn('id', $allowed_flights))
             ->orderBy('route_code')->orderBy('route_leg')
             ->paginate(paginate_limit($request->integer('limit') ?: null));
 
@@ -201,20 +199,12 @@ class FlightController extends Controller
         $user = Auth::user();
         // Support retrieval of deleted relationships
         $with_flight = [
-            'airline' => function ($query) {
-                return $query->withTrashed();
-            },
-            'alt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
-            'arr_airport' => function ($query) {
-                return $query->withTrashed();
-            },
-            'dpt_airport' => function ($query) {
-                return $query->withTrashed();
-            },
+            'airline'     => fn ($query) => $query->withTrashed(),
+            'alt_airport' => fn ($query) => $query->withTrashed(),
+            'arr_airport' => fn ($query) => $query->withTrashed(),
+            'dpt_airport' => fn ($query) => $query->withTrashed(),
             'subfleets.airline',
-            'simbrief' => function ($query) use ($user) {
+            'simbrief' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             },
         ];

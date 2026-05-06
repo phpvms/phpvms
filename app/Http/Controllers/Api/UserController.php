@@ -50,7 +50,7 @@ class UserController extends Controller
      */
     public function index(Request $request): UserResource
     {
-        $with_subfleets = (!$request->has('with') || str_contains($request->input('with', ''), 'subfleets'));
+        $with_subfleets = (!$request->has('with') || str_contains((string) $request->input('with', ''), 'subfleets'));
 
         return $this->get(Auth::user()->id, $with_subfleets);
     }
@@ -92,6 +92,7 @@ class UserController extends Controller
                 $aircraft_id = $request->input('aircraft_id');
                 $aircraft = Aircraft::find($aircraft_id);
             }
+
             $flight = Flight::findOrFail($flight_id);
             $bid = $this->bidSvc->addBid($flight, $user, $aircraft ?? null);
 
@@ -116,7 +117,7 @@ class UserController extends Controller
         ];
 
         if ($request->has('with')) {
-            $relations = explode(',', $request->input('with', ''));
+            $relations = explode(',', (string) $request->input('with', ''));
         }
 
         // Return the flights they currently have bids on

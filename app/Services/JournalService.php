@@ -64,7 +64,7 @@ class JournalService extends Service
         ];
 
         if ($reference instanceof Model) {
-            $attrs['ref_model_type'] = \get_class($reference);
+            $attrs['ref_model_type'] = $reference::class;
             $attrs['ref_model_id'] = $reference->getKey();
         }
 
@@ -85,7 +85,7 @@ class JournalService extends Service
     public function deleteAllForObject(Model $object, ?Journal $journal = null): void
     {
         $query = JournalTransaction::query()
-            ->where('ref_model_type', \get_class($object))
+            ->where('ref_model_type', $object::class)
             ->where('ref_model_id', $object->getKey());
 
         if ($journal instanceof Journal) {

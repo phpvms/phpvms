@@ -129,17 +129,15 @@ class PirepsTable
                         DatePicker::make('filed_before')
                             ->label(__('filament.filed_before')),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                isset($data['filed_after']) && $data['filed_after'],
-                                fn (Builder $query): Builder => $query->whereDate('submitted_at', '>=', $data['filed_after']),
-                            )
-                            ->when(
-                                isset($data['filed_before']) && $data['filed_before'],
-                                fn (Builder $query): Builder => $query->whereDate('submitted_at', '<=', $data['filed_before']),
-                            );
-                    }),
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when(
+                            isset($data['filed_after']) && $data['filed_after'],
+                            fn (Builder $query): Builder => $query->whereDate('submitted_at', '>=', $data['filed_after']),
+                        )
+                        ->when(
+                            isset($data['filed_before']) && $data['filed_before'],
+                            fn (Builder $query): Builder => $query->whereDate('submitted_at', '<=', $data['filed_before']),
+                        )),
                 TrashedFilter::make(),
             ])
             ->filtersFormColumns(2)

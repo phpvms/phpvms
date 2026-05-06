@@ -124,7 +124,7 @@ class RegisterController extends Controller
         if ($captcha_enabled === true) {
             $rules['h-captcha-response'] = [
                 'required',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $response = $this->httpClient->form_post('https://hcaptcha.com/siteverify', [
                         'secret'   => setting('captcha.secret_key', ''),
                         'response' => $value,
@@ -159,7 +159,7 @@ class RegisterController extends Controller
             }
 
             $invite = Invite::find($request->input('invite'));
-            if (!$invite || $invite->token !== base64_decode($request->input('invite_token'))) {
+            if (!$invite || $invite->token !== base64_decode((string) $request->input('invite_token'))) {
                 abort(403, 'Invalid invite');
             }
 

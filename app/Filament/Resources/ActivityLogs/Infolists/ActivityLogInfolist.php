@@ -32,7 +32,7 @@ class ActivityLogInfolist
 
                                 return $record->causer_id.' | '.class_basename($record->causer_type);
                             })
-                            ->url(fn (Activity $record): ?string => $record->causer_type === 'App\Models\User' ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
+                            ->url(fn (Activity $record): ?string => $record->causer_type === User::class ? UserResource::getUrl('edit', ['record' => $record->causer_id]) : null)
                             ->label(trans('activities.causer')),
 
                         TextEntry::make('created_at')

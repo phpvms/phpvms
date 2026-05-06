@@ -89,9 +89,7 @@ class UserService extends Service
         ?bool $only_public_fields = null,
         bool $with_internal_fields = false,
     ): Collection {
-        $fields = UserField::when(!$with_internal_fields, function ($query) {
-            return $query->where('internal', false);
-        });
+        $fields = UserField::when(!$with_internal_fields, fn ($query) => $query->where('internal', false));
 
         if (is_bool($only_public_fields)) {
             $fields = $fields->where(['private' => !$only_public_fields]);
@@ -99,9 +97,10 @@ class UserService extends Service
 
         $fields = $fields->get();
 
-        return $fields->map(function ($field, $_) use ($user) {
+        return $fields->map(function (UserField $field, $_) use ($user): UserField {
             foreach ($user->fields as $userFieldValue) {
                 if ($userFieldValue->field->slug === $field->slug) {
+                    // @phpstan-ignore-next-line
                     $field->value = $userFieldValue->value;
                 }
             }
@@ -141,10 +140,8 @@ class UserService extends Service
         $user->save();
 
         // Attach any additional roles
-        if ($roles !== []) {
-            foreach ($roles as $role) {
-                $this->addUserToRole($user, $role);
-            }
+        foreach ($roles as $role) {
+            $this->addUserToRole($user, $role);
         }
 
         // Let's check their rank and where they should start
@@ -163,7 +160,7 @@ class UserService extends Service
      *
      * @throws Exception
      */
-    public function removeUser(User $user)
+    public function removeUser(User $user): void
     {
         // Detach all roles from this user
         foreach ($user->roles as $role) {
@@ -278,12 +275,12 @@ class UserService extends Service
 
         /** @var Airline $airline */
         foreach ($airlines as $airline) {
-            if (strpos($pilot_id, $airline->icao) !== false) {
+            if (str_contains($pilot_id, $airline->icao)) {
                 $ident_str = $airline->icao;
                 break;
             }
 
-            if (!empty($airline->iata) && strpos($pilot_id, $airline->iata) !== false) {
+            if (!empty($airline->iata) && str_contains($pilot_id, (string) $airline->iata)) {
                 $ident_str = $airline->iata;
                 break;
             }
@@ -317,7 +314,7 @@ class UserService extends Service
         $date = Carbon::now('UTC');
         $users = User::where('state', UserState::ACTIVE)->get();
 
-        return $users->filter(function (User $user, $i) use ($date, $leave_days) {
+        return $users->filter(function (User $user, $i) use ($date, $leave_days): bool {
             // If any role for this user has the "disable_activity_check" feature activated, skip this user
             foreach ($user->roles()->get() as $role) {
                 /** @var Role $role */
@@ -364,9 +361,7 @@ class UserService extends Service
             $restrict_type = false;
         }
 
-        $subfleetsQuery = Subfleet::when($restrict_rank || $restrict_type, function ($query) use ($restricted_to) {
-            return $query->whereIn('id', $restricted_to);
-        })->with(['aircraft', 'aircraft.bid', 'fares']);
+        $subfleetsQuery = Subfleet::when($restrict_rank || $restrict_type, fn ($query) => $query->whereIn('id', $restricted_to))->with(['aircraft', 'aircraft.bid', 'fares']);
 
         $mapper = function (Subfleet $sf): Subfleet {
             // @phpstan-ignore-next-line
@@ -384,11 +379,8 @@ class UserService extends Service
 
     /**
      * Return a bool if a user is allowed to fly the current aircraft
-     *
-     *
-     * @return bool
      */
-    public function aircraftAllowed($user, $aircraft_id)
+    public function aircraftAllowed($user, $aircraft_id): bool
     {
         $aircraft = Aircraft::findOrFail($aircraft_id, ['subfleet_id']);
         $subfleets = $this->getAllowableSubfleets($user);
@@ -553,7 +545,7 @@ class UserService extends Service
     /**
      * Attach a type rating to the user
      */
-    public function addUserToTypeRating(User $user, Typerating $typerating)
+    public function addUserToTypeRating(User $user, Typerating $typerating): User
     {
         $user->typeratings()->syncWithoutDetaching([$typerating->id]);
         $user->save();
@@ -565,7 +557,7 @@ class UserService extends Service
     /**
      * Detach a type rating from the user
      */
-    public function removeUserFromTypeRating(User $user, Typerating $typerating)
+    public function removeUserFromTypeRating(User $user, Typerating $typerating): User
     {
         $user->typeratings()->detach($typerating->id);
         $user->save();
@@ -596,9 +588,7 @@ class UserService extends Service
             $user->update([
                 'discord_private_channel_id' => $privateChannel,
             ]);
-        } catch (Exception $e) {
-            Log::error('Discord OAuth Error: '.$e->getMessage());
-        } catch (GuzzleException $e) {
+        } catch (Exception|GuzzleException $e) {
             Log::error('Discord OAuth Error: '.$e->getMessage());
         }
     }

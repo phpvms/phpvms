@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'ident'     => 'ＩＤ',
     'home'      => '拠点空港',

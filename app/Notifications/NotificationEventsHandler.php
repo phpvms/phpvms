@@ -53,7 +53,7 @@ class NotificationEventsHandler extends Listener
      */
     protected function notifyAdmins(\App\Contracts\Notification $notification)
     {
-        $admin_users = User::whereHas('roles', function ($query) {
+        $admin_users = User::whereHas('roles', function ($query): void {
             $query->where('name', 'super_admin');
         })->get();
 
@@ -79,8 +79,8 @@ class NotificationEventsHandler extends Listener
 
         try {
             $user->notify($notification);
-        } catch (Exception $e) {
-            Log::emergency('Error emailing user, '.$user->ident.'='.$user->email.', error='.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::emergency('Error emailing user, '.$user->ident.'='.$user->email.', error='.$exception->getMessage());
         }
     }
 

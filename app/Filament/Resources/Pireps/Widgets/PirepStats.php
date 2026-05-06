@@ -22,6 +22,7 @@ class PirepStats extends BaseWidget
         return ListPireps::class;
     }
 
+    #[\Override]
     protected function getStats(): array
     {
         $pirepData = Trend::model(Pirep::class)
@@ -33,7 +34,7 @@ class PirepStats extends BaseWidget
             ->count();
 
         return [
-            Stat::make(trans_choice('common.pirep', 2), $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value) => $value->aggregate)->toArray()),
+            Stat::make(trans_choice('common.pirep', 2), $this->getPageTableQuery()->count())->chart($pirepData->map(fn (TrendValue $value): mixed => $value->aggregate)->toArray()),
             Stat::make(__('pireps.state.accepted'), $this->getPageTableQuery()->where('state', PirepState::ACCEPTED)->count())->color('danger'),
             Stat::make(__('pireps.state.pending'), $this->getPageTableQuery()->where('state', PirepState::PENDING)->count()),
         ];

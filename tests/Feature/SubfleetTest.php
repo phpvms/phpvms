@@ -4,7 +4,7 @@ use App\Models\Fare;
 use App\Models\Subfleet;
 use App\Services\FareService;
 
-test('subfleet fares no override', function () {
+test('subfleet fares no override', function (): void {
     $fare_svc = app(FareService::class);
 
     $subfleet = Subfleet::factory()->hasAircraft(1)->create();

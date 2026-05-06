@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
@@ -38,6 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
+ * @property Pivot       $pivot
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Collection<int, Aircraft> $aircraft
@@ -123,7 +125,7 @@ class Subfleet extends Model
     public function type(): Attribute
     {
         return Attribute::make(
-            set: fn ($type) => str_replace([' ', ','], ['-', ''], $type)
+            set: fn ($type): string|array => str_replace([' ', ','], ['-', ''], $type)
         );
     }
 
@@ -197,6 +199,7 @@ class Subfleet extends Model
     /**
      * The attributes that should be cast to native types.
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

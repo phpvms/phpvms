@@ -21,11 +21,8 @@ class FormRequest extends \Illuminate\Foundation\Http\FormRequest
 
     /**
      * Set a given column as being unique
-     *
-     *
-     * @return array
      */
-    public function unique($table)
+    public function unique($table): array
     {
         return [
             Rule::unique($table)->ignore($this->id, 'id'),

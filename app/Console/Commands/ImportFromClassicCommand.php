@@ -16,7 +16,7 @@ class ImportFromClassicCommand extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $creds = [
             'host'         => $this->argument('db_host'),
@@ -29,6 +29,7 @@ class ImportFromClassicCommand extends Command
         $importerSvc = new LegacyImporterService();
 
         $importerSvc->saveCredentials($creds);
+
         $manifest = $importerSvc->generateImportManifest();
 
         foreach ($manifest as $record) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\SimBriefAirframes\Pages;
 
 use App\Filament\Resources\SimBriefAirframes\SimBriefAirframeResource;
@@ -11,6 +13,7 @@ class ManageSimBriefAirframes extends ManageRecords
 {
     protected static string $resource = SimBriefAirframeResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

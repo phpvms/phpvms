@@ -17,6 +17,7 @@ class TransactionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'transactions';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -55,7 +56,7 @@ class TransactionsRelationManager extends RelationManager
             ->headerActions([
                 Action::make('recalculate_finances')
                     ->label(__('filament.recalculate_finances'))
-                    ->action(function () {
+                    ->action(function (): void {
                         assert($this->getOwnerRecord() instanceof Pirep);
 
                         app(PirepFinanceService::class)->processFinancesForPirep($this->getOwnerRecord());
@@ -74,11 +75,13 @@ class TransactionsRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.transaction', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.transaction', 2);

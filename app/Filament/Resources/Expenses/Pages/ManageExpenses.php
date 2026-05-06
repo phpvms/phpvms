@@ -18,6 +18,7 @@ class ManageExpenses extends ManageRecords
 {
     protected static string $resource = ExpenseResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

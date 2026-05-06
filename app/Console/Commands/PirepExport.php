@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
@@ -15,7 +17,7 @@ class PirepExport extends Command
     /**
      * Run dev related commands
      */
-    public function handle()
+    public function handle(): void
     {
         $pirep_id = $this->argument('id');
         if (empty($pirep_id)) {

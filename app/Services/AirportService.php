@@ -75,7 +75,7 @@ class AirportService extends Service
      * @param  string $icao ICAO
      * @return mixed
      */
-    public function lookupAirport($icao)
+    public function lookupAirport(string $icao)
     {
         $key = config('cache.keys.AIRPORT_VACENTRAL_LOOKUP.key').$icao;
 
@@ -85,7 +85,7 @@ class AirportService extends Service
         }
 
         $airport = $this->lookupProvider->getAirport($icao);
-        if ($airport === null) {
+        if ($airport === []) {
             return [];
         }
 
@@ -164,12 +164,8 @@ class AirportService extends Service
 
         // Convert into a Distance object
         try {
-            $distance = new Distance($dist->greatCircle(), 'mi');
-
-            return $distance;
-        } catch (NonNumericValue $e) {
-            return null;
-        } catch (NonStringUnitName $e) {
+            return new Distance($dist->greatCircle(), 'mi');
+        } catch (NonNumericValue|NonStringUnitName) {
             return null;
         }
     }

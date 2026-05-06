@@ -237,7 +237,7 @@ class Flight extends Model
     public function ident(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, $attrs): string {
                 $flight_id = optional($this->airline)->code;
                 $flight_id .= $this->flight_number;
 
@@ -260,7 +260,7 @@ class Flight extends Model
     public function atc(): Attribute
     {
         return Attribute::make(
-            get: function ($_, $attrs) {
+            get: function ($_, $attrs): string {
                 $flight_atc = optional($this->airline)->icao;
 
                 if (!empty($this->callsign)) {
@@ -301,7 +301,7 @@ class Flight extends Model
         return Attribute::make(
             set: function ($value) {
                 if (\is_array($value)) {
-                    $value = Days::getDaysMask($value);
+                    return Days::getDaysMask($value);
                 }
 
                 return $value;
@@ -380,6 +380,7 @@ class Flight extends Model
         return $this->morphTo('owner', 'owner_type', 'owner_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

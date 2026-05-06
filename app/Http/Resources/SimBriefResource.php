@@ -13,6 +13,7 @@ use Illuminate\Http\Resources\MissingValue;
  */
 class SimBriefResource extends Resource
 {
+    #[\Override]
     public function toArray($request)
     {
         $data = [
@@ -28,11 +29,12 @@ class SimBriefResource extends Resource
                 $fare_data = json_decode($this->fare_data, true);
                 foreach ($fare_data as $fare) {
                     $newFare = new Fare($fare);
+                    // @phpstan-ignore-next-line
                     $newFare->count = $fare['count'];
                     $fares->push($newFare);
                 }
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             // Invalid fare data
         }
 

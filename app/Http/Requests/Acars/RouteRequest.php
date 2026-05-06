@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Acars;
 
 use App\Contracts\FormRequest;
@@ -8,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RouteRequest extends FormRequest
 {
+    #[\Override]
     public function authorize(): bool
     {
         $pirep = Pirep::findOrFail($this->route('pirep_id'), ['user_id']);
@@ -15,6 +18,7 @@ class RouteRequest extends FormRequest
         return $pirep->user_id === Auth::id();
     }
 
+    #[\Override]
     public function rules(): array
     {
         return [

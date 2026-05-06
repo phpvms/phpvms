@@ -54,6 +54,7 @@ class Settings extends Page
         $this->previousUrl = url()->previous();
     }
 
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         return $schema->components([
@@ -102,7 +103,7 @@ class Settings extends Page
             // transaction so a partial failure rolls back BOTH halves rather
             // than leaving the DB with half-saved settings or a half-migrated
             // journal.
-            DB::transaction(function () use ($data) {
+            DB::transaction(function () use ($data): void {
                 $settingService = app(SettingService::class);
                 foreach ($data as $key => $value) {
                     $settingService->store($key, $value);
@@ -115,7 +116,7 @@ class Settings extends Page
                 ->success()
                 ->title('Settings saved successfully')
                 ->send();
-        } catch (Halt $exception) {
+        } catch (Halt) {
             return;
         }
     }
@@ -161,14 +162,16 @@ class Settings extends Page
         foreach ($grouped_settings->groupBy('group') as $group => $settings) {
             $tabs[] = Tab::make(Str::ucfirst($group))
                 ->schema(
-                    $settings->map(function (Setting $setting) {
+                    $settings->map(function (Setting $setting): DatePicker|Toggle|TextInput|Select {
                         if ($setting->type === 'date') {
                             return DatePicker::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
                                 ->format('Y-m-d')
                                 ->native(false);
-                        } elseif ($setting->type === 'boolean' || $setting->type === 'bool') {
+                        }
+
+                        if ($setting->type === 'boolean' || $setting->type === 'bool') {
                             return Toggle::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
@@ -176,24 +179,32 @@ class Settings extends Page
                                 ->offColor('danger')
                                 ->onIcon(Heroicon::CheckCircle)
                                 ->onColor('success');
-                        } elseif ($setting->type === 'int') {
+                        }
+
+                        if ($setting->type === 'int') {
                             return TextInput::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
                                 ->integer();
-                        } elseif ($setting->type === 'number') {
+                        }
+
+                        if ($setting->type === 'number') {
                             return TextInput::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
                                 ->numeric()
                                 ->step(0.01);
-                        } elseif ($setting->type === 'select') {
+                        }
+
+                        if ($setting->type === 'select') {
                             if ($setting->id === 'general_theme') {
                                 return Select::make($setting->key)
                                     ->label($setting->name)
                                     ->helperText($setting->description)
                                     ->options(list_to_assoc($this->getThemes()));
-                            } elseif ($setting->id === 'units_currency') {
+                            }
+
+                            if ($setting->id === 'units_currency') {
                                 return Select::make($setting->key)
                                     ->label($setting->name)
                                     ->helperText($setting->description)
@@ -205,7 +216,7 @@ class Settings extends Page
                             return Select::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
-                                ->options(list_to_assoc(explode(',', $setting->options)));
+                                ->options(list_to_assoc(explode(',', (string) $setting->options)));
                         }
 
                         return TextInput::make($setting->key)
@@ -229,9 +240,18 @@ class Settings extends Page
         $themes = Theme::all();
         $theme_list = [];
         foreach ($themes as $t) {
-            if (!$t || !$t->name || $t->name === 'false') {
+            if (!$t) {
                 continue;
             }
+
+            if (!$t->name) {
+                continue;
+            }
+
+            if ($t->name === 'false') {
+                continue;
+            }
+
             $theme_list[] = $t->name;
         }
 
@@ -249,11 +269,13 @@ class Settings extends Page
         return $curr;
     }
 
+    #[\Override]
     public static function getNavigationLabel(): string
     {
         return trans_choice('common.setting', 2);
     }
 
+    #[\Override]
     public function getTitle(): string
     {
         return trans_choice('common.setting', 2);

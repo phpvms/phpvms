@@ -9,6 +9,8 @@ use App\Services\LegacyImporterService;
 use App\Utils\IdMapper;
 use App\Utils\ImporterDB;
 use Carbon\Carbon;
+use Carbon\Month;
+use Carbon\WeekDay;
 use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -23,10 +25,8 @@ abstract class BaseImporter
 
     /**
      * Holds the connection to the legacy database
-     *
-     * @var ImporterDB
      */
-    protected $db;
+    protected ImporterDB $db;
 
     /**
      * The mapper class used for old IDs to new IDs
@@ -74,7 +74,7 @@ abstract class BaseImporter
 
         // Ensure that the table exists; if it doesn't skip it from the manifest
         if (!$this->db->tableExists($this->table)) {
-            Log::info('Table '.$this->table.' doesn\'t exist');
+            Log::info('Table '.$this->table." doesn't exist");
 
             return [];
         }
@@ -115,7 +115,7 @@ abstract class BaseImporter
     /**
      * @return Carbon
      */
-    protected function parseDate($date)
+    protected function parseDate(\DateTimeInterface|WeekDay|Month|string|int|float|null $date)
     {
         return Carbon::parse($date);
     }
@@ -129,7 +129,7 @@ abstract class BaseImporter
     protected function convertDuration($duration)
     {
         $duration = (string) ($duration ?? '');
-        if (strpos($duration, '.') !== false) {
+        if (str_contains($duration, '.')) {
             $delim = '.';
         } elseif (strpos($duration, ':')) {
             $delim = ':';

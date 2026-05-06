@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console;
 
 use App\Console\Cron\ActivityLogClean;
@@ -27,6 +29,7 @@ class Kernel extends ConsoleKernel
      * Then the CronServiceProvider has the list of cronjobs which then run according to the events
      * and then calls those at the proper times.
      */
+    #[\Override]
     protected function schedule(Schedule $schedule): void
     {
         // If not using the queue worker then run those via cron
@@ -70,6 +73,7 @@ class Kernel extends ConsoleKernel
     /**
      * Register the Closure based commands for the application.
      */
+    #[\Override]
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');

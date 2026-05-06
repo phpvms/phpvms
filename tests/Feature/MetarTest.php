@@ -3,13 +3,13 @@
 use App\Services\AirportService;
 use App\Support\Metar;
 
-test('blank metar', function () {
+test('blank metar', function (): void {
     $metar = '';
     $parsed = Metar::parse($metar);
     expect($parsed['raw'])->toEqual('');
 });
 
-test('metar1', function () {
+test('metar1', function (): void {
     $metar =
         'KJFK 042151Z 28026G39KT 10SM FEW055 SCT095 BKN110 BKN230 12/M04 A2958 RMK AO2 PK WND 27045/2128 PRESRR SLP018 T01221044';
 
@@ -50,7 +50,7 @@ test('metar1', function () {
 
 });
 
-test('metar2', function () {
+test('metar2', function (): void {
     $metar = 'EGLL 261250Z AUTO 17014KT 8000 -RA BKN010/// '
             .'BKN016/// OVC040/// //////TCU 13/12 Q1008 TEMPO 4000 RA';
 
@@ -63,7 +63,7 @@ test('metar2', function () {
         ->and($parsed['clouds'][3]['height'])->toBeNull();
 });
 
-test('metar3', function () {
+test('metar3', function (): void {
     $metar = 'LEBL 310337Z 24006G18KT 210V320 1000 '
         .'R25R/P2000 R07L/1900N R07R/1700D R25L/1900N '
         .'+TSRA SCT006 BKN015 SCT030CB 22/21 Q1018 NOSIG';
@@ -90,7 +90,7 @@ test('metar3', function () {
         ->and($parsed['barometer']['hPa'])->toEqual(1018);
 });
 
-test('metar trends', function () {
+test('metar trends', function (): void {
     $metar =
         'KJFK 070151Z 20005KT 10SM BKN100 08/07 A2970 RMK AO2 SLP056 T00780067';
 
@@ -108,7 +108,7 @@ test('metar trends', function () {
         ->and($parsed['remarks'])->toContain('SLP056');
 });
 
-test('metar trends2', function () {
+test('metar trends2', function (): void {
     $metar = 'KAUS 092135Z 26018G25KT 8SM -TSRA BR SCT045CB BKN060 OVC080 30/21 A2992 RMK FQT LTGICCCCG OHD-W MOVG E  RAB25 TSB32 CB ALQDS  SLP132 P0035 T03020210 =';
     $parsed = Metar::parse($metar);
 
@@ -118,14 +118,14 @@ test('metar trends2', function () {
         ->and($parsed['clouds_report_ft'])->toEqual('Scattered at 4500 feet, cumulonimbus; broken sky at 6000 feet; overcast sky at 8000 feet');
 });
 
-test('metar trends3', function () {
+test('metar trends3', function (): void {
     $metar = 'EHAM 041455Z 13012KT 9999 FEW034CB BKN040 05/01 Q1007 TEMPO 14017G28K 4000 SHRA =';
     $metar = Metar::parse($metar);
 
     expect($metar['category'])->toEqual('VFR');
 });
 
-test('metar4 clouds', function () {
+test('metar4 clouds', function (): void {
     $metar = 'KAUS 171153Z 18006KT 9SM FEW015 FEW250 26/24 A3003 RMK AO2 SLP156 T02560244 10267 20239 $';
     $metar = Metar::parse($metar);
 
@@ -134,7 +134,7 @@ test('metar4 clouds', function () {
         ->and($metar['clouds_report_ft'])->toEqual('Few at 1500 feet; few at 25000 feet');
 });
 
-test('metar wind speed chill', function () {
+test('metar wind speed chill', function (): void {
     $metar = 'EKYT 091020Z /////KT CAVOK 02/M03 Q1019';
     $metar = Metar::parse($metar);
 
@@ -143,7 +143,7 @@ test('metar wind speed chill', function () {
         ->and($metar['visibility']['mi'])->toEqual(6.21);
 });
 
-test('metar5', function () {
+test('metar5', function (): void {
     $metar = 'NZOH 031300Z 04004KT 38KM SCT075 BKN090 15/14 Q1002 RMK AUTO NZPM VATSIM USE ONL';
     $metar = Metar::parse($metar);
 
@@ -151,7 +151,7 @@ test('metar5', function () {
         ->and($metar['visibility_report'])->toEqual('38 km');
 });
 
-test('lgkl', function () {
+test('lgkl', function (): void {
     $metar = 'LGKL 160320Z AUTO VRB02KT //// -RA ////// 07/04 Q1008 RE//';
     $metar = Metar::parse($metar);
 
@@ -159,14 +159,14 @@ test('lgkl', function () {
         ->and($metar['present_weather_report'])->toEqual('Light rain');
 });
 
-test('lbbg', function () {
+test('lbbg', function (): void {
     $metar = 'LBBG 041600Z 12003MPS 310V290 1400 R04/1000D R22/P1500U +SN BKN022 OVC050 M04/M07 Q1020 NOSIG 9949//91=';
     $metar = Metar::parse($metar);
 
     expect($metar['runways_visual_range'][0]['report'])->toEqual('1000m and decreasing');
 });
 
-test('http call success', function () {
+test('http call success', function (): void {
     mockGuzzleResponse('aviationweather/kjfk.txt', 'text/plain');
 
     /** @var AirportService $airportSvc */
@@ -175,7 +175,7 @@ test('http call success', function () {
     expect($airportSvc->getMetar('kjfk'))->toBeInstanceOf(Metar::class);
 });
 
-test('lfrs call', function () {
+test('lfrs call', function (): void {
     mockGuzzleResponse('aviationweather/lfrs.txt', 'text/plain');
 
     /** @var AirportService $airportSvc */
@@ -186,14 +186,14 @@ test('lfrs call', function () {
     expect($metar['cavok'])->toBeTrue();
 });
 
-test('http call success full response', function () {
+test('http call success full response', function (): void {
     mockGuzzleResponse('aviationweather/kphx.txt', 'text/plain');
     $airportSvc = app(AirportService::class);
 
     expect($airportSvc->getMetar('kphx'))->toBeInstanceOf(Metar::class);
 });
 
-test('http call empty', function () {
+test('http call empty', function (): void {
     mockGuzzleResponse('aviationweather/empty.txt', 'text/plain');
     $airportSvc = app(AirportService::class);
 

@@ -19,16 +19,19 @@ class InviteResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return InviteForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return InvitesTable::configure($table);
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -36,11 +39,13 @@ class InviteResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function canAccess(): bool
     {
         return setting('general.invite_only_registrations', false);
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('common.invite');

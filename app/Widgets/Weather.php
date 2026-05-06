@@ -4,6 +4,8 @@ namespace App\Widgets;
 
 use App\Contracts\Widget;
 use App\Services\AirportService;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 
 /**
  * This is a widget for the 3rd party CheckWX service
@@ -18,7 +20,7 @@ class Weather extends Widget
     /**
      * Attempt to get the data from the CheckWX API
      */
-    public function run()
+    public function run(): Factory|View
     {
         /** @var AirportService $airportSvc */
         $airportSvc = app(AirportService::class);

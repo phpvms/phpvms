@@ -8,7 +8,7 @@ use Spatie\Valuestore\Valuestore;
 
 class KvpService
 {
-    private Valuestore $valueStore;
+    private readonly Valuestore $valueStore;
 
     public function __construct()
     {
@@ -16,7 +16,6 @@ class KvpService
     }
 
     /**
-     * @param  null              $default
      * @return array|string|null
      */
     public function retrieve(string $key, mixed $default = null): mixed

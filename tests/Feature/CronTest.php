@@ -16,7 +16,6 @@ function createInProgressPirep($subtractTime): Pirep
     /** @var User $user */
     $user = User::factory()->create();
 
-    /** @var Pirep $pirep */
     return Pirep::factory()->create([
         'user_id'    => $user->id,
         'state'      => PirepState::IN_PROGRESS,
@@ -24,7 +23,7 @@ function createInProgressPirep($subtractTime): Pirep
     ]);
 }
 
-test('expired flight not being removed', function () {
+test('expired flight not being removed', function (): void {
     updateSetting('acars.live_time', 0);
     $pirep = createInProgressPirep(2);
 
@@ -36,7 +35,7 @@ test('expired flight not being removed', function () {
     expect($found_pirep)->not->toBeNull();
 });
 
-test('expired flight should not be removed', function () {
+test('expired flight should not be removed', function (): void {
     updateSetting('acars.live_time', 3);
     $pirep = createInProgressPirep(2);
 
@@ -48,7 +47,7 @@ test('expired flight should not be removed', function () {
     expect($found_pirep)->not->toBeNull();
 });
 
-test('expired flight should be removed', function () {
+test('expired flight should be removed', function (): void {
     updateSetting('acars.live_time', 3);
     $pirep = createInProgressPirep(4);
 
@@ -60,7 +59,7 @@ test('expired flight should be removed', function () {
     expect($found_pirep)->toBeNull();
 });
 
-test('completed flights should not be deleted', function () {
+test('completed flights should not be deleted', function (): void {
     updateSetting('acars.live_time', 3);
     $pirep = createInProgressPirep(4);
 
@@ -76,7 +75,7 @@ test('completed flights should not be deleted', function () {
     expect($found_pirep)->not->toBeNull();
 });
 
-test('delete rejected pireps', function () {
+test('delete rejected pireps', function (): void {
     updateSetting('pireps.delete_rejected_hours', 3);
     $pirep = createInProgressPirep(4);
 
@@ -92,7 +91,7 @@ test('delete rejected pireps', function () {
     expect($found_pirep)->not->toBeNull();
 });
 
-test('delete cancelled pireps', function () {
+test('delete cancelled pireps', function (): void {
     updateSetting('pireps.delete_cancelled_hours', 3);
     $pirep = createInProgressPirep(4);
 

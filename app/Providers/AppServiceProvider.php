@@ -37,23 +37,19 @@ class AppServiceProvider extends ServiceProvider
         //        ->toString()
         // );
 
-        Notification::extend('discord_webhook', function ($app) {
-            return app(DiscordWebhook::class);
-        });
+        Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
     }
 
     /**
      * Register any application services.
      */
+    #[\Override]
     public function register(): void
     {
-        $this->app->singleton('view.finder', function ($app) {
-            return new ThemeViewFinder(
-                $app['files'],
-                $app['config']['view.paths'],
-                null
-            );
-        });
+        $this->app->singleton('view.finder', fn (\application $app): ThemeViewFinder => new ThemeViewFinder(
+            $app['files'],
+            $app['config']['view.paths']
+        ));
 
         // Only load the IDE helper if it's included and enabled
         if (config('app.debug') === true) {

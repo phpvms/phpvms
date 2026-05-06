@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * vaCentral Configurations
  */
-
 return [
     /*
      * Your vaCentral API key

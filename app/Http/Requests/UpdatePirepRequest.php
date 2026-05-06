@@ -12,10 +12,11 @@ class UpdatePirepRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    #[\Override]
     public function rules(): array
     {
         // Don't run validations if it's just being saved
-        $action = strtolower(request('submit', 'submit'));
+        $action = strtolower((string) request('submit', 'submit'));
         if (in_array($action, ['save', 'cancel', 'delete'], true)) {
             return [
                 'airline_id'     => 'required|exists:airlines,id',

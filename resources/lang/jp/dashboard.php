@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'totalhours'     => '合計飛行時間',
     'yourbalance'    => '残金',

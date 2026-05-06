@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Contracts\Model;
@@ -39,6 +41,7 @@ class SimBriefLayout extends Model
         'name_long' => 'required|string',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\User;
@@ -7,12 +9,7 @@ use App\Services\UserService;
 
 class UserObserver
 {
-    private $userSvc;
-
-    public function __construct(UserService $userSvc)
-    {
-        $this->userSvc = $userSvc;
-    }
+    public function __construct(private readonly UserService $userSvc) {}
 
     /**
      * After a user has been created, do some stuff

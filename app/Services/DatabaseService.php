@@ -29,31 +29,25 @@ class DatabaseService extends Service
     }
 
     /**
-     * @param bool $ignore_errors
-     *
      * @throws Exception
      */
-    public function seed_from_yaml_file($yaml_file, $ignore_errors = false): array
+    public function seed_from_yaml_file($yaml_file, bool $ignore_errors = false): array
     {
         return Database::seed_from_yaml_file($yaml_file, $ignore_errors);
     }
 
     /**
-     * @param bool $ignore_errors
-     *
      * @throws Exception
      */
-    public function seed_from_yaml($yml, $ignore_errors = false): array
+    public function seed_from_yaml($yml, bool $ignore_errors = false): array
     {
         return Database::seed_from_yaml($yml, $ignore_errors);
     }
 
     /**
-     * @return mixed
-     *
      * @throws Exception
      */
-    public function insert_row($table, $row)
+    public function insert_row($table, array $row): array
     {
         // see if this table uses a UUID as the PK
         // if no ID is specified

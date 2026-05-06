@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
 use Carbon\Carbon;
@@ -61,8 +63,8 @@ class Dates
         $days = static::getDaysInMonth((int) $month, (int) $year);
 
         return [
-            "$year-$month-01",
-            "$year-$month-$days",
+            sprintf('%s-%s-01', $year, $month),
+            sprintf('%s-%s-%d', $year, $month, $days),
         ];
     }
 

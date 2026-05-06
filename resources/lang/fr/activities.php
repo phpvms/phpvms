@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'activity'           => 'Activité',
     'causer'             => 'Auteur',
-    'causer_information' => 'Informations sur l\'auteur',
-    'causer_type'        => 'Type d\'auteur',
+    'causer_information' => "Informations sur l'auteur",
+    'causer_type'        => "Type d'auteur",
 
     'subject_information' => 'Informations sur le sujet',
     'subject_type'        => 'Type du sujet',

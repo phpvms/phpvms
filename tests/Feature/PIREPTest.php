@@ -35,7 +35,7 @@ use Nwidart\Modules\Facades\Module;
 
 use function Pest\Laravel\seed;
 
-beforeEach(function () {
+beforeEach(function (): void {
     loadYamlIntoDb('fleet');
 });
 
@@ -64,7 +64,7 @@ function getAcarsRoute(Pirep $pirep): array
     return $saved_route;
 }
 
-test('add pirep', function () {
+test('add pirep', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -80,11 +80,7 @@ test('add pirep', function () {
 
     $pirep = $pirepSvc->create($pirep, []);
 
-    try {
-        $pirepSvc->saveRoute($pirep);
-    } catch (Exception $e) {
-        throw $e;
-    }
+    $pirepSvc->saveRoute($pirep);
 
     /*
      * Check the initial state info
@@ -156,7 +152,7 @@ test('add pirep', function () {
     expect($saved_route)->toEqual($route);
 });
 
-test('unit fields', function () {
+test('unit fields', function (): void {
     $pirep = createPirep();
     $pirep->save();
 
@@ -198,7 +194,7 @@ test('unit fields', function () {
     expect(Fuel::make($val, 'kg')->toUnit('lbs', 2))->toEqual($pirep->fuel_used->internal(2));
 });
 
-test('get user pireps', function () {
+test('get user pireps', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -238,7 +234,7 @@ test('get user pireps', function () {
         ->and($pirep_ids->contains($pirep_cancelled->id))->toBeFalse();
 });
 
-test('pirep notifications', function () {
+test('pirep notifications', function (): void {
     seed(ShieldSeeder::class);
 
     $pirepSvc = app(PirepService::class);
@@ -267,7 +263,7 @@ test('pirep notifications', function () {
     Notification::assertNotSentTo([$user], PirepFiled::class);
 });
 
-test('pilot stats incr', function () {
+test('pilot stats incr', function (): void {
     $pirepSvc = app(PirepService::class);
     updateSetting('pilots.count_transfer_hours', false);
 
@@ -351,7 +347,7 @@ test('pilot stats incr', function () {
     $this->assertNotEquals($last_pirep->id, $latest_pirep->id);
 });
 
-test('pilot dont change rank', function () {
+test('pilot dont change rank', function (): void {
     $pirepSvc = app(PirepService::class);
 
     $rank = Rank::factory()->create([
@@ -383,7 +379,7 @@ test('pilot dont change rank', function () {
     expect($pilot->rank_id)->toEqual($rank->id);
 });
 
-test('pilot stats incr with transfer hours', function () {
+test('pilot stats incr with transfer hours', function (): void {
     $pirepSvc = app(PirepService::class);
     updateSetting('pilots.count_transfer_hours', true);
 
@@ -449,7 +445,7 @@ test('pilot stats incr with transfer hours', function () {
     expect($aircraft->flight_time)->toEqual(120);
 });
 
-test('pilot status change', function () {
+test('pilot status change', function (): void {
     $pirepSvc = app(PirepService::class);
     $user = User::factory()->create([
         'state' => UserState::ON_LEAVE,
@@ -471,7 +467,7 @@ test('pilot status change', function () {
     expect($user->state)->toEqual(UserState::ACTIVE);
 });
 
-test('duplicate pireps', function () {
+test('duplicate pireps', function (): void {
     $pirepSvc = app(PirepService::class);
     $user = User::factory()->create();
     $pirep = Pirep::factory()->create([
@@ -496,7 +492,7 @@ test('duplicate pireps', function () {
     expect($dupe_pirep)->toBeFalse();
 });
 
-test('cancel via api', function () {
+test('cancel via api', function (): void {
     $pirep = createPirep();
 
     apiAs($pirep->user);
@@ -507,6 +503,7 @@ test('cancel via api', function () {
     $uri = '/api/pireps/prefile';
     $response = $this->post($uri, $pirep);
     $response->assertStatus(200);
+
     $pirep_id = $response->json()['data']['id'];
 
     $uri = '/api/pireps/'.$pirep_id.'/acars/position';
@@ -532,7 +529,7 @@ test('cancel via api', function () {
     $response->assertStatus(400);
 });
 
-test('pirep bid removed', function () {
+test('pirep bid removed', function (): void {
     $bidSvc = app(BidService::class);
     $pirepSvc = app(PirepService::class);
 
@@ -555,6 +552,7 @@ test('pirep bid removed', function () {
     ]);
 
     $pirep = $pirepSvc->create($pirep, []);
+
     $pirepSvc->submit($pirep);
 
     $user_bid = Bid::where([
@@ -565,7 +563,7 @@ test('pirep bid removed', function () {
     expect($user_bid)->toBeNull();
 });
 
-test('pirep create returns not found for missing flight', function () {
+test('pirep create returns not found for missing flight', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -573,7 +571,7 @@ test('pirep create returns not found for missing flight', function () {
         ->assertNotFound();
 });
 
-test('pirep progress percent', function () {
+test('pirep progress percent', function (): void {
     updateSetting('units.distance', 'km');
 
     $user = User::factory()->create();
@@ -598,7 +596,7 @@ test('pirep progress percent', function () {
     expect($progress)->toEqual(100);
 });
 
-test('notification formatting', function () {
+test('notification formatting', function (): void {
     updateSetting('units.distance', 'km');
 
     /** @var User $user */
@@ -629,7 +627,7 @@ test('notification formatting', function () {
         ->and($fields['Distance'])->toEqual('185.2 km');
 });
 
-test('diversion handler', function () {
+test('diversion handler', function (): void {
     updateSetting('pireps.handle_diversion', true);
     updateSetting('notifications.discord_pirep_diverted', true);
 
@@ -677,10 +675,10 @@ test('diversion handler', function () {
     Notification::assertSentTo([$pirep], PirepDiverted::class);
 });
 
-test('diversion handler reuses matching reposition flight and attaches subfleet', function () {
+test('diversion handler reuses matching reposition flight and attaches subfleet', function (): void {
     updateSetting('pireps.handle_diversion', true);
 
-    Schema::create('vmsacars_config', function (Blueprint $table) {
+    Schema::create('vmsacars_config', function (Blueprint $table): void {
         $table->string('id')->primary();
         $table->string('value')->nullable();
     });

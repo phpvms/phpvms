@@ -20,7 +20,7 @@ use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
@@ -54,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
@@ -73,7 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 // Labels should be in a closure to allow for translation
 
                 NavigationItem::make()
-                    ->label(fn () => __('common.go_back_to', ['name' => config('app.name')]))
+                    ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
                     ->icon(Heroicon::OutlinedArrowUturnLeft)
                     ->url('/'),
 
@@ -82,7 +82,7 @@ class AdminPanelProvider extends PanelProvider
                     ->group(EnumsNavigationGroup::Developers)
                     ->sort(3)
                     ->icon(Heroicon::OutlinedDocumentText)
-                    ->label(fn () => __('common.view_logs'))
+                    ->label(fn (): string => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
@@ -95,7 +95,7 @@ class AdminPanelProvider extends PanelProvider
                 ModuleLinksPlugin::make(),
                 LanguageSwitcherPlugin::make(),
             ])
-            ->bootUsing(function () {
+            ->bootUsing(function (): void {
                 activity()->enableLogging();
             })
             ->brandName('phpVMS')
@@ -107,6 +107,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
 
+    #[\Override]
     public function register(): void
     {
         parent::register();

@@ -14,6 +14,7 @@ class FaresRelationManager extends RelationManager
 {
     protected static string $relationship = 'fares';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -60,11 +61,13 @@ class FaresRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.fare', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.fare', 2);

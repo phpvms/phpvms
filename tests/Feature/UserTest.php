@@ -20,7 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
-test('rank subfleets', function () {
+test('rank subfleets', function (): void {
     $userSvc = app(UserService::class);
 
     // Add subfleets and aircraft, but also add another
@@ -74,7 +74,7 @@ test('rank subfleets', function () {
     expect($aircraft_from_api)->toEqual($added_aircraft);
 });
 
-test('get all aircraft', function () {
+test('get all aircraft', function (): void {
     $fareSvc = app(FareService::class);
     $userSvc = app(UserService::class);
 
@@ -138,7 +138,7 @@ test('get all aircraft', function () {
         ->and($overrides['capacity'])->toEqual($subfleetAFromApi['fares'][0]['capacity']);
 });
 
-test('get aircraft allowed from flight', function () {
+test('get aircraft allowed from flight', function (): void {
     // Add subfleets and aircraft, but also add another
     // set of subfleets
     $airport = Airport::factory()->create();
@@ -172,6 +172,7 @@ test('get aircraft allowed from flight', function () {
 
     $response = $this->get('/api/flights/'.$flight->id, [], $user);
     $response->assertStatus(200);
+
     expect($response->json()['data']['subfleets'])->toHaveCount(2);
 
     /*
@@ -184,6 +185,7 @@ test('get aircraft allowed from flight', function () {
      */
     $response = $this->get('/api/flights/'.$flight->id, [], $user);
     $response->assertStatus(200);
+
     expect($response->json()['data']['subfleets'])->toHaveCount(1);
 
     /**
@@ -199,11 +201,12 @@ test('get aircraft allowed from flight', function () {
      */
     $response = $this->get('/api/flights/search?flight_id='.$flight->id, [], $user);
     $response->assertStatus(200);
+
     $body = $response->json()['data'];
     expect($body[0]['subfleets'])->toHaveCount(1);
 });
 
-test('api flight list excludes flights without allowable subfleets', function () {
+test('api flight list excludes flights without allowable subfleets', function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', true);
@@ -239,7 +242,7 @@ test('api flight list excludes flights without allowable subfleets', function ()
     $response = $this->get('/api/flights');
     $response->assertOk();
 
-    $flightIds = collect($response->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->all();
+    $flightIds = collect($response->json('data'))->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
     expect($flightIds)
         ->toContain($allowedFlight->id)
@@ -248,17 +251,18 @@ test('api flight list excludes flights without allowable subfleets', function ()
 
     $searchResponse = $this->get('/api/flights/search?flight_id='.$restrictedFlight->id);
     $searchResponse->assertOk();
+
     expect($searchResponse->json('data'))->toHaveCount(0);
 });
 
-test('user pilot id change already exists', function () {
+test('user pilot id change already exists', function (): void {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
     app(UserService::class)->changePilotId($user1, $user2->pilot_id);
 })->throws(UserPilotIdExists::class);
 
-test('user pilot id split', function () {
+test('user pilot id split', function (): void {
     $userSvc = app(UserService::class);
 
     $user = User::factory()->create();
@@ -270,21 +274,21 @@ test('user pilot id split', function () {
     expect($found_user->id)->toEqual($user->id);
 });
 
-test('user pilot id split invalid id', function () {
+test('user pilot id split invalid id', function (): void {
     /** @var User $user */
     $user = User::factory()->create();
 
     app(UserService::class)->findUserByPilotId($user->airline->iata);
 })->throws(PilotIdNotFound::class);
 
-test('user pilot id invalid iata', function () {
+test('user pilot id invalid iata', function (): void {
     $airline = Airline::factory()->create(['icao' => 'ABC', 'iata' => null]);
     $user = User::factory()->create(['airline_id' => $airline->id]);
 
     app(UserService::class)->findUserByPilotId('123');
 })->throws(PilotIdNotFound::class);
 
-test('user pilot id added', function () {
+test('user pilot id added', function (): void {
     $userSvc = app(UserService::class);
 
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
@@ -307,7 +311,7 @@ test('user pilot id added', function () {
     expect($user3->pilot_id)->toEqual(5);
 });
 
-test('user pilot deleted', function () {
+test('user pilot deleted', function (): void {
     $userSvc = app(UserService::class);
 
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
@@ -330,7 +334,7 @@ test('user pilot deleted', function () {
     expect($user)->toBeNull();
 });
 
-test('user pilot deleted with pireps', function () {
+test('user pilot deleted with pireps', function (): void {
     $userSvc = app(UserService::class);
 
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
@@ -342,7 +346,6 @@ test('user pilot deleted with pireps', function () {
     $user = $userSvc->createUser($new_user);
     expect($user->pilot_id)->toEqual($user->id);
 
-    /** @var Pirep $pirep */
     Pirep::factory()->create([
         'user_id' => $user->id,
     ]);
@@ -359,7 +362,7 @@ test('user pilot deleted with pireps', function () {
     $this->assertNotEquals($new_user['password'], $user->password);
 });
 
-test('user name private', function () {
+test('user name private', function (): void {
     $vals = [
         'Firstname'                     => 'Firstname',
         'Firstname Lastname'            => 'Firstname L',
@@ -373,7 +376,7 @@ test('user name private', function () {
     }
 });
 
-test('user leave', function () {
+test('user leave', function (): void {
     $userSvc = app(UserService::class);
 
     User::factory()->create([
@@ -441,7 +444,7 @@ test('user leave', function () {
     expect($users_on_leave)->toHaveCount(0);
 });
 
-test('event called when profile updated', function () {
+test('event called when profile updated', function (): void {
     Event::fake();
     $user = User::factory()->create();
 
@@ -465,7 +468,7 @@ test('event called when profile updated', function () {
 | Prettus repository removal) can be verified to be behavior-preserving.
 */
 
-test('pilots list renders all states when hide_inactive is off', function () {
+test('pilots list renders all states when hide_inactive is off', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'PilotActive', 'state' => UserState::ACTIVE]);
@@ -480,7 +483,7 @@ test('pilots list renders all states when hide_inactive is off', function () {
     $response->assertSee('PilotLeave');
 });
 
-test('pilots list filters to active when hide_inactive is on', function () {
+test('pilots list filters to active when hide_inactive is on', function (): void {
     updateSetting('pilots.hide_inactive', true);
 
     User::factory()->create(['name' => 'PilotActive', 'state' => UserState::ACTIVE]);
@@ -495,7 +498,7 @@ test('pilots list filters to active when hide_inactive is on', function () {
     $response->assertDontSee('PilotRejected');
 });
 
-test('pilots list filters by free-text search', function () {
+test('pilots list filters by free-text search', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'JohnDoe', 'state' => UserState::ACTIVE]);
@@ -508,7 +511,7 @@ test('pilots list filters by free-text search', function () {
     $response->assertDontSee('JaneSmith');
 });
 
-test('pilots list filters by field-specific search syntax', function () {
+test('pilots list filters by field-specific search syntax', function (): void {
     updateSetting('pilots.hide_inactive', false);
 
     User::factory()->create(['name' => 'JohnDoe', 'state' => UserState::ACTIVE]);
@@ -521,7 +524,7 @@ test('pilots list filters by field-specific search syntax', function () {
     $response->assertDontSee('BobSmith');
 });
 
-test('LatestPilots widget excludes deleted users and orders by created_at desc', function () {
+test('LatestPilots widget excludes deleted users and orders by created_at desc', function (): void {
     User::factory()->create([
         'name'       => 'Newest',
         'state'      => UserState::ACTIVE,

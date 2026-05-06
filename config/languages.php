@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     // First in the list is the default
     'en' => [

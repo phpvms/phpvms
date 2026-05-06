@@ -17,15 +17,10 @@ abstract class Enum
 
     protected static array $labels = [];
 
-    protected int $value;
-
     /**
      * Create an instance of this Enum
      */
-    final public function __construct($val)
-    {
-        $this->value = $val;
-    }
+    final public function __construct(protected int $value) {}
 
     /**
      * Return the value that's been set if this is an instance
@@ -42,7 +37,7 @@ abstract class Enum
     {
         if (isset(static::$labels[$value])) {
             $val = static::$labels[$value];
-            if (strpos($val, '.') !== false) {
+            if (str_contains($val, '.')) {
                 return trans($val);
             }
 
@@ -131,21 +126,19 @@ abstract class Enum
 
     final public function equals(self $enum): bool
     {
-        return $this->getValue() === $enum->getValue() && static::class === \get_class($enum);
+        return $this->getValue() === $enum->getValue() && static::class === $enum::class;
     }
 
     /**
      * Returns a value when called statically like so: MyEnum::SOME_VALUE() given SOME_VALUE is a
      * class constant
      *
-     * @param  string $name
-     * @param  array  $arguments
      * @return static
      *
      * @throws BadMethodCallException
      * @throws ReflectionException
      */
-    public static function __callStatic($name, $arguments)
+    public static function __callStatic(string $name, array $arguments)
     {
         $array = static::toArray();
         if (isset($array[$name])) {
@@ -153,7 +146,7 @@ abstract class Enum
         }
 
         throw new BadMethodCallException(
-            "No static method or enum constant '$name' in class ".static::class
+            sprintf("No static method or enum constant '%s' in class ", $name).static::class
         );
     }
 }

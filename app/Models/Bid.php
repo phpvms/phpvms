@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUserId($value)
+ * @method static \Database\Factories\BidFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */
@@ -60,6 +61,7 @@ class Bid extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

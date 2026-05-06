@@ -41,6 +41,7 @@ class Maintenance extends Page
 
     // protected string $view = 'filament.pages.maintenance';
 
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         $this->cron = [
@@ -71,7 +72,7 @@ class Maintenance extends Page
                 ->schema([
                     TextEntry::make(__('filament.maintenance_cron_run_recently'))
                         ->color( $cronProblemExists ? 'danger' : 'success')
-                        ->state(fn () => $cronProblemExists ? __('common.no') : __('common.yes')),
+                        ->state(fn (): string => $cronProblemExists ? __('common.no') : __('common.yes')),
 
                     TextInput::make('command')
                         ->label(__('filament.maintenance_cron_command'))
@@ -100,7 +101,7 @@ class Maintenance extends Page
         return Action::make('checkForPhpVMSUpdates')
             ->label(__('filament.maintenance_check_update'))
             ->icon(Heroicon::OutlinedArrowPath)
-            ->action(function () {
+            ->action(function (): void {
                 app(VersionService::class)->isNewVersionAvailable();
 
                 $kvpRepo = app(KvpService::class);
@@ -131,7 +132,7 @@ class Maintenance extends Page
     {
         return Action::make('enableWebCron')
             ->label(__('filament.maintenance_cron_change_id'))
-            ->action(function () {
+            ->action(function (): void {
                 $id = Utils::generateNewId(24);
                 setting_save('cron.random_id', $id);
                 $this->cron['random_id'] = url(route('api.maintenance.cron', $id));
@@ -148,7 +149,7 @@ class Maintenance extends Page
         return Action::make('disableWebCron')
             ->label(__('common.disable'))
             ->color('warning')
-            ->action(function () {
+            ->action(function (): void {
                 setting_save('cron.random_id', '');
 
                 $this->cron['random_id'] = __('common.disabled');
@@ -166,7 +167,7 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedTrash)
             ->color('danger')
             ->label(__('filament.maintenance_clear_cache'))
-            ->action(function () {
+            ->action(function (): void {
                 $calls = [
                     'cache:clear',
                     'optimize:clear',
@@ -191,7 +192,7 @@ class Maintenance extends Page
                     Artisan::call('cache:clear');
 
                     // We have to defer it because it kills the livewire request, thus throwing errors.
-                    defer(function () {
+                    defer(function (): void {
                         Artisan::call('optimize:clear');
                         Artisan::call('filament:optimize-clear');
 
@@ -213,7 +214,7 @@ class Maintenance extends Page
             ->color('danger')
             ->icon(Heroicon::OutlinedTrash)
             ->label(__('filament.maintenance_flush_failed_jobs'))
-            ->action(function () {
+            ->action(function (): void {
                 if (function_exists('proc_open')) {
                     Process::run([$this->getPhpBinary(), base_path('artisan'), 'queue:flush'])->throw();
                 } else {
@@ -233,7 +234,7 @@ class Maintenance extends Page
             ->icon(Heroicon::OutlinedCircleStack)
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
-            ->action(function () {
+            ->action(function (): void {
                 app(SeederService::class)->syncAllSeeds();
 
                 Notification::make()
@@ -248,13 +249,13 @@ class Maintenance extends Page
         return Action::make('optimizeApp')
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
             ->label(__('filament.maintenance_optimize_app'))
-            ->action(function () {
+            ->action(function (): void {
                 if (function_exists('proc_open')) {
                     Process::env(['APP_RUNNING_IN_CONSOLE' => true])
                         ->run([$this->getPhpBinary(), base_path('artisan'), 'optimize'])->throw();
                 } else {
                     // We have to defer it because it kills the livewire request, thus throwing errors.
-                    defer(function () {
+                    defer(function (): void {
                         Artisan::call('optimize');
                         Artisan::call('filament:optimize');
                     });

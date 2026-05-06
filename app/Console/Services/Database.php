@@ -12,14 +12,11 @@ class Database
 {
     /**
      * Create the base connection DSN, optionally include the DB name
-     *
-     * @param  null   $name
-     * @return string
      */
-    public function createDsn($host, $port, $name = null)
+    public function createDsn($host, $port, $name = null): string
     {
         $conn = config('database.default');
-        $dsn = "$conn:host=$host;port=$port";
+        $dsn = sprintf('%s:host=%s;port=%s', $conn, $host, $port);
         if (filled($name)) {
             $dsn .= ';dbname='.$name;
         }
@@ -28,18 +25,12 @@ class Database
     }
 
     /**
-     * @return PDO
-     *
      * @throws PDOException
      */
-    public function createPDO($dsn, $user, $pass)
+    public function createPDO($dsn, $user, $pass): PDO
     {
-        try {
-            $conn = new PDO($dsn, $user, $pass);
-            $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            throw $e;
-        }
+        $conn = new PDO($dsn, $user, $pass);
+        $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 
         return $conn;
     }

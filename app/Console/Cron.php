@@ -24,13 +24,10 @@ use Illuminate\Console\Scheduling\Schedule;
 
 class Cron
 {
-    /** @var Schedule */
-    private $scheduler;
-
     /**
      * @var string[] The cron tasks which get called/run
      */
-    private $cronTasks = [
+    private array $cronTasks = [
         JobQueue::class,
         FiveMinute::class,
         FifteenMinute::class,
@@ -50,9 +47,8 @@ class Cron
      */
     private $cronRunners = [];
 
-    public function __construct(Schedule $scheduler)
+    public function __construct(private readonly Schedule $scheduler)
     {
-        $this->scheduler = $scheduler;
         foreach ($this->cronTasks as $task) {
             /** @var Command $cronTask */
             $cronTask = app($task);
@@ -83,7 +79,7 @@ class Cron
         /** @var Event $event */
         foreach ($events as $event) {
             foreach ($this->cronRunners as $signature => $task) {
-                if (!str_contains($event->command, $signature)) {
+                if (!str_contains((string) $event->command, (string) $signature)) {
                     continue;
                 }
 

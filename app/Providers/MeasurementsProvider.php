@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use Exception;
@@ -18,8 +20,8 @@ class MeasurementsProvider extends ServiceProvider
     {
         try {
             $this->addTemperatures();
-        } catch (Exception $e) {
-            Log::error($e);
+        } catch (Exception $exception) {
+            Log::error('Error adding temperature units: '.$exception->getMessage());
         }
     }
 

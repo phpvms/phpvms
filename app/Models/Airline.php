@@ -74,6 +74,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withoutTrashed()
+ * @method static Builder<static>|Airline                               byIcao(string $icao)
  *
  * @mixin \Eloquent
  */
@@ -86,7 +87,7 @@ class Airline extends Model
     use SoftDeletes;
     use Sortable;
 
-    private const SELECT_LIST_ORDER_COLUMNS = [
+    private const array SELECT_LIST_ORDER_COLUMNS = [
         'id',
         'name',
         'icao',
@@ -196,6 +197,7 @@ class Airline extends Model
     /**
      * The attributes that should be casted to native types.
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

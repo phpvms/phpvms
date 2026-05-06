@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
      *
@@ -40,7 +42,7 @@ return [
     'user_and_airline_setup'            => 'User & Airline Setup',
     'legacy_importer'                   => 'phpVMS v5 Legacy Importer',
     'super_admin_informations'          => 'Super Admin User Informations',
-    'lets_rebuild_cache'                => 'Let\'s rebuild the cache.',
-    'update_completed'                  => 'Update completed successfully. You\'ll be redirected in a few seconds',
+    'lets_rebuild_cache'                => "Let's rebuild the cache.",
+    'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
     'update_phpvms'                     => 'Update phpVMS',
 ];

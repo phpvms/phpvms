@@ -30,16 +30,19 @@ class AirportResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return AirportForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return AirportsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -48,6 +51,7 @@ class AirportResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -57,6 +61,7 @@ class AirportResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -65,6 +70,7 @@ class AirportResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'icao', 'location'];
@@ -73,6 +79,7 @@ class AirportResource extends Resource
     /**
      * @param Airport $record
      */
+    #[\Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name;
@@ -81,6 +88,7 @@ class AirportResource extends Resource
     /**
      * @param Airport $record
      */
+    #[\Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -88,6 +96,7 @@ class AirportResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return __('common.airport');

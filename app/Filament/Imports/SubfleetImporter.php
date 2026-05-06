@@ -80,6 +80,7 @@ class SubfleetImporter extends Importer
         }
     }
 
+    #[\Override]
     public function resolveRecord(): Subfleet
     {
         return Subfleet::withTrashed()->firstOrNew([
@@ -101,7 +102,7 @@ class SubfleetImporter extends Importer
     /**
      * Parse all of the fares in the multi-format
      */
-    private function processFares(Subfleet $subfleet, $col): void
+    private function processFares(Subfleet $subfleet, string $col): void
     {
         $fares = Utils::parseMultiColumnValues($col);
         foreach ($fares as $fare_code => $fare_attributes) {
@@ -119,7 +120,7 @@ class SubfleetImporter extends Importer
     /**
      * Parse all of the rakns in the multi-format
      */
-    private function processRanks(Subfleet $subfleet, $col): void
+    private function processRanks(Subfleet $subfleet, string $col): void
     {
         $ranks = Utils::parseMultiColumnValues($col);
         foreach ($ranks as $rank_id => $rank_attributes) {

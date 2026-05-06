@@ -27,7 +27,7 @@ class LegacyImporterService extends Service
 {
     private string $CREDENTIALS_KEY = 'legacy.importer.db';
 
-    private KvpService $kvpRepo;
+    private readonly KvpService $kvpRepo;
 
     /**
      * The list of importers, in proper order
@@ -56,7 +56,7 @@ class LegacyImporterService extends Service
     /**
      * Save the credentials from a request
      */
-    public function saveCredentialsFromRequest(Request $request)
+    public function saveCredentialsFromRequest(Request $request): void
     {
         $creds = [
             'host'         => $request->post('db_host'),
@@ -73,7 +73,7 @@ class LegacyImporterService extends Service
     /**
      * Save the given credentials
      */
-    public function saveCredentials(array $creds)
+    public function saveCredentials(array $creds): void
     {
         $creds = array_merge([
             'admin_email'  => '',
@@ -91,7 +91,7 @@ class LegacyImporterService extends Service
     /**
      * Get the saved credentials
      */
-    public function getCredentials()
+    public function getCredentials(): mixed
     {
         return $this->kvpRepo->get($this->CREDENTIALS_KEY);
     }
@@ -99,8 +99,10 @@ class LegacyImporterService extends Service
     /**
      * Create a manifest of the import. Creates an array with the importer name,
      * which then has a subarray of all of the different steps/stages it needs to run
+     *
+     * @return mixed[]
      */
-    public function generateImportManifest()
+    public function generateImportManifest(): array
     {
         $manifest = [];
 
@@ -116,12 +118,11 @@ class LegacyImporterService extends Service
     /**
      * Run a given stage
      *
-     * @param  int      $start
-     * @return int|void
+     * @param int $start
      *
      * @throws Exception
      */
-    public function run($importer, $start = 0)
+    public function run(string $importer, $start = 0): void
     {
         if (!in_array($importer, $this->importList, true)) {
             throw new Exception('Unknown importer "'.$importer.'"');
@@ -132,8 +133,8 @@ class LegacyImporterService extends Service
 
         try {
             $importerInst->run($start);
-        } catch (Exception $e) {
-            Log::error('Error running importer: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Error running importer: '.$exception->getMessage());
         }
     }
 }

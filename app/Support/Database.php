@@ -81,8 +81,7 @@ class Database
     }
 
     /**
-     * @param  string $id_col The ID column to use for update/insert
-     * @return mixed
+     * @param string $id_col The ID column to use for update/insert
      */
     public static function insert_row(
         string $table,
@@ -91,7 +90,7 @@ class Database
         array $ignore_on_updates = [],
         bool $ignore_errors = true,
         bool $ignore_if_exists = true,
-    ) {
+    ): array {
         // encrypt any password fields
         if (array_key_exists('password', $row)) {
             $row['password'] = bcrypt($row['password']);
@@ -103,7 +102,7 @@ class Database
 
         // if any time fields are == to "now", then insert the right time
         foreach ($row as $column => $value) {
-            if (!empty($value) && strtolower($value) === 'now') {
+            if (!empty($value) && strtolower((string) $value) === 'now') {
                 $row[$column] = static::time();
             }
         }
@@ -136,10 +135,10 @@ class Database
 
                 DB::table($table)->insert($row);
             }
-        } catch (QueryException $e) {
-            Log::error($e);
+        } catch (QueryException $queryException) {
+            Log::error($queryException);
             if (!$ignore_errors) {
-                throw $e;
+                throw $queryException;
             }
         }
 

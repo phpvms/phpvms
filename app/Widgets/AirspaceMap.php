@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Widgets;
 
 use App\Contracts\Widget;
@@ -21,7 +23,7 @@ class AirspaceMap extends Widget
     /**
      * @return Factory|View
      */
-    public function run()
+    public function run(): Factory|\Illuminate\Contracts\View\View
     {
         return view('widgets.airspace_map', [
             'config' => $this->config,

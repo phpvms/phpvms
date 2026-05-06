@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use Illuminate\Http\Request;
 
 class JournalTransactionResource extends Resource
 {
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
-        $transaction = parent::toArray($request);
-
-        return $transaction;
+        return parent::toArray($request);
     }
 }

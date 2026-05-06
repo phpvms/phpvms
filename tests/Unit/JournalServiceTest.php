@@ -64,7 +64,7 @@ function countJournalTxnForPirep(Pirep $pirep, ?Journal $journal = null): int
     return $query->count();
 }
 
-test('deletes all transactions for object type and id', function () {
+test('deletes all transactions for object type and id', function (): void {
     /** @var Journal $journal */
     $journal = Journal::factory()->create();
 
@@ -88,7 +88,7 @@ test('deletes all transactions for object type and id', function () {
         ->and(countJournalTxnForPirep($pirep2))->toEqual(1);
 });
 
-test('deletes only transactions for given journal when journal provided', function () {
+test('deletes only transactions for given journal when journal provided', function (): void {
     /** @var Journal $journalA */
     $journalA = Journal::factory()->create();
     /** @var Journal $journalB */

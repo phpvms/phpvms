@@ -15,6 +15,7 @@ class ManageInvites extends ManageRecords
 {
     protected static string $resource = InviteResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

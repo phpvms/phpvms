@@ -51,7 +51,8 @@ class AircraftRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return __('common.aircraft');
     }

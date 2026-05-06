@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Notifications\Messages\AdminUserRegistered;
 use App\Notifications\Messages\NewsAdded;
 use App\Notifications\Messages\PirepAccepted;

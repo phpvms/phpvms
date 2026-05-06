@@ -40,16 +40,19 @@ class UserResource extends Resource
         return $count > 0 ? (string) $count : null;
     }
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return UsersTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -60,6 +63,7 @@ class UserResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -69,6 +73,7 @@ class UserResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -77,6 +82,7 @@ class UserResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.user', 1);

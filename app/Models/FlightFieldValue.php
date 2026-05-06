@@ -32,6 +32,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereValue($value)
+ * @method static \Database\Factories\FlightFieldValueFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */
@@ -57,7 +58,7 @@ class FlightFieldValue extends Model
     public function name(): Attribute
     {
         return Attribute::make(
-            set: fn ($name) => [
+            set: fn ($name): array => [
                 'name' => $name,
                 'slug' => Str::slug($name),
             ]

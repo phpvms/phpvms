@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Composers;
 
 use App\Contracts\Composer;
@@ -12,7 +14,7 @@ class VersionComposer extends Composer
         private readonly VersionService $versionSvc
     ) {}
 
-    public function compose(View $view)
+    public function compose(View $view): void
     {
         $view->with('version', $this->versionSvc->getCurrentVersion(false));
         $view->with('version_full', $this->versionSvc->getCurrentVersion(true));

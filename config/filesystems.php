@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'default' => 'local',
 
@@ -52,7 +54,6 @@ return [
             'username'             => env('SFTP_USERNAME', ''),
             'password'             => env('SFTP_PASSWORD', ''),
             'privateKey'           => env('SFTP_PRIVATE_KEY', ''),
-            'passphrase'           => env('SFTP_PASSPHRASE', ''),
             'visibility'           => env('SFTP_FILE_VISIBILITY', 'private'), // `private` = 0600, `public` = 0644
             'directory_visibility' => env('SFTP_FOLDER_VISIBILITY', 'private'), // `private` = 0700, `public` = 0755
             'hostFingerprint'      => env('SFTP_HOST_FINGERPRINT', ''),

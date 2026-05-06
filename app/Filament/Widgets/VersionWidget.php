@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Services\VersionService;
@@ -23,6 +25,7 @@ class VersionWidget extends Widget
         $this->version_full = $versionSvc->getCurrentVersion(true);
     }
 
+    #[\Override]
     protected function getViewData(): array
     {
         return [

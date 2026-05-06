@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\AcarsController;
 use App\Http\Controllers\Api\AirlineController;
 use App\Http\Controllers\Api\AirportController;
@@ -32,7 +34,7 @@ Route::get('version', [StatusController::class, 'status']);
 /*
  * These need to be authenticated with a user's API key
  */
-Route::group(['middleware' => ['api.auth']], function () {
+Route::group(['middleware' => ['api.auth']], function (): void {
     Route::get('airlines', [AirlineController::class, 'index']);
     Route::get('airlines/{id}', [AirlineController::class, 'get']);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Frontend\AirportController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +26,7 @@ Route::group([
     'prefix'     => '',
     'as'         => 'frontend.',
     'middleware' => (config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth']),
-], function () {
+], function (): void {
     Route::resource('dashboard', DashboardController::class);
 
     Route::get('airports/{id}', [AirportController::class, 'show'])->name('airports.show');
@@ -60,7 +63,7 @@ Route::group([
 Route::group([
     'prefix' => '',
     'as'     => 'frontend.',
-], function () {
+], function (): void {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('r/{id}', [PirepController::class, 'show'])->name('pirep.show.public');
     Route::get('pireps/{id}', [PirepController::class, 'show'])->name('pireps.show');
@@ -85,7 +88,7 @@ Route::group([
 Route::group([
     'prefix' => 'oauth',
     'as'     => 'oauth.',
-], function () {
+], function (): void {
     Route::get('{provider}/redirect', [OAuthController::class, 'redirectToProvider'])->name('redirect');
     Route::get('{provider}/callback', [OAuthController::class, 'handleProviderCallback'])->name('callback');
     Route::get('{provider}/logout', [OAuthController::class, 'logoutProvider'])->name('logout')->middleware('auth');
@@ -94,6 +97,4 @@ Route::group([
 Route::get('/logout', [LoginController::class, 'logout'])->name(Logout::class);
 Auth::routes(['verify' => true]);
 
-Route::get('/update', function () {
-    return redirect('/system/update');
-});
+Route::get('/update', fn (): Redirector|\Illuminate\Http\RedirectResponse => redirect('/system/update'));

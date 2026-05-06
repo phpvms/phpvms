@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Enums;
 
 use App\Contracts\Enum;
@@ -58,11 +60,8 @@ class Days extends Enum
 
     /**
      * Create the masked value for the days of week
-     *
-     *
-     * @return int|mixed
      */
-    public static function getDaysMask(array $days)
+    public static function getDaysMask(array $days): int
     {
         $mask = 0;
         foreach ($days as $day) {

@@ -16,7 +16,7 @@ class LookupAction
         return Action::make('lookup')
             ->label(__('airports.lookup'))
             ->icon(Heroicon::OutlinedMagnifyingGlass)
-            ->action(function (Get $get, Set $set) {
+            ->action(function (Get $get, Set $set): void {
                 $airport = app(AirportService::class)->lookupAirport($get('icao'));
 
                 foreach ($airport as $key => $value) {

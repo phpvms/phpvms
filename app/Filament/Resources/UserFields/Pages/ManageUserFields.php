@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\UserFields\Pages;
 
 use App\Filament\Resources\UserFields\UserFieldResource;
@@ -11,6 +13,7 @@ class ManageUserFields extends ManageRecords
 {
     protected static string $resource = UserFieldResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

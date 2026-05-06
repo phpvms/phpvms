@@ -30,6 +30,7 @@ class Finances extends Page
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
+    #[\Override]
     public static function getNavigationLabel(): string
     {
         return __('common.finances');
@@ -44,12 +45,12 @@ class Finances extends Page
                     ->native(false)
                     // Some magic cause if no start_date is set, now is returned
                     ->minDate(setting('general.start_date')->diffInSeconds() > 2 ? setting('general.start_date') : now()->subYear())
-                    ->maxDate(fn (Get $get) => $get('end_date') ?: now()),
+                    ->maxDate(fn (Get $get): mixed => $get('end_date') ?: now()),
 
                 DatePicker::make('end_date')
                     ->label(__('common.end_date'))
                     ->native(false)
-                    ->minDate(fn (Get $get) => $get('start_date'))
+                    ->minDate(fn (Get $get): mixed => $get('start_date'))
                     ->maxDate(now()),
 
                 Select::make('airline_id')
@@ -84,6 +85,7 @@ class Finances extends Page
             ->schema($this->getWidgetsSchemaComponents($this->getWidgets()));
     }
 
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         return $schema

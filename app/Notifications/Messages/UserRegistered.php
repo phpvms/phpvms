@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Messages;
 
 use App\Contracts\Notification;
@@ -26,12 +28,12 @@ class UserRegistered extends Notification implements ShouldQueue
         );
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
 
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
             'user_id' => $this->user->id,

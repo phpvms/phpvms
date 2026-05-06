@@ -11,11 +11,8 @@ class RoleService extends Service
 {
     /**
      * Update a role with the given attributes
-     *
-     *
-     * @return Role
      */
-    public function updateRole(Role $role, array $attrs)
+    public function updateRole(Role $role, array $attrs): Role
     {
         $role->update($attrs);
         $role->save();
@@ -23,12 +20,10 @@ class RoleService extends Service
         return $role;
     }
 
-    public function setPermissionsForRole(Role $role, array $permissions)
+    public function setPermissionsForRole(Role $role, array $permissions): void
     {
         // Update the permissions, filter out null/invalid values
-        $perms = collect($permissions)->filter(static function ($v, $k) {
-            return !empty($v);
-        });
+        $perms = collect($permissions)->filter(static fn ($v, $k): bool => !empty($v));
 
         $role->permissions()->sync($perms);
     }

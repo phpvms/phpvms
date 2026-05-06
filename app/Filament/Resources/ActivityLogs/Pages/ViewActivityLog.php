@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\ActivityLogs\Pages;
 
 use App\Filament\Resources\ActivityLogs\ActivityLogResource;
@@ -21,6 +23,7 @@ class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
 
     protected static string $resource = ActivityLogResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -28,6 +31,7 @@ class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
         ];
     }
 
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         return $schema

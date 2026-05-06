@@ -1,22 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions\Converters;
 
 use App\Exceptions\AbstractHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException as SymfonyHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SymfonyException extends AbstractHttpException
 {
-    private $exception;
-
-    public function __construct(SymfonyHttpException $exception)
+    public function __construct(private readonly HttpException $exception)
     {
-        $this->exception = $exception;
         parent::__construct(
-            $exception->getStatusCode(),
-            $exception->getMessage(),
+            $this->exception->getStatusCode(),
+            $this->exception->getMessage(),
             null,
-            $exception->getHeaders()
+            $this->exception->getHeaders()
         );
     }
 

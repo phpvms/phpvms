@@ -16,7 +16,7 @@ use App\Services\FleetService;
 use App\Services\FlightService;
 use Carbon\Carbon;
 
-test('duplicate flight', function () {
+test('duplicate flight', function (): void {
     $user = User::factory()->create();
 
     $flight = Flight::factory()->create([
@@ -80,7 +80,7 @@ test('duplicate flight', function () {
     expect($flightSvc->isFlightDuplicate($flight_leg))->toBeFalse();
 });
 
-test('get flight', function () {
+test('get flight', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -104,7 +104,7 @@ test('get flight', function () {
         ->assertStatus(404);
 });
 
-test('search flight', function () {
+test('search flight', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -126,7 +126,7 @@ test('search flight', function () {
     expect($data)->toHaveCount(1);
 });
 
-test('search flight inactive airline', function () {
+test('search flight inactive airline', function (): void {
     $airline_inactive = Airline::factory()->create(['active' => 0]);
 
     $airline_active = Airline::factory()->create(['active' => 1]);
@@ -147,13 +147,14 @@ test('search flight inactive airline', function () {
     // search specifically for a flight ID
     $req = $this->get('/api/flights/search?ignore_restrictions=1');
     $req->assertStatus(200);
+
     $body = $req->json('data');
 
     expect($body)->toHaveCount(1)
         ->and($body[0]['airline_id'])->toEqual($airline_active->id);
 });
 
-test('flight route', function () {
+test('flight route', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -174,6 +175,7 @@ test('flight route', function () {
 
     $res = $this->get('/api/flights/'.$flight->id.'/route');
     $res->assertStatus(200);
+
     $body = $res->json();
 
     expect($body['data'])->toHaveCount($route_count);
@@ -185,7 +187,7 @@ test('flight route', function () {
         ->and(NavaidType::label($route[0]->type))->toEqual($first_point['type']['name']);
 });
 
-test('find all flights', function () {
+test('find all flights', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -202,7 +204,7 @@ test('find all flights', function () {
     $res->assertJsonCount(5, 'data');
 });
 
-test('frontend flight list hides restricted flights and keeps open flights', function () {
+test('frontend flight list hides restricted flights and keeps open flights', function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_show_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', true);
@@ -237,7 +239,7 @@ test('frontend flight list hides restricted flights and keeps open flights', fun
     $response->assertOk();
 
     $flights = collect($response->viewData('flights')->items());
-    $flightIds = $flights->pluck('id')->map(fn ($id) => (int) $id)->all();
+    $flightIds = $flights->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
     expect($flightIds)
         ->toContain($allowedFlight->id)
@@ -245,7 +247,7 @@ test('frontend flight list hides restricted flights and keeps open flights', fun
         ->not->toContain($restrictedFlight->id);
 });
 
-test('frontend flight list prefers explicit ordering over sortable aliases', function () {
+test('frontend flight list prefers explicit ordering over sortable aliases', function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_show_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
@@ -282,13 +284,13 @@ test('frontend flight list prefers explicit ordering over sortable aliases', fun
 
     $flightNumbers = collect($response->viewData('flights')->items())
         ->pluck('flight_number')
-        ->map(fn ($flightNumber) => (int) $flightNumber)
+        ->map(fn ($flightNumber): int => (int) $flightNumber)
         ->all();
 
     expect($flightNumbers)->toBe([100, 200]);
 });
 
-test('search flight by subfleet', function () {
+test('search flight by subfleet', function (): void {
     $airline = Airline::factory()->create();
     $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);
     $subfleetB = Subfleet::factory()->create(['airline_id' => $airline->id]);
@@ -318,13 +320,13 @@ test('search flight by subfleet', function () {
     $meta = $res->json('meta');
 
     $body = $res->json('data');
-    collect($body)->each(function ($flight) use ($subfleetB) {
+    collect($body)->each(function (array $flight) use ($subfleetB): void {
         expect($flight['subfleets'])->not->toBeEmpty()
             ->and($subfleetB->id)->toEqual($flight['subfleets'][0]['id']);
     });
 });
 
-test('search flight by subfleet pagination', function () {
+test('search flight by subfleet pagination', function (): void {
     $airline = Airline::factory()->create();
 
     $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);
@@ -361,13 +363,13 @@ test('search flight by subfleet pagination', function () {
         ->and($meta['total'])->toEqual(10);
 
     $body = $res->json('data');
-    collect($body)->each(function ($flight) use ($subfleetB) {
+    collect($body)->each(function (array $flight) use ($subfleetB): void {
         expect($flight['subfleets'])->not->toBeEmpty()
             ->and($subfleetB->id)->toEqual($flight['subfleets'][0]['id']);
     });
 });
 
-test('find days of week', function () {
+test('find days of week', function (): void {
     $user = User::factory()->create();
 
     Flight::factory()->count(20)->create([
@@ -397,7 +399,7 @@ test('find days of week', function () {
     expect($flight)->toBeNull();
 });
 
-test('day of week active', function () {
+test('day of week active', function (): void {
     $user = User::factory()->create();
 
     // Set it to Monday or Tuesday, depending on what today is
@@ -425,7 +427,7 @@ test('day of week active', function () {
     expect($flights)->toBeNull();
 });
 
-test('day of week tests', function () {
+test('day of week tests', function (): void {
     $mask = 127;
     expect(Days::in($mask, Days::$isoDayMap[1]))->toBeTrue()
         ->and(Days::in($mask, Days::$isoDayMap[2]))->toBeTrue()
@@ -451,7 +453,7 @@ test('day of week tests', function () {
     expect(Days::in($mask, Days::$isoDayMap[1]))->toBeFalse();
 });
 
-test('start end date', function () {
+test('start end date', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -480,7 +482,7 @@ test('start end date', function () {
     expect($flights)->toBeNull();
 });
 
-test('start end date day of week', function () {
+test('start end date day of week', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -519,7 +521,7 @@ test('start end date day of week', function () {
     expect($flights)->toBeNull();
 });
 
-test('flight search api', function () {
+test('flight search api', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -536,7 +538,7 @@ test('flight search api', function () {
     expect($body['data'][0]['id'])->toEqual($flight->id);
 });
 
-test('flight search api departure airport', function () {
+test('flight search api departure airport', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -557,7 +559,7 @@ test('flight search api departure airport', function () {
     expect($body['data'][0]['id'])->toEqual($flight->id);
 });
 
-test('flight search api distance', function () {
+test('flight search api distance', function (): void {
     $total_flights = 10;
 
     $user = User::factory()->create();
@@ -597,7 +599,7 @@ test('flight search api distance', function () {
         ->and($body['data'][0]['id'])->toEqual($flight->id);
 });
 
-test('add subfleet', function () {
+test('add subfleet', function (): void {
     $subfleet = Subfleet::factory()->create();
     $flight = Flight::factory()->create();
 
@@ -615,7 +617,7 @@ test('add subfleet', function () {
     expect($found)->toHaveCount(1);
 });
 
-test('delete flight', function () {
+test('delete flight', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 
@@ -631,7 +633,7 @@ test('delete flight', function () {
     expect($empty_flight)->toBeNull();
 });
 
-test('airport distance', function () {
+test('airport distance', function (): void {
     // KJFK
     $fromIcao = Airport::factory()->create([
         'lat' => 40.6399257,
@@ -650,7 +652,7 @@ test('airport distance', function () {
         ->and($distance['nmi'])->toEqual(2244.33);
 });
 
-test('airport distance api', function () {
+test('airport distance api', function (): void {
     $user = User::factory()->create();
     apiAs($user);
 

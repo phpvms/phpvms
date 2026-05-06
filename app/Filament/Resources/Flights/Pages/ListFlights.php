@@ -18,6 +18,7 @@ class ListFlights extends ListRecords
 {
     protected static string $resource = FlightResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

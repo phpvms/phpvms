@@ -93,11 +93,8 @@ class FlightService extends Service
 
     /**
      * Check the fields for a flight and transform them
-     *
-     * @param  array $fields
-     * @return array
      */
-    protected function transformFlightFields($fields)
+    protected function transformFlightFields(array $fields): array
     {
         if (array_key_exists('days', $fields) && filled($fields['days'])) {
             $fields['days'] = Days::getDaysMask($fields['days']);
@@ -153,24 +150,19 @@ class FlightService extends Service
      */
     public function getSubfleetsForBid(Bid $bid)
     {
-        $sf = Subfleet::with([
+        return Subfleet::with([
             'fares',
-            'aircraft' => function ($query) use ($bid) {
+            'aircraft' => function ($query) use ($bid): void {
                 $query->where('id', $bid->aircraft_id);
             }])
             ->where('id', $bid->aircraft->subfleet_id)
             ->get();
-
-        return $sf;
     }
 
     /**
      * Filter out subfleets to only include aircraft that a user has access to
-     *
-     *
-     * @return mixed
      */
-    public function filterSubfleets(User $user, Flight $flight)
+    public function filterSubfleets(User $user, Flight $flight): Flight
     {
         // Eager load some of the relationships needed
         // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
@@ -194,9 +186,7 @@ class FlightService extends Service
         // Only allow aircraft that the user has access to by their rank or type rating
         if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
             $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
-            $subfleets = $subfleets->filter(function (Subfleet $subfleet, $i) use ($allowed_subfleets) {
-                return $allowed_subfleets->contains($subfleet->id);
-            });
+            $subfleets = $subfleets->filter(fn (Subfleet $subfleet, $i) => $allowed_subfleets->contains($subfleet->id));
         }
 
         /*
@@ -206,13 +196,14 @@ class FlightService extends Service
         $aircraft_not_booked = setting('bids.block_aircraft', false);
 
         if ($aircraft_at_dpt_airport || $aircraft_not_booked) {
+            // @phpstan-ignore-next-line
             $subfleets->loadMissing('aircraft');
 
             foreach ($subfleets as $subfleet) {
                 /** @var Subfleet $subfleet */
                 // @phpstan-ignore-next-line
                 $subfleet->aircraft = $subfleet->aircraft->filter(
-                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked) {
+                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked): bool {
                         if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
                             return false;
                         }
@@ -223,9 +214,7 @@ class FlightService extends Service
 
                         return true;
                     }
-                )->sortBy(function (Aircraft $ac, int $_) {
-                    return !empty($ac->bid);
-                });
+                )->sortBy(fn (Aircraft $ac, int $_): bool => !empty($ac->bid));
             }
         }
 
@@ -267,7 +256,7 @@ class FlightService extends Service
             $value = $flight->{$column};
 
             if (in_array($value, [null, '', 0, '0'], true)) {
-                $query->where(function ($q) use ($column) {
+                $query->where(function ($q) use ($column): void {
                     $q->whereNull($column)
                         ->orWhere($column, '')
                         ->orWhere($column, 0);
@@ -313,17 +302,14 @@ class FlightService extends Service
 
     /**
      * Return all of the navaid points as a collection
-     *
-     *
-     * @return Collection
      */
-    public function getRoute(Flight $flight)
+    public function getRoute(Flight $flight): Collection
     {
         if (!$flight->route) {
             return collect();
         }
 
-        $route_points = array_map('strtoupper', explode(' ', $flight->route));
+        $route_points = array_map(strtoupper(...), explode(' ', (string) $flight->route));
 
         $route = Navdata::whereIn('id', $route_points)->get();
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'avatarresize' => 'Dieser Avatar wird auf die Größe :Breite x :Höhe Pixel gebracht',
 

@@ -56,7 +56,7 @@ class UserOAuthToken extends Model
     public function isExpired(): Attribute
     {
         return Attribute::make(
-            get: fn () => now()->isAfter($this->expires_at),
+            get: fn (): bool => now()->isAfter($this->expires_at),
         );
     }
 
@@ -65,6 +65,7 @@ class UserOAuthToken extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

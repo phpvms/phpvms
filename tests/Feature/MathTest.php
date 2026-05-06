@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Support\Math;
 use App\Support\Units\Distance;
 
-test('add percent', function () {
+test('add percent', function (): void {
     $tests = [
         ['expected' => 112, 'fn' => Math::getPercent(100, 112)],
         ['expected' => 112, 'fn' => Math::getPercent(100, '112')],
@@ -22,7 +24,7 @@ test('add percent', function () {
     }
 });
 
-test('distance measurement', function () {
+test('distance measurement', function (): void {
     $dist = new Distance(1, 'mi');
     expect($dist['m'])->toEqualWithDelta(1609.34, 0.1)
         ->and($dist['km'])->toEqualWithDelta(1.61, 0.1);

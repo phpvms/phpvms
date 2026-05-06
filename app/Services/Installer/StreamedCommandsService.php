@@ -16,7 +16,7 @@ class StreamedCommandsService extends Service
     public function streamArtisanCommand(array $command, \Closure $streamCallback): void
     {
         if (!function_exists('proc_open')) {
-            throw new \RuntimeException('You can\'t use artisan streamed commands without proc_open');
+            throw new \RuntimeException("You can't use artisan streamed commands without proc_open");
         }
 
         $finder = new PhpExecutableFinder();
@@ -34,7 +34,7 @@ class StreamedCommandsService extends Service
 
         $process = new Process($command);
         $process->setTimeout(120);
-        $process->run(function ($type, $buffer) use ($streamCallback) {
+        $process->run(function ($type, $buffer) use ($streamCallback): void {
             $streamCallback($buffer);
         });
     }

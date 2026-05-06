@@ -31,16 +31,19 @@ class FlightResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsVertical;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return FlightForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return FlightsTable::configure($table);
     }
 
+    #[\Override]
     public static function getRelations(): array
     {
         return [
@@ -50,6 +53,7 @@ class FlightResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -59,6 +63,7 @@ class FlightResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -67,6 +72,7 @@ class FlightResource extends Resource
             ]);
     }
 
+    #[\Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['flight_number', 'route_code'];
@@ -75,6 +81,7 @@ class FlightResource extends Resource
     /**
      * @param Flight $record
      */
+    #[\Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->airline->icao.$record->flight_number;
@@ -83,6 +90,7 @@ class FlightResource extends Resource
     /**
      * @param Flight $record
      */
+    #[\Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -91,6 +99,7 @@ class FlightResource extends Resource
         ];
     }
 
+    #[\Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.flight', 1);

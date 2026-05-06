@@ -33,7 +33,7 @@ function userFieldsMakeUserWithFields(): User
     return $user->fresh(['fields.field']);
 }
 
-test('returns only public fields when only public true', function () {
+test('returns only public fields when only public true', function (): void {
     /** @var UserField $public */
     $public = UserField::create([
         'name'     => 'Discord Username',
@@ -56,7 +56,7 @@ test('returns only public fields when only public true', function () {
     expect($first->slug)->toEqual($public->slug);
 });
 
-test('returns only private fields when only public false', function () {
+test('returns only private fields when only public false', function (): void {
     UserField::create([
         'name'     => 'Discord Username',
         'private'  => false,
@@ -79,7 +79,7 @@ test('returns only private fields when only public false', function () {
     expect($first->slug)->toEqual($private->slug);
 });
 
-test('returns all non internal fields when only public null', function () {
+test('returns all non internal fields when only public null', function (): void {
     UserField::create([
         'name'     => 'Discord Username',
         'private'  => false,
@@ -107,7 +107,7 @@ test('returns all non internal fields when only public null', function () {
     }
 });
 
-test('with internal fields true includes internal', function () {
+test('with internal fields true includes internal', function (): void {
     UserField::create([
         'name'     => 'Discord Username',
         'private'  => false,
@@ -126,7 +126,7 @@ test('with internal fields true includes internal', function () {
     expect($results)->toHaveCount(2);
 });
 
-test('populates field value from user field values', function () {
+test('populates field value from user field values', function (): void {
     /** @var UserField $field */
     $field = UserField::create([
         'name'     => 'Discord Username',

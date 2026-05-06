@@ -21,6 +21,7 @@ class FieldValuesRelationManager extends RelationManager
 {
     protected static string $relationship = 'field_values';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -76,11 +77,13 @@ class FieldValuesRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice( 'common.field', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.field', 2);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Fares\Pages;
 
 use App\Filament\Resources\Fares\FareResource;
@@ -12,6 +14,7 @@ class EditFare extends EditRecord
 {
     protected static string $resource = FareResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [

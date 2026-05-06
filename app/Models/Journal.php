@@ -70,6 +70,7 @@ class Journal extends Model
         'morphed_id',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -100,15 +101,12 @@ class Journal extends Model
     /**
      * @param string $currency
      */
-    public function setCurrency($currency)
+    public function setCurrency($currency): void
     {
         $this->currency = $currency;
     }
 
-    /**
-     * @return Journal
-     */
-    public function assignToLedger(Ledger $ledger)
+    public function assignToLedger(Ledger $ledger): static
     {
         $ledger->journals()->save($this);
 
@@ -119,7 +117,7 @@ class Journal extends Model
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function resetCurrentBalances()
+    public function resetCurrentBalances(): void
     {
         $this->balance = $this->getBalance();
         $this->save();
@@ -133,7 +131,7 @@ class Journal extends Model
     {
         return $this
             ->transactions()
-            ->where('ref_model_type', \get_class($object))
+            ->where('ref_model_type', $object::class)
             ->where('ref_model_id', $object->id);
     }
 
@@ -141,12 +139,11 @@ class Journal extends Model
      * Get the credit only balance of the journal based on a given date.
      *
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getCreditBalanceOn(Carbon $date)
+    public function getCreditBalanceOn(Carbon $date): Money
     {
         $balance = $this->transactions()
             ->where('post_date', '<=', $date)
@@ -168,12 +165,11 @@ class Journal extends Model
      * Get the balance of the journal based on a given date.
      *
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getBalanceOn(Carbon $date)
+    public function getBalanceOn(Carbon $date): Money
     {
         return $this->getCreditBalanceOn($date)
             ->subtract($this->getDebitBalanceOn($date));
@@ -182,12 +178,11 @@ class Journal extends Model
     /**
      * Get the balance of the journal as of right now, excluding future transactions.
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getCurrentBalance()
+    public function getCurrentBalance(): Money
     {
         return $this->getBalanceOn(Carbon::now('UTC'));
     }
@@ -195,12 +190,11 @@ class Journal extends Model
     /**
      * Get the balance of the journal.  This "could" include future dates.
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getBalance()
+    public function getBalance(): Money
     {
         $balance = $this
             ->transactions()

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
      *
@@ -37,9 +39,9 @@ return [
     'click_update_to_run'               => 'Cliquez sur "Mettre à jour" pour exécuter le script.',
     'update'                            => 'Mettre à jour',
     'migrations_not_completed'          => 'Il vous reste :count migrations à exécuter. Veuillez réessayer...',
-    'user_and_airline_setup'            => 'Configuration de l\'utilisateur et de la compagnie',
+    'user_and_airline_setup'            => "Configuration de l'utilisateur et de la compagnie",
     'legacy_importer'                   => 'Importateur phpVMS v5 Legacy',
-    'super_admin_informations'          => 'Informations de l\'utilisateur Super Admin',
+    'super_admin_informations'          => "Informations de l'utilisateur Super Admin",
     'lets_rebuild_cache'                => 'Reconstruction du cache.',
     'cache_build_background'            => 'Vous n\'avez pas la fonction proc_open. Le cache sera reconstruit en arrière-plan, consultez les logs pour plus de détails.',
     'update_completed'                  => 'Mise à jour terminée avec succès. Vous allez être redirigé dans quelques secondes',

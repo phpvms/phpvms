@@ -21,7 +21,7 @@ class LatestPireps extends Widget
     /**
      * @return Factory|View
      */
-    public function run()
+    public function run(): Factory|\Illuminate\Contracts\View\View
     {
         $pireps = Pirep::query()
             ->with(['airline', 'aircraft', 'user'])

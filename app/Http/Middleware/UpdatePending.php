@@ -12,12 +12,7 @@ use Illuminate\Http\Request;
  */
 class UpdatePending implements Middleware
 {
-    private $installerSvc;
-
-    public function __construct(InstallerService $installerSvc)
-    {
-        $this->installerSvc = $installerSvc;
-    }
+    public function __construct(private readonly InstallerService $installerSvc) {}
 
     public function handle(Request $request, Closure $next)
     {

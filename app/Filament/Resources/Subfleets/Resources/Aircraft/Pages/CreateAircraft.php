@@ -10,6 +10,7 @@ class CreateAircraft extends CreateRecord
 {
     protected static string $resource = AircraftResource::class;
 
+    #[\Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['dow'] = (filled($data['dow']) && $data['dow'] > 0) ? Mass::make((float) $data['dow'], setting('units.weight')) : null;

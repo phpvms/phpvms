@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Contracts\Model;
@@ -54,10 +56,11 @@ class Invite extends Model
     public function link(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, $attrs) => url('/register?invite='.$attrs['id'].'&token='.$attrs['token'])
+            get: fn ($value, $attrs): string => url('/register?invite='.$attrs['id'].'&token='.$attrs['token'])
         );
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Models\Aircraft;
@@ -14,7 +16,8 @@ use App\Models\Subfleet;
  */
 class BidSubfleetResource extends SubfleetResource
 {
-    public function toArray($request)
+    #[\Override]
+    public function toArray($request): array
     {
         return [
             'airline_id'                 => $this->airline_id,

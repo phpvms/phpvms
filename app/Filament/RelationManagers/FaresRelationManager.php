@@ -18,6 +18,7 @@ class FaresRelationManager extends RelationManager
 {
     protected static string $relationship = 'fares';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -38,19 +39,19 @@ class FaresRelationManager extends RelationManager
                 TextInputColumn::make('pivot.capacity')
                     ->placeholder(__('common.inherited'))
                     ->label(__('common.capacity'))
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['capacity' => $state]);
                     }),
                 TextInputColumn::make('pivot.price')
                     ->label(__('common.price'))
                     ->placeholder(__('common.inherited'))
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['price' => $state]);
                     }),
                 TextInputColumn::make('pivot.cost')
                     ->label(__('common.cost'))
                     ->placeholder(__('common.inherited'))
-                    ->updateStateUsing(function (Fare $record, string $state) {
+                    ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['cost' => $state]);
                     }),
             ])
@@ -71,11 +72,13 @@ class FaresRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.fare', 1);
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.fare', 2);

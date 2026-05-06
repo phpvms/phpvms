@@ -22,7 +22,7 @@ class LiveMap extends Widget
     /**
      * @return Factory|View
      */
-    public function run()
+    public function run(): Factory|\Illuminate\Contracts\View\View
     {
         $geoSvc = app(GeoService::class);
 
@@ -30,9 +30,7 @@ class LiveMap extends Widget
         $positions = $geoSvc->getFeatureForLiveFlights($pireps);
 
         $center_coords = setting('acars.center_coords', '0,0');
-        $center_coords = array_map(function ($c) {
-            return (float) trim($c);
-        }, explode(',', $center_coords));
+        $center_coords = array_map(fn ($c): float => (float) trim($c), explode(',', $center_coords));
 
         return view('widgets.live_map', [
             'config'    => $this->config,

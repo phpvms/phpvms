@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Cron;
 
 use App\Contracts\CronCommand;
@@ -24,7 +26,7 @@ class Weekly extends CronCommand
         $this->callEvent();
     }
 
-    public function callEvent()
+    public function callEvent(): void
     {
         event(new CronWeekly());
     }

@@ -2,32 +2,43 @@
 
 declare(strict_types=1);
 
-use Rector\CodeQuality\Rector\FuncCall\CompactToVariablesRector;
 use Rector\Config\RectorConfig;
-use Rector\Set\ValueObject\SetList;
-use Rector\ValueObject\PhpVersion;
-use RectorLaravel\Set\LaravelLevelSetList;
+use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
+use RectorLaravel\Rector\Class_\AppendsPropertyToAppendsAttributeRector;
+use RectorLaravel\Rector\Class_\FillablePropertyToFillableAttributeRector;
+use RectorLaravel\Rector\Class_\GuardedPropertyToGuardedAttributeRector;
+use RectorLaravel\Rector\Class_\HiddenPropertyToHiddenAttributeRector;
+use RectorLaravel\Rector\Class_\TablePropertyToTableAttributeRector;
+use RectorLaravel\Rector\Class_\TouchesPropertyToTouchesAttributeRector;
+use RectorLaravel\Set\LaravelSetProvider;
 
-return static function (RectorConfig $rectorConfig): void {
-    // Paths to analyze
-    $rectorConfig->paths([
+return RectorConfig::configure()
+    ->withPaths([
         __DIR__.'/app',
+        __DIR__.'/bootstrap/app.php',
         __DIR__.'/config',
+        __DIR__.'/routes',
         __DIR__.'/resources',
         __DIR__.'/tests',
+    ])
+    ->withSetProviders(LaravelSetProvider::class)
+    ->withComposerBased(laravel: true)
+    ->withPreparedSets(
+        deadCode: true,
+        codeQuality: true,
+        codingStyle: true,
+        typeDeclarations: true,
+        earlyReturn: true,
+    )
+    ->withPhpSets()
+    ->withSkip([
+        RemoveUselessVarTagRector::class => [
+            __DIR__.'/app/Http/Resources/SimBriefResource.php',
+        ],
+        FillablePropertyToFillableAttributeRector::class,
+        TablePropertyToTableAttributeRector::class,
+        GuardedPropertyToGuardedAttributeRector::class,
+        AppendsPropertyToAppendsAttributeRector::class,
+        TouchesPropertyToTouchesAttributeRector::class,
+        HiddenPropertyToHiddenAttributeRector::class,
     ]);
-
-    // Skip specific rules
-    $rectorConfig->skip([
-        CompactToVariablesRector::class,
-    ]);
-
-    // Apply sets for Laravel and general code quality
-    $rectorConfig->sets([
-        LaravelLevelSetList::UP_TO_LARAVEL_110,
-        SetList::CODE_QUALITY,
-    ]);
-
-    // Define PHP version for Rector
-    $rectorConfig->phpVersion(PhpVersion::PHP_84);
-};

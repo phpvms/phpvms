@@ -68,15 +68,13 @@ class SeederService extends Service
         // Gather all of the files to seed
         collect()
             ->concat(Storage::disk('seeds')->files($env))
-            ->map(function ($file) {
-                return database_path('seeders/'.$file);
-            })
-            ->filter(function ($file) {
+            ->map(fn (string $file): string => database_path('seeders/'.$file))
+            ->filter(function ($file): bool {
                 $info = pathinfo($file);
 
                 return $info['extension'] === 'yml';
             })
-            ->each(function ($file) {
+            ->each(function (string $file): void {
                 Log::info('Seeding .'.$file);
                 $this->databaseSvc->seed_from_yaml_file($file);
             });
@@ -98,7 +96,7 @@ class SeederService extends Service
         $data = file_get_contents(database_path('/seeders/settings.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $setting) {
-            if (trim($setting['key']) === '') {
+            if (trim((string) $setting['key']) === '') {
                 continue;
             }
 
@@ -206,7 +204,7 @@ class SeederService extends Service
 
         // See if any are missing from the DB
         foreach ($yml as $setting) {
-            if (trim($setting['key']) === '') {
+            if (trim((string) $setting['key']) === '') {
                 continue;
             }
 

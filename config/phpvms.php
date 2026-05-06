@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Services\AirportLookup\VaCentralLookup;
 use App\Services\Metar\AviationWeather;
 

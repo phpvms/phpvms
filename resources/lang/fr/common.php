@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'dashboard'      => 'Tableau de bord',
     'administration' => 'Administration',
@@ -12,7 +14,7 @@ return [
     'profile'        => 'Profil',
     'email'          => 'Email',
     'pilot_id'       => 'Pilote ID',
-    'register'       => 'S\'inscrire',
+    'register'       => "S'inscrire",
     'login'          => 'Se connecter',
     'logout'         => 'Se déconnecter',
     'timezone'       => 'Fuseau horraire',
@@ -83,7 +85,7 @@ return [
     'simbrief_airframe'     => 'Profil SimBrief',
     'simbrief_airframe_id'  => 'ID du Profil SimBrief',
     'image'                 => 'Image',
-    'image_url'             => 'URL de l\'Image',
+    'image_url'             => "URL de l'Image",
     'description'           => 'Description',
     'file'                  => 'Fichier',
     'link_to_file'          => 'Lien vers le fichier',

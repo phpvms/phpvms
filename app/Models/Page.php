@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereUpdatedAt($value)
+ * @method static Builder<static>|Page                               bySlug(string $slug)
  *
  * @mixin \Eloquent
  */
@@ -90,6 +91,7 @@ class Page extends Model
         );
     }
 
+    #[\Override]
     protected function casts(): array
     {
         return [

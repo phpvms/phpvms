@@ -111,7 +111,7 @@ class FlightImporter extends Importer
             ImportColumn::make('notes'),
 
             ImportColumn::make('days')
-                ->fillRecordUsing(function (Flight $record, ?string $state) {
+                ->fillRecordUsing(function (Flight $record, ?string $state): void {
                     $record->days = self::setDays($state);
                 }),
 
@@ -149,6 +149,7 @@ class FlightImporter extends Importer
         ];
     }
 
+    #[\Override]
     public function resolveRecord(): Flight
     {
         return Flight::withTrashed()->firstOrNew([
@@ -234,13 +235,17 @@ class FlightImporter extends Importer
         return Days::getDaysMask($days);
     }
 
-    private function processSubfleets(Flight $flight, $col): void
+    private function processSubfleets(Flight $flight, string $col): void
     {
         $count = 0;
         $subfleets = Utils::parseMultiColumnValues($col);
         foreach ($subfleets as $subfleet_type) {
-            $subfleet_type = trim($subfleet_type);
-            if ($subfleet_type === '' || $subfleet_type === '0') {
+            $subfleet_type = trim((string) $subfleet_type);
+            if ($subfleet_type === '') {
+                continue;
+            }
+
+            if ($subfleet_type === '0') {
                 continue;
             }
 

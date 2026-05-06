@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Resources\Awards\AwardResource;
@@ -12,6 +14,7 @@ class EditAward extends EditRecord
 {
     protected static string $resource = AwardResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -21,9 +24,10 @@ class EditAward extends EditRecord
         ];
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        if (array_key_exists('image_url', $data) && str_starts_with($data['image_url'], 'awards/')) {
+        if (array_key_exists('image_url', $data) && str_starts_with((string) $data['image_url'], 'awards/')) {
             $data['image_file'] = $data['image_url'];
             unset($data['image_url']);
         }
@@ -31,6 +35,7 @@ class EditAward extends EditRecord
         return $data;
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (!empty($data['image_file'])) {

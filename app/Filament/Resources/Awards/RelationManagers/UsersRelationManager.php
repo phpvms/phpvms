@@ -16,6 +16,7 @@ class UsersRelationManager extends RelationManager
 {
     protected static string $relationship = 'users';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -57,11 +58,13 @@ class UsersRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return trans_choice('common.user', 1);
     }
 
+    #[\Override]
     public static function getTitle(EloquentModel $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.user', 2);

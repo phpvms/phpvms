@@ -27,7 +27,7 @@ abstract class Metar
     /**
      * Download the METAR, wrap in caching
      */
-    public function metar($icao): string
+    public function metar(string $icao): string
     {
         $cache = config('cache.keys.METAR_WEATHER_LOOKUP');
         $key = $cache['key'].$icao;
@@ -41,8 +41,8 @@ abstract class Metar
 
         try {
             $raw_metar = $this->get_metar($icao);
-        } catch (Exception $e) {
-            Log::error('Error getting METAR: '.$e->getMessage(), $e->getTrace());
+        } catch (Exception $exception) {
+            Log::error('Error getting METAR: '.$exception->getMessage(), $exception->getTrace());
 
             return '';
         }
@@ -57,7 +57,7 @@ abstract class Metar
     /**
      * Download the TAF, wrap in caching
      */
-    public function taf($icao): string
+    public function taf(string $icao): string
     {
         $cache = config('cache.keys.TAF_WEATHER_LOOKUP');
         $key = $cache['key'].$icao;
@@ -71,8 +71,8 @@ abstract class Metar
 
         try {
             $taf = $this->get_taf($icao);
-        } catch (Exception $e) {
-            Log::error('Error getting TAF: '.$e->getMessage(), $e->getTrace());
+        } catch (Exception $exception) {
+            Log::error('Error getting TAF: '.$exception->getMessage(), $exception->getTrace());
 
             return '';
         }

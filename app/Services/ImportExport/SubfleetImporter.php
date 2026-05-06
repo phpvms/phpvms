@@ -37,9 +37,9 @@ class SubfleetImporter extends ImportExport
         'ranks'                      => 'nullable',
     ];
 
-    private FareService $fareSvc;
+    private readonly FareService $fareSvc;
 
-    private FleetService $fleetSvc;
+    private readonly FleetService $fleetSvc;
 
     /**
      * FlightImportExporter constructor.
@@ -64,8 +64,8 @@ class SubfleetImporter extends ImportExport
             $subfleet = Subfleet::updateOrCreate([
                 'type' => $row['type'],
             ], $row);
-        } catch (Exception $e) {
-            $this->errorLog('Error in row '.($index + 1).': '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->errorLog('Error in row '.($index + 1).': '.$exception->getMessage());
 
             return false;
         }

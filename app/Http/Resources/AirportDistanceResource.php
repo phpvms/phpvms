@@ -3,10 +3,12 @@
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
+use Illuminate\Http\Request;
 
 class AirportDistanceResource extends Resource
 {
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
         $res['distance'] = $res['distance']->getResponseUnits();

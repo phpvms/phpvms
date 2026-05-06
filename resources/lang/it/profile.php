@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'avatarresize'    => 'Questo avatar sarà ridimensionato a :width x :height pixels',
     'newapikey'       => 'Nuova Chiave API',

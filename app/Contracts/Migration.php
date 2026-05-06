@@ -32,21 +32,21 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
      *
      * @param string $file Full path to yml file to seed
      */
-    public function seedFile($file): void
+    public function seedFile(string $file): void
     {
         try {
             $path = base_path($file);
             Database::seed_from_yaml_file($path, false);
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             Log::error('Unable to load '.$file.' file');
-            Log::error($e);
+            Log::error($exception);
         }
     }
 
     /**
      * Add rows to a table
      */
-    public function addData($table, $rows)
+    public function addData($table, $rows): void
     {
         foreach ($rows as $row) {
             try {
@@ -67,7 +67,7 @@ abstract class Migration extends \Illuminate\Database\Migrations\Migration
      *
      * @throws ValidationException
      */
-    public function addAward(array $award)
+    public function addAward(array $award): void
     {
         $validator = Validator::make($award, Award::$rules);
         if ($validator->fails()) {

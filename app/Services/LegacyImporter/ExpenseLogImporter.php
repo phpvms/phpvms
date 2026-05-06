@@ -16,7 +16,7 @@ class ExpenseLogImporter extends BaseImporter
     /**
      * {@inheritdoc}
      */
-    public function run($start = 0)
+    public function run($start = 0): void
     {
         $this->comment('--- EXPENSE LOG IMPORT ---');
 

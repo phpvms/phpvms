@@ -66,7 +66,7 @@ class PirepFinanceService extends Service
         // failure can't leave a journal half-cleared with new entries
         // posted on top. recalculateBalance still runs after the rollback
         // boundary so the cached balance reflects the final committed set.
-        DB::transaction(function () use ($pirep) {
+        DB::transaction(function () use ($pirep): void {
             // Clean out the expenses first
             $this->deleteFinancesForPirep($pirep);
 
@@ -107,7 +107,7 @@ class PirepFinanceService extends Service
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function payFaresForPirep($pirep): void
+    public function payFaresForPirep(Pirep $pirep): void
     {
         $fares = $this->getFaresForPirep($pirep);
 
@@ -301,7 +301,7 @@ class PirepFinanceService extends Service
         /*
          * Go through the expenses and apply a mulitplier if present
          */
-        $expenses->map(function (Expense $expense, $i) use ($pirep) {
+        $expenses->map(function (Expense $expense, $i) use ($pirep): void {
             // Airport expenses are paid out separately
             if ($expense->ref_model instanceof Airport) {
                 return;
@@ -320,23 +320,23 @@ class PirepFinanceService extends Service
             // tables or specific expense calls to accomodate all of these
             $klass = 'Expense';
             if ($expense->ref_model_type) {
-                $ref = explode('\\', $expense->ref_model_type);
+                $ref = explode('\\', (string) $expense->ref_model_type);
                 $klass = end($ref);
             }
 
             // Form the memo, with some specific ones depending on the group
             if ($expense->ref_model_type === Subfleet::class) {
                 if ((int) $expense->ref_model_id === $pirep->aircraft->subfleet->id) {
-                    $memo = "Subfleet Expense: $expense->name ({$pirep->aircraft->subfleet->name}) dd";
-                    $transaction_group = "Subfleet: $expense->name ({$pirep->aircraft->subfleet->name})";
+                    $memo = sprintf('Subfleet Expense: %s (%s) dd', $expense->name, $pirep->aircraft->subfleet->name);
+                    $transaction_group = sprintf('Subfleet: %s (%s)', $expense->name, $pirep->aircraft->subfleet->name);
                 } else { // Skip any subfleets that weren't used for this flight
                     return;
                 }
             } elseif ($expense->ref_model_type === Aircraft::class) {
                 if ((int) $expense->ref_model_id === $pirep->aircraft->id) {
-                    $memo = "Aircraft Expense: $expense->name ({$pirep->aircraft->name})";
-                    $transaction_group = "Aircraft: $expense->name "
-                        ."({$pirep->aircraft->name}-{$pirep->aircraft->registration})";
+                    $memo = sprintf('Aircraft Expense: %s (%s)', $expense->name, $pirep->aircraft->name);
+                    $transaction_group = sprintf('Aircraft: %s ', $expense->name)
+                        .sprintf('(%s-%s)', $pirep->aircraft->name, $pirep->aircraft->registration);
                 } else { // Skip any aircraft expenses that weren't used for this flight
                     return;
                 }
@@ -346,8 +346,8 @@ class PirepFinanceService extends Service
                     return;
                 }
 
-                $memo = "Expense: $expense->name";
-                $transaction_group = "Expense: $expense->name";
+                $memo = 'Expense: '.$expense->name;
+                $transaction_group = 'Expense: '.$expense->name;
             }
 
             if (filled($pirep->aircraft->subfleet->ground_handling_multiplier) && $expense->multiplier == 1) {
@@ -393,11 +393,11 @@ class PirepFinanceService extends Service
         /*
          * Go through the expenses and apply a mulitplier if present
          */
-        $expenses->map(function (Expense $expense, $i) use ($pirep) {
+        $expenses->map(function (Expense $expense, $i) use ($pirep): void {
             Log::info('Finance: PIREP: '.$pirep->id.', airport expense:', $expense->toArray());
 
-            $memo = "Airport Expense: $expense->name ($expense->ref_model_id)";
-            $transaction_group = "Airport: $expense->ref_model_id";
+            $memo = sprintf('Airport Expense: %s (%s)', $expense->name, $expense->ref_model_id);
+            $transaction_group = 'Airport: '.$expense->ref_model_id;
 
             $debit = Money::createFromAmount($expense->amount);
 
@@ -449,7 +449,7 @@ class PirepFinanceService extends Service
                 // If an airline_id is filled, then see if it matches
                 /* @noinspection NotOptimalIfConditionsInspection */
                 if (filled($expense->airline_id) && $expense->airline_id !== $pirep->airline_id) {
-                    Log::info('Finance: Expense has an airline ID and it doesn\'t match, skipping');
+                    Log::info("Finance: Expense has an airline ID and it doesn't match, skipping");
 
                     continue;
                 }
@@ -556,7 +556,7 @@ class PirepFinanceService extends Service
      *
      * @return Collection
      */
-    public function getFaresForPirep($pirep)
+    public function getFaresForPirep(Pirep $pirep)
     {
         // Collect all of the fares and prices
         return $this->fareSvc->getForPirep($pirep);
@@ -588,11 +588,10 @@ class PirepFinanceService extends Service
      * Return the pilot's hourly pay for the given PIREP
      *
      *
-     * @return float
      *
      * @throws InvalidArgumentException
      */
-    public function getPilotPayRateForPirep(Pirep $pirep)
+    public function getPilotPayRateForPirep(Pirep $pirep): ?float
     {
         // Get the base rate for the rank
         $rank = $pirep->user->rank;
@@ -635,12 +634,11 @@ class PirepFinanceService extends Service
      * Get the user's payment amount for a PIREP
      *
      *
-     * @return Money
      *
      * @throws UnexpectedValueException
      * @throws InvalidArgumentException
      */
-    public function getPilotPay(Pirep $pirep)
+    public function getPilotPay(Pirep $pirep): Money
     {
         // If there is a fixed price for this flight, return that amount
         $flight = $pirep->flight;

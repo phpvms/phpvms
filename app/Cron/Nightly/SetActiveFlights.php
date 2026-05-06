@@ -40,6 +40,7 @@ class SetActiveFlights extends Listener
             if (!$flight->active) {
                 continue;
             }
+
             // Set visible default
             $flight->visible = true;
 

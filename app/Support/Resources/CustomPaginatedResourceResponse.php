@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 
 class CustomPaginatedResourceResponse extends PaginatedResourceResponse
 {
+    #[\Override]
     protected function paginationLinks($paginated)
     {
         return [
@@ -17,6 +18,7 @@ class CustomPaginatedResourceResponse extends PaginatedResourceResponse
         ];
     }
 
+    #[\Override]
     protected function meta($paginated)
     {
         $arr = Arr::except($paginated, [

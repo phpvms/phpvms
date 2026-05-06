@@ -14,7 +14,7 @@ function airportSearchQueryV1For(array $params): AirportSearchQueryV1
     return new AirportSearchQueryV1($request);
 }
 
-test('AirportSearchQueryV1 returns a Builder ordered by icao asc by default', function () {
+test('AirportSearchQueryV1 returns a Builder ordered by icao asc by default', function (): void {
     foreach (['KZZZ', 'KAAA', 'KMMM'] as $icao) {
         Airport::factory()->create(['id' => $icao, 'icao' => $icao]);
     }
@@ -24,7 +24,7 @@ test('AirportSearchQueryV1 returns a Builder ordered by icao asc by default', fu
     expect($results->pluck('icao')->all())->toBe(['KAAA', 'KMMM', 'KZZZ']);
 });
 
-test('AirportSearchQueryV1 filters to hubs with ?hub=1', function () {
+test('AirportSearchQueryV1 filters to hubs with ?hub=1', function (): void {
     Airport::factory()->count(3)->create(['hub' => false]);
     Airport::factory()->create(['icao' => 'KORD', 'hub' => true]);
 
@@ -33,7 +33,7 @@ test('AirportSearchQueryV1 filters to hubs with ?hub=1', function () {
     expect($results->pluck('icao')->all())->toBe(['KORD']);
 });
 
-test('AirportSearchQueryV1 filters to hubs with ?hubs=true', function () {
+test('AirportSearchQueryV1 filters to hubs with ?hubs=true', function (): void {
     Airport::factory()->count(2)->create(['hub' => false]);
     Airport::factory()->create(['icao' => 'KORD', 'hub' => true]);
 
@@ -42,7 +42,7 @@ test('AirportSearchQueryV1 filters to hubs with ?hubs=true', function () {
     expect($results->pluck('icao')->all())->toBe(['KORD']);
 });
 
-test('AirportSearchQueryV1 free-text search matches across icao/iata/name', function () {
+test('AirportSearchQueryV1 free-text search matches across icao/iata/name', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'iata' => 'JFK', 'name' => 'Kennedy']);
     Airport::factory()->create(['id' => 'KORD', 'icao' => 'KORD', 'iata' => 'ORD', 'name' => "O'Hare"]);
 
@@ -59,7 +59,7 @@ test('AirportSearchQueryV1 free-text search matches across icao/iata/name', func
     expect($byIata->pluck('icao')->all())->toBe(['KORD']);
 });
 
-test('AirportSearchQueryV1 field-specific search uses LIKE for icao:value', function () {
+test('AirportSearchQueryV1 field-specific search uses LIKE for icao:value', function (): void {
     foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
         Airport::factory()->create(['id' => $a, 'icao' => $a]);
     }
@@ -69,7 +69,7 @@ test('AirportSearchQueryV1 field-specific search uses LIKE for icao:value', func
     expect($results->pluck('icao')->all())->toBe(['EGLL']);
 });
 
-test('AirportSearchQueryV1 free-text search honors searchFields', function () {
+test('AirportSearchQueryV1 free-text search honors searchFields', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'iata' => 'AAA', 'name' => 'Alpha']);
     Airport::factory()->create(['id' => 'EGAA', 'icao' => 'EGAA', 'iata' => 'JFK', 'name' => 'Bravo']);
     Airport::factory()->create(['id' => 'KORD', 'icao' => 'KORD', 'iata' => 'ORD', 'name' => 'JFK Terminal']);
@@ -82,7 +82,7 @@ test('AirportSearchQueryV1 free-text search honors searchFields', function () {
     expect($results->pluck('icao')->all())->toBe(['KJFK']);
 });
 
-test('AirportSearchQueryV1 field-specific search defaults to OR across multiple fields', function () {
+test('AirportSearchQueryV1 field-specific search defaults to OR across multiple fields', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'name' => 'Kennedy International']);
     Airport::factory()->create(['id' => 'KORD', 'icao' => 'KORD', 'name' => 'OHare International']);
     Airport::factory()->create(['id' => 'EGLL', 'icao' => 'EGLL', 'name' => 'Heathrow']);
@@ -92,7 +92,7 @@ test('AirportSearchQueryV1 field-specific search defaults to OR across multiple 
     expect($results->pluck('icao')->all())->toBe(['EGLL', 'KJFK', 'KORD']);
 });
 
-test('AirportSearchQueryV1 field-specific search supports searchJoin=and', function () {
+test('AirportSearchQueryV1 field-specific search supports searchJoin=and', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'name' => 'Kennedy International']);
     Airport::factory()->create(['id' => 'KORD', 'icao' => 'KORD', 'name' => 'OHare International']);
     Airport::factory()->create(['id' => 'EGLL', 'icao' => 'EGLL', 'name' => 'Heathrow International']);
@@ -105,7 +105,7 @@ test('AirportSearchQueryV1 field-specific search supports searchJoin=and', funct
     expect($results->pluck('icao')->all())->toBe(['KJFK']);
 });
 
-test('AirportSearchQueryV1 search is case insensitive', function () {
+test('AirportSearchQueryV1 search is case insensitive', function (): void {
     foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
         Airport::factory()->create(['id' => $a, 'icao' => $a]);
     }
@@ -115,7 +115,7 @@ test('AirportSearchQueryV1 search is case insensitive', function () {
     expect($results->pluck('icao')->all())->toBe(['KJFK']);
 });
 
-test('AirportSearchQueryV1 honors orderBy and sortedBy', function () {
+test('AirportSearchQueryV1 honors orderBy and sortedBy', function (): void {
     foreach (['KAAA', 'KZZZ', 'KMMM'] as $icao) {
         Airport::factory()->create(['id' => $icao, 'icao' => $icao]);
     }
@@ -125,7 +125,7 @@ test('AirportSearchQueryV1 honors orderBy and sortedBy', function () {
     expect($results->pluck('icao')->all())->toBe(['KZZZ', 'KMMM', 'KAAA']);
 });
 
-test('AirportSearchQueryV1 honors legacy multi-column orderBy syntax', function () {
+test('AirportSearchQueryV1 honors legacy multi-column orderBy syntax', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'country' => 'US']);
     Airport::factory()->create(['id' => 'EGAA', 'icao' => 'EGAA', 'country' => 'UK']);
     Airport::factory()->create(['id' => 'EGLL', 'icao' => 'EGLL', 'country' => 'UK']);
@@ -138,7 +138,7 @@ test('AirportSearchQueryV1 honors legacy multi-column orderBy syntax', function 
     expect($results->pluck('icao')->all())->toBe(['EGLL', 'EGAA', 'KJFK']);
 });
 
-test('AirportSearchQueryV1 filters to non-hubs with ?hub=0', function () {
+test('AirportSearchQueryV1 filters to non-hubs with ?hub=0', function (): void {
     Airport::factory()->create(['icao' => 'KJFK', 'hub' => true]);
     Airport::factory()->create(['icao' => 'KORD', 'hub' => false]);
     Airport::factory()->create(['icao' => 'KLAX', 'hub' => false]);
@@ -148,7 +148,7 @@ test('AirportSearchQueryV1 filters to non-hubs with ?hub=0', function () {
     expect($results->pluck('icao')->all())->toBe(['KLAX', 'KORD']);
 });
 
-test('AirportSearchQueryV1 composes hub filter and search', function () {
+test('AirportSearchQueryV1 composes hub filter and search', function (): void {
     Airport::factory()->create(['id' => 'KORD', 'icao' => 'KORD', 'hub' => true]);
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK', 'hub' => false]);
     Airport::factory()->create(['id' => 'KAAA', 'icao' => 'KAAA', 'hub' => true]);
@@ -159,7 +159,7 @@ test('AirportSearchQueryV1 composes hub filter and search', function () {
     expect($results->pluck('icao')->all())->toBe(['KAAA', 'KORD']);
 });
 
-test('AirportSearchQueryV1 does not add empty-value LIKE clauses', function () {
+test('AirportSearchQueryV1 does not add empty-value LIKE clauses', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK']);
 
     // ?search=icao: — empty value should be silently dropped, NOT translated to LIKE '%%'

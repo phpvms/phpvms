@@ -31,10 +31,8 @@ class AwardHandler extends Listener // implements ShouldQueue
 
     /**
      * Check for any awards to be run and test them against the user
-     *
-     * @param User $user
      */
-    public function checkForAwards($user): void
+    public function checkForAwards(?User $user): void
     {
         /** @var Award[] $awards */
         $awards = Award::where('active', 1)->get();

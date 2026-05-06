@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
@@ -28,7 +30,7 @@ class CreateConfigs extends Command
      *
      * @throws FileException
      */
-    public function handle()
+    public function handle(): void
     {
         $this->writeConfigs();
 

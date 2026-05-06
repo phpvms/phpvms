@@ -17,6 +17,7 @@ class ListPireps extends ListRecords
 
     protected static string $resource = PirepResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -24,6 +25,7 @@ class ListPireps extends ListRecords
         ];
     }
 
+    #[\Override]
     protected function getHeaderWidgets(): array
     {
         return [
@@ -31,6 +33,7 @@ class ListPireps extends ListRecords
         ];
     }
 
+    #[\Override]
     public function getTabs(): array
     {
         return [

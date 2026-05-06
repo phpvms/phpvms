@@ -24,6 +24,7 @@ class FilesRelationManager extends RelationManager
 {
     protected static string $relationship = 'files';
 
+    #[\Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -82,26 +83,26 @@ class FilesRelationManager extends RelationManager
                     ->icon(Heroicon::Link)
                     ->label(__('common.link_to_file'))
                     ->action(fn (File $record) => Storage::disk($record->disk)->download($record->path, Str::kebab($record->name)))
-                    ->visible(fn (File $record): bool => $record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
+                    ->visible(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
                 Action::make('view_file')
                     ->icon(Heroicon::Link)
                     ->label(__('common.link_to_file'))
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
-                    ->hidden(fn (File $record): bool => $record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
+                    ->hidden(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
-                DeleteAction::make()->before(function (File $record) {
-                    if ($record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
+                DeleteAction::make()->before(function (File $record): void {
+                    if ($record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
                         Storage::disk($record->disk)->delete($record->path);
                     }
                 }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->before(function (Collection $records) {
+                    DeleteBulkAction::make()->before(function (Collection $records): void {
                         /** @var Collection<int, File> $records */
-                        $records->each(function (File $record) {
-                            if ($record->disk && !str_contains($record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
+                        $records->each(function (File $record): void {
+                            if ($record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)) {
                                 Storage::disk($record->disk)->delete($record->path);
                             }
                         });
@@ -123,11 +124,13 @@ class FilesRelationManager extends RelationManager
             ]);
     }
 
-    public static function getModelLabel(): string
+    #[\Override]
+    protected static function getModelLabel(): string
     {
         return __('common.file');
     }
 
+    #[\Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('common.file'))

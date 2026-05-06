@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'url'         => env('OPCACHE_URL', config('app.url')),
     'verify_ssl'  => true,

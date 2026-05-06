@@ -22,6 +22,7 @@ class EditUser extends EditRecord
 
     protected static string $resource = UserResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -33,6 +34,7 @@ class EditUser extends EditRecord
         ];
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         if ($this->record instanceof User) {
@@ -44,6 +46,7 @@ class EditUser extends EditRecord
         return $data;
     }
 
+    #[\Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (isset($data['password'])) {

@@ -18,10 +18,10 @@ class PirepResource extends Resource
     /**
      * Transform the resource into an array.
      *
-     * @param  Request $request
      * @return array
      */
-    public function toArray($request)
+    #[\Override]
+    public function toArray(Request $request)
     {
         $res = parent::toArray($request);
         $res['ident'] = $this->ident;

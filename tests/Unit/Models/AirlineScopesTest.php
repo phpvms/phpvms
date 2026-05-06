@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Airline;
 
-test('Airline::byIcao matches uppercased ICAO codes', function () {
+test('Airline::byIcao matches uppercased ICAO codes', function (): void {
     Airline::factory()->create(['icao' => 'UALAA', 'iata' => 'UA']);
     Airline::factory()->create(['icao' => 'DALAA', 'iata' => 'DL']);
 
@@ -13,7 +13,7 @@ test('Airline::byIcao matches uppercased ICAO codes', function () {
     expect($results)->toBe(['UALAA']);
 });
 
-test('Airline::selectList falls back to id ordering for unsupported columns', function () {
+test('Airline::selectList falls back to id ordering for unsupported columns', function (): void {
     $first = Airline::factory()->create([
         'name' => 'Zulu Air',
         'icao' => 'ZZZAA',

@@ -44,7 +44,7 @@ abstract class Controller extends \Illuminate\Routing\Controller
     {
         // See if a list of values is passed in, or if a validation list is passed in
         $is_validation = false;
-        if (array_filter(array_keys($attrs_or_validations), '\is_string') !== []) {
+        if (array_filter(array_keys($attrs_or_validations), \is_string(...)) !== []) {
             $is_validation = true;
         }
 
@@ -64,7 +64,7 @@ abstract class Controller extends \Illuminate\Routing\Controller
         }
 
         if ($addtl_fields !== null && $addtl_fields !== []) {
-            $fields = array_merge($fields, $addtl_fields);
+            return array_merge($fields, $addtl_fields);
         }
 
         return $fields;
