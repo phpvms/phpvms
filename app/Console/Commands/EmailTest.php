@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Contracts\Command;
 use App\Events\NewsAdded;
+use App\Listeners\NotificationsSubscriber;
 use App\Models\News;
-use App\Notifications\NotificationEventsHandler;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class EmailTest extends Command
@@ -21,8 +21,8 @@ class EmailTest extends Command
      */
     public function handle(): void
     {
-        /** @var NotificationEventsHandler $eventHandler */
-        $eventHandler = app(NotificationEventsHandler::class);
+        /** @var NotificationsSubscriber $eventHandler */
+        $eventHandler = app(NotificationsSubscriber::class);
 
         $news = new News();
         $news->user_id = 1;
@@ -31,6 +31,6 @@ class EmailTest extends Command
         $news->save();
 
         $newsEvent = new NewsAdded($news);
-        $eventHandler->onNewsAdded($newsEvent);
+        $eventHandler->handleNewsAdded($newsEvent);
     }
 }

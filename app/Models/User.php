@@ -348,9 +348,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
      */
     public function gravatar($size = null): string
     {
-        $default = config('gravatar.default');
+        $default = config('phpvms.avatar.default');
 
-        $uri = config('gravatar.url').md5(strtolower(trim($this->email))).'?d='.urlencode((string) $default);
+        $uri = config('phpvms.avatar.gravatar_url').md5(strtolower(trim($this->email))).'?d='.urlencode((string) $default);
 
         if ($size !== null) {
             $uri .= '&s='.$size;

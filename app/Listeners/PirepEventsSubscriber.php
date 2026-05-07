@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Listener;
 use App\Events\PirepAccepted;
+use App\Events\PirepFiled;
 use App\Events\PirepRejected;
+use App\Services\BidService;
 use App\Services\Finance\PirepFinanceService;
+use App\Services\PirepService;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,17 +20,14 @@ use UnexpectedValueException;
  * Subscribe for events that we do some financial processing for
  * This includes when a PIREP is accepted, or rejected
  */
-class FinanceEventHandler extends Listener // implements ShouldQueue
+final readonly class PirepEventsSubscriber // implements ShouldQueue
 {
     // use Queueable;
 
-    public static $callbacks = [
-        PirepAccepted::class => 'onPirepAccept',
-        PirepRejected::class => 'onPirepReject',
-    ];
-
     public function __construct(
-        private readonly PirepFinanceService $financeSvc
+        private BidService $bidSvc,
+        private PirepFinanceService $pirepFinanceSvc,
+        private PirepService $pirepSvc,
     ) {}
 
     /**
@@ -38,9 +37,9 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
      * @throws InvalidArgumentException
      * @throws Exception
      */
-    public function onPirepAccept(PirepAccepted $event): void
+    public function handlePirepAccepted(PirepAccepted $event): void
     {
-        $this->financeSvc->processFinancesForPirep($event->pirep);
+        $this->pirepFinanceSvc->processFinancesForPirep($event->pirep);
     }
 
     /**
@@ -50,8 +49,17 @@ class FinanceEventHandler extends Listener // implements ShouldQueue
      * @throws InvalidArgumentException
      * @throws Exception
      */
-    public function onPirepReject(PirepRejected $event): void
+    public function handlePirepRejected(PirepRejected $event): void
     {
-        $this->financeSvc->deleteFinancesForPirep($event->pirep);
+        $this->pirepFinanceSvc->deleteFinancesForPirep($event->pirep);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function handlePirepFiled(PirepFiled $event): void
+    {
+        $this->bidSvc->removeBidForPirep($event->pirep);
+        $this->pirepSvc->handleDiversion($event->pirep);
     }
 }

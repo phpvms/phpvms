@@ -114,7 +114,7 @@ class Rank extends Model
                     return $value;
                 }
 
-                return public_url($value);
+                return url($value);
             },
         );
     }

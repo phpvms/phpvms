@@ -20,7 +20,7 @@ class SetActiveLanguage
     {
         $preferredLanguage = 'en';
         if ((setting('general.auto_language_detection', false) && !$request->hasCookie('lang')) || request()->is('system/install')) {
-            $preferredLanguage = $request->getPreferredLanguage(array_keys(config('languages')));
+            $preferredLanguage = $request->getPreferredLanguage(array_keys(config('phpvms.languages')));
         } else {
             $preferredLanguage = $request->cookie('lang', config('app.locale', 'en'));
         }

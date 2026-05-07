@@ -58,7 +58,7 @@ final class LanguageSwitcherPlugin implements Plugin
      */
     private function getLanguageSwitcherView(): View
     {
-        $locales = array_keys(config('languages'));
+        $locales = array_keys(config('phpvms.languages'));
 
         $currentLocale = app()->getLocale();
 
@@ -72,7 +72,7 @@ final class LanguageSwitcherPlugin implements Plugin
 
     private function getLabel(string $locale): string
     {
-        return config('languages')[$locale]['display'];
+        return config('phpvms.languages')[$locale]['display'];
         // Resolve using php-intl
         /*return str(
             locale_get_display_name(
@@ -85,6 +85,6 @@ final class LanguageSwitcherPlugin implements Plugin
 
     private function getFlag(string $locale): string
     {
-        return 'https://cdn.jsdelivr.net/gh/hampusborgos/country-flags@main/svg/'.(config('languages')[$locale]['flag-icon'] ?: null).'.svg';
+        return 'https://cdn.jsdelivr.net/gh/hampusborgos/country-flags@main/svg/'.(config('phpvms.languages')[$locale]['flag-icon'] ?: null).'.svg';
     }
 }

@@ -16,7 +16,8 @@ class ImporterDB
     /**
      * @var int
      */
-    public $batchSize;
+    // Log::info('Using DSN: '.$this->dsn);
+    public $batchSize = 20;
 
     private ?PDO $conn = null;
 
@@ -32,10 +33,6 @@ class ImporterDB
             'port='.$this->creds['port'],
             'dbname='.$this->creds['name'],
         ]);
-
-        // Log::info('Using DSN: '.$this->dsn);
-
-        $this->batchSize = config('installer.importer.batch_size', 20);
     }
 
     public function __destruct()

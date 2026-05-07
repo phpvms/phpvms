@@ -25,7 +25,7 @@ Route::get('airports/search', [AirportController::class, 'search']);
 Route::get('pireps/{pirep_id}', [PirepController::class, 'get']);
 Route::get('pireps/{pirep_id}/acars/geojson', [AcarsController::class, 'acars_geojson']);
 
-Route::get('cron/{id}', [MaintenanceController::class, 'cron'])->name('maintenance.cron');
+Route::get('cron/{id}', [MaintenanceController::class, 'cron'])->name('api.maintenance.cron');
 
 Route::get('news', [NewsController::class, 'index']);
 Route::get('status', [StatusController::class, 'status']);
@@ -52,7 +52,7 @@ Route::group(['middleware' => ['api.auth']], function (): void {
     Route::get('flights', [FlightController::class, 'index']);
     Route::get('flights/search', [FlightController::class, 'search']);
     Route::get('flights/{id}', [FlightController::class, 'get']);
-    Route::get('flights/{id}/briefing', [FlightController::class, 'briefing'])->name('flights.briefing');
+    Route::get('flights/{id}/briefing', [FlightController::class, 'briefing'])->name('api.flights.briefing');
     Route::get('flights/{id}/route', [FlightController::class, 'route']);
     Route::get('flights/{id}/aircraft', [FlightController::class, 'aircraft']);
 
@@ -116,5 +116,5 @@ Route::group(['middleware' => ['api.auth']], function (): void {
     Route::put('users/{id}/bids', [UserController::class, 'bids']);
     Route::post('users/{id}/bids', [UserController::class, 'bids']);
 
-    Route::post('users/simbrief_username', [UserController::class, 'simbrief_username'])->name('users.simbrief_username');
+    Route::post('users/simbrief_username', [UserController::class, 'simbrief_username'])->name('api.users.simbrief_username');
 });

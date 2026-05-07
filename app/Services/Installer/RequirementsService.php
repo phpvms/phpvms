@@ -14,7 +14,7 @@ class RequirementsService extends Service
     public function checkPHPVersion(): array
     {
         $passed = false;
-        if (version_compare(PHP_VERSION, config('installer.php.version')) >= 0) {
+        if (version_compare(PHP_VERSION, config('phpvms.installer.php_version')) >= 0) {
             $passed = true;
         }
 
@@ -27,7 +27,7 @@ class RequirementsService extends Service
     public function checkExtensions(): array
     {
         $extensions = [];
-        foreach (config('installer.extensions') as $ext) {
+        foreach (config('phpvms.installer.extensions') as $ext) {
             $pass = true;
             if (!\extension_loaded($ext)) {
                 $pass = false;
@@ -51,7 +51,7 @@ class RequirementsService extends Service
         clearstatcache();
 
         $directories = [];
-        foreach (config('installer.permissions') as $path) {
+        foreach (config('phpvms.installer.permissions') as $path) {
             $pass = true;
 
             if (!file_exists($path)) {

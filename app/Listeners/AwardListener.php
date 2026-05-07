@@ -15,30 +15,20 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  *
  * @url http://docs.phpvms.net/customizing/awards
  */
-class AwardHandler extends Listener // implements ShouldQueue
+class AwardListener extends Listener // implements ShouldQueue
 {
     // use Queueable;
-
-    /** The events and the callback */
-    public static $callbacks = [
-        ProcessAward::class => 'processAward',
-    ];
-
-    public function processAward(ProcessAward $event): void
-    {
-        $this->checkForAwards($event->user);
-    }
 
     /**
      * Check for any awards to be run and test them against the user
      */
-    public function checkForAwards(?User $user): void
+    public function handle(ProcessAward $event): void
     {
         /** @var Award[] $awards */
         $awards = Award::where('active', 1)->get();
         foreach ($awards as $award) {
             /** @var ?\App\Contracts\Award $klass */
-            $klass = $award->getReference($award, $user);
+            $klass = $award->getReference($award, $event->user);
             $klass?->handle();
         }
     }

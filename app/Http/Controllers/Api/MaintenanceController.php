@@ -2,44 +2,38 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Console\Cron;
-use App\Console\Kernel;
 use App\Contracts\Controller;
 use App\Exceptions\CronInvalid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\NullOutput;
+use Illuminate\Support\Facades\Artisan;
 
 class MaintenanceController extends Controller
 {
     /**
      * Run the cron job from the web
-     *
-     * @param string $id The ID passed in for the cron
      */
     public function cron(Request $request, string $id): JsonResponse
     {
-        $cron_id = setting('cron.random_id');
-        if (empty($cron_id) || $id !== $cron_id) {
+        $cronId = setting('cron.random_id');
+
+        if (empty($cronId) || !hash_equals($cronId, $id)) {
             throw new CronInvalid();
         }
 
-        // Create a console kernel instance
-        $consoleKernel = app()->make(Kernel::class);
+        // Run Laravel's scheduler
+        $exitCode = Artisan::call('schedule:run');
 
-        // Run a null artisan thing just so Laravel internals can be setup properly
-        $consoleKernel->handle(
-            new ArgvInput(),
-            new NullOutput()
-        );
-
-        $cron = app(Cron::class);
-        $run = $cron->run();
+        // Capture scheduler output
+        $output = trim(Artisan::output());
 
         return response()->json([
-            'count' => count($run),
-            'tasks' => $run,
+            'success'   => $exitCode === 0,
+            'exit_code' => $exitCode,
+            'timestamp' => now()->toIso8601String(),
+            'output'    => $output === '' || $output === '0'
+                ? ['No scheduled tasks were ready to run.']
+                : preg_split('/\r\n|\r|\n/', $output),
         ]);
     }
 }
