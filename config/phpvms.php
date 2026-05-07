@@ -7,11 +7,7 @@ use App\Services\Metar\AviationWeather;
 
 /**
  * DO NOT MODIFY THIS FILE DIRECTLY!
- * It will just make upgrading (a little) more difficult
- *
- * Create a local.conf.php in the root (in the same directory
- * as your .env file), and then copy this file into there, and
- * make your changes there.
+ * Use your .env instead
  */
 
 return [
@@ -26,8 +22,10 @@ return [
      * Both parameters are in px.
      */
     'avatar' => [
-        'width'  => '200',
-        'height' => '200',
+        'width'        => '200',
+        'height'       => '200',
+        'gravatar_url' => 'https://www.gravatar.com/avatar/',
+        'default'      => env('GRAVATAR_DEFAULT_AVATAR', 'https://en.gravatar.com/userimage/12856995/aa6c0527a723abfd5fb9e246f0ff8af4.png'),
     ],
 
     /*
@@ -163,6 +161,11 @@ return [
      */
     'use_queued_filament_imports' => env('USE_QUEUED_FILAMENT_IMPORTS', false),
 
+    /**
+     * Run jobs in cron. Should be enabled when you don't have a queue worker (ie not running the queue:work command). NOT RECOMMENDED
+     */
+    'run_queued_jobs_in_cron' => env('RUN_QUEUED_JOBS_IN_CRON', false),
+
     /*
      * Default pagination limits for paginated endpoints. Replaces the
      * removed `config/repository.php` (Prettus l5-repository) defaults.
@@ -175,5 +178,90 @@ return [
     'pagination' => [
         'limit' => 50,
         'max'   => 100,
+    ],
+
+    /**
+     * Installer related config
+     */
+    'installer' => [
+        'php_version' => '8.3',
+
+        'extensions' => [
+            // 'bcmath',
+            'fileinfo',
+            'openssl',
+            'pdo',
+            'intl',
+            'mbstring',
+            'tokenizer',
+            'json',
+            'curl',
+            'dom',
+            'zip',
+        ],
+
+        // Make sure these are writable
+        'permissions' => [
+            base_path('bootstrap/cache'),
+            public_path('uploads'),
+            storage_path(),
+            storage_path('app/public'),
+            storage_path('app/public/avatars'),
+            storage_path('app/public/uploads'),
+            storage_path('framework'),
+            storage_path('framework/cache'),
+            storage_path('framework/sessions'),
+            storage_path('framework/views'),
+            storage_path('logs'),
+        ],
+    ],
+
+    /**
+     * Available languages
+     */
+    'languages' => [
+        // First in the list is the default
+        'en' => [
+            'display'   => 'English',
+            'flag-icon' => 'us',
+        ],
+        'de' => [
+            'display'   => 'German',
+            'flag-icon' => 'de',
+        ],
+        'es-es' => [
+            'display'   => 'Spanish (Spain)',
+            'flag-icon' => 'es',
+        ],
+        'fr' => [
+            'display'   => 'French',
+            'flag-icon' => 'fr',
+        ],
+        'it' => [
+            'display'   => 'Italian',
+            'flag-icon' => 'it',
+        ],
+        'pt-br' => [
+            'display'   => 'Portuguese (Brazilian)',
+            'flag-icon' => 'br',
+        ],
+        'jp' => [
+            'display'   => 'Japanese (日本語)',
+            'flag-icon' => 'jp',
+        ],
+        'tr' => [
+            'display'   => 'Turkish (Türkçe)',
+            'flag-icon' => 'tr',
+        ],
+    ],
+
+    /*
+     * This can really be any METAR service, as long as it returns GeoJSON
+     */
+    'metar_wms' => [
+        'url'    => 'https://ogcie.iblsoft.com/observations?',
+        'params' => [
+            'layers' => 'metar',
+        ],
     ],
 ];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Cron\Weekly;
 
 use App\Events\CronWeekly;
 use Illuminate\Support\Facades\Http;

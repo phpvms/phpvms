@@ -225,44 +225,10 @@ if (!function_exists('kvp_save')) {
  * set
  */
 if (!function_exists('public_asset')) {
+
+    #[Deprecated('use asset() instead')]
     function public_asset($path, array $parameters = []): string
     {
-        /** @var application $app */
-        $app = app();
-        $publicBaseUrl = $app->publicUrlPath();
-        $path = $publicBaseUrl.$path;
-        $path = str_replace('//', '/', $path);
-
-        return url($path, $parameters);
-    }
-}
-
-/*
- * Call mix() and then prepend the proper public URL
- */
-if (!function_exists('public_mix')) {
-    function public_mix($path, array $parameters = []): string
-    {
-        try {
-            $path = mix($path);
-        } catch (Exception) {
-        }
-
-        return public_asset($path, $parameters);
-    }
-}
-
-/**
- * Wrap a call to url() and append the public folder before it
- */
-if (!function_exists('public_url')) {
-    function public_url($path, array $parameters = []): string
-    {
-        /** @var application $app */
-        $app = app();
-        $publicBaseUrl = $app->publicUrlPath();
-        $path = $publicBaseUrl.$path;
-
         $path = str_replace('//', '/', $path);
 
         return url($path, $parameters);
