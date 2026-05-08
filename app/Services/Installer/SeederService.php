@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Nwidart\Modules\Facades\Module;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -48,7 +47,6 @@ class SeederService extends Service
     public function syncAllSeeds(): void
     {
         $this->syncAllSettings();
-        $this->syncAllModules();
 
         // Seed base
         $this->databaseSvc->seedFromYamlFile(database_path('seeders/base.yml'));
@@ -80,17 +78,6 @@ class SeederService extends Service
                 Log::info('Seeding .'.$file);
                 $this->databaseSvc->seedFromYamlFile($file);
             });
-    }
-
-    public function syncAllModules(): void
-    {
-        $data = file_get_contents(database_path('/seeders/modules.yml'));
-        $yml = Yaml::parse($data);
-        foreach ($yml as $module) {
-            /** @var ?\Nwidart\Modules\Module $moduleInstance */
-            $moduleInstance = Module::find($module['name']);
-            $moduleInstance?->setActive((bool) $module['enabled']);
-        }
     }
 
     public function syncAllSettings(): void
