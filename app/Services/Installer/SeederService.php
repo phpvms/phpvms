@@ -23,8 +23,10 @@ class SeederService extends Service
     private array $offsets = [];
 
     // Map an environment to a seeder directory, if we want to share
-    public static $seed_mapper = [
-        'production' => 'prod',
+    public static array $seedMapper = [
+        'production'  => 'prod',
+        'dev'         => 'local',
+        'development' => 'local',
     ];
 
     public function __construct(
@@ -40,7 +42,7 @@ class SeederService extends Service
     }
 
     /**
-     * Syncronize all of the seed files, run this after the migrations
+     * Syncronize all the seed files, run this after the migrations
      * and on first install.
      */
     public function syncAllSeeds(): void
@@ -49,7 +51,7 @@ class SeederService extends Service
         $this->syncAllModules();
 
         // Seed base
-        $this->databaseSvc->seed_from_yaml_file(database_path('seeders/base.yml'));
+        $this->databaseSvc->seedFromYamlFile(database_path('seeders/base.yml'));
 
         $this->syncAllYamlFileSeeds();
     }
@@ -61,8 +63,8 @@ class SeederService extends Service
     {
         Log::info('Running seeder');
         $env = App::environment();
-        if (array_key_exists($env, self::$seed_mapper)) {
-            $env = self::$seed_mapper[$env];
+        if (array_key_exists($env, self::$seedMapper)) {
+            $env = self::$seedMapper[$env];
         }
 
         // Gather all of the files to seed
@@ -76,7 +78,7 @@ class SeederService extends Service
             })
             ->each(function (string $file): void {
                 Log::info('Seeding .'.$file);
-                $this->databaseSvc->seed_from_yaml_file($file);
+                $this->databaseSvc->seedFromYamlFile($file);
             });
     }
 

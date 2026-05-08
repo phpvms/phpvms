@@ -2,60 +2,86 @@
 
 namespace App\Console\Commands;
 
-use App\Contracts\Command;
 use App\Services\VersionService;
-use Symfony\Component\Yaml\Exception\ParseException;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Yaml\Yaml;
 use Version\Extension\Build;
 use Version\Extension\PreRelease;
+use Version\Version as SemanticVersion;
 
+#[AsCommand(name: 'phpvms:version', description: 'Get or update the current application version')]
 class Version extends Command
 {
-    protected $signature = 'phpvms:version {--write} {--base-only} {--write-full-version} {version?}';
+    /**
+     * The console command signature.
+     */
+    protected $signature = 'phpvms:version 
+                            {version? : The semantic version string to apply}
+                            {--write : Write the updated version/build number to the version.yml file} 
+                            {--base-only : Only output the base version without build metadata} 
+                            {--write-full-version : Update the major, minor, and patch values in the file}';
 
-    public function __construct(private readonly VersionService $versionSvc)
+    /**
+     * Execute the console command.
+     */
+    public function handle(VersionService $versionSvc): int
     {
-        parent::__construct();
+        if ($this->option('write') && $this->argument('version')) {
+            $this->updateVersionConfig($versionSvc);
+        }
+
+        $includeBuild = !$this->option('base-only');
+        $version = $versionSvc->getCurrentVersion($includeBuild);
+
+        // We use line() instead of components->info() so this command safely pipes
+        // raw string data to bash scripts during CI/CD workflows.
+        $this->line($version);
+
+        return self::SUCCESS;
     }
 
     /**
-     * Run dev related commands
-     *
-     * @throws ParseException
+     * Parse and update the version.yml file.
      */
-    public function handle(): void
+    protected function updateVersionConfig(VersionService $versionSvc): void
     {
-        if ($this->option('write')) {
-            // Write the updated build number out to the file
-            $version_file = config_path('version.yml');
-            $cfg = Yaml::parse(file_get_contents($version_file));
+        $versionFile = config_path('version.yml');
 
-            // If a version is being passed in, the update the build, etc data against this
-            if ($this->argument('version')) {
-                $version = \Version\Version::fromString($this->argument('version'));
-                if ($this->option('write-full-version')) {
-                    $cfg['current']['major'] = $version->getMajor();
-                    $cfg['current']['minor'] = $version->getMinor();
-                    $cfg['current']['patch'] = $version->getPatch();
-                }
+        if (!File::exists($versionFile)) {
+            $this->components->error(sprintf('Version config file not found at [%s]', $versionFile));
 
-                $prerelease = $version->getPreRelease();
-                $cfg['current']['prerelease'] = $prerelease instanceof PreRelease ? $prerelease->toString() : false;
-
-                $build_meta = $version->getBuild();
-                if ($build_meta instanceof Build) {
-                    $cfg['current']['buildmetadata'] = $build_meta->toString();
-                } else {
-                    $build_number = $this->versionSvc->generateBuildId($cfg);
-                    $cfg['current']['buildmetadata'] = $build_number;
-                }
-
-                file_put_contents($version_file, Yaml::dump($cfg, 4, 2));
-            }
+            return;
         }
 
-        $incl_build = empty($this->option('base-only'));
-        $version = $this->versionSvc->getCurrentVersion($incl_build);
-        echo $version."\n";
+        $versionString = $this->argument('version');
+
+        $this->components->task('Updating version.yml to '.$versionString, function () use ($versionString, $versionSvc, $versionFile): void {
+            $cfg = Yaml::parse(File::get($versionFile));
+            $version = SemanticVersion::fromString($versionString);
+
+            // Update Base Version if requested
+            if ($this->option('write-full-version')) {
+                $cfg['current']['major'] = $version->getMajor();
+                $cfg['current']['minor'] = $version->getMinor();
+                $cfg['current']['patch'] = $version->getPatch();
+            }
+
+            // Update Pre-release
+            $prerelease = $version->getPreRelease();
+            $cfg['current']['prerelease'] = $prerelease instanceof PreRelease
+                ? $prerelease->toString()
+                : false;
+
+            // Update Build Metadata
+            $buildMeta = $version->getBuild();
+            $cfg['current']['buildmetadata'] = $buildMeta instanceof Build
+                ? $buildMeta->toString()
+                : $versionSvc->generateBuildId($cfg);
+
+            // Save back to disk
+            File::put($versionFile, Yaml::dump($cfg, 4, 2));
+        });
     }
 }

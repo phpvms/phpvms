@@ -14,7 +14,7 @@ use App\Services\UserService;
 function loadYamlIntoDb(string $file): void
 {
     $file_path = base_path('tests/data/'.$file.'.yml');
-    app(DatabaseService::class)->seed_from_yaml_file($file_path);
+    app(DatabaseService::class)->seedFromYamlFile($file_path);
 }
 
 /**
