@@ -104,6 +104,10 @@ class DatabaseService extends Service
         bool $ignore_errors = true,
         bool $ignore_if_exists = true,
     ): array {
+        if ($row === []) {
+            return $row;
+        }
+
         if (!array_key_exists('id', $row) && \in_array($table, $this->uuidTables, true)) {
             $row['id'] = Str::uuid();
         }
@@ -111,10 +115,6 @@ class DatabaseService extends Service
         // encrypt any password fields
         if (array_key_exists('password', $row)) {
             $row['password'] = bcrypt($row['password']);
-        }
-
-        if ($row === []) {
-            return $row;
         }
 
         // if any time fields are == to "now", then insert the right time
