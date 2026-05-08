@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Flights\Schemas;
 
+use App\Enums\FlightType;
 use App\Models\Airport;
-use App\Models\Enums\Days;
-use App\Models\Enums\FlightType;
+use App\Support\Days;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
@@ -41,7 +41,7 @@ class FlightForm
                                 ->searchable()
                                 ->native(false)
                                 ->required()
-                                ->options(FlightType::select()),
+                                ->options(FlightType::class),
 
                             TextInput::make('callsign')
                                 ->label(__('flights.callsign'))
@@ -105,7 +105,7 @@ class FlightForm
 
                             Select::make('days')
                                 ->label(__('common.days_text'))
-                                ->options(Days::labels())
+                                ->options(Days::class)
                                 ->multiple()
                                 ->native(false),
 

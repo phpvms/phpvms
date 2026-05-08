@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Pireps\Schemas;
 
+use App\Enums\FlightType;
 use App\Models\Airport;
-use App\Models\Enums\FlightType;
-use App\Models\Enums\PirepSource;
 use App\Models\Pirep;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -39,12 +38,12 @@ class PirepForm
                     Select::make('flight_type')
                         ->label(__('flights.flighttype'))
                         ->disabled(false)
-                        ->options(FlightType::select())
+                        ->options(FlightType::class)
                         ->native(false),
 
                     TextEntry::make('source')
                         ->label(__('pireps.source'))
-                        ->state(fn (Pirep $record): string => PirepSource::label($record->source).(filled($record->source_name) ? '('.$record->source_name.')' : '')),
+                        ->state(fn (Pirep $record): string => $record->source->getLabel().(filled($record->source_name) ? '('.$record->source_name.')' : '')),
                 ])
                     ->columns(5)
                     ->columnSpanFull()

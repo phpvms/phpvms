@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Enums\AcarsType;
+use App\Enums\PirepFieldSource;
+use App\Enums\PirepSource;
 use App\Events\PirepUpdated;
 use App\Exceptions\AircraftNotAtAirport;
 use App\Exceptions\AircraftPermissionDenied;
@@ -21,9 +24,6 @@ use App\Http\Resources\PirepCommentResource;
 use App\Http\Resources\PirepFieldCollectionResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\PirepFieldSource;
-use App\Models\Enums\PirepSource;
 use App\Models\Pirep;
 use App\Models\PirepComment;
 use App\Models\PirepFare;

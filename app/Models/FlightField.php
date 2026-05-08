@@ -15,13 +15,13 @@ use Illuminate\Support\Str;
  * @property string      $name
  * @property string|null $slug
  *
+ * @method static \Database\Factories\FlightFieldFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereSlug($value)
- * @method static \Database\Factories\FlightFieldFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

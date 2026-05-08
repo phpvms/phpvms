@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
+use App\Enums\UserState;
+use Illuminate\Validation\Rule;
 
 /**
  * Validates query string for the public /users (pilots list) page.
@@ -55,7 +57,7 @@ class SearchUsersRequest extends FormRequest
     {
         return [
             'search'     => ['sometimes', 'string', 'max:255'],
-            'state'      => ['sometimes', 'integer'],
+            'state'      => ['sometimes', Rule::enum(UserState::class)],
             'airline_id' => ['sometimes', 'integer'],
             'orderBy'    => ['sometimes', 'string', 'in:'.implode(',', self::ORDERABLE_FIELDS)],
             'sortedBy'   => ['sometimes', 'string', 'in:'.implode(',', self::SORT_DIRECTIONS)],

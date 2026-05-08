@@ -26,10 +26,10 @@
           @else
              <div class="badge bg-info">
           @endif
-            {{ PirepState::label($pirep->state) }}</div>
+            {{ $pirep->state->getLabel() }}</div>
           <a href="{{ route('frontend.pireps.edit', [$pirep->id]) }}"
-            class="btn btn-sm btn-info">@lang('common.edit')</a> 
-      </div>    
+            class="btn btn-sm btn-info">@lang('common.edit')</a>
+      </div>
     </div>
   </div>
 </div>

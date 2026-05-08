@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read mixed $link
+ * @property-read string $link
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newQuery()

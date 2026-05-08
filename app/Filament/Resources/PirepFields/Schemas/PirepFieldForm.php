@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\PirepFields\Schemas;
 
-use App\Models\Enums\PirepFieldSource;
+use App\Enums\PirepFieldSource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -27,7 +27,7 @@ class PirepFieldForm
 
                 Select::make('pirep_source')
                     ->label(__('pireps.source'))
-                    ->options(PirepFieldSource::select())
+                    ->options(PirepFieldSource::class)
                     ->native(false)
                     ->required(),
 

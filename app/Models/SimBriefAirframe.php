@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\AirframeSource;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -66,8 +67,9 @@ class SimBriefAirframe extends Model
     protected function casts(): array
     {
         return [
-            'icao' => 'string',
-            'name' => 'string',
+            'icao'   => 'string',
+            'name'   => 'string',
+            'source' => AirframeSource::class,
         ];
     }
 }

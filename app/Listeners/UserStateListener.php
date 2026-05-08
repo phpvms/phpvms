@@ -3,9 +3,9 @@
 namespace App\Listeners;
 
 use App\Contracts\Listener;
+use App\Enums\UserState;
 use App\Events\PirepFiled;
 use App\Events\UserStateChanged;
-use App\Models\Enums\UserState;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

@@ -6,11 +6,14 @@ use App\Casts\CarbonCast;
 use App\Casts\DistanceCast;
 use App\Casts\FuelCast;
 use App\Contracts\Model;
+use App\Enums\AcarsType;
+use App\Enums\FlightType;
+use App\Enums\PirepFieldSource;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\PirepFieldSource;
-use App\Models\Enums\PirepState;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -31,54 +34,50 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string      $id
- * @property int         $user_id
- * @property int         $airline_id
- * @property int|null    $aircraft_id
- * @property int|null    $event_id
- * @property string|null $flight_id
- * @property string|null $flight_number
- * @property string|null $route_code
- * @property string|null $route_leg
- * @property string      $flight_type
- * @property string      $dpt_airport_id
- * @property string      $arr_airport_id
- * @property string|null $alt_airport_id
- * @property int|null    $level
- * @property mixed|null  $distance
- * @property mixed|null  $planned_distance
- * @property int|null    $flight_time
- * @property int|null    $planned_flight_time
- * @property float|null  $zfw
- * @property mixed|null  $block_fuel
- * @property mixed|null  $fuel_used
- * @property float|null  $landing_rate
- * @property int|null    $score
- * @property string|null $route
- * @property string|null $notes
- * @property int|null    $source
- * @property string|null $source_name
- * @property int         $state
- * @property string      $status
- * @property mixed|null  $submitted_at
- * @property mixed|null  $block_off_time
- * @property mixed|null  $block_on_time
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
+ * @property string           $id
+ * @property int              $user_id
+ * @property int              $airline_id
+ * @property int|null         $aircraft_id
+ * @property int|null         $event_id
+ * @property string|null      $flight_id
+ * @property string|null      $flight_number
+ * @property string|null      $route_code
+ * @property string|null      $route_leg
+ * @property string           $flight_type
+ * @property string           $dpt_airport_id
+ * @property string           $arr_airport_id
+ * @property string|null      $alt_airport_id
+ * @property int|null         $level
+ * @property mixed|null       $distance
+ * @property mixed|null       $planned_distance
+ * @property int|null         $flight_time
+ * @property int|null         $planned_flight_time
+ * @property float|null       $zfw
+ * @property mixed|null       $block_fuel
+ * @property mixed|null       $fuel_used
+ * @property float|null       $landing_rate
+ * @property int|null         $score
+ * @property string|null      $route
+ * @property string|null      $notes
+ * @property PirepSource|null $source
+ * @property string|null      $source_name
+ * @property PirepState       $state
+ * @property PirepStatus      $status
+ * @property mixed|null       $submitted_at
+ * @property mixed|null       $block_off_time
+ * @property mixed|null       $block_on_time
+ * @property Carbon|null      $created_at
+ * @property Carbon|null      $updated_at
+ * @property Carbon|null      $deleted_at
  * @property-read Collection<int, Acars> $acars
  * @property-read int|null $acars_count
- * @property-read Collection<int, Acars> $acars_logs
- * @property-read int|null $acars_logs_count
- * @property-read Collection<int, Acars> $acars_route
- * @property-read int|null $acars_route_count
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Aircraft|null $aircraft
  * @property-read Airline|null $airline
  * @property-read Airport|null $alt_airport
  * @property-read Airport|null $arr_airport
- * @property-read mixed $cancelled
+ * @property-read bool $cancelled
  * @property-read Collection<int, PirepComment> $comments
  * @property-read int|null $comments_count
  * @property-read Airport|null $dpt_airport
@@ -88,61 +87,62 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $field_values_count
  * @property-read mixed $fields
  * @property-read Flight|null $flight
- * @property-read mixed $ident
+ * @property-read string $ident
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
+ * @property-read User|null $pilot
  * @property-read Acars|null $position
- * @property-read mixed $progress_percent
- * @property-read mixed $read_only
+ * @property-read float $progress_percent
+ * @property-read bool $read_only
  * @property-read SimBrief|null $simbrief
  * @property-read Collection<int, JournalTransaction> $transactions
  * @property-read int|null $transactions_count
  * @property-read User|null $user
  *
- * @method static \Database\Factories\PirepFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereAircraftId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereAirlineId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereAltAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereArrAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereBlockFuel($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereBlockOffTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereBlockOnTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereDistance($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereDptAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereEventId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereFlightId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereFlightNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereFlightTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereFlightType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereFuelUsed($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereLandingRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereNotes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep wherePlannedDistance($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep wherePlannedFlightTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereRoute($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereRouteCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereRouteLeg($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereScore($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereSource($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereSourceName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereState($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereSubmittedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep whereZfw($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Pirep withoutTrashed()
- * @method static Builder<static>|Pirep                               activeFlights(int $liveTime = 0)
+ * @method static Builder<static>|Pirep            activeFlights(int $liveTime = 0)
+ * @method static \Database\Factories\PirepFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Pirep            newModelQuery()
+ * @method static Builder<static>|Pirep            newQuery()
+ * @method static Builder<static>|Pirep            onlyTrashed()
+ * @method static Builder<static>|Pirep            query()
+ * @method static Builder<static>|Pirep            sortable($defaultParameters = null)
+ * @method static Builder<static>|Pirep            whereAircraftId($value)
+ * @method static Builder<static>|Pirep            whereAirlineId($value)
+ * @method static Builder<static>|Pirep            whereAltAirportId($value)
+ * @method static Builder<static>|Pirep            whereArrAirportId($value)
+ * @method static Builder<static>|Pirep            whereBlockFuel($value)
+ * @method static Builder<static>|Pirep            whereBlockOffTime($value)
+ * @method static Builder<static>|Pirep            whereBlockOnTime($value)
+ * @method static Builder<static>|Pirep            whereCreatedAt($value)
+ * @method static Builder<static>|Pirep            whereDeletedAt($value)
+ * @method static Builder<static>|Pirep            whereDistance($value)
+ * @method static Builder<static>|Pirep            whereDptAirportId($value)
+ * @method static Builder<static>|Pirep            whereEventId($value)
+ * @method static Builder<static>|Pirep            whereFlightId($value)
+ * @method static Builder<static>|Pirep            whereFlightNumber($value)
+ * @method static Builder<static>|Pirep            whereFlightTime($value)
+ * @method static Builder<static>|Pirep            whereFlightType($value)
+ * @method static Builder<static>|Pirep            whereFuelUsed($value)
+ * @method static Builder<static>|Pirep            whereId($value)
+ * @method static Builder<static>|Pirep            whereLandingRate($value)
+ * @method static Builder<static>|Pirep            whereLevel($value)
+ * @method static Builder<static>|Pirep            whereNotes($value)
+ * @method static Builder<static>|Pirep            wherePlannedDistance($value)
+ * @method static Builder<static>|Pirep            wherePlannedFlightTime($value)
+ * @method static Builder<static>|Pirep            whereRoute($value)
+ * @method static Builder<static>|Pirep            whereRouteCode($value)
+ * @method static Builder<static>|Pirep            whereRouteLeg($value)
+ * @method static Builder<static>|Pirep            whereScore($value)
+ * @method static Builder<static>|Pirep            whereSource($value)
+ * @method static Builder<static>|Pirep            whereSourceName($value)
+ * @method static Builder<static>|Pirep            whereState($value)
+ * @method static Builder<static>|Pirep            whereStatus($value)
+ * @method static Builder<static>|Pirep            whereSubmittedAt($value)
+ * @method static Builder<static>|Pirep            whereUpdatedAt($value)
+ * @method static Builder<static>|Pirep            whereUserId($value)
+ * @method static Builder<static>|Pirep            whereZfw($value)
+ * @method static Builder<static>|Pirep            withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Pirep            withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -588,14 +588,16 @@ class Pirep extends Model
             'block_off_time'      => CarbonCast::class,
             'block_on_time'       => CarbonCast::class,
             'flight_time'         => 'integer',
+            'flight_type'         => FlightType::class,
             'planned_flight_time' => 'integer',
             'zfw'                 => 'float',
             'block_fuel'          => FuelCast::class,
             'fuel_used'           => FuelCast::class,
             'landing_rate'        => 'float',
             'score'               => 'integer',
-            'source'              => 'integer',
-            'state'               => 'integer',
+            'source'              => PirepSource::class,
+            'state'               => PirepState::class,
+            'status'              => PirepStatus::class,
             'submitted_at'        => CarbonCast::class,
         ];
     }

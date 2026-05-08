@@ -3,7 +3,7 @@
 
   Name: {{ $user->name }}!
   Email: {{ $user->email }}
-  State: {{ UserState::label($user->state) }}
+  State: {{ $user->state->getLabel() }}
 
   {{ config('app.name') }}
 @endcomponent

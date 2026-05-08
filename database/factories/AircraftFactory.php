@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
 
 use App\Contracts\Factory;
+use App\Enums\AircraftState;
+use App\Enums\AircraftStatus;
 use App\Models\Aircraft;
 use App\Models\Airport;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\AircraftStatus;
 use App\Models\Subfleet;
 use App\Support\ICAO;
 use DateTime;

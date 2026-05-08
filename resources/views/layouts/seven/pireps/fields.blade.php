@@ -94,7 +94,7 @@ flight reports that have been filed. You've been warned!
           <div class="col-lg-4">
             <label for="flight_type">@lang('flights.flighttype')</label>
             @if(!empty($pirep) && $pirep->read_only)
-              <p>{{ $flight_type_id }} ({{ \App\Models\Enums\FlightType::label($pirep->flight_type) }})</p>
+              <p>{{ $flight_type_id }} ({{ $pirep->flight_type->getLabel() }})</p>
               <input type="hidden" name="flight_type" value="{{ $pirep->flight_type }}" />
             @else
               <div class="form-group">
@@ -103,7 +103,7 @@ flight reports that have been filed. You've been warned!
                   id="flight_type"
                   class="form-select select2"
                 >
-                  @foreach(\App\Models\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
+                  @foreach(\App\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
                     <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_id }} ({{ $flight_type_label }})</option>
                   @endforeach
                 </select>
@@ -309,7 +309,7 @@ flight reports that have been filed. You've been warned!
     <div id="fares_container">
       @include('pireps.fares')
     </div>
-    
+
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
       @lang('flights.route') & {{ trans_choice('common.remark', 2) }}
@@ -346,13 +346,13 @@ flight reports that have been filed. You've been warned!
       </div>
       <div class="card-body">
         <table class="table table-striped">
-          
+
             @if(isset($pirep) && $pirep->fields)
               @each('pireps.custom_fields', $pirep->fields, 'field')
             @else
               @each('pireps.custom_fields', $pirep_fields, 'field')
             @endif
-          
+
         </table>
       </div>
     </div>

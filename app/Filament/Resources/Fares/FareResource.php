@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Fares;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Fares\Pages\CreateFare;
 use App\Filament\Resources\Fares\Pages\EditFare;
 use App\Filament\Resources\Fares\Pages\ListFares;
 use App\Filament\Resources\Fares\Schemas\FareForm;
 use App\Filament\Resources\Fares\Tables\FaresTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Fare;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

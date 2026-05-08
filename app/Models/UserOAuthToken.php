@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read mixed $is_expired
+ * @property-read bool $is_expired
  * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken newModelQuery()

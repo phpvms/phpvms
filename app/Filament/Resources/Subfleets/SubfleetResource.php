@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets;
 
+use App\Enums\NavigationGroup;
 use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FaresRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
@@ -13,7 +14,6 @@ use App\Filament\Resources\Subfleets\RelationManagers\RanksRelationManager;
 use App\Filament\Resources\Subfleets\RelationManagers\TyperatingsRelationManager;
 use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\Tables\SubfleetsTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Subfleet;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

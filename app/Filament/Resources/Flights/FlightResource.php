@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Flights;
 
+use App\Enums\NavigationGroup;
 use App\Filament\RelationManagers\FaresRelationManager;
 use App\Filament\Resources\Flights\Pages\CreateFlight;
 use App\Filament\Resources\Flights\Pages\EditFlight;
@@ -10,7 +11,6 @@ use App\Filament\Resources\Flights\RelationManagers\FieldValuesRelationManager;
 use App\Filament\Resources\Flights\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\Flights\Schemas\FlightForm;
 use App\Filament\Resources\Flights\Tables\FlightsTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Flight;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

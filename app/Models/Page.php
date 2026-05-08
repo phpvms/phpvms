@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\PageType;
 use App\Exceptions\UnknownPageType;
-use App\Models\Enums\PageType;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string      $name
  * @property string      $slug
  * @property string|null $icon
- * @property int         $type
+ * @property PageType    $type
  * @property bool        $public
  * @property bool        $enabled
  * @property string|null $body
@@ -26,22 +26,22 @@ use Illuminate\Support\Carbon;
  * @property bool        $new_window
  * @property-read mixed $url
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereBody($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereEnabled($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereIcon($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereLink($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereNewWindow($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page whereUpdatedAt($value)
- * @method static Builder<static>|Page                               bySlug(string $slug)
+ * @method static Builder<static>|Page bySlug(string $slug)
+ * @method static Builder<static>|Page newModelQuery()
+ * @method static Builder<static>|Page newQuery()
+ * @method static Builder<static>|Page query()
+ * @method static Builder<static>|Page whereBody($value)
+ * @method static Builder<static>|Page whereCreatedAt($value)
+ * @method static Builder<static>|Page whereEnabled($value)
+ * @method static Builder<static>|Page whereIcon($value)
+ * @method static Builder<static>|Page whereId($value)
+ * @method static Builder<static>|Page whereLink($value)
+ * @method static Builder<static>|Page whereName($value)
+ * @method static Builder<static>|Page whereNewWindow($value)
+ * @method static Builder<static>|Page wherePublic($value)
+ * @method static Builder<static>|Page whereSlug($value)
+ * @method static Builder<static>|Page whereType($value)
+ * @method static Builder<static>|Page whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -77,16 +77,9 @@ class Page extends Model
     public function url(): Attribute
     {
         return Attribute::make(
-            get: function ($value, $attrs) {
-                if ($this->type === PageType::PAGE) {
-                    return url(route('frontend.pages.show', ['slug' => $this->slug]));
-                }
-
-                if ($this->type === PageType::LINK) {
-                    return $this->link;
-                }
-
-                throw new UnknownPageType($this);
+            get: fn () => match ($this->type) {
+                PageType::PAGE => url(route('frontend.pages.show', ['slug' => $this->slug])),
+                PageType::LINK => $this->link,
             }
         );
     }
@@ -95,7 +88,7 @@ class Page extends Model
     protected function casts(): array
     {
         return [
-            'type'       => 'integer',
+            'type'       => PageType::class,
             'public'     => 'boolean',
             'enabled'    => 'boolean',
             'new_window' => 'boolean',

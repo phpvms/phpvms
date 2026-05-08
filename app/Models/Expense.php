@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\CommaDelimitedCast;
 use App\Contracts\Model;
+use App\Enums\ExpenseType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int|null    $airline_id
  * @property string      $name
  * @property int         $amount
- * @property string      $type
+ * @property ExpenseType $type
  * @property mixed|null  $flight_type
  * @property int|null    $charge_to_user
  * @property int|null    $multiplier
@@ -28,9 +29,14 @@ use Illuminate\Support\Carbon;
  * @property-read Airline|null $airline
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $ref_model
  *
+ * @method static Builder<static>|Expense            active()
  * @method static \Database\Factories\ExpenseFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Expense            forAirline(int $airlineId)
+ * @method static Builder<static>|Expense            forGlobalAirline()
+ * @method static Builder<static>|Expense            forRefModel(string $type, ?mixed $id = null)
  * @method static Builder<static>|Expense            newModelQuery()
  * @method static Builder<static>|Expense            newQuery()
+ * @method static Builder<static>|Expense            ofType(string $type)
  * @method static Builder<static>|Expense            query()
  * @method static Builder<static>|Expense            whereActive($value)
  * @method static Builder<static>|Expense            whereAirlineId($value)
@@ -45,12 +51,6 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Expense            whereRefModelType($value)
  * @method static Builder<static>|Expense            whereType($value)
  * @method static Builder<static>|Expense            whereUpdatedAt($value)
- * @method static Builder<static>|Expense            active()
- * @method static Builder<static>|Expense            forAirline(int $airlineId)
- * @method static Builder<static>|Expense            forGlobalAirline()
- * @method static Builder<static>|Expense            forRefModel(string $type, ?mixed $id = null)
- * @method static Builder<static>|Expense            ofType(string $type)
- * @method static Builder<static>|Expense            whereRefModel($value)
  *
  * @mixin \Eloquent
  */
@@ -91,6 +91,7 @@ class Expense extends Model
     {
         return [
             'flight_type' => CommaDelimitedCast::class,
+            'type'        => ExpenseType::class,
         ];
     }
 
@@ -107,7 +108,7 @@ class Expense extends Model
      * Filter by expense type (FLIGHT / DAILY / MONTHLY).
      */
     #[Scope]
-    protected function ofType(Builder $q, string $type): Builder
+    protected function ofType(Builder $q, ExpenseType $type): Builder
     {
         return $q->where('type', $type);
     }

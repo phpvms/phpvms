@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Queries;
 
+use App\Enums\UserState;
 use App\Http\Requests\SearchUsersRequest;
-use App\Models\Enums\UserState;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -67,8 +67,8 @@ class UserSearchQuery
 
     private function applyExplicitFilters(Builder $query, SearchUsersRequest $request): void
     {
-        if ($request->filled('state')) {
-            $query->where('state', (int) $request->input('state'));
+        if ($request->has('state')) {
+            $query->where('state', $request->input('state'));
         }
 
         if ($request->filled('airline_id')) {

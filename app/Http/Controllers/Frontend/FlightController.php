@@ -7,7 +7,6 @@ use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Bid;
-use App\Models\Enums\FlightType;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Models\Typerating;
@@ -96,7 +95,7 @@ class FlightController extends Controller
         /** @var Collection<string, string> $flight_types */
         $flight_types = collect();
         foreach ($usedtypes as $ftype) {
-            $flight_types->put($ftype->flight_type, FlightType::label($ftype->flight_type));
+            $flight_types->put($ftype->flight_type->value, $ftype->flight_type->getLabel());
         }
 
         $query = $this->flightSearchQuery->build($request)

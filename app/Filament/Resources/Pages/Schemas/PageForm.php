@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Pages\Schemas;
 
-use App\Models\Enums\PageType;
+use App\Enums\PageType;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -34,10 +34,9 @@ class PageForm
 
                                 Select::make('type')
                                     ->label(__('common.type'))
-                                    ->options(PageType::select())
-                                    ->default(PageType::PAGE)
-                                    ->required()
-                                    ->native(false),
+                                    ->options(PageType::class)
+                                    ->native(false)
+                                    ->required(),
                             ])
                             ->columnSpanFull()
                             ->columns(3),

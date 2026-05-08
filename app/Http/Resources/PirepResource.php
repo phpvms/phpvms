@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Http\Resources\SimBriefResource as SimbriefResource;
-use App\Models\Enums\PirepStatus;
 use App\Models\Pirep;
 use App\Support\Units\Distance;
 use App\Support\Units\Fuel;
@@ -26,7 +25,7 @@ class PirepResource extends Resource
         $res = parent::toArray($request);
         $res['ident'] = $this->ident;
         $res['phase'] = $this->status;
-        $res['status_text'] = PirepStatus::label($this->status);
+        $res['status_text'] = $this->status->getLabel();
 
         // Set these to the response units
         if (!array_key_exists('distance', $res)) {

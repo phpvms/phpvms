@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Enums\UserState;
 use App\Models\Airport;
-use App\Models\Enums\UserState;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -60,12 +60,6 @@ class UsersTable
                 TextColumn::make('state')
                     ->label(__('common.state'))
                     ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        UserState::PENDING => 'warning',
-                        UserState::ACTIVE  => 'success',
-                        default            => 'info',
-                    })
-                    ->formatStateUsing(fn (int $state): string => UserState::label($state))
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
@@ -88,7 +82,7 @@ class UsersTable
 
                 SelectFilter::make('state')
                     ->label(__('common.state'))
-                    ->options(UserState::labels()),
+                    ->options(UserState::class),
             ])
             ->recordActions([
                 EditAction::make(),

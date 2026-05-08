@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
 
 use App\Contracts\Factory;
-use App\Models\Enums\ExpenseType;
+use App\Enums\ExpenseType;
 use App\Models\Expense;
 
 /**

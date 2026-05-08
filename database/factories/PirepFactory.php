@@ -5,11 +5,11 @@
 namespace Database\Factories;
 
 use App\Contracts\Factory;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Models\Aircraft;
 use App\Models\Airline;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\User;
@@ -58,7 +58,7 @@ class PirepFactory extends Factory
             'planned_flight_time' => fake()->numberBetween(60, 360),
             'zfw'                 => fake()->randomFloat(2),
             'block_fuel'          => fake()->randomFloat(2, 0, 1000),
-            'fuel_used'           => fn (array $pirep) => round($pirep['block_fuel'] * .9, 2),
+            'fuel_used'           => fn (array $pirep): float => round($pirep['block_fuel'] * .9, 2),
             'block_on_time'       => Carbon::now('UTC'),
             'block_off_time'      => fn (array $pirep) => $pirep['block_on_time']->subMinutes(
                 $pirep['flight_time']

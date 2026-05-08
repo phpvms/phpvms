@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airlines;
 
+use App\Enums\NavigationGroup;
 use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\Airlines\Pages\CreateAirline;
 use App\Filament\Resources\Airlines\Pages\EditAirline;
@@ -9,7 +10,6 @@ use App\Filament\Resources\Airlines\Pages\ListAirlines;
 use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Filament\Resources\Airlines\Tables\AirlinesTable;
 use App\Models\Airline;
-use App\Models\Enums\NavigationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;

@@ -17,13 +17,13 @@ use Exception;
  */
 class SubfleetImporter extends ImportExport
 {
-    public $assetType = 'subfleet';
+    public string $assetType = 'subfleet';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'airline'                    => 'required',
         'hub_id'                     => 'nullable',
         'type'                       => 'required',
@@ -52,13 +52,13 @@ class SubfleetImporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param int $index
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         $airline = $this->getAirline($row['airline']);
         $row['airline_id'] = $airline->id;
+
+        $row['fuel_type'] = (int) $row['fuel_type'];
 
         try {
             $subfleet = Subfleet::updateOrCreate([
@@ -81,7 +81,7 @@ class SubfleetImporter extends ImportExport
     /**
      * Parse all of the fares in the multi-format
      */
-    protected function processFares(Subfleet &$subfleet, $col): void
+    protected function processFares(Subfleet $subfleet, string $col): void
     {
         $fares = $this->parseMultiColumnValues($col);
         foreach ($fares as $fare_code => $fare_attributes) {
@@ -99,7 +99,7 @@ class SubfleetImporter extends ImportExport
     /**
      * Parse all of the rakns in the multi-format
      */
-    protected function processRanks(Subfleet &$subfleet, $col): void
+    protected function processRanks(Subfleet $subfleet, string $col): void
     {
         $ranks = $this->parseMultiColumnValues($col);
         foreach ($ranks as $rank_id => $rank_attributes) {

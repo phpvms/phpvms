@@ -3,7 +3,7 @@
 namespace App\Widgets;
 
 use App\Contracts\Widget;
-use App\Models\Enums\PirepState;
+use App\Enums\PirepState;
 use App\Models\Pirep;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;

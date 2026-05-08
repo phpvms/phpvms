@@ -7,7 +7,7 @@
       @foreach($aircraft->subfleet->fares as $fare)
         <div class="row mb-3">
           <div class="col">
-            <label for="fare_{{ $fare->id }}">{{ $fare->name.' ('. \App\Models\Enums\FareType::label($fare->type).', code '.$fare->code.')' }}</label>
+            <label for="fare_{{ $fare->id }}">{{ $fare->name.' ('. $fare->type->getLabel().', code '.$fare->code.')' }}</label>
             <div class="input-group">
               <input type="number" name="fare_{{ $fare->id }}" id="fare_{{ $fare->id }}" class="form-control" min="0" value="{{ old('fare_'.$fare->id) }}">
             </div>

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
+use App\Enums\ExpenseType;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\ExpenseType;
 use App\Models\Expense;
 use App\Models\Journal;
 use App\Models\JournalTransaction;
@@ -81,7 +81,7 @@ class RecurringFinanceService extends Service
     /**
      * Run all of the daily expense/financials
      */
-    public function processExpenses(string $type = ExpenseType::DAILY): void
+    public function processExpenses(ExpenseType $type = ExpenseType::DAILY): void
     {
         // Eager-load ref_model and the airline relation on its possible morph
         // targets (Subfleet, Aircraft) in one go, so the per-expense lookup
@@ -93,7 +93,7 @@ class RecurringFinanceService extends Service
                     Aircraft::class => ['airline'],
                 ]);
             },
-        ])->where(['type' => $type])->get();
+        ])->where(['type' => $type->value])->get();
 
         $tag = 'expense_recurring';
         if ($type === ExpenseType::DAILY) {

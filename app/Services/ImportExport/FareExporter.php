@@ -6,13 +6,14 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Fare;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The flight importer can be imported or export. Operates on rows
  */
 class FareExporter extends ImportExport
 {
-    public $assetType = 'fare';
+    public string $assetType = 'fare';
 
     /**
      * Set the current columns and other setup
@@ -24,14 +25,16 @@ class FareExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Fare $fare
      */
-    public function export($fare): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Fare) {
+            throw new \InvalidArgumentException('Expected Fare Model');
+        }
+
         $ret = [];
         foreach (self::$columns as $column) {
-            $ret[$column] = $fare->{$column};
+            $ret[$column] = $row->{$column};
         }
 
         return $ret;

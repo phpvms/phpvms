@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use App\Models\UserOAuthToken;
 use App\Services\UserService;
@@ -128,7 +128,7 @@ class OAuthController extends Controller
 
             // We don't want to log in a non-active user
             if ($user->state !== UserState::ACTIVE && $user->state !== UserState::ON_LEAVE) {
-                Log::info('Trying to login '.$user->ident.', state '.UserState::label($user->state));
+                Log::info('Trying to login '.$user->ident.', state '.$user->state->getLabel());
 
                 // Log them out
                 Auth::logout();

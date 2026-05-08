@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\AcarsType;
 use App\Models\Acars;
-use App\Models\Enums\AcarsType;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;

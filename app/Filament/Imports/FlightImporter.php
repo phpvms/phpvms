@@ -3,13 +3,13 @@
 namespace App\Filament\Imports;
 
 use App\Models\Airport;
-use App\Models\Enums\Days;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
+use App\Support\Days;
 use App\Support\Utils;
 use Filament\Actions\Imports\Exceptions\RowImportFailedException;
 use Filament\Actions\Imports\ImportColumn;

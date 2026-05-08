@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Enums\AircraftState;
+use App\Enums\AircraftStatus;
 use App\Exceptions\AssetNotFound;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Http\Resources\FlightResource;
 use App\Http\Resources\NavdataResource;
 use App\Models\Aircraft;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\AircraftStatus;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;

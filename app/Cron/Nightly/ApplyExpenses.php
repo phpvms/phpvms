@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Cron\Nightly;
 
 use App\Contracts\Listener;
+use App\Enums\ExpenseType;
 use App\Events\CronNightly;
-use App\Models\Enums\ExpenseType;
 use App\Services\Finance\RecurringFinanceService;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\NavaidType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property string     $id
  * @property string     $name
- * @property int        $type
+ * @property NavaidType $type
  * @property float|null $lat
  * @property float|null $lon
  * @property float|null $freq
@@ -64,7 +65,7 @@ class Navdata extends Model
     protected function casts(): array
     {
         return [
-            'type' => 'integer',
+            'type' => NavaidType::class,
             'lat'  => 'float',
             'lon'  => 'float',
             'freq' => 'float',

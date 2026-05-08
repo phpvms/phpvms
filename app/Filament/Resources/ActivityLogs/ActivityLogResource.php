@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\ActivityLogs;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\ActivityLogs\Infolists\ActivityLogInfolist;
 use App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Filament\Resources\ActivityLogs\Pages\ViewActivityLog;
 use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
-use App\Models\Enums\NavigationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;

@@ -35,7 +35,19 @@ class CommaDelimitedCast implements CastsAttributes
     public function set($model, string $key, $value, array $attributes)
     {
         if (is_array($value)) {
+            $value = collect($value)->map(function ($v) {
+                if ($v instanceof \BackedEnum) {
+                    return $v->value;
+                }
+
+                return $v;
+            })->toArray();
+
             return implode(',', $value);
+        }
+
+        if ($value instanceof \BackedEnum) {
+            return $value->value;
         }
 
         return trim((string) $value);

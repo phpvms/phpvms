@@ -1,13 +1,13 @@
 <?php
 
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Exceptions\AircraftNotAtAirport;
 use App\Exceptions\UserNotAtAirport;
 use App\Models\Acars;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
 use App\Models\Fare;
 use App\Models\Navdata;
 use App\Models\PirepFare;
@@ -290,7 +290,7 @@ it('can prefile and update a pirep', function (): void {
 
     $body = $response->json('data');
 
-    expect(PirepState::CANCELLED)->toEqual($body['state']);
+    expect(PirepState::CANCELLED->value)->toEqual($body['state']);
 });
 
 it('should validate updates', function (): void {
@@ -366,7 +366,7 @@ it('can receive acars updates', function (): void {
         'level'               => 38000,
         'planned_distance'    => 400,
         'planned_flight_time' => 120,
-        'status'              => PirepStatus::BOARDING,
+        'status'              => PirepStatus::BOARDING->value,
         'route'               => 'POINTA POINTB',
         'source_name'         => 'AcarsTest::testAcarsUpdates',
         'fields'              => [
@@ -387,8 +387,8 @@ it('can receive acars updates', function (): void {
 
     // Check the PIREP state and status
     $pirep = getPirepFromApi($pirep_id);
-    expect($pirep['state'])->toEqual(PirepState::IN_PROGRESS)
-        ->and($pirep['status'])->toEqual(PirepStatus::INITIATED)
+    expect(PirepState::from($pirep['state']))->toEqual(PirepState::IN_PROGRESS)
+        ->and(PirepStatus::from($pirep['status']))->toEqual(PirepStatus::INITIATED)
         ->and($pirep)->toHaveKey('fields')
         ->and($pirep['fields']['custom_field'])->toEqual('custom_value')
         ->and($pirep['planned_distance']['nmi'])->toEqual($pirep_create['planned_distance'])
@@ -405,7 +405,7 @@ it('can receive acars updates', function (): void {
     $this->post($uri, [
         'flight_time' => 60,
         'distance'    => 20,
-        'status'      => PirepStatus::AIRBORNE,
+        'status'      => PirepStatus::AIRBORNE->value,
         'fields'      => [
             'custom_field' => 'custom_value_changed',
         ],
@@ -442,8 +442,8 @@ it('can receive acars updates', function (): void {
 
     // Make sure PIREP state moved into ENROUTE
     $pirep = getPirepFromApi($pirep_id);
-    expect($pirep['state'])->toEqual(PirepState::IN_PROGRESS)
-        ->and($pirep['status'])->toEqual(PirepStatus::AIRBORNE);
+    expect(PirepState::from($pirep['state']))->toEqual(PirepState::IN_PROGRESS)
+        ->and(PirepStatus::from($pirep['status']))->toEqual(PirepStatus::AIRBORNE);
 
     $response = $this->get($uri);
     $response->assertStatus(200);
@@ -542,7 +542,7 @@ test('multiple altitudes', function (): void {
         'level'               => 38000,
         'planned_distance'    => 400,
         'planned_flight_time' => 120,
-        'status'              => PirepStatus::BOARDING,
+        'status'              => PirepStatus::BOARDING->value,
         'route'               => 'POINTA POINTB',
         'source_name'         => 'AcarsTest::testAcarsUpdates',
         'fields'              => [
@@ -670,7 +670,7 @@ it('can file a pirep via api', function (): void {
 
     // Check the block_off_time and block_on_time being set
     $body = $this->get('/api/pireps/'.$pirep_id)->json('data');
-    expect($body['state'])->toEqual(PirepState::PENDING)
+    expect(PirepState::from($body['state']))->toEqual(PirepState::PENDING)
         ->and($body['block_off_time'])->not->toBeNull()
         ->and($body['block_on_time'])->not->toBeNull();
 

@@ -50,7 +50,7 @@
                 $color = 'bg-danger';
             }
           @endphp
-          <div class="badge {{ $color }}">{{ PirepState::label($pirep->state) }}</div>
+          <div class="badge {{ $color }}">{{ $pirep->state->getLabel() }}</div>
         </td>
         <td>
           @if(filled($pirep->submitted_at))

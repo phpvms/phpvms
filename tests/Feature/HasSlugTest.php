@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\PirepFieldSource;
 use App\Models\FlightField;
 use App\Models\Pirep;
 use App\Models\PirepFieldValue;
@@ -36,7 +37,7 @@ it('does not change the slug if the name is unchanged', function (): void {
     $pirep = Pirep::factory()->create();
     $pirepFieldValue = PirepFieldValue::create([
         'pirep_id' => $pirep->id,
-        'source'   => PirepSource::ACARS,
+        'source'   => PirepFieldSource::ACARS,
         'name'     => 'Fixed Title',
     ]);
     $originalSlug = $pirepFieldValue->slug;
