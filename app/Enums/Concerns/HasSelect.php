@@ -11,16 +11,14 @@ trait HasSelect
             ->toArray();
     }
 
-    #[\Deprecated('Use ->getLabel() on the enum instance instead')]
+    #[\Deprecated('If you have an enum instance, call $enum->getLabel() directly. If you have a raw scalar value (e.g. from the DB or a request), use static::tryFrom($value)?->getLabel().')]
     public static function label(mixed $value): ?string
     {
         if ($value instanceof self) {
             return $value->getLabel();
         }
 
-        $case = static::tryFrom($value);
-
-        return $case ? $case->getLabel() : $value;
+        return static::tryFrom($value)?->getLabel();
     }
 
     public static function select(bool $add_blank = false): array

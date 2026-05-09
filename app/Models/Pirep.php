@@ -43,7 +43,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null      $flight_number
  * @property string|null      $route_code
  * @property string|null      $route_leg
- * @property string           $flight_type
+ * @property FlightType       $flight_type
  * @property string           $dpt_airport_id
  * @property string           $arr_airport_id
  * @property string|null      $alt_airport_id
@@ -71,6 +71,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null      $deleted_at
  * @property-read Collection<int, Acars> $acars
  * @property-read int|null $acars_count
+ * @property-read Collection<int, Acars> $acars_logs
+ * @property-read int|null $acars_logs_count
+ * @property-read Collection<int, Acars> $acars_route
+ * @property-read int|null $acars_route_count
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Aircraft|null $aircraft

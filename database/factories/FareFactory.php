@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Contracts\Factory;
+use App\Enums\FareType;
 use App\Models\Fare;
 
 /**
@@ -35,6 +36,7 @@ class FareFactory extends Factory
             'price'    => fake()->randomFloat(2, 100, 1000),
             'cost'     => fn (array $fare): float => round($fare['price'] / 2),
             'capacity' => fake()->randomFloat(0, 20, 500),
+            'type'     => FareType::PASSENGER,
         ];
     }
 }

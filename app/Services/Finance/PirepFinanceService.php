@@ -311,11 +311,8 @@ class PirepFinanceService extends Service
 
             // Check to see if there is a certain fleet or flight type set on this expense
             // if there is and it doesn't match up the flight type for the PIREP, skip it
-            if ($expense->ref_model_type === Expense::class && filled($expense->flight_type)) {
-                $flight_types = collect($expense->flight_type);
-                if ($flight_types->isNotEmpty() && !$flight_types->contains($pirep->flight_type)) {
-                    return;
-                }
+            if ($expense->ref_model_type === Expense::class && filled($expense->flight_type) && ($expense->flight_type->isNotEmpty() && !$expense->flight_type->contains($pirep->flight_type))) {
+                return;
             }
 
             // Get the transaction group name from the ref_model name

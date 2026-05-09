@@ -2,30 +2,32 @@
 
 namespace App\Models;
 
-use App\Casts\CommaDelimitedCast;
 use App\Contracts\Model;
 use App\Enums\ExpenseType;
+use App\Enums\FlightType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
- * @property int         $id
- * @property int|null    $airline_id
- * @property string      $name
- * @property int         $amount
- * @property ExpenseType $type
- * @property mixed|null  $flight_type
- * @property int|null    $charge_to_user
- * @property int|null    $multiplier
- * @property int|null    $active
- * @property string|null $ref_model_type
- * @property string|null $ref_model_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property int                              $id
+ * @property int|null                         $airline_id
+ * @property string                           $name
+ * @property int                              $amount
+ * @property ExpenseType                      $type
+ * @property Collection<int, FlightType>|null $flight_type
+ * @property int|null                         $charge_to_user
+ * @property int|null                         $multiplier
+ * @property int|null                         $active
+ * @property string|null                      $ref_model_type
+ * @property string|null                      $ref_model_id
+ * @property Carbon|null                      $created_at
+ * @property Carbon|null                      $updated_at
  * @property-read Airline|null $airline
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $ref_model
  *
@@ -36,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Expense            forRefModel(string $type, ?mixed $id = null)
  * @method static Builder<static>|Expense            newModelQuery()
  * @method static Builder<static>|Expense            newQuery()
- * @method static Builder<static>|Expense            ofType(string $type)
+ * @method static Builder<static>|Expense            ofType(\App\Enums\ExpenseType $type)
  * @method static Builder<static>|Expense            query()
  * @method static Builder<static>|Expense            whereActive($value)
  * @method static Builder<static>|Expense            whereAirlineId($value)
@@ -90,7 +92,7 @@ class Expense extends Model
     protected function casts(): array
     {
         return [
-            'flight_type' => CommaDelimitedCast::class,
+            'flight_type' => AsEnumCollection::of(FlightType::class),
             'type'        => ExpenseType::class,
         ];
     }

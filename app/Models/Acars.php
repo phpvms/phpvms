@@ -49,7 +49,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Acars            forPirep(string $pirepId)
  * @method static Builder<static>|Acars            newModelQuery()
  * @method static Builder<static>|Acars            newQuery()
- * @method static Builder<static>|Acars            ofType(int $type)
+ * @method static Builder<static>|Acars            ofType(\App\Enums\AcarsType|int $type)
  * @method static Builder<static>|Acars            orderedByCreatedAt(string $direction = 'asc')
  * @method static Builder<static>|Acars            orderedByOrder(string $direction = 'asc')
  * @method static Builder<static>|Acars            orderedBySimTime(string $direction = 'asc')
