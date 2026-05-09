@@ -103,8 +103,10 @@ flight reports that have been filed. You've been warned!
                   id="flight_type"
                   class="form-select select2"
                 >
-                  @foreach(\App\Enums\FlightType::select() as $flight_type_id => $flight_type_label)
-                    <option value="{{ $flight_type_id }}" @if(!empty($pirep) && $pirep->flight_type == $flight_type_id) selected @endif>{{ $flight_type_id }} ({{ $flight_type_label }})</option>
+                  @foreach(\App\Enums\FlightType::cases() as $flightType)
+                    <option value="{{ $flightType->value }}" @selected(!empty($pirep) && $pirep->flight_type?->value === $flightType->value)>
+                      {{ $flightType->value }} ({{ $flightType->getLabel() }})
+                    </option>
                   @endforeach
                 </select>
               </div>

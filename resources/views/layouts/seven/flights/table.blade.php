@@ -38,7 +38,7 @@
                                 @endif
                             </span>
                         </div>
-                        <div><span class="badge bg-secondary">{{ $flight->flight_type }}&nbsp;<span
+                        <div><span class="badge bg-secondary">{{ $flight->flight_type->value }}&nbsp;<span
                                     class="d-none d-sm-inline">({{ $flight->flight_type->getLabel() }})</span></span>
                         </div>
                     </div>

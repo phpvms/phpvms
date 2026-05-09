@@ -58,7 +58,7 @@ class SubfleetImporter extends ImportExport
         $airline = $this->getAirline($row['airline']);
         $row['airline_id'] = $airline->id;
 
-        $row['fuel_type'] = (int) $row['fuel_type'];
+        $row['fuel_type'] = $row['fuel_type'] ? (int) $row['fuel_type'] : null;
 
         try {
             $subfleet = Subfleet::updateOrCreate([
