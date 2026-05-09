@@ -4,6 +4,7 @@ namespace App\Enums\Concerns;
 
 trait HasSelect
 {
+    #[\Deprecated('Use static::cases() directly with collections or map across the Enum cases.')]
     public static function labels(): array
     {
         return collect(static::cases())
@@ -21,6 +22,7 @@ trait HasSelect
         return static::tryFrom($value)?->getLabel();
     }
 
+    #[\Deprecated('This method couples Enum logic with UI/Form concerns. Generate select options at the Form level from static::cases()')]
     public static function select(bool $add_blank = false): array
     {
         $labels = static::labels();
