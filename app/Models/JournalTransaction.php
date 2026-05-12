@@ -15,19 +15,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property string                       $id
- * @property string|null                  $transaction_group
- * @property int                          $journal_id
- * @property int|null                     $credit
- * @property int|null                     $debit
- * @property string                       $currency
- * @property string|null                  $memo
- * @property array<array-key, mixed>|null $tags
- * @property string|null                  $ref_model_type
- * @property string|null                  $ref_model_id
- * @property Carbon|null                  $created_at
- * @property Carbon|null                  $updated_at
- * @property Carbon                       $post_date
+ * @property string      $id
+ * @property string|null $transaction_group
+ * @property int         $journal_id
+ * @property int|null    $credit
+ * @property int|null    $debit
+ * @property string      $currency
+ * @property string|null $memo
+ * @property string|null $tags
+ * @property string|null $ref_model_type
+ * @property string|null $ref_model_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon      $post_date
  * @property-read Journal|null $journal
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction newModelQuery()
@@ -46,10 +46,6 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTags($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTransactionGroup($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereUpdatedAt($value)
- *
- * @property string|null $ref_model
- *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModel($value)
  *
  * @mixin \Eloquent
  */

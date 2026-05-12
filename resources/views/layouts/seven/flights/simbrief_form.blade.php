@@ -83,7 +83,7 @@
               <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                   @lang('pireps.flightinformations') For
-                  <b>{{ $flight->airline->code }}{{ $flight->flight_number }} ({{ \App\Models\Enums\FlightType::label($flight->flight_type) }})</b>
+                  <b>{{ $flight->airline->code }}{{ $flight->flight_number }} ({{ $flight->flight_type->getLabel() }})</b>
                 </div>
                 <div class="card-body">
                   <div class="row">

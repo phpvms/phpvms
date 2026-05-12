@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airports;
 
+use App\Enums\NavigationGroup;
 use App\Filament\RelationManagers\ExpensesRelationManager;
 use App\Filament\RelationManagers\FilesRelationManager;
 use App\Filament\Resources\Airports\Pages\CreateAirport;
@@ -10,7 +11,6 @@ use App\Filament\Resources\Airports\Pages\ListAirports;
 use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Filament\Resources\Airports\Tables\AirportsTable;
 use App\Models\Airport;
-use App\Models\Enums\NavigationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;

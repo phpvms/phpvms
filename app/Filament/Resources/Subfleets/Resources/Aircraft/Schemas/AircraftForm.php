@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Schemas;
 
+use App\Enums\AircraftStatus;
 use App\Models\Airport;
-use App\Models\Enums\AircraftStatus;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -33,7 +33,7 @@ class AircraftForm
 
                         Select::make('status')
                             ->label(__('common.status'))
-                            ->options(AircraftStatus::labels())
+                            ->options(AircraftStatus::class)
                             ->required()
                             ->native(false),
 

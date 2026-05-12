@@ -6,13 +6,14 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Aircraft;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The flight importer can be imported or export. Operates on rows
  */
 class AircraftExporter extends ImportExport
 {
-    public $assetType = 'aircraft';
+    public string $assetType = 'aircraft';
 
     /**
      * Set the current columns and other setup
@@ -24,17 +25,23 @@ class AircraftExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Aircraft $aircraft
      */
-    public function export($aircraft): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Aircraft) {
+            throw new \InvalidArgumentException('Expected Aircraft Model');
+        }
+
         $ret = [];
         foreach (self::$columns as $column) {
             if ($column === 'subfleet') {
-                $ret['subfleet'] = $aircraft->subfleet->type;
+                $ret['subfleet'] = $row->subfleet->type;
+            } elseif ($column === 'state') {
+                $ret[$column] = $row->state->value;
+            } elseif ($column === 'status') {
+                $ret[$column] = $row->status->value;
             } else {
-                $ret[$column] = $aircraft->{$column};
+                $ret[$column] = $row->{$column};
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\SimBriefAirframes\Schemas;
 
-use App\Models\Enums\AirframeSource;
+use App\Enums\AirframeSource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -30,7 +30,7 @@ class SimBriefAirframeForm
                 Hidden::make('source')
                     ->label(__('pireps.source'))
                     ->visibleOn('create')
-                    ->formatStateUsing(fn (): int => AirframeSource::INTERNAL),
+                    ->formatStateUsing(fn (): AirframeSource => AirframeSource::INTERNAL),
             ])
             ->columns(3);
     }

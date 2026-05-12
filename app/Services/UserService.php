@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\PirepState;
+use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Exceptions\PilotIdNotFound;
@@ -12,8 +14,6 @@ use App\Exceptions\UserPilotIdExists;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Bid;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\UserState;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Role;
@@ -399,7 +399,7 @@ class UserService extends Service
             return $user;
         }
 
-        Log::info('User '.$user->ident.' state changing from '.UserState::label($old_state).' to '.UserState::label($user->state));
+        Log::info('User '.$user->ident.' state changing from '.$old_state->getLabel().' to '.$user->state->getLabel());
 
         event(new UserStateChanged($user, $old_state));
 

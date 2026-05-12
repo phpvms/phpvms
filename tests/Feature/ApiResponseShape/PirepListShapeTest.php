@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Enums\PirepState;
+use App\Enums\PirepState;
 use App\Models\Pirep;
 use App\Models\User;
 

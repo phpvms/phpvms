@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property-read Flight|null $flight
  * @property-read User|null $user
  *
+ * @method static \Database\Factories\BidFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid query()
@@ -27,7 +28,6 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUserId($value)
- * @method static \Database\Factories\BidFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

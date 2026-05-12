@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Expenses\Schemas;
 
-use App\Models\Enums\ExpenseType;
-use App\Models\Enums\FlightType;
+use App\Enums\ExpenseType;
+use App\Enums\FlightType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -26,14 +26,14 @@ class ExpenseForm
                         ->label(__('common.airline')),
 
                     Select::make('type')
-                        ->options(ExpenseType::select())
+                        ->options(ExpenseType::class)
                         ->searchable()
                         ->native(false)
                         ->required()
                         ->label(__('common.type')),
 
                     Select::make('flight_type')
-                        ->options(FlightType::select())
+                        ->options(FlightType::class)
                         ->searchable()
                         ->native(false)
                         ->multiple()

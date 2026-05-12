@@ -1,15 +1,15 @@
 <?php
 
+use App\Enums\AcarsType;
+use App\Enums\PirepFieldSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
+use App\Enums\UserState;
 use App\Models\Acars;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Bid;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\PirepFieldSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
-use App\Models\Enums\UserState;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
@@ -224,7 +224,7 @@ test('get user pireps', function (): void {
         ->and($pirep_ids->contains($pirep_cancelled->id))->toBeFalse();
 
     // Get only status
-    $pireps = $this->get('/api/user/pireps?state='.PirepState::IN_PROGRESS)
+    $pireps = $this->get('/api/user/pireps?state='.PirepState::IN_PROGRESS->value)
         ->assertStatus(200)
         ->json();
 

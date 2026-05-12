@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Enums\NavigationGroup;
+use App\Enums\NavigationGroup;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;

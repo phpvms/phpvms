@@ -13,13 +13,13 @@ use Exception;
  */
 class FareImporter extends ImportExport
 {
-    public $assetType = 'fare';
+    public string $assetType = 'fare';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'code'     => 'required',
         'name'     => 'required',
         'type'     => 'required',
@@ -32,10 +32,8 @@ class FareImporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param int $index
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         try {
             // Try to add or update

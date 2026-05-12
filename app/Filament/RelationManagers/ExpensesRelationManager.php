@@ -2,8 +2,8 @@
 
 namespace App\Filament\RelationManagers;
 
+use App\Enums\ExpenseType;
 use App\Models\Aircraft;
-use App\Models\Enums\ExpenseType;
 use App\Models\Subfleet;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -41,7 +41,7 @@ class ExpensesRelationManager extends RelationManager
 
                 Select::make('type')
                     ->label(__('common.type'))
-                    ->options(ExpenseType::select())
+                    ->options(ExpenseType::class)
                     ->required(),
             ]);
     }
@@ -60,7 +60,7 @@ class ExpensesRelationManager extends RelationManager
 
                 TextColumn::make('type')
                     ->label(__('common.type'))
-                    ->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
+                    ->badge(),
             ])
             ->filters([
                 //

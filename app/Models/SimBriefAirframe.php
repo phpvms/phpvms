@@ -3,19 +3,20 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\AirframeSource;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int         $id
- * @property string      $icao
- * @property string      $name
- * @property string|null $airframe_id
- * @property int|null    $source
- * @property string|null $details
- * @property string|null $options
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property int                 $id
+ * @property string              $icao
+ * @property string              $name
+ * @property string|null         $airframe_id
+ * @property AirframeSource|null $source
+ * @property string|null         $details
+ * @property string|null         $options
+ * @property Carbon|null         $created_at
+ * @property Carbon|null         $updated_at
  * @property-read SimBriefAircraft|null $sbaircraft
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAirframe newModelQuery()
@@ -66,8 +67,9 @@ class SimBriefAirframe extends Model
     protected function casts(): array
     {
         return [
-            'icao' => 'string',
-            'name' => 'string',
+            'icao'   => 'string',
+            'name'   => 'string',
+            'source' => AirframeSource::class,
         ];
     }
 }

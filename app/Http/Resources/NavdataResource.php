@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Contracts\Resource;
-use App\Models\Enums\NavaidType;
+use App\Enums\NavaidType;
 use Illuminate\Http\Request;
 
 class NavdataResource extends Resource
@@ -18,7 +18,7 @@ class NavdataResource extends Resource
         // Some details about the navaid type
         $type = [
             'type' => $res['type'],
-            'name' => NavaidType::label($res['type']),
+            'name' => NavaidType::from($res['type'])->getLabel(),
         ];
 
         $res['type'] = $type;

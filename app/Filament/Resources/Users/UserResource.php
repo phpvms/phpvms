@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -11,7 +12,6 @@ use App\Filament\Resources\Users\RelationManagers\PirepsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\TypeRatingsRelationManager;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\User;
 use App\Services\UserService;
 use Filament\Resources\Resource;

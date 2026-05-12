@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Enums\NavigationGroup;
+use App\Enums\NavigationGroup;
 use App\Services\CronService;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\SeederService;

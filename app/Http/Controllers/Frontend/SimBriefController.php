@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Enums\AircraftState;
+use App\Enums\AircraftStatus;
+use App\Enums\AirframeSource;
+use App\Enums\FareType;
+use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
 use App\Models\Aircraft;
 use App\Models\Bid;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\AircraftStatus;
-use App\Models\Enums\AirframeSource;
-use App\Models\Enums\FareType;
-use App\Models\Enums\FlightType;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;

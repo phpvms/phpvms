@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Contracts\Command;
-use App\Models\Enums\NavaidType;
+use App\Enums\NavaidType;
 use App\Models\Navdata;
 use League\Geotools\Exception\InvalidArgumentException;
 

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Pireps\RelationManagers;
 
-use App\Models\Enums\PirepSource;
 use App\Models\Pirep;
 use App\Models\PirepField;
 use App\Models\PirepFieldValue;
@@ -57,7 +56,7 @@ class FieldValuesRelationManager extends RelationManager
 
                 TextColumn::make('source')
                     ->label(__('pireps.source'))
-                    ->formatStateUsing(fn (int $state): string => PirepSource::label($state)),
+                    ->badge(),
             ])
             ->filters([
                 //

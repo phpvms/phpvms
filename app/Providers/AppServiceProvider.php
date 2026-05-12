@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use App\Contracts\AirportLookup;
 use App\Contracts\Metar;
+use App\Enums\ActiveState;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
+use App\Enums\UserState;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
-use App\Models\Enums\ActiveState;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
-use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;

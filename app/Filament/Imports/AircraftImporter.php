@@ -2,8 +2,8 @@
 
 namespace App\Filament\Imports;
 
+use App\Enums\AircraftState;
 use App\Models\Aircraft;
-use App\Models\Enums\AircraftState;
 use App\Support\ICAO;
 use App\Support\Units\Mass;
 use Filament\Actions\Imports\ImportColumn;

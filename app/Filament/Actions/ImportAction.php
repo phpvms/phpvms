@@ -2,7 +2,7 @@
 
 namespace App\Filament\Actions;
 
-use App\Models\Enums\ImportExportType;
+use App\Enums\ImportExportType;
 use App\Services\ImportService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;

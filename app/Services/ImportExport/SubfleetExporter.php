@@ -7,13 +7,14 @@ namespace App\Services\ImportExport;
 use App\Contracts\ImportExport;
 use App\Models\Flight;
 use App\Models\Subfleet;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The flight importer can be imported or export. Operates on rows
  */
 class SubfleetExporter extends ImportExport
 {
-    public $assetType = 'subfleet';
+    public string $assetType = 'subfleet';
 
     /**
      * Set the current columns and other setup
@@ -25,20 +26,22 @@ class SubfleetExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Subfleet $subfleet
      */
-    public function export($subfleet): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Subfleet) {
+            throw new \InvalidArgumentException('Expected Subfleet Model');
+        }
+
         $ret = [];
         foreach (self::$columns as $column) {
-            $ret[$column] = $subfleet->{$column};
+            $ret[$column] = $row->{$column};
         }
 
         // Modify special fields
-        $ret['airline'] = $subfleet->airline->icao;
-        $ret['fares'] = $this->getFares($subfleet);
-        $ret['ranks'] = $this->getRanks($subfleet);
+        $ret['airline'] = $row->airline->icao;
+        $ret['fares'] = $this->getFares($row);
+        $ret['ranks'] = $this->getRanks($row);
 
         return $ret;
     }
@@ -46,7 +49,7 @@ class SubfleetExporter extends ImportExport
     /**
      * Return any custom fares that have been made to this flight
      */
-    protected function getFares(Subfleet &$subfleet): string
+    protected function getFares(Subfleet $subfleet): string
     {
         $fares = [];
         foreach ($subfleet->fares as $fare) {
@@ -72,7 +75,7 @@ class SubfleetExporter extends ImportExport
     /**
      * Return any ranks that have been linked to this subfleet
      */
-    protected function getRanks(Subfleet &$subfleet): string
+    protected function getRanks(Subfleet $subfleet): string
     {
         $ranks = [];
         foreach ($subfleet->ranks as $rank) {
@@ -94,7 +97,7 @@ class SubfleetExporter extends ImportExport
     /**
      * Parse all of the subfields
      */
-    protected function getFields(Flight &$flight): string
+    protected function getFields(Flight $flight): string
     {
         $ret = [];
         foreach ($flight->field_values as $field) {
@@ -107,7 +110,7 @@ class SubfleetExporter extends ImportExport
     /**
      * Create the list of subfleets that are associated here
      */
-    protected function getSubfleets(Flight &$flight): string
+    protected function getSubfleets(Flight $flight): string
     {
         $subfleets = [];
         foreach ($flight->subfleets as $subfleet) {

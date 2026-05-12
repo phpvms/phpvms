@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read Flight|null $flight
  *
+ * @method static \Database\Factories\FlightFieldValueFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue query()
@@ -32,7 +33,6 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereValue($value)
- * @method static \Database\Factories\FlightFieldValueFactory                    factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

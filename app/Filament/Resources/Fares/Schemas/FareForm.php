@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Fares\Schemas;
 
-use App\Models\Enums\FareType;
+use App\Enums\FareType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -29,12 +29,12 @@ class FareForm
                             ->label(__('common.name'))
                             ->required()
                             ->string(),
-
                         Select::make('type')
                             ->label(__('common.type'))
-                            ->options(FareType::labels())
-                            ->native(false)
-                            ->required(),
+                            ->options(FareType::class)
+                            ->required()
+                            ->native(false),
+
                         TextInput::make('price')
                             ->label(__('common.price'))
                             ->helperText(__('filament.fare_price_hint'))

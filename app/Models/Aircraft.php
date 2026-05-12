@@ -5,7 +5,8 @@ namespace App\Models;
 use App\Casts\FuelCast;
 use App\Casts\MassCast;
 use App\Contracts\Model;
-use App\Models\Enums\AircraftStatus;
+use App\Enums\AircraftState;
+use App\Enums\AircraftStatus;
 use App\Observers\AircraftObserver;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
@@ -45,12 +46,12 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property string|null                     $simbrief_type
  * @property mixed|null                      $fuel_onboard
  * @property float|null                      $flight_time
- * @property string                          $status
- * @property int                             $state
+ * @property AircraftStatus                  $status
+ * @property AircraftState                   $state
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read mixed $active
+ * @property-read bool $active
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Airport|null $airport
@@ -61,7 +62,7 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property-read int|null $files_count
  * @property-read Airport|null $home
  * @property-read Airport|null $hub
- * @property-read mixed $ident
+ * @property-read string $ident
  * @property-read Collection<int, Pirep> $pireps
  * @property-read int|null $pireps_count
  * @property-read SimBriefAircraft|null $sbaircraft
@@ -293,7 +294,8 @@ class Aircraft extends Model
             'dow'          => MassCast::class,
             'mlw'          => MassCast::class,
             'mtow'         => MassCast::class,
-            'state'        => 'integer',
+            'state'        => AircraftState::class,
+            'status'       => AircraftStatus::class,
             'subfleet_id'  => 'integer',
             'zfw'          => MassCast::class,
         ];

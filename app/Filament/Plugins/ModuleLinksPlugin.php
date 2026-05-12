@@ -70,7 +70,7 @@ class ModuleLinksPlugin implements Plugin
                 ->icon(Heroicon::OutlinedFolder);
         }
 
-        $group = \App\Models\Enums\NavigationGroup::Modules;
+        $group = \App\Enums\NavigationGroup::Modules;
 
         return NavigationGroup::make($group->name)
             ->label($group->getLabel())

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\PirepFieldsAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Filament\Resources\Pireps\Widgets\PirepStats;
-use App\Models\Enums\PirepState;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -38,9 +38,9 @@ class ListPireps extends ListRecords
     {
         return [
             'all'      => Tab::make()->label(__('filament-tables::table.filters.multi_select.placeholder')),
-            'pending'  => Tab::make()->label(PirepState::label(PirepState::PENDING))->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::PENDING)),
-            'rejected' => Tab::make()->label(PirepState::label(PirepState::REJECTED))->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::REJECTED)),
-            'accepted' => Tab::make()->label(PirepState::label(PirepState::ACCEPTED))->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::ACCEPTED)),
+            'pending'  => Tab::make()->label(PirepState::PENDING->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::PENDING)),
+            'rejected' => Tab::make()->label(PirepState::REJECTED->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::REJECTED)),
+            'accepted' => Tab::make()->label(PirepState::ACCEPTED->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::ACCEPTED)),
         ];
     }
 }

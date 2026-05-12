@@ -2,8 +2,8 @@
 
 use App\Cron\Hourly\DeletePireps;
 use App\Cron\Hourly\RemoveExpiredLiveFlights;
+use App\Enums\PirepState;
 use App\Events\CronHourly;
-use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Models\User;
 use Carbon\Carbon;

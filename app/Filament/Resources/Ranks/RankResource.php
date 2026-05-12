@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Ranks;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Ranks\Pages\CreateRank;
 use App\Filament\Resources\Ranks\Pages\EditRank;
 use App\Filament\Resources\Ranks\Pages\ListRanks;
 use App\Filament\Resources\Ranks\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\Ranks\Schemas\RankForm;
 use App\Filament\Resources\Ranks\Tables\RanksTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Rank;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

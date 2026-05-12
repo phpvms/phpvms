@@ -18,13 +18,13 @@ use Illuminate\Support\Str;
  */
 class ExpenseImporter extends ImportExport
 {
-    public $assetType = 'expense';
+    public string $assetType = 'expense';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'airline'        => 'nullable',
         'name'           => 'required',
         'amount'         => 'required|numeric',
@@ -39,10 +39,8 @@ class ExpenseImporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param int $index
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         if ($row['airline']) {
             $row['airline_id'] = $this->getAirline($row['airline'])->id;

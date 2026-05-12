@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\LegacyImporter;
 
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use App\Services\UserService;
 use App\Support\Units\Time;
@@ -119,7 +119,7 @@ class UserImport extends BaseImporter
     /**
      * Get the user's new state from their original state
      */
-    protected function getUserState($state): int
+    protected function getUserState($state): UserState
     {
         // Return active for now, let the stats/cron determine the status later
         return UserState::ACTIVE;

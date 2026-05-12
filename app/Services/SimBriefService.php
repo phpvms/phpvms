@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\AcarsType;
+use App\Enums\AirframeSource;
 use App\Models\Acars;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\AirframeSource;
 use App\Models\Pirep;
 use App\Models\SimBrief;
 use App\Models\SimBriefAircraft;

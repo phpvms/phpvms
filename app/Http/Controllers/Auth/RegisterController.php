@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
+use App\Enums\UserState;
 use App\Models\Airline;
-use App\Models\Enums\UserState;
 use App\Models\Invite;
 use App\Models\User;
 use App\Models\UserField;

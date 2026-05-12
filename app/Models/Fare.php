@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\FareType;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,19 +15,19 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int         $id
- * @property string      $code
- * @property string      $name
- * @property float|null  $price
- * @property float|null  $cost
- * @property int|null    $capacity
- * @property int|null    $type
- * @property string|null $notes
- * @property bool        $active
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property Pivot       $pivot
+ * @property int           $id
+ * @property string        $code
+ * @property string        $name
+ * @property float|null    $price
+ * @property float|null    $cost
+ * @property int|null      $capacity
+ * @property FareType|null $type
+ * @property string|null   $notes
+ * @property bool          $active
+ * @property Carbon|null   $created_at
+ * @property Carbon|null   $updated_at
+ * @property Carbon|null   $deleted_at
+ * @property Pivot         $pivot
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Collection<int, Flight> $flights
@@ -110,7 +111,7 @@ class Fare extends Model
             'price'    => 'float',
             'cost'     => 'float',
             'capacity' => 'integer',
-            'type'     => 'integer',
+            'type'     => FareType::class,
             'active'   => 'boolean',
         ];
     }

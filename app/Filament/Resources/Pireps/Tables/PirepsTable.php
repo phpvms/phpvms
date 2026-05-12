@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources\Pireps\Tables;
 
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\Airport;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use App\Support\Units\Time;
 use Filament\Actions\ActionGroup;
@@ -72,19 +71,11 @@ class PirepsTable
                 TextColumn::make('source')
                     ->label(__('pireps.source'))
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->formatStateUsing(fn (int $state): string => PirepSource::label($state))
                     ->sortable(),
 
                 TextColumn::make('state')
                     ->label(__('common.state'))
                     ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        PirepState::PENDING  => 'warning',
-                        PirepState::ACCEPTED => 'success',
-                        PirepState::REJECTED => 'danger',
-                        default              => 'info',
-                    })
-                    ->formatStateUsing(fn (int $state): string => PirepState::label($state))
                     ->sortable(),
 
                 TextColumn::make('submitted_at')
