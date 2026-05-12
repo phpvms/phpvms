@@ -3,10 +3,10 @@
 namespace App\Cron\Hourly;
 
 use App\Contracts\Listener;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Events\CronHourly;
 use App\Events\PirepCancelled;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
 use App\Models\Pirep;
 use Carbon\Carbon;
 use Exception;
@@ -37,7 +37,7 @@ class RemoveExpiredLiveFlights extends Listener
 
         foreach ($pireps as $pirep) {
             event(new PirepCancelled($pirep));
-            Log::info('Cron: Deleting Expired Live PIREP id='.$pirep->id.', state='.PirepState::label($pirep->state));
+            Log::info('Cron: Deleting Expired Live PIREP id='.$pirep->id.', state='.$pirep->state->getLabel());
             $pirep->delete();
         }
     }

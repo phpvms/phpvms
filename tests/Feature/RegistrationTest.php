@@ -1,8 +1,8 @@
 <?php
 
+use App\Enums\UserState;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\UserState;
 use App\Models\Invite;
 use App\Models\User;
 use App\Notifications\Messages\AdminUserRegistered;

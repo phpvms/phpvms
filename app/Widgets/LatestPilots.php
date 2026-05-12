@@ -3,7 +3,7 @@
 namespace App\Widgets;
 
 use App\Contracts\Widget;
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\View\View;

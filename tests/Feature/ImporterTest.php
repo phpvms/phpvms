@@ -1,14 +1,13 @@
 <?php
 
 use App\Contracts\ImportExport;
+use App\Enums\AircraftStatus;
+use App\Enums\ExpenseType;
+use App\Enums\FareType;
+use App\Enums\FlightType;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\AircraftStatus;
-use App\Models\Enums\Days;
-use App\Models\Enums\ExpenseType;
-use App\Models\Enums\FareType;
-use App\Models\Enums\FlightType;
 use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
@@ -22,6 +21,7 @@ use App\Services\ImportExport\AirportExporter;
 use App\Services\ImportExport\ExpenseExporter;
 use App\Services\ImportExport\FlightExporter;
 use App\Services\ImportService;
+use App\Support\Days;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
@@ -322,7 +322,7 @@ test('flight exporter', function (): void {
     expect($exported['days'])->toEqual('27')
         ->and($exported['airline'])->toEqual('VMS')
         ->and($exported['flight_time'])->toEqual($flight->flight_time)
-        ->and($exported['flight_type'])->toEqual('J')
+        ->and(FlightType::from($exported['flight_type']))->toEqual(FlightType::SCHED_PAX)
         ->and($exported['subfleets'])->toEqual('A32X;B74X')
         ->and($exported['fares'])->toEqual('Y?capacity=100;F')
         ->and($exported['fields'])->toEqual('Departure Gate=4;Arrival Gate=C41');
@@ -362,7 +362,7 @@ test('expense exporter', function (): void {
     expect($exported['airline'])->toEqual($expense->airline->icao)
         ->and($exported['name'])->toEqual($expense->name)
         ->and($exported['amount'])->toEqual($expense->amount)
-        ->and($exported['type'])->toEqual($expense->type);
+        ->and(ExpenseType::from($exported['type']))->toEqual($expense->type);
 
     $importer = app(ImportService::class);
     $exporter = app(ExportService::class);

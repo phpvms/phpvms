@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Awards;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Awards\Pages\CreateAward;
 use App\Filament\Resources\Awards\Pages\EditAward;
 use App\Filament\Resources\Awards\Pages\ListAwards;
@@ -9,7 +10,6 @@ use App\Filament\Resources\Awards\RelationManagers\UsersRelationManager;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\Awards\Tables\AwardsTable;
 use App\Models\Award;
-use App\Models\Enums\NavigationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;

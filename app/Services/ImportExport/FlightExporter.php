@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
-use App\Models\Enums\Days;
 use App\Models\Flight;
+use App\Support\Days;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The flight importer can be imported or export. Operates on rows
  */
 class FlightExporter extends ImportExport
 {
-    public $assetType = 'flight';
+    public string $assetType = 'flight';
 
     /**
      * Set the current columns and other setup
@@ -25,30 +26,33 @@ class FlightExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Flight $flight
      */
-    public function export($flight): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Flight) {
+            throw new \InvalidArgumentException('Expected Flight Model');
+        }
+
         $ret = [];
         foreach (self::$columns as $column) {
-            $ret[$column] = $flight->{$column};
+            $ret[$column] = $row->{$column};
         }
 
         // Modify special fields
-        $ret['airline'] = $flight->airline->icao;
-        $ret['dpt_airport'] = $flight->dpt_airport_id;
-        $ret['arr_airport'] = $flight->arr_airport_id;
-        $ret['distance'] = $flight->distance->internal();
+        $ret['airline'] = $row->airline->icao;
+        $ret['dpt_airport'] = $row->dpt_airport_id;
+        $ret['arr_airport'] = $row->arr_airport_id;
+        $ret['distance'] = $row->distance->internal();
+        $ret['flight_type'] = $row->flight_type->value;
 
-        if ($flight->alt_airport) {
-            $ret['alt_airport'] = $flight->alt_airport_id;
+        if ($row->alt_airport) {
+            $ret['alt_airport'] = $row->alt_airport_id;
         }
 
-        $ret['days'] = $this->getDays($flight);
-        $ret['fares'] = $this->getFares($flight);
-        $ret['fields'] = $this->getFields($flight);
-        $ret['subfleets'] = $this->getSubfleets($flight);
+        $ret['days'] = $this->getDays($row);
+        $ret['fares'] = $this->getFares($row);
+        $ret['fields'] = $this->getFields($row);
+        $ret['subfleets'] = $this->getSubfleets($row);
 
         return $ret;
     }
@@ -56,7 +60,7 @@ class FlightExporter extends ImportExport
     /**
      * Return the days string
      */
-    protected function getDays(Flight &$flight): string
+    protected function getDays(Flight $flight): string
     {
         $days_str = '';
 
@@ -94,7 +98,7 @@ class FlightExporter extends ImportExport
     /**
      * Return any custom fares that have been made to this flight
      */
-    protected function getFares(Flight &$flight): string
+    protected function getFares(Flight $flight): string
     {
         $fares = [];
         foreach ($flight->fares as $fare) {
@@ -120,7 +124,7 @@ class FlightExporter extends ImportExport
     /**
      * Parse all of the subfields
      */
-    protected function getFields(Flight &$flight): string
+    protected function getFields(Flight $flight): string
     {
         $ret = [];
         foreach ($flight->field_values as $field) {
@@ -133,7 +137,7 @@ class FlightExporter extends ImportExport
     /**
      * Create the list of subfleets that are associated here
      */
-    protected function getSubfleets(Flight &$flight): string
+    protected function getSubfleets(Flight $flight): string
     {
         $subfleets = [];
         foreach ($flight->subfleets as $subfleet) {

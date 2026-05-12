@@ -7,7 +7,7 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Routing\ResponseFactory;

@@ -13,13 +13,13 @@ use Exception;
  */
 class AirportImporter extends ImportExport
 {
-    public $assetType = 'airport';
+    public string $assetType = 'airport';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'icao'                 => 'required',
         'iata'                 => 'nullable',
         'name'                 => 'required',
@@ -40,10 +40,8 @@ class AirportImporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param int $index
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         $row['id'] = $row['icao'];
         $row['hub'] = get_truth_state($row['hub']);

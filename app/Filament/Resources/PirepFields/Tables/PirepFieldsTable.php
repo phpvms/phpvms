@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\PirepFields\Tables;
 
-use App\Models\Enums\PirepFieldSource;
+use App\Enums\PirepFieldSource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -29,7 +29,7 @@ class PirepFieldsTable
 
                 TextColumn::make('pirep_source')
                     ->label(__('pireps.source'))
-                    ->formatStateUsing(fn (int $state): string => PirepFieldSource::label($state))
+                    ->badge()
                     ->sortable(),
 
                 IconColumn::make('required')
@@ -40,7 +40,7 @@ class PirepFieldsTable
             ->filters([
                 SelectFilter::make('pirep_source')
                     ->label(__('pireps.source'))
-                    ->options(PirepFieldSource::labels()),
+                    ->options(PirepFieldSource::class),
             ])
             ->recordActions([
                 EditAction::make(),

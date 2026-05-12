@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
+use App\Enums\FlightType;
 use App\Models\Airport;
-use App\Models\Enums\Days;
-use App\Models\Enums\FlightType;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
+use App\Support\Days;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -22,13 +22,13 @@ use Illuminate\Support\Facades\Log;
  */
 class FlightImporter extends ImportExport
 {
-    public $assetType = 'flight';
+    public string $assetType = 'flight';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'airline'              => 'required',
         'flight_number'        => 'required',
         'route_code'           => 'nullable',
@@ -59,11 +59,11 @@ class FlightImporter extends ImportExport
         'user_id'              => 'nullable|integer',
     ];
 
-    private $airportSvc;
+    private readonly AirportService $airportSvc;
 
-    private $fareSvc;
+    private readonly FareService $fareSvc;
 
-    private $flightSvc;
+    private readonly FlightService $flightSvc;
 
     /**
      * FlightImportExporter constructor.
@@ -77,10 +77,8 @@ class FlightImporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param int $index
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         // Get the airline ID from the ICAO code
         $airline = $this->getAirline($row['airline']);
@@ -256,7 +254,7 @@ class FlightImporter extends ImportExport
      * Parse out all of the subfleets and associate them to the flight
      * The subfleet is created if it doesn't exist
      */
-    protected function processSubfleets(Flight &$flight, $col): void
+    protected function processSubfleets(Flight $flight, string $col): void
     {
         $count = 0;
         $subfleets = $this->parseMultiColumnValues($col);
@@ -291,7 +289,7 @@ class FlightImporter extends ImportExport
     /**
      * Parse all of the fares in the multi-format
      */
-    protected function processFares(Flight &$flight, $col): void
+    protected function processFares(Flight $flight, string $col): void
     {
         $fares = $this->parseMultiColumnValues($col);
         foreach ($fares as $fare_code => $fare_attributes) {
@@ -309,7 +307,7 @@ class FlightImporter extends ImportExport
     /**
      * Parse all of the subfields
      */
-    protected function processFields(Flight &$flight, $col): void
+    protected function processFields(Flight $flight, string $col): void
     {
         $pass_fields = [];
         $fields = $this->parseMultiColumnValues($col);

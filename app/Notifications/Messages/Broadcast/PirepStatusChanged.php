@@ -3,7 +3,7 @@
 namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
-use App\Models\Enums\PirepStatus;
+use App\Enums\PirepStatus;
 use App\Models\Pirep;
 use App\Notifications\Channels\Discord\DiscordMessage;
 use App\Notifications\Channels\Discord\DiscordWebhook;
@@ -17,31 +17,31 @@ class PirepStatusChanged extends Notification implements ShouldQueue
 {
     // TODO: Int'l languages for these
     protected static $verbs = [
-        PirepStatus::INITIATED     => 'is initialized',
-        PirepStatus::SCHEDULED     => 'is scheduled',
-        PirepStatus::BOARDING      => 'is boarding',
-        PirepStatus::RDY_START     => 'is ready for start',
-        PirepStatus::PUSHBACK_TOW  => 'is pushing back',
-        PirepStatus::DEPARTED      => 'has departed',
-        PirepStatus::RDY_DEICE     => 'is ready for de-icing',
-        PirepStatus::STRT_DEICE    => 'is de-icing',
-        PirepStatus::GRND_RTRN     => 'on ground return',
-        PirepStatus::TAXI          => 'is taxiing',
-        PirepStatus::TAKEOFF       => 'has taken off',
-        PirepStatus::INIT_CLIM     => 'in initial climb',
-        PirepStatus::AIRBORNE      => 'is enroute',
-        PirepStatus::ENROUTE       => 'is enroute',
-        PirepStatus::DIVERTED      => 'has diverted',
-        PirepStatus::APPROACH      => 'on approach',
-        PirepStatus::APPROACH_ICAO => 'on approach',
-        PirepStatus::ON_FINAL      => 'on final approach',
-        PirepStatus::LANDING       => 'is landing',
-        PirepStatus::LANDED        => 'has landed',
-        PirepStatus::ON_BLOCK      => 'has arrived',
-        PirepStatus::ARRIVED       => 'has arrived',
-        PirepStatus::CANCELLED     => 'is cancelled',
-        PirepStatus::PAUSED        => 'is paused',
-        PirepStatus::EMERG_DESCENT => 'in emergency descent',
+        'INI' => 'is initialized',
+        'SCH' => 'is scheduled',
+        'BST' => 'is boarding',
+        'RDT' => 'is ready for start',
+        'PBT' => 'is pushing back',
+        'OFB' => 'has departed',
+        'DIR' => 'is ready for de-icing',
+        'DIC' => 'is de-icing',
+        'GRT' => 'on ground return',
+        'TXI' => 'is taxiing',
+        'TOF' => 'has taken off',
+        'ICL' => 'in initial climb',
+        'TKO' => 'is enroute',
+        'ENR' => 'is enroute',
+        'DV'  => 'has diverted',
+        'TEN' => 'on approach',
+        'APR' => 'on approach',
+        'FIN' => 'on final approach',
+        'LDG' => 'is landing',
+        'LAN' => 'has landed',
+        'ONB' => 'has arrived',
+        'ARR' => 'has arrived',
+        'DX'  => 'is cancelled',
+        'PSD' => 'is paused',
+        'EMG' => 'in emergency descent',
     ];
 
     /**
@@ -68,7 +68,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
             return null;
         }
 
-        $title = 'Flight '.$pirep->ident.' '.self::$verbs[$pirep->status];
+        $title = 'Flight '.$pirep->ident.' '.self::$verbs[$pirep->status->value];
         $fields = $this->createFields($pirep);
 
         // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail

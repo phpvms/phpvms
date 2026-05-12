@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use App\Models\UserOAuthToken;
 use App\Services\OAuthService;

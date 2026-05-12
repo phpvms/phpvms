@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\LegacyImporter;
 
-use App\Models\Enums\FlightType;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
+use App\Enums\FlightType;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Models\Pirep;
 use App\Services\FinanceService;
 use App\Support\Money;
@@ -217,7 +217,7 @@ class PirepImporter extends BaseImporter
      *
      * @param int $old_state
      */
-    private function mapState($old_state): int
+    private function mapState($old_state): PirepState
     {
         $map = [
             0 => PirepState::PENDING,
@@ -226,11 +226,6 @@ class PirepImporter extends BaseImporter
             3 => PirepState::IN_PROGRESS,
         ];
 
-        $old_state = (int) $old_state;
-        if (!in_array($old_state, $map, true)) {
-            return PirepState::PENDING;
-        }
-
-        return $map[$old_state];
+        return $map[(int) $old_state] ?? PirepState::PENDING;
     }
 }

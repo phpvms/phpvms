@@ -4,6 +4,7 @@ namespace App\Contracts;
 
 use App\Models\Airline;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -14,9 +15,9 @@ use RuntimeException;
  */
 class ImportExport
 {
-    public $assetType;
+    public string $assetType;
 
-    public $status = [
+    public array $status = [
         'success' => [],
         'errors'  => [],
     ];
@@ -24,22 +25,17 @@ class ImportExport
     /**
      * Hold the columns for the particular table
      */
-    public static $columns = [];
+    public static array $columns = [];
 
-    /**
-     * @param mixed $row
-     */
-    public function export($row): array
+    public function export(Model $row): array
     {
         throw new RuntimeException('export not implemented');
     }
 
     /**
-     * @param mixed $index
-     *
      * @throws RuntimeException
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         throw new RuntimeException('import not implemented');
     }
@@ -47,17 +43,14 @@ class ImportExport
     /**
      * Get the airline from the ICAO. Create it if it doesn't exist
      */
-    public function getAirline($code): Airline
+    public function getAirline(string $code): Airline
     {
         return Airline::firstOrCreate([
             'icao' => $code,
         ], ['name' => $code]);
     }
 
-    /**
-     * @return array
-     */
-    public function getColumns()
+    public function getColumns(): array
     {
         return static::$columns;
     }
@@ -65,7 +58,7 @@ class ImportExport
     /**
      * Do a basic check that the number of columns match
      */
-    public function checkColumns($row): bool
+    public function checkColumns(array $row): bool
     {
         return \count($row) === \count($this->getColumns());
     }
@@ -92,7 +85,7 @@ class ImportExport
     /**
      * Add to the log messages for this importer
      */
-    public function log($msg): void
+    public function log(string $msg): void
     {
         $this->status['success'][] = $msg;
         Log::info($msg);
@@ -101,7 +94,7 @@ class ImportExport
     /**
      * Add to the error log for this import
      */
-    public function errorLog($msg): void
+    public function errorLog(string $msg): void
     {
         $this->status['errors'][] = $msg;
         Log::error($msg);
@@ -110,9 +103,9 @@ class ImportExport
     /**
      * Set a key-value pair to an array
      */
-    protected function kvpToArray($kvp_str, array &$arr)
+    protected function kvpToArray(string $kvp_str, array &$arr): void
     {
-        $item = explode('=', (string) $kvp_str);
+        $item = explode('=', $kvp_str);
         if (\count($item) === 1) {  // just a list?
             $arr[] = trim($item[0]);
         } else {  // actually a key-value pair
@@ -130,10 +123,10 @@ class ImportExport
      *
      * Converted into a multi-dimensional array
      */
-    public function parseMultiColumnValues($field): array
+    public function parseMultiColumnValues(string $field): array
     {
         $ret = [];
-        $split_values = explode(';', (string) $field);
+        $split_values = explode(';', $field);
 
         // No multiple values in here, just a straight value
         if (\count($split_values) === 1) {
@@ -209,12 +202,9 @@ class ImportExport
         return $ret;
     }
 
-    /**
-     * @return mixed
-     */
-    public function objectToMultiString($obj)
+    public function objectToMultiString(array|string $obj): string
     {
-        if (!\is_array($obj)) {
+        if (!is_array($obj)) {
             return $obj;
         }
 

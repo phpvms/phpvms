@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Enums\PirepState;
 use App\Exceptions\BidExistsForFlight;
 use App\Exceptions\BidNotFound;
 use App\Exceptions\Unauthorized;
@@ -14,7 +15,6 @@ use App\Http\Resources\SubfleetResource;
 use App\Http\Resources\UserResource;
 use App\Models\Aircraft;
 use App\Models\Bid;
-use App\Models\Enums\PirepState;
 use App\Models\Flight;
 use App\Models\User;
 use App\Queries\PirepSearchQuery;

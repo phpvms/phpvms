@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\AcarsType;
+use App\Enums\FareType;
+use App\Enums\UserState;
 use App\Models\Acars;
 use App\Models\Aircraft;
 use App\Models\Airport;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\FareType;
-use App\Models\Enums\UserState;
 use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\Rank;
@@ -113,7 +113,7 @@ test('api calls', function (): void {
             'id'       => 100,
             'code'     => 'F',
             'name'     => 'Test Fare',
-            'type'     => 'P',
+            'type'     => FareType::PASSENGER->value,
             'capacity' => 100,
             'count'    => 99,
         ],

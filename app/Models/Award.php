@@ -49,10 +49,6 @@ use Kyslik\ColumnSortable\Sortable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
  *
- * @property string|null $ref_model
- *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModel($value)
- *
  * @mixin \Eloquent
  */
 class Award extends Model

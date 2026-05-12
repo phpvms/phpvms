@@ -13,7 +13,7 @@ class UnknownPageType extends AbstractHttpException
     ) {
         parent::__construct(
             400,
-            'Unknown page type "'.$page->type.'"'
+            'Unknown page type "'.$page->type->name.'"'
         );
     }
 

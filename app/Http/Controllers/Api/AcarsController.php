@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
+use App\Enums\AcarsType;
 use App\Events\AcarsUpdate;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepNotFound;
@@ -12,7 +13,6 @@ use App\Http\Requests\Acars\PositionRequest;
 use App\Http\Resources\AcarsRouteResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
-use App\Models\Enums\AcarsType;
 use App\Models\Pirep;
 use App\Services\GeoService;
 use Carbon\Carbon;

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Enums\PirepFieldSource;
+use App\Enums\PirepFieldSource;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,16 +11,16 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @property int         $id
- * @property string      $pirep_id
- * @property string      $name
- * @property string|null $slug
- * @property string|null $value
- * @property int         $source
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property int              $id
+ * @property string           $pirep_id
+ * @property string           $name
+ * @property string|null      $slug
+ * @property string|null      $value
+ * @property PirepFieldSource $source
+ * @property Carbon|null      $created_at
+ * @property Carbon|null      $updated_at
  * @property-read Pirep|null $pirep
- * @property-read mixed $read_only
+ * @property-read bool $read_only
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue newQuery()
@@ -89,7 +89,7 @@ class PirepFieldValue extends Model
     protected function casts(): array
     {
         return [
-            'source' => 'integer',
+            'source' => PirepFieldSource::class,
         ];
     }
 }

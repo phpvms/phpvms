@@ -168,7 +168,7 @@
         }
         @endphp
         <span class="badge {{ $stateClass }}">
-        {{ PirepState::label($pirep->state) }}
+        {{ $pirep->state->getLabel() }}
         </span>
       </div>
 
@@ -190,19 +190,19 @@
         }
         @endphp
         <span class="badge {{ $statusClass }}">
-        {{ PirepStatus::label($pirep->status) }}
+        {{ $pirep->status->getLabel() }}
         </span>
       </div>
       @endif
 
       <div class="d-flex justify-content-between list-group-item">
         <span>@lang('pireps.source')</span>
-        <span>{{ PirepSource::label($pirep->source) }}</span>
+        <span>{{ $pirep->source->getLabel() }}</span>
       </div>
 
       <div class="d-flex justify-content-between list-group-item">
         <span>@lang('flights.flighttype')</span>
-        <span>{{ \App\Models\Enums\FlightType::label($pirep->flight_type) }}</span>
+        <span>{{ $pirep->flight_type->getLabel() }}</span>
       </div>
 
       <div class="d-flex justify-content-between list-group-item">

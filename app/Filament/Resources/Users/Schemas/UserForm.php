@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Enums\UserState;
 use App\Models\Airport;
-use App\Models\Enums\UserState;
 use App\Support\Timezonelist;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -93,7 +93,7 @@ class UserForm
                         Select::make('state')
                             ->label(__('common.state'))
                             ->required()
-                            ->options(UserState::labels())
+                            ->options(UserState::class)
                             ->searchable()
                             ->native(false),
 

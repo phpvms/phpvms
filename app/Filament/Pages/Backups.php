@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Models\Enums\NavigationGroup;
+use App\Enums\NavigationGroup;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Support\Icons\Heroicon;
 use ShuvroRoy\FilamentSpatieLaravelBackup\Pages\Backups as BaseBackups;

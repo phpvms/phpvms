@@ -9,6 +9,7 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use App\Contracts\Model;
+use App\Enums\JournalType;
 use App\Observers\JournalObserver;
 use App\Support\Money;
 use Carbon\Carbon;
@@ -26,7 +27,7 @@ use UnexpectedValueException;
  *
  * @property int                             $id
  * @property int|null                        $ledger_id
- * @property int                             $type
+ * @property JournalType                     $type
  * @property mixed                           $balance
  * @property string                          $currency
  * @property string|null                     $morphed_type
@@ -75,6 +76,7 @@ class Journal extends Model
     {
         return [
             'balance'    => MoneyCast::class,
+            'type'       => JournalType::class,
             'deleted_at' => 'datetime',
         ];
     }

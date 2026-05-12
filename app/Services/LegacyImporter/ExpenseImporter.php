@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\LegacyImporter;
 
-use App\Models\Enums\ExpenseType;
+use App\Enums\ExpenseType;
 use App\Models\Expense;
 
 class ExpenseImporter extends BaseImporter
