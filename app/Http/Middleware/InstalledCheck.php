@@ -11,6 +11,7 @@ use App\Filament\System\Installer;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -23,15 +24,18 @@ class InstalledCheck implements Middleware
 {
     public function handle(Request $request, Closure $next)
     {
-        $key = config('app.key');
-
         // If we're in the installer, skip this
         // Also skip if this is a livewire update (might be called from the system)
         if ($request->is('system*') || request()->is('livewire/update')) {
             return $next($request);
         }
 
-        if (empty($key) || $key === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' || !Schema::hasTable('users') || User::count() === 0) {
+        try {
+            DB::connection()->getPdo();
+            if (!Schema::hasTable('users') || User::count() === 0) {
+                return redirect('/system/install');
+            }
+        } catch (\Exception $e) {
             return redirect('/system/install');
         }
 
