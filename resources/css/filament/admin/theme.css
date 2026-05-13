@@ -1,4 +1,220 @@
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
 
+/* Google Fonts injected via Filament render hook (AppServiceProvider::boot).
+ * Family names mirror the docs (custom.css lines 24-47):
+ *   - Geist        (body sans-serif)
+ *   - Encode Sans  (display/headings)
+ *   - Geist Mono   (monospace) */
+
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+/* Filament's --font-family is set by ->font('Geist', provider: GoogleFontProvider::class)
+ * in each panel provider, which writes the value into an inline <style> tag via
+ * vendor/filament/filament/resources/views/components/layout/base.blade.php.
+ * That declaration wins over CSS :root rules, so we configure it through Filament's
+ * API rather than overriding it here. */
+
+/* Tailwind v4 theme tokens — declared once, both panels use them */
+@theme {
+  --font-sans:
+    "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Encode Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Primary palette derived from #067ec1 (docs --ifm-color-primary) */
+  --color-primary-50: #e6f3fb;
+  --color-primary-100: #cce7f6;
+  --color-primary-200: #99cfee;
+  --color-primary-300: #66b7e5;
+  --color-primary-400: #339fdc;
+  --color-primary-500: #067ec1;
+  --color-primary-600: #056ba4;
+  --color-primary-700: #045887;
+  --color-primary-800: #034669;
+  --color-primary-900: #02334c;
+  --color-primary-950: #01202f;
+}
+
+/* Dark-mode surfaces — match docs (GitHub-inspired) */
+.dark {
+  --color-gray-900: #0d1117;
+  --color-gray-800: #161b22;
+}
+
+/*
+ * Layer 2 — Panel-scoped overrides for the system installer panel.
+ * Verified against vendor/filament/schemas/resources/css/components/wizard.css
+ * and vendor/filament/filament/resources/css/components/page.css.
+ */
+
+/* System panel body */
+.fi-panel-system {
+  background: #ffffff;
+  font-family: var(--font-sans), serif;
+}
+
+.dark .fi-panel-system {
+  background: #0d1117;
+}
+
+/* Topbar — match docs navbar (white, 60px, no shadow) */
+.fi-panel-system .fi-topbar {
+  background: #ffffff;
+  box-shadow: none;
+  /*border-bottom: 1px solid rgb(0 0 0 / 6%);*/
+  height: 60px;
+}
+
+.dark .fi-panel-system .fi-topbar {
+  background: #0d1117;
+  border-bottom-color: rgb(255 255 255 / 8%);
+}
+
+/* Wizard stepper — primary fill, Encode Sans labels */
+.fi-panel-system .fi-sc-wizard-header {
+  font-family: var(--font-display), serif;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-icon-ctn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-number {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: #ffffff;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-number {
+  color: #ffffff;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-label {
+  font-family: var(--font-display), ui-sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-separator {
+  color: var(--color-gray-200);
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-separator {
+  color: var(--color-primary-500);
+}
+
+/* Heading scale — Encode Sans, docs proportions.
+ * Base letter-spacing for wizard section headings (PHP / Directory / Database).
+ * Hero h1 needs tighter tracking (-0.02em per docs .lp-hero-title); higher-specificity
+ * selector below restores it for any <h1> inside a <header> element. */
+.fi-panel-system h1,
+.fi-panel-system h2,
+.fi-panel-system h3 {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.fi-panel-system header h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Code blocks (migration stream output) */
+.fi-panel-system code,
+.fi-panel-system pre {
+  font-family: var(--font-mono), monospace;
+  font-variant-ligatures: none;
+}
+
+/* Solid primary buttons — match docs .lp-btn-primary background (shade 500 =
+ * #067ec1, the docs --ifm-color-primary). Filament defaults to shade 600
+ * (#056ba4) and writes the colour via an inline style attribute, so we need
+ * !important to override the inline value. Hover darkens to shade 600 to
+ * mirror docs .lp-btn-primary:hover (--ifm-color-primary-darker). Outlined
+ * buttons keep the framework default. */
+.fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+.fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+.dark .fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+.dark .fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+
+/* Bottom-right atmospheric dot grid — ported from docs/src/css/custom.css:2388
+ * (html.docs-wrapper::after). Two-layer dot field (24px + 72px spacing) with
+ * radial-ellipse mask anchored at bottom-right. z-index: -1 + pointer-events: none
+ * so nothing interactive is affected. */
+body.fi-panel-system::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  bottom: 0;
+  right: 0;
+  width: 560px;
+  height: 460px;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 20%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 9%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    24px 24px,
+    72px 72px;
+  background-position:
+    0 0,
+    12px 12px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at bottom right,
+    black 0%,
+    black 25%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(ellipse at bottom right, black 0%, black 25%, transparent 75%);
+}
+
+/* Dark mode: bump alpha (32% / 14%) using the lighter primary shade
+ * so the dots stay legible against #0d1117. */
+.dark body.fi-panel-system::after {
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 32%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 14%, transparent) 1px,
+      transparent 1.5px
+    );
+}
+
+/* Mobile: shrink so the corner texture doesn't dominate small viewports. */
+@media (max-width: 720px) {
+  body.fi-panel-system::after {
+    width: 280px;
+    height: 220px;
+  }
+}

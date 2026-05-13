@@ -98,8 +98,9 @@ class AdminPanelProvider extends PanelProvider
             ->bootUsing(function (): void {
                 activity()->enableLogging();
             })
-            ->brandName('phpVMS')
-            ->favicon(public_asset('assets/img/favicon.png'))
+            ->brandName('phpvms')
+            ->font('Geist')
+            ->favicon(asset('assets/img/favicon.png'))
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()

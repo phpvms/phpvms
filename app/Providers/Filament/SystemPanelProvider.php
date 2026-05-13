@@ -6,6 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Http\Middleware\SetActiveLanguage;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
@@ -47,8 +48,12 @@ class SystemPanelProvider extends PanelProvider
             ->plugins([
                 LanguageSwitcherPlugin::make(),
             ])
-            ->brandName('phpVMS')
-            ->favicon(public_asset('assets/img/favicon.png'))
+            ->defaultThemeMode(ThemeMode::Light)
+            ->brandName('phpvms')
+            ->font('Geist')
+            ->brandLogo(fn () => view('filament.system.brand'))
+            ->brandLogoHeight('3rem')
+            ->favicon(asset('assets/img/favicon.png'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)

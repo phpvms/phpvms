@@ -28,6 +28,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
@@ -54,7 +55,7 @@ class Installer extends Page
     public function mount(): void
     {
         try {
-            if (!empty(config('app.key')) && config('app.key') !== 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=' && Schema::hasTable('users') && User::count() > 0) {
+            if (Schema::hasTable('users') && User::count() > 0) {
                 Notification::make()
                     ->title(__('installer.already_installed'))
                     ->danger()
@@ -452,6 +453,16 @@ class Installer extends Page
                         ])
                         ->columns(),
                 ]);
+    }
+
+    #[\Override]
+    public function getHeader(): ?View
+    {
+        return view('filament.system.hero', [
+            'eyebrow'  => __('installer.eyebrow'),
+            'title'    => __('installer.hero_title'),
+            'subtitle' => __('installer.hero_subtitle'),
+        ]);
     }
 
     #[\Override]

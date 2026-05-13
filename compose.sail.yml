@@ -1,18 +1,18 @@
-# This Docker Compose file is used by Laravel Sail. It should not be used in production and is only
-# useful in a development environment. See https://laravel.com/docs/10.x/sail
 services:
   laravel.test:
     build:
-      context: ./vendor/laravel/sail/runtimes/8.4
+      context: ./vendor/laravel/sail/runtimes/8.5
       dockerfile: Dockerfile
       args:
         WWWGROUP: "${WWWGROUP}"
-    image: sail-8.4/app
+    image: sail-8.5/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "${APP_PORT:-80}:80"
       - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+    env_file:
+      - .env
     environment:
       WWWUSER: "${WWWUSER}"
       LARAVEL_SAIL: 1
@@ -24,11 +24,11 @@ services:
     networks:
       - sail
     depends_on:
-      - mariadb
+      - mysql
       - redis
       - mailpit
-  mariadb:
-    image: "mariadb:10"
+  mysql:
+    image: "mysql:8.4"
     ports:
       - "${FORWARD_DB_PORT:-3306}:3306"
     environment:
@@ -37,9 +37,10 @@ services:
       MYSQL_DATABASE: "${DB_DATABASE}"
       MYSQL_USER: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_EXTRA_OPTIONS: "${MYSQL_EXTRA_OPTIONS:-}"
     volumes:
-      - "sail-mariadb:/var/lib/mysql"
+      - "sail-mysql:/var/lib/mysql"
       - "./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh"
     networks:
       - sail
@@ -77,7 +78,7 @@ networks:
   sail:
     driver: bridge
 volumes:
-  sail-mariadb:
+  sail-mysql:
     driver: local
   sail-redis:
     driver: local

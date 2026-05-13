@@ -8,13 +8,13 @@ return [
      * Shared translations.
      *
      */
-    'title'                             => 'phpVMS Installer',
+    'title'                             => 'phpvms',
     'next'                              => 'Next Step',
     'back'                              => 'Previous',
     'finish'                            => 'Install',
     'output'                            => 'Console Output',
-    'already_installed'                 => 'phpVMS is already installed.',
-    'install_completed'                 => 'phpVMS Installation completed successfully.',
+    'already_installed'                 => 'phpvms is already installed.',
+    'install_completed'                 => 'phpvms Installation completed successfully.',
     'complete_setup'                    => 'Complete Setup',
     'failed'                            => 'Failed',
     'db_connection_ok'                  => 'Connection OK',
@@ -40,10 +40,13 @@ return [
     'update'                            => 'Update',
     'migrations_not_completed'          => 'You still have :count migrations to run. Please try again...',
     'user_and_airline_setup'            => 'User & Airline Setup',
-    'legacy_importer'                   => 'phpVMS v5 Legacy Importer',
+    'legacy_importer'                   => 'phpvms v5 Legacy Importer',
     'super_admin_informations'          => 'Super Admin User Informations',
     'lets_rebuild_cache'                => "Let's rebuild the cache.",
     'cache_build_background'            => "You don't have access to the proc_open function, so the cache rebuild will be done in the background. Check logs for details.",
     'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
-    'update_phpvms'                     => 'Update phpVMS',
+    'update_phpvms'                     => 'Update phpvms',
+    'eyebrow'                           => '',
+    'hero_title'                        => "Welcome. Let's get you flying",
+    'hero_subtitle'                     => '',
 ];
