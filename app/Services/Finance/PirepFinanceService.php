@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Contracts\Service;
+use App\Enums\ExpenseType;
+use App\Enums\FuelType;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Events\Expenses as ExpensesEvent;
 use App\Events\Fares as FaresEvent;
 use App\Models\Aircraft;
 use App\Models\Airport;
-use App\Models\Enums\ExpenseType;
-use App\Models\Enums\FareType;
-use App\Models\Enums\FuelType;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
 use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Pirep;
@@ -120,7 +119,7 @@ class PirepFinanceService extends Service
 
             Log::info('Finance: Calculate: C='.$credit->toAmount().', D='.$debit->toAmount());
 
-            $memo = FareType::label($fare->type).' fare: '.$fare->code.': '.$fare->count
+            $memo = $fare->type->getLabel().' fare: '.$fare->code.': '.$fare->count
                 .'; price: '.$fare->price.', cost: '.$fare->cost;
 
             $this->journalSvc->post(
@@ -193,6 +192,7 @@ class PirepFinanceService extends Service
         // Get Aircraft Fuel Type from Subfleet
         // And set $fuel_cost according to type (Failsafe is Jet A)
         $sf = $pirep->aircraft->subfleet;
+        /** @var FuelType $fuel_type */
         $fuel_type = $sf ? $sf->fuel_type : FuelType::JET_A;
 
         if ($fuel_type === FuelType::LOW_LEAD) {
@@ -311,7 +311,7 @@ class PirepFinanceService extends Service
 
             // Check to see if there is a certain fleet or flight type set on this expense
             // if there is and it doesn't match up the flight type for the PIREP, skip it
-            if ($expense->ref_model_type === Expense::class && (is_array($expense->flight_type) && $expense->flight_type !== []) && !in_array($pirep->flight_type, $expense->flight_type, true)) {
+            if ($expense->ref_model_type === Expense::class && filled($expense->flight_type) && ($expense->flight_type->isNotEmpty() && !$expense->flight_type->contains($pirep->flight_type))) {
                 return;
             }
 

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Expenses;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
 use App\Filament\Resources\Expenses\Schemas\ExpenseForm;
 use App\Filament\Resources\Expenses\Tables\ExpensesTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Expense;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

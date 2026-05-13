@@ -4,8 +4,9 @@ namespace App\Models;
 
 use App\Casts\DistanceCast;
 use App\Contracts\Model;
-use App\Models\Enums\Days;
+use App\Enums\FlightType;
 use App\Observers\FlightObserver;
+use App\Support\Days;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -39,7 +40,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null    $level
  * @property mixed|null  $distance
  * @property int|null    $flight_time
- * @property string      $flight_type
+ * @property FlightType  $flight_type
  * @property float|null  $load_factor
  * @property float|null  $load_factor_variance
  * @property string|null $route
@@ -64,39 +65,36 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Airline|null $airline
  * @property-read Airport|null $alt_airport
  * @property-read Airport|null $arr_airport
- * @property-read mixed $atc
+ * @property-read string $atc
  * @property-read Airport|null $dpt_airport
  * @property-read Event|null $event
  * @property-read Collection<int, Fare> $fares
  * @property-read int|null $fares_count
  * @property-read Collection<int, FlightFieldValue> $field_values
  * @property-read int|null $field_values_count
- * @property-read mixed $ident
+ * @property-read string $ident
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $owner
  * @property-read SimBrief|null $simbrief
  * @property-read Collection<int, Subfleet> $subfleets
  * @property-read int|null $subfleets_count
  * @property-read User|null $user
  *
- * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
  * @method static Builder<static>|Flight            active()
- * @method static Builder<static>|Flight            visible()
- * @method static Builder<static>|Flight            forAirline(int $airlineId)
- * @method static Builder<static>|Flight            fromAirport(string $icao)
- * @method static Builder<static>|Flight            toAirport(string $icao)
- * @method static Builder<static>|Flight            withFlightType(string $type)
  * @method static Builder<static>|Flight            distanceAtLeast(int $distance)
  * @method static Builder<static>|Flight            distanceAtMost(int $distance)
+ * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
  * @method static Builder<static>|Flight            flightTimeAtLeast(int $minutes)
  * @method static Builder<static>|Flight            flightTimeAtMost(int $minutes)
- * @method static Builder<static>|Flight            withSubfleet(int $subfleetId)
+ * @method static Builder<static>|Flight            forAirline(int $airlineId)
  * @method static Builder<static>|Flight            forTypeRating(int $typeRatingId)
- * @method static Builder<static>|Flight            withIcaoType(string $icao)
+ * @method static Builder<static>|Flight            fromAirport(string $icao)
  * @method static Builder<static>|Flight            newModelQuery()
  * @method static Builder<static>|Flight            newQuery()
  * @method static Builder<static>|Flight            onlyTrashed()
  * @method static Builder<static>|Flight            query()
  * @method static Builder<static>|Flight            sortable($defaultParameters = null)
+ * @method static Builder<static>|Flight            toAirport(string $icao)
+ * @method static Builder<static>|Flight            visible()
  * @method static Builder<static>|Flight            whereActive($value)
  * @method static Builder<static>|Flight            whereAirlineId($value)
  * @method static Builder<static>|Flight            whereAltAirportId($value)
@@ -131,6 +129,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder<static>|Flight            whereUpdatedAt($value)
  * @method static Builder<static>|Flight            whereUserId($value)
  * @method static Builder<static>|Flight            whereVisible($value)
+ * @method static Builder<static>|Flight            withFlightType(string $type)
+ * @method static Builder<static>|Flight            withIcaoType(string $icao)
+ * @method static Builder<static>|Flight            withSubfleet(int $subfleetId)
  * @method static Builder<static>|Flight            withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Flight            withoutTrashed()
  *
@@ -389,6 +390,7 @@ class Flight extends Model
             'level'                => 'integer',
             'distance'             => DistanceCast::class,
             'flight_time'          => 'integer',
+            'flight_type'          => FlightType::class,
             'start_date'           => 'date',
             'end_date'             => 'date',
             'load_factor'          => 'double',

@@ -6,13 +6,14 @@ namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
 use App\Models\Airport;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The flight importer can be imported or export. Operates on rows
  */
 class AirportExporter extends ImportExport
 {
-    public $assetType = 'airport';
+    public string $assetType = 'airport';
 
     /**
      * Set the current columns and other setup
@@ -24,14 +25,16 @@ class AirportExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Airport $airport
      */
-    public function export($airport): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Airport) {
+            throw new \InvalidArgumentException('Expected Airport Model');
+        }
+
         $ret = [];
         foreach (self::$columns as $column) {
-            $ret[$column] = $airport->{$column};
+            $ret[$column] = $row->{$column};
         }
 
         return $ret;

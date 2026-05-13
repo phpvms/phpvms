@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\AcarsType;
 use App\Models\Acars;
-use App\Models\Enums\AcarsType;
 
 test('Acars::forPirep returns only matching pirep rows', function (): void {
     Acars::factory()->create([

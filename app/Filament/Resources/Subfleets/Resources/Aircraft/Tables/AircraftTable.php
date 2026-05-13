@@ -4,8 +4,6 @@ namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Tables;
 
 use App\Models\Aircraft;
 use App\Models\Airport;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\AircraftStatus;
 use App\Models\File;
 use App\Services\FileService;
 use Filament\Actions\BulkActionGroup;
@@ -72,23 +70,13 @@ class AircraftTable
                     ->label(__('common.status'))
                     ->toggleable()
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        AircraftStatus::ACTIVE => 'success',
-                        default                => 'info',
-                    })
-                    ->sortable()
-                    ->formatStateUsing(fn (string $state): string => AircraftStatus::label($state)),
+                    ->sortable(),
 
                 TextColumn::make('state')
                     ->label(__('common.state'))
                     ->toggleable()
                     ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        AircraftState::PARKED => 'success',
-                        default               => 'info',
-                    })
-                    ->sortable()
-                    ->formatStateUsing(fn (int $state): string => AircraftState::label($state)),
+                    ->sortable(),
 
             ])
             ->filters([

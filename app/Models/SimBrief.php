@@ -14,23 +14,22 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @property string      $id                   The Simbrief OFP ID
- * @property int         $user_id              The user that generated this
- * @property string      $flight_id            Optional, if attached to a flight, removed if attached to PIREP
- * @property string      $pirep_id             Optional, if attached to a PIREP, removed if attached to flight
- * @property string      $aircraft_id          The aircraft this is for
- * @property string      $ofp_json_path
- * @property string      $fare_data            JSON string of the fare data that was generated
- * @property Collection  $images
- * @property Collection  $files
- * @property Flight      $flight
- * @property User        $user
- * @property Aircraft    $aircraft
- * @property string      $acars_flightplan_url
+ * @property string      $id
+ * @property int         $user_id
+ * @property string|null $flight_id
+ * @property string|null $pirep_id
+ * @property int|null    $aircraft_id
+ * @property string|null $fare_data
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read ?SimBriefOfp $ofp
+ * @property string|null $ofp_json_path
+ * @property-read Aircraft|null $aircraft
+ * @property-read Collection $files
+ * @property-read Flight|null $flight
+ * @property-read Collection $images
+ * @property-read SimBriefOfp|null $ofp
  * @property-read Pirep|null $pirep
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\SimBriefFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newModelQuery()

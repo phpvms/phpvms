@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Enums\JournalType;
+use App\Enums\JournalType;
 use App\Traits\FilesTrait;
 use App\Traits\JournalTrait;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -52,29 +52,29 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static \Database\Factories\AirlineFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline active()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCallsign($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCountry($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereIata($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereIcao($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereLogo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereTotalFlights($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereTotalTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Airline withoutTrashed()
- * @method static Builder<static>|Airline                               byIcao(string $icao)
+ * @method static Builder<static>|Airline            active()
+ * @method static Builder<static>|Airline            byIcao(string $icao)
+ * @method static \Database\Factories\AirlineFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Airline            newModelQuery()
+ * @method static Builder<static>|Airline            newQuery()
+ * @method static Builder<static>|Airline            onlyTrashed()
+ * @method static Builder<static>|Airline            query()
+ * @method static Builder<static>|Airline            sortable($defaultParameters = null)
+ * @method static Builder<static>|Airline            whereActive($value)
+ * @method static Builder<static>|Airline            whereCallsign($value)
+ * @method static Builder<static>|Airline            whereCountry($value)
+ * @method static Builder<static>|Airline            whereCreatedAt($value)
+ * @method static Builder<static>|Airline            whereDeletedAt($value)
+ * @method static Builder<static>|Airline            whereIata($value)
+ * @method static Builder<static>|Airline            whereIcao($value)
+ * @method static Builder<static>|Airline            whereId($value)
+ * @method static Builder<static>|Airline            whereLogo($value)
+ * @method static Builder<static>|Airline            whereName($value)
+ * @method static Builder<static>|Airline            whereTotalFlights($value)
+ * @method static Builder<static>|Airline            whereTotalTime($value)
+ * @method static Builder<static>|Airline            whereUpdatedAt($value)
+ * @method static Builder<static>|Airline            withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Airline            withoutTrashed()
  *
  * @mixin \Eloquent
  */

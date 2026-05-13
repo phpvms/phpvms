@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Contracts\Model;
 use App\Contracts\Service;
+use App\Enums\ExpenseType;
 use App\Models\Airline;
 use App\Models\Expense;
 use App\Models\Journal;
@@ -63,14 +64,14 @@ class FinanceService extends Service
      * Note: $ref_model_id narrows only the global lane; the airline-specific lane
      * filters on $ref_model type alone (preserves legacy behavior).
      *
-     * @param  string                   $type         An ExpenseType constant (FLIGHT/DAILY/MONTHLY).
+     * @param  ExpenseType|string       $type         An ExpenseType constant (FLIGHT/DAILY/MONTHLY).
      * @param  int|null                 $airline_id   When set, also include this airline's expenses.
      * @param  object|string|null       $ref_model    Either a model instance or a class string.
      * @param  int|string|null          $ref_model_id Optional id to narrow the ref_model match (global lane only).
      * @return Collection<int, Expense>
      */
     public function getExpensesForType(
-        string $type,
+        ExpenseType|string $type,
         ?int $airline_id = null,
         object|string|null $ref_model = null,
         int|string|null $ref_model_id = null,

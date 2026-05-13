@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Models\Enums\AircraftStatus;
+use App\Enums\AircraftStatus;
+use App\Enums\FuelType;
 use App\Observers\SubfleetObserver;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
@@ -23,23 +23,22 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int         $id
- * @property int|null    $airline_id
- * @property string|null $hub_id
- * @property string      $type
- * @property string|null $simbrief_type
- * @property string      $name
- * @property float|null  $cost_block_hour
- * @property float|null  $cost_delay_minute
- * @property int|null    $fuel_type
- * @property float|null  $ground_handling_multiplier
- * @property float|null  $cargo_capacity
- * @property float|null  $fuel_capacity
- * @property float|null  $gross_weight
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property Pivot       $pivot
+ * @property int           $id
+ * @property int|null      $airline_id
+ * @property string|null   $hub_id
+ * @property string        $type
+ * @property string|null   $simbrief_type
+ * @property string        $name
+ * @property float|null    $cost_block_hour
+ * @property float|null    $cost_delay_minute
+ * @property FuelType|null $fuel_type
+ * @property float|null    $ground_handling_multiplier
+ * @property float|null    $cargo_capacity
+ * @property float|null    $fuel_capacity
+ * @property float|null    $gross_weight
+ * @property Carbon|null   $created_at
+ * @property Carbon|null   $updated_at
+ * @property Carbon|null   $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Collection<int, Aircraft> $aircraft
@@ -207,7 +206,7 @@ class Subfleet extends Model
             'turn_time'                  => 'integer',
             'cost_block_hour'            => 'float',
             'cost_delay_minute'          => 'float',
-            'fuel_type'                  => 'integer',
+            'fuel_type'                  => FuelType::class,
             'ground_handling_multiplier' => 'float',
             'cargo_capacity'             => 'float',
             'fuel_capacity'              => 'float',

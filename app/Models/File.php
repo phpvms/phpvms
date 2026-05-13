@@ -23,10 +23,11 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read mixed $extension
- * @property-read mixed $filename
+ * @property-read string $filename
  * @property-read bool $is_external_file
  * @property-read mixed $url
  *
+ * @method static \Database\Factories\FileFactory                    factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File query()
@@ -41,11 +42,6 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
- *
- * @property string|null $ref_model
- *
- * @method static \Database\Factories\FileFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModel($value)
  *
  * @mixin \Eloquent
  */

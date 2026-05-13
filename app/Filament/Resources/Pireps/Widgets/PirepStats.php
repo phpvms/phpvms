@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Pireps\Widgets;
 
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\ListPireps;
-use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;

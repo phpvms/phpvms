@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\AircraftStatus;
+use App\Enums\PirepState;
 use App\Models\Aircraft;
-use App\Models\Enums\AircraftStatus;
-use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 
 class AircraftService extends Service

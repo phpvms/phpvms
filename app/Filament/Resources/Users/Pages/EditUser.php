@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Hash;
 
 class EditUser extends EditRecord
 {
-    private ?int $oldState = null;
+    private ?UserState $oldState = null;
 
     private ?int $oldRankId = null;
 

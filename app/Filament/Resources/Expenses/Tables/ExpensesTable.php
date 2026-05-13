@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Expenses\Tables;
 
-use App\Models\Enums\ExpenseType;
+use App\Enums\ExpenseType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -26,7 +26,7 @@ class ExpensesTable
                 TextColumn::make('type')
                     ->label(__('common.type'))
                     ->sortable()
-                    ->formatStateUsing(fn (string $state): string => ExpenseType::label($state)),
+                    ->badge(),
 
                 TextColumn::make('amount')
                     ->label(__('common.amount'))
@@ -46,7 +46,7 @@ class ExpensesTable
             ->filters([
                 SelectFilter::make('type')
                     ->label(__('common.type'))
-                    ->options(ExpenseType::labels())
+                    ->options(ExpenseType::class)
                     ->multiple(),
             ])
             ->recordActions([

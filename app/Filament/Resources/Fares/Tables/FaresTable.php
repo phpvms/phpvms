@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Fares\Tables;
 
-use App\Models\Enums\FareType;
+use App\Enums\FareType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -36,7 +36,7 @@ class FaresTable
 
                 TextColumn::make('type')
                     ->label(__('common.type'))
-                    ->formatStateUsing(fn (int $state): string => FareType::label($state))
+                    ->badge()
                     ->sortable(),
 
                 TextColumn::make('price')
@@ -60,7 +60,7 @@ class FaresTable
             ->filters(filters: [
                 SelectFilter::make('type')
                     ->label(__('common.type'))
-                    ->options(FareType::labels()),
+                    ->options(FareType::class),
 
                 TrashedFilter::make(),
             ])

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\Enums\Days;
 use App\Models\Flight;
+use App\Support\Days;
 use App\Support\Utils;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;

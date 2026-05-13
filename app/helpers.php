@@ -235,6 +235,27 @@ if (!function_exists('public_asset')) {
     }
 }
 
+if (!function_exists('public_mix')) {
+    #[Deprecated('use asset() instead')]
+    function public_mix($path, array $parameters = []): string
+    {
+        return public_asset($path, $parameters);
+    }
+}
+
+/**
+ * Wrap a call to url() and append the public folder before it
+ */
+if (!function_exists('public_url')) {
+    #[Deprecated('use url() instead')]
+    function public_url($path, array $parameters = []): string
+    {
+        $path = str_replace('//', '/', $path);
+
+        return url($path, $parameters);
+    }
+}
+
 /*
  * Show a date/time in the proper timezone for a user
  */

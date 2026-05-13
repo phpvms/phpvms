@@ -1,15 +1,18 @@
 <?php
 
-namespace App\Models\Enums;
+namespace App\Enums;
 
+use App\Enums\Concerns\HasSelect;
 use Filament\Support\Contracts\HasLabel;
 
-enum NavigationGroup implements HasLabel
+enum NavigationGroup: string implements HasLabel
 {
-    case Config;
-    case Operations;
-    case Modules;
-    case Developers;
+    use HasSelect;
+
+    case Config = 'Config';
+    case Operations = 'Operations';
+    case Modules = 'Modules';
+    case Developers = 'Developers';
 
     public function getLabel(): string
     {

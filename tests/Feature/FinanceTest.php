@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\ExpenseType;
+use App\Enums\FlightType;
+use App\Enums\PirepSource;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\ExpenseType;
-use App\Models\Enums\FlightType;
-use App\Models\Enums\PirepSource;
 use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;

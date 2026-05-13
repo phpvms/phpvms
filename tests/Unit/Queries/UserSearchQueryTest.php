@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Enums\UserState;
 use App\Http\Requests\SearchUsersRequest;
 use App\Models\Airline;
-use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Queries\UserSearchQuery;
 use Illuminate\Database\Eloquent\Builder;

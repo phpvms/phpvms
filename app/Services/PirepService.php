@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\AcarsType;
+use App\Enums\AircraftState;
+use App\Enums\FlightType;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
+use App\Enums\PirepStatus;
 use App\Events\PirepAccepted;
 use App\Events\PirepCancelled;
 use App\Events\PirepFiled;
@@ -23,12 +29,6 @@ use App\Exceptions\UserNotAtAirport;
 use App\Models\Acars;
 use App\Models\Aircraft;
 use App\Models\Airport;
-use App\Models\Enums\AcarsType;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\FlightType;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
-use App\Models\Enums\PirepStatus;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
@@ -468,7 +468,7 @@ class PirepService extends Service
     public function cancel(Pirep $pirep): Pirep
     {
         if (in_array($pirep->state, Pirep::$cancel_states, true)) {
-            Log::info('PIREP '.$pirep->id." can't be cancelled, state=".$pirep->state);
+            Log::info('PIREP '.$pirep->id." can't be cancelled, state=".$pirep->state->value);
 
             throw new PirepCancelNotAllowed($pirep);
         }
@@ -548,9 +548,9 @@ class PirepService extends Service
     /**
      * @throws Exception
      */
-    public function changeState(Pirep $pirep, int $new_state): Pirep
+    public function changeState(Pirep $pirep, PirepState $new_state): Pirep
     {
-        Log::info('PIREP '.$pirep->id.' state change from '.$pirep->state.' to '.$new_state);
+        Log::info('PIREP '.$pirep->id.' state change from '.$pirep->state->value.' to '.$new_state->value);
 
         if ($pirep->state === $new_state) {
             return $pirep;

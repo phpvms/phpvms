@@ -2,6 +2,8 @@
 
 namespace App\Listeners;
 
+use App\Enums\PirepStatus;
+use App\Enums\UserState;
 use App\Events\AwardAwarded;
 use App\Events\NewsAdded;
 use App\Events\NewsUpdated;
@@ -12,8 +14,6 @@ use App\Events\PirepRejected;
 use App\Events\PirepStatusChange;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
-use App\Models\Enums\PirepStatus;
-use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Notifications\Messages;
 use App\Notifications\Messages\AdminUserRegistered;
@@ -104,7 +104,7 @@ class NotificationsSubscriber
 
         Log::info('NotificationEvents::onUserRegister: '
             .$user->ident.' is '
-            .UserState::label($user->state).', sending active email');
+            .$user->state->getLabel().', sending active email');
 
         /*
          * Send the user a confirmation email
@@ -131,7 +131,7 @@ class NotificationsSubscriber
      */
     public function handleUserStateChanged(UserStateChanged $event): void
     {
-        Log::info('NotificationEvents::onUserStateChange: New user state='.$event->user->state);
+        Log::info('NotificationEvents::onUserStateChange: New user state='.$event->user->state->value);
 
         if ($event->old_state === UserState::PENDING) {
             if ($event->user->state === UserState::ACTIVE) {

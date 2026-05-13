@@ -1,11 +1,10 @@
 <?php
 
 use App\Cron\Nightly\SetActiveFlights;
+use App\Enums\NavaidType;
 use App\Events\CronNightly;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\Days;
-use App\Models\Enums\NavaidType;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Rank;
@@ -14,6 +13,7 @@ use App\Models\User;
 use App\Services\AirportService;
 use App\Services\FleetService;
 use App\Services\FlightService;
+use App\Support\Days;
 use Carbon\Carbon;
 
 test('duplicate flight', function (): void {
@@ -183,8 +183,8 @@ test('flight route', function (): void {
     $first_point = $body['data'][0];
     expect($route[0]->id)->toEqual($first_point['id'])
         ->and($route[0]->name)->toEqual($first_point['name'])
-        ->and($route[0]->type)->toEqual($first_point['type']['type'])
-        ->and(NavaidType::label($route[0]->type))->toEqual($first_point['type']['name']);
+        ->and($route[0]->type)->toEqual(NavaidType::from($first_point['type']['type']))
+        ->and($route[0]->type->getLabel())->toEqual($first_point['type']['name']);
 });
 
 test('find all flights', function (): void {

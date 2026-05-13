@@ -27,8 +27,8 @@
                                         @endif
                                     </span>
                                 </div>
-                                <div><span class="badge bg-secondary">{{ $flight->flight_type }}&nbsp;<span
-                                            class="d-none d-sm-inline">({{ \App\Models\Enums\FlightType::label($flight->flight_type) }})</span></span>
+                                <div><span class="badge bg-secondary">{{ $flight->flight_type->value }}&nbsp;<span
+                                            class="d-none d-sm-inline">({{ $flight->flight_type->getLabel() }})</span></span>
                                 </div>
                             </div>
                             <div class="my-2 d-flex flex-row justify-content-between">

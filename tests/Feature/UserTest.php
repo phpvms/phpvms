@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\UserState;
 use App\Events\ProfileUpdated;
 use App\Exceptions\PilotIdNotFound;
 use App\Exceptions\UserPilotIdExists;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\UserState;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Pirep;
@@ -389,7 +389,6 @@ test('user leave', function (): void {
     updateSetting('pilots.auto_leave_days', 1);
     $user = User::factory()->create([
         'state'      => UserState::ACTIVE,
-        'status'     => UserState::ACTIVE,
         'created_at' => Carbon::now('UTC')->subDays(5),
     ]);
 

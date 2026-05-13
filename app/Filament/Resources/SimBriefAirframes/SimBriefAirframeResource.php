@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\SimBriefAirframes;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\SimBriefAirframes\Pages\ManageSimBriefAirframes;
 use App\Filament\Resources\SimBriefAirframes\Schemas\SimBriefAirframeForm;
 use App\Filament\Resources\SimBriefAirframes\Tables\SimBriefAirframesTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\SimBriefAirframe;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

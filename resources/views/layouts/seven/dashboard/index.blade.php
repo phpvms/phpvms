@@ -4,7 +4,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-8">
-            @if (Auth::user()->state === \App\Models\Enums\UserState::ON_LEAVE)
+            @if (Auth::user()->state === UserState::ON_LEAVE)
                 <div class="row">
                     <div class="col-12">
                         <div class="alert alert-warning" role="alert">

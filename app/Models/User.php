@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Enums\JournalType;
-use App\Models\Enums\UserState;
+use App\Enums\JournalType;
+use App\Enums\UserState;
 use App\Observers\UserObserver;
 use App\Traits\JournalTrait;
 use BezhanSalleh\FilamentShield\Support\Utils;
@@ -36,46 +36,46 @@ use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
- * @property int         $id
- * @property int|null    $pilot_id
- * @property string|null $callsign
- * @property string|null $name
- * @property string      $email
- * @property string      $password
- * @property string|null $api_key
- * @property int         $airline_id
- * @property int|null    $rank_id
- * @property string      $discord_id
- * @property string      $discord_private_channel_id
- * @property string      $vatsim_id
- * @property string      $ivao_id
- * @property ?string     $simbrief_username
- * @property string|null $country
- * @property string|null $home_airport_id
- * @property string|null $curr_airport_id
- * @property string|null $last_pirep_id
- * @property int         $flights
- * @property int|null    $flight_time
- * @property int|null    $transfer_time
- * @property File|null   $avatar
- * @property string|null $timezone
- * @property int|null    $status
- * @property int|null    $state
- * @property bool|null   $toc_accepted
- * @property bool|null   $opt_in
- * @property int|null    $active
- * @property string|null $last_ip
- * @property Carbon|null $lastlogin_at
- * @property string|null $remember_token
- * @property string|null $notes
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property Carbon|null $email_verified_at
+ * @property int            $id
+ * @property int|null       $pilot_id
+ * @property string|null    $callsign
+ * @property string|null    $name
+ * @property string         $email
+ * @property string         $password
+ * @property string|null    $api_key
+ * @property int            $airline_id
+ * @property int|null       $rank_id
+ * @property string         $discord_id
+ * @property string         $discord_private_channel_id
+ * @property string         $vatsim_id
+ * @property string         $ivao_id
+ * @property string|null    $country
+ * @property string|null    $home_airport_id
+ * @property string|null    $curr_airport_id
+ * @property string|null    $last_pirep_id
+ * @property int            $flights
+ * @property int|null       $flight_time
+ * @property int|null       $transfer_time
+ * @property File|null      $avatar
+ * @property string|null    $timezone
+ * @property int|null       $status
+ * @property UserState|null $state
+ * @property bool|null      $toc_accepted
+ * @property bool|null      $opt_in
+ * @property int|null       $active
+ * @property string|null    $last_ip
+ * @property Carbon|null    $lastlogin_at
+ * @property string|null    $remember_token
+ * @property string|null    $notes
+ * @property Carbon|null    $created_at
+ * @property Carbon|null    $updated_at
+ * @property Carbon|null    $deleted_at
+ * @property Carbon|null    $email_verified_at
+ * @property string|null    $simbrief_username
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Airline|null $airline
- * @property-read mixed $atc
+ * @property-read string $atc
  * @property-read Collection<int, Award> $awards
  * @property-read int|null $awards_count
  * @property-read Collection<int, Bid> $bids
@@ -84,11 +84,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, UserFieldValue> $fields
  * @property-read int|null $fields_count
  * @property-read Airport|null $home_airport
- * @property-read mixed $ident
+ * @property-read string $ident
  * @property-read Journal|null $journal
  * @property-read Pirep|null $last_pirep
  * @property-read Airport|null $location
- * @property-read mixed $name_private
+ * @property-read string $name_private
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read Collection<int, UserOAuthToken> $oauth_tokens
@@ -100,18 +100,26 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Rank|null $rank
  * @property-read Collection<int, Role> $roles
  * @property-read int|null $roles_count
+ * @property-read Collection<int, Permission> $teams
+ * @property-read int|null $teams_count
  * @property-read Collection<int, Typerating> $typeratings
  * @property-read int|null $typeratings_count
  * @property mixed $tz
  *
+ * @method static Builder<static>|User            active()
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static Builder<static>|User            forAirline(int $airlineId)
+ * @method static Builder<static>|User            inState(int $state)
  * @method static Builder<static>|User            newModelQuery()
  * @method static Builder<static>|User            newQuery()
+ * @method static Builder<static>|User            notRejected()
  * @method static Builder<static>|User            onlyTrashed()
- * @method static Builder<static>|User            permission($permissions, $without = false)
+ * @method static Builder<static>|User            pending()
+ * @method static Builder<static>|User            permission($permissions, bool $without = false)
  * @method static Builder<static>|User            query()
- * @method static Builder<static>|User            role($roles, $guard = null, $without = false)
+ * @method static Builder<static>|User            role($roles, ?string $guard = null, bool $without = false)
  * @method static Builder<static>|User            sortable($defaultParameters = null)
+ * @method static Builder<static>|User            team($teams, bool $without = false)
  * @method static Builder<static>|User            whereActive($value)
  * @method static Builder<static>|User            whereAirlineId($value)
  * @method static Builder<static>|User            whereApiKey($value)
@@ -140,6 +148,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            wherePilotId($value)
  * @method static Builder<static>|User            whereRankId($value)
  * @method static Builder<static>|User            whereRememberToken($value)
+ * @method static Builder<static>|User            whereSimbriefUsername($value)
  * @method static Builder<static>|User            whereState($value)
  * @method static Builder<static>|User            whereStatus($value)
  * @method static Builder<static>|User            whereTimezone($value)
@@ -149,19 +158,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|User            whereVatsimId($value)
  * @method static Builder<static>|User            withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|User            withoutPermission($permissions)
- * @method static Builder<static>|User            withoutRole($roles, $guard = null)
+ * @method static Builder<static>|User            withoutRole($roles, ?string $guard = null)
+ * @method static Builder<static>|User            withoutTeam($teams)
  * @method static Builder<static>|User            withoutTrashed()
- *
- * @property-read Collection<int, Permission> $teams
- * @property-read int|null $teams_count
- *
- * @method static Builder<static>|User active()
- * @method static Builder<static>|User forAirline(int $airlineId)
- * @method static Builder<static>|User inState(int $state)
- * @method static Builder<static>|User notRejected()
- * @method static Builder<static>|User pending()
- * @method static Builder<static>|User team($teams, bool $without = false)
- * @method static Builder<static>|User withoutTeam($teams)
  *
  * @mixin \Eloquent
  */
@@ -532,7 +531,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             'flight_time'       => 'integer',
             'transfer_time'     => 'integer',
             'balance'           => 'double',
-            'state'             => 'integer',
+            'state'             => UserState::class,
             'status'            => 'integer',
             'toc_accepted'      => 'boolean',
             'opt_in'            => 'boolean',

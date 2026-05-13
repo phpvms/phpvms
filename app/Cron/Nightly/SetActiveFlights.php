@@ -4,8 +4,8 @@ namespace App\Cron\Nightly;
 
 use App\Contracts\Listener;
 use App\Events\CronNightly;
-use App\Models\Enums\Days;
 use App\Models\Flight;
+use App\Support\Days;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 

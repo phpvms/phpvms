@@ -3,20 +3,21 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\FareType;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int         $id
- * @property string      $pirep_id
- * @property int|null    $fare_id
- * @property int|null    $count
- * @property string|null $code
- * @property string|null $name
- * @property float|null  $price
- * @property float|null  $cost
- * @property int|null    $capacity
- * @property int|null    $type
- * @property string|null $deleted_at
+ * @property int           $id
+ * @property string        $pirep_id
+ * @property int|null      $fare_id
+ * @property int|null      $count
+ * @property string|null   $code
+ * @property string|null   $name
+ * @property float|null    $price
+ * @property float|null    $cost
+ * @property int|null      $capacity
+ * @property FareType|null $type
+ * @property string|null   $deleted_at
  * @property-read Fare|null $fare
  * @property-read Pirep|null $pirep
  *
@@ -80,7 +81,7 @@ class PirepFare extends Model
             'price'    => 'float',
             'cost'     => 'float',
             'capacity' => 'integer',
-            'type'     => 'integer',
+            'type'     => FareType::class,
         ];
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
 // use Swagger\Serializer;
+use App\Enums\UserState;
 use App\Http\Resources\AirlineResource;
 use App\Http\Resources\AirportResource;
 use App\Http\Resources\NewsResource;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Airport;
-use App\Models\Enums\UserState;
 use App\Models\Fare;
 use App\Models\News;
 use App\Models\Subfleet;

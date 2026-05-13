@@ -2,10 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\ModuleLinksPlugin;
-use App\Models\Enums\NavigationGroup as EnumsNavigationGroup;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;

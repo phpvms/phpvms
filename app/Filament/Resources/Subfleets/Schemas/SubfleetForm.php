@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Subfleets\Schemas;
 
+use App\Enums\FuelType;
 use App\Models\Airport;
-use App\Models\Enums\FuelType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -50,7 +50,7 @@ class SubfleetForm
 
                         Select::make('fuel_type')
                             ->label(__('common.fuel_type'))
-                            ->options(FuelType::labels())
+                            ->options(FuelType::class)
                             ->searchable()
                             ->native(false),
 

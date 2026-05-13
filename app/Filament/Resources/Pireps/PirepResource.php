@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Pireps;
 
+use App\Enums\NavigationGroup;
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\EditPirep;
 use App\Filament\Resources\Pireps\Pages\ListPireps;
 use App\Filament\Resources\Pireps\RelationManagers\CommentsRelationManager;
@@ -11,8 +13,6 @@ use App\Filament\Resources\Pireps\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\Pireps\Schemas\PirepForm;
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
 use App\Filament\Resources\Pireps\Widgets\PirepStats;
-use App\Models\Enums\NavigationGroup;
-use App\Models\Enums\PirepState;
 use App\Models\Pirep;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

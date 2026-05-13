@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Pages\Tables;
 
-use App\Models\Enums\PageType;
+use App\Enums\PageType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -27,7 +27,7 @@ class PagesTable
                 TextColumn::make('type')
                     ->label(__('common.type'))
                     ->sortable()
-                    ->formatStateUsing(fn (int $state): string => PageType::label($state)),
+                    ->badge(),
 
                 IconColumn::make('public')
                     ->label(__('common.public'))
@@ -41,7 +41,7 @@ class PagesTable
             ->filters([
                 SelectFilter::make('type')
                     ->label(__('common.type'))
-                    ->options(PageType::labels()),
+                    ->options(PageType::class),
             ])
             ->recordActions([
                 EditAction::make(),

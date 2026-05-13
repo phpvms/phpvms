@@ -17,21 +17,21 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int         $id
- * @property string      $name
- * @property string|null $image_url
- * @property int         $hours
- * @property string|null $acars_base_pay_rate
- * @property string|null $manual_base_pay_rate
- * @property bool|null   $auto_approve_acars
- * @property bool|null   $auto_approve_manual
- * @property bool|null   $auto_promote
- * @property int|null    $auto_approve_above_score
- * @property int|null    $auto_approve_score
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property Pivot       $pivot
+ * @property int          $id
+ * @property string       $name
+ * @property string|null  $image_url
+ * @property int          $hours
+ * @property numeric|null $acars_base_pay_rate
+ * @property numeric|null $manual_base_pay_rate
+ * @property bool|null    $auto_approve_acars
+ * @property bool|null    $auto_approve_manual
+ * @property bool|null    $auto_promote
+ * @property int|null     $auto_approve_above_score
+ * @property int|null     $auto_approve_score
+ * @property Carbon|null  $created_at
+ * @property Carbon|null  $updated_at
+ * @property Carbon|null  $deleted_at
+ * @property Pivot        $pivot
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Collection<int, Subfleet> $subfleets

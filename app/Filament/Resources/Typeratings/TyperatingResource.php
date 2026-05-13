@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Typeratings;
 
+use App\Enums\NavigationGroup;
 use App\Filament\Resources\Typeratings\Pages\CreateTyperating;
 use App\Filament\Resources\Typeratings\Pages\EditTyperating;
 use App\Filament\Resources\Typeratings\Pages\ListTyperating;
 use App\Filament\Resources\Typeratings\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\Typeratings\Schemas\TyperatingForm;
 use App\Filament\Resources\Typeratings\Tables\TyperatingsTable;
-use App\Models\Enums\NavigationGroup;
 use App\Models\Typerating;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\UserState;
 use App\Models\Airline;
-use App\Models\Enums\UserState;
 use App\Models\User;
 
 test('User scopes compose with each other', function (): void {

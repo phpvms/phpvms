@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\PirepFieldSource;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,12 +13,12 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property int         $id
- * @property string      $name
- * @property string|null $slug
- * @property string|null $description
- * @property bool|null   $required
- * @property int|null    $pirep_source
+ * @property int                   $id
+ * @property string                $name
+ * @property string|null           $slug
+ * @property string|null           $description
+ * @property bool|null             $required
+ * @property PirepFieldSource|null $pirep_source
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  *
@@ -80,7 +81,8 @@ class PirepField extends Model
     protected function casts(): array
     {
         return [
-            'required' => 'boolean',
+            'required'     => 'boolean',
+            'pirep_source' => PirepFieldSource::class,
         ];
     }
 }

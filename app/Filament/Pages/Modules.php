@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Enums\NavigationGroup;
+use App\Enums\NavigationGroup;
 use App\Services\ModuleService;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;

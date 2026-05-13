@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
+use App\Enums\UserState;
 use App\Exceptions\PilotIdNotFound;
-use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -103,7 +103,7 @@ class LoginController extends Controller
         }
 
         if ($user->state !== UserState::ACTIVE && $user->state !== UserState::ON_LEAVE) {
-            Log::info('Trying to login '.$user->ident.', state '.UserState::label($user->state));
+            Log::info('Trying to login '.$user->ident.', state '.$user->state->getLabel());
 
             // Log them out
             $this->guard()->logout();

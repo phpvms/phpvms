@@ -9,13 +9,14 @@ use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\Expense;
 use App\Models\Subfleet;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Import expenses
  */
 class ExpenseExporter extends ImportExport
 {
-    public $assetType = 'expense';
+    public string $assetType = 'expense';
 
     /**
      * Set the current columns and other setup
@@ -27,39 +28,45 @@ class ExpenseExporter extends ImportExport
 
     /**
      * Import a flight, parse out the different rows
-     *
-     * @param Expense $expense
      */
-    public function export($expense): array
+    public function export(Model $row): array
     {
+        if (!$row instanceof Expense) {
+            throw new \InvalidArgumentException('Expected Expense Model');
+        }
+
         $ret = [];
 
         foreach (self::$columns as $col) {
             if ($col === 'airline') {
-                $ret['airline'] = optional($expense->airline)->icao;
+                $ret['airline'] = $row->airline?->icao;
             } elseif ($col === 'flight_type') {
-                $ret['flight_type'] = implode(',', $expense->flight_type);
+                $ret['flight_type'] = $row->flight_type
+                    ? $row->flight_type->pluck('value')->implode(',')
+                    : null;
+            } elseif ($col === 'type') {
+                $ret['type'] = $row->type->value;
             } else {
-                $ret[$col] = $expense->{$col};
+                $ret[$col] = $row->{$col};
             }
         }
 
         // For the different expense types, instead of exporting
         // the ID, export a specific column
-        if ($expense->ref_model instanceof Expense) {
+        if ($row->ref_model instanceof Expense) {
             $ret['ref_model_type'] = '';
             $ret['ref_model_id'] = '';
         } else {
-            if (!$expense->ref_model) { // bail out
+            if (!$row->ref_model) { // bail out
                 return $ret;
             }
 
-            if ($expense->ref_model instanceof Aircraft) {
-                $ret['ref_model_id'] = $expense->ref_model->registration;
-            } elseif ($expense->ref_model instanceof Airport) {
-                $ret['ref_model_id'] = $expense->ref_model->icao;
-            } elseif ($expense->ref_model instanceof Subfleet) {
-                $ret['ref_model_id'] = $expense->ref_model->type;
+            if ($row->ref_model instanceof Aircraft) {
+                $ret['ref_model_id'] = $row->ref_model->registration;
+            } elseif ($row->ref_model instanceof Airport) {
+                $ret['ref_model_id'] = $row->ref_model->icao;
+            } elseif ($row->ref_model instanceof Subfleet) {
+                $ret['ref_model_id'] = $row->ref_model->type;
             }
         }
 

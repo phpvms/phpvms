@@ -5,7 +5,7 @@
 namespace Database\Factories;
 
 use App\Contracts\Factory;
-use App\Models\Enums\NavaidType;
+use App\Enums\NavaidType;
 use App\Models\Navdata;
 
 /**
@@ -29,10 +29,10 @@ class NavdataFactory extends Factory
     {
         return [
             'id'   => str_replace(' ', '', str_replace('.', '', fake()->unique()->text(5))),
-            'name' => str_replace('.', '', fake()->unique()->word),
+            'name' => str_replace('.', '', fake()->unique()->word()),
             'type' => fake()->randomElement([NavaidType::VOR, NavaidType::NDB]),
-            'lat'  => fake()->latitude,
-            'lon'  => fake()->longitude,
+            'lat'  => fake()->latitude(),
+            'lon'  => fake()->longitude(),
             'freq' => fake()->randomFloat(2, 100, 1000),
         ];
     }

@@ -5,28 +5,27 @@ declare(strict_types=1);
 namespace App\Services\ImportExport;
 
 use App\Contracts\ImportExport;
+use App\Enums\AircraftState;
+use App\Enums\AircraftStatus;
 use App\Models\Aircraft;
 use App\Models\Airline;
-use App\Models\Enums\AircraftState;
-use App\Models\Enums\AircraftStatus;
 use App\Models\Subfleet;
 use App\Support\ICAO;
 use App\Support\Units\Mass;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Import aircraft
  */
 class AircraftImporter extends ImportExport
 {
-    public $assetType = 'aircraft';
+    public string $assetType = 'aircraft';
 
     /**
      * All of the columns that are in the CSV import
      * Should match the database fields, for the most part
      */
-    public static $columns = [
+    public static array $columns = [
         'subfleet'      => 'required',
         'iata'          => 'nullable',
         'icao'          => 'nullable',
@@ -48,11 +47,8 @@ class AircraftImporter extends ImportExport
     /**
      * Find the subfleet specified, or just create it on the fly and attach it to the
      * first airline that's been found
-     *
-     *
-     * @return Subfleet|Model|null|object|static
      */
-    protected function getSubfleet($type)
+    protected function getSubfleet(string $type): Subfleet
     {
         return Subfleet::firstOrCreate([
             'type' => $type,
@@ -65,11 +61,9 @@ class AircraftImporter extends ImportExport
     /**
      * Import an aircraft, parse out the different rows
      *
-     * @param int $index
-     *
      * @throws Exception
      */
-    public function import(array $row, $index): bool
+    public function import(array $row, int $index): bool
     {
         $subfleet = $this->getSubfleet($row['subfleet']);
         $row['subfleet_id'] = $subfleet->id;
@@ -94,10 +88,10 @@ class AircraftImporter extends ImportExport
         $row['selcal'] = blank($row['selcal']) ? null : $row['selcal'];
         $row['simbrief_type'] = blank($row['simbrief_type']) ? null : $row['simbrief_type'];
         // Set the correct mass units
-        $row['dow'] = $this->CorrectMassUnit($row['dow']);
-        $row['zfw'] = $this->CorrectMassUnit($row['zfw']);
-        $row['mtow'] = $this->CorrectMassUnit($row['mtow']);
-        $row['mlw'] = $this->CorrectMassUnit($row['mlw']);
+        $row['dow'] = $this->CorrectMassUnit((float) $row['dow']);
+        $row['zfw'] = $this->CorrectMassUnit((float) $row['zfw']);
+        $row['mtow'] = $this->CorrectMassUnit((float) $row['mtow']);
+        $row['mlw'] = $this->CorrectMassUnit((float) $row['mlw']);
 
         // Try to add or update
         try {
@@ -115,10 +109,10 @@ class AircraftImporter extends ImportExport
         return true;
     }
 
-    public function CorrectMassUnit($value): ?Mass
+    public function CorrectMassUnit(float $value): ?Mass
     {
         if ($value > 0) {
-            return Mass::make((float) $value, setting('units.weight'));
+            return Mass::make($value, setting('units.weight'));
         }
 
         return null;

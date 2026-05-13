@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Contracts\Controller;
+use App\Enums\PirepFieldSource;
+use App\Enums\PirepSource;
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Requests\UpdatePirepRequest;
 use App\Models\Aircraft;
 use App\Models\Airline;
-use App\Models\Enums\PirepFieldSource;
-use App\Models\Enums\PirepSource;
-use App\Models\Enums\PirepState;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Pirep;

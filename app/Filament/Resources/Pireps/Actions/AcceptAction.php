@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Pireps\Actions;
 
-use App\Models\Enums\PirepState;
+use App\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
 use Filament\Actions\Action;
