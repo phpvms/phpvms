@@ -1,84 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App;
-use App\Contracts\Command;
-use App\Services\Installer\ConfigService;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Illuminate\Console\Command;
+use Symfony\Component\Console\Attribute\AsCommand;
 
-/**
- * Create a fresh development install
- */
+use function Laravel\Prompts\confirm;
+
+#[AsCommand(name: 'phpvms:dev-install', description: 'Create a fresh development install and run the sample migration')]
 class DevInstall extends Command
 {
-    protected $signature = 'phpvms:dev-install {--reset-db} {--reset-configs}';
-
-    protected $description = 'Run a developer install and run the sample migration';
+    /**
+     * The console command signature.
+     */
+    protected $signature = 'phpvms:dev-install 
+                            {--reset-db : Completely drop and recreate the database}
+                            {--force : Force the operation to run without prompts}';
 
     /**
-     * Run dev related commands
-     *
-     * @throws FileException
+     * Execute the console command.
      */
-    public function handle(): void
+    public function handle(): int
     {
-        if ($this->option('reset-configs')) {
-            $this->rewriteConfigs();
+        if (app()->isProduction() && !$this->option('force')) {
+            $confirmed = confirm(
+                label: 'You are in a PRODUCTION environment! This will destroy your database. Are you absolutely sure?',
+                default: false,
+                hint: 'Run with --force to bypass this prompt.'
+            );
+
+            if (!$confirmed) {
+                $this->components->warn('Developer installation cancelled.');
+
+                return self::FAILURE;
+            }
         }
 
-        // Reload the configuration
-        App::boot();
+        app()->boot();
 
-        $this->info('Recreating database');
-        $this->call('database:create', [
-            '--reset' => true,
+        $this->components->info('Starting phpVMS Developer Installation...');
+
+        // We pass `--force` to the inner command so it doesn't prompt the user a second time
+        $this->components->info('Step 1: Setting up the database');
+        $this->call('db:create', [
+            '--reset' => $this->option('reset-db'),
+            '--force' => true,
         ]);
 
-        $this->info('Running migrations');
+        $this->components->info('Step 2: Running migrations and seeders');
         $this->call('migrate:fresh', [
-            '--seed' => true,
+            '--seed'  => true,
+            '--force' => true,
         ]);
 
-        $this->info('Done!');
-    }
+        $this->components->info('Developer installation completed successfully!');
 
-    /**
-     * Rewrite the configuration files
-     *
-     * @throws FileException
-     */
-    protected function rewriteConfigs()
-    {
-        /** @var ConfigService $cfgSvc */
-        $cfgSvc = app(ConfigService::class);
-
-        $this->info('Removing the old config files');
-
-        // Remove the old files
-        $config_file = base_path('config.php');
-        if (file_exists($config_file)) {
-            unlink($config_file);
-        }
-
-        $env_file = base_path('.env');
-        if (file_exists($env_file)) {
-            unlink($env_file);
-        }
-
-        $this->info('Removing the sqlite db');
-        $db_file = storage_path('db.sqlite');
-        if (file_exists($db_file)) {
-            unlink($db_file);
-        }
-
-        $this->info('Regenerating the config files');
-        $cfgSvc->createConfigFiles([
-            'APP_ENV'       => 'dev',
-            'SITE_NAME'     => 'phpvms test',
-            'DB_CONNECTION' => 'sqlite',
-        ]);
-
-        $this->info('Config files generated!');
+        return self::SUCCESS;
     }
 }

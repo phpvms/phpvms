@@ -13,10 +13,7 @@ all: install
 
 .PHONY: clean
 clean:
-	@php artisan cache:clear
-	@php artisan route:clear
-	@php artisan config:clear
-	@php artisan view:clear
+	@php artisan optimize:clear
 	@find bootstrap/cache -type f -not -name '.gitignore' -print0 | xargs -0 rm -rf
 
 	@find storage/framework/cache/ -mindepth 1 -type f -not -name '.gitignore' -print0 | xargs -0 rm -rf
@@ -31,10 +28,7 @@ clean-routes:
 
 .PHONY: clear
 clear:
-	@php artisan cache:clear
-	@php artisan config:clear
-	@php artisan route:clear
-	@php artisan view:clear
+	@php artisan optimize:clear
 
 .PHONY:  build
 build:
@@ -43,11 +37,11 @@ build:
 # This is to build all the stylesheets, etc
 .PHONY: build-assets
 build-assets:
-	npm run production
+	npm run build
 
 .PHONY: install
 install: build
-	@php artisan database:create
+	@php artisan db:create
 	@php artisan migrate --seed
 	@echo "Done!"
 
@@ -65,7 +59,7 @@ reset: clean
 
 .PHONY: reload-db
 reload-db:
-	@php artisan database:create --reset
+	@php artisan db:create --reset
 	@php artisan migrate --seed
 	@echo "Done!"
 	@make clean
@@ -75,29 +69,16 @@ tests: test
 
 .PHONY: test
 test:
-	@#php artisan database:create --reset
-	@vendor/bin/phpunit
+	@#php artisan db:create --reset
+	@php artisan test -p
 
-.PHONY: phpcs
-phpcs:
-	@PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php -v --dry-run --diff --using-cache=no
-
-.PHONY: replay-acars
-replay-acars:
-	#@php artisan phpvms:replay AAL10,AAL3113,BAW172,DAL988,FIN6,MSR986 --manual
-	@php artisan phpvms:replay ASH6028 --manual
-
-.PHONY: sass-watch
-sass-watch:
-	sass --watch public/assets/admin/sass/paper-dashboard.scss:public/assets/admin/css/paper-dashboard.css
-
-.PHONY: deploy-package
-deploy-package:
-	./.travis/deploy_script.sh
+.PHONY: pint
+pint:
+	@vendor/bin/pint --parallel
 
 .PHONY: reset-installer
 reset-installer:
-	@php artisan database:create --reset
+	@php artisan db:create --reset
 	@php artisan migrate:refresh --seed
 
 .PHONY: docker-test
@@ -114,5 +95,4 @@ docker-test:
 docker-clean:
 	-docker stop phpvms
 	-docker rm -rf phpvms
-	-rm core/local.config.php
 	-rm -rf tmp/mysql

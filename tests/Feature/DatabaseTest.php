@@ -1,13 +1,16 @@
 <?php
 
-use App\Support\Database;
+use App\Services\DatabaseService;
 use Symfony\Component\Yaml\Yaml;
 
 test('seeder', function (): void {
     $file = file_get_contents(base_path('tests/data/seed.yml'));
     $yml = Yaml::parse($file);
 
-    Database::seed_from_yaml($yml);
+    $databaseSvc = app(DatabaseService::class);
+
+    $databaseSvc->seedFromYaml($yml);
+
     $value = setting('test.setting');
     expect($value)->toEqual('default');
 
@@ -15,13 +18,13 @@ test('seeder', function (): void {
     $yml['settings']['data'][0]['value'] = 'changed';
 
     // The value shouldn't change here
-    Database::seed_from_yaml($yml);
+    $databaseSvc->seedFromYaml($yml);
     $value = setting('test.setting');
     expect($value)->toEqual('default');
 
     // Now the value should change
     $yml['settings']['ignore_on_update'] = [];
-    Database::seed_from_yaml($yml);
+    $databaseSvc->seedFromYaml($yml);
     $value = setting('test.setting');
     expect($value)->toEqual('changed');
 });
@@ -30,7 +33,10 @@ test('seeder value ignore value', function (): void {
     $file = file_get_contents(base_path('tests/data/seed.yml'));
     $yml = Yaml::parse($file);
 
-    Database::seed_from_yaml($yml);
+    $databaseSvc = app(DatabaseService::class);
+
+    $databaseSvc->seedFromYaml($yml);
+
     $value = setting('test.setting');
     expect($value)->toEqual('default');
 
@@ -38,7 +44,7 @@ test('seeder value ignore value', function (): void {
     $yml['settings']['data'][0]['value'] = 'changed';
 
     // The value shouldn't change here
-    Database::seed_from_yaml($yml);
+    $databaseSvc->seedFromYaml($yml);
     $value = setting('test.setting');
     expect($value)->toEqual('default');
 });
@@ -49,7 +55,10 @@ test('seeder dont ignore value', function (): void {
 
     $yml['settings']['ignore_on_update'] = [];
 
-    Database::seed_from_yaml($yml);
+    $databaseSvc = app(DatabaseService::class);
+
+    $databaseSvc->seedFromYaml($yml);
+
     $value = setting('test.setting');
     expect($value)->toEqual('default');
 
@@ -57,7 +66,7 @@ test('seeder dont ignore value', function (): void {
     $yml['settings']['data'][0]['value'] = 'changed';
 
     // Now the value should change
-    Database::seed_from_yaml($yml);
+    $databaseSvc->seedFromYaml($yml);
     $value = setting('test.setting');
     expect($value)->toEqual('changed');
 });

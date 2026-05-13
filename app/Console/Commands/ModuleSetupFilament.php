@@ -4,139 +4,171 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\Concerns\PromptsForMissingInput;
-use Illuminate\Filesystem\Filesystem;
+use Illuminate\Contracts\Console\PromptsForMissingInput as PromptsForMissingInputContract;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Nwidart\Modules\Module;
+use Symfony\Component\Console\Attribute\AsCommand;
 
-class ModuleSetupFilament extends Command implements \Illuminate\Contracts\Console\PromptsForMissingInput
+#[AsCommand(name: 'module:setup-filament', description: 'Add Filament Support to a Module')]
+class ModuleSetupFilament extends Command implements PromptsForMissingInputContract
 {
     use PromptsForMissingInput;
 
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
+     * The console command signature.
      */
-    protected $signature = 'module:setup-filament {module}';
+    protected $signature = 'module:setup-filament {module : The name of the module}';
+
+    protected string $basePath = 'Providers/Filament';
+
+    protected string $className = 'AdminPanelProvider';
+
+    protected string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
 
     /**
-     * The console command description.
-     *
-     * @var string
+     * Execute the console command.
      */
-    protected $description = 'Add Filament Support to a Module';
-
-    protected ?Module $module = null;
-
-    private string $basePath = 'Providers/Filament';
-
-    private string $className = 'AdminPanelProvider';
-
-    private string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
-
-    public function handle(): void
+    public function handle(): int
     {
         $moduleName = $this->argument('module');
-        $this->module = app('modules')->find($moduleName);
 
-        if (!$this->module instanceof Module) {
-            $this->fail(sprintf("Module %s not found, are you sure it's installed and enabled?", $moduleName));
+        /** @var Module|null $module */
+        $module = app('modules')->find($moduleName);
+
+        if (!$module) {
+            $this->components->error(sprintf("Module [%s] not found. Are you sure it's installed and enabled?", $moduleName));
+
+            return self::FAILURE;
         }
 
-        // The provider file path
-        $path = str($this->module->getExtraPath(sprintf('%s/%s', $this->basePath, $this->className)))
+        $this->components->info('Setting up Filament for module: '.$module->getName());
+
+        $providerPath = str($module->getExtraPath(sprintf('%s/%s', $this->basePath, $this->className)))
             ->replace('\\', '/')
-            ->append('.php')->toString();
+            ->append('.php')
+            ->toString();
 
         $namespace = Str::of($this->basePath)
             ->replace('/', '\\')
             ->prepend('\\')
-            ->prepend($this->getModuleNamespace());
+            ->prepend($this->getModuleNamespace($module))
+            ->toString();
 
-        $this->copyPanelStubToApp($path, [
-            'STUDLY_NAME'      => $this->module->getStudlyName(),
-            'LOWER_NAME'       => $this->module->getLowerName(),
-            'MODULE_NAMESPACE' => $this->laravel['modules']->config('namespace'),
-        ]);
+        $providerClass = sprintf('%s\%s', $namespace, $this->className);
 
-        $this->info(sprintf('The %s has been created at %s', $this->className, $path));
+        // Step 1: Scaffold the Provider
+        $stubSuccess = false;
 
-        $this->info(sprintf('Adding %s to module.json and composer.json', $this->className));
+        $this->components->task('Creating Admin Panel Provider', function () use ($module, $providerPath, &$stubSuccess): bool {
+            $stubSuccess = $this->copyPanelStubToApp($module, $providerPath);
 
-        $provider = sprintf('%s\%s', $namespace, $this->className);
+            // Return the boolean so the task component shows a Green Check or Red X
+            return $stubSuccess;
+        });
 
-        $moduleJson = json_decode($this->readFile(module_path($this->module->getName(), 'module.json')), true);
-        $providers = collect($moduleJson['providers']);
-
-        if (!$providers->contains($provider)) {
-            $moduleJson['providers'][] = $provider;
-            $this->writeFile(module_path($this->module->getName(), 'module.json'), json_encode($moduleJson, JSON_PRETTY_PRINT));
+        if (!$stubSuccess) {
+            return self::FAILURE;
         }
 
-        $composerJson = json_decode($this->readFile(module_path($this->module->getName(), 'composer.json')), true);
-        $providers = collect($composerJson['extra']['laravel']['providers']);
+        // Step 2: Register in module.json
+        $this->components->task('Registering provider in module.json', function () use ($module, $providerClass): void {
+            $this->updateJsonArray(
+                module_path($module->getName(), 'module.json'),
+                'providers',
+                $providerClass
+            );
+        });
 
-        if (!$providers->contains($provider)) {
-            $composerJson['extra']['laravel']['providers'][] = $provider;
-            $this->writeFile(module_path($this->module->getName(), 'composer.json'), json_encode($composerJson, JSON_PRETTY_PRINT));
-        }
+        // Step 3: Register in composer.json
+        $this->components->task('Registering provider in composer.json', function () use ($module, $providerClass): void {
+            $this->updateComposerJson($module, $providerClass);
+        });
 
-        $this->info(sprintf('Module %s is now ready for Filament!', $this->module->getName()));
+        $this->components->info(sprintf('Module [%s] is now ready for Filament!', $module->getName()));
+
+        return self::SUCCESS;
     }
 
-    protected function copyPanelStubToApp(string $targetPath, ?array $replacements = []): void
+    /**
+     * Copy the stub file and replace placeholders.
+     */
+    protected function copyPanelStubToApp(Module $module, string $targetPath): bool
     {
-        $filesystem = app(Filesystem::class);
-
         $panelStubPath = base_path($this->panelStub);
 
-        if (!$this->fileExists($panelStubPath)) {
-            $this->fail('The panel stub file does not exist at '.$panelStubPath);
+        if (!File::exists($panelStubPath)) {
+            $this->components->error(sprintf('The panel stub file does not exist at [%s]', $panelStubPath));
+
+            return false;
         }
 
-        $stub = str($filesystem->get($panelStubPath));
+        $stub = str(File::get($panelStubPath));
+
+        $replacements = [
+            'STUDLY_NAME'      => $module->getStudlyName(),
+            'LOWER_NAME'       => $module->getLowerName(),
+            'MODULE_NAMESPACE' => app('modules')->config('namespace'),
+        ];
 
         foreach ($replacements as $key => $replacement) {
-            $stub = $stub->replace(sprintf('{{ %s }}', $key), $replacement);
-            $stub = $stub->replace('$'.$key.'$', $replacement);
+            $stub = $stub->replace([sprintf('{{ %s }}', $key), '$'.$key.'$'], $replacement);
         }
 
-        $stub = (string) $stub;
+        File::ensureDirectoryExists(dirname($targetPath));
+        File::put($targetPath, (string) $stub);
 
-        $this->writeFile($targetPath, $stub);
+        return true;
     }
 
-    protected function fileExists(string $path): bool
+    /**
+     * Helper to safely append a value to a JSON file array (like module.json).
+     */
+    protected function updateJsonArray(string $path, string $key, string $value): void
     {
-        $filesystem = app(Filesystem::class);
-
-        return $filesystem->exists($path);
-    }
-
-    protected function readFile(string $path): string
-    {
-        $filesystem = app(Filesystem::class);
-
-        if (!$this->fileExists($path)) {
-            $this->fail('The file does not exist at '.$path);
+        if (!File::exists($path)) {
+            return;
         }
 
-        return $filesystem->get($path);
+        // Casting to array fixes the PHPStan "not nullable" warning
+        // while safely handling empty files.
+        $data = (array) File::json($path);
+        $items = collect($data[$key] ?? []);
+
+        if (!$items->contains($value)) {
+            $data[$key] = $items->push($value)->values()->toArray();
+            File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
     }
 
-    protected function writeFile(string $path, string $contents): void
+    /**
+     * Helper to safely append the provider to the composer.json extra.laravel.providers array.
+     */
+    protected function updateComposerJson(Module $module, string $providerClass): void
     {
-        $filesystem = app(Filesystem::class);
+        $path = module_path($module->getName(), 'composer.json');
 
-        $filesystem->ensureDirectoryExists(
-            pathinfo($path, PATHINFO_DIRNAME),
-        );
+        if (!File::exists($path)) {
+            return;
+        }
 
-        $filesystem->put($path, $contents);
+        // Casting to array fixes the PHPStan "not nullable" warning
+        $data = (array) File::json($path);
+        $providers = collect(data_get($data, 'extra.laravel.providers', []));
+
+        if (!$providers->contains($providerClass)) {
+            $providers->push($providerClass);
+            data_set($data, 'extra.laravel.providers', $providers->values()->toArray());
+
+            File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
     }
 
-    protected function getModuleNamespace(): string
+    /**
+     * Get the root namespace for the module.
+     */
+    protected function getModuleNamespace(Module $module): string
     {
-        return $this->laravel['modules']->config('namespace').'\\'.$this->module->getName();
+        return app('modules')->config('namespace').'\\'.$module->getName();
     }
 }

@@ -148,34 +148,57 @@
     }
   },
   "scripts": {
-    "pre-package-uninstall": [
-      "@php -r \"array_map('unlink', glob('bootstrap/cache/*'));\""
-    ],
-    "post-package-uninstall": [
-      "@php artisan package:discover --ansi",
-      "@php artisan phpvms:caches"
-    ],
-    "pre-autoload-dump": [
-      "@php -r \"array_map('unlink', glob('bootstrap/cache/*'));\""
-    ],
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi",
-      "@php artisan phpvms:caches",
       "@php artisan filament:upgrade",
       ".hooks/setup-git-hooks.sh"
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+      "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
       "@php artisan ide-helper:generate",
       "@php artisan ide-helper:meta",
       "@php artisan vendor:publish --tag=log-viewer-assets --ansi --force"
     ],
-    "pint": "pint --dirty",
-    "test": "phpunit",
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "@php artisan key:generate --ansi",
+      "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+      "@php artisan migrate --ansi"
+    ],
+    "bump:minor": [
+      "composer update && composer bump",
+      "npx npm-check-updates -u -t minor && npm install"
+    ],
+    "lint": "pint --parallel",
+    "refactor": "rector",
+    "test:lint": "pint --test --parallel",
+    "test:refactor": "rector --dry-run",
+    "test:types": "phpstan analyse",
+    "test:arch": "pest --filter=arch",
+    "test:type-coverage": "pest --type-coverage",
+    "test:unit": "pest --parallel --coverage",
+    "test": [
+      "@test:lint",
+      "@test:refactor",
+      "@test:types",
+      "@test:type-coverage",
+      "@test:unit"
+    ],
+    "setup": [
+      "composer install",
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+      "@php artisan key:generate",
+      "@php artisan migrate --force",
+      "npm install --ignore-scripts",
+      "npm run build"
+    ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
     ]
   },
   "config": {
