@@ -114,7 +114,7 @@ class AdminPanelProvider extends PanelProvider
         parent::register();
         // Vite hot reloading (not needed in production)
         if (!app()->isProduction()) {
-            FilamentView::registerRenderHook('panels::body.end', static fn (): string => Blade::render("@vite('resources/js/entrypoint.js')"));
+            FilamentView::registerRenderHook('panels::body.end', static fn (): string => Blade::render("@vite('resources/js/app.js')"));
         }
     }
 }

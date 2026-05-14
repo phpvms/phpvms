@@ -12,20 +12,20 @@
 
     @if ($eyebrow)
         <span
-            class="mb-[18.75px] inline-flex items-center gap-[6px] rounded-full border border-primary-500/25 bg-primary-500/10 px-[9.75px] py-[4.5px] text-[11.7px] font-medium tracking-[0.02em] text-primary-500 dark:text-primary-400"
+            class="mb-[18.75px] inline-flex items-center gap-1.5 rounded-full border border-primary-500/25 bg-primary-500/10 px-[9.75px] py-[4.5px] text-[11.7px] font-medium tracking-[0.02em] text-primary-500 dark:text-primary-400"
         >
             {{ $eyebrow }}
         </span>
     @endif
 
     <h1
-        class="font-display mb-[15px] text-[clamp(30px,4vw,42px)] font-semibold leading-[1.1] tracking-[-0.02em] text-[#1c1e21] dark:text-[#e3e3e3]"
+        class="font-display mb-3.75 text-[clamp(30px,4vw,42px)] font-semibold leading-[1.1] tracking-[-0.02em] text-[#1c1e21] dark:text-[#e3e3e3]"
     >
         {{ $title }}
     </h1>
 
     @if ($subtitle)
-        <p class="mb-[30px] max-w-[640px] font-sans text-[16.5px] leading-[1.55] text-[#606770] dark:text-[#8a8a8a]">
+        <p class="mb-7.5 max-w-160 font-sans text-[16.5px] leading-[1.55] text-[#606770] dark:text-[#8a8a8a]">
             {{ $subtitle }}
         </p>
     @endif

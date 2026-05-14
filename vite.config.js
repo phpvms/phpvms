@@ -10,10 +10,10 @@ export default defineConfig({
     laravel({
       input: [
         "resources/css/filament/admin/theme.css",
-        "resources/js/entrypoint.js",
-        "resources/js/frontend/app.js",
-        "public/assets/global/js/jquery.js",
-        "public/assets/global/js/simbrief.apiv1.js",
+        "resources/js/app.js",
+        // "resources/js/frontend/app.js",
+        // "public/assets/global/js/jquery.js",
+        // "public/assets/global/js/simbrief.apiv1.js",
       ],
       refresh: [...refreshPaths, "app/Filament/**", "modules/**/**"],
     }),
