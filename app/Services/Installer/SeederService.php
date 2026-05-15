@@ -7,10 +7,11 @@ namespace App\Services\Installer;
 use App\Contracts\Service;
 use App\Models\Setting;
 use App\Services\DatabaseService;
+use File;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -20,13 +21,6 @@ class SeederService extends Service
     private array $counters = [];
 
     private array $offsets = [];
-
-    // Map an environment to a seeder directory, if we want to share
-    public static array $seedMapper = [
-        'production'  => 'prod',
-        'dev'         => 'local',
-        'development' => 'local',
-    ];
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
@@ -43,6 +37,8 @@ class SeederService extends Service
     /**
      * Syncronize all the seed files, run this after the migrations
      * and on first install.
+     *
+     * @throws \Exception
      */
     public function syncAllSeeds(): void
     {
@@ -61,18 +57,11 @@ class SeederService extends Service
     {
         Log::info('Running seeder');
         $env = App::environment();
-        if (array_key_exists($env, self::$seedMapper)) {
-            $env = self::$seedMapper[$env];
-        }
 
         // Gather all of the files to seed
-        collect()
-            ->concat(Storage::disk('seeds')->files($env))
-            ->map(fn (string $file): string => database_path('seeders/'.$file))
-            ->filter(function ($file): bool {
-                $info = pathinfo($file);
-
-                return $info['extension'] === 'yml';
+        collect(File::allFiles(database_path('seeders/'.$env)))
+            ->filter(function (SplFileInfo $file): bool {
+                return $file->getExtension() === 'yml';
             })
             ->each(function (string $file): void {
                 Log::info('Seeding .'.$file);

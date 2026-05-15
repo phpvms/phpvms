@@ -29,6 +29,7 @@ use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -265,6 +266,20 @@ class Installer extends Page
         $this->airlineAndUserSetup();
 
         flash()->success(__('installer.install_completed'));
+
+        // Log them in - attempt only wants these properties
+        $user = [
+            'email'    => $this->user['email'],
+            'password' => $this->user['password'],
+        ];
+
+        if (Auth::attempt($user)) {
+            request()->session()->regenerate();
+            $this->redirect('/admin');
+
+            return;
+        }
+
         $this->redirect('/login');
     }
 

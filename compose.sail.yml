@@ -11,8 +11,8 @@ services:
     ports:
       - "${APP_PORT:-80}:80"
       - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
-    env_file:
-      - .env
+    #env_file:
+    #  - .env
     environment:
       WWWUSER: "${WWWUSER}"
       LARAVEL_SAIL: 1

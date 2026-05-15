@@ -26,7 +26,7 @@ class InstalledCheck implements Middleware
     {
         // If we're in the installer, skip this
         // Also skip if this is a livewire update (might be called from the system)
-        if ($request->is('system*') || request()->is('livewire/update')) {
+        if ($request->is('system*') || request()->is('livewire-*/update')) {
             return $next($request);
         }
 
