@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'Haber Bulunamadı',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => 'Yer Hızı',
         'altitude'    => 'İrtifa',
         'heading'     => 'Uçuş Başı',

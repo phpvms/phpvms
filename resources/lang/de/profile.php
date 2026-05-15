@@ -17,7 +17,7 @@ return [
     'updateprofile'   => 'Profil aktualisieren',
     'editprofile'     => 'Profil bearbeiten',
     'edityourprofile' => 'Dein Profil bearbeiten',
-    'transferhours'   => 'Übertragene Stunden',
+    'transfer_hours'  => 'Übertragene Stunden',
     'opt-in'          => 'Opt-In',
     'opt-in-descrip'  => 'Ja, schließe mich bei nicht-administrativen E-Mails ein',
 ];

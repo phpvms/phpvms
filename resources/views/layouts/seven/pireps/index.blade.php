@@ -6,7 +6,7 @@
     <div class="col-md-12">
       <div class="float-end">
         <a class="btn btn-info pull-end"
-           href="{{ route('frontend.pireps.create') }}">@lang('pireps.filenewpirep')</a>
+           href="{{ route('frontend.pireps.create') }}">@lang('pireps.file_new_pirep')</a>
       </div>
       <h2>{{ trans_choice('pireps.pilotreport', 2) }}</h2>
       @include('flash::message')

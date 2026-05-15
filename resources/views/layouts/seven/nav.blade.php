@@ -21,7 +21,7 @@
                 <li class="nav-item d-flex align-items-center">
                     <a class="nav-link  d-flex gap-1" href="{{ route('frontend.livemap.index') }}">
                         <i class="bi bi-globe"></i>
-                        @lang('common.livemap')
+                        @lang('common.live_map')
                     </a>
                 </li>
 
@@ -152,7 +152,7 @@
                         id="bd-theme" type="button" aria-expanded="true" data-bs-toggle="dropdown"
                         data-bs-display="static" aria-label="Toggle theme (light)">
                         <i class="bi-sun-fill" id="theme-icon-active"></i>
-                        <span class="d-lg-none ms-2" id="bd-theme-text">@lang('common.toggleColors')</span>
+                        <span class="d-lg-none ms-2" id="bd-theme-text">@lang('common.toggle_colors')</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text"
                         data-bs-popper="static">

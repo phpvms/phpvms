@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'Keine News gefunden',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => 'Bodengeschwindigkeit',
         'altitude'    => 'Flughöhe',
         'heading'     => 'Kurs',

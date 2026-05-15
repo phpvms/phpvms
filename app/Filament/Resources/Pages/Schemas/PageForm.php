@@ -19,7 +19,7 @@ class PageForm
 
         return $schema
             ->components([
-                Section::make(__('filament.page_informations'))
+                Section::make(__('filament.page_information'))
                     ->schema([
                         Grid::make()
                             ->schema([

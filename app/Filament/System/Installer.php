@@ -7,12 +7,11 @@ use App\Models\User;
 use App\Services\AirlineService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\RequirementsService;
-use App\Services\Installer\SeederService;
 use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\InstallSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -30,13 +29,13 @@ use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property-read FilamentSchema $form
@@ -66,7 +65,6 @@ class Installer extends Page
                 return;
             }
         } catch (QueryException) {
-
         }
 
         $this->form->fill();
@@ -96,8 +94,10 @@ class Installer extends Page
                 $this->getUserAndAirlineSetupStep(),
             ])
                 ->persistStepInQueryString()
-                ->submitAction(new HtmlString(Blade::render(
-                    <<<'BLADE'
+                ->submitAction(
+                    new HtmlString(
+                        Blade::render(
+                            <<<'BLADE'
                     <x-filament::button
                         type="submit"
                         size="sm"
@@ -105,7 +105,9 @@ class Installer extends Page
                         {{ __('installer.complete_setup') }}
                     </x-filament::button>
                 BLADE
-                ))),
+                        )
+                    )
+                ),
         ]);
     }
 
@@ -114,7 +116,6 @@ class Installer extends Page
      */
     private function getRequirementsData(): array
     {
-
         $reqSvc = app(RequirementsService::class);
 
         $php_version = $reqSvc->checkPHPVersion();
@@ -144,7 +145,10 @@ class Installer extends Page
             Log::error('Error while trying to connect to the database', [$exception]);
             $db = [
                 'passed' => false,
-                'msg'    => __('installer.db_connection_failed', ['exception' => $exception->getMessage()]),
+                'msg'    => __(
+                    'installer.db_connection_failed',
+                    ['exception' => $exception->getMessage()]
+                ),
             ];
         }
 
@@ -178,44 +182,32 @@ class Installer extends Page
             ->label(__('installer.update'))
             ->action(function (Entry $component): true {
                 $output = __('installer.starting_migration_process').PHP_EOL;
-                $this->stream(content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL, to: $this->stream);
+                $this->stream(
+                    content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL,
+                    to: $this->stream
+                );
 
-                if (function_exists('proc_open')) {
-                    // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
-                    app(MigrationService::class)
-                        ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
-                            $output .= $buffer;
-                            $this->stream(content: $buffer, to: $this->stream);
-                        });
-                } else {
-                    $output .= app(MigrationService::class)
-                        ->runAllMigrations();
-
-                    $this->stream(content: $output, to: $this->stream);
-                }
-
-                app(SeederService::class)->syncAllSeeds();
-
-                if (function_exists('proc_open')) {
-                    app(StreamedCommandsService::class)->streamArtisanCommand(['db:seed', '--force', '--class='.ShieldSeeder::class], function (string $buffer) use (&$output): void {
+                app(MigrationService::class)
+                    ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
                         $output .= $buffer;
                         $this->stream(content: $buffer, to: $this->stream);
                     });
-                } else {
-                    Artisan::call('db:seed', ['--force' => true, '--class' => ShieldSeeder::class]);
-                    $buffer = Artisan::output();
-                    $output .= $buffer;
-                    $this->stream(content: $buffer, to: $this->stream);
-                }
+
+                $this->stream(content: $output, to: $this->stream);
+
+                app(StreamedCommandsService::class)->streamArtisanCommand(
+                    ['db:seed', '--force', '--class='.InstallSeeder::class],
+                    function (string $buffer) use (&$output): void {
+                        $output .= $buffer;
+                        $this->stream(content: $buffer, to: $this->stream);
+                    }
+                );
 
                 $output .= __('installer.migrations_completed').PHP_EOL;
-                $this->stream(content: __('installer.migrations_completed').PHP_EOL, to: $this->stream);
-
-                // Let's generate a new key if the app is still using the one from the .env.example
-                if (config('app.key') === 'base64:1IcdcyMVAztKFFiqfJOX5w6FkOb9ONnjCA3bdxNbtQ4=' || config('app.key') === 'base64:zdgcDqu9PM8uGWCtMxd74ZqdGJIrnw812oRMmwDF6KY=') {
-                    $output .= __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL;
-                    $this->stream(content: __('installer.app_key_warning').' php artisan key:generate --force'.PHP_EOL, to: $this->stream);
-                }
+                $this->stream(
+                    content: __('installer.migrations_completed').PHP_EOL,
+                    to: $this->stream
+                );
 
                 $component->state(fn (): string => $output);
 
@@ -264,6 +256,8 @@ class Installer extends Page
 
     /**
      * Called when the form is filed
+     *
+     * @throws ValidationException
      */
     public function save(): void
     {
@@ -283,10 +277,11 @@ class Installer extends Page
                 ->schema([
                     TextEntry::make('info')
                         ->label(__('installer.important'))
-                        ->hintAction(Action::make('openDocs')
-                            ->label(__('common.see_the_docs'))
-                            ->url(docs_link('installation'))
-                            ->openUrlInNewTab()
+                        ->hintAction(
+                            Action::make('openDocs')
+                                ->label(__('common.see_the_docs'))
+                                ->url(docs_link('installation'))
+                                ->openUrlInNewTab()
                         )
                         ->state(fn (): string => __('installer.create_env')),
 
@@ -295,8 +290,16 @@ class Installer extends Page
                             TextEntry::make('php_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn (): string => $data['php']['passed'] && $data['extensionsPassed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn (): string => $data['php']['passed'] && $data['extensionsPassed'] ? 'success' : 'danger')
+                                ->state(
+                                    fn (
+                                    ): string => $data['php']['passed'] && $data['extensionsPassed'] ? 'OK' : __(
+                                        'installer.failed'
+                                    )
+                                )
+                                ->color(
+                                    fn (
+                                    ): string => $data['php']['passed'] && $data['extensionsPassed'] ? 'success' : 'danger'
+                                )
                                 ->badge(),
                         ])
                         ->schema([
@@ -320,8 +323,15 @@ class Installer extends Page
                             TextEntry::make('directory_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn (): string => $data['directoriesPassed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn (): string => $data['directoriesPassed'] ? 'success' : 'danger')
+                                ->state(
+                                    fn (): string => $data['directoriesPassed'] ? 'OK' : __(
+                                        'installer.failed'
+                                    )
+                                )
+                                ->color(
+                                    fn (
+                                    ): string => $data['directoriesPassed'] ? 'success' : 'danger'
+                                )
                                 ->badge(),
                         ])
                         ->description(__('installer.directory_permissions_description'))
@@ -339,15 +349,21 @@ class Installer extends Page
                             TextEntry::make('database_passed')
                                 ->hiddenLabel()
                                 ->size('md')
-                                ->state(fn (): string => $data['db']['passed'] ? 'OK' : __('installer.failed'))
-                                ->color(fn (): string => $data['db']['passed'] ? 'success' : 'danger')
+                                ->state(
+                                    fn (): string => $data['db']['passed'] ? 'OK' : __(
+                                        'installer.failed'
+                                    )
+                                )
+                                ->color(fn (): string => $data['db']['passed'] ? 'success' : 'danger'
+                                )
                                 ->badge(),
                         ])
                         ->schema([
                             TextEntry::make('db_connection')
                                 ->inlineLabel($data['db']['passed'])
                                 ->label(__('installer.database_connection'))
-                                ->color(fn (): string => $data['db']['passed'] ? 'success' : 'danger')
+                                ->color(fn (): string => $data['db']['passed'] ? 'success' : 'danger'
+                                )
                                 ->alignEnd($data['db']['passed'])
                                 ->badge($data['db']['passed'])
                                 ->state(fn () => $data['db']['msg']),
@@ -363,7 +379,6 @@ class Installer extends Page
                         throw new Halt();
                     }
                 });
-
     }
 
     private function getMigrationStep(): Step
@@ -381,7 +396,16 @@ class Installer extends Page
             ->afterValidation(function (): void {
                 if (count(app(MigrationService::class)->migrationsAvailable()) > 0) {
                     Notification::make()
-                        ->title(__('installer.migrations_not_completed', ['count' => count(app(MigrationService::class)->migrationsAvailable())]))
+                        ->title(
+                            __(
+                                'installer.migrations_not_completed',
+                                [
+                                    'count' => count(
+                                        app(MigrationService::class)->migrationsAvailable()
+                                    ),
+                                ]
+                            )
+                        )
                         ->danger()
                         ->send();
 
@@ -395,14 +419,14 @@ class Installer extends Page
         return
             Step::make(__('installer.user_and_airline_setup'))
                 ->schema([
-                    Section::make(__('filament.airline_informations'))
+                    Section::make(__('filament.airline_information'))
                         ->statePath('user')
-                        ->headerActions([
+                        /*->headerActions([
                             Action::make('test')
                                 ->label(__('installer.legacy_importer'))
                                 ->openUrlInNewTab()
                                 ->url(docs_link('importing_legacy')),
-                        ])
+                        ])*/
                         ->schema([
                             TextInput::make('airline_icao')
                                 ->length(3)
@@ -425,7 +449,7 @@ class Installer extends Page
                         ])
                         ->columns(),
 
-                    Section::make(__('installer.super_admin_informations'))
+                    Section::make(__('installer.super_admin_information'))
                         ->statePath('user')
                         ->schema([
                             TextInput::make('name')

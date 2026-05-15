@@ -22,7 +22,7 @@ class UserForm
             ->components([
                 Group::make()
                     ->schema([
-                        Section::make(__('filament.basic_informations'))
+                        Section::make(__('filament.basic_information'))
                             ->schema([
                                 TextInput::make('pilot_id')
                                     ->required()
@@ -53,7 +53,7 @@ class UserForm
                             ])
                             ->columnSpanFull()
                             ->columns(),
-                        Section::make(__('filament.location_informations'))
+                        Section::make(__('filament.location_information'))
                             ->schema([
                                 Select::make('country')
                                     ->label(__('common.country'))
@@ -88,7 +88,7 @@ class UserForm
                             ->columnSpanFull()
                             ->columns(),
                     ])->columnSpan(['lg' => 2]),
-                Section::make(__('filament.user_informations'))
+                Section::make(__('filament.user_information'))
                     ->schema([
                         Select::make('state')
                             ->label(__('common.state'))
@@ -114,7 +114,7 @@ class UserForm
                             ->native(false),
 
                         TextInput::make('transfer_time')
-                            ->label(__('profile.transferhours'))
+                            ->label(__('profile.transfer_hours'))
                             ->numeric(),
 
                         Select::make('roles')

@@ -4,7 +4,7 @@
 @section('content')
   <div class="row">
     <div class="col-md-12">
-      <h2>@lang('common.newestpilots')</h2>
+      <h2>@lang('common.newest_pilots')</h2>
       <div class="card border-0">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5" style="margin: -.5rem; /* m-n2 */">
           @foreach ($users as $user)

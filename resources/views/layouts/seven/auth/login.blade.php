@@ -43,7 +43,7 @@
           @if(config('services.discord.enabled'))
             <div class="d-grid mt-3">
               <a href="{{ route('oauth.redirect', ['provider' => 'discord']) }}" class="btn" style="background-color:#738ADB;">
-                @lang('auth.loginwith', ['provider' => 'Discord'])
+                @lang('auth.login_with', ['provider' => 'Discord'])
               </a>
             </div>
           @endif
@@ -51,7 +51,7 @@
           @if(config('services.ivao.enabled'))
             <div class="d-grid mt-3">
               <a href="{{ route('oauth.redirect', ['provider' => 'ivao']) }}" class="btn" style="background-color:#0d2c99;">
-                @lang('auth.loginwith', ['provider' => 'IVAO'])
+                @lang('auth.login_with', ['provider' => 'IVAO'])
               </a>
             </div>
           @endif
@@ -59,15 +59,15 @@
           @if(config('services.vatsim.enabled'))
             <div class="d-grid mt-3">
               <a href="{{ route('oauth.redirect', ['provider' => 'vatsim']) }}" class="btn" style="background-color:#29B473;">
-                @lang('auth.loginwith', ['provider' => 'VATSIM'])
+                @lang('auth.login_with', ['provider' => 'VATSIM'])
               </a>
             </div>
           @endif
         </form>
       </div>
       <div class="card-footer d-flex justify-content-between">
-        <a href="{{ url('/register') }}" class="link">@lang('auth.createaccount')</a>
-        <a href="{{ url('/password/reset') }}" class="link">@lang('auth.forgotpassword')?</a>
+        <a href="{{ url('/register') }}" class="link">@lang('auth.create_account')</a>
+        <a href="{{ url('/password/reset') }}" class="link">@lang('auth.forgot_password')?</a>
       </div>
     </div>
   </div>

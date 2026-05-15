@@ -15,7 +15,7 @@ class AircraftForm
     {
         return $schema
             ->components([
-                Section::make(__('filament.aircraft_informations'))
+                Section::make(__('filament.aircraft_information'))
                     ->schema([
                         TextInput::make('name')
                             ->label(__('common.name'))

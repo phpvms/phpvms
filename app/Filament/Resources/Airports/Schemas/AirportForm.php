@@ -20,7 +20,7 @@ class AirportForm
 
         return $schema
             ->components([
-                Section::make(__('filament.airport_informations'))
+                Section::make(__('filament.airport_information'))
                     ->schema([
                         TextInput::make('icao')
                             ->label('ICAO')

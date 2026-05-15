@@ -132,7 +132,7 @@
                 @endif
                @endif
                 <a href="{{ route('frontend.pireps.create') }}?flight_id={{ $flight->id }}" class="btn btn-sm btn-info">
-                  {{ __('pireps.newpirep') }}
+                  {{ __('pireps.new_pirep') }}
                 </a>
                 <button
                     class="btn btn-sm save_flight

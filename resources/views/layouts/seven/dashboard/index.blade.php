@@ -29,7 +29,7 @@
                     <div class="card bg-primary text-white dashboard-box">
                         <div class="card-body text-center">
                             <h3 class="header">@minutestotime($user->flight_time)</h3>
-                            <h5 class="description">@lang('dashboard.totalhours')</h5>
+                            <h5 class="description">@lang('dashboard.total_hours')</h5>
                         </div>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                     <div class="card bg-primary text-white dashboard-box">
                         <div class="card-body text-center">
                             <h3 class="header">{{ optional($user->journal)->balance ?? 0 }}</h3>
-                            <h5 class="description">@lang('dashboard.yourbalance')</h5>
+                            <h5 class="description">@lang('dashboard.your_balance')</h5>
                         </div>
                     </div>
                 </div>
@@ -54,11 +54,11 @@
             </div>
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white" role="tablist">
-                    @lang('dashboard.yourlastreport')
+                    @lang('dashboard.your_last_report')
                 </div>
                 @if ($last_pirep === null)
                     <div class="card-body text-center">
-                        @lang('dashboard.noreportsyet') <a href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
+                        @lang('dashboard.no_reports_yet') <a href="{{ route('frontend.pireps.create') }}">@lang('dashboard.fileonenow')</a>
                     </div>
                 @else
                     @include('dashboard.pirep_card', ['pirep' => $last_pirep])
@@ -95,7 +95,7 @@
 
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white" role="tablist">
-                    @lang('common.newestpilots')
+                    @lang('common.newest_pilots')
                 </div>
                 <div class="card-body">
                     <!-- Tab panes -->

@@ -26,7 +26,7 @@ class FlightForm
         return $schema
             ->components([
                 Grid::make()->schema([
-                    Section::make(__('filament.flight_informations'))
+                    Section::make(__('filament.flight_information'))
                         ->schema([
                             Select::make('airline_id')
                                 ->label(__('common.airline'))
@@ -65,7 +65,7 @@ class FlightForm
 
                             TimePicker::make('flight_time')
                                 ->seconds(false)
-                                ->label(__('flights.flighttime'))
+                                ->label(__('flights.flight_time'))
                                 ->native(false)
                                 ->required(),
 

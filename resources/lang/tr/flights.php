@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'flightnumber'     => 'Uçuş Numarası',
-    'flighttime'       => 'Uçuş Süresi',
+    'flight_time'      => 'Uçuş Süresi',
     'flighttype'       => 'Uçuş Tipi',
     'flighthours'      => 'Uçuş Saatleri',
     'code'             => 'Kod',

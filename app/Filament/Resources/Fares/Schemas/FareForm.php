@@ -17,7 +17,7 @@ class FareForm
     {
         return $schema
             ->components([
-                Section::make(__('filament.fare_informations'))
+                Section::make(__('filament.fare_information'))
                     ->description(__('filament.fare_description'))
                     ->schema([
                         TextInput::make('code')

@@ -41,7 +41,7 @@ return [
     'migrations_not_completed'          => 'You still have :count migrations to run. Please try again...',
     'user_and_airline_setup'            => 'User & Airline Setup',
     'legacy_importer'                   => 'phpvms v5 Legacy Importer',
-    'super_admin_informations'          => 'Super Admin User Informations',
+    'super_admin_information'           => 'Super Admin User Information',
     'lets_rebuild_cache'                => "Let's rebuild the cache.",
     'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
     'update_phpvms'                     => 'Update phpvms',

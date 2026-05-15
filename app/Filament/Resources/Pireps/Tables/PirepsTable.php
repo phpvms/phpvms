@@ -58,7 +58,7 @@ class PirepsTable
 
                 TextColumn::make('flight_time')
                     ->toggleable()
-                    ->label(__('flights.flighttime'))
+                    ->label(__('flights.flight_time'))
                     ->formatStateUsing(fn (int $state): string => Time::minutesToTimeString($state))
                     ->sortable(),
 

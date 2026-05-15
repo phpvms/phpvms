@@ -16,7 +16,7 @@ class RankForm
 
         return $schema
             ->components([
-                Section::make(__('filament.rank_informations'))
+                Section::make(__('filament.rank_information'))
                     ->schema([
                         Grid::make()
                             ->schema([

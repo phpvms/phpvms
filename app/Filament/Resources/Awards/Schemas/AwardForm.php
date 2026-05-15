@@ -26,7 +26,7 @@ class AwardForm
 
         return $schema
             ->components([
-                Section::make(__('filament.awards_informations'))
+                Section::make(__('filament.awards_information'))
                     ->description(__('filament.awards_description'))
                     ->schema([
                         TextInput::make('name')

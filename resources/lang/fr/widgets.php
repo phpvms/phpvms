@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'Aucune actualité trouvée',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => 'Vitesse Sol',
         'altitude'    => 'Altitude',
         'heading'     => 'Cap',

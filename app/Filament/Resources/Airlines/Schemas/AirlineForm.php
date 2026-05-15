@@ -16,7 +16,7 @@ class AirlineForm
     {
         return $schema
             ->components([
-                Section::make(__('filament.airline_informations'))
+                Section::make(__('filament.airline_information'))
                     ->schema([
                         TextInput::make('icao')
                             ->label('ICAO (3LD)')
