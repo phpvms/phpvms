@@ -2,9 +2,10 @@
 
 /* Google Fonts injected via Filament render hook (AppServiceProvider::boot).
  * Family names mirror the docs (custom.css lines 24-47):
- *   - Geist        (body sans-serif)
- *   - Encode Sans  (display/headings)
- *   - Geist Mono   (monospace) */
+ *   - Geist          (body sans-serif)
+ *   - Encode Sans    (display/headings)
+ *   - Geist Mono     (monospace, code blocks)
+ *   - JetBrains Mono (small-caps style labels — sidebar groups, TOC headers) */
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
@@ -21,6 +22,9 @@
     "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Encode Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Small-caps style label font — sidebar group labels, mirrors docs TOC header
+   * (custom.css:204-216). Distinct from --font-mono which is for code blocks. */
+  --font-mono-display: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Primary palette derived from #067ec1 (docs --ifm-color-primary) */
   --color-primary-50: #e6f3fb;
@@ -42,34 +46,325 @@
   --color-gray-800: #161b22;
 }
 
-/*
- * Layer 2 — Panel-scoped overrides for the system installer panel.
- * Verified against vendor/filament/schemas/resources/css/components/wizard.css
- * and vendor/filament/filament/resources/css/components/page.css.
- */
+/* ============================================================================
+ * Shared brand styling — applies to both admin and system panels.
+ * Selector `body[class*="fi-panel-"]` matches `.fi-panel-admin` + `.fi-panel-system`.
+ * ============================================================================ */
 
-/* System panel body */
-.fi-panel-system {
+/* Panel body */
+body[class*="fi-panel-"] {
   background: #ffffff;
   font-family: var(--font-sans), serif;
 }
 
-.dark .fi-panel-system {
+.dark body[class*="fi-panel-"] {
   background: #0d1117;
 }
 
 /* Topbar — match docs navbar (white, 60px, no shadow) */
-.fi-panel-system .fi-topbar {
+body[class*="fi-panel-"] .fi-topbar {
   background: #ffffff;
   box-shadow: none;
-  /*border-bottom: 1px solid rgb(0 0 0 / 6%);*/
   height: 60px;
 }
 
-.dark .fi-panel-system .fi-topbar {
+.dark body[class*="fi-panel-"] .fi-topbar {
   background: #0d1117;
   border-bottom-color: rgb(255 255 255 / 8%);
 }
+
+/* Heading scale — Encode Sans, docs proportions.
+ * Base letter-spacing for section headings.
+ * Hero h1 needs tighter tracking (-0.02em per docs .lp-hero-title); higher-specificity
+ * selector below restores it for any <h1> inside a <header> element.
+ * Color matches the "phpvms" wordmark in the brand component (filament/shared/brand.blade.php). */
+body[class*="fi-panel-"] h1,
+body[class*="fi-panel-"] h2,
+body[class*="fi-panel-"] h3 {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.01em;
+  color: #444950;
+}
+
+.dark body[class*="fi-panel-"] h1,
+.dark body[class*="fi-panel-"] h2,
+.dark body[class*="fi-panel-"] h3 {
+  color: #e3e3e3;
+}
+
+body[class*="fi-panel-"] header h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Code blocks — Geist Mono, no ligatures (migration stream, log viewer, etc.) */
+body[class*="fi-panel-"] code,
+body[class*="fi-panel-"] pre {
+  font-family: var(--font-mono), monospace;
+  font-variant-ligatures: none;
+}
+
+/* Solid primary buttons — match docs .lp-btn-primary background (shade 500 =
+ * #067ec1, the docs --ifm-color-primary). Filament defaults to shade 600
+ * (#056ba4) and writes the colour via an inline style attribute, so we need
+ * !important to override the inline value. Hover darkens to shade 600 to
+ * mirror docs .lp-btn-primary:hover (--ifm-color-primary-darker). Outlined
+ * buttons keep the framework default.
+ *
+ * Icons inside the button render via `.fi-icon` which reads `--text` (inline
+ * style written by Filament). We target it directly to force white. */
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+  color: var(--color-white) !important;
+}
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+
+/* ============================================================================
+ * Bottom-right atmospheric dot grid — ported from docs/src/css/custom.css:2388
+ * (html.docs-wrapper::after). Two-layer dot field (24px + 72px spacing) with
+ * radial-ellipse mask anchored at bottom-right so it fades smoothly into the
+ * rest of the page. z-index: -1 + pointer-events: none — nothing interactive
+ * is affected.
+ * ============================================================================ */
+body[class*="fi-panel-"]::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  bottom: 0;
+  right: 0;
+  width: 560px;
+  height: 460px;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 20%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 9%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    24px 24px,
+    72px 72px;
+  background-position:
+    0 0,
+    12px 12px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at bottom right,
+    black 0%,
+    black 25%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(ellipse at bottom right, black 0%, black 25%, transparent 75%);
+}
+
+/* Dark mode: bump alpha (32% / 14%) using the lighter primary shade
+ * so the dots stay legible against #0d1117. */
+.dark body[class*="fi-panel-"]::after {
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 32%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 14%, transparent) 1px,
+      transparent 1.5px
+    );
+}
+
+/* Mobile: shrink both layers so the corner texture doesn't dominate small viewports. */
+@media (max-width: 720px) {
+  body[class*="fi-panel-"]::before {
+    width: 320px;
+    height: 260px;
+  }
+  body[class*="fi-panel-"]::after {
+    width: 280px;
+    height: 220px;
+  }
+}
+
+/* ============================================================================
+ * Admin panel — sidebar styling.
+ *
+ * Mirrors the docs site sidebar (docs/src/css/custom.css:530-697):
+ *   - Group label  → JetBrains Mono uppercase 0.75rem, gray-500
+ *   - Nav item     → 0.875rem (14px) weight 400, gray-600
+ *   - Active item  → weight 600, near-black
+ *
+ * Vertical separator removed — surface alone defines the boundary.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-sidebar {
+  background: #ffffff;
+  border-right: 0;
+}
+
+.dark .fi-panel-admin .fi-sidebar {
+  background: #0d1117;
+  border-right: 0;
+}
+
+/* Group label (docs custom.css:537-545) */
+.fi-panel-admin .fi-sidebar-group-label {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+
+.dark .fi-panel-admin .fi-sidebar-group-label {
+  color: #99a1af;
+}
+
+/* Nav item label — matches docs sidebar (custom.css:666-673): 0.875rem / 14px,
+ * weight 400 default, weight 600 when active.
+ * !important is required because Filament's source uses `@apply text-sm` which
+ * generates a Tailwind utility that wins on cascade order despite our higher
+ * specificity (utility classes get hoisted in Tailwind v4 builds). */
+.fi-panel-admin .fi-sidebar-item-label {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  font-weight: 400 !important;
+  color: #4a5565;
+}
+
+.dark .fi-panel-admin .fi-sidebar-item-label {
+  color: #d1d5dc;
+}
+
+/* Active item — bold + darker (docs custom.css:681-686) */
+.fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+  font-weight: 600 !important;
+  color: #030712;
+}
+
+.dark .fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+  color: #ffffff;
+}
+
+/* Button padding to match docs (6px 12px). Filament default is p-2 (8px). */
+.fi-panel-admin .fi-sidebar-item-btn {
+  padding: 6px 12px;
+}
+
+/* ============================================================================
+ * Sidebar collapse toggle relocation.
+ *
+ * Filament renders desktop collapse buttons inside the topbar Livewire
+ * component (.fi-topbar-collapse-sidebar-btn-ctn wraps both expand and
+ * collapse variants). SidebarCollapseTogglePlugin renders a replacement
+ * at the bottom of the sidebar via SIDEBAR_FOOTER. Hide the topbar
+ * variants to avoid duplication.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-topbar-collapse-sidebar-btn-ctn,
+.fi-panel-admin .fi-topbar-open-collapse-sidebar-btn,
+.fi-panel-admin .fi-topbar-close-collapse-sidebar-btn,
+.fi-panel-admin .fi-layout-sidebar-toggle-btn-ctn {
+  display: none !important;
+}
+
+.fi-panel-admin .fi-sidebar-collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Main content gutter — Filament default is px-4 / md:px-6 / lg:px-8.
+ * Halved here to tighten the gap between sidebar and main body. */
+.fi-panel-admin .fi-main {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .fi-panel-admin .fi-main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fi-panel-admin .fi-main {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Sidebar item icons — Filament renders these at IconSize::Large (24px), which
+ * is oversized next to the 14px label. Shrink to 16px for visual balance.
+ * !important required to defeat Tailwind utility hoisting (same reason as the
+ * label sizing above). */
+.fi-panel-admin .fi-sidebar-item-icon {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+/* ============================================================================
+ * Modals — remove the 1px outer ring and halve internal padding.
+ *
+ * Filament source (vendor/.../modal.css):
+ *   - .fi-modal-window has `ring-1 ring-gray-950/5 dark:ring-white/10`
+ *   - .fi-modal-content has `py-6` (vertical) + `px-6` (horizontal via separate rules)
+ *   - .fi-modal-header has `px-6 pt-6`, footer `pb-6 px-6`
+ *
+ * !important needed to defeat utility hoisting. Scoped to admin panel; system
+ * panel installer wizard doesn't use modals.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-modal-window {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  box-shadow: var(--tw-shadow, 0 0 #0000) !important;
+}
+
+.fi-panel-admin .fi-modal-header {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.fi-panel-admin .fi-modal-content {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+.fi-panel-admin .fi-modal-footer {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
+/* ============================================================================
+ * System panel — installer wizard styles (scoped — wizard not used in admin).
+ * ============================================================================ */
 
 /* Wizard stepper — primary fill, Encode Sans labels */
 .fi-panel-system .fi-sc-wizard-header {
@@ -109,112 +404,4 @@
 
 .fi-panel-system .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-separator {
   color: var(--color-primary-500);
-}
-
-/* Heading scale — Encode Sans, docs proportions.
- * Base letter-spacing for wizard section headings (PHP / Directory / Database).
- * Hero h1 needs tighter tracking (-0.02em per docs .lp-hero-title); higher-specificity
- * selector below restores it for any <h1> inside a <header> element. */
-.fi-panel-system h1,
-.fi-panel-system h2,
-.fi-panel-system h3 {
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.01em;
-}
-
-.fi-panel-system header h1 {
-  letter-spacing: -0.02em;
-}
-
-/* Code blocks (migration stream output) */
-.fi-panel-system code,
-.fi-panel-system pre {
-  font-family: var(--font-mono), monospace;
-  font-variant-ligatures: none;
-}
-
-/* Solid primary buttons — match docs .lp-btn-primary background (shade 500 =
- * #067ec1, the docs --ifm-color-primary). Filament defaults to shade 600
- * (#056ba4) and writes the colour via an inline style attribute, so we need
- * !important to override the inline value. Hover darkens to shade 600 to
- * mirror docs .lp-btn-primary:hover (--ifm-color-primary-darker). Outlined
- * buttons keep the framework default. */
-.fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined) {
-  background-color: var(--color-primary-500) !important;
-  color: var(--color-white) !important;
-}
-.fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined):hover {
-  background-color: var(--color-primary-600) !important;
-  color: var(--color-white) !important;
-}
-.dark .fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined) {
-  background-color: var(--color-primary-500) !important;
-  color: var(--color-white) !important;
-}
-.dark .fi-panel-system .fi-btn.fi-color-primary:not(.fi-outlined):hover {
-  background-color: var(--color-primary-600) !important;
-  color: var(--color-white) !important;
-}
-
-/* Bottom-right atmospheric dot grid — ported from docs/src/css/custom.css:2388
- * (html.docs-wrapper::after). Two-layer dot field (24px + 72px spacing) with
- * radial-ellipse mask anchored at bottom-right. z-index: -1 + pointer-events: none
- * so nothing interactive is affected. */
-body.fi-panel-system::after {
-  content: "";
-  position: fixed;
-  pointer-events: none;
-  z-index: -1;
-  bottom: 0;
-  right: 0;
-  width: 560px;
-  height: 460px;
-  background-image:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-500) 20%, transparent) 1px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-500) 9%, transparent) 1px,
-      transparent 1.5px
-    );
-  background-size:
-    24px 24px,
-    72px 72px;
-  background-position:
-    0 0,
-    12px 12px;
-  -webkit-mask-image: radial-gradient(
-    ellipse at bottom right,
-    black 0%,
-    black 25%,
-    transparent 75%
-  );
-  mask-image: radial-gradient(ellipse at bottom right, black 0%, black 25%, transparent 75%);
-}
-
-/* Dark mode: bump alpha (32% / 14%) using the lighter primary shade
- * so the dots stay legible against #0d1117. */
-.dark body.fi-panel-system::after {
-  background-image:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-400) 32%, transparent) 1px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-400) 14%, transparent) 1px,
-      transparent 1.5px
-    );
-}
-
-/* Mobile: shrink so the corner texture doesn't dominate small viewports. */
-@media (max-width: 720px) {
-  body.fi-panel-system::after {
-    width: 280px;
-    height: 220px;
-  }
 }

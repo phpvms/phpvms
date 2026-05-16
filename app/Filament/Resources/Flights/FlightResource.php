@@ -29,7 +29,7 @@ class FlightResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsVertical;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     #[\Override]
     public static function form(Schema $schema): Schema

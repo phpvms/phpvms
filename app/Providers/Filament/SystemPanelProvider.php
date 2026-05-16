@@ -14,7 +14,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
@@ -51,13 +50,14 @@ class SystemPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('phpvms')
             ->font('Geist')
-            ->brandLogo(fn () => view('filament.system.brand'))
+            ->brandLogo(fn () => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('assets/img/favicon.png'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)
             ->spa()
+            ->breadcrumbs(false)
             ->errorNotifications();
     }
 }

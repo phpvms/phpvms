@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 
 class ModuleLinksPlugin implements Plugin
 {
@@ -27,13 +28,13 @@ class ModuleLinksPlugin implements Plugin
     public function register(Panel $panel): void
     {
         // Render in the topbar (wide screen)
-        $panel->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): Factory|\Illuminate\Contracts\View\View => view('filament.plugins.module-links-topbar', [
+        $panel->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): Factory|View => view('filament.plugins.module-links-topbar', [
             'current_panel' => Filament::getCurrentOrDefaultPanel(),
             'group'         => $this->getGroup(),
         ]));
 
         // Render in the sidebar (mobile)
-        $panel->renderHook(PanelsRenderHook::SIDEBAR_NAV_END, fn (): Factory|\Illuminate\Contracts\View\View => view('filament.plugins.module-links-sidebar', [
+        $panel->renderHook(PanelsRenderHook::SIDEBAR_NAV_END, fn (): Factory|View => view('filament.plugins.module-links-sidebar', [
             'group' => $this->getGroup(),
         ]));
     }
@@ -70,7 +71,7 @@ class ModuleLinksPlugin implements Plugin
                 ->icon(Heroicon::OutlinedFolder);
         }
 
-        $group = \App\Enums\NavigationGroup::Modules;
+        $group = \App\Enums\NavigationGroup::AddOns;
 
         return NavigationGroup::make($group->name)
             ->label($group->getLabel())

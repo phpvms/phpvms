@@ -9,9 +9,9 @@ enum NavigationGroup: string implements HasLabel
 {
     use HasSelect;
 
-    case Config = 'Config';
     case Operations = 'Operations';
-    case Modules = 'Modules';
+    case Config = 'Config';
+    case AddOns = 'Add-Ons';
     case Developers = 'Developers';
 
     public function getLabel(): string
@@ -19,7 +19,7 @@ enum NavigationGroup: string implements HasLabel
         return match ($this) {
             self::Config     => __('filament.config'),
             self::Operations => __('filament.operations'),
-            self::Modules    => __('filament.modules'),
+            self::AddOns     => __('filament.addons'),
             self::Developers => __('filament.developers'),
         };
     }

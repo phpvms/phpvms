@@ -4,8 +4,10 @@ namespace App\Providers\Filament;
 
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
+use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\ModuleLinksPlugin;
+use App\Filament\Plugins\SidebarCollapseTogglePlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,16 +18,17 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Override;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -64,9 +67,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                EnumsNavigationGroup::Config->name,
                 EnumsNavigationGroup::Operations->name,
-                EnumsNavigationGroup::Modules->name,
+                EnumsNavigationGroup::Config->name,
+                EnumsNavigationGroup::AddOns->name,
                 EnumsNavigationGroup::Developers->name,
             ])
             ->navigationItems([
@@ -93,14 +96,23 @@ class AdminPanelProvider extends PanelProvider
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 ModuleLinksPlugin::make(),
+                ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
+                SidebarCollapseTogglePlugin::make(),
             ])
             ->bootUsing(function (): void {
                 activity()->enableLogging();
             })
             ->brandName('phpvms')
+            ->brandLogo(fn () => view('filament.shared.brand'))
+            ->brandLogoHeight('3rem')
             ->font('Geist')
             ->favicon(asset('assets/img/favicon.png'))
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): string => view('filament.auth.login-hero')->render(),
+            )
+            ->breadcrumbs(false)
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()
@@ -108,7 +120,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
 
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         parent::register();

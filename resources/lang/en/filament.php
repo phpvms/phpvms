@@ -74,6 +74,7 @@ return [
     'maintenance_current_version'        => 'Current version: :version',
     'maintenance_clear_cache'            => 'Clear cache',
     'maintenance_cache_cleared'          => 'Cache cleared',
+    'maintenance_cache_clear_failed'     => 'Failed to clear caches',
     'maintenance_recommend_optimize'     => "We recommend using 'Optimize App' in order to improve performance and rebuild the cache.",
     'maintenance_optimize_app'           => 'Optimize App',
     'maintenance_app_optimized'          => 'Application optimized',
@@ -85,7 +86,7 @@ return [
     'maintenance_database_is_up_to_date' => 'Your database is up to date',
     'config'                             => 'Config',
     'operations'                         => 'Operations',
-    'modules'                            => 'Modules',
+    'addons'                             => 'Add-Ons',
     'developers'                         => 'Developers',
     'today'                              => 'Today',
     'this_week'                          => 'This week',
@@ -95,4 +96,6 @@ return [
     'news_subject'                       => 'Subject',
     'news_body'                          => 'Body',
     'news_send_notifications'            => 'Send Notifications',
+    'login_heading'                      => 'Welcome back',
+    'login_subtitle'                     => 'Sign in to manage your virtual airline.',
 ];

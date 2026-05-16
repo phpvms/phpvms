@@ -95,5 +95,6 @@ return [
     'news_subject'                       => 'Sujet',
     'news_body'                          => 'Corps',
     'news_send_notifications'            => 'Envoyer des notifications',
-
+    'login_heading'                      => 'Bon retour',
+    'login_subtitle'                     => 'Connectez-vous pour gérer votre compagnie aérienne virtuelle.',
 ];

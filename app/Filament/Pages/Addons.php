@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Nwidart\Modules\Facades\Module;
 
-class Modules extends Page implements Tables\Contracts\HasTable
+class Addons extends Page implements Tables\Contracts\HasTable
 {
     use HasPageShield;
     use Tables\Concerns\InteractsWithTable;
@@ -32,7 +32,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
     #[\Override]
     public static function getNavigationLabel(): string
     {
-        return Str::of(__('common.module'))->plural();
+        return Str::of(__('common.addons'))->plural();
     }
 
     public function table(Table $table): Table

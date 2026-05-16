@@ -31,7 +31,7 @@ class PirepResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCloudArrowUp;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     public static function getNavigationBadge(): ?string
     {
