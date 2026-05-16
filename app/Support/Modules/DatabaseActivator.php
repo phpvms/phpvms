@@ -147,10 +147,11 @@ class DatabaseActivator implements ActivatorInterface
      */
     public function setActive(Module $module, bool $active): void
     {
-        $module = $this->getModuleByName($module->getName());
+        $name = $module->getName();
+        $module = $this->getModuleByName($name);
         if (!$module) {
             $module = \App\Models\Module::create([
-                'name' => $module->name,
+                'name' => $name,
             ]);
         }
 
