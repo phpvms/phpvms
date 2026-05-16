@@ -33,7 +33,9 @@ class PirepsTable
     {
 
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query
+                ->with(['airline', 'aircraft', 'user'])
+                ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
             ->columns([
                 TextColumn::make('ident')
                     ->label(trans_choice('common.flight', 1).' #')
