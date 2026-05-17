@@ -12,8 +12,10 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
@@ -38,7 +40,7 @@ class SystemPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                // ValidateCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
@@ -50,7 +52,7 @@ class SystemPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('phpvms')
             ->font('Geist')
-            ->brandLogo(fn () => view('filament.shared.brand'))
+            ->brandLogo(fn (): Factory|\Illuminate\Contracts\View\View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('assets/img/favicon.png'))
             ->viteTheme('resources/css/filament/admin/theme.css')

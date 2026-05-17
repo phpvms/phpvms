@@ -11,7 +11,7 @@ return [
     'full_name'                 => 'Nom Complet',
     'email_address'             => 'Adresse Email',
     'fill_captcha'              => 'Remplissez le captcha',
-    'toc_accept'                => 'En vous inscrivant, vous accezptez les Conditions Générales d\'Utilisations.',
+    'toc_accept'                => 'En vous inscrivant, vous acceptez les Conditions Générales d\'Utilisation.',
     'register'                  => "S'inscrire",
     'registration_pending'      => 'Inscription en attente',
     'pending_message'           => 'Votre inscription est en attente d\'approbation. Veuillez vérifier vos emails!',

@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,7 @@ class NewsTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->schema(fn ($schema) => NewsForm::configure($schema))
+                    ->schema(fn (Schema $schema): Schema => NewsForm::configure($schema))
                     ->mutateDataUsing(function (array $data): array {
                         $data['user_id'] = Auth::id();
 

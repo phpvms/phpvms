@@ -47,6 +47,7 @@ return [
     'hello'           => 'Ciao',
     'regards'         => 'Saluti',
     'rights_reserved' => 'Tutti i Diritti Riservati',
+    'toggle_colors'   => 'Cambia colori',
     'active'          => 'Attivo',
     'inactive'        => 'Inattivo',
     'yes'             => 'Sì',

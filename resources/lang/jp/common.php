@@ -47,6 +47,7 @@ return [
     'hello'           => 'こんにちは、',
     'regards'         => 'よろしくお願いします。',
     'rights_reserved' => 'All Rights Reserved',
+    'toggle_colors'   => 'カラー切り替え',
     'active'          => 'アクティブ',
     'inactive'        => '非アクティブ',
     'yes'             => 'はい',

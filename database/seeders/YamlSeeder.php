@@ -7,11 +7,11 @@ namespace Database\Seeders;
 use App\Services\Installer\SeederService;
 use Carbon\Carbon;
 use Exception;
-use File;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
@@ -43,23 +43,20 @@ class YamlSeeder extends Seeder
         // Special method to sync the settings
         $this->seederSvc->syncAllSettings();
 
-        // See if there are seed files that match the environment
         $env = App::environment();
-        if (!File::exists(database_path('seeders/'.$env))) {
+        $seedPath = database_path('seeders/'.$env);
+        if (!File::isDirectory($seedPath)) {
             return;
         }
 
-        Log::info("current environment $env");
-        // Gather all of the files to seed
-        collect(File::allFiles(database_path('seeders/'.$env)))
-            ->each(function (SplFileInfo $file) {
-                Log::info("reading $file");
-            })
-            ->filter(function (SplFileInfo $file): bool {
-                return $file->getExtension() === 'yml';
-            })
-            ->each(function (string $file): void {
-                $this->seedFromYamlFile($file);
+        Log::info('current environment '.$env);
+
+        collect(File::allFiles($seedPath))
+            ->filter(fn (SplFileInfo $file): bool => $file->getExtension() === 'yml')
+            ->each(function (SplFileInfo $file): void {
+                $path = $file->getPathname();
+                Log::info('reading '.$path);
+                $this->seedFromYamlFile($path);
             });
     }
 
@@ -69,6 +66,10 @@ class YamlSeeder extends Seeder
     public function seedFromYamlFile(string $yaml_file, bool $ignore_errors = false): array
     {
         $yml = file_get_contents($yaml_file);
+        if ($yml === false) {
+            throw new \RuntimeException('Unable to read YAML seed file: '.$yaml_file);
+        }
+
         $yml = Yaml::parse($yml);
 
         return $this->seedFromYaml($yml, $ignore_errors);
@@ -113,7 +114,7 @@ class YamlSeeder extends Seeder
                         $row,
                         $id_column,
                         $ignore_on_update,
-                        true,
+                        $ignore_errors,
                         $ignore_if_exists
                     );
                 } catch (QueryException $e) {
@@ -183,11 +184,6 @@ class YamlSeeder extends Seeder
                     ->where($id_col, $row[$id_col])
                     ->update($row);
             } else {
-                // Remove ID column if it exists and its empty, let the DB set it
-                /*if (array_key_exists($id_col, $row) && empty($row[$id_col])) {
-                    unset($row[$id_col]);
-                }*/
-
                 DB::table($table)->insert($row);
             }
         } catch (QueryException $queryException) {

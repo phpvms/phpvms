@@ -6,6 +6,7 @@ use App\Enums\NavigationGroup;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\EditPirep;
 use App\Filament\Resources\Pireps\Pages\ListPireps;
+use App\Filament\Resources\Pireps\Pages\ViewPirep;
 use App\Filament\Resources\Pireps\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\Pireps\RelationManagers\FaresRelationManager;
 use App\Filament\Resources\Pireps\RelationManagers\FieldValuesRelationManager;
@@ -68,6 +69,7 @@ class PirepResource extends Resource
     {
         return [
             'index' => ListPireps::route('/'),
+            'view'  => ViewPirep::route('/{record}'),
             'edit'  => EditPirep::route('/{record}/edit'),
         ];
     }

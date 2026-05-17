@@ -8,7 +8,7 @@
     <div class="mb-5 flex items-center justify-center gap-3">
         <img
             src="{{ asset('assets/img/logo_blue.svg') }}"
-            alt="phpVMS"
+            alt="phpvms"
             class="h-12 w-auto"
         />
         <span

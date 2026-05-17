@@ -8,7 +8,7 @@ return [
      * Shared translations.
      *
      */
-    'title'                             => 'phpvms Installer',
+    'title'                             => 'phpvms',
     'next'                              => 'Next Step',
     'back'                              => 'Previous',
     'finish'                            => 'Install',

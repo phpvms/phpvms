@@ -47,12 +47,12 @@ final class ClearCaches extends Component
                 ->title(__('filament.maintenance_cache_cleared'))
                 ->success()
                 ->send();
-        } catch (Throwable $e) {
-            Log::error('ClearCaches plugin failed', ['error' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            Log::error('ClearCaches plugin failed', ['error' => $throwable->getMessage()]);
 
             Notification::make()
                 ->title(__('filament.maintenance_cache_clear_failed'))
-                ->body($e->getMessage())
+                ->body($throwable->getMessage())
                 ->danger()
                 ->send();
         }

@@ -36,6 +36,6 @@ return [
     'suspended_message'         => 'Tu cuenta ha sido suspendida. Por favor, contacta con un administrador.',
     'transfer_hours'            => 'Transferir horas',
     'login_with'                => 'Iniciar sesión con :provider',
-    'send_reset_link'           => 'Send Password Reset Link',
+    'send_reset_link'           => 'Enviar enlace para restablecer la contraseña',
 
 ];

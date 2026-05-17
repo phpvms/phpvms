@@ -9,7 +9,7 @@ return [
     'create_account'            => 'Account erstellen',
     'forgot_password'           => 'Passwort vergessen',
     'full_name'                 => 'Username',
-    'email_address'             => 'E-Mail Addresse',
+    'email_address'             => 'E-Mail Adresse',
     'fill_captcha'              => 'Fülle das Captcha aus',
     'toc_accept'                => 'Mit der Registrierung erklären Sie sich mit den Allgemeinen Geschäftsbedingungen einverstanden.',
     'register'                  => 'Registrieren',
@@ -24,5 +24,5 @@ return [
     'suspended_message'         => 'Dein Konto wurde gesperrt.  Bitte kontaktiere einen Administrator.',
     'transfer_hours'            => 'Transferstunden',
     'login_with'                => 'Einloggen mit :provider',
-    'send_reset_link'           => 'Send Password Reset Link',
+    'send_reset_link'           => 'Link zum Zurücksetzen des Passworts senden',
 ];

@@ -6,7 +6,7 @@
       icon="heroicon-o-home"
       :url="url(\Filament\Facades\Filament::getPanel('admin')->getPath())"
     >
-      Admin
+      {{ __('common.administration') }}
     </x-filament-panels::topbar.item>
     @endif
 

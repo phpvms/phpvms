@@ -35,7 +35,7 @@ class InstalledCheck implements Middleware
             if (!Schema::hasTable('users') || User::count() === 0) {
                 return redirect('/system/install');
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return redirect('/system/install');
         }
 

@@ -24,5 +24,5 @@ return [
     'suspended_message'         => 'Il tuo account è stato sospeso. Contatta un amministratore per favore.',
     'transfer_hours'            => 'Ore di trasferimento',
     'login_with'                => 'Accesso con :provider',
-    'send_reset_link'           => 'Send Password Reset Link',
+    'send_reset_link'           => 'Invia link per reimpostare la password',
 ];

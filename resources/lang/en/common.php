@@ -10,6 +10,7 @@ return [
     'pilot'           => 'Pilot|Pilots',
     'user'            => 'User|Users',
     'pirep'           => 'PIREP|PIREPs',
+    'news'            => 'News',
     'newest_pilots'   => 'Newest Pilots',
     'profile'         => 'Profile',
     'email'           => 'Email',

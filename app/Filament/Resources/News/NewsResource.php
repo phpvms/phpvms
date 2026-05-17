@@ -67,6 +67,6 @@ class NewsResource extends Resource
     #[Override]
     public static function getModelLabel(): string
     {
-        return __('widgets.latestnews.news');
+        return __('common.news');
     }
 }

@@ -7,9 +7,9 @@ namespace App\Services\Installer;
 use App\Contracts\Service;
 use App\Models\Setting;
 use App\Services\DatabaseService;
-use File;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
@@ -58,14 +58,17 @@ class SeederService extends Service
         Log::info('Running seeder');
         $env = App::environment();
 
-        // Gather all of the files to seed
-        collect(File::allFiles(database_path('seeders/'.$env)))
-            ->filter(function (SplFileInfo $file): bool {
-                return $file->getExtension() === 'yml';
-            })
-            ->each(function (string $file): void {
-                Log::info('Seeding .'.$file);
-                $this->databaseSvc->seedFromYamlFile($file);
+        $seedPath = database_path('seeders/'.$env);
+        if (!File::isDirectory($seedPath)) {
+            return;
+        }
+
+        collect(File::allFiles($seedPath))
+            ->filter(fn (SplFileInfo $file): bool => $file->getExtension() === 'yml')
+            ->each(function (SplFileInfo $file): void {
+                $path = $file->getPathname();
+                Log::info('Seeding '.$path);
+                $this->databaseSvc->seedFromYamlFile($path);
             });
     }
 

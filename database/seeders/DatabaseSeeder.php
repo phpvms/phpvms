@@ -8,7 +8,7 @@ use App\Services\Installer\MigrationService;
 use Exception;
 use Illuminate\Database\Seeder;
 
-class InstallSeeder extends Seeder
+class DatabaseSeeder extends Seeder
 {
     public function __construct(
         private readonly MigrationService $migrationSvc
@@ -26,7 +26,6 @@ class InstallSeeder extends Seeder
             YamlSeeder::class,
         ]);
 
-        // Make sure any data migrations that need to be run are run/cleared out
         if ($this->migrationSvc->dataMigrationsAvailable()) {
             $this->migrationSvc->runAllDataMigrations();
         }

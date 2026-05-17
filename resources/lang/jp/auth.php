@@ -10,7 +10,7 @@ return [
     'forgot_password'           => 'パスワード忘れ方はこちら',
     'full_name'                 => '氏名(フルネーム)',
     'email_address'             => 'メールアドレス',
-    'fill_captcha'              => 'Fill out the captcha',
+    'fill_captcha'              => 'CAPTCHAを入力してください',
     'toc_accept'                => '登録することで, あなたは規約に同意する。',
     'register'                  => '新規登録',
     'registration_pending'      => '登録待機中',
@@ -24,5 +24,5 @@ return [
     'suspended_message'         => 'アカウント停止状態です。管理員にお問い合わせください。',
     'transfer_hours'            => '転入時間',
     'login_with'                => ':provider でログイン',
-    'send_reset_link'           => 'Send Password Reset Link',
+    'send_reset_link'           => 'パスワード再設定リンクを送信',
 ];

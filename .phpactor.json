@@ -1,0 +1,22 @@
+{
+  "$schema": "/phpactor.schema.json",
+  "language_server_phpstan.enabled": false,
+  "indexer.include_patterns": [
+    "/app/**/*.php",
+    "/config/**/*.php",
+    "/database/**/*.php",
+    "/modules/**/*.php",
+    "/routes/**/*.php",
+    "/tests/**/*.php",
+    "/vendor/**/*.php"
+  ],
+  "indexer.exclude_patterns": [
+    "/vendor/**/Tests/**/*.php",
+    "/vendor/**/tests/**/*.php",
+    "/storage/**/*.php",
+    "/bootstrap/cache/**/*.php"
+  ],
+  "language_server.diagnostics_on_update": false,
+  "language_server.diagnostics_on_save": true,
+  "language_server.diagnostics_on_open": true
+}

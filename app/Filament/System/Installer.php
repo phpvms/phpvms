@@ -55,7 +55,7 @@ class Installer extends Page
     public function mount(): void
     {
         try {
-            if (Schema::hasTable('users') && User::count() > 0) {
+            if (Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists()) {
                 Notification::make()
                     ->title(__('installer.already_installed'))
                     ->danger()
@@ -193,8 +193,6 @@ class Installer extends Page
                         $output .= $buffer;
                         $this->stream(content: $buffer, to: $this->stream);
                     });
-
-                $this->stream(content: $output, to: $this->stream);
 
                 app(StreamedCommandsService::class)->streamArtisanCommand(
                     ['db:seed', '--force', '--class='.InstallSeeder::class],
@@ -436,12 +434,6 @@ class Installer extends Page
                 ->schema([
                     Section::make(__('filament.airline_information'))
                         ->statePath('user')
-                        /*->headerActions([
-                            Action::make('test')
-                                ->label(__('installer.legacy_importer'))
-                                ->openUrlInNewTab()
-                                ->url(docs_link('importing_legacy')),
-                        ])*/
                         ->schema([
                             TextInput::make('airline_icao')
                                 ->length(3)

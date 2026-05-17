@@ -45,15 +45,12 @@ require $root.'/vendor/autoload.php';
 $app = require_once $root.'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 
-// ---------------------------------------------------------------------------
-// Airports
-// ---------------------------------------------------------------------------
 $airports = [
     ['id' => 'KLGA', 'iata' => 'LGA', 'icao' => 'KLGA', 'name' => 'La Guardia Airport',                     'location' => 'New York, New York, USA', 'country' => 'United States',         'timezone' => 'America/New_York',     'lat' => 40.7772, 'lon' => -73.8726, 'hub' => 1, 'ground_handling_cost' => 250],
     ['id' => 'KPAE', 'iata' => 'PAE', 'icao' => 'KPAE', 'name' => 'Snohomish County (Paine Field) Airport', 'location' => 'Everett',                 'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 47.9063, 'lon' => -122.282, 'hub' => 0],
     ['id' => 'KSEA', 'iata' => 'SEA', 'icao' => 'KSEA', 'name' => 'Seattle Tacoma International Airport',   'location' => 'Seattle',                 'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 47.449,  'lon' => -122.309, 'hub' => 0],
-    ['id' => 'KSAN', 'iata' => 'SAN', 'icao' => 'KSAN', 'name' => 'San Diego International Airport',       'location' => 'San Diego',               'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 33.9425, 'lon' => -118.408, 'hub' => 0],
-    ['id' => 'KLAX', 'iata' => 'LAX', 'icao' => 'KLAX', 'name' => 'Los Angeles International Airport',     'location' => 'Los Angeles',             'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 32.7336, 'lon' => -117.19,  'hub' => 1],
+    ['id' => 'KSAN', 'iata' => 'SAN', 'icao' => 'KSAN', 'name' => 'San Diego International Airport',       'location' => 'San Diego',               'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 32.7336, 'lon' => -117.19,  'hub' => 0],
+    ['id' => 'KLAX', 'iata' => 'LAX', 'icao' => 'KLAX', 'name' => 'Los Angeles International Airport',     'location' => 'Los Angeles',             'country' => 'United States',         'timezone' => 'America/Los_Angeles',  'lat' => 33.9425, 'lon' => -118.408, 'hub' => 1],
     ['id' => 'EGLL', 'iata' => 'LHR', 'icao' => 'EGLL', 'name' => 'London Heathrow',                       'location' => 'London, England',         'country' => 'United Kingdom',        'timezone' => 'Europe/London',        'lat' => 51.4775, 'lon' => -0.4614,  'hub' => 0, 'ground_handling_cost' => 500],
     ['id' => 'MKJP', 'iata' => 'KIN', 'icao' => 'MKJP', 'name' => 'Norman Manley International Airport',   'location' => 'Kingston, Jamaica',       'country' => 'Jamaica',               'timezone' => 'America/Jamaica',      'lat' => 17.9357, 'lon' => -76.7875, 'hub' => 0, 'ground_handling_cost' => 50],
     ['id' => 'OMDB', 'iata' => 'DXB', 'icao' => 'OMDB', 'name' => 'Dubai International Airport',           'location' => 'Dubai, UAE',              'country' => 'United Arab Emirates',  'timezone' => 'Asia/Dubai',           'lat' => 25.2528, 'lon' => 55.3644,  'hub' => 0, 'ground_handling_cost' => 50],
@@ -65,11 +62,7 @@ foreach ($airports as $airport) {
 
 echo 'Airports total: '.Airport::withoutGlobalScopes()->count().PHP_EOL;
 
-// ---------------------------------------------------------------------------
-// Subfleets (from sample.yml)
-// ---------------------------------------------------------------------------
-// Subfleet.id is auto_increment and not in fillable; lookup by unique
-// (airline_id, type) keeps the script idempotent across re-runs.
+// Subfleet.id is auto_increment + not fillable; lookup by (airline_id, type) for idempotency.
 $subfleetSeed = [
     ['airline_id' => 1, 'type' => '744-3X-RB211',      'name' => '747-43X RB211-524G',    'cost_block_hour' => 1000.00, 'cost_delay_minute' => 0.00, 'ground_handling_multiplier' => 200.00],
     ['airline_id' => 1, 'type' => '772-22ER-GE90-76B', 'name' => '777-222ER GE90-76B',    'cost_block_hour' => 500.00,  'cost_delay_minute' => 0.00, 'ground_handling_multiplier' => 150.00],
@@ -87,12 +80,7 @@ foreach ($subfleetSeed as $subfleet) {
 
 echo 'Subfleets total: '.Subfleet::withoutGlobalScopes()->count().PHP_EOL;
 
-// ---------------------------------------------------------------------------
-// Aircraft (active fleet only; skip retired + aircraft tied to non-seeded
-// airports). Three active aircraft is enough to round-robin across PIREPs.
-// ---------------------------------------------------------------------------
-// Lookup by registration (unique); aircraft.id is auto_increment + not in
-// fillable, so the actual ids are captured after upsert for round-robin.
+// Aircraft.id auto_increment + not fillable; lookup by registration (unique). IDs captured for round-robin assignment.
 $aircraftSeed = [
     ['subfleet_id' => $subfleetIdsByType['744-3X-RB211'], 'icao' => 'B744', 'iata' => '744', 'airport_id' => 'KJFK', 'name' => 'Boeing 747-438', 'registration' => '001Z',   'flight_time' => 540, 'status' => 'A', 'state' => 0],
     ['subfleet_id' => $subfleetIdsByType['744-3X-RB211'], 'icao' => 'B744', 'iata' => '744', 'airport_id' => 'KAUS', 'name' => 'Boeing 747-412', 'registration' => 'S2333',  'flight_time' => 180, 'status' => 'A', 'state' => 0],
@@ -107,12 +95,8 @@ foreach ($aircraftSeed as $a) {
 echo 'Aircraft total: '.Aircraft::withoutGlobalScopes()->count().PHP_EOL;
 echo 'Aircraft IDs assigned: '.implode(', ', $aircraftIds).PHP_EOL;
 
-// ---------------------------------------------------------------------------
-// PIREPs (10, all owned by admin user_id=1, airline_id=1)
-// The last two routes (flight 700, 800) are seeded as PENDING so the admin
-// has something to accept/reject. Everything earlier is ACCEPTED.
-// [departure, arrival, flight_number, flight_time_minutes]
-// ---------------------------------------------------------------------------
+// Last two routes (700, 800) seeded PENDING for admin accept/reject; rest ACCEPTED.
+// Tuple: [departure, arrival, flight_number, flight_time_minutes]
 $routes = [
     ['KJFK', 'KLAX', 100, 330],
     ['KLAX', 'KJFK', 101, 320],
@@ -158,7 +142,7 @@ foreach ($routes as $i => [$dpt, $arr, $flightNum, $flightTime]) {
         'source_name'         => 'Manual seed',
         'state'               => $state->value,
         'status'              => PirepStatus::ARRIVED->value,
-        'notes'               => "Seeded PIREP #{$flightNum}",
+        'notes'               => 'Seeded PIREP #'.$flightNum,
         'block_off_time'      => $blockOffStr,
         'block_on_time'       => $blockOnStr,
         'submitted_at'        => $blockOnStr,

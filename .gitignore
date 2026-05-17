@@ -97,3 +97,7 @@ boost.json
 
 # Modules
 modules_statuses.json
+.superpowers/
+
+# Local SQLite scratch db (test artifact)
+/phpvms

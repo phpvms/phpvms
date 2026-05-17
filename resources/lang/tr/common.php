@@ -47,6 +47,7 @@ return [
     'hello'           => 'Merhaba',
     'regards'         => 'Saygılar',
     'rights_reserved' => 'Tüm Hakları Saklıdır',
+    'toggle_colors'   => 'Renkleri değiştir',
     'active'          => 'Aktif',
     'inactive'        => 'Pasif',
     'yes'             => 'Evet',
