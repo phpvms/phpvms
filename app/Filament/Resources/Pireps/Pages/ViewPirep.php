@@ -7,6 +7,7 @@ use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
 use App\Services\GeoService;
+use App\Services\Pirep\PerformanceChartService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
@@ -33,6 +34,14 @@ class ViewPirep extends ViewRecord
      * @var array<string, mixed>
      */
     public array $mapFeatures = [];
+
+    /**
+     * Chart.js payload for the Performance card. Null when the PIREP has no
+     * ACARS samples — blade switches to the empty stub.
+     *
+     * @var array<string, mixed>|null
+     */
+    public ?array $performance = null;
 
     /**
      * Custom blade view that renders the PIREP detail layout.
@@ -79,7 +88,8 @@ class ViewPirep extends ViewRecord
     {
         parent::mount($record);
 
-        // 'fields' is an Attribute accessor, not a relation — don't eager-load it.
+        // Eager-load everything the detail blade and embedded relation
+        // managers need. 'fields' is an Attribute accessor — don't load it.
         $this->record->loadMissing([
             'user',
             'aircraft',
@@ -88,11 +98,17 @@ class ViewPirep extends ViewRecord
             'arr_airport',
             'comments.user',
             'transactions',
+            'fares.fare',
+            'field_values',
         ]);
 
         // GeoService returns FeatureCollection value objects; convert to plain
         // arrays so Livewire can serialize the property between requests.
         $features = app(GeoService::class)->pirepGeoJson($this->record);
         $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
+
+        // Build chart payload (null when no ACARS data).
+        $this->performance = app(PerformanceChartService::class)
+            ->buildDatasets($this->record);
     }
 }
