@@ -3,6 +3,8 @@
 namespace App\Services\Pirep;
 
 use App\Enums\AcarsType;
+use App\Enums\PirepStatus;
+use App\Models\Acars;
 use App\Models\Pirep;
 use Illuminate\Support\Collection;
 
@@ -17,8 +19,9 @@ class PerformanceChartService
      * @return array{
      *     sample_count: int,
      *     series: array<string, array<string, mixed>>,
-     *     phases: array<int, array{name: string, start: int, end: int}>,
+     *     phases: array<int, array{code: string, label: string, start: int, end: int}>,
      *     meta: array<string, mixed>,
+     *     landing: array<string, mixed>|null,
      * }|null
      */
     public function buildDatasets(Pirep $pirep): ?array
@@ -46,9 +49,187 @@ class PerformanceChartService
                 'fuel'     => $this->fuelSeries($reduced),
                 'vs'       => $this->vsSeries($reduced),
             ],
-            'phases' => $this->detectPhases($reduced),
-            'meta'   => $this->buildMeta($reduced),
+            'phases'  => $this->detectPhases($pirep, $reduced),
+            'meta'    => $this->buildMeta($reduced),
+            'landing' => $this->buildLandingBlock($pirep),
         ];
+    }
+
+    /**
+     * Pull departure + arrival runway metrics and landing scorecard data
+     * from the PIREP's custom field values. Returns null when nothing
+     * usable is present.
+     *
+     * Field-name lookups are case-insensitive substring matches against
+     * the names ACARS clients use today (e.g. "Departure Runway",
+     * "Landing Rate"). Storing them in this service rather than a config
+     * file keeps the mapping next to where it's consumed; if more clients
+     * adopt different naming, this becomes the one place to extend.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildLandingBlock(Pirep $pirep): ?array
+    {
+        $fields = $pirep->field_values
+            ->mapWithKeys(fn ($f): array => [strtolower((string) $f->name) => $f->value]);
+
+        if ($fields->isEmpty()) {
+            return null;
+        }
+
+        $get = fn (string $needle): ?string => $fields
+            ->first(fn ($_v, $k): bool => str_contains((string) $k, $needle));
+
+        $departure = [
+            'runway'            => $get('departure runway'),
+            'heading_deviation' => $this->toFloat($get('departure heading deviation')),
+            'centerline_offset' => $this->toFloat($get('departure centerline deviation')),
+        ];
+
+        $arrival = [
+            'runway'                 => $get('arrival runway'),
+            'heading_deviation'      => $this->toFloat($get('arrival heading deviation')),
+            'centerline_offset'      => $this->toFloat($get('arrival centerline deviation')),
+            'threshold_distance'     => $this->toFloat($get('arrival threshold distance')),
+            'threshold_crossing_alt' => $this->toFloat($get('arrival threshold crossing height')),
+        ];
+
+        // Landing scorecard — raw values exposed alongside normalized 0–100
+        // scores (where 100 = ideal). The frontend polar chart consumes the
+        // scores; the table beneath shows the raw values for context.
+        $landingRate = $this->toFloat($get('landing rate'));
+        $landingG = $this->toFloat($get('landing g-force'));
+        $landingPitch = $this->toFloat($get('landing pitch'));
+        $landingRoll = $this->toFloat($get('landing roll'));
+        $landingSpeed = $this->toFloat($get('landing speed'));
+
+        $scorecard = [
+            'rate'       => ['value' => $landingRate,  'score' => $this->scoreLandingRate($landingRate)],
+            'g_force'    => ['value' => $landingG,     'score' => $this->scoreGForce($landingG)],
+            'pitch'      => ['value' => $landingPitch, 'score' => $this->scorePitch($landingPitch)],
+            'roll'       => ['value' => $landingRoll,  'score' => $this->scoreRoll($landingRoll)],
+            'centerline' => ['value' => $arrival['centerline_offset'], 'score' => $this->scoreCenterline($arrival['centerline_offset'])],
+            'heading'    => ['value' => $arrival['heading_deviation'], 'score' => $this->scoreHeading($arrival['heading_deviation'])],
+        ];
+
+        return [
+            'departure' => $departure,
+            'arrival'   => $arrival,
+            'scorecard' => $scorecard,
+        ];
+    }
+
+    private function toFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    /**
+     * Score landing rate (fpm). Ideal touchdown: -100 to -300 fpm.
+     * Smoother (less negative) is still good; harder degrades fast.
+     * Returns 0–100.
+     */
+    private function scoreLandingRate(?float $fpm): float
+    {
+        if ($fpm === null) {
+            return 0.0;
+        }
+
+        $rate = abs($fpm);
+
+        return match (true) {
+            $rate <= 200.0  => 100.0,
+            $rate <= 400.0  => 100.0 - ($rate - 200.0) / 200.0 * 30.0, // 100 → 70
+            $rate <= 600.0  => 70.0 - ($rate - 400.0) / 200.0 * 40.0,  // 70 → 30
+            $rate <= 1000.0 => 30.0 - ($rate - 600.0) / 400.0 * 30.0, // 30 → 0
+            default         => 0.0,
+        };
+    }
+
+    /** G-force at touchdown. Ideal ≤ 1.2g; hard landing 1.5g+. */
+    private function scoreGForce(?float $g): float
+    {
+        if ($g === null) {
+            return 0.0;
+        }
+
+        return match (true) {
+            $g <= 1.2 => 100.0,
+            $g <= 1.5 => 100.0 - ($g - 1.2) / 0.3 * 40.0,  // 100 → 60
+            $g <= 2.0 => 60.0 - ($g - 1.5) / 0.5 * 60.0,   // 60 → 0
+            default   => 0.0,
+        };
+    }
+
+    /** Landing pitch (degrees nose-up). Ideal 2–6° for transport jets. */
+    private function scorePitch(?float $pitch): float
+    {
+        if ($pitch === null) {
+            return 0.0;
+        }
+
+        return match (true) {
+            $pitch >= 2.0 && $pitch <= 6.0 => 100.0,
+            $pitch >= 0.0 && $pitch < 2.0  => 60.0 + $pitch / 2.0 * 40.0,
+            $pitch > 6.0 && $pitch <= 10.0 => 100.0 - ($pitch - 6.0) / 4.0 * 70.0,
+            default                        => 0.0,
+        };
+    }
+
+    /** Roll at touchdown (degrees). Ideal ≤ 1°; >5° is bad. */
+    private function scoreRoll(?float $deg): float
+    {
+        if ($deg === null) {
+            return 0.0;
+        }
+
+        $absDeg = abs($deg);
+
+        return match (true) {
+            $absDeg <= 1.0 => 100.0,
+            $absDeg <= 3.0 => 100.0 - ($absDeg - 1.0) / 2.0 * 40.0,
+            $absDeg <= 5.0 => 60.0 - ($absDeg - 3.0) / 2.0 * 60.0,
+            default        => 0.0,
+        };
+    }
+
+    /** Centerline deviation (meters/feet, units TBD by client). Tight ≤3, OK ≤10, ugly >20. */
+    private function scoreCenterline(?float $offset): float
+    {
+        if ($offset === null) {
+            return 0.0;
+        }
+
+        $abs = abs($offset);
+
+        return match (true) {
+            $abs <= 3.0  => 100.0,
+            $abs <= 10.0 => 100.0 - ($abs - 3.0) / 7.0 * 30.0,
+            $abs <= 20.0 => 70.0 - ($abs - 10.0) / 10.0 * 50.0,
+            default      => 0.0,
+        };
+    }
+
+    /** Heading deviation from runway (degrees). Crosswind landings ≤5° normal. */
+    private function scoreHeading(?float $deg): float
+    {
+        if ($deg === null) {
+            return 0.0;
+        }
+
+        $abs = abs($deg);
+
+        return match (true) {
+            $abs <= 1.0  => 100.0,
+            $abs <= 3.0  => 100.0 - ($abs - 1.0) / 2.0 * 30.0,
+            $abs <= 5.0  => 70.0 - ($abs - 3.0) / 2.0 * 40.0,
+            $abs <= 10.0 => 30.0 - ($abs - 5.0) / 5.0 * 30.0,
+            default      => 0.0,
+        };
     }
 
     private function downsample(Collection $samples, int $maxPoints): Collection
@@ -123,33 +304,207 @@ class PerformanceChartService
         ];
     }
 
-    /** @return array<int, array{name: string, start: int, end: int}> */
-    private function detectPhases(Collection $samples): array
+    /**
+     * Log-substring → PirepStatus marker table. Ordered by typical flight
+     * sequence; substrings matched case-insensitively against the first
+     * occurrence of each row in the LOG stream (with "flaps set to up"
+     * gated to fire only after takeoff — pre-takeoff flap retract and
+     * post-landing flap stow share the same string).
+     *
+     * @var array<int, array{needle: string, status: PirepStatus, after_takeoff: bool}>
+     */
+    private const array LOG_MARKERS = [
+        ['needle' => 'started boarding',  'status' => PirepStatus::BOARDING,      'after_takeoff' => false],
+        ['needle' => 'started pushback',  'status' => PirepStatus::PUSHBACK_TOW,  'after_takeoff' => false],
+        ['needle' => 'started taxi out',  'status' => PirepStatus::TAXI,          'after_takeoff' => false],
+        ['needle' => 'started takeoff',   'status' => PirepStatus::TAKEOFF,       'after_takeoff' => false],
+        ['needle' => 'flaps set to up',   'status' => PirepStatus::ENROUTE,       'after_takeoff' => true],
+        ['needle' => 'on approach',       'status' => PirepStatus::APPROACH_ICAO, 'after_takeoff' => true],
+        ['needle' => 'on final approach', 'status' => PirepStatus::ON_FINAL,      'after_takeoff' => true],
+        ['needle' => 'landing rate',      'status' => PirepStatus::LANDING,       'after_takeoff' => true],
+        ['needle' => 'blocks on time',    'status' => PirepStatus::ON_BLOCK,      'after_takeoff' => true],
+    ];
+
+    /**
+     * Phase detection strategy:
+     *
+     * 1. If FLIGHT_PATH samples carry real per-sample status (anything other
+     *    than the default 'SCH'), emit one phase per contiguous status run.
+     * 2. Otherwise scan the LOG rows for known marker substrings and derive
+     *    phases from marker timestamps.
+     * 3. If neither produces phases (no logs either), fall back to a VS-
+     *    derived heuristic so the chart still gets some shading.
+     *
+     * @return array<int, array{code: string, label: string, start: int, end: int}>
+     */
+    private function detectPhases(Pirep $pirep, Collection $samples): array
     {
-        // Simple altitude-derivative based phase detection.
-        // Cruise threshold: |vs| < 200 fpm for at least 5 consecutive samples.
-        $phases = [];
-        $current = ['name' => 'climb', 'start' => $this->ts($samples->first())];
+        $hasRealStatus = $samples->contains(fn ($s): bool => $s->status !== null && $s->status !== 'SCH');
 
-        foreach ($samples as $s) {
-            $vs = (float) ($s->vs ?? 0);
-            $name = match (true) {
-                $vs > 200  => 'climb',
-                $vs < -200 => 'descent',
-                default    => 'cruise',
-            };
+        if ($hasRealStatus) {
+            return $this->collapseToPhases(
+                $samples,
+                fn ($s): string => (string) ($s->status ?? 'SCH'),
+            );
+        }
 
-            if ($name !== $current['name']) {
-                $current['end'] = $this->ts($s);
-                $phases[] = $current;
-                $current = ['name' => $name, 'start' => $this->ts($s)];
+        $fromLogs = $this->detectPhasesFromLogs($pirep, $samples);
+        if ($fromLogs !== []) {
+            return $fromLogs;
+        }
+
+        return $this->detectPhasesFromVs($samples);
+    }
+
+    /**
+     * Scan ACARS LOG rows for known marker substrings (boarding / pushback /
+     * taxi / takeoff / enroute / approach / final / landing / on-block) and
+     * emit one phase per consecutive marker pair. Final phase end-anchored
+     * to the last flight-path sample.
+     *
+     * Returns an empty array when the LOG stream produces no markers — the
+     * caller then falls back to the VS heuristic.
+     *
+     * @return array<int, array{code: string, label: string, start: int, end: int}>
+     */
+    private function detectPhasesFromLogs(Pirep $pirep, Collection $samples): array
+    {
+        // Inline rather than using the `acars()` relation (which prescopes to
+        // FLIGHT_PATH) or `acars_logs()` (which orders desc) — we need LOG
+        // rows ordered ascending so the first-match-wins marker scan picks up
+        // markers in flight-time order.
+        $logs = $pirep->hasMany(Acars::class, 'pirep_id')
+            ->where('type', AcarsType::LOG)
+            ->whereNotNull('log')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($logs->isEmpty()) {
+            return [];
+        }
+
+        $takeoffSeen = false;
+        $matched = [];
+
+        foreach ($logs as $logRow) {
+            $haystack = strtolower((string) $logRow->log);
+            $ts = $this->ts($logRow);
+
+            foreach (self::LOG_MARKERS as $i => $marker) {
+                if (isset($matched[$i])) {
+                    continue;
+                }
+
+                if ($marker['after_takeoff'] && !$takeoffSeen) {
+                    continue;
+                }
+
+                if (!str_contains($haystack, $marker['needle'])) {
+                    continue;
+                }
+
+                $matched[$i] = ['status' => $marker['status'], 'ts' => $ts];
+
+                if ($marker['status'] === PirepStatus::TAKEOFF) {
+                    $takeoffSeen = true;
+                }
+
+                // Each log row maps to at most one marker — first match wins.
+                break;
             }
         }
 
-        $current['end'] = $this->ts($samples->last());
-        $phases[] = $current;
+        if ($matched === []) {
+            return [];
+        }
+
+        // Preserve LOG_MARKERS table order rather than match-discovery order.
+        ksort($matched);
+        $ordered = array_values($matched);
+
+        $phases = [];
+        $endAnchor = $this->ts($samples->last());
+
+        foreach ($ordered as $idx => $entry) {
+            $next = $ordered[$idx + 1] ?? null;
+
+            $phases[] = [
+                'code'  => $entry['status']->value,
+                'label' => $entry['status']->value,
+                'start' => $entry['ts'],
+                'end'   => $next['ts'] ?? $endAnchor,
+            ];
+        }
 
         return $phases;
+    }
+
+    /**
+     * Last-resort heuristic when neither per-sample status nor LOG markers
+     * are available. Cruise threshold: |vs| < 200 fpm.
+     *
+     * @return array<int, array{code: string, label: string, start: int, end: int}>
+     */
+    private function detectPhasesFromVs(Collection $samples): array
+    {
+        return $this->collapseToPhases(
+            $samples,
+            fn ($s): string => match (true) {
+                (float) ($s->vs ?? 0) > 200  => PirepStatus::INIT_CLIM->value,
+                (float) ($s->vs ?? 0) < -200 => PirepStatus::APPROACH_ICAO->value,
+                default                      => PirepStatus::ENROUTE->value,
+            },
+        );
+    }
+
+    /**
+     * Walk the sample collection, group contiguous runs that share the same
+     * phase code (resolved by `$codeFor`), and emit one entry per run with
+     * its translated PirepStatus label.
+     *
+     * @param  callable(Acars): string                                              $codeFor
+     * @return array<int, array{code: string, label: string, start: int, end: int}>
+     */
+    private function collapseToPhases(Collection $samples, callable $codeFor): array
+    {
+        $phases = [];
+        $first = $samples->first();
+        $currentCode = $codeFor($first);
+        $currentStart = $this->ts($first);
+
+        foreach ($samples as $s) {
+            $code = $codeFor($s);
+
+            if ($code !== $currentCode) {
+                $phases[] = [
+                    'code'  => $currentCode,
+                    'label' => $this->phaseLabel($currentCode),
+                    'start' => $currentStart,
+                    'end'   => $this->ts($s),
+                ];
+                $currentCode = $code;
+                $currentStart = $this->ts($s);
+            }
+        }
+
+        $phases[] = [
+            'code'  => $currentCode,
+            'label' => $this->phaseLabel($currentCode),
+            'start' => $currentStart,
+            'end'   => $this->ts($samples->last()),
+        ];
+
+        return $phases;
+    }
+
+    /**
+     * Label = the PirepStatus 3-letter code itself (e.g. 'TXI', 'ENR').
+     * Chart corner real estate is cramped and the codes are unambiguous
+     * to anyone reading flight data. Unknown codes pass through as-is.
+     */
+    private function phaseLabel(string $code): string
+    {
+        return $code;
     }
 
     /** @return array<string, mixed> */

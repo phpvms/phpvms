@@ -4,25 +4,6 @@
 @endphp
 
 <aside class="fi-pirep-detail-v2-sidebar">
-    {{-- PIREP custom fields --}}
-    @if ($record->fields && $record->fields->isNotEmpty())
-        <div class="fi-pirep-detail-v2-card">
-            <div class="fi-pirep-detail-v2-card-head">
-                <h3>{{ __('pireps.fields') }}</h3>
-            </div>
-            <div class="fi-pirep-detail-v2-card-body flush">
-                <div class="fi-pirep-detail-v2-facts">
-                    @foreach ($record->fields as $field)
-                        <div class="fact">
-                            <span class="k">{{ $field->name }}</span>
-                            <span class="v">{{ filled($field->value) ? $field->value : '—' }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    @endif
-
     {{-- Pilot --}}
     @if ($pilot)
         <div class="fi-pirep-detail-v2-card">
@@ -72,4 +53,23 @@
             </div>
         </div>
     </div>
+
+    {{-- PIREP custom fields --}}
+    @if ($record->fields && $record->fields->isNotEmpty())
+        <div class="fi-pirep-detail-v2-card">
+            <div class="fi-pirep-detail-v2-card-head">
+                <h3>{{ __('pireps.fields') }}</h3>
+            </div>
+            <div class="fi-pirep-detail-v2-card-body flush">
+                <div class="fi-pirep-detail-v2-facts stacked">
+                    @foreach ($record->fields as $field)
+                        <div class="fact">
+                            <span class="k">{{ $field->name }}</span>
+                            <span class="v">{{ filled($field->value) ? $field->value : '—' }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
 </aside>

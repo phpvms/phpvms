@@ -25,7 +25,7 @@
             {{-- Comments — embedded RelationManager --}}
             <div class="fi-pirep-detail-v2-card">
                 <div class="fi-pirep-detail-v2-card-head">
-                    <h3>{{ trans_choice('common.comment', 2) }}</h3>
+                    <h3>{{ trans_choice('pireps.comment', 2) }}</h3>
                 </div>
                 <div class="fi-pirep-detail-v2-card-body flush">
                     @livewire(
@@ -57,19 +57,6 @@
                 </div>
             </div>
 
-            {{-- Custom field values (CRUD) — embedded --}}
-            <div class="fi-pirep-detail-v2-card">
-                <div class="fi-pirep-detail-v2-card-head">
-                    <h3>{{ __('pireps.fields') }}</h3>
-                </div>
-                <div class="fi-pirep-detail-v2-card-body flush">
-                    @livewire(
-                        \App\Filament\Resources\Pireps\RelationManagers\FieldValuesRelationManager::class,
-                        ['ownerRecord' => $record, 'pageClass' => \App\Filament\Resources\Pireps\Pages\ViewPirep::class],
-                        key('pirep-fields-'.$record->id)
-                    )
-                </div>
-            </div>
         </div>
 
         @include('filament.pireps.detail.sidebar', ['record' => $record])

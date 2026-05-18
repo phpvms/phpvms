@@ -27,6 +27,7 @@ class FaresRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('code')
+            ->modifyQueryUsing(fn ($query) => $query->with(['fare', 'pirep']))
             ->columns([
                 TextColumn::make('fare')
                     ->label(trans_choice('pireps.fare', 1))

@@ -15,6 +15,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
@@ -136,11 +137,20 @@ class AdminPanelProvider extends PanelProvider
             Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
                 ->module()
                 ->loadedOnRequest(),
-            Js::make('pirep-performance-chart', Vite::asset('resources/js/admin/pirep-performance-chart.js'))
-                ->module()
-                ->loadedOnRequest(),
+            AlpineComponent::make('pirep-performance-chart', resource_path('js/dist/components/pirep-performance-chart.js')),
+            AlpineComponent::make('pirep-landing-analysis', resource_path('js/dist/components/pirep-landing-analysis.js')),
             Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css')
                 ->loadedOnRequest(),
+        ]);
+
+        // Expose map-related config to JS (window.filamentData.maps).
+        // The OpenAIP overlay needs an API key client-side — pulling from
+        // config keeps it out of the bundled JS and lets each install
+        // configure its own key in .env.
+        FilamentAsset::registerScriptData([
+            'maps' => [
+                'openaip_api_key' => config('services.openaip.api_key'),
+            ],
         ]);
     }
 }

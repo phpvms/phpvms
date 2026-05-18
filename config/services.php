@@ -68,4 +68,11 @@ return [
         'scopes'        => env('IVAO_SCOPES', '') === '' ? [] : explode(',', (string) env('IVAO_SCOPES', '')),
         'redirect'      => '/oauth/ivao/callback',
     ],
+
+    'openaip' => [
+        // OpenAIP airspace + nav-aid tile overlay. Free key from
+        // https://www.openaip.net/users/clients (requires account).
+        // Empty key = overlay is silently disabled, base map still renders.
+        'api_key' => env('OPENAIP_API_KEY', ''),
+    ],
 ];

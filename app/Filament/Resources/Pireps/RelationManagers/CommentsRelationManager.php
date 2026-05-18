@@ -34,6 +34,7 @@ class CommentsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('comment')
+            ->modifyQueryUsing(fn ($query) => $query->with('user'))
             ->columns([
                 TextColumn::make('user.name')
                     ->label(trans_choice('common.user', 1)),

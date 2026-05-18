@@ -11,7 +11,6 @@ export default defineConfig({
       input: [
         "resources/css/filament/admin/theme.css",
         "resources/js/admin/app.js",
-        "resources/js/admin/pirep-performance-chart.js",
         // "resources/js/frontend/app.js",
         // "public/assets/global/js/jquery.js",
         // "public/assets/global/js/simbrief.apiv1.js",
