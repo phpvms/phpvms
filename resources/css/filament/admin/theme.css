@@ -657,105 +657,6 @@ body[class*="fi-panel-"]::after {
   opacity: 0.5;
 }
 
-/* PIREP detail layout — used by the dedicated ViewPirep page.
- * (Previously rendered inside a modal; now lives on its own page route.) */
-.fi-panel-admin .fi-pirep-modal-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 640px) {
-  .fi-panel-admin .fi-pirep-modal-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .fi-panel-admin .fi-pirep-modal-stats {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-.fi-panel-admin .fi-pirep-modal-stat {
-  background: var(--color-gray-50);
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  text-align: center;
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-stat {
-  background: var(--color-gray-800);
-}
-
-.fi-panel-admin .fi-pirep-modal-stat-label {
-  font-size: 0.625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-gray-500);
-  font-weight: 600;
-}
-
-.fi-panel-admin .fi-pirep-modal-stat-value {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin-top: 0.25rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-stat-value {
-  color: var(--color-gray-100);
-}
-
-.fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-good {
-  color: rgb(6 95 70);
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-good {
-  color: rgb(110 231 183);
-}
-
-.fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-warn {
-  color: rgb(146 64 14);
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-warn {
-  color: rgb(252 211 77);
-}
-
-.fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-bad {
-  color: rgb(153 27 27);
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-stat-value.fi-pirep-modal-stat-bad {
-  color: rgb(252 165 165);
-}
-
-.fi-panel-admin .fi-pirep-modal-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.875rem;
-  border-bottom: 1px solid var(--color-gray-200);
-  margin-bottom: 1rem;
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-header {
-  border-bottom-color: var(--color-gray-700);
-}
-
-.fi-panel-admin .fi-pirep-modal-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-}
-
-.dark .fi-panel-admin .fi-pirep-modal-title {
-  color: var(--color-gray-100);
-}
-
 /* ============================================================================
  * System panel — installer wizard styles (scoped — wizard not used in admin).
  * ============================================================================ */
@@ -1048,8 +949,7 @@ body[class*="fi-panel-"]::after {
 /* ============================================================================
  * PIREP detail v2 — single-page Stripe-style layout.
  *
- * Scope: every selector lives under .fi-pirep-detail-v2 so legacy
- * .fi-pirep-modal-* rules above are untouched.
+ * Scope: every selector lives under .fi-pirep-detail-v2.
  * Tokens reused: --color-primary-*, --color-gray-*, font families.
  * ============================================================================ */
 
