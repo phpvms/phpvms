@@ -135,6 +135,54 @@
                     <canvas x-ref="canvas" style="width:100%;height:240px;"></canvas>
                 </div>
             </div>
+
+            {{-- Phase timing summary boxes: climb / cruise / descent durations
+                 + cruise altitude. Derived from PerformanceChartService->buildSummary()
+                 which buckets the per-phase ranges into climb/cruise/descent and
+                 finds peak altitude inside cruise phases. --}}
+            @php
+                $summary = $performance['summary'] ?? null;
+                $fmtDuration = function (int $seconds): string {
+                    if ($seconds <= 0) {
+                        return '—';
+                    }
+
+                    $h = intdiv($seconds, 3600);
+                    $m = intdiv($seconds % 3600, 60);
+
+                    if ($h > 0) {
+                        return sprintf('%dh %02dm', $h, $m);
+                    }
+
+                    return sprintf('%dm', $m);
+                };
+            @endphp
+            @if ($summary)
+                <div class="fi-pirep-detail-v2-stat-strip fi-pirep-detail-v2-perf-summary">
+                    <div class="cell">
+                        <div class="lbl">Climb time</div>
+                        <div class="val">{{ $fmtDuration((int) $summary['climb_seconds']) }}</div>
+                    </div>
+                    <div class="cell">
+                        <div class="lbl">Cruise time</div>
+                        <div class="val">{{ $fmtDuration((int) $summary['cruise_seconds']) }}</div>
+                    </div>
+                    <div class="cell">
+                        <div class="lbl">Descent time</div>
+                        <div class="val">{{ $fmtDuration((int) $summary['descent_seconds']) }}</div>
+                    </div>
+                    <div class="cell">
+                        <div class="lbl">Cruise altitude</div>
+                        <div class="val">
+                            @if (filled($summary['cruise_altitude']))
+                                {{ number_format((int) $summary['cruise_altitude']) }}<span class="unit">ft</span>
+                            @else
+                                —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endif
     </div>
 </div>

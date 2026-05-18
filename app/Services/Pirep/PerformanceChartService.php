@@ -22,6 +22,7 @@ class PerformanceChartService
      *     phases: array<int, array{code: string, label: string, start: int, end: int}>,
      *     meta: array<string, mixed>,
      *     landing: array<string, mixed>|null,
+     *     summary: array{climb_seconds: int, cruise_seconds: int, descent_seconds: int, cruise_altitude: ?int},
      * }|null
      */
     public function buildDatasets(Pirep $pirep): ?array
@@ -40,6 +41,7 @@ class PerformanceChartService
         }
 
         $reduced = $this->downsample($samples, self::MAX_POINTS);
+        $phases = $this->detectPhases($pirep, $reduced);
 
         return [
             'sample_count' => $samples->count(),
@@ -49,10 +51,105 @@ class PerformanceChartService
                 'fuel'     => $this->fuelSeries($reduced),
                 'vs'       => $this->vsSeries($reduced),
             ],
-            'phases'  => $this->detectPhases($pirep, $reduced),
+            'phases'  => $phases,
             'meta'    => $this->buildMeta($reduced),
             'landing' => $this->buildLandingBlock($pirep),
+            'summary' => $this->buildSummary($phases, $reduced),
         ];
+    }
+
+    /**
+     * Compact phase-timing summary rendered as four stat boxes beneath the
+     * performance chart. Bucket per PirepStatus code:
+     *
+     *   - climb   : TAKEOFF, INIT_CLIM, AIRBORNE
+     *   - cruise  : ENROUTE
+     *   - descent : APPROACH, APPROACH_ICAO, ON_FINAL, LANDING, EMERG_DESCENT
+     *
+     * Cruise altitude is the max altitude observed inside any cruise phase;
+     * falls back to the overall max when no cruise phase was detected so a
+     * VFR / short hop without classified cruise still shows a number.
+     *
+     * @param  array<int, array{code: string, label: string, start: int, end: int}>                        $phases
+     * @return array{climb_seconds: int, cruise_seconds: int, descent_seconds: int, cruise_altitude: ?int}
+     */
+    private function buildSummary(array $phases, Collection $samples): array
+    {
+        $climbCodes = ['TOF', 'ICL', 'TKO'];
+        $cruiseCodes = ['ENR'];
+        $descentCodes = ['TEN', 'APR', 'FIN', 'LDG', 'EMG'];
+
+        $climb = 0;
+        $cruise = 0;
+        $descent = 0;
+        $cruiseRanges = [];
+
+        foreach ($phases as $phase) {
+            $duration = max(0, $phase['end'] - $phase['start']);
+
+            if (in_array($phase['code'], $climbCodes, true)) {
+                $climb += $duration;
+            } elseif (in_array($phase['code'], $cruiseCodes, true)) {
+                $cruise += $duration;
+                $cruiseRanges[] = [$phase['start'], $phase['end']];
+            } elseif (in_array($phase['code'], $descentCodes, true)) {
+                $descent += $duration;
+            }
+        }
+
+        $cruiseAltitude = $this->maxAltitudeInRanges($samples, $cruiseRanges);
+
+        if ($cruiseAltitude === null) {
+            $alts = $samples
+                ->map(fn ($s): ?float => $s->altitude_msl !== null ? (float) $s->altitude_msl : null)
+                ->filter(fn (?float $v): bool => $v !== null)
+                ->all();
+
+            $cruiseAltitude = $alts === [] ? null : (int) max($alts);
+        }
+
+        return [
+            'climb_seconds'   => $climb,
+            'cruise_seconds'  => $cruise,
+            'descent_seconds' => $descent,
+            'cruise_altitude' => $cruiseAltitude,
+        ];
+    }
+
+    /**
+     * Peak altitude among samples whose timestamp falls inside any of the
+     * supplied [start, end] ranges. Returns null when no sample falls in
+     * range or all in-range samples are missing altitude.
+     *
+     * @param array<int, array{0: int, 1: int}> $ranges
+     */
+    private function maxAltitudeInRanges(Collection $samples, array $ranges): ?int
+    {
+        if ($ranges === []) {
+            return null;
+        }
+
+        $max = null;
+
+        foreach ($samples as $s) {
+            if ($s->altitude_msl === null) {
+                continue;
+            }
+
+            $ts = $this->ts($s);
+            foreach ($ranges as [$start, $end]) {
+                if ($ts >= $start && $ts <= $end) {
+                    $alt = (float) $s->altitude_msl;
+                    if ($max === null || $alt > $max) {
+                        $max = $alt;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return $max === null ? null : (int) $max;
     }
 
     /**
@@ -78,7 +175,7 @@ class PerformanceChartService
         }
 
         $get = fn (string $needle): ?string => $fields
-            ->first(fn ($_v, $k): bool => str_contains((string) $k, $needle));
+            ->first(fn ($_v, $k): bool => str_contains($k, $needle));
 
         $departure = [
             'runway'            => $get('departure runway'),
@@ -101,7 +198,7 @@ class PerformanceChartService
         $landingG = $this->toFloat($get('landing g-force'));
         $landingPitch = $this->toFloat($get('landing pitch'));
         $landingRoll = $this->toFloat($get('landing roll'));
-        $landingSpeed = $this->toFloat($get('landing speed'));
+        $this->toFloat($get('landing speed'));
 
         $scorecard = [
             'rate'       => ['value' => $landingRate,  'score' => $this->scoreLandingRate($landingRate)],

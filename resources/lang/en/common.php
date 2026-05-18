@@ -142,4 +142,12 @@ return [
     'setting'               => 'Setting|Settings',
     'go_back_to'            => 'Go back to :name',
     'view_logs'             => 'View logs',
+    'add'                   => 'Add',
+    'added'                 => 'added',
+    'not_authorized'        => 'Not authorized',
+    'notes_and_comments'    => 'Notes & Comments',
+    'pilot_note'            => 'Pilot note',
+    'add_a_comment'         => 'Add a comment…',
+    'no_notes_or_comments'  => 'No notes or comments yet.',
+    'net'                   => 'Net',
 ];

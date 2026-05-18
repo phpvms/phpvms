@@ -14,6 +14,7 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property Pirep $record
@@ -118,11 +119,33 @@ class ViewPirep extends ViewRecord
 
         // GeoService returns FeatureCollection value objects; convert to plain
         // arrays so Livewire can serialize the property between requests.
-        $features = app(GeoService::class)->pirepGeoJson($this->record);
-        $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
+        //
+        // A malformed ACARS sample (non-numeric lat/lon, missing airport
+        // relation) should not 500 the entire view — log + render without
+        // the map. The blade's $hasRouteMap guard hides the map when
+        // mapFeatures stays empty.
+        try {
+            $features = app(GeoService::class)->pirepGeoJson($this->record);
+            $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
+        } catch (\Throwable $throwable) {
+            Log::warning('PIREP map build failed', [
+                'pirep_id' => $this->record->id,
+                'error'    => $throwable->getMessage(),
+            ]);
+            $this->mapFeatures = [];
+        }
 
-        // Build chart payload (null when no ACARS data).
-        $this->performance = app(PerformanceChartService::class)
-            ->buildDatasets($this->record);
+        // Build chart payload (null when no ACARS data). Same fail-soft
+        // contract: bad samples should not break the page, just hide the chart.
+        try {
+            $this->performance = app(PerformanceChartService::class)
+                ->buildDatasets($this->record);
+        } catch (\Throwable $throwable) {
+            Log::warning('PIREP performance chart build failed', [
+                'pirep_id' => $this->record->id,
+                'error'    => $throwable->getMessage(),
+            ]);
+            $this->performance = null;
+        }
     }
 }
