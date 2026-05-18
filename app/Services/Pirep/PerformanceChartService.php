@@ -92,7 +92,8 @@ class PerformanceChartService
     /** @return array{data: array<int, array{0: int, 1: float|null}>, flow_avg: float|null} */
     private function fuelSeries(Collection $samples): array
     {
-        $points = $samples->map(fn ($s): array => [$this->ts($s), $s->fuel ? (float) $s->fuel : null])->all();
+        // Preserve legitimate zero-fuel samples — `$s->fuel ? ... : null` would drop them.
+        $points = $samples->map(fn ($s): array => [$this->ts($s), $s->fuel !== null ? (float) $s->fuel : null])->all();
         $flows = array_filter($samples->pluck('fuel_flow')->all(), fn ($v): bool => $v !== null);
 
         return [
