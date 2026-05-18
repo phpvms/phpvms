@@ -53,13 +53,21 @@ class PerformanceChartService
 
     private function downsample(Collection $samples, int $maxPoints): Collection
     {
-        if ($samples->count() <= $maxPoints) {
+        $total = $samples->count();
+
+        if ($total <= $maxPoints) {
             return $samples->values();
         }
 
-        $step = (int) ceil($samples->count() / $maxPoints);
+        $step = (int) ceil($total / $maxPoints);
+        $lastIndex = $total - 1;
 
-        return $samples->values()->filter(fn ($_, int $i): bool => $i % $step === 0)->values();
+        // Keep every Nth sample AND always keep the final sample so the chart
+        // shows touchdown / arrival even when (count - 1) is not divisible by
+        // step. Index 0 is already preserved by the modulo (0 % step === 0).
+        return $samples->values()
+            ->filter(fn ($_, int $i): bool => $i % $step === 0 || $i === $lastIndex)
+            ->values();
     }
 
     /** @return array{data: array<int, array{0: int, 1: float|null}>, min: float, max: float, avg_cruise: float|null} */
@@ -93,7 +101,7 @@ class PerformanceChartService
     private function fuelSeries(Collection $samples): array
     {
         // Preserve legitimate zero-fuel samples — `$s->fuel ? ... : null` would drop them.
-        $points = $samples->map(fn ($s): array => [$this->ts($s), $s->fuel !== null ? (float) $s->fuel : null])->all();
+        $points = $samples->map(fn ($s): array => [$this->ts($s), $s->fuel->toUnit('lbs') !== null ? (float) $s->fuel->toUnit('lbs') : null])->all();
         $flows = array_filter($samples->pluck('fuel_flow')->all(), fn ($v): bool => $v !== null);
 
         return [
@@ -157,9 +165,18 @@ class PerformanceChartService
         ];
     }
 
-    /** Unix timestamp from an Acars row's created_at, in seconds. */
+    /**
+     * Unix timestamp from an Acars row's created_at, in seconds. Returns 0
+     * when created_at is null (Acars::$created_at is documented Carbon|null
+     * and partial imports can leave it unset). The explicit isset() guard
+     * sidesteps a larastan false positive — its model resolver narrows the
+     * type to non-null Carbon, so `?->` reads as nullsafe.neverNull at
+     * level 5 even though the property is genuinely nullable at runtime.
+     */
     private function ts(mixed $sample): int
     {
-        return (int) ($sample->created_at->timestamp ?? 0);
+        $createdAt = $sample->created_at;
+
+        return $createdAt instanceof \DateTimeInterface ? $createdAt->getTimestamp() : 0;
     }
 }
