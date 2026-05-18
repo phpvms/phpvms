@@ -88,12 +88,16 @@ class ViewPirep extends ViewRecord
     {
         parent::mount($record);
 
-        // Eager-load everything the detail blade directly reads.
-        // - 'user.rank' covers sidebar's $pilot->rank->name access (would N+1 otherwise).
+        // Eager-load everything the detail blade and embedded relation managers
+        // read. Lazy loading is disabled globally (Model::preventLazyLoading),
+        // so any nested relation access from a blade column (e.g. PirepFare->fare)
+        // must be preloaded here or the request hard-fails.
+        //
+        // - 'user.rank' covers sidebar's $pilot->rank->name access.
+        // - 'comments.user' covers CommentsRelationManager's user.name column.
+        // - 'fares.fare' covers FaresRelationManager's fare column (PirepFare->fare).
+        // - 'transactions' covers TransactionsRelationManager listing.
         // - 'field_values' feeds the `fields` Attribute accessor used by the sidebar.
-        // - comments / transactions / fares are NOT preloaded here — the embedded
-        //   relation managers (@livewire in detail.blade.php) own their own queries,
-        //   so loading them at the page level only burns DB round-trips.
         // - 'fields' itself is an Attribute, not a relation — don't load it.
         $this->record->loadMissing([
             'user.rank',
@@ -101,6 +105,9 @@ class ViewPirep extends ViewRecord
             'airline',
             'dpt_airport',
             'arr_airport',
+            'comments.user',
+            'transactions',
+            'fares.fare',
             'field_values',
         ]);
 
