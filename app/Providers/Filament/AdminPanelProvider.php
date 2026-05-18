@@ -15,8 +15,10 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
-use Filament\Support\Facades\FilamentView;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
@@ -28,7 +30,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Override;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
@@ -126,9 +128,16 @@ class AdminPanelProvider extends PanelProvider
     public function register(): void
     {
         parent::register();
-        // Vite hot reloading (not needed in production)
-        if (!app()->isProduction()) {
-            FilamentView::registerRenderHook('panels::body.end', static fn (): string => Blade::render("@vite('resources/js/app.js')"));
-        }
+
+        // Lazy-loaded admin assets. Only pulled in when a blade opts in via
+        // x-load-js / x-load-css (see Filament asset docs). Keeps Leaflet and
+        // the phpvms admin map bundle off pages that don't render a map.
+        FilamentAsset::register([
+            Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
+                ->module()
+                ->loadedOnRequest(),
+            Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css')
+                ->loadedOnRequest(),
+        ]);
     }
 }

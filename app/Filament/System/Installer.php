@@ -11,7 +11,7 @@ use App\Services\Installer\StreamedCommandsService;
 use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
-use Database\Seeders\InstallSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -195,7 +195,7 @@ class Installer extends Page
                     });
 
                 app(StreamedCommandsService::class)->streamArtisanCommand(
-                    ['db:seed', '--force', '--class='.InstallSeeder::class],
+                    ['db:seed', '--force', '--class='.DatabaseSeeder::class],
                     function (string $buffer) use (&$output): void {
                         $output .= $buffer;
                         $this->stream(content: $buffer, to: $this->stream);

@@ -2,11 +2,17 @@
     use App\Enums\PirepState;
     use App\Filament\Resources\Users\UserResource;
     use App\Support\Units\Time;
+    use Filament\Support\Facades\FilamentAsset;
 
     /** @var \App\Models\Pirep $record */
     // Caller passes $record via @include. Fall back to schema-component $getRecord()
     // for backwards compatibility if this partial is ever reused as a schema View.
     $record = $record ?? (isset($getRecord) ? $getRecord() : null);
+
+    /** @var array<string, mixed> $mapFeatures */
+    $mapFeatures = $mapFeatures ?? [];
+    $hasRouteMap = ! empty($mapFeatures);
+    $mapElementId = 'pirep-route-map-'.$record->id;
 
     $pilotName = $record->user?->name ?? '—';
     $initials = collect(explode(' ', trim((string) $pilotName)))
@@ -155,6 +161,41 @@
     {{-- Two-column body --}}
     <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;" class="fi-pirep-detail-body">
         <div>
+            @if ($hasRouteMap)
+                {{-- Route map (lazy-loaded: Leaflet + phpvms admin maps bundle pulled in via x-load) --}}
+                <div
+                    x-data="{
+                        ready: false,
+                        init() {
+                            const tryInit = () => {
+                                if (window.phpvms?.map?.render_route_map) {
+                                    window.phpvms.map.render_route_map({
+                                        render_elem: @js($mapElementId),
+                                        route_points:        @js($mapFeatures['planned_rte_points'] ?? null),
+                                        planned_route_line:  @js($mapFeatures['planned_rte_line'] ?? null),
+                                        actual_route_line:   @js($mapFeatures['actual_route_line'] ?? null),
+                                        actual_route_points: @js($mapFeatures['actual_route_points'] ?? null),
+                                        flown_route_color: '#067ec1',
+                                        circle_color: '#056093',
+                                        flightplan_route_color: '#8B008B',
+                                        leafletOptions: { scrollWheelZoom: false },
+                                    });
+                                    this.ready = true;
+                                    return;
+                                }
+                                setTimeout(tryInit, 50);
+                            };
+                            tryInit();
+                        }
+                    }"
+                    x-load-css="[@js(FilamentAsset::getStyleHref('leaflet'))]"
+                    x-load-js="[@js(FilamentAsset::getScriptSrc('phpvms-admin-maps'))]"
+                    style="margin-bottom: 1rem; border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--color-gray-200);"
+                >
+                    <div id="{{ $mapElementId }}" style="width: 100%; height: 500px;"></div>
+                </div>
+            @endif
+
             {{-- Route panel --}}
             <div class="fi-pirep-route" style="margin-bottom: 1rem;">
                 <div class="fi-pirep-route-endpoint">

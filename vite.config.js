@@ -10,7 +10,7 @@ export default defineConfig({
     laravel({
       input: [
         "resources/css/filament/admin/theme.css",
-        "resources/js/app.js",
+        "resources/js/admin/app.js",
         // "resources/js/frontend/app.js",
         // "public/assets/global/js/jquery.js",
         // "public/assets/global/js/simbrief.apiv1.js",

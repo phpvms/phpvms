@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Pireps\Pages;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
+use App\Models\Pirep;
+use App\Services\GeoService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
@@ -12,9 +14,25 @@ use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
 
+/**
+ * @property Pirep $record
+ */
 class ViewPirep extends ViewRecord
 {
     protected static string $resource = PirepResource::class;
+
+    /**
+     * GeoJSON feature collections for the route map, serialized to plain arrays
+     * so Livewire can hydrate them between requests. GeoService returns
+     * \GeoJson\Feature\FeatureCollection value objects which Livewire cannot
+     * serialize; we convert to associative arrays in mount().
+     *
+     * Shape: ['planned_rte_points' => [...], 'planned_rte_line' => [...],
+     *         'actual_route_points' => [...], 'actual_route_line' => [...]]
+     *
+     * @var array<string, mixed>
+     */
+    public array $mapFeatures = [];
 
     /**
      * Custom blade view that renders the PIREP detail layout.
@@ -71,5 +89,10 @@ class ViewPirep extends ViewRecord
             'comments.user',
             'transactions',
         ]);
+
+        // GeoService returns FeatureCollection value objects; convert to plain
+        // arrays so Livewire can serialize the property between requests.
+        $features = app(GeoService::class)->pirepGeoJson($this->record);
+        $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
     }
 }
