@@ -11,7 +11,7 @@
                 <h3>Pilot</h3>
             </div>
             <div class="fi-pirep-detail-v2-card-body flush">
-                <div class="fi-pirep-detail-v2-facts">
+                <div class="fi-pirep-detail-v2-facts stacked">
                     @if ($pilot->rank)
                         <div class="fact"><span class="k">Rank</span><span class="v">{{ $pilot->rank->name }}</span></div>
                     @endif
@@ -30,7 +30,7 @@
             <h3>Flight</h3>
         </div>
         <div class="fi-pirep-detail-v2-card-body flush">
-            <div class="fi-pirep-detail-v2-facts">
+            <div class="fi-pirep-detail-v2-facts stacked">
                 @if ($record->flight_type)
                     <div class="fact"><span class="k">Flight Type</span><span class="v">{{ $record->flight_type->getLabel() }}</span></div>
                 @endif

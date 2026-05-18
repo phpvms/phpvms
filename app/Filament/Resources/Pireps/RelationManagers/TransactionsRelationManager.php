@@ -8,7 +8,6 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +29,7 @@ class TransactionsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('memo')
+            ->paginated(false)
             ->columns([
                 TextColumn::make('memo')
                     ->label(__('common.memo')),
@@ -37,18 +37,14 @@ class TransactionsRelationManager extends RelationManager
                 TextColumn::make('credit')
                     ->label(__('common.credit'))
                     ->color('success')
-                    ->money(setting('units.currency'), 100)
-                    ->summarize([
-                        Sum::make()->money(setting('units.currency'), 100),
-                    ]),
+                    ->extraAttributes(['class' => 'fi-pirep-money-mono'])
+                    ->money(setting('units.currency'), 100),
 
                 TextColumn::make('debit')
                     ->label(__('common.debit'))
                     ->color('danger')
-                    ->money(setting('units.currency'), 100)
-                    ->summarize([
-                        Sum::make()->money(setting('units.currency'), 100),
-                    ]),
+                    ->extraAttributes(['class' => 'fi-pirep-money-mono'])
+                    ->money(setting('units.currency'), 100),
             ])
             ->filters([
                 //

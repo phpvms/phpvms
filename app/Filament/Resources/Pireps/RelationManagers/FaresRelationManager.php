@@ -6,7 +6,6 @@ use App\Models\PirepFare;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,23 +26,21 @@ class FaresRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('code')
+            ->paginated(false)
             ->modifyQueryUsing(fn ($query) => $query->with(['fare', 'pirep']))
             ->columns([
                 TextColumn::make('fare')
                     ->label(trans_choice('pireps.fare', 1))
                     ->formatStateUsing(fn (PirepFare $record): string => $record->name.' ('.$record->code.')'),
 
-                TextInputColumn::make('count')
+                TextColumn::make('count')
                     ->label(__('pireps.count'))
-                    ->disabled(fn (PirepFare $record): bool => $record->pirep->read_only)
-                    ->step(0.01)
-                    ->rules(['min:0']),
+                    ->extraAttributes(['class' => 'fi-pirep-money-mono']),
 
-                TextInputColumn::make('price')
+                TextColumn::make('price')
                     ->label(__('common.price'))
-                    ->disabled(fn (PirepFare $record): bool => $record->pirep->read_only)
-                    ->step(0.01)
-                    ->rules(['min:0']),
+                    ->money(setting('units.currency'))
+                    ->extraAttributes(['class' => 'fi-pirep-money-mono']),
 
                 TextColumn::make('capacity')
                     ->label(__('common.capacity')),

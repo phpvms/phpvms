@@ -4,7 +4,8 @@
  * instead of hardcoding the "map" id, so multiple maps can coexist on a page.
  *
  * Default tile stack:
- *   - CartoDB Voyager — neutral base, clean labels, free, no key.
+ *   - CartoDB Voyager (light) / CartoDB.DarkMatter (dark) — neutral base,
+ *     clean labels, free, no key.
  *   - OpenAIP airspace + nav-aid overlay — added on top when a key is
  *     present in window.filamentData.maps.openaip_api_key.
  *
@@ -19,6 +20,18 @@ const OPENAIP_TILE_URL =
   "https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey={apiKey}";
 const OPENAIP_ATTRIBUTION =
   '<a href="https://www.openaip.net/" target="_blank">OpenAIP</a> — airspace data CC BY-NC-SA';
+
+const TILE_PROVIDERS = {
+  light: "CartoDB.Voyager",
+  dark: "CartoDB.DarkMatter",
+};
+
+function resolveTheme(theme) {
+  if (theme === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return theme;
+}
 
 function addOpenAipOverlay(map) {
   const apiKey = window.filamentData?.maps?.openaip_api_key;
@@ -59,12 +72,14 @@ export default (_opts) => {
     opts.leafletOptions,
   );
 
-  // Default tile provider if caller didn't specify one. CartoDB Voyager is a
-  // neutral, label-light base with stronger geographic features than Positron
-  // — better contrast for the OpenAIP airspace overlay.
-  if (Object.entries(leafletOptions.providers).length === 0) {
+  // Default tile provider if caller didn't specify one.
+  const hasCustomProvider = Object.entries(leafletOptions.providers).length > 0;
+  if (!hasCustomProvider) {
+    const initialTheme =
+      window.Alpine?.store("theme") ??
+      (document.documentElement.classList.contains("dark") ? "dark" : "light");
     leafletOptions.providers = {
-      "CartoDB.Voyager": {},
+      [TILE_PROVIDERS[resolveTheme(initialTheme)]]: {},
     };
   }
 
@@ -76,6 +91,39 @@ export default (_opts) => {
   }
 
   addOpenAipOverlay(map);
+
+  // Swap base tile layer when Filament's theme changes.
+  // Only applies when we own the provider (no custom leafletOptions.providers).
+  if (!hasCustomProvider) {
+    let baseTileLayer = null;
+    let openAipLayer = null;
+    // Grab the tile layers we added.
+    map.eachLayer((layer) => {
+      if (layer instanceof leaflet.TileLayer) {
+        if (!baseTileLayer) {
+          baseTileLayer = layer;
+        } else {
+          openAipLayer = layer;
+        }
+      }
+    });
+
+    window.addEventListener("theme-changed", (event) => {
+      const theme = resolveTheme(event.detail);
+      const newProvider = TILE_PROVIDERS[theme];
+      if (!newProvider || !baseTileLayer) return;
+
+      const newTileLayer = leaflet.tileLayer.provider(newProvider);
+      map.removeLayer(baseTileLayer);
+      newTileLayer.addTo(map);
+      // Re-add OpenAIP overlay on top if it exists.
+      if (openAipLayer) {
+        map.removeLayer(openAipLayer);
+        openAipLayer.addTo(map);
+      }
+      baseTileLayer = newTileLayer;
+    });
+  }
 
   return map;
 };

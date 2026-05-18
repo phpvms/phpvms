@@ -1076,11 +1076,15 @@ body[class*="fi-panel-"]::after {
   border-right: 0;
 }
 .fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-gray-500);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
+  color: var(--color-gray-400);
 }
 .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
   font-family: var(--font-display);
@@ -1146,11 +1150,11 @@ body[class*="fi-panel-"]::after {
 }
 .fi-panel-admin .fi-pirep-detail-v2-sidebar {
   position: sticky;
-  top: 1rem;
+  top: 4.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100vh - 5.5rem);
   overflow: auto;
 }
 @media (max-width: 1024px) {
@@ -1377,6 +1381,18 @@ body[class*="fi-panel-"]::after {
 }
 .fi-panel-admin .fi-pirep-detail-v2-perf .chart-wrap {
   padding: 1rem 1.25rem 1.25rem;
+}
+
+/* PHASE TIMING SUMMARY — reuses the hero stat-strip styling. Override grid
+ * to 4 columns instead of 6 and let the existing .cell rules carry label,
+ * value, and divider styling. */
+.fi-panel-admin .fi-pirep-detail-v2-perf-summary {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 768px) {
+  .fi-panel-admin .fi-pirep-detail-v2-perf-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* PERFORMANCE EMPTY STUB */
@@ -1657,6 +1673,162 @@ body[class*="fi-panel-"]::after {
   }
 }
 
+/* NOTES & COMMENTS — chat-style thread.
+ * Pilot note pinned on top, rendered as the first row with a "Pilot note"
+ * tag. Each row: circular initials avatar, message bubble with the message
+ * on top and small meta (author · time) underneath. Read-only — no compose
+ * box is rendered. */
+.fi-panel-admin .fi-pirep-detail-v2-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .bubble {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-gray-900);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
+  color: var(--color-gray-200);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .dot {
+  opacity: 0.6;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+  background: var(--color-primary-50, rgba(59, 130, 246, 0.1));
+  color: var(--color-primary-700, #1d4ed8);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--color-primary-300, #93c5fd);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row.pilot-note .message {
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-empty {
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  padding: 0.5rem 0;
+}
+/* Compose box: textarea + submit. Sits flush below the thread, separated
+ * by a hairline divider. Pure form controls — leans on Filament's .fi-input
+ * + .fi-btn primitives so it tracks the admin theme automatically. */
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+  color: var(--color-gray-900);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+/* Single-line row: textarea grows, submit button stays at fixed size on the
+ * right. Textarea defaults to one row but is vertically resizable; the
+ * button is centered against the initial line. */
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row textarea.fi-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row .fi-btn {
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-error {
+  font-size: 0.75rem;
+  color: var(--color-danger-600, #dc2626);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-error {
+  color: var(--color-danger-400, #f87171);
+}
+
 /* FINANCE SECTION TITLES */
 .fi-panel-admin .fi-pirep-detail-v2-fin-section-title {
   padding: 0.75rem 1.25rem;
@@ -1672,6 +1844,82 @@ body[class*="fi-panel-"]::after {
   background: var(--color-gray-800);
   border-bottom-color: var(--color-gray-700);
 }
+/* Second + subsequent section titles inside the finance card get a top
+ * border + spacer so transactions visually separates from fares. The
+ * first section title sits flush under the card header and needs no
+ * divider. Uses :not(:first-of-type) because the embedded RelationManager
+ * markup sits between the titles, so an adjacent-sibling selector misses. */
+.fi-panel-admin .fi-pirep-detail-v2-fin-section-title:not(:first-of-type) {
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-fin-section-title:not(:first-of-type) {
+  border-top-color: var(--color-gray-700);
+}
+
+/* Net row — full-width footer beneath the transactions table inside the
+ * finance card. Larger mono amount + small uppercase label, color flips
+ * green/red on sign of the net. */
+.fi-panel-admin .fi-pirep-net-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: #fafbfc;
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-net-row {
+  background: var(--color-gray-800);
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-net-row .lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+.dark .fi-panel-admin .fi-pirep-net-row .lbl {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-net-row .amt {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.fi-panel-admin .fi-pirep-net-row.positive .amt {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-net-row.negative .amt {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-net-row.positive .amt {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-net-row.negative .amt {
+  color: rgb(252 165 165);
+}
+
+/* Page footer — sits below the layout grid with a fixed gap. Muted grey,
+ * small mono caps so it reads as a chrome element, not content. */
+.fi-panel-admin .fi-pirep-detail-v2-footer {
+  margin-top: 50px;
+  padding: 1rem 0;
+  text-align: center;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-footer {
+  color: var(--color-gray-400);
+}
 
 /* EMBEDDED RELATION MANAGERS — tighten chrome inside our cards */
 .fi-panel-admin .fi-pirep-detail-v2 .fi-ta {
@@ -1685,4 +1933,10 @@ body[class*="fi-panel-"]::after {
 }
 .fi-panel-admin .fi-pirep-detail-v2 .fi-ta-footer-ctn {
   background: transparent;
+}
+
+/* Money amounts — JetBrains Mono for fares/transactions in PIREP admin */
+.fi-panel-admin .fi-pirep-money-mono {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }

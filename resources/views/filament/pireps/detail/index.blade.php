@@ -20,35 +20,32 @@
                 'performance'  => $performance,
             ])
 
-            @include('filament.pireps.detail.notes', ['record' => $record])
+            @livewire(
+                \App\Livewire\Filament\PirepCommentThread::class,
+                ['record' => $record],
+                key('pirep-notes-comments-'.$record->id)
+            )
 
-            {{-- Comments — embedded RelationManager --}}
+            {{-- Fares --}}
             <div class="fi-pirep-detail-v2-card">
                 <div class="fi-pirep-detail-v2-card-head">
-                    <h3>{{ trans_choice('pireps.comment', 2) }}</h3>
+                    <h3>{{ trans_choice('pireps.fare', 2) }}</h3>
                 </div>
                 <div class="fi-pirep-detail-v2-card-body flush">
-                    @livewire(
-                        \App\Filament\Resources\Pireps\RelationManagers\CommentsRelationManager::class,
-                        ['ownerRecord' => $record, 'pageClass' => \App\Filament\Resources\Pireps\Pages\ViewPirep::class],
-                        key('pirep-comments-'.$record->id)
-                    )
-                </div>
-            </div>
-
-            {{-- Finance — fares + transactions embedded --}}
-            <div class="fi-pirep-detail-v2-card">
-                <div class="fi-pirep-detail-v2-card-head">
-                    <h3>Finance</h3>
-                </div>
-                <div class="fi-pirep-detail-v2-card-body flush">
-                    <div class="fi-pirep-detail-v2-fin-section-title">{{ trans_choice('pireps.fare', 2) }}</div>
                     @livewire(
                         \App\Filament\Resources\Pireps\RelationManagers\FaresRelationManager::class,
                         ['ownerRecord' => $record, 'pageClass' => \App\Filament\Resources\Pireps\Pages\ViewPirep::class],
                         key('pirep-fares-'.$record->id)
                     )
-                    <div class="fi-pirep-detail-v2-fin-section-title">{{ trans_choice('pireps.transaction', 2) }}</div>
+                </div>
+            </div>
+
+            {{-- Transactions --}}
+            <div class="fi-pirep-detail-v2-card">
+                <div class="fi-pirep-detail-v2-card-head">
+                    <h3>{{ trans_choice('pireps.transaction', 2) }}</h3>
+                </div>
+                <div class="fi-pirep-detail-v2-card-body flush">
                     @livewire(
                         \App\Filament\Resources\Pireps\RelationManagers\TransactionsRelationManager::class,
                         ['ownerRecord' => $record, 'pageClass' => \App\Filament\Resources\Pireps\Pages\ViewPirep::class],
@@ -57,8 +54,32 @@
                 </div>
             </div>
 
+            {{-- Net total --}}
+            @php
+                $netCents = $record->transactions->reduce(
+                    fn (int $carry, $tx): int => $carry + (int) $tx->credit - (int) $tx->debit,
+                    0,
+                );
+                $netFormatted = \Illuminate\Support\Number::currency(
+                    $netCents / 100,
+                    setting('units.currency'),
+                );
+            @endphp
+            <div class="fi-pirep-detail-v2-card">
+                <div class="fi-pirep-detail-v2-card-body flush">
+                    <div class="fi-pirep-net-row {{ $netCents >= 0 ? 'positive' : 'negative' }}">
+                        <span class="lbl">{{ __('common.net') }}</span>
+                        <span class="amt">{{ $netFormatted }}</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         @include('filament.pireps.detail.sidebar', ['record' => $record])
     </div>
+
+    <footer class="fi-pirep-detail-v2-footer">
+        phpVMS &copy; {{ now()->format('Y') }}
+    </footer>
 </div>

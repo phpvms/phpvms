@@ -71,6 +71,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('14.5rem')
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name,
                 EnumsNavigationGroup::Config->name,
