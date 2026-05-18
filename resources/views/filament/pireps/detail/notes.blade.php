@@ -13,13 +13,3 @@
     </div>
 @endif
 
-@if (filled($record->route))
-    <div class="fi-pirep-detail-v2-card">
-        <div class="fi-pirep-detail-v2-card-head">
-            <h3>{{ __('flights.route') }}</h3>
-        </div>
-        <div class="fi-pirep-detail-v2-card-body">
-            <pre class="fi-pirep-detail-v2-route-str">{{ $record->route }}</pre>
-        </div>
-    </div>
-@endif

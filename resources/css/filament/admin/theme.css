@@ -1134,7 +1134,7 @@ body[class*="fi-panel-"]::after {
 /* LAYOUT GRID */
 .fi-panel-admin .fi-pirep-detail-v2-layout {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: 1fr 306px;
   gap: 1rem;
   align-items: start;
 }
@@ -1499,6 +1499,162 @@ body[class*="fi-panel-"]::after {
 .fi-panel-admin .fi-pirep-detail-v2-facts .fact .v.mono {
   font-family: var(--font-mono);
   font-size: 0.75rem;
+}
+
+/* Stacked variant — used by the PIREP custom-fields card.
+ * Field name renders on top in the small-caps mono label style shared with
+ * sidebar group labels (.fi-sidebar-group-label), value below in the standard
+ * fact-value style. Mirrors a `<dl>` definition list visually. */
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  gap: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact:last-child {
+  padding-bottom: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
+  display: block;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+  white-space: normal;
+  margin-bottom: 0.125rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .v {
+  display: block;
+  text-align: left;
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* LANDING ANALYSIS — runway plan-views + scorecard polar.
+ * Three-column grid: departure rwy / arrival rwy / scorecard.
+ * Collapses to a single column under 768px. */
+.fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+/* Row 2 of the landing grid: two attitude indicators spanning the full
+ * width. Sized to match runway panels by sharing the same diagram
+ * aspect-ratio / facts pattern. */
+.fi-panel-admin .fi-pirep-detail-v2-landing .landing-attitude-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-gray-700);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
+  width: 100%;
+  aspect-ratio: 200 / 100;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .attitude-diagram {
+  background: transparent;
+  padding: 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
+  background: var(--color-gray-800);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .scorecard-chart {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  /* Radar chart needs square-ish aspect for labels to fit. */
+  min-height: 240px;
+}
+@media (max-width: 768px) {
+  .fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* FINANCE SECTION TITLES */
