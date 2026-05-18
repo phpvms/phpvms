@@ -7,6 +7,7 @@ use App\Exceptions\ModuleExistsException;
 use App\Exceptions\ModuleInstallationError;
 use App\Exceptions\ModuleInvalidFileType;
 use App\Models\Module;
+use App\Support\Modules\DatabaseActivator;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
@@ -142,6 +143,8 @@ class ModuleService extends Service
                 'name'    => $module_name,
                 'enabled' => 1,
             ]);
+
+            DatabaseActivator::flushCaches($module_name);
 
             try {
                 Artisan::call('module:migrate', ['module' => $module_name, '--force' => true]);
