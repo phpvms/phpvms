@@ -23,9 +23,13 @@ class PerformanceChartService
      */
     public function buildDatasets(Pirep $pirep): ?array
     {
+        // Inline the Acars query rather than calling its `ofType` / `orderedByCreatedAt`
+        // scopes — larastan does not forward `#[Scope]` attribute methods through
+        // HasMany relation builders, so the scoped form trips a false-positive
+        // method.notFound at PHPStan level 5 even though both scopes exist at runtime.
         $samples = $pirep->acars()
-            ->ofType(AcarsType::FLIGHT_PATH)
-            ->orderedByCreatedAt()
+            ->where('type', AcarsType::FLIGHT_PATH)
+            ->orderBy('created_at', 'asc')
             ->get();
 
         if ($samples->isEmpty()) {
