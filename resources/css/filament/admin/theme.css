@@ -1045,3 +1045,588 @@ body[class*="fi-panel-"]::after {
     margin-top: 0.5rem;
   }
 }
+/* ============================================================================
+ * PIREP detail v2 — single-page Stripe-style layout.
+ *
+ * Scope: every selector lives under .fi-pirep-detail-v2 so legacy
+ * .fi-pirep-modal-* rules above are untouched.
+ * Tokens reused: --color-primary-*, --color-gray-*, font families.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-pirep-detail-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* HEADER + HERO */
+.fi-panel-admin .fi-pirep-detail-v2-hero {
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-hero {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-main {
+  padding: 1.5rem 1.75rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-left {
+  display: flex;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+.fi-panel-admin .fi-pirep-detail-v2-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(6, 126, 193, 0.25);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-gray-900);
+  line-height: 1.1;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .route {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .route .arrow {
+  color: var(--color-gray-400);
+  margin: 0 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta {
+  color: var(--color-gray-500);
+  font-size: 0.8125rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta a {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta a:hover {
+  text-decoration: underline;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta .dot {
+  color: var(--color-gray-300);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* STAT STRIP */
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--color-gray-100);
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+  border-right-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell:last-child {
+  border-right: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val .unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  margin-left: 0.15rem;
+  letter-spacing: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
+  color: rgb(180 83 9);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
+  color: rgb(252 211 77);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
+  color: rgb(252 165 165);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
+  color: rgb(4 120 87);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
+  color: rgb(110 231 183);
+}
+
+/* LAYOUT GRID */
+.fi-panel-admin .fi-pirep-detail-v2-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1rem;
+  align-items: start;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+@media (max-width: 1024px) {
+  .fi-panel-admin .fi-pirep-detail-v2-layout {
+    grid-template-columns: 1fr;
+  }
+  .fi-panel-admin .fi-pirep-detail-v2-sidebar {
+    position: static;
+    max-height: none;
+  }
+  .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+}
+
+/* CARD */
+.fi-panel-admin .fi-pirep-detail-v2-card {
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card-head {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  letter-spacing: -0.005em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .link {
+  color: var(--color-primary-600);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .link:hover {
+  text-decoration: underline;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-body {
+  padding: 1.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-body.flush {
+  padding: 0;
+}
+
+/* ROUTE BAR (under the map) */
+.fi-panel-admin .fi-pirep-detail-v2-route-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.left {
+  text-align: left;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.right {
+  text-align: right;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .name {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-top: 0.15rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .time {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-top: 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(to right, rgb(16 185 129), var(--color-primary-500));
+  border-radius: 1px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before,
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before {
+  left: -4px;
+  background: rgb(16 185 129);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
+  right: -4px;
+  background: var(--color-primary-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .duration {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .distance {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-gray-400);
+}
+
+/* PERFORMANCE TABS + CHART */
+.fi-panel-admin .fi-pirep-detail-v2-perf {
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 120ms ease;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab:hover {
+  color: var(--color-gray-900);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
+  background: #fff;
+  color: var(--color-gray-900);
+  border-color: var(--color-gray-200);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
+  background: var(--color-gray-900);
+  color: var(--color-gray-50);
+  border-color: var(--color-gray-600);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .extra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .extra .lbl {
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .chart-wrap {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+/* PERFORMANCE EMPTY STUB */
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty {
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: var(--color-gray-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  margin-bottom: 0.75rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
+  background: var(--color-gray-800);
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon svg {
+  width: 26px;
+  height: 26px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin: 0 0 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
+  color: var(--color-gray-200);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty p {
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  margin: 0 auto;
+  max-width: 380px;
+  line-height: 1.55;
+}
+
+/* PROSE + ROUTE STRING */
+.fi-panel-admin .fi-pirep-detail-v2-prose {
+  color: var(--color-gray-700);
+  line-height: 1.65;
+  font-size: 0.875rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-prose {
+  color: var(--color-gray-300);
+}
+.fi-panel-admin .fi-pirep-detail-v2-prose p {
+  margin: 0 0 0.75rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-prose p:last-child {
+  margin: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-str {
+  margin: 0;
+  background: #fafbfc;
+  border: 1px solid var(--color-gray-100);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-700);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-str {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-300);
+}
+
+/* FACTS LIST (sidebar) */
+.fi-panel-admin .fi-pirep-detail-v2-facts {
+  display: flex;
+  flex-direction: column;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: 0.8125rem;
+  gap: 1rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact:last-child {
+  border-bottom: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .k {
+  color: var(--color-gray-500);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v.mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* FINANCE SECTION TITLES */
+.fi-panel-admin .fi-pirep-detail-v2-fin-section-title {
+  padding: 0.75rem 1.25rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-fin-section-title {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+
+/* EMBEDDED RELATION MANAGERS — tighten chrome inside our cards */
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-header-ctn {
+  display: none;
+}
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-footer-ctn {
+  background: transparent;
+}
