@@ -136,6 +136,9 @@ class AdminPanelProvider extends PanelProvider
             Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
                 ->module()
                 ->loadedOnRequest(),
+            Js::make('pirep-performance-chart', Vite::asset('resources/js/admin/pirep-performance-chart.js'))
+                ->module()
+                ->loadedOnRequest(),
             Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css')
                 ->loadedOnRequest(),
         ]);
