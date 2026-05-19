@@ -35,29 +35,35 @@
             <div
                 class="fi-pirep-detail-v2-map"
                 x-data="{
-                    init() {
-                        const tryInit = () => {
-                            if (window.phpvms?.map?.render_route_map) {
-                                window.phpvms.map.render_route_map({
-                                    render_elem: @js($mapElementId),
-                                    route_points:        @js($mapFeatures['planned_rte_points'] ?? null),
-                                    planned_route_line:  @js($mapFeatures['planned_rte_line'] ?? null),
-                                    actual_route_line:   @js($mapFeatures['actual_route_line'] ?? null),
-                                    actual_route_points: @js($mapFeatures['actual_route_points'] ?? null),
-                                    flown_route_color: '#067ec1',
-                                    circle_color: '#056093',
-                                    flightplan_route_color: '#8B008B',
-                                    leafletOptions: { scrollWheelZoom: false },
-                                });
-                                return;
-                            }
-                            setTimeout(tryInit, 50);
-                        };
-                        tryInit();
+                    async init() {
+                        // window.phpvms is set by resources/js/admin/app.js,
+                        // which is injected into every admin page via the
+                        // HEAD_END render hook in AdminPanelProvider. Vite
+                        // serves it as `<script type=module>`, so it runs
+                        // after DOM parsing — Alpine's init() can land
+                        // before window.phpvms exists. Await the ready
+                        // signal (a resolved Promise once app.js finishes;
+                        // a one-shot event listener while it's loading).
+                        const phpvms = await (window.phpvmsReady ?? new Promise(resolve => {
+                            window.addEventListener('phpvms:ready', e => resolve(e.detail), { once: true });
+                        }));
+
+                        // map.render_route_map dynamic-imports ./maps, so
+                        // Leaflet only loads here, not on every admin page.
+                        phpvms.map.render_route_map({
+                            render_elem: @js($mapElementId),
+                            route_points:        @js($mapFeatures['planned_rte_points'] ?? null),
+                            planned_route_line:  @js($mapFeatures['planned_rte_line'] ?? null),
+                            actual_route_line:   @js($mapFeatures['actual_route_line'] ?? null),
+                            actual_route_points: @js($mapFeatures['actual_route_points'] ?? null),
+                            flown_route_color: '#067ec1',
+                            circle_color: '#056093',
+                            flightplan_route_color: '#8B008B',
+                            leafletOptions: { scrollWheelZoom: false },
+                        });
                     }
                 }"
                 x-load-css="[@js(FilamentAsset::getStyleHref('leaflet'))]"
-                x-load-js="[@js(FilamentAsset::getScriptSrc('phpvms-admin-maps'))]"
             >
                 <div id="{{ $mapElementId }}" style="width:100%;height:360px;"></div>
             </div>
