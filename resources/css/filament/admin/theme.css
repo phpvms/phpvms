@@ -1347,6 +1347,89 @@ body[class*="fi-panel-"]::after {
   flex-shrink: 0;
 }
 
+/* Flight-log row phase tints + zebra striping.
+ *
+ * The row's background derives from two sources, in this order (later wins):
+ *   1. base row (transparent — lets grid-body bg show through)
+ *   2. zebra (every odd row gets a faint tint)
+ *   3. phase tint (climb / land — overrides zebra for emphasis)
+ *
+ * Light and dark mode both defined so the row stays readable when the panel
+ * is toggled. Phase tints are intentionally subtle in dark mode — the row
+ * text stays gray-50 from the base rule above.
+ */
+.fi-panel-admin .fi-pirep-flight-log-row--zebra {
+  background: #fafbfc;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--zebra {
+  background: rgb(255 255 255 / 0.025);
+}
+.fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
+  background: #fefce8;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
+  background: rgb(250 204 21 / 0.06);
+}
+.fi-panel-admin .fi-pirep-flight-log-row--phase-land {
+  background: #fef2f2;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-land {
+  background: rgb(248 113 113 / 0.08);
+}
+
+/* Phase badges — pill color reflects the phase bucket. Light variants
+ * use saturated pastel; dark variants use translucent tint with bright
+ * text so the badge reads against the dark row background.
+ */
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
+  background: #ecfdf5;
+  color: #065f46;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
+  background: rgb(16 185 129 / 0.15);
+  color: #6ee7b7;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
+  background: rgb(245 158 11 / 0.18);
+  color: #fcd34d;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
+  background: #eff6ff;
+  color: #1e40af;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
+  background: rgb(59 130 246 / 0.18);
+  color: #93c5fd;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
+  background: rgb(139 92 246 / 0.18);
+  color: #c4b5fd;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
+  background: #fef2f2;
+  color: #991b1b;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
+  background: rgb(239 68 68 / 0.18);
+  color: #fca5a5;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
+  background: #f3f4f6;
+  color: #374151;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
+  background: rgb(156 163 175 / 0.15);
+  color: var(--color-gray-300);
+}
+
 /* LAYOUT GRID */
 .fi-panel-admin .fi-pirep-detail-v2-layout {
   display: grid;

@@ -15,38 +15,16 @@
         ? '—'
         : preg_replace('/\s*at\s+\d{4}-\d{2}-\d{2}T[\d:]+Z.*$/i', '', $log);
 
-    $phaseColor = fn (string $code): string => match ($code) {
-        'BRD', 'PBT', 'TXI' => '#10b981',
-        'TKO', 'ICL'       => '#f59e0b',
-        'ENR'               => '#3b82f6',
-        'APR', 'FIN'        => '#8b5cf6',
-        'LDG', 'ONB'        => '#ef4444',
-        default             => '#6b7280',
-    };
-
-    $phaseBg = fn (string $code): string => match ($code) {
-        'BRD', 'PBT', 'TXI' => '#ecfdf5',
-        'TKO', 'ICL'       => '#fef3c7',
-        'ENR'               => '#eff6ff',
-        'APR', 'FIN'        => '#f3e8ff',
-        'LDG', 'ONB'        => '#fef2f2',
-        default             => '#f3f4f6',
-    };
-
-    $phaseTextColor = fn (string $code): string => match ($code) {
-        'BRD', 'PBT', 'TXI' => '#065f46',
-        'TKO', 'ICL'       => '#92400e',
-        'ENR'               => '#1e40af',
-        'APR', 'FIN'        => '#6b21a8',
-        'LDG', 'ONB'        => '#991b1b',
-        default             => '#374151',
-    };
-
-    $rowBg = fn (string $code, int $i): string => match (true) {
-        in_array($code, ['TKO', 'ICL'], true) => 'background: #fefce8;',
-        in_array($code, ['LDG', 'ONB'], true) => 'background: #fef2f2;',
-        $i % 2 === 1                          => 'background: #fafbfc;',
-        default                               => '',
+    // Map a phase code to a stable phase bucket name. Bucket name drives the
+    // CSS class — colors (light + dark) live in theme.css so dark mode works
+    // without inline overrides.
+    $phaseBucket = fn (string $code): string => match ($code) {
+        'BRD', 'PBT', 'TXI' => 'ground',
+        'TKO', 'ICL'        => 'climb',
+        'ENR'               => 'cruise',
+        'APR', 'FIN'        => 'descent',
+        'LDG', 'ONB'        => 'land',
+        default             => 'neutral',
     };
 
     $resolvePhase = function (\App\Models\Acars $entry, array $phases): string {
@@ -116,22 +94,20 @@
             @foreach ($logEntries as $i => $entry)
                 @php
                     $phase = $resolvePhase($entry, $phases);
-                    $color = $phaseColor($phase);
-                    $bg = $phaseBg($phase);
-                    $textColor = $phaseTextColor($phase);
-                    $rowStyle = $rowBg($phase, $i);
+                    $bucket = $phaseBucket($phase);
+                    $rowClasses = 'fi-pirep-flight-log-row fi-pirep-flight-log-row--phase-' . $bucket;
+                    if ($i % 2 === 1) {
+                        $rowClasses .= ' fi-pirep-flight-log-row--zebra';
+                    }
                 @endphp
-                <div class="fi-pirep-flight-log-row" style="{{ $rowStyle }}">
+                <div class="{{ $rowClasses }}">
                     <div class="fi-pirep-flight-log-time">
                         <div class="time">{{ $fmtTime($entry->created_at) }}</div>
                         <div class="data">{{ $fmtAlt($entry->altitude_msl) }} · {{ $fmtGs($entry->gs) }}</div>
                     </div>
                     <div class="fi-pirep-flight-log-event">
                         <span class="msg">{{ $cleanLog($entry->log) }}</span>
-                        <span
-                            class="fi-pirep-flight-log-badge"
-                            style="background: {{ $bg }}; color: {{ $textColor }};"
-                        >
+                        <span class="fi-pirep-flight-log-badge fi-pirep-flight-log-badge--phase-{{ $bucket }}">
                             {{ $phase }}
                         </span>
                     </div>
