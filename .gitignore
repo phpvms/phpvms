@@ -22,11 +22,11 @@ public/hot
 public/js/filament
 public/js/app
 public/css/filament
+public/css/filament-spatie-backup
 public/fonts/filament
-# esbuild output for Filament AlpineComponents IS committed (Option C).
-# Files are built by `node bin/build.js` and a CI freshness check
-# ensures the committed files match the source. See `build:components`
-# in package.json.
+# esbuild output for Filament AlpineComponents (built by `node bin/build.js`).
+# Built in CI; not committed.
+resources/js/dist
 storage/*.key
 storage/settings.json
 storage/*.sqlite

@@ -107,18 +107,6 @@ jobs:
       - name: Compile assets
         run: npm run build
 
-      # Freshness check: bin/build.js writes esbuild output into
-      # resources/js/dist/, which IS committed (see .gitignore comment).
-      # Fail the build if the committed files drift from a fresh build —
-      # forces contributors to re-run `npm run build:components` after
-      # editing the AlpineComponent sources.
-      - name: Verify committed dist files match a fresh build
-        run: |
-          git diff --exit-code resources/js/dist || {
-            echo "::error::resources/js/dist is out of sync. Run 'npm run build:components' and commit the result.";
-            exit 1;
-          }
-
       - name: Run Composer post-autoload scripts
         run: |
           composer dump-autoload -o
