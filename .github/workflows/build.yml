@@ -73,9 +73,22 @@ jobs:
           coverage: xdebug
           tools: php-cs-fixer, phpunit
 
-      # Node + frontend build runs BEFORE composer so post-autoload-dump
-      # scripts (package:discover, filament:upgrade) can find the Vite
-      # manifest + Filament AlpineComponent dist files at provider boot.
+      # Bootstrap order has to thread a needle:
+      #   1. composer install --no-scripts: pulls vendor/ (needed by Vite
+      #      because theme.css @imports vendor/filament/filament/resources/css)
+      #      WITHOUT firing post-autoload-dump (which boots service providers
+      #      that read the Vite manifest + dist files we haven't built yet).
+      #   2. npm install + npm run build: produces public/build/manifest.json
+      #      and (re)writes resources/js/dist/admin/components/*.js.
+      #   3. composer dump-autoload: re-fires post-autoload-dump now that the
+      #      frontend artifacts exist; package:discover and filament:upgrade
+      #      boot providers cleanly.
+      - name: Install Composer dependencies (no scripts)
+        run: |
+          php --version
+          composer install --dev --no-interaction --no-scripts --verbose
+          composer global require laravel/pint
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -106,11 +119,8 @@ jobs:
             exit 1;
           }
 
-      - name: Configure Environment
+      - name: Run Composer post-autoload scripts
         run: |
-          php --version
-          composer install --dev --no-interaction --verbose
-          composer global require laravel/pint
           composer dump-autoload -o
           cp .github/scripts/env.test .env
           cp .github/scripts/phpunit.xml phpunit.xml
@@ -175,8 +185,16 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      # Node + npm build BEFORE composer so post-autoload-dump scripts
-      # (filament:upgrade) find the dist assets at provider boot.
+      # Three-step bootstrap (see `build` job comment for full rationale):
+      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
+      #   2. npm build: writes public/build manifest + dist files
+      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
+      - name: "Install Release Dependencies (no scripts)"
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
+          sudo chmod +x ./.github/scripts/*
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -189,13 +207,8 @@ jobs:
       - name: Compile assets
         run: npm run build
 
-        # Dependencies
-      - name: "Install Release Dependencies"
-        run: |
-          rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          composer dump-autoload
-          sudo chmod +x ./.github/scripts/*
+      - name: Run Composer post-autoload scripts
+        run: composer dump-autoload
 
       - id: version
         name: Get version
@@ -256,8 +269,16 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      # Node + npm build BEFORE composer so post-autoload-dump scripts
-      # (filament:upgrade) find the dist assets at provider boot.
+      # Three-step bootstrap (see `build` job comment for full rationale):
+      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
+      #   2. npm build: writes public/build manifest + dist files
+      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
+      - name: "Install Release Dependencies (no scripts)"
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
+          sudo chmod +x ./.github/scripts/*
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -270,13 +291,8 @@ jobs:
       - name: Compile assets
         run: npm run build
 
-        # Dependencies
-      - name: "Install Release Dependencies"
-        run: |
-          rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          composer dump-autoload
-          sudo chmod +x ./.github/scripts/*
+      - name: Run Composer post-autoload scripts
+        run: composer dump-autoload
 
       # https://github.com/marketplace/actions/nerdbank-gitversioning
       - name: Nerdbank.GitVersioning
