@@ -6,6 +6,7 @@
     "dev:components": "node bin/build.js --dev",
     "build": "vite build && node bin/build.js",
     "build:components": "node bin/build.js",
+    "clean": "rm -rf public/build resources/js/dist",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
