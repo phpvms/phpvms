@@ -122,7 +122,23 @@ $routes = [
 
 $lastTwoIndex = count($routes) - 2;
 
+// Match the bulk PIREPs by their source_name marker so re-runs are idempotent.
+// Each route's flight_number is unique within this seed set, so combined with
+// the marker it forms a stable lookup key.
+$bulkSeedMarker = 'Manual seed';
+
 foreach ($routes as $i => [$dpt, $arr, $flightNum, $flightTime]) {
+    $exists = Pirep::query()
+        ->where('source_name', $bulkSeedMarker)
+        ->where('flight_number', (string) $flightNum)
+        ->where('dpt_airport_id', $dpt)
+        ->where('arr_airport_id', $arr)
+        ->exists();
+
+    if ($exists) {
+        continue;
+    }
+
     $blockOff = Carbon::now()->subDays(14 - $i)->setTime(8 + $i, 0, 0);
     $blockOn = $blockOff->copy()->addMinutes($flightTime);
     $blockOffStr = $blockOff->toDateTimeString();
@@ -149,7 +165,7 @@ foreach ($routes as $i => [$dpt, $arr, $flightNum, $flightTime]) {
         'landing_rate'        => -150 - ($i * 10),
         'score'               => 90 - $i,
         'source'              => 0,
-        'source_name'         => 'Manual seed',
+        'source_name'         => $bulkSeedMarker,
         'state'               => $state->value,
         'status'              => PirepStatus::ARRIVED->value,
         'notes'               => 'Seeded PIREP #'.$flightNum,
