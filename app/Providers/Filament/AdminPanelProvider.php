@@ -134,15 +134,26 @@ class AdminPanelProvider extends PanelProvider
         // Lazy-loaded admin assets. Only pulled in when a blade opts in via
         // x-load-js / x-load-css (see Filament asset docs). Keeps Leaflet and
         // the phpvms admin map bundle off pages that don't render a map.
-        FilamentAsset::register([
-            Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
-                ->module()
-                ->loadedOnRequest(),
+        //
+        // The Vite::asset() call resolves the manifest eagerly during provider
+        // registration. `composer install` runs `package:discover` before the
+        // frontend has been built (CI, fresh clones), so we skip the Vite-
+        // sourced admin map JS when no manifest exists. The map blade has its
+        // own @vite() guard for the asset URL.
+        $assets = [
             AlpineComponent::make('pirep-performance-chart', resource_path('js/dist/components/pirep-performance-chart.js')),
             AlpineComponent::make('pirep-landing-analysis', resource_path('js/dist/components/pirep-landing-analysis.js')),
             Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css')
                 ->loadedOnRequest(),
-        ]);
+        ];
+
+        if (is_file(public_path('build/manifest.json'))) {
+            $assets[] = Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
+                ->module()
+                ->loadedOnRequest();
+        }
+
+        FilamentAsset::register($assets);
 
         // Expose map-related config to JS (window.filamentData.maps).
         // The OpenAIP overlay needs an API key client-side — pulling from
