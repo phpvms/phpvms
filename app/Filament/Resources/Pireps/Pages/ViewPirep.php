@@ -61,7 +61,7 @@ class ViewPirep extends ViewRecord
      * URL and applies policy checks; we just opt out of the default infolist
      * rendering and provide our own markup.
      */
-    protected string $view = 'filament.resources.pireps.pages.view-pirep';
+    protected string $view = 'filament.pireps.pages.view-pirep';
 
     #[\Override]
     public function getHeading(): string

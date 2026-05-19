@@ -88,7 +88,7 @@
                         wire:key="pirep-card-{{ $recordKey }}"
                         class="fi-pirep-card"
                     >
-                        @include('filament.pireps.row', ['record' => $record, 'recordKey' => $recordKey])
+                        @include('filament.pireps.partials.row', ['record' => $record, 'recordKey' => $recordKey])
                     </article>
                 @endforeach
             </div>

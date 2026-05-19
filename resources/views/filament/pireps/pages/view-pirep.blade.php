@@ -7,7 +7,7 @@
 @endphp
 
 <x-filament-panels::page>
-    @include('filament.pireps.detail.index', [
+    @include('filament.pireps.partials.detail.index', [
         'record'      => $record,
         'mapFeatures' => $mapFeatures,
         'performance' => $performance,

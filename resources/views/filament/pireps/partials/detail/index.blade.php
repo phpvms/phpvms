@@ -10,7 +10,7 @@
 @endphp
 
 <div class="fi-pirep-detail-v2">
-    @include('filament.pireps.detail.header', ['record' => $record])
+    @include('filament.pireps.partials.detail.header', ['record' => $record])
 
     <div class="fi-pirep-detail-v2-layout">
         <div class="fi-pirep-detail-v2-main" x-data="{ activeTab: 'flight' }">
@@ -59,7 +59,7 @@
 
             {{-- Flight tab panel --}}
             <div x-show="activeTab === 'flight'" x-cloak class="fi-pirep-detail-v2-tab-panel">
-                @include('filament.pireps.detail.route-performance', [
+                @include('filament.pireps.partials.detail.route-performance', [
                     'record'       => $record,
                     'mapFeatures'  => $mapFeatures,
                     'performance'  => $performance,
@@ -74,7 +74,7 @@
 
             {{-- Flight Log tab panel --}}
             <div x-show="activeTab === 'log'" x-cloak class="fi-pirep-detail-v2-tab-panel">
-                @include('filament.pireps.detail.flight-log')
+                @include('filament.pireps.partials.detail.flight-log')
             </div>
 
             {{-- Finances tab panel --}}
@@ -184,7 +184,7 @@
 
         </div>
 
-        @include('filament.pireps.detail.sidebar', ['record' => $record])
+        @include('filament.pireps.partials.detail.sidebar', ['record' => $record])
     </div>
 
     <footer class="fi-pirep-detail-v2-footer">

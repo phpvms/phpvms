@@ -23,7 +23,7 @@ class ListPireps extends ListRecords
      * filters, search, sort, and pagination via Livewire — we just don't render
      * the table markup.
      */
-    protected string $view = 'filament.resources.pireps.pages.list-pireps';
+    protected string $view = 'filament.pireps.pages.list-pireps';
 
     #[\Override]
     public function content(Schema $schema): Schema
