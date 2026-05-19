@@ -66,7 +66,7 @@ class ViewPirep extends ViewRecord
     #[\Override]
     public function getHeading(): string
     {
-        $record = $this->getRecord();
+        $record = $this->record;
         $parts = [$record->ident];
         if ($record->aircraft) {
             $parts[] = $record->aircraft->registration;

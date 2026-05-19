@@ -198,7 +198,6 @@ class PerformanceChartService
         $landingG = $this->toFloat($get('landing g-force'));
         $landingPitch = $this->toFloat($get('landing pitch'));
         $landingRoll = $this->toFloat($get('landing roll'));
-        $this->toFloat($get('landing speed'));
 
         $scorecard = [
             'rate'       => ['value' => $landingRate,  'score' => $this->scoreLandingRate($landingRate)],

@@ -12,7 +12,6 @@ use Filament\Actions\EditAction;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 
 class NewsTable
 {
@@ -45,11 +44,6 @@ class NewsTable
             ->recordActions([
                 EditAction::make()
                     ->schema(fn (Schema $schema): Schema => NewsForm::configure($schema))
-                    ->mutateDataUsing(function (array $data): array {
-                        $data['user_id'] = Auth::id();
-
-                        return $data;
-                    })
                     ->after(function (array $data, News $record): void {
                         if (get_truth_state($data['send_notifications'] ?? false)) {
                             event(new NewsUpdated($record));
