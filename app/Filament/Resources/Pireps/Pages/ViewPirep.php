@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
+use App\Enums\AcarsType;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
+use App\Models\Acars;
 use App\Models\Pirep;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
@@ -16,6 +18,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -45,6 +48,12 @@ class ViewPirep extends ViewRecord
      * @var array<string, mixed>|null
      */
     public ?array $performance = null;
+
+    /**
+     * Sort direction for the Flight Log timeline. Toggled between 'asc'
+     * (earliest first) and 'desc' (latest first) via wire:click.
+     */
+    public string $logSort = 'asc';
 
     /**
      * Custom blade view that renders the PIREP detail layout.
@@ -88,6 +97,30 @@ class ViewPirep extends ViewRecord
             ->send();
 
         $this->dispatch('$refresh');
+    }
+
+    /**
+     * Computed getter for LOG entries. Queries acars rows where type = LOG
+     * and log is not null, ordered by the current $logSort direction.
+     *
+     * @return Collection<int, Acars>
+     */
+    public function getLogEntriesProperty(): Collection
+    {
+        return Acars::query()
+            ->where('pirep_id', $this->record->id)
+            ->where('type', AcarsType::LOG)
+            ->whereNotNull('log')
+            ->orderBy('created_at', $this->logSort)
+            ->get();
+    }
+
+    /**
+     * Toggle the Flight Log sort direction between ascending and descending.
+     */
+    public function toggleLogSort(): void
+    {
+        $this->logSort = $this->logSort === 'asc' ? 'desc' : 'asc';
     }
 
     /**

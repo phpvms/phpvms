@@ -10,6 +10,11 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 
+/* Alpine x-cloak — hides elements until Alpine initializes */
+[x-cloak] {
+  display: none !important;
+}
+
 /* Filament's --font-family is set by ->font('Geist', provider: GoogleFontProvider::class)
  * in each panel provider, which writes the value into an inline <style> tag via
  * vendor/filament/filament/resources/views/components/layout/base.blade.php.
@@ -1163,6 +1168,185 @@ body[class*="fi-panel-"]::after {
   color: rgb(110 231 183);
 }
 
+/* MAIN TABS (Flight / Flight Log / Finances) */
+.fi-panel-admin .fi-pirep-detail-v2-main-tabs {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-main-tabs {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-gray-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 120ms ease;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab:hover {
+  color: var(--color-gray-900);
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
+  color: var(--color-gray-900);
+  border-bottom-color: var(--color-primary-500);
+  background: transparent;
+  box-shadow: none;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
+  color: var(--color-gray-50);
+  border-bottom-color: var(--color-primary-400);
+}
+.fi-panel-admin .fi-pirep-tab-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* FLIGHT LOG TIMELINE */
+.fi-panel-admin .fi-pirep-detail-v2-flight-log {
+  display: flex;
+  flex-direction: column;
+}
+.fi-panel-admin .fi-pirep-flight-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-header .count {
+  font-size: 0.75rem;
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
+  color: var(--color-gray-900);
+  border-color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
+  color: var(--color-gray-50);
+  border-color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-grid-head {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0.4rem 0.75rem;
+  background: var(--color-gray-100);
+  border-radius: 0.5rem 0.5rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-grid-head {
+  background: var(--color-gray-800);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-grid-body {
+  background: #fff;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-grid-body {
+  background: var(--color-gray-900);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.fi-panel-admin .fi-pirep-flight-log-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  align-items: center;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-flight-log-row:last-child {
+  border-bottom: none;
+}
+.fi-panel-admin .fi-pirep-flight-log-time {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-time .time {
+  color: var(--color-gray-900);
+  font-weight: 500;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-time .time {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-flight-log-time .data {
+  color: var(--color-gray-400);
+  margin-top: 0.125rem;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-time .data {
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-flight-log-event {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-event .msg {
+  font-weight: 500;
+  color: var(--color-gray-900);
+  font-size: 0.8125rem;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-event .msg {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-flight-log-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
 /* LAYOUT GRID */
 .fi-panel-admin .fi-pirep-detail-v2-layout {
   display: grid;
@@ -1202,6 +1386,7 @@ body[class*="fi-panel-"]::after {
   border-radius: 0.75rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   overflow: hidden;
+  margin-bottom: 0.625rem;
 }
 .dark .fi-panel-admin .fi-pirep-detail-v2-card {
   background: var(--color-gray-900);
