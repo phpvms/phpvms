@@ -46,6 +46,6 @@ return [
     'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
     'update_phpvms'                     => 'Update phpvms',
     'eyebrow'                           => '',
-    'hero_title'                        => "Welcome. Let's get you flying",
+    'hero_title'                        => 'Bem-vindo. Vamos colocá-lo para voar',
     'hero_subtitle'                     => '',
 ];

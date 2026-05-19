@@ -51,9 +51,10 @@
         default => 'gray',
     };
 
+    $sourceLabel = $record->source?->getLabel();
     $sourceName = filled($record->source_name)
-        ? $record->source->getLabel().' · '.$record->source_name
-        : $record->source?->getLabel();
+        ? ($sourceLabel ? $sourceLabel.' · '.$record->source_name : $record->source_name)
+        : $sourceLabel;
 
     $dptIcao = $record->dpt_airport_id;
     $arrIcao = $record->arr_airport_id;
@@ -202,7 +203,7 @@
                 </div>
             @endif
 
-            @if ($record->landing_rate)
+            @if ($record->landing_rate !== null)
                 <div class="fi-pirep-stat-box {{ $landingClass }}">
                     <span aria-hidden="true">📉</span>
                     {{ number_format((float) $record->landing_rate) }} fpm

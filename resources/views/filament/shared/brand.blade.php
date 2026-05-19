@@ -1,7 +1,7 @@
 <div class="flex items-center gap-3">
     <img
         src="{{ asset('assets/img/logo_blue.svg') }}"
-        alt="phpVMS"
+        alt="phpvms"
         class="h-12 w-auto"
     />
     <span

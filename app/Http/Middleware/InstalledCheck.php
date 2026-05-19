@@ -13,6 +13,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Check the app.key to see whether we're installed or not
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class InstalledCheck implements Middleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         // If we're in the installer, skip this
         // Also skip if this is a livewire update (might be called from the system)

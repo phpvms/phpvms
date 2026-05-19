@@ -47,6 +47,6 @@ return [
     'update_completed'                  => 'Mise à jour terminée avec succès. Vous allez être redirigé dans quelques secondes',
     'update_phpvms'                     => 'Mettre à jour phpvms',
     'eyebrow'                           => '',
-    'hero_title'                        => "Welcome. Let's get you flying",
+    'hero_title'                        => 'Bienvenue. Préparez-vous à prendre votre envol',
     'hero_subtitle'                     => '',
 ];
