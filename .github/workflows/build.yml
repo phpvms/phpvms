@@ -73,16 +73,9 @@ jobs:
           coverage: xdebug
           tools: php-cs-fixer, phpunit
 
-      - name: Configure Environment
-        run: |
-          php --version
-          composer install --dev --no-interaction --verbose
-          composer global require laravel/pint
-          composer dump-autoload -o
-          cp .github/scripts/env.test .env
-          cp .github/scripts/phpunit.xml phpunit.xml
-          .github/scripts/version.sh
-
+      # Node + frontend build runs BEFORE composer so post-autoload-dump
+      # scripts (package:discover, filament:upgrade) can find the Vite
+      # manifest + Filament AlpineComponent dist files at provider boot.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -100,6 +93,28 @@ jobs:
 
       - name: Compile assets
         run: npm run build
+
+      # Freshness check: bin/build.js writes esbuild output into
+      # resources/js/dist/, which IS committed (see .gitignore comment).
+      # Fail the build if the committed files drift from a fresh build —
+      # forces contributors to re-run `npm run build:components` after
+      # editing the AlpineComponent sources.
+      - name: Verify committed dist files match a fresh build
+        run: |
+          git diff --exit-code resources/js/dist || {
+            echo "::error::resources/js/dist is out of sync. Run 'npm run build:components' and commit the result.";
+            exit 1;
+          }
+
+      - name: Configure Environment
+        run: |
+          php --version
+          composer install --dev --no-interaction --verbose
+          composer global require laravel/pint
+          composer dump-autoload -o
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          .github/scripts/version.sh
 
       - name: Run Pint
         run: pint --test --parallel
@@ -160,6 +175,20 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      # Node + npm build BEFORE composer so post-autoload-dump scripts
+      # (filament:upgrade) find the dist assets at provider boot.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Compile assets
+        run: npm run build
+
         # Dependencies
       - name: "Install Release Dependencies"
         run: |
@@ -167,12 +196,6 @@ jobs:
           composer install --no-dev --prefer-dist --no-interaction --verbose
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
-
-      - name: Install NPM dependencies
-        run: npm install
-
-      - name: Compile assets
-        run: npm run build
 
       - id: version
         name: Get version
@@ -232,6 +255,20 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+
+      # Node + npm build BEFORE composer so post-autoload-dump scripts
+      # (filament:upgrade) find the dist assets at provider boot.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Compile assets
+        run: npm run build
 
         # Dependencies
       - name: "Install Release Dependencies"
