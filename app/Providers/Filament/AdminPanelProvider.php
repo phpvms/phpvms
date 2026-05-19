@@ -135,36 +135,28 @@ class AdminPanelProvider extends PanelProvider
         // x-load-js / x-load-css (see Filament asset docs). Keeps Leaflet and
         // the phpvms admin map bundle off pages that don't render a map.
         //
-        // Frontend builds are not part of `composer install` — Vite produces
-        // public/build/manifest.json and `bin/build.js` produces the esbuild'd
-        // Alpine component files under resources/js/dist/. Both can be absent
-        // when `package:discover` / `filament:upgrade` boot service providers
-        // (CI, fresh clones). Guard each asset by the existence of its source
-        // so provider registration never throws when the frontend hasn't been
-        // built yet. The map blade has its own @vite() at render time.
-        $assets = [
+        // Frontend artifacts (public/build/manifest.json + resources/js/dist/*)
+        // are produced by `npm run build` and `bin/build.js`. CI builds them
+        // before composer post-autoload-dump fires (see build.yml three-step
+        // bootstrap). Release tarballs ship them pre-built. If they are
+        // missing at runtime, fail loudly rather than silently degrading.
+        FilamentAsset::register([
             Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css')
                 ->loadedOnRequest(),
-        ];
 
-        $alpineComponents = [
-            'pirep-performance-chart' => resource_path('js/dist/admin/components/pirep-performance-chart.js'),
-            'pirep-landing-analysis'  => resource_path('js/dist/admin/components/pirep-landing-analysis.js'),
-        ];
+            AlpineComponent::make(
+                'pirep-performance-chart',
+                resource_path('js/dist/admin/components/pirep-performance-chart.js'),
+            ),
+            AlpineComponent::make(
+                'pirep-landing-analysis',
+                resource_path('js/dist/admin/components/pirep-landing-analysis.js'),
+            ),
 
-        foreach ($alpineComponents as $name => $path) {
-            if (is_file($path)) {
-                $assets[] = AlpineComponent::make($name, $path);
-            }
-        }
-
-        if (is_file(public_path('build/manifest.json'))) {
-            $assets[] = Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
+            Js::make('phpvms-admin-maps', Vite::asset('resources/js/admin/app.js'))
                 ->module()
-                ->loadedOnRequest();
-        }
-
-        FilamentAsset::register($assets);
+                ->loadedOnRequest(),
+        ]);
 
         // Expose map-related config to JS (window.filamentData.maps).
         // The OpenAIP overlay needs an API key client-side — pulling from
