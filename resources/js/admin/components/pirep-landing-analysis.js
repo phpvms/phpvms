@@ -20,7 +20,6 @@ import Chart from "chart.js/auto";
 const RW_VIEWBOX = { w: 200, h: 100 };
 const RW_CENTERLINE_Y = RW_VIEWBOX.h / 2;
 const RW_RUNWAY_WIDTH = 32;
-const RW_RUNWAY_TOP = (RW_VIEWBOX.h - RW_RUNWAY_WIDTH) / 2;
 
 // Centerline-offset clamp range (meters or feet — units defined by ACARS
 // client). Beyond ±30 we just pin the marker to the edge and let the numeric
@@ -35,12 +34,12 @@ const HEADING_MULTIPLIER = 8;
 const HEADING_CLAMP = 45;
 
 const SCORE_AXIS_LABELS = {
-  rate:       "Touchdown",
-  g_force:    "G-force",
-  pitch:      "Pitch",
-  roll:       "Roll",
+  rate: "Touchdown",
+  g_force: "G-force",
+  pitch: "Pitch",
+  roll: "Roll",
   centerline: "Centerline",
-  heading:    "Heading",
+  heading: "Heading",
 };
 
 // Color bands for individual metric scores. Used both in scorecard tooltip
@@ -49,7 +48,7 @@ function severityColor(score) {
   if (score >= 80) return "#10b981"; // emerald — excellent
   if (score >= 60) return "#84cc16"; // lime — acceptable
   if (score >= 40) return "#f59e0b"; // amber — degraded
-  return "#ef4444";                  // red — bad
+  return "#ef4444"; // red — bad
 }
 
 export default function pirepLandingAnalysis(payload) {

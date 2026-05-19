@@ -36,5 +36,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": ["public/**"]
+  "ignorePatterns": ["public/**", "resources/js/dist/**"]
 }

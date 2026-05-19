@@ -148,8 +148,8 @@ class AdminPanelProvider extends PanelProvider
         ];
 
         $alpineComponents = [
-            'pirep-performance-chart' => resource_path('js/dist/components/pirep-performance-chart.js'),
-            'pirep-landing-analysis'  => resource_path('js/dist/components/pirep-landing-analysis.js'),
+            'pirep-performance-chart' => resource_path('js/dist/admin/components/pirep-performance-chart.js'),
+            'pirep-landing-analysis'  => resource_path('js/dist/admin/components/pirep-landing-analysis.js'),
         ];
 
         foreach ($alpineComponents as $name => $path) {

@@ -3,6 +3,7 @@
   "ignorePatterns": [
     "public/**",
     "modules/**",
+    "resources/js/dist/**",
     ".github/skills/*",
     ".github/copilot-instructions.md"
   ]
