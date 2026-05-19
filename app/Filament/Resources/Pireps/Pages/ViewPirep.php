@@ -6,12 +6,14 @@ use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
+use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +73,21 @@ class ViewPirep extends ViewRecord
     {
         // No default infolist — the custom blade renders the detail layout.
         return $schema->components([]);
+    }
+
+    /**
+     * Recalculate finances for this PIREP and refresh the page.
+     */
+    public function recalculateFinances(): void
+    {
+        app(PirepFinanceService::class)->processFinancesForPirep($this->record);
+
+        Notification::make()
+            ->success()
+            ->title(__('filament.finances_recalculated'))
+            ->send();
+
+        $this->dispatch('$refresh');
     }
 
     /**

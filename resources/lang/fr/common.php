@@ -137,6 +137,8 @@ return [
     'role'                  => 'Rôle|Rôles',
     'registered_on'         => 'Inscrit le',
     'finances'              => 'Finances',
+    'revenue'               => 'Revenus',
+    'expenses'              => 'Dépenses',
     'see_the_docs'          => 'Voir la docs',
     'setting'               => 'Paramètre|Paramètres',
     'go_back_to'            => 'Revenir sur :name',

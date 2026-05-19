@@ -75,6 +75,7 @@ return [
     'comment'              => 'Comment|Comments',
     'field_value'          => 'Field Value|Fields Values',
     'transaction'          => 'Transaction|Transactions',
+    'finance'              => 'Finance',
     'score'                => 'Score',
     'planned_flight_time'  => 'Planned Flight Time',
     'planned_level'        => 'Planned Flight Level',

@@ -138,6 +138,8 @@ return [
     'role'                  => 'Role|Roles',
     'registered_on'         => 'Registered On',
     'finances'              => 'Finances',
+    'revenue'               => 'Revenue',
+    'expenses'              => 'Expenses',
     'see_the_docs'          => 'See the docs',
     'setting'               => 'Setting|Settings',
     'go_back_to'            => 'Go back to :name',

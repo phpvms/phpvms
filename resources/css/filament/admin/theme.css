@@ -1850,34 +1850,6 @@ body[class*="fi-panel-"]::after {
   color: var(--color-danger-400, #f87171);
 }
 
-/* FINANCE SECTION TITLES */
-.fi-panel-admin .fi-pirep-detail-v2-fin-section-title {
-  padding: 0.75rem 1.25rem;
-  background: #fafbfc;
-  border-bottom: 1px solid var(--color-gray-100);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-fin-section-title {
-  background: var(--color-gray-800);
-  border-bottom-color: var(--color-gray-700);
-}
-/* Second + subsequent section titles inside the finance card get a top
- * border + spacer so transactions visually separates from fares. The
- * first section title sits flush under the card header and needs no
- * divider. Uses :not(:first-of-type) because the embedded RelationManager
- * markup sits between the titles, so an adjacent-sibling selector misses. */
-.fi-panel-admin .fi-pirep-detail-v2-fin-section-title:not(:first-of-type) {
-  margin-top: 1rem;
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-fin-section-title:not(:first-of-type) {
-  border-top-color: var(--color-gray-700);
-}
-
 /* Net row — full-width footer beneath the transactions table inside the
  * finance card. Larger mono amount + small uppercase label, color flips
  * green/red on sign of the net. */
@@ -1954,6 +1926,221 @@ body[class*="fi-panel-"]::after {
 }
 .fi-panel-admin .fi-pirep-detail-v2 .fi-ta-footer-ctn {
   background: transparent;
+}
+
+/* ============================================================================
+ * FINANCE CARD — combined summary + fares + transactions (demo layout).
+ * ============================================================================ */
+
+/* Summary row — three equal cells: revenue / expenses / net */
+.fi-panel-admin .fi-pirep-fin-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-cell {
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-cell {
+  border-right-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-cell:last-child {
+  border-right: 0;
+}
+.fi-panel-admin .fi-pirep-fin-lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-fin-lbl {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-fin-val {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+/* Summary row credit/debit colors */
+.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
+  color: rgb(252 165 165);
+}
+/* Table cell credit/debit colors — scoped to table to beat tbody td color */
+.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
+  color: rgb(252 165 165);
+}
+/* Direct td credit/debit coloring — beats tbody td color rule */
+.fi-panel-admin .fi-pirep-fin-table tbody td.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody td.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td.debit {
+  color: rgb(252 165 165);
+}
+
+/* Section titles — fares / transactions headers */
+.fi-panel-admin .fi-pirep-fin-section-title {
+  padding: 0.75rem 1.25rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.dark .fi-panel-admin .fi-pirep-fin-section-title {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-pirep-fin-section-title + .fi-pirep-fin-table {
+  border-top: 0;
+}
+
+/* Finance tables — clean table matching demo */
+.fi-panel-admin .fi-pirep-fin-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-table thead th {
+  padding: 0.625rem 1.25rem;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table thead th {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody td {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-50);
+  vertical-align: middle;
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td {
+  color: var(--color-gray-300);
+  border-bottom-color: var(--color-gray-800);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
+  background: var(--color-gray-50);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
+  background: var(--color-gray-800);
+}
+
+/* Value cells */
+.fi-panel-admin .fi-pirep-fin-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-fin-money {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+.fi-panel-admin .fi-pirep-fin-ta-right {
+  text-align: right;
+}
+.fi-panel-admin .fi-pirep-fin-table th.fi-pirep-fin-ta-right,
+.fi-panel-admin .fi-pirep-fin-table td.fi-pirep-fin-ta-right {
+  text-align: right;
+}
+
+/* Recalculate button — micro-btn style from demo */
+.fi-panel-admin .fi-pirep-finance-recalculate-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 120ms ease;
+  line-height: 1.25;
+}
+.fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
+  background: var(--color-gray-200);
+  color: var(--color-gray-900);
+}
+.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
+  background: var(--color-gray-700);
+  color: var(--color-gray-50);
+}
+
+/* Mobile: stack summary cells */
+@media (max-width: 640px) {
+  .fi-panel-admin .fi-pirep-fin-summary {
+    grid-template-columns: 1fr;
+  }
+  .fi-panel-admin .fi-pirep-fin-cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+  .dark .fi-panel-admin .fi-pirep-fin-cell {
+    border-bottom-color: var(--color-gray-700);
+  }
+  .fi-panel-admin .fi-pirep-fin-cell:last-child {
+    border-bottom: 0;
+  }
+  .fi-panel-admin .fi-pirep-fin-table thead th,
+  .fi-panel-admin .fi-pirep-fin-table tbody td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
 }
 
 /* Money amounts — JetBrains Mono for fares/transactions in PIREP admin */

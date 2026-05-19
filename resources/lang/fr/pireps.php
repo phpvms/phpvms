@@ -75,6 +75,7 @@ return [
     'comment'              => 'Commentaire|Commentaires',
     'field_value'          => 'Valeur du champ|Valeurs des champs',
     'transaction'          => 'Transaction|Transactions',
+    'finance'              => 'Finance',
     'score'                => 'Score',
     'planned_flight_time'  => 'Temps de vol prévu',
     'planned_level'        => 'Niveau de vol prévu',
