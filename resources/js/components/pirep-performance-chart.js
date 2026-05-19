@@ -25,36 +25,36 @@ Chart.register(annotationPlugin);
 // Low-alpha backgrounds so the data line stays visually dominant.
 const PHASE_COLORS = {
   // Ground / pre-flight
-  BST: "rgba(148, 163, 184, 0.08)",  // slate — boarding
-  RDT: "rgba(148, 163, 184, 0.08)",  // slate — ready start
-  PBT: "rgba(148, 163, 184, 0.10)",  // slate — pushback
-  OFB: "rgba(148, 163, 184, 0.10)",  // slate — departed gate
-  TXI: "rgba(168, 162, 158, 0.10)",  // stone — taxi
-  DIR: "rgba(148, 163, 184, 0.08)",  // slate — ready deice
-  DIC: "rgba(148, 163, 184, 0.08)",  // slate — deicing
+  BST: "rgba(148, 163, 184, 0.08)", // slate — boarding
+  RDT: "rgba(148, 163, 184, 0.08)", // slate — ready start
+  PBT: "rgba(148, 163, 184, 0.10)", // slate — pushback
+  OFB: "rgba(148, 163, 184, 0.10)", // slate — departed gate
+  TXI: "rgba(168, 162, 158, 0.10)", // stone — taxi
+  DIR: "rgba(148, 163, 184, 0.08)", // slate — ready deice
+  DIC: "rgba(148, 163, 184, 0.08)", // slate — deicing
 
   // Departure
-  TOF: "rgba(20, 184, 166, 0.14)",   // teal — takeoff (emphasized)
-  ICL: "rgba(20, 184, 166, 0.10)",   // teal — initial climb
-  TKO: "rgba(20, 184, 166, 0.08)",   // teal — airborne
+  TOF: "rgba(20, 184, 166, 0.14)", // teal — takeoff (emphasized)
+  ICL: "rgba(20, 184, 166, 0.10)", // teal — initial climb
+  TKO: "rgba(20, 184, 166, 0.08)", // teal — airborne
 
   // Cruise
-  ENR: "rgba(6, 126, 193, 0.06)",    // blue — enroute / cruise
+  ENR: "rgba(6, 126, 193, 0.06)", // blue — enroute / cruise
 
   // Approach / arrival
-  APR: "rgba(245, 158, 11, 0.08)",   // amber — approach
-  TEN: "rgba(245, 158, 11, 0.08)",   // amber — approach (legacy)
-  FIN: "rgba(245, 158, 11, 0.10)",   // amber — on final
-  LDG: "rgba(239, 68, 68, 0.10)",    // red — landing (emphasized)
-  LAN: "rgba(239, 68, 68, 0.08)",    // red — landed
-  ONB: "rgba(148, 163, 184, 0.08)",  // slate — on block
-  ARR: "rgba(148, 163, 184, 0.08)",  // slate — arrived
+  APR: "rgba(245, 158, 11, 0.08)", // amber — approach
+  TEN: "rgba(245, 158, 11, 0.08)", // amber — approach (legacy)
+  FIN: "rgba(245, 158, 11, 0.10)", // amber — on final
+  LDG: "rgba(239, 68, 68, 0.10)", // red — landing (emphasized)
+  LAN: "rgba(239, 68, 68, 0.08)", // red — landed
+  ONB: "rgba(148, 163, 184, 0.08)", // slate — on block
+  ARR: "rgba(148, 163, 184, 0.08)", // slate — arrived
 
   // Non-normal
-  GRT: "rgba(239, 68, 68, 0.10)",    // red — ground return
-  DV:  "rgba(245, 158, 11, 0.12)",   // amber — diverted
-  EMG: "rgba(220, 38, 38, 0.16)",    // red bold — emergency
-  PSD: "rgba(107, 114, 128, 0.06)",  // gray — paused
+  GRT: "rgba(239, 68, 68, 0.10)", // red — ground return
+  DV: "rgba(245, 158, 11, 0.12)", // amber — diverted
+  EMG: "rgba(220, 38, 38, 0.16)", // red bold — emergency
+  PSD: "rgba(107, 114, 128, 0.06)", // gray — paused
 };
 
 const SERIES = {
@@ -85,13 +85,32 @@ const SERIES = {
 };
 
 export default function pirepPerformanceChart(payload) {
+  let chartInstance = null;
+  let observer = null;
+
   return {
     payload,
     active: "altitude",
-    chart: null,
 
     init() {
       if (!this.payload) return;
+
+      // Watch for canvas removal (e.g. Livewire morphing a parent).
+      // Chart.js's rAF loop will throw "save on null" if the canvas
+      // disappears mid-draw — stop() prevents that.
+      observer = new MutationObserver(() => {
+        const canvas = this.$refs.canvas;
+        if (!canvas && chartInstance) {
+          chartInstance.stop();
+          chartInstance = null;
+        }
+      });
+      observer.observe(this.$el.parentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+
       this.render();
     },
 
@@ -138,11 +157,34 @@ export default function pirepPerformanceChart(payload) {
 
     render() {
       const cfg = SERIES[this.active];
-      const data = cfg.pick(this.payload).filter(([t, v]) => v !== null);
+      const data = cfg.pick(this.payload).filter(([, v]) => v !== null);
 
-      if (this.chart) this.chart.destroy();
+      const canvas = this.$refs.canvas;
+      if (!canvas) return;
 
-      this.chart = new Chart(this.$refs.canvas, {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      if (chartInstance) {
+        chartInstance.stop();
+
+        const ds = chartInstance.data.datasets[0];
+        ds.label = cfg.label;
+        ds.borderColor = cfg.color;
+        ds.backgroundColor = `${cfg.color}22`;
+        ds.data = data.map(([t, v]) => ({ x: t * 1000, y: v }));
+
+        chartInstance.options.scales.y.ticks.callback = (v) =>
+          cfg.unit === "ft" ? (v / 1000).toFixed(0) + "k" : v.toLocaleString();
+        chartInstance.options.plugins.tooltip.callbacks.label = (ctx) =>
+          ` ${ctx.parsed.y.toLocaleString()} ${cfg.unit}`;
+        chartInstance.options.plugins.annotation.annotations = this.buildPhaseAnnotations();
+
+        chartInstance.update("none");
+        return;
+      }
+
+      chartInstance = new Chart(ctx, {
         type: "line",
         data: {
           datasets: [
@@ -160,7 +202,8 @@ export default function pirepPerformanceChart(payload) {
           ],
         },
         options: {
-          responsive: true,
+          responsive: false,
+          animation: false,
           maintainAspectRatio: false,
           interaction: { mode: "index", intersect: false },
           plugins: {
@@ -194,6 +237,8 @@ export default function pirepPerformanceChart(payload) {
           },
         },
       });
+
+      chartInstance.stop();
     },
   };
-};
+}

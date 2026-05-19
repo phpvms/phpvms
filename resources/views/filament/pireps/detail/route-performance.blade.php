@@ -109,30 +109,32 @@
             </div>
         @else
             {{-- Performance: chart container --}}
-            <div
-                class="fi-pirep-detail-v2-perf"
-                x-load
-                x-load-src="{{ FilamentAsset::getAlpineComponentSrc('pirep-performance-chart') }}"
-                x-data="pirepPerformanceChart(@js($performance))"
-            >
-                <div class="perf-tabs">
-                    <button type="button" class="perf-tab" :class="active==='altitude' && 'active'" @click="select('altitude')">
-                        <span class="swatch" style="background:#067ec1"></span>Altitude
-                    </button>
-                    <button type="button" class="perf-tab" :class="active==='speed' && 'active'" @click="select('speed')">
-                        <span class="swatch" style="background:#14b8a6"></span>Speed
-                    </button>
-                    <button type="button" class="perf-tab" :class="active==='fuel' && 'active'" @click="select('fuel')">
-                        <span class="swatch" style="background:#f59e0b"></span>Fuel
-                    </button>
-                    <button type="button" class="perf-tab" :class="active==='vs' && 'active'" @click="select('vs')">
-                        <span class="swatch" style="background:#8b5cf6"></span>Vertical speed
-                    </button>
-                    <div class="extra"><span class="lbl">{{ number_format($performance['sample_count']) }} samples</span></div>
-                </div>
+            <div wire:ignore>
+                <div
+                    class="fi-pirep-detail-v2-perf"
+                    x-load
+                    x-load-src="{{ FilamentAsset::getAlpineComponentSrc('pirep-performance-chart') }}"
+                    x-data="pirepPerformanceChart(@js($performance))"
+                >
+                    <div class="perf-tabs">
+                        <button type="button" class="perf-tab" :class="active==='altitude' && 'active'" @click="select('altitude')">
+                            <span class="swatch" style="background:#067ec1"></span>Altitude
+                        </button>
+                        <button type="button" class="perf-tab" :class="active==='speed' && 'active'" @click="select('speed')">
+                            <span class="swatch" style="background:#14b8a6"></span>Speed
+                        </button>
+                        <button type="button" class="perf-tab" :class="active==='fuel' && 'active'" @click="select('fuel')">
+                            <span class="swatch" style="background:#f59e0b"></span>Fuel
+                        </button>
+                        <button type="button" class="perf-tab" :class="active==='vs' && 'active'" @click="select('vs')">
+                            <span class="swatch" style="background:#8b5cf6"></span>Vertical speed
+                        </button>
+                        <div class="extra"><span class="lbl">{{ number_format($performance['sample_count']) }} samples</span></div>
+                    </div>
 
-                <div class="chart-wrap">
-                    <canvas x-ref="canvas" style="width:100%;height:240px;"></canvas>
+                    <div class="chart-wrap">
+                        <canvas x-ref="canvas" style="width:100%;height:240px;"></canvas>
+                    </div>
                 </div>
             </div>
 

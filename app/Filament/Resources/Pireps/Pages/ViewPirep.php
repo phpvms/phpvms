@@ -53,6 +53,20 @@ class ViewPirep extends ViewRecord
     protected string $view = 'filament.resources.pireps.pages.view-pirep';
 
     #[\Override]
+    public function getHeading(): string
+    {
+        $record = $this->getRecord();
+        $parts = [$record->ident];
+        if ($record->aircraft) {
+            $parts[] = $record->aircraft->registration;
+        }
+
+        $parts[] = $record->dpt_airport_id.'→'.$record->arr_airport_id;
+
+        return implode(' ', $parts);
+    }
+
+    #[\Override]
     public function content(Schema $schema): Schema
     {
         // No default infolist — the custom blade renders the detail layout.

@@ -74,10 +74,6 @@
                 </div>
                 <div style="min-width:0;">
                     <div class="fi-pirep-detail-v2-hero-title">
-                        <span class="ident">{{ $record->ident }}</span>
-                        <span class="route">{{ $record->dpt_airport_id }}<span class="arrow">→</span>{{ $record->arr_airport_id }}</span>
-                    </div>
-                    <div class="fi-pirep-detail-v2-hero-meta">
                         @if ($userUrl)
                             <a href="{{ $userUrl }}">{{ $pilotName }}</a>
                         @else
@@ -87,8 +83,9 @@
                             <span class="dot">·</span>
                             <span>{{ $record->aircraft->registration }} · {{ $record->aircraft->name }}</span>
                         @endif
+                    </div>
+                    <div class="fi-pirep-detail-v2-hero-meta">
                         @if ($record->submitted_at)
-                            <span class="dot">·</span>
                             <span title="{{ $record->submitted_at->format('d-m-Y H:i') }}">Filed {{ $record->submitted_at->diffForHumans() }}</span>
                         @endif
                         @if (filled($sourceLabel))

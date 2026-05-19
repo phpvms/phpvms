@@ -74,11 +74,12 @@
     $table = $this->getTable();
     $acceptAction = $table->getAction('accept')?->record($record);
     $rejectAction = $table->getAction('reject')?->record($record);
+    $viewUrl = PirepResource::getUrl('view', ['record' => $record]);
     $viewAction = Action::make('view')
         ->color('info')
         ->icon(Heroicon::Eye)
         ->label(__('pireps.view_pirep'))
-        ->url(PirepResource::getUrl('view', ['record' => $record]))
+        ->url($viewUrl)
         ->livewire($this);
     $editAction   = $table->getAction('edit')?->record($record);
     $deleteAction = $table->getAction('delete')?->record($record);
@@ -97,7 +98,7 @@
 
         <div class="fi-pirep-row-head-text">
             <div class="fi-pirep-row-title">
-                <span class="fi-pirep-ident">{{ $record->ident }}</span>
+                <a href="{{ $viewUrl }}" class="fi-pirep-ident">{{ $record->ident }}</a>
                 <span class="fi-pirep-meta">·</span>
                 @if ($userUrl)
                     <a href="{{ $userUrl }}" class="fi-pirep-pilot-link">{{ $pilotName }}</a>

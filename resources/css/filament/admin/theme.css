@@ -297,6 +297,7 @@ body[class*="fi-panel-"]::after {
 .fi-panel-admin .fi-main {
   padding-left: 0.5rem !important;
   padding-right: 0.5rem !important;
+  overflow: visible !important;
 }
 
 @media (min-width: 768px) {
@@ -419,6 +420,17 @@ body[class*="fi-panel-"]::after {
 .fi-panel-admin .fi-pirep-ident {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.fi-panel-admin .fi-pirep-ident:hover {
+  color: var(--color-primary-600);
+}
+
+.dark .fi-panel-admin .fi-pirep-ident:hover {
+  color: var(--color-primary-400);
 }
 
 .fi-panel-admin .fi-pirep-pilot-link {
@@ -879,6 +891,21 @@ body[class*="fi-panel-"]::after {
   padding-right: 0.875rem;
 }
 
+/* View PIREP button — no background, icon-only style like the ellipsis trigger */
+.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
+  background: var(--color-gray-100);
+}
+
+.dark .fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
+  background: var(--color-gray-800);
+}
+
 .fi-panel-admin .fi-pirep-row-actions-trigger {
   width: 2rem;
   height: 2rem;
@@ -957,6 +984,7 @@ body[class*="fi-panel-"]::after {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: visible;
 }
 
 /* HEADER + HERO */
@@ -1141,6 +1169,7 @@ body[class*="fi-panel-"]::after {
   grid-template-columns: 1fr 306px;
   gap: 1rem;
   align-items: start;
+  overflow: visible;
 }
 .fi-panel-admin .fi-pirep-detail-v2-main {
   display: flex;
@@ -1149,21 +1178,13 @@ body[class*="fi-panel-"]::after {
   min-width: 0;
 }
 .fi-panel-admin .fi-pirep-detail-v2-sidebar {
-  position: sticky;
-  top: 4.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: calc(100vh - 5.5rem);
-  overflow: auto;
 }
 @media (max-width: 1024px) {
   .fi-panel-admin .fi-pirep-detail-v2-layout {
     grid-template-columns: 1fr;
-  }
-  .fi-panel-admin .fi-pirep-detail-v2-sidebar {
-    position: static;
-    max-height: none;
   }
   .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
     grid-template-columns: repeat(3, 1fr);
