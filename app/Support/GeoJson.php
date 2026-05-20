@@ -29,14 +29,27 @@ class GeoJson
     protected $point_coords = [];
 
     /**
+     * Add a point to the line + point collections. Silently drops rows whose
+     * lat/lon cannot be coerced into floats (null, empty string, garbage)
+     * so a single malformed ACARS sample does not break the entire map for
+     * a PIREP. The geojson lib's Point constructor throws
+     * "Position elements must be integers or floats" otherwise.
+     *
      * @param array $attrs Attributes of the Feature
      */
     public function addPoint($lat, $lon, array $attrs): void
     {
+        if (!is_numeric($lat) || !is_numeric($lon)) {
+            return;
+        }
+
+        $lat = (float) $lat;
+        $lon = (float) $lon;
+
         $point = [$lon, $lat];
         $this->line_coords[] = [$lon, $lat];
 
-        if (array_key_exists('alt', $attrs)) {
+        if (array_key_exists('alt', $attrs) && is_numeric($attrs['alt'])) {
             $point[] = (float) $attrs['alt'];
         }
 

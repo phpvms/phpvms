@@ -206,7 +206,7 @@
       </div>
 
       <div class="d-flex justify-content-between list-group-item">
-        <span>@lang('pireps.filedroute')</span>
+        <span>@lang('pireps.filed_route')</span>
         <span>{{ $pirep->route }}</span>
       </div>
 
@@ -227,7 +227,7 @@
       @endif
 
       <div class="d-flex justify-content-between list-group-item">
-        <span>@lang('pireps.filedon')</span>
+        <span>@lang('pireps.filed_on')</span>
         <span>{{ show_datetime($pirep->created_at) }}</span>
       </div>
       </div>
@@ -271,7 +271,7 @@
     <div class="separator"></div>
     <div class="row">
       <div class="col-12">
-        <h5>@lang('pireps.flightlog')</h5>
+        <h5>@lang('pireps.flight_log')</h5>
       </div>
       <div class="col-12">
         <table class="table table-hover table-condensed" id="users-table">

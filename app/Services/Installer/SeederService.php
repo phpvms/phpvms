@@ -9,8 +9,9 @@ use App\Models\Setting;
 use App\Services\DatabaseService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -20,13 +21,6 @@ class SeederService extends Service
     private array $counters = [];
 
     private array $offsets = [];
-
-    // Map an environment to a seeder directory, if we want to share
-    public static array $seedMapper = [
-        'production'  => 'prod',
-        'dev'         => 'local',
-        'development' => 'local',
-    ];
 
     public function __construct(
         private readonly DatabaseService $databaseSvc
@@ -43,6 +37,8 @@ class SeederService extends Service
     /**
      * Syncronize all the seed files, run this after the migrations
      * and on first install.
+     *
+     * @throws \Exception
      */
     public function syncAllSeeds(): void
     {
@@ -61,22 +57,18 @@ class SeederService extends Service
     {
         Log::info('Running seeder');
         $env = App::environment();
-        if (array_key_exists($env, self::$seedMapper)) {
-            $env = self::$seedMapper[$env];
+
+        $seedPath = database_path('seeders/'.$env);
+        if (!File::isDirectory($seedPath)) {
+            return;
         }
 
-        // Gather all of the files to seed
-        collect()
-            ->concat(Storage::disk('seeds')->files($env))
-            ->map(fn (string $file): string => database_path('seeders/'.$file))
-            ->filter(function ($file): bool {
-                $info = pathinfo($file);
-
-                return $info['extension'] === 'yml';
-            })
-            ->each(function (string $file): void {
-                Log::info('Seeding .'.$file);
-                $this->databaseSvc->seedFromYamlFile($file);
+        collect(File::allFiles($seedPath))
+            ->filter(fn (SplFileInfo $file): bool => $file->getExtension() === 'yml')
+            ->each(function (SplFileInfo $file): void {
+                $path = $file->getPathname();
+                Log::info('Seeding '.$path);
+                $this->databaseSvc->seedFromYamlFile($path);
             });
     }
 

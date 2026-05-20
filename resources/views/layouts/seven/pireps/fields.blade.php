@@ -17,7 +17,7 @@ flight reports that have been filed. You've been warned!
   <div class="row">
     <div class="col-sm-12">
       @component('components.info')
-        @lang('pireps.fieldsreadonly')
+        @lang('pireps.fields_readonly')
       @endcomponent
     </div>
   </div>
@@ -26,7 +26,7 @@ flight reports that have been filed. You've been warned!
   <div class="{{ $form_width }}">
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
-        @lang('pireps.flightinformations')
+        @lang('pireps.flight_information')
       </div>
       <div class="card-body">
         <div class="row">
@@ -47,7 +47,7 @@ flight reports that have been filed. You've been warned!
             @endif
           </div>
           <div class="col-sm-4">
-            <label for="flight_number">@lang('pireps.flightident')</label>
+            <label for="flight_number">@lang('pireps.flight_ident')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>{{ $pirep->ident }}
                 <input type="hidden" name="flight_number" value="{{ $pirep->flight_number }}" />
@@ -73,7 +73,7 @@ flight reports that have been filed. You've been warned!
                   class="form-control"
                   @if(!empty($pirep) && $pirep->read_only) readonly @endif
                   value="{{ !empty($pirep) ? $pirep->route_code : old('route_code') }}"
-                  placeholder="@lang('pireps.codeoptional')"
+                  placeholder="@lang('pireps.code_optional')"
                 />
 
                 <input
@@ -83,7 +83,7 @@ flight reports that have been filed. You've been warned!
                   class="form-control"
                   @if(!empty($pirep) && $pirep->route_leg) readonly @endif
                   value="{{ !empty($pirep) ? $pirep->route_leg : old('route_leg') }}"
-                  placeholder="@lang('pireps.legoptional')"
+                  placeholder="@lang('pireps.leg_optional')"
                 />
               </div>
               <p class="text-danger">{{ $errors->first('flight_number') }}</p>
@@ -117,7 +117,7 @@ flight reports that have been filed. You've been warned!
 
         <div class="row">
           <div class="col-6">
-            <label for="hours">@lang('flights.flighttime')</label>
+            <label for="hours">@lang('flights.flight_time')</label>
             @if(!empty($pirep) && $pirep->read_only)
               <p>
                 {{ $pirep->hours.' '.trans_choice('common.hour', $pirep->hours) }}
@@ -177,7 +177,7 @@ flight reports that have been filed. You've been warned!
 
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
-        @lang('pireps.deparrinformations')
+        @lang('pireps.deparr_information')
       </div>
       <div class="card-body">
         <div class="row">
@@ -234,7 +234,7 @@ flight reports that have been filed. You've been warned!
 
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
-        @lang('pireps.aircraftinformations')
+        @lang('pireps.aircraft_information')
       </div>
       <div class="card-body">
         <div class="row">
@@ -371,17 +371,17 @@ flight reports that have been filed. You've been warned!
 
         @if(isset($pirep) && !$pirep->read_only)
           <button name="submit" type="submit" class="btn btn-warning" value="Delete" onclick="return confirm('Are you sure you want to delete this PIREP?')">
-            @lang('pireps.deletepirep')
+            @lang('pireps.delete_pirep')
           </button>
         @endif
 
         <button name="submit" type="submit" class="btn btn-info" value="Save">
-          @lang('pireps.savepirep')
+          @lang('pireps.save_pirep')
         </button>
 
         @if(!isset($pirep) || (filled($pirep) && !$pirep->read_only))
           <button name="submit" type="submit" class="btn btn-success" value="Submit">
-            @lang('pireps.submitpirep')
+            @lang('pireps.submit_pirep')
           </button>
         @endif
       </div>

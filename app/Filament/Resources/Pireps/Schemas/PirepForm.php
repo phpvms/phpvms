@@ -22,7 +22,7 @@ class PirepForm
 
         return $schema
             ->components([
-                Section::make(__('filament.basic_informations'))->schema([
+                Section::make(__('filament.basic_information'))->schema([
 
                     TextInput::make('flight_number')
                         ->integer()
@@ -65,7 +65,7 @@ class PirepForm
                                 ->disabled(fn (Pirep $record): bool => $record->read_only),
 
                             TimePicker::make('flight_time')
-                                ->label(__('pireps.flighttime'))
+                                ->label(__('pireps.flight_time'))
                                 ->seconds(false)
                                 ->native(false),
 

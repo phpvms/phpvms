@@ -6,11 +6,13 @@ namespace App\Providers\Filament;
 
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Http\Middleware\SetActiveLanguage;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -47,12 +49,17 @@ class SystemPanelProvider extends PanelProvider
             ->plugins([
                 LanguageSwitcherPlugin::make(),
             ])
-            ->brandName('phpVMS')
-            ->favicon(public_asset('assets/img/favicon.png'))
+            ->defaultThemeMode(ThemeMode::Light)
+            ->brandName('phpvms')
+            ->font('Geist')
+            ->brandLogo(fn (): Factory|\Illuminate\Contracts\View\View => view('filament.shared.brand'))
+            ->brandLogoHeight('3rem')
+            ->favicon(asset('assets/img/favicon.png'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()
             ->navigation(false)
             ->spa()
+            ->breadcrumbs(false)
             ->errorNotifications();
     }
 }

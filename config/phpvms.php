@@ -176,8 +176,8 @@ return [
      *         protect the API from oversized result sets.
      */
     'pagination' => [
-        'limit' => 50,
-        'max'   => 100,
+        'limit' => env('PHPVMS_PAGINATION_LIMIT', 50),
+        'max'   => env('PHPVMS_PAGINATION_MAX', 100),
     ],
 
     /**

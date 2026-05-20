@@ -22,7 +22,7 @@ class SimBriefAirframeResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentDuplicate;
 
     #[\Override]
     public static function form(Schema $schema): Schema

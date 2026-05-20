@@ -17,7 +17,7 @@ return [
     'updateprofile'   => 'プロフィールアップデート',
     'editprofile'     => 'プロフィール変更',
     'edityourprofile' => 'あなたのプロフィールを変更する',
-    'transferhours'   => '転入時間',
+    'transfer_hours'  => '転入時間',
     'opt-in'          => '告知',
     'opt-in-descrip'  => 'はい、すべての告知を受け取ります',
 ];

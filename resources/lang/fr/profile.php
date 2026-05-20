@@ -16,7 +16,7 @@ return [
     'updateprofile'           => 'Modifier le Profil',
     'editprofile'             => 'Editer le Profil',
     'edityourprofile'         => 'Editer mon Profil',
-    'transferhours'           => 'Heures Transférées',
+    'transfer_hours'          => 'Heures Transférées',
     'opt-in'                  => 'Opt-In',
     'opt-in-descrip'          => 'Oui, incluez-moi dans les emails non administratifs.',
     'simbrief_username'       => "Nom d'utilisateur SimBrief",

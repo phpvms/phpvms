@@ -91,7 +91,7 @@ class AirlineFinanceTable extends TableWidget
     #[\Override]
     public static function canView(): bool
     {
-        // Display if the page is finance or /livewire/update from finance
+        // Display if the page is finance or a /livewire-{hash}/update request from finance
         if (request()->url() === Finances::getUrl()) {
             return true;
         }

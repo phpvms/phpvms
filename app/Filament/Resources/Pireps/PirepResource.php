@@ -6,10 +6,7 @@ use App\Enums\NavigationGroup;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Pages\EditPirep;
 use App\Filament\Resources\Pireps\Pages\ListPireps;
-use App\Filament\Resources\Pireps\RelationManagers\CommentsRelationManager;
-use App\Filament\Resources\Pireps\RelationManagers\FaresRelationManager;
-use App\Filament\Resources\Pireps\RelationManagers\FieldValuesRelationManager;
-use App\Filament\Resources\Pireps\RelationManagers\TransactionsRelationManager;
+use App\Filament\Resources\Pireps\Pages\ViewPirep;
 use App\Filament\Resources\Pireps\Schemas\PirepForm;
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
 use App\Filament\Resources\Pireps\Widgets\PirepStats;
@@ -31,7 +28,7 @@ class PirepResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCloudArrowUp;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     public static function getNavigationBadge(): ?string
     {
@@ -55,12 +52,10 @@ class PirepResource extends Resource
     #[\Override]
     public static function getRelations(): array
     {
-        return [
-            FaresRelationManager::class,
-            FieldValuesRelationManager::class,
-            CommentsRelationManager::class,
-            TransactionsRelationManager::class,
-        ];
+        // Relation managers are embedded inline by the custom ViewPirep blade
+        // (@livewire(CommentsRelationManager::class, ...)) and no longer
+        // surface as panel tabs.
+        return [];
     }
 
     #[\Override]
@@ -68,6 +63,7 @@ class PirepResource extends Resource
     {
         return [
             'index' => ListPireps::route('/'),
+            'view'  => ViewPirep::route('/{record}'),
             'edit'  => EditPirep::route('/{record}/edit'),
         ];
     }

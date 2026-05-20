@@ -15,7 +15,7 @@ class TyperatingForm
 
         return $schema
             ->components([
-                Section::make(__('filament.typerating_informations'))->schema([
+                Section::make(__('filament.typerating_information'))->schema([
                     TextInput::make('name')
                         ->label(__('common.name'))
                         ->required(),

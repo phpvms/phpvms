@@ -61,15 +61,15 @@
           </div>
           <div style="float: right; margin-left: 30px; margin-right: 30px;">
             <p id="map_flight_stats_right">
-              @lang('widgets.livemap.groundspeed'): <span style="font-weight: bold">{ pirep.position.gs }</span><br/>
-              @lang('widgets.livemap.altitude'): <span style="font-weight: bold">{ pirep.position.altitude }</span><br/>
-              @lang('widgets.livemap.heading'): <span style="font-weight: bold">{ pirep.position.heading }</span><br/>
+              @lang('widgets.live_map.groundspeed'): <span style="font-weight: bold">{ pirep.position.gs }</span><br/>
+              @lang('widgets.live_map.altitude'): <span style="font-weight: bold">{ pirep.position.altitude }</span><br/>
+              @lang('widgets.live_map.heading'): <span style="font-weight: bold">{ pirep.position.heading }</span><br/>
             </p>
           </div>
           <div style="float: right; margin-left: 30px;">
             <p id="map_flight_stats_middle">
               @lang('common.status'): <span style="font-weight: bold">{ pirep.status_text }</span><br/>
-              @lang('flights.flighttime'): <span style="font-weight: bold">{ pirep.flight_time | time_hm }</span><br/>
+              @lang('flights.flight_time'): <span style="font-weight: bold">{ pirep.flight_time | time_hm }</span><br/>
               @lang('common.distance'): <span style="font-weight: bold">{ pirep.position.distance.{{setting('units.distance')}} }</span>
               / <span style="font-weight: bold">
                                         { pirep.planned_distance.{{setting('units.distance')}} }</span>
@@ -93,7 +93,7 @@ and being mindful of the rivets bindings
 --}}
 <div id="live_flights" class="row">
   <div class="col-md-12">
-    <div rv-hide="has_data"  class="p-5 mb-4 bg-body-tertiary rounded-3 text-center fs-4">@lang('widgets.livemap.noflights')</div>
+    <div rv-hide="has_data"  class="p-5 mb-4 bg-body-tertiary rounded-3 text-center fs-4">@lang('widgets.live_map.noflights')</div>
     <table rv-show="has_data" id="live_flights_table" class="table table-striped">
       <thead>
       <tr class="text-small header">
@@ -101,9 +101,9 @@ and being mindful of the rivets bindings
         <td class="text-small">@lang('common.departure')</td>
         <td class="text-small">@lang('common.arrival')</td>
         <td class="text-small">@lang('common.aircraft')</td>
-        <td class="text-small">@lang('widgets.livemap.altitude')</td>
-        <td class="text-small">@lang('widgets.livemap.gs')</td>
-        <td class="text-small">@lang('widgets.livemap.distance')</td>
+        <td class="text-small">@lang('widgets.live_map.altitude')</td>
+        <td class="text-small">@lang('widgets.live_map.gs')</td>
+        <td class="text-small">@lang('widgets.live_map.distance')</td>
         <td class="text-small">@lang('common.status')</td>
       </tr>
       </thead>

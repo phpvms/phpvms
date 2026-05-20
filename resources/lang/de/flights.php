@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'flightnumber'     => 'Flugnummer',
-    'flighttime'       => 'Flugzeit',
+    'flight_time'      => 'Flugzeit',
     'flighttype'       => 'Flugtyp',
     'flighthours'      => 'Flugstunden',
     'code'             => 'Code',

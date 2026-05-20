@@ -18,6 +18,8 @@ use App\Services\ModuleService;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -60,6 +62,22 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
 
         activity()->disableLogging();
+
+        /**
+         * Inject the extra display + monospace fonts used by the docs design
+         * (Encode Sans for headings, Geist Mono + JetBrains Mono for code).
+         * Served via Bunny Fonts (GDPR-compliant Google Fonts mirror — same
+         * family names, same files, no Google CDN call). The body font (Geist)
+         * is loaded by each panel via ->font('Geist'), which also writes
+         * Filament's --font-family CSS variable. Family + weight list mirrors
+         * docs/src/css/custom.css.
+         */
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            static fn (): string => <<<'HTML'
+                <link rel="stylesheet" href="https://fonts.bunny.net/css?family=encode-sans:500,600,700|geist-mono:400,500|jetbrains-mono:400,500,600&display=swap">
+                HTML,
+        );
 
         Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
 

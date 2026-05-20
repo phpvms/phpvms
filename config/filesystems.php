@@ -40,11 +40,6 @@ return [
             'report' => false,
         ],
 
-        'seeds' => [
-            'driver' => 'local',
-            'root'   => database_path('seeders'),
-        ],
-
         'public' => [
             'driver'     => 'local',
             'root'       => storage_path('app/public'),

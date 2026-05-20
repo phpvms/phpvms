@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'No News Found',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => 'Ground Speed',
         'altitude'    => 'Altitude',
         'heading'     => 'Heading',

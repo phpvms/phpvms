@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'flightnumber'     => 'フライトナンバー',
-    'flighttime'       => '飛行時間',
+    'flight_time'      => '飛行時間',
     'flighttype'       => 'フライト種類',
     'flighthours'      => 'フライト時間',
     'code'             => 'コード',

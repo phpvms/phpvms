@@ -8,7 +8,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use League\ISO3166\ISO3166;
@@ -20,7 +20,9 @@ class AirportForm
 
         return $schema
             ->components([
-                Section::make(__('filament.airport_informations'))
+                Grid::make([
+                    'default' => 4,
+                ])
                     ->schema([
                         TextInput::make('icao')
                             ->label('ICAO')

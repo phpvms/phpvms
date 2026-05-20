@@ -1,5 +1,5 @@
 @extends('app')
-@section('title', __('auth.accountsuspended'))
+@section('title', __('auth.account_suspended'))
 
 @section('content')
   <div class="row">
@@ -7,7 +7,7 @@
       <div class="flex-center position-ref full-height">
         <div class="title m-b-md">
           <h2 class="description">
-            @lang('auth.suspendedmessage')
+            @lang('auth.suspended_message')
           </h2>
         </div>
       </div>

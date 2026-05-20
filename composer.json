@@ -44,7 +44,7 @@
     "psr/container": "1.1.1",
     "composer/composer": "^2.9.3",
     "composer/installers": "^2.3.0",
-    "laravel/framework": "^v13.7",
+    "laravel/framework": "^v13.9",
     "arrilot/laravel-widgets": "^3.14.0",
     "guzzlehttp/guzzle": "^7.9.0",
     "hashids/hashids": "~4.1.0",
@@ -115,7 +115,8 @@
     "barryvdh/laravel-ide-helper": "^3.7.0",
     "larastan/larastan": "^3.9.6",
     "fruitcake/laravel-debugbar": "^4.2.8",
-    "laravel/boost": "^2.0"
+    "laravel/boost": "^2.0",
+    "laravel/tinker": "^3.0"
   },
   "autoload": {
     "files": [
@@ -151,15 +152,15 @@
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi",
-      "@php artisan filament:upgrade",
+      "@php artisan ide-helper:generate",
+      "@php artisan ide-helper:meta",
       ".hooks/setup-git-hooks.sh"
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-      "@php artisan ide-helper:generate",
-      "@php artisan ide-helper:meta",
-      "@php artisan vendor:publish --tag=log-viewer-assets --ansi --force"
+      "@php artisan vendor:publish --tag=log-viewer-assets --ansi --force",
+      "@php artisan filament:upgrade"
     ],
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -198,7 +199,7 @@
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
     ]
   },
   "config": {

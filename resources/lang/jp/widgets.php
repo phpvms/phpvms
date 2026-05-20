@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'ニュースが見つかりません',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => '地上速度',
         'altitude'    => '高度',
         'heading'     => '針路',

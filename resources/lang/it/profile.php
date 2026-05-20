@@ -16,7 +16,7 @@ return [
     'updateprofile'   => 'Aggiorna Profilo',
     'editprofile'     => 'Modifica Profilo',
     'edityourprofile' => 'Modifica Il Tuo Profilo',
-    'transferhours'   => 'Ore trasferite',
+    'transfer_hours'  => 'Ore trasferite',
     'opt-in'          => 'Partecipa',
     'opt-in-descrip'  => 'Sì, includimi nelle e-mail non amministrative',
 ];

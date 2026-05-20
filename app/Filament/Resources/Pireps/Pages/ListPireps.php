@@ -1,21 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Pireps\Pages;
 
-use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\PirepFieldsAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Filament\Resources\Pireps\Widgets\PirepStats;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Schemas\Components\Tabs\Tab;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Schemas\Schema;
 
 class ListPireps extends ListRecords
 {
     use ExposesTableToWidgets;
 
     protected static string $resource = PirepResource::class;
+
+    /**
+     * Custom blade view that renders pireps as cards instead of an embedded table.
+     * The page still extends ListRecords so Filament wires the Table object's
+     * filters, search, sort, and pagination via Livewire — we just don't render
+     * the table markup.
+     */
+    protected string $view = 'filament.pireps.pages.list-pireps';
+
+    #[\Override]
+    public function content(Schema $schema): Schema
+    {
+        // No EmbeddedTable. The custom blade renders filters + cards directly.
+        return $schema->components([]);
+    }
 
     #[\Override]
     protected function getHeaderActions(): array
@@ -30,17 +45,6 @@ class ListPireps extends ListRecords
     {
         return [
             PirepStats::class,
-        ];
-    }
-
-    #[\Override]
-    public function getTabs(): array
-    {
-        return [
-            'all'      => Tab::make()->label(__('filament-tables::table.filters.multi_select.placeholder')),
-            'pending'  => Tab::make()->label(PirepState::PENDING->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::PENDING)),
-            'rejected' => Tab::make()->label(PirepState::REJECTED->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::REJECTED)),
-            'accepted' => Tab::make()->label(PirepState::ACCEPTED->getLabel())->modifyQueryUsing(fn (Builder $query) => $query->where('state', PirepState::ACCEPTED)),
         ];
     }
 }

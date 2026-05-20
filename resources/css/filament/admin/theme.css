@@ -1,4 +1,2418 @@
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
 
+/* Google Fonts injected via Filament render hook (AppServiceProvider::boot).
+ * Family names mirror the docs (custom.css lines 24-47):
+ *   - Geist          (body sans-serif)
+ *   - Encode Sans    (display/headings)
+ *   - Geist Mono     (monospace, code blocks)
+ *   - JetBrains Mono (small-caps style labels — sidebar groups, TOC headers) */
+
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+/* Alpine x-cloak — hides elements until Alpine initializes */
+[x-cloak] {
+  display: none !important;
+}
+
+/* Filament's --font-family is set by ->font('Geist', provider: GoogleFontProvider::class)
+ * in each panel provider, which writes the value into an inline <style> tag via
+ * vendor/filament/filament/resources/views/components/layout/base.blade.php.
+ * That declaration wins over CSS :root rules, so we configure it through Filament's
+ * API rather than overriding it here. */
+
+/* Tailwind v4 theme tokens — declared once, both panels use them */
+@theme {
+  --font-sans:
+    "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Encode Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Small-caps style label font — sidebar group labels, mirrors docs TOC header
+   * (custom.css:204-216). Distinct from --font-mono which is for code blocks. */
+  --font-mono-display: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Primary palette derived from #067ec1 (docs --ifm-color-primary) */
+  --color-primary-50: #e6f3fb;
+  --color-primary-100: #cce7f6;
+  --color-primary-200: #99cfee;
+  --color-primary-300: #66b7e5;
+  --color-primary-400: #339fdc;
+  --color-primary-500: #067ec1;
+  --color-primary-600: #056ba4;
+  --color-primary-700: #045887;
+  --color-primary-800: #034669;
+  --color-primary-900: #02334c;
+  --color-primary-950: #01202f;
+}
+
+/* Dark-mode surfaces — match docs (GitHub-inspired) */
+.dark {
+  --color-gray-900: #0d1117;
+  --color-gray-800: #161b22;
+}
+
+/* ============================================================================
+ * Shared brand styling — applies to both admin and system panels.
+ * Selector `body[class*="fi-panel-"]` matches `.fi-panel-admin` + `.fi-panel-system`.
+ * ============================================================================ */
+
+/* Panel body */
+body[class*="fi-panel-"] {
+  background: #ffffff;
+  font-family: var(--font-sans), serif;
+}
+
+.dark body[class*="fi-panel-"] {
+  background: #0d1117;
+}
+
+/* Topbar — match docs navbar (white, 60px, no shadow) */
+body[class*="fi-panel-"] .fi-topbar {
+  background: #ffffff;
+  box-shadow: none;
+  height: 60px;
+}
+
+.dark body[class*="fi-panel-"] .fi-topbar {
+  background: #0d1117;
+  border-bottom-color: rgb(255 255 255 / 8%);
+}
+
+/* Heading scale — Encode Sans, docs proportions.
+ * Base letter-spacing for section headings.
+ * Hero h1 needs tighter tracking (-0.02em per docs .lp-hero-title); higher-specificity
+ * selector below restores it for any <h1> inside a <header> element.
+ * Color matches the "phpvms" wordmark in the brand component (filament/shared/brand.blade.php). */
+body[class*="fi-panel-"] h1,
+body[class*="fi-panel-"] h2,
+body[class*="fi-panel-"] h3 {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.01em;
+  color: #444950;
+}
+
+.dark body[class*="fi-panel-"] h1,
+.dark body[class*="fi-panel-"] h2,
+.dark body[class*="fi-panel-"] h3 {
+  color: #e3e3e3;
+}
+
+body[class*="fi-panel-"] header h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Code blocks — Geist Mono, no ligatures (migration stream, log viewer, etc.) */
+body[class*="fi-panel-"] code,
+body[class*="fi-panel-"] pre {
+  font-family: var(--font-mono), monospace;
+  font-variant-ligatures: none;
+}
+
+/* Solid primary buttons — match docs .lp-btn-primary background (shade 500 =
+ * #067ec1, the docs --ifm-color-primary). Filament defaults to shade 600
+ * (#056ba4) and writes the colour via an inline style attribute, so we need
+ * !important to override the inline value. Hover darkens to shade 600 to
+ * mirror docs .lp-btn-primary:hover (--ifm-color-primary-darker). Outlined
+ * buttons keep the framework default.
+ *
+ * Icons inside the button render via `.fi-icon` which reads `--text` (inline
+ * style written by Filament). We target it directly to force white. */
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+  color: var(--color-white) !important;
+}
+body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
+  background-color: var(--color-primary-500) !important;
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+  color: var(--color-white) !important;
+}
+.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
+  background-color: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+}
+
+/* ============================================================================
+ * Bottom-right atmospheric dot grid — ported from docs/src/css/custom.css:2388
+ * (html.docs-wrapper::after). Two-layer dot field (24px + 72px spacing) with
+ * radial-ellipse mask anchored at bottom-right so it fades smoothly into the
+ * rest of the page. z-index: -1 + pointer-events: none — nothing interactive
+ * is affected.
+ * ============================================================================ */
+body[class*="fi-panel-"]::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  bottom: 0;
+  right: 0;
+  width: 560px;
+  height: 460px;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 20%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-500) 9%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size:
+    24px 24px,
+    72px 72px;
+  background-position:
+    0 0,
+    12px 12px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at bottom right,
+    black 0%,
+    black 25%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(ellipse at bottom right, black 0%, black 25%, transparent 75%);
+}
+
+/* Dark mode: bump alpha (32% / 14%) using the lighter primary shade
+ * so the dots stay legible against #0d1117. */
+.dark body[class*="fi-panel-"]::after {
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 32%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary-400) 14%, transparent) 1px,
+      transparent 1.5px
+    );
+}
+
+/* Mobile: shrink the corner texture so it doesn't dominate small viewports. */
+@media (max-width: 720px) {
+  body[class*="fi-panel-"]::after {
+    width: 280px;
+    height: 220px;
+  }
+}
+
+/* ============================================================================
+ * Admin panel — sidebar styling.
+ *
+ * Mirrors the docs site sidebar (docs/src/css/custom.css:530-697):
+ *   - Group label  → JetBrains Mono uppercase 0.75rem, gray-500
+ *   - Nav item     → 0.875rem (14px) weight 400, gray-600
+ *   - Active item  → weight 600, near-black
+ *
+ * Vertical separator removed — surface alone defines the boundary.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-sidebar {
+  background: #ffffff;
+  border-right: 0;
+}
+
+.dark .fi-panel-admin .fi-sidebar {
+  background: #0d1117;
+  border-right: 0;
+}
+
+/* Group label (docs custom.css:537-545) */
+.fi-panel-admin .fi-sidebar-group-label {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+
+.dark .fi-panel-admin .fi-sidebar-group-label {
+  color: #99a1af;
+}
+
+/* Nav item label — matches docs sidebar (custom.css:666-673): 0.875rem / 14px,
+ * weight 400 default, weight 600 when active.
+ * !important is required because Filament's source uses `@apply text-sm` which
+ * generates a Tailwind utility that wins on cascade order despite our higher
+ * specificity (utility classes get hoisted in Tailwind v4 builds). */
+.fi-panel-admin .fi-sidebar-item-label {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  font-weight: 400 !important;
+  color: #4a5565;
+}
+
+.dark .fi-panel-admin .fi-sidebar-item-label {
+  color: #d1d5dc;
+}
+
+/* Active item — bold + darker (docs custom.css:681-686) */
+.fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+  font-weight: 600 !important;
+  color: #030712;
+}
+
+.dark .fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+  color: #ffffff;
+}
+
+/* Button padding to match docs (6px 12px). Filament default is p-2 (8px). */
+.fi-panel-admin .fi-sidebar-item-btn {
+  padding: 6px 12px;
+}
+
+/* ============================================================================
+ * Sidebar collapse toggle relocation.
+ *
+ * Filament renders desktop collapse buttons inside the topbar Livewire
+ * component (.fi-topbar-collapse-sidebar-btn-ctn wraps both expand and
+ * collapse variants). SidebarCollapseTogglePlugin renders a replacement
+ * at the bottom of the sidebar via SIDEBAR_FOOTER. Hide the topbar
+ * variants to avoid duplication.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-topbar-collapse-sidebar-btn-ctn,
+.fi-panel-admin .fi-topbar-open-collapse-sidebar-btn,
+.fi-panel-admin .fi-topbar-close-collapse-sidebar-btn,
+.fi-panel-admin .fi-layout-sidebar-toggle-btn-ctn {
+  display: none !important;
+}
+
+.fi-panel-admin .fi-sidebar-collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Main content gutter — Filament default is px-4 / md:px-6 / lg:px-8.
+ * Halved here to tighten the gap between sidebar and main body. */
+.fi-panel-admin .fi-main {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  overflow: visible !important;
+}
+
+@media (min-width: 768px) {
+  .fi-panel-admin .fi-main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fi-panel-admin .fi-main {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Sidebar item icons — Filament renders these at IconSize::Large (24px), which
+ * is oversized next to the 14px label. Shrink to 16px for visual balance.
+ * !important required to defeat Tailwind utility hoisting (same reason as the
+ * label sizing above). */
+.fi-panel-admin .fi-sidebar-item-icon {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+/* ============================================================================
+ * Modals — remove the 1px outer ring and halve internal padding.
+ *
+ * Filament source (vendor/.../modal.css):
+ *   - .fi-modal-window has `ring-1 ring-gray-950/5 dark:ring-white/10`
+ *   - .fi-modal-content has `py-6` (vertical) + `px-6` (horizontal via separate rules)
+ *   - .fi-modal-header has `px-6 pt-6`, footer `pb-6 px-6`
+ *
+ * !important needed to defeat utility hoisting. Scoped to admin panel; system
+ * panel installer wizard doesn't use modals.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-modal-window {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  box-shadow: var(--tw-shadow, 0 0 #0000) !important;
+}
+
+.fi-panel-admin .fi-modal-header {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.fi-panel-admin .fi-modal-content {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+.fi-panel-admin .fi-modal-footer {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
+/* ============================================================================
+ * PIREPs feed-style row layout.
+ *
+ * Replaces the flat 9-column PIREP table with a per-row "activity log" card.
+ * The Filament Table column is a Layout\View pointing at
+ * resources/views/filament/pireps/row.blade.php; everything below styles that
+ * partial.
+ *
+ * Visual hierarchy:
+ *   [avatar] [ident · pilot · aircraft]                    [state badge]
+ *           [filed-when · source]
+ *   ┌──────────────────────────────────────────┐
+ *   │  KJFK ──────────────────────→ EGLL       │
+ *   │  22:14Z                        05:26Z    │
+ *   └──────────────────────────────────────────┘
+ *   [⏱ time] [📏 dist] [⭐ score] [📉 landing]   [accept] [reject] [⋯]
+ * ============================================================================ */
+
+/* Layout mode: contentGrid() in PirepsTable.php makes Filament render rows
+ * as cards in a single-column grid (one card per record). Our partial is the
+ * card body — no <table>, no <td>, no fight with stack-vs-cell rules. */
+.fi-panel-admin .fi-pirep-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.25rem 0;
+  width: 100%;
+}
+
+.fi-panel-admin .fi-pirep-row-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fi-panel-admin .fi-pirep-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.fi-panel-admin .fi-pirep-row-title {
+  color: var(--color-gray-900);
+  font-size: 0.9375rem;
+  line-height: 1.25;
+}
+
+.dark .fi-panel-admin .fi-pirep-row-title {
+  color: var(--color-gray-100);
+}
+
+.fi-panel-admin .fi-pirep-ident {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.fi-panel-admin .fi-pirep-ident:hover {
+  color: var(--color-primary-600);
+}
+
+.dark .fi-panel-admin .fi-pirep-ident:hover {
+  color: var(--color-primary-400);
+}
+
+.fi-panel-admin .fi-pirep-pilot-link {
+  color: var(--color-primary-600);
+  text-decoration: none;
+}
+
+.fi-panel-admin .fi-pirep-pilot-link:hover {
+  text-decoration: underline;
+}
+
+.dark .fi-panel-admin .fi-pirep-pilot-link {
+  color: var(--color-primary-400);
+}
+
+.fi-panel-admin .fi-pirep-meta {
+  color: var(--color-gray-500);
+  font-size: 0.75rem;
+}
+
+.dark .fi-panel-admin .fi-pirep-meta {
+  color: var(--color-gray-400);
+}
+
+.fi-panel-admin .fi-pirep-submeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.125rem;
+}
+
+/* Combined route + stats row.
+ * On desktop: route fixed ~33%, stats fill remaining ~67% as a grid.
+ * On narrow viewports (<768px): stats wrap below route. */
+.fi-panel-admin .fi-pirep-row-line {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+@media (max-width: 767px) {
+  .fi-panel-admin .fi-pirep-row-line {
+    flex-wrap: wrap;
+  }
+}
+
+/* Route visualization — full-width by default; the list-row variant
+ * (inside .fi-pirep-row-line) overrides to ~33% so the stat grid fills the rest. */
+.fi-panel-admin .fi-pirep-route {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: var(--color-gray-50);
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.375rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Inside the list-row flex container: constrain to ~1/3, defeat stat-grid push-back. */
+.fi-panel-admin .fi-pirep-row-line > .fi-pirep-route {
+  width: calc(33.333% - 0.25rem);
+  flex-shrink: 0;
+}
+
+.dark .fi-panel-admin .fi-pirep-route {
+  background: var(--color-gray-800);
+}
+
+.fi-panel-admin .fi-pirep-route-endpoint {
+  text-align: center;
+  min-width: 4rem;
+}
+
+.fi-panel-admin .fi-pirep-route-icao {
+  font-weight: 700;
+  color: var(--color-gray-900);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .fi-panel-admin .fi-pirep-route-icao {
+  color: var(--color-gray-100);
+}
+
+.fi-panel-admin .fi-pirep-route-time {
+  color: var(--color-gray-500);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .fi-panel-admin .fi-pirep-route-time {
+  color: var(--color-gray-400);
+}
+
+.fi-panel-admin .fi-pirep-route-bar {
+  flex: 1;
+  height: 2px;
+  background: var(--color-primary-500);
+  position: relative;
+}
+
+.fi-panel-admin .fi-pirep-route-bar::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid var(--color-primary-500);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* Stat boxes — inline with the route in .fi-pirep-row-line.
+ * Equal-width grid children fill remaining row space next to the route box.
+ * Uses the existing fi-pirep-chip-* color classes for background + text. */
+.fi-panel-admin .fi-pirep-stat-grid {
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.fi-panel-admin .fi-pirep-stat-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Legacy chip row — kept for additional information variants */
+.fi-panel-admin .fi-pirep-stats {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fi-panel-admin .fi-pirep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.fi-panel-admin .fi-pirep-chip-neutral {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.dark .fi-panel-admin .fi-pirep-chip-neutral {
+  background: var(--color-gray-800);
+  color: var(--color-gray-300);
+}
+
+.fi-panel-admin .fi-pirep-chip-good {
+  background: rgb(209 250 229);
+  color: rgb(6 95 70);
+}
+
+.dark .fi-panel-admin .fi-pirep-chip-good {
+  background: rgb(6 95 70 / 25%);
+  color: rgb(110 231 183);
+}
+
+.fi-panel-admin .fi-pirep-chip-warn {
+  background: rgb(254 243 199);
+  color: rgb(146 64 14);
+}
+
+.dark .fi-panel-admin .fi-pirep-chip-warn {
+  background: rgb(146 64 14 / 25%);
+  color: rgb(252 211 77);
+}
+
+.fi-panel-admin .fi-pirep-chip-bad {
+  background: rgb(254 226 226);
+  color: rgb(153 27 27);
+}
+
+.dark .fi-panel-admin .fi-pirep-chip-bad {
+  background: rgb(153 27 27 / 25%);
+  color: rgb(252 165 165);
+}
+
+/* Row separator — 5px diagonal hatch in primary blue, between cards only.
+ * Custom list page renders rows as <article class="fi-pirep-card"> inside
+ * .fi-pirep-card-list. Paint the separator on each card's bottom edge except
+ * the last one. */
+.fi-panel-admin .fi-pirep-card {
+  position: relative;
+}
+
+/* Hatch separator — visual divider that sits in the 7px gap between cards.
+ *
+ * Why ::after instead of border-bottom-image?
+ *   - border-image ignores border-radius (rounded corners would be lost)
+ *   - this is "stuff between siblings", not a card property
+ *   - ::after gives independent control of width/opacity/position
+ *
+ * Inset by 0.625rem on each side to align with the card's border-radius
+ * (same value as .fi-pirep-card border-radius) so the hatch sits within
+ * the visual edge of the curved corners. Centered in the 7px gap. */
+.fi-panel-admin .fi-pirep-card-list .fi-pirep-card:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0.625rem;
+  right: 0.625rem;
+  bottom: -6px;
+  height: 5px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-primary-500) 0,
+    var(--color-primary-500) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+ * System panel — installer wizard styles (scoped — wizard not used in admin).
+ * ============================================================================ */
+
+/* Wizard stepper — primary fill, Encode Sans labels */
+.fi-panel-system .fi-sc-wizard-header {
+  font-family: var(--font-display), serif;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-icon-ctn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-number {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: #ffffff;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-number {
+  color: #ffffff;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-label {
+  font-family: var(--font-display), ui-sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.fi-panel-system .fi-sc-wizard-header-step-separator {
+  color: var(--color-gray-200);
+}
+
+.fi-panel-system .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-separator {
+  color: var(--color-primary-500);
+}
+
+/* ============================================================================
+ * PIREP list page — custom standalone card layout (Option C).
+ *
+ * The ListPireps page uses a custom $view that renders pireps as cards
+ * directly via $this->getTableRecords(), bypassing EmbeddedTable. No
+ * .fi-ta-record / .fi-ta-record-content cell wrapper exists — the partial
+ * owns the entire card surface.
+ *
+ * DOM shape:
+ *   .fi-pirep-list
+ *     .fi-pirep-toolbar (search + state pills + filters trigger)
+ *     .fi-pirep-card-list
+ *       <article class="fi-pirep-card">
+ *         .fi-pirep-row (header + route + stats)
+ *     .fi-pirep-pagination
+ * ============================================================================ */
+
+/* Page wrapper */
+.fi-panel-admin .fi-pirep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Toolbar — search left, state pills center, filters trigger right */
+.fi-panel-admin .fi-pirep-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fi-panel-admin .fi-pirep-toolbar-search {
+  flex: 1 1 14rem;
+  min-width: 14rem;
+}
+
+.fi-panel-admin .fi-pirep-toolbar-search .fi-input-wrp {
+  width: 100%;
+}
+
+.fi-panel-admin .fi-pirep-toolbar-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-gray-100);
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.dark .fi-panel-admin .fi-pirep-toolbar-pills {
+  background: var(--color-gray-800);
+}
+
+.fi-panel-admin .fi-pirep-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+  line-height: 1.25;
+}
+
+.fi-panel-admin .fi-pirep-pill:hover {
+  color: var(--color-gray-900);
+}
+
+.dark .fi-panel-admin .fi-pirep-pill {
+  color: var(--color-gray-400);
+}
+
+.dark .fi-panel-admin .fi-pirep-pill:hover {
+  color: var(--color-gray-100);
+}
+
+.fi-panel-admin .fi-pirep-pill-active {
+  background: #ffffff;
+  color: var(--color-gray-900);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+}
+
+.dark .fi-panel-admin .fi-pirep-pill-active {
+  background: var(--color-gray-700);
+  color: var(--color-gray-50);
+}
+
+/* Color-coded active state pills */
+.fi-panel-admin .fi-pirep-pill-warning.fi-pirep-pill-active {
+  color: rgb(146 64 14);
+}
+.dark .fi-panel-admin .fi-pirep-pill-warning.fi-pirep-pill-active {
+  color: rgb(252 211 77);
+}
+.fi-panel-admin .fi-pirep-pill-success.fi-pirep-pill-active {
+  color: rgb(6 95 70);
+}
+.dark .fi-panel-admin .fi-pirep-pill-success.fi-pirep-pill-active {
+  color: rgb(110 231 183);
+}
+.fi-panel-admin .fi-pirep-pill-danger.fi-pirep-pill-active {
+  color: rgb(153 27 27);
+}
+.dark .fi-panel-admin .fi-pirep-pill-danger.fi-pirep-pill-active {
+  color: rgb(252 165 165);
+}
+
+.fi-panel-admin .fi-pirep-toolbar-filters {
+  margin-left: auto;
+}
+
+/* Card list — vertical stack of articles with 7px gap between cards. */
+.fi-panel-admin .fi-pirep-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Individual card */
+.fi-panel-admin .fi-pirep-card {
+  background: #ffffff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.625rem;
+  padding: 0.875rem 1rem;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.fi-panel-admin .fi-pirep-card:hover {
+  border-color: var(--color-gray-300);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 4%);
+}
+
+.dark .fi-panel-admin .fi-pirep-card {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+}
+
+.dark .fi-panel-admin .fi-pirep-card:hover {
+  border-color: var(--color-gray-600);
+}
+
+/* Header row layout adjustments for actions on the right */
+.fi-panel-admin .fi-pirep-row-head-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fi-panel-admin .fi-pirep-row-head-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.fi-panel-admin .fi-pirep-row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Ensure each action button has its own breathing room — Filament's default
+ * Action button has tight horizontal padding. Bump it for visual separation. */
+.fi-panel-admin .fi-pirep-row-actions > .fi-btn {
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+}
+
+/* View PIREP button — no background, icon-only style like the ellipsis trigger */
+.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
+  background: var(--color-gray-100);
+}
+
+.dark .fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
+  background: var(--color-gray-800);
+}
+
+.fi-panel-admin .fi-pirep-row-actions-trigger {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  color: var(--color-gray-500);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.fi-panel-admin .fi-pirep-row-actions-trigger:hover {
+  background: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+.dark .fi-panel-admin .fi-pirep-row-actions-trigger:hover {
+  background: var(--color-gray-800);
+  color: var(--color-gray-100);
+}
+
+/* Empty state */
+.fi-panel-admin .fi-pirep-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: var(--color-gray-50);
+  border-radius: 0.5rem;
+  border: 1px dashed var(--color-gray-300);
+}
+
+.dark .fi-panel-admin .fi-pirep-empty {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+}
+
+.fi-panel-admin .fi-pirep-empty-heading {
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+
+.dark .fi-panel-admin .fi-pirep-empty-heading {
+  color: var(--color-gray-300);
+}
+
+/* Pagination wrapper */
+.fi-panel-admin .fi-pirep-pagination {
+  padding-top: 0.5rem;
+}
+
+/* Mobile: stack actions below content */
+@media (max-width: 640px) {
+  .fi-panel-admin .fi-pirep-row-head {
+    flex-wrap: wrap;
+  }
+  .fi-panel-admin .fi-pirep-row-head-right {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+}
+/* ============================================================================
+ * PIREP detail v2 — single-page Stripe-style layout.
+ *
+ * Scope: every selector lives under .fi-pirep-detail-v2.
+ * Tokens reused: --color-primary-*, --color-gray-*, font families.
+ * ============================================================================ */
+
+.fi-panel-admin .fi-pirep-detail-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: visible;
+}
+
+/* HEADER + HERO */
+.fi-panel-admin .fi-pirep-detail-v2-hero {
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-hero {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-main {
+  padding: 1.5rem 1.75rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-left {
+  display: flex;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+.fi-panel-admin .fi-pirep-detail-v2-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(6, 126, 193, 0.25);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-gray-900);
+  line-height: 1.1;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .route {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-title .route .arrow {
+  color: var(--color-gray-400);
+  margin: 0 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta {
+  color: var(--color-gray-500);
+  font-size: 0.8125rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta a {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta a:hover {
+  text-decoration: underline;
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-meta .dot {
+  color: var(--color-gray-300);
+}
+.fi-panel-admin .fi-pirep-detail-v2-hero-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* STAT STRIP */
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--color-gray-100);
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+  border-right-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell:last-child {
+  border-right: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val .unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  margin-left: 0.15rem;
+  letter-spacing: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
+  color: rgb(180 83 9);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
+  color: rgb(252 211 77);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
+  color: rgb(252 165 165);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
+  color: rgb(4 120 87);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
+  color: rgb(110 231 183);
+}
+
+/* MAIN TABS (Flight / Flight Log / Finances) */
+.fi-panel-admin .fi-pirep-detail-v2-main-tabs {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-main-tabs {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-gray-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 120ms ease;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab:hover {
+  color: var(--color-gray-900);
+}
+.fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
+  color: var(--color-gray-900);
+  border-bottom-color: var(--color-primary-500);
+  background: transparent;
+  box-shadow: none;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
+  color: var(--color-gray-50);
+  border-bottom-color: var(--color-primary-400);
+}
+.fi-panel-admin .fi-pirep-tab-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* FLIGHT LOG TIMELINE */
+.fi-panel-admin .fi-pirep-detail-v2-flight-log {
+  display: flex;
+  flex-direction: column;
+}
+.fi-panel-admin .fi-pirep-flight-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-header .count {
+  font-size: 0.75rem;
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
+  color: var(--color-gray-900);
+  border-color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
+  color: var(--color-gray-50);
+  border-color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-flight-log-sort-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-grid-head {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0.4rem 0.75rem;
+  background: var(--color-gray-100);
+  border-radius: 0.5rem 0.5rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-grid-head {
+  background: var(--color-gray-800);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-flight-log-grid-body {
+  background: #fff;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-grid-body {
+  background: var(--color-gray-900);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.fi-panel-admin .fi-pirep-flight-log-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  align-items: center;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-flight-log-row:last-child {
+  border-bottom: none;
+}
+.fi-panel-admin .fi-pirep-flight-log-time {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-time .time {
+  color: var(--color-gray-900);
+  font-weight: 500;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-time .time {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-flight-log-time .data {
+  color: var(--color-gray-400);
+  margin-top: 0.125rem;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-time .data {
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-flight-log-event {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-flight-log-event .msg {
+  font-weight: 500;
+  color: var(--color-gray-900);
+  font-size: 0.8125rem;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-event .msg {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-flight-log-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* Flight-log row phase tints + zebra striping.
+ *
+ * The row's background derives from two sources, in this order (later wins):
+ *   1. base row (transparent — lets grid-body bg show through)
+ *   2. zebra (every odd row gets a faint tint)
+ *   3. phase tint (climb / land — overrides zebra for emphasis)
+ *
+ * Light and dark mode both defined so the row stays readable when the panel
+ * is toggled. Phase tints are intentionally subtle in dark mode — the row
+ * text stays gray-50 from the base rule above.
+ */
+.fi-panel-admin .fi-pirep-flight-log-row--zebra {
+  background: #fafbfc;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--zebra {
+  background: rgb(255 255 255 / 0.025);
+}
+.fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
+  background: #fefce8;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
+  background: rgb(250 204 21 / 0.06);
+}
+.fi-panel-admin .fi-pirep-flight-log-row--phase-land {
+  background: #fef2f2;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-land {
+  background: rgb(248 113 113 / 0.08);
+}
+
+/* Phase badges — pill color reflects the phase bucket. Light variants
+ * use saturated pastel; dark variants use translucent tint with bright
+ * text so the badge reads against the dark row background.
+ */
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
+  background: #ecfdf5;
+  color: #065f46;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
+  background: rgb(16 185 129 / 0.15);
+  color: #6ee7b7;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
+  background: rgb(245 158 11 / 0.18);
+  color: #fcd34d;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
+  background: #eff6ff;
+  color: #1e40af;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
+  background: rgb(59 130 246 / 0.18);
+  color: #93c5fd;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
+  background: rgb(139 92 246 / 0.18);
+  color: #c4b5fd;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
+  background: #fef2f2;
+  color: #991b1b;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
+  background: rgb(239 68 68 / 0.18);
+  color: #fca5a5;
+}
+.fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
+  background: #f3f4f6;
+  color: #374151;
+}
+.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
+  background: rgb(156 163 175 / 0.15);
+  color: var(--color-gray-300);
+}
+
+/* LAYOUT GRID */
+.fi-panel-admin .fi-pirep-detail-v2-layout {
+  display: grid;
+  grid-template-columns: 1fr 306px;
+  gap: 1rem;
+  align-items: start;
+  overflow: visible;
+}
+.fi-panel-admin .fi-pirep-detail-v2-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (max-width: 1024px) {
+  .fi-panel-admin .fi-pirep-detail-v2-layout {
+    grid-template-columns: 1fr;
+  }
+  .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+}
+
+/* CARD */
+.fi-panel-admin .fi-pirep-detail-v2-card {
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  margin-bottom: 0.625rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card-head {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  letter-spacing: -0.005em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .link {
+  color: var(--color-primary-600);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-head .link:hover {
+  text-decoration: underline;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-body {
+  padding: 1.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-card-body.flush {
+  padding: 0;
+}
+
+/* ROUTE BAR (under the map) */
+.fi-panel-admin .fi-pirep-detail-v2-route-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.left {
+  text-align: left;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.right {
+  text-align: right;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .name {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-top: 0.15rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .time {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-top: 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(to right, rgb(16 185 129), var(--color-primary-500));
+  border-radius: 1px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before,
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before {
+  left: -4px;
+  background: rgb(16 185 129);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
+  right: -4px;
+  background: var(--color-primary-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .duration {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-bar .distance {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-gray-400);
+}
+
+/* PERFORMANCE TABS + CHART */
+.fi-panel-admin .fi-pirep-detail-v2-perf {
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 120ms ease;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab:hover {
+  color: var(--color-gray-900);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
+  background: #fff;
+  color: var(--color-gray-900);
+  border-color: var(--color-gray-200);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
+  background: var(--color-gray-900);
+  color: var(--color-gray-50);
+  border-color: var(--color-gray-600);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .extra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .extra .lbl {
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf .chart-wrap {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+/* PHASE TIMING SUMMARY — reuses the hero stat-strip styling. Override grid
+ * to 4 columns instead of 6 and let the existing .cell rules carry label,
+ * value, and divider styling. */
+.fi-panel-admin .fi-pirep-detail-v2-perf-summary {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 768px) {
+  .fi-panel-admin .fi-pirep-detail-v2-perf-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* PERFORMANCE EMPTY STUB */
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty {
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+  background: linear-gradient(to bottom, #fafbfc, #fff);
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty {
+  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: var(--color-gray-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  margin-bottom: 0.75rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
+  background: var(--color-gray-800);
+  color: var(--color-gray-500);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon svg {
+  width: 26px;
+  height: 26px;
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin: 0 0 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
+  color: var(--color-gray-200);
+}
+.fi-panel-admin .fi-pirep-detail-v2-perf-empty p {
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  margin: 0 auto;
+  max-width: 380px;
+  line-height: 1.55;
+}
+
+/* PROSE + ROUTE STRING */
+.fi-panel-admin .fi-pirep-detail-v2-prose {
+  color: var(--color-gray-700);
+  line-height: 1.65;
+  font-size: 0.875rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-prose {
+  color: var(--color-gray-300);
+}
+.fi-panel-admin .fi-pirep-detail-v2-prose p {
+  margin: 0 0 0.75rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-prose p:last-child {
+  margin: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-route-str {
+  margin: 0;
+  background: #fafbfc;
+  border: 1px solid var(--color-gray-100);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-gray-700);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-route-str {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-300);
+}
+
+/* FACTS LIST (sidebar) */
+.fi-panel-admin .fi-pirep-detail-v2-facts {
+  display: flex;
+  flex-direction: column;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: 0.8125rem;
+  gap: 1rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact:last-child {
+  border-bottom: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .k {
+  color: var(--color-gray-500);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v.mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* Stacked variant — used by the PIREP custom-fields card.
+ * Field name renders on top in the small-caps mono label style shared with
+ * sidebar group labels (.fi-sidebar-group-label), value below in the standard
+ * fact-value style. Mirrors a `<dl>` definition list visually. */
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  gap: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact:last-child {
+  padding-bottom: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
+  display: block;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+  white-space: normal;
+  margin-bottom: 0.125rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .v {
+  display: block;
+  text-align: left;
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* LANDING ANALYSIS — runway plan-views + scorecard polar.
+ * Three-column grid: departure rwy / arrival rwy / scorecard.
+ * Collapses to a single column under 768px. */
+.fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+/* Row 2 of the landing grid: two attitude indicators spanning the full
+ * width. Sized to match runway panels by sharing the same diagram
+ * aspect-ratio / facts pattern. */
+.fi-panel-admin .fi-pirep-detail-v2-landing .landing-attitude-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-gray-700);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
+  width: 100%;
+  aspect-ratio: 200 / 100;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .attitude-diagram {
+  background: transparent;
+  padding: 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
+  background: var(--color-gray-800);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .rw-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7282;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
+  color: #99a1af;
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
+  color: var(--color-gray-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-landing .scorecard-chart {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  /* Radar chart needs square-ish aspect for labels to fit. */
+  min-height: 240px;
+}
+@media (max-width: 768px) {
+  .fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* NOTES & COMMENTS — chat-style thread.
+ * Pilot note pinned on top, rendered as the first row with a "Pilot note"
+ * tag. Each row: circular initials avatar, message bubble with the message
+ * on top and small meta (author · time) underneath. Read-only — no compose
+ * box is rendered. */
+.fi-panel-admin .fi-pirep-detail-v2-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .bubble {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-gray-900);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
+  color: var(--color-gray-200);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .dot {
+  opacity: 0.6;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+  background: var(--color-primary-50, rgba(59, 130, 246, 0.1));
+  color: var(--color-primary-700, #1d4ed8);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--color-primary-300, #93c5fd);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-row.pilot-note .message {
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-empty {
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  padding: 0.5rem 0;
+}
+/* Compose box: textarea + submit. Sits flush below the thread, separated
+ * by a hairline divider. Pure form controls — leans on Filament's .fi-input
+ * + .fi-btn primitives so it tracks the admin theme automatically. */
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+  color: var(--color-gray-900);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
+  background: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-50);
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+/* Single-line row: textarea grows, submit button stays at fixed size on the
+ * right. Textarea defaults to one row but is vertically resizable; the
+ * button is centered against the initial line. */
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row textarea.fi-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row .fi-btn {
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+.fi-panel-admin .fi-pirep-detail-v2-chat-error {
+  font-size: 0.75rem;
+  color: var(--color-danger-600, #dc2626);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-chat-error {
+  color: var(--color-danger-400, #f87171);
+}
+
+/* Net row — full-width footer beneath the transactions table inside the
+ * finance card. Larger mono amount + small uppercase label, color flips
+ * green/red on sign of the net. */
+.fi-panel-admin .fi-pirep-net-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: #fafbfc;
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-net-row {
+  background: var(--color-gray-800);
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-net-row .lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+.dark .fi-panel-admin .fi-pirep-net-row .lbl {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-net-row .amt {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.fi-panel-admin .fi-pirep-net-row.positive .amt {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-net-row.negative .amt {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-net-row.positive .amt {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-net-row.negative .amt {
+  color: rgb(252 165 165);
+}
+
+/* Page footer — sits below the layout grid with a fixed gap. Muted grey,
+ * small mono caps so it reads as a chrome element, not content. */
+.fi-panel-admin .fi-pirep-detail-v2-footer {
+  margin-top: 50px;
+  padding: 1rem 0;
+  text-align: center;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+.dark .fi-panel-admin .fi-pirep-detail-v2-footer {
+  color: var(--color-gray-400);
+}
+
+/* EMBEDDED RELATION MANAGERS — tighten chrome inside our cards */
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-header-ctn {
+  display: none;
+}
+.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-footer-ctn {
+  background: transparent;
+}
+
+/* ============================================================================
+ * FINANCE CARD — combined summary + fares + transactions (demo layout).
+ * ============================================================================ */
+
+/* Summary row — three equal cells: revenue / expenses / net */
+.fi-panel-admin .fi-pirep-fin-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary {
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-cell {
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-cell {
+  border-right-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-cell:last-child {
+  border-right: 0;
+}
+.fi-panel-admin .fi-pirep-fin-lbl {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+.dark .fi-panel-admin .fi-pirep-fin-lbl {
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-fin-val {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+/* Summary row credit/debit colors */
+.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
+  color: rgb(252 165 165);
+}
+/* Table cell credit/debit colors — scoped to table to beat tbody td color */
+.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
+  color: rgb(252 165 165);
+}
+/* Direct td credit/debit coloring — beats tbody td color rule */
+.fi-panel-admin .fi-pirep-fin-table tbody td.credit {
+  color: rgb(4 120 87);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody td.debit {
+  color: rgb(185 28 28);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td.credit {
+  color: rgb(110 231 183);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td.debit {
+  color: rgb(252 165 165);
+}
+
+/* Section titles — fares / transactions headers */
+.fi-panel-admin .fi-pirep-fin-section-title {
+  padding: 0.75rem 1.25rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.dark .fi-panel-admin .fi-pirep-fin-section-title {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+}
+.fi-pirep-fin-section-title + .fi-pirep-fin-table {
+  border-top: 0;
+}
+
+/* Finance tables — clean table matching demo */
+.fi-panel-admin .fi-pirep-fin-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table {
+  border-top-color: var(--color-gray-700);
+}
+.fi-panel-admin .fi-pirep-fin-table thead th {
+  padding: 0.625rem 1.25rem;
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table thead th {
+  background: var(--color-gray-800);
+  border-bottom-color: var(--color-gray-700);
+  color: var(--color-gray-400);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody td {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-50);
+  vertical-align: middle;
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody td {
+  color: var(--color-gray-300);
+  border-bottom-color: var(--color-gray-800);
+}
+.fi-panel-admin .fi-pirep-fin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
+  background: var(--color-gray-50);
+}
+.dark .fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
+  background: var(--color-gray-800);
+}
+
+/* Value cells */
+.fi-panel-admin .fi-pirep-fin-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.fi-panel-admin .fi-pirep-fin-money {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+.fi-panel-admin .fi-pirep-fin-ta-right {
+  text-align: right;
+}
+.fi-panel-admin .fi-pirep-fin-table th.fi-pirep-fin-ta-right,
+.fi-panel-admin .fi-pirep-fin-table td.fi-pirep-fin-ta-right {
+  text-align: right;
+}
+
+/* Recalculate button — micro-btn style from demo */
+.fi-panel-admin .fi-pirep-finance-recalculate-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 120ms ease;
+  line-height: 1.25;
+}
+.fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
+  background: var(--color-gray-200);
+  color: var(--color-gray-900);
+}
+.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-300);
+}
+.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
+  background: var(--color-gray-700);
+  color: var(--color-gray-50);
+}
+
+/* Mobile: stack summary cells */
+@media (max-width: 640px) {
+  .fi-panel-admin .fi-pirep-fin-summary {
+    grid-template-columns: 1fr;
+  }
+  .fi-panel-admin .fi-pirep-fin-cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+  .dark .fi-panel-admin .fi-pirep-fin-cell {
+    border-bottom-color: var(--color-gray-700);
+  }
+  .fi-panel-admin .fi-pirep-fin-cell:last-child {
+    border-bottom: 0;
+  }
+  .fi-panel-admin .fi-pirep-fin-table thead th,
+  .fi-panel-admin .fi-pirep-fin-table tbody td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Money amounts — JetBrains Mono for fares/transactions in PIREP admin */
+.fi-panel-admin .fi-pirep-money-mono {
+  font-family: var(--font-mono-display), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}

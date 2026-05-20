@@ -8,7 +8,7 @@ return [
         'nonewsfound' => 'Nessuna Novità Trovata',
     ],
 
-    'livemap' => [
+    'live_map' => [
         'groundspeed' => 'Velocità al Suolo',
         'altitude'    => 'Altitudine',
         'heading'     => 'Direzione',

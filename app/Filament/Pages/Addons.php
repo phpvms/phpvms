@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Nwidart\Modules\Facades\Module;
 
-class Modules extends Page implements Tables\Contracts\HasTable
+class Addons extends Page implements Tables\Contracts\HasTable
 {
     use HasPageShield;
     use Tables\Concerns\InteractsWithTable;
@@ -32,7 +32,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
     #[\Override]
     public static function getNavigationLabel(): string
     {
-        return Str::of(__('common.module'))->plural();
+        return Str::of(__('common.addons'))->plural();
     }
 
     public function table(Table $table): Table
@@ -57,7 +57,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->action(function (array $record): void {
                         app(ModuleService::class)->updateModule($record['name'], true);
-                        $this->redirectRoute('filament.admin.pages.modules'); // Reload the page to refresh everything
+                        $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
                 Action::make('disable')
@@ -67,7 +67,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
                     ->visible(fn (array $record): bool => $record['enabled'])
                     ->action(function (array $record): void {
                         app(ModuleService::class)->updateModule($record['name'], false);
-                        $this->redirectRoute('filament.admin.pages.modules'); // Reload the page to refresh everything
+                        $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
                 Action::make('delete')
@@ -78,7 +78,7 @@ class Modules extends Page implements Tables\Contracts\HasTable
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
                         app(ModuleService::class)->deleteModule($record['name']);
-                        $this->redirectRoute('filament.admin.pages.modules'); // Reload the page to refresh everything
+                        $this->redirectRoute('filament.admin.pages.addons');
                     }),
             ])
             ->records(fn (?string $sortColumn, ?string $sortDirection, ?string $search): Collection => $this->getModulesRecords()

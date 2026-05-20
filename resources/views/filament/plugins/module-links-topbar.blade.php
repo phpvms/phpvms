@@ -1,12 +1,14 @@
 @can('view:modules')
   <ul class="fi-topbar-nav-groups">
+    @if(count($group->getItems()) > 0)
     <x-filament-panels::topbar.item
       :active="$current_panel->getId() === 'admin'"
       icon="heroicon-o-home"
       :url="url(\Filament\Facades\Filament::getPanel('admin')->getPath())"
     >
-      Main v8
+      {{ __('common.administration') }}
     </x-filament-panels::topbar.item>
+    @endif
 
     @foreach($group->getItems() as $item)
       <x-filament-panels::topbar.item

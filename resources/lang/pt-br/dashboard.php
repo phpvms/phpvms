@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 return [
-    'totalhours'     => 'Total de horas',
-    'yourbalance'    => 'Seu balanço',
-    'yourlastreport' => 'Seu último PIREP',
-    'noreportsyet'   => 'Ainda não há PIREPs.',
-    'fileonenow'     => 'Envie um agora.',
-    'weatherat'      => 'Tempo em :ICAO',
-    'recentreports'  => 'Reportes Recentes',
+    'total_hours'      => 'Total de horas',
+    'your_balance'     => 'Seu balanço',
+    'your_last_report' => 'Seu último PIREP',
+    'no_reports_yet'   => 'Ainda não há PIREPs.',
+    'fileonenow'       => 'Envie um agora.',
+    'weatherat'        => 'Tempo em :ICAO',
+    'recentreports'    => 'Reportes Recentes',
 ];

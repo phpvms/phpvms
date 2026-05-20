@@ -15,7 +15,7 @@ class SubfleetForm
     {
         return $schema
             ->components([
-                Section::make(__('filament.subfleet_informations'))
+                Section::make(__('filament.subfleet_information'))
                     ->description(__('filament.subfleet_description'))
                     ->schema([
                         Select::make('airline_id')

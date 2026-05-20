@@ -94,7 +94,7 @@
                             <div class="card-body">
                                 <div class="social-description">
                                     <h2 class="card-title">@minutestohours($user->transfer_time)h</h2>
-                                    <p class="card-text">@lang('profile.transferhours')</p>
+                                    <p class="card-text">@lang('profile.transfer_hours')</p>
                                 </div>
                             </div>
                         </div>

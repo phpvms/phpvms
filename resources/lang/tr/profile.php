@@ -17,7 +17,7 @@ return [
     'updateprofile'   => 'Profili Güncelle',
     'editprofile'     => 'Profili Düzenle',
     'edityourprofile' => 'Profilinize Düzenleyin',
-    'transferhours'   => 'Harici/Transfer Saatler',
+    'transfer_hours'  => 'Harici/Transfer Saatler',
     'opt-in'          => 'Dahil Ol',
     'opt-in-descrip'  => 'Evet, yönetimsel olmayan eposta mesajlarını almak istiyorum (duyuru/haber)',
 ];

@@ -46,6 +46,7 @@ class FieldValuesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
+            ->modifyQueryUsing(fn ($query) => $query->with('pirep'))
             ->columns([
                 TextColumn::make('name')
                     ->label(__('common.name')),

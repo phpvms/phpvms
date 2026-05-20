@@ -12,7 +12,7 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">@lang('auth.fullname')</label>
+                            <label for="name" class="form-label">@lang('auth.full_name')</label>
                             <input type="text" name="name" id="name"
                                 class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" />
                             @error('name')
@@ -21,7 +21,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">@lang('auth.emailaddress')</label>
+                            <label for="email" class="form-label">@lang('auth.email_address')</label>
                             <input type="email" name="email" id="email"
                                 class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" />
                             @error('email')
@@ -91,7 +91,7 @@
 
                         @if (setting('pilots.allow_transfer_hours') === true)
                             <div class="mb-3">
-                                <label for="transfer_time" class="form-label">@lang('auth.transferhours')</label>
+                                <label for="transfer_time" class="form-label">@lang('auth.transfer_hours')</label>
                                 <input type="number" name="transfer_time" id="transfer_time"
                                     class="form-control @error('transfer_time') is-invalid @enderror"
                                     value="{{ old('transfer_time') }}" />
@@ -135,7 +135,7 @@
 
                         @if ($captcha['enabled'] === true)
                             <div class="mb-3">
-                                <label for="h-captcha" class="form-label">@lang('auth.fillcaptcha')</label>
+                                <label for="h-captcha" class="form-label">@lang('auth.fill_captcha')</label>
                                 <div class="h-captcha" data-sitekey="{{ $captcha['site_key'] }}"></div>
                                 @error('h-captcha-response')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -157,7 +157,7 @@
                             <input class="form-check-input @error('toc_accepted') is-invalid @enderror" type="checkbox"
                                 name="toc_accepted" id="toc_accepted">
                             <label class="form-check-label" for="toc_accepted">
-                                @lang('auth.tocaccept')
+                                @lang('auth.toc_accept')
                             </label>
                             @error('toc_accepted')
                                 <div class="invalid-feedback">{{ $message }}</div>

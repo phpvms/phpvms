@@ -10,7 +10,7 @@ use App\Services\FareService;
  */
 return new class() extends Migration
 {
-    public function up()
+    public function up(): void
     {
         $cached = [];
         $fareSvc = app(FareService::class);

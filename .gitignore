@@ -18,6 +18,10 @@ app/storage/
 public/storage
 public/build
 public/hot
+public/js/app
+# esbuild output for Filament AlpineComponents (built by `node bin/build.js`).
+# Built in CI; not committed.
+resources/js/dist
 storage/*.key
 storage/settings.json
 storage/*.sqlite
@@ -97,3 +101,7 @@ boost.json
 
 # Modules
 modules_statuses.json
+.superpowers/
+
+# Local SQLite scratch db (test artifact)
+/phpvms

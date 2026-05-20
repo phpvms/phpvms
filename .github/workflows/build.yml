@@ -73,15 +73,21 @@ jobs:
           coverage: xdebug
           tools: php-cs-fixer, phpunit
 
-      - name: Configure Environment
+      # Bootstrap order has to thread a needle:
+      #   1. composer install --no-scripts: pulls vendor/ (needed by Vite
+      #      because theme.css @imports vendor/filament/filament/resources/css)
+      #      WITHOUT firing post-autoload-dump (which boots service providers
+      #      that read the Vite manifest + dist files we haven't built yet).
+      #   2. npm install + npm run build: produces public/build/manifest.json
+      #      and (re)writes resources/js/dist/admin/components/*.js.
+      #   3. composer dump-autoload: re-fires post-autoload-dump now that the
+      #      frontend artifacts exist; package:discover and filament:upgrade
+      #      boot providers cleanly.
+      - name: Install Composer dependencies (no scripts)
         run: |
           php --version
-          composer install --dev --no-interaction --verbose
+          composer install --dev --no-interaction --no-scripts --verbose
           composer global require laravel/pint
-          composer dump-autoload -o
-          cp .github/scripts/env.test .env
-          cp .github/scripts/phpunit.xml phpunit.xml
-          .github/scripts/version.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -100,6 +106,13 @@ jobs:
 
       - name: Compile assets
         run: npm run build
+
+      - name: Run Composer post-autoload scripts
+        run: |
+          composer dump-autoload -o
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          .github/scripts/version.sh
 
       - name: Run Pint
         run: pint --test --parallel
@@ -160,19 +173,30 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-        # Dependencies
-      - name: "Install Release Dependencies"
+      # Three-step bootstrap (see `build` job comment for full rationale):
+      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
+      #   2. npm build: writes public/build manifest + dist files
+      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
+      - name: "Install Release Dependencies (no scripts)"
         run: |
           rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          composer dump-autoload
+          composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
           sudo chmod +x ./.github/scripts/*
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
 
       - name: Install NPM dependencies
         run: npm install
 
       - name: Compile assets
         run: npm run build
+
+      - name: Run Composer post-autoload scripts
+        run: composer dump-autoload
 
       - id: version
         name: Get version
@@ -233,13 +257,30 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-        # Dependencies
-      - name: "Install Release Dependencies"
+      # Three-step bootstrap (see `build` job comment for full rationale):
+      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
+      #   2. npm build: writes public/build manifest + dist files
+      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
+      - name: "Install Release Dependencies (no scripts)"
         run: |
           rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --verbose
-          composer dump-autoload
+          composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
           sudo chmod +x ./.github/scripts/*
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Compile assets
+        run: npm run build
+
+      - name: Run Composer post-autoload scripts
+        run: composer dump-autoload
 
       # https://github.com/marketplace/actions/nerdbank-gitversioning
       - name: Nerdbank.GitVersioning
