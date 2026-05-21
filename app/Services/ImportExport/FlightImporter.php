@@ -9,6 +9,7 @@ use App\Enums\FlightType;
 use App\Models\Airport;
 use App\Models\Fare;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
@@ -51,7 +52,7 @@ class FlightImporter extends ImportExport
         'notes'                => 'nullable',
         'start_date'           => 'nullable|date',
         'end_date'             => 'nullable|date',
-        'active'               => 'nullable|boolean',
+        'enabled'              => 'nullable|boolean',
         'subfleets'            => 'nullable',
         'fares'                => 'nullable',
         'fields'               => 'nullable',
@@ -175,7 +176,15 @@ class FlightImporter extends ImportExport
         }
 
         $flight->setAttribute('flight_type', $flight_type);
-        $flight->setAttribute('active', get_truth_state($row['active']));
+        $flight->setAttribute('enabled', get_truth_state($row['enabled'] ?? $row['active'] ?? false));
+
+        // Resolve bundle_id: explicit CSV value > existing flight value > default bundle.
+        if (filled($row['bundle_id'] ?? null)) {
+            $flight->setAttribute('bundle_id', (int) $row['bundle_id']);
+        } elseif (blank($flight->bundle_id)) {
+            $defaultBundleId = FlightBundle::query()->where('is_default', true)->value('id');
+            $flight->setAttribute('bundle_id', $defaultBundleId);
+        }
 
         try {
             $flight->save();

@@ -47,6 +47,9 @@ class FlightResource extends Resource
     {
         $res = parent::toArray($request);
 
+        // Backwards-compat alias: 'active' mirrors 'enabled' for existing API consumers.
+        $res['active'] = $res['enabled'] ?? null;
+
         // Display flight callsign if pilot ident usage is not forced by VA
         // Check if there is a callsign too
         if (!empty($this->callsign) && !setting('simbrief.callsign', true)) {

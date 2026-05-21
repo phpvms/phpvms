@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -8,6 +10,7 @@ use App\Contracts\Factory;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use DateTime;
 
 /**
@@ -21,6 +24,22 @@ class FlightFactory extends Factory
      * @var string
      */
     protected $model = Flight::class;
+
+    private static ?int $defaultBundleId = null;
+
+    private function defaultBundleId(): int
+    {
+        if (self::$defaultBundleId === null || !FlightBundle::query()->whereKey(self::$defaultBundleId)->exists()) {
+            $id = FlightBundle::query()->where('is_default', true)->value('id');
+            if ($id === null) {
+                $id = FlightBundle::factory()->create(['is_default' => true])->id;
+            }
+
+            self::$defaultBundleId = (int) $id;
+        }
+
+        return self::$defaultBundleId;
+    }
 
     /**
      * Define the model's default state.
@@ -49,7 +68,7 @@ class FlightFactory extends Factory
             'load_factor'          => fake()->randomElement([15, 20, 50, 90, 100]),
             'load_factor_variance' => fake()->randomElement([15, 20, 50, 90, 100]),
             'has_bid'              => false,
-            'active'               => true,
+            'enabled'              => true,
             'visible'              => true,
             'days'                 => 0,
             'start_date'           => null,
@@ -60,6 +79,7 @@ class FlightFactory extends Factory
             'updated_at' => static fn (array $flight) => $flight['created_at'],
             'owner_type' => null,
             'owner_id'   => null,
+            'bundle_id'  => $this->defaultBundleId(...),
         ];
     }
 }

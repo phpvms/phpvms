@@ -24,7 +24,7 @@ test('flight list returns expected json structure', function (): void {
     // the pilots.restrict_to_company filter (if it's enabled).
     Flight::factory()->count(3)->create([
         'airline_id' => $user->airline_id,
-        'active'     => true,
+        'enabled'    => true,
         'visible'    => true,
     ]);
 

@@ -5,6 +5,7 @@ namespace App\Filament\Imports;
 use App\Models\Airport;
 use App\Models\Fare;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
@@ -15,6 +16,7 @@ use Filament\Actions\Imports\Exceptions\RowImportFailedException;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
@@ -61,6 +63,25 @@ class FlightImporter extends Importer
                     $record->arr_airport_id = self::processAirport($state)->id;
                 })
                 ->rules(['required']),
+
+            ImportColumn::make('bundle_id')
+                ->numeric()
+                ->rules(['nullable', 'integer'])
+                ->fillRecordUsing(function (Flight $record, ?string $state, FlightImporter $importer): void {
+                    if ($state !== null && $state !== '') {
+                        $record->bundle_id = (int) $state;
+
+                        return;
+                    }
+
+                    $fallback = $importer->getImportBundleId();
+
+                    if ($fallback === null) {
+                        throw new RowImportFailedException('No flight bundle resolved for row; ensure a default bundle exists or select one in the import options.');
+                    }
+
+                    $record->bundle_id = $fallback;
+                }),
 
             ImportColumn::make('alt_airport')
                 ->fillRecordUsing(function (Flight $record, ?string $state): void {
@@ -121,7 +142,7 @@ class FlightImporter extends Importer
             ImportColumn::make('end_date')
                 ->rules(['nullable', 'date']),
 
-            ImportColumn::make('active')
+            ImportColumn::make('enabled')
                 ->requiredMapping()
                 ->boolean()
                 ->rules(['required', 'boolean']),
@@ -309,5 +330,39 @@ class FlightImporter extends Importer
         }
 
         return $airport;
+    }
+
+    /**
+     * Filament import-options form: lets the admin pick a target bundle for rows
+     * whose `bundle_id` column is empty. Defaults to the seeded default bundle.
+     */
+    #[\Override]
+    public static function getOptionsFormComponents(): array
+    {
+        return [
+            Select::make('bundle_id')
+                ->label(__('filament.flights.fields.bundle'))
+                ->relationship('bundle', 'name', modifyQueryUsing: fn ($query) => $query->orderBy('name'))
+                ->default(fn (): ?int => FlightBundle::query()->where('is_default', true)->value('id'))
+                ->preload()
+                ->required(),
+        ];
+    }
+
+    /**
+     * Resolve the bundle id to use for a row whose CSV `bundle_id` is empty.
+     * Reads from the import-options form first, falls back to the default bundle.
+     */
+    public function getImportBundleId(): ?int
+    {
+        $optionId = $this->getOptions()['bundle_id'] ?? null;
+
+        if ($optionId !== null && $optionId !== '') {
+            return (int) $optionId;
+        }
+
+        $id = FlightBundle::query()->where('is_default', true)->value('id');
+
+        return $id === null ? null : (int) $id;
     }
 }

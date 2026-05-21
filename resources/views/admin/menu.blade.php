@@ -17,7 +17,7 @@
       @endcan
 
       @can('view-any:flight')
-        <li><a href="{{ \App\Filament\Resources\Flights\FlightResource::getUrl() }}"><i class="pe-7s-vector"></i>flights</a>
+        <li><a href="{{ \App\Filament\Resources\FlightBundles\FlightBundleResource::getUrl() }}"><i class="pe-7s-vector"></i>flights</a>
         </li>
       @endcan
 

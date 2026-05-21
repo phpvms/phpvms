@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
@@ -14,14 +15,38 @@ class ShieldSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $tenants = '[]';
-        $users = '[]';
-        $userTenantPivot = '[]';
-        $rolesWithPermissions = '[{"name":"super_admin","guard_name":"web","permissions":["view:modules","view-logs","download-backup","delete-backup","create-backup"]},{"name":"Pilot","guard_name":"web","permissions":["view-logs","download-backup","delete-backup","create-backup","view:modules"]}]';
-        $directPermissions = '[]';
+        $tenants = [];
+        $users = [];
+        $userTenantPivot = [];
+        $rolesWithPermissions = [
+            [
+                'name'        => 'super_admin',
+                'guard_name'  => 'web',
+                'permissions' => [
+                    'view:modules',
+                    'view-logs',
+                    'download-backup',
+                    'delete-backup',
+                    'create-backup',
+                ],
+            ],
+            [
+                'name'        => 'Pilot',
+                'guard_name'  => 'web',
+                'permissions' => [
+                    'view-logs',
+                    'download-backup',
+                    'delete-backup',
+                    'create-backup',
+                    'view:modules',
+                ],
+            ],
+        ];
+
+        $directPermissions = [];
 
         // 1. Seed tenants first (if present)
-        if (!blank($tenants) && $tenants !== '[]') {
+        if ($tenants !== []) {
             static::seedTenants($tenants);
         }
 
@@ -32,47 +57,25 @@ class ShieldSeeder extends Seeder
         static::makeDirectPermissions($directPermissions);
 
         // 4. Seed users with their roles/permissions (if present)
-        if (!blank($users) && $users !== '[]') {
+        if ($users !== []) {
             static::seedUsers($users);
         }
 
         // 5. Seed user-tenant pivot (if present)
-        if (!blank($userTenantPivot) && $userTenantPivot !== '[]') {
+        if ($userTenantPivot !== []) {
             static::seedUserTenantPivot($userTenantPivot);
         }
 
         $this->command->info('Shield Seeding Completed.');
     }
 
-    protected static function seedTenants(string $tenants): void
+    protected static function seedTenants(array $tenants): void {}
+
+    protected static function seedUsers(array $users): void
     {
-        if (blank($tenantData = json_decode($tenants, true))) {
-            return;
-        }
-
-        $tenantModel = '';
-        if (blank($tenantModel)) {
-            return;
-        }
-
-        foreach ($tenantData as $tenant) {
-            $tenantModel::firstOrCreate(
-                ['id' => $tenant['id']],
-                $tenant
-            );
-        }
-    }
-
-    protected static function seedUsers(string $users): void
-    {
-        if (blank($userData = json_decode($users, true))) {
-            return;
-        }
-
-        $userModel = 'App\Models\User';
         $tenancyEnabled = false;
 
-        foreach ($userData as $data) {
+        foreach ($users as $data) {
             // Extract role/permission data before creating user
             $roles = $data['roles'] ?? [];
             $permissions = $data['permissions'] ?? [];
@@ -80,7 +83,7 @@ class ShieldSeeder extends Seeder
             $tenantPermissions = $data['tenant_permissions'] ?? [];
             unset($data['roles'], $data['permissions'], $data['tenant_roles'], $data['tenant_permissions']);
 
-            $user = $userModel::firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $data['email']],
                 $data
             );
@@ -140,11 +143,13 @@ class ShieldSeeder extends Seeder
         }
     }
 
-    protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
+    protected static function makeRolesWithPermissions(array $rolesWithPermissions): void
     {
-        if (blank($rolePlusPermissions = json_decode($rolesWithPermissions, true))) {
+        if (blank($rolesWithPermissions)) {
             return;
         }
+
+        $rolePlusPermissions = $rolesWithPermissions;
 
         /** @var Model $roleModel */
         $roleModel = Utils::getRoleModel();
@@ -187,12 +192,8 @@ class ShieldSeeder extends Seeder
         }
     }
 
-    public static function makeDirectPermissions(string $directPermissions): void
+    public static function makeDirectPermissions(array $permissions): void
     {
-        if (blank($permissions = json_decode($directPermissions, true))) {
-            return;
-        }
-
         /** @var Model $permissionModel */
         $permissionModel = Utils::getPermissionModel();
 

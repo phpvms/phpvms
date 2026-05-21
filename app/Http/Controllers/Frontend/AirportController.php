@@ -34,12 +34,12 @@ class AirportController extends Controller
 
         $inbound_flights = Flight::with($with_flights)
             ->where('arr_airport_id', $id)
-            ->where('active', 1)
+            ->visible()
             ->get();
 
         $outbound_flights = Flight::with($with_flights)
             ->where('dpt_airport_id', $id)
-            ->where('active', 1)
+            ->visible()
             ->get();
 
         return view('airports.show', [

@@ -27,6 +27,7 @@ class FlightExporter extends Exporter
             ExportColumn::make('alt_airport.icao'),
             ExportColumn::make('dpt_time'),
             ExportColumn::make('arr_time'),
+            ExportColumn::make('bundle_id'),
             ExportColumn::make('level'),
             ExportColumn::make('distance'),
             ExportColumn::make('flight_time'),
@@ -40,7 +41,10 @@ class FlightExporter extends Exporter
                 ->formatStateUsing(fn (Flight $record): string => self::getDays($record)),
             ExportColumn::make('start_date'),
             ExportColumn::make('end_date'),
-            ExportColumn::make('active'),
+            ExportColumn::make('enabled'),
+            // Backwards-compat alias: 'active' mirrors 'enabled' for downstream CSV consumers.
+            ExportColumn::make('active')
+                ->state(fn (Flight $record): bool => (bool) $record->enabled),
             ExportColumn::make('event.id'),
             ExportColumn::make('user.id'),
             ExportColumn::make('owner_type'),

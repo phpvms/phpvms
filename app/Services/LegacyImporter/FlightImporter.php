@@ -48,7 +48,7 @@ class FlightImporter extends BaseImporter
                 'arr_time'       => $row->arrtime ?: '',
                 'flight_time'    => $this->convertDuration($row->flighttime) ?: '',
                 'notes'          => $row->notes ?: '',
-                'active'         => $row->enabled ?: true,
+                'enabled'        => $row->enabled ?: true,
             ];
 
             try {
