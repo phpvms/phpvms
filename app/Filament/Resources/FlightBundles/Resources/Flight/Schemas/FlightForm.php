@@ -10,13 +10,13 @@ use App\Models\FlightBundle;
 use App\Support\Days;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -121,9 +121,10 @@ class FlightForm
                                 ->minDate(fn (Get $get): Carbon|string => $get('start_date') ?? now())
                                 ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
 
-                            Placeholder::make('bundle_dates_message')
+                            TextEntry::make('bundle_dates_message')
                                 ->visible(fn (?Flight $record): bool => self::parentBundleOwnsDates($record))
-                                ->content(fn (?Flight $record): HtmlString => new HtmlString(self::parentBundleOwnedDatesMessage($record)))
+                                ->state(fn (?Flight $record): HtmlString => new HtmlString(self::parentBundleOwnedDatesMessage($record)))
+                                ->html()
                                 ->label(''),
 
                             Select::make('days')
@@ -201,10 +202,10 @@ class FlightForm
                             ->label(__('common.notes'))
                             ->columnSpanFull(),
 
-                        Placeholder::make('status_badge')
+                        TextEntry::make('status_badge')
                             ->label(__('common.status'))
                             ->visible(fn (?Flight $record): bool => $record instanceof Flight)
-                            ->content(function (?Flight $record): HtmlString {
+                            ->state(function (?Flight $record): HtmlString {
                                 if (!$record instanceof Flight) {
                                     return new HtmlString('');
                                 }
@@ -216,7 +217,8 @@ class FlightForm
                                     e($color),
                                     e($label),
                                 ));
-                            }),
+                            })
+                            ->html(),
 
                         Toggle::make('enabled')
                             ->label(__('common.enabled'))
