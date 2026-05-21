@@ -431,14 +431,6 @@ class Flight extends Model
         return $this->belongsTo(FlightBundle::class, 'bundle_id');
     }
 
-    /**
-     * Alias for Filament nested resource parent resolution.
-     */
-    public function flightBundle(): BelongsTo
-    {
-        return $this->bundle();
-    }
-
     public function owner(): MorphTo
     {
         return $this->morphTo('owner', 'owner_type', 'owner_id');

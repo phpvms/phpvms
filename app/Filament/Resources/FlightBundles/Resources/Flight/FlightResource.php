@@ -11,6 +11,7 @@ use App\Filament\Resources\FlightBundles\Resources\Flight\RelationManagers\Subfl
 use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Tables\FlightsTable;
 use App\Models\Flight;
+use Filament\Resources\ParentResourceRegistration;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -27,6 +28,12 @@ class FlightResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static ?string $parentResource = FlightBundleResource::class;
+
+    #[\Override]
+    public static function getParentResourceRegistration(): ?ParentResourceRegistration
+    {
+        return parent::getParentResourceRegistration()?->inverseRelationship('bundle');
+    }
 
     protected static ?string $slug = 'flight';
 
