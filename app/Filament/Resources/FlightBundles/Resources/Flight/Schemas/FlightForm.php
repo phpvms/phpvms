@@ -26,6 +26,17 @@ use Illuminate\Support\HtmlString;
 
 class FlightForm
 {
+    /**
+     * @var array<string, FlightBundle|null>
+     *
+     * In-request cache for resolveParentBundle(). The Create page has 4
+     * visibility/content closures that each call resolveParentBundle() →
+     * FlightBundle::query()->find($value). Memoizing collapses those 4
+     * queries into 1 per form render. The form is short-lived per request
+     * so no explicit invalidation needed.
+     */
+    private static array $bundleCache = [];
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -221,6 +232,10 @@ class FlightForm
 
     /**
      * Resolve the parent FlightBundle from the record or route.
+     *
+     * Memoized via self::$bundleCache because 4 form closures invoke this
+     * during a single Create page render; without the cache that would be
+     * 4 identical FlightBundle::find queries per render.
      */
     private static function resolveParentBundle(?Flight $record = null): ?FlightBundle
     {
@@ -248,10 +263,12 @@ class FlightForm
             }
 
             if (is_scalar($value)) {
-                $found = FlightBundle::query()->find($value);
-                if ($found instanceof FlightBundle) {
-                    return $found;
+                $cacheKey = (string) $value;
+                if (array_key_exists($cacheKey, self::$bundleCache)) {
+                    return self::$bundleCache[$cacheKey];
                 }
+
+                return self::$bundleCache[$cacheKey] = FlightBundle::query()->find($value);
             }
         }
 
