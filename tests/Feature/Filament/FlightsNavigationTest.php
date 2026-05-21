@@ -28,9 +28,13 @@ it('registers exactly one Flights navigation entry pointing to /admin/flights', 
         ->toBe(__('filament.flights.navigation_label'));
 
     // FlightResource is nested under FlightBundleResource — no standalone nav entry.
-    $parentResource = (new ReflectionClass(FlightResource::class))->getStaticPropertyValue('parentResource');
-    expect($parentResource)
+    expect(FlightResource::getParentResource())
         ->toBe(FlightBundleResource::class);
+
+    // Parent registration is the mechanism Filament uses to skip nav for nested resources
+    // (see Filament\Resources\Resource\Concerns\HasNavigation::registerNavigationItems).
+    expect(FlightResource::getParentResourceRegistration())
+        ->not->toBeNull();
 
     // Slug confirms URL ends with /admin/flights.
     expect(FlightBundleResource::getSlug())

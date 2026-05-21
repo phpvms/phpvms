@@ -242,17 +242,15 @@ class FlightForm
         // Fall back to route resolution (works on create page + production requests).
         $route = request()->route();
         if ($route !== null) {
-            foreach (['bundle', 'flightBundle', 'flight_bundle', 'record'] as $param) {
-                $value = $route->parameter($param);
-                if ($value instanceof FlightBundle) {
-                    return $value;
-                }
+            $value = $route->parameter('flight_bundle');
+            if ($value instanceof FlightBundle) {
+                return $value;
+            }
 
-                if (is_scalar($value)) {
-                    $found = FlightBundle::query()->find($value);
-                    if ($found instanceof FlightBundle) {
-                        return $found;
-                    }
+            if (is_scalar($value)) {
+                $found = FlightBundle::query()->find($value);
+                if ($found instanceof FlightBundle) {
+                    return $found;
                 }
             }
         }
