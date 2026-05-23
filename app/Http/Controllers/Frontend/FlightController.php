@@ -82,7 +82,6 @@ class FlightController extends Controller
         // And filter according to settings (active/visible apply here too —
         // we don't want flight_type options surfacing from hidden flights).
         $usedtypes = Flight::select('flight_type')
-            ->active()
             ->visible()
             ->where($where)
             ->groupby('flight_type')

@@ -16,13 +16,11 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 class BidFlightResource extends FlightResource
 {
     /**
-     * @return array
-     *
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
     #[\Override]
-    public function toArray(Request $request)
+    public function toArray(Request $request): array
     {
         $res = parent::toArray($request);
 

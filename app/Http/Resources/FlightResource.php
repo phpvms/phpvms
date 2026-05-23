@@ -6,10 +6,10 @@ use App\Contracts\Resource;
 use App\Http\Resources\SimBriefResource as SimbriefResource;
 use App\Models\Flight;
 use App\Support\Units\Distance;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use PhpUnitsOfMeasure\Exception\NonNumericValue;
-use PhpUnitsOfMeasure\Exception\NonStringUnitName;
+use Override;
 use stdClass;
 
 /**
@@ -37,15 +37,24 @@ class FlightResource extends Resource
     }
 
     /**
-     * @return array
-     *
-     * @throws NonNumericValue
-     * @throws NonStringUnitName
+     * @throws Exception
      */
-    #[\Override]
-    public function toArray(Request $request)
+    #[Override]
+    public function toArray(Request $request): array
     {
         $res = parent::toArray($request);
+
+        // Backwards-compat alias: 'active' mirrors 'enabled' for existing API consumers.
+        $res['active'] = $res['enabled'] ?? null;
+
+        // Expose both the structured TIME columns (canonical `H:i:s` strings)
+        // and the legacy `Hi`-formatted aliases consumed by ACARS clients and
+        // third-party integrations. The legacy keys are projected here rather
+        // than via a model accessor so the model stays free of API concerns.
+        $res['departure_time'] = $this->departure_time?->format('H:i:s');
+        $res['arrival_time'] = $this->arrival_time?->format('H:i:s');
+        $res['dpt_time'] = $this->departure_time?->format('Hi');
+        $res['arr_time'] = $this->arrival_time?->format('Hi');
 
         // Display flight callsign if pilot ident usage is not forced by VA
         // Check if there is a callsign too

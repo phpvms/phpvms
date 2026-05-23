@@ -9,11 +9,13 @@ use App\Enums\FlightType;
 use App\Models\Airport;
 use App\Models\Fare;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
 use App\Support\Days;
+use App\Support\FlightTimeParser;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -51,7 +53,7 @@ class FlightImporter extends ImportExport
         'notes'                => 'nullable',
         'start_date'           => 'nullable|date',
         'end_date'             => 'nullable|date',
-        'active'               => 'nullable|boolean',
+        'enabled'              => 'nullable|boolean',
         'subfleets'            => 'nullable',
         'fares'                => 'nullable',
         'fields'               => 'nullable',
@@ -64,6 +66,14 @@ class FlightImporter extends ImportExport
     private readonly FareService $fareSvc;
 
     private readonly FlightService $flightSvc;
+
+    /**
+     * Memoized id of the bundle named "Default", used as the bundle_id fallback
+     * for rows whose CSV value is blank. Cached per importer instance to avoid
+     * an N+1 lookup across imports of many rows. `false` sentinel = lookup not
+     * yet attempted.
+     */
+    private int|false|null $defaultBundleId = false;
 
     /**
      * FlightImportExporter constructor.
@@ -80,6 +90,24 @@ class FlightImporter extends ImportExport
      */
     public function import(array $row, int $index): bool
     {
+        // Map legacy `dpt_time` / `arr_time` CSV columns onto the structured
+        // `departure_time` / `arrival_time` columns by parsing the free-form
+        // input through FlightTimeParser. Preserves backward CSV compatibility
+        // for re-imports of archived exports.
+        if (array_key_exists('dpt_time', $row)) {
+            $row['departure_time'] = filled($row['dpt_time'])
+                ? FlightTimeParser::parse((string) $row['dpt_time'])
+                : null;
+            unset($row['dpt_time']);
+        }
+
+        if (array_key_exists('arr_time', $row)) {
+            $row['arrival_time'] = filled($row['arr_time'])
+                ? FlightTimeParser::parse((string) $row['arr_time'])
+                : null;
+            unset($row['arr_time']);
+        }
+
         // Get the airline ID from the ICAO code
         $airline = $this->getAirline($row['airline']);
 
@@ -175,7 +203,13 @@ class FlightImporter extends ImportExport
         }
 
         $flight->setAttribute('flight_type', $flight_type);
-        $flight->setAttribute('active', get_truth_state($row['active']));
+        $flight->setAttribute('enabled', get_truth_state($row['enabled'] ?? $row['active'] ?? false));
+
+        if (filled($row['bundle_id'] ?? null)) {
+            $flight->setAttribute('bundle_id', (int) $row['bundle_id']);
+        } elseif (blank($flight->bundle_id)) {
+            $flight->setAttribute('bundle_id', $this->getDefaultBundleId());
+        }
 
         try {
             $flight->save();
@@ -199,6 +233,23 @@ class FlightImporter extends ImportExport
         $this->log('Imported row '.($index + 1));
 
         return true;
+    }
+
+    /**
+     * Resolve the id of the bundle named "Default" once per importer instance.
+     *
+     * `bundle_id` resolution precedence: explicit CSV value > existing flight
+     * value > this "Default" bundle. Returns null only when no bundle named
+     * "Default" exists in the database (rare; usually the migration seeds one).
+     */
+    private function getDefaultBundleId(): ?int
+    {
+        if ($this->defaultBundleId === false) {
+            $id = FlightBundle::query()->where('name', 'Default')->value('id');
+            $this->defaultBundleId = $id === null ? null : (int) $id;
+        }
+
+        return $this->defaultBundleId;
     }
 
     /**

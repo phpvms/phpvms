@@ -31,6 +31,7 @@ storage/*.sqlite
 .env
 .github/scripts/env.test
 .vagrant
+.docker
 #Homestead.yaml
 Homestead.json
 LocalValetDriver.php
@@ -105,3 +106,4 @@ modules_statuses.json
 
 # Local SQLite scratch db (test artifact)
 /phpvms
+.env.testing

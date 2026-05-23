@@ -79,6 +79,5 @@ networks:
     driver: bridge
 volumes:
   sail-mysql:
-    driver: local
   sail-redis:
     driver: local

@@ -10,6 +10,7 @@ use App\Support\Days;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,40 +27,44 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string      $id
- * @property int         $airline_id
- * @property int         $flight_number
- * @property string|null $callsign
- * @property string|null $route_code
- * @property int|null    $route_leg
- * @property string      $dpt_airport_id
- * @property string      $arr_airport_id
- * @property string|null $alt_airport_id
- * @property string|null $dpt_time
- * @property string|null $arr_time
- * @property int|null    $level
- * @property mixed|null  $distance
- * @property int|null    $flight_time
- * @property FlightType  $flight_type
- * @property float|null  $load_factor
- * @property float|null  $load_factor_variance
- * @property string|null $route
- * @property float|null  $pilot_pay
- * @property string|null $notes
- * @property int|null    $scheduled
- * @property int|null    $days
- * @property Carbon|null $start_date
- * @property Carbon|null $end_date
- * @property bool        $has_bid
- * @property bool        $active
- * @property bool        $visible
- * @property int|null    $event_id
- * @property int|null    $user_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property string|null $owner_type
- * @property string|null $owner_id
+ * @property string            $id
+ * @property int               $airline_id
+ * @property int               $flight_number
+ * @property string|null       $callsign
+ * @property string|null       $route_code
+ * @property int|null          $route_leg
+ * @property string            $dpt_airport_id
+ * @property string            $arr_airport_id
+ * @property string|null       $alt_airport_id
+ * @property string|null       $dpt_time
+ * @property string|null       $arr_time
+ * @property Carbon|null       $departure_time
+ * @property Carbon|null       $arrival_time
+ * @property int|null          $level
+ * @property mixed|null        $distance
+ * @property int|null          $flight_time
+ * @property FlightType        $flight_type
+ * @property float|null        $load_factor
+ * @property float|null        $load_factor_variance
+ * @property string|null       $route
+ * @property float|null        $pilot_pay
+ * @property string|null       $notes
+ * @property int|null          $scheduled
+ * @property int|null          $days
+ * @property Carbon|null       $start_date
+ * @property Carbon|null       $end_date
+ * @property bool              $has_bid
+ * @property bool              $enabled
+ * @property bool              $visible
+ * @property int|null          $event_id
+ * @property int|null          $user_id
+ * @property int|null          $bundle_id
+ * @property FlightBundle|null $bundle
+ * @property Carbon|null       $created_at
+ * @property Carbon|null       $updated_at
+ * @property Carbon|null       $deleted_at
+ * @property string|null       $owner_type
+ * @property string|null       $owner_id
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Airline|null $airline
@@ -95,7 +100,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder<static>|Flight            sortable($defaultParameters = null)
  * @method static Builder<static>|Flight            toAirport(string $icao)
  * @method static Builder<static>|Flight            visible()
- * @method static Builder<static>|Flight            whereActive($value)
+ * @method static Builder<static>|Flight            whereEnabled($value)
  * @method static Builder<static>|Flight            whereAirlineId($value)
  * @method static Builder<static>|Flight            whereAltAirportId($value)
  * @method static Builder<static>|Flight            whereArrAirportId($value)
@@ -138,6 +143,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 #[ObservedBy(FlightObserver::class)]
+#[WithoutIncrementing]
 class Flight extends Model
 {
     use HasFactory;
@@ -155,8 +161,6 @@ class Flight extends Model
 
     protected $keyType = 'string';
 
-    public $incrementing = false;
-
     protected $fillable = [
         'id',
         'airline_id',
@@ -169,6 +173,8 @@ class Flight extends Model
         'alt_airport_id',
         'dpt_time',
         'arr_time',
+        'departure_time',
+        'arrival_time',
         'days',
         'level',
         'distance',
@@ -182,10 +188,11 @@ class Flight extends Model
         'start_date',
         'end_date',
         'has_bid',
-        'active',
+        'enabled',
         'visible',
         'event_id',
         'user_id',
+        'bundle_id',
         'owner_type',
         'owner_id',
     ];
@@ -224,7 +231,7 @@ class Flight extends Model
     public static function findByDays(array $days): Builder
     {
         /** @noinspection DynamicInvocationViaScopeResolutionInspection */
-        $flights = self::where('active', true);
+        $flights = self::where('enabled', true);
         foreach ($days as $day) {
             $flights = $flights->where('days', '&', $day);
         }
@@ -407,6 +414,11 @@ class Flight extends Model
         return $this->belongsTo(Event::class);
     }
 
+    public function bundle(): BelongsTo
+    {
+        return $this->belongsTo(FlightBundle::class, 'bundle_id');
+    }
+
     public function owner(): MorphTo
     {
         return $this->morphTo('owner', 'owner_type', 'owner_id');
@@ -422,29 +434,47 @@ class Flight extends Model
             'distance'             => DistanceCast::class,
             'flight_time'          => 'integer',
             'flight_type'          => FlightType::class,
-            'start_date'           => 'date',
-            'end_date'             => 'date',
+            'departure_time'       => 'datetime:H:i:s',
+            'arrival_time'         => 'datetime:H:i:s',
+            'start_date'           => 'datetime',
+            'end_date'             => 'datetime',
             'load_factor'          => 'double',
             'load_factor_variance' => 'double',
             'pilot_pay'            => 'float',
             'has_bid'              => 'boolean',
             'route_leg'            => 'integer',
-            'active'               => 'boolean',
+            'enabled'              => 'boolean',
             'visible'              => 'boolean',
             'event_id'             => 'integer',
             'user_id'              => 'integer',
+            'bundle_id'            => 'integer',
         ];
     }
 
     /*
      * Query scopes
      */
+
+    /**
+     * Backwards-compatible alias for the renamed scope. Equivalent to
+     * `Flight::visible()`. Kept indefinitely for module compatibility.
+     *
+     * @deprecated use ->visible()
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {
-        return $query->where('active', true);
+        return $query->where('visible', true);
     }
 
+    /**
+     * Pilot-facing visibility scope. The `visible` column is cron-managed combined state:
+     * computed nightly by `App\Cron\Nightly\SetVisibleFlights` (and via a queued
+     * `RecomputeBundleVisibility` job dispatched by `BundleObserver` on bundle
+     * save/restore) as `flight.enabled AND bundle.enabled AND
+     * in_effective_window`. Admin code SHALL NOT write to `flights.visible` directly;
+     * toggle `flights.enabled` instead.
+     */
     #[Scope]
     protected function visible(Builder $query): Builder
     {
