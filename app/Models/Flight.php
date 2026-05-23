@@ -373,6 +373,37 @@ class Flight extends Model
         return $this->belongsToMany(Subfleet::class, 'flight_subfleet');
     }
 
+    /**
+     * Resolve the subfleets shown for this flight given a user.
+     *
+     * Pinned subfleets win. If none are pinned, fall back to:
+     *   - airline subfleets when `flights.only_company_aircraft` is on
+     *   - all user-allowed subfleets otherwise
+     *
+     * User access constraints (rank / type rating) are applied throughout.
+     * Use this in single-flight controllers; list endpoints use the
+     * `withAccessibleSubfleets` scope which skips the fallback.
+     */
+    public function accessibleSubfleetsFor(User $user, array $with = []): Collection
+    {
+        $pinned = Subfleet::query()
+            ->allowedFor($user)
+            ->whereHas('flights', fn ($q) => $q->whereKey($this->id))
+            ->with($with)
+            ->get();
+
+        if ($pinned->isNotEmpty()) {
+            return $pinned;
+        }
+
+        $fallback = Subfleet::query()->allowedFor($user)->with($with);
+        if (setting('flights.only_company_aircraft', false)) {
+            $fallback->where('airline_id', $this->airline_id);
+        }
+
+        return $fallback->get();
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -541,5 +572,29 @@ class Flight extends Model
             'subfleets',
             fn (Builder $sq) => $sq->whereIn('subfleets.id', $subfleetIds)
         );
+    }
+
+    /**
+     * Eager-load subfleets, their aircraft, and their fares constrained to the
+     * user's access policy. No flight context is passed to the aircraft scope
+     * here — airport restriction is a per-flight concern handled by
+     * single-flight callers via `Aircraft::allowedFor($user, $flight)`. Rank,
+     * type-rating, and bid-block constraints still apply.
+     *
+     * `fares` is eager-loaded because callers commonly run the result through
+     * `FareService::getReconciledFaresForFlight()`, which reads
+     * `$subfleet->fares`. Without that load, lazy-loading kicks in and trips
+     * `preventLazyLoading()` in non-prod environments.
+     */
+    #[Scope]
+    protected function withAccessibleSubfleets(Builder $query, User $user): Builder
+    {
+        return $query->with([
+            'subfleets' => fn ($sq) => $sq->allowedFor($user)->with([
+                'aircraft' => fn ($aq) => $aq->allowedFor($user),
+                'aircraft.bid',
+                'fares',
+            ]),
+        ]);
     }
 }

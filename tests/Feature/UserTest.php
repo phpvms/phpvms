@@ -21,8 +21,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
 test('rank subfleets', function (): void {
-    $userSvc = app(UserService::class);
-
     // Add subfleets and aircraft, but also add another
     // set of subfleets
     $subfleet = Subfleet::factory()->hasAircraft(2)->count(2)->create();
@@ -36,7 +34,7 @@ test('rank subfleets', function (): void {
 
     $added_aircraft = $subfleetA->aircraft->pluck('id');
 
-    $subfleets = $userSvc->getAllowableSubfleets($user);
+    $subfleets = $user->allowedSubfleets()->with('aircraft')->get();
     expect($subfleets->count())->toEqual(1);
 
     $subfleet = $subfleets[0];
@@ -76,7 +74,6 @@ test('rank subfleets', function (): void {
 
 test('get all aircraft', function (): void {
     $fareSvc = app(FareService::class);
-    $userSvc = app(UserService::class);
 
     // Add subfleets and aircraft, but also add another
     // set of subfleets
@@ -110,7 +107,7 @@ test('get all aircraft', function (): void {
 
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
-    $subfleets = $userSvc->getAllowableSubfleets($user);
+    $subfleets = $user->allowedSubfleets()->with(['aircraft', 'fares'])->get();
     expect($subfleets->count())->toEqual(2);
 
     $all_aircraft = array_merge(
@@ -120,9 +117,11 @@ test('get all aircraft', function (): void {
 
     expect($all_aircraft)->toEqual($added_aircraft);
 
-    $subfleetACalled = collect($subfleets)->firstWhere('id', $subfleetA->id);
-    expect($overrides['price'])->toEqual($subfleetACalled->fares[0]['price'])
-        ->and($overrides['capacity'])->toEqual($subfleetACalled->fares[0]['capacity']);
+    // Override resolution now happens at the API Resource boundary (not in
+    // the loader). The /api/user/fleet check below pins that surface.
+    $subfleetACalled = $fareSvc->getForSubfleet($subfleets->firstWhere('id', $subfleetA->id));
+    expect($overrides['price'])->toEqual($subfleetACalled[0]->price)
+        ->and($overrides['capacity'])->toEqual($subfleetACalled[0]->capacity);
 
     /**
      * Check via API, but should only show the single subfleet being returned

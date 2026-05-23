@@ -32,7 +32,6 @@ use App\Models\User;
 use App\Queries\JournalTransactionQuery;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\PirepService;
-use App\Services\UserService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -51,7 +50,6 @@ class PirepController extends Controller
         private readonly PirepFinanceService $financeSvc,
         private readonly JournalTransactionQuery $journalTransactions,
         private readonly PirepService $pirepSvc,
-        private readonly UserService $userSvc
     ) {}
 
     /**
@@ -229,7 +227,7 @@ class PirepController extends Controller
         if (array_key_exists('aircraft_id', $attrs)
             && setting('pireps.restrict_aircraft_to_rank', false)
         ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
+            $can_use_ac = $user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists();
             if (!$can_use_ac) {
                 throw new AircraftPermissionDenied($user, $pirep->aircraft);
             }
@@ -271,7 +269,7 @@ class PirepController extends Controller
         if (array_key_exists('aircraft_id', $attrs)
             && setting('pireps.restrict_aircraft_to_rank', false)
         ) {
-            $can_use_ac = $this->userSvc->aircraftAllowed($user, $pirep->aircraft_id);
+            $can_use_ac = $user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists();
             if (!$can_use_ac) {
                 throw new AircraftPermissionDenied($user, $pirep->aircraft);
             }

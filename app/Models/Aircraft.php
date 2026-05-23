@@ -8,10 +8,13 @@ use App\Contracts\Model;
 use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
 use App\Observers\AircraftObserver;
+use App\Support\SubfleetAccessPolicy;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -270,6 +273,17 @@ class Aircraft extends Model
     public function subfleet(): BelongsTo
     {
         return $this->belongsTo(Subfleet::class, 'subfleet_id');
+    }
+
+    /**
+     * Restrict to aircraft the given user is allowed to operate. Optionally
+     * scope to a flight context to apply departure-airport restriction.
+     * See SubfleetAccessPolicy.
+     */
+    #[Scope]
+    protected function allowedFor(Builder $query, User $user, ?Flight $flight = null): Builder
+    {
+        return (new SubfleetAccessPolicy($user, $flight))->applyToAircraft($query);
     }
 
     public function sbaircraft(): HasOne

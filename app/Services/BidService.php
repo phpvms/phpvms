@@ -22,7 +22,6 @@ class BidService extends Service
 {
     public function __construct(
         private readonly FareService $fareSvc,
-        private readonly FlightService $flightSvc
     ) {}
 
     /**
@@ -40,10 +39,6 @@ class BidService extends Service
             },
             'flight.simbrief.aircraft',
             'flight.simbrief.aircraft.subfleet',
-            'flight.subfleets',
-            'flight.subfleets.aircraft',
-            'flight.subfleets.aircraft.bid',
-            'flight.subfleets.fares',
         ];
 
         /** @var ?Bid $bid */
@@ -52,17 +47,28 @@ class BidService extends Service
             return null;
         }
 
-        // Reconcile the aircraft for this bid
-        // TODO: Only do this if there isn't a Simbrief attached?
-        if (!empty($bid->aircraft)) {
-            $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
-        } else {
-            // @phpstan-ignore-next-line
-            $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
-        }
+        if ($bid->flight !== null) {
+            if ($bid->aircraft !== null) {
+                // Bid is for a specific aircraft — show only that aircraft's subfleet
+                $bid->flight->setRelation(
+                    'subfleets',
+                    $bid->flight->subfleets()
+                        ->where('subfleets.id', $bid->aircraft->subfleet_id)
+                        ->with([
+                            'fares',
+                            'aircraft' => fn ($q) => $q->where('id', $bid->aircraft_id),
+                        ])
+                        ->get(),
+                );
+            } else {
+                $bid->flight->setRelation(
+                    'subfleets',
+                    $bid->flight->accessibleSubfleetsFor($user, ['aircraft.bid', 'fares']),
+                );
+            }
 
-        // @phpstan-ignore-next-line
-        $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
+            $this->fareSvc->getReconciledFaresForFlight($bid->flight);
+        }
 
         return $bid;
     }
@@ -86,36 +92,41 @@ class BidService extends Service
             },
         ];
 
-        foreach ($relations as $relation) {
-            $with = array_merge($with, match ($relation) {
-                'subfleets' => [
-                    'flight.subfleets',
-                    'flight.subfleets.aircraft',
-                    'flight.subfleets.aircraft.bid',
-                    'flight.subfleets.fares',
-                ],
-                'simbrief_aircraft' => [
-                    'flight.simbrief.aircraft',
-                    'flight.simbrief.aircraft.subfleet',
-                    'flight.simbrief.aircraft.subfleet.fares',
-                ],
-                default => [],
-            });
+        $loadSubfleets = in_array('subfleets', $relations, true);
+
+        if ($loadSubfleets) {
+            // Eager-load filtered subfleets + their fares + aircraft via the
+            // access-policy scope in a single query plan per relation.
+            $with['flight'] = fn ($q) => $q->withAccessibleSubfleets($user);
+        }
+
+        if (in_array('simbrief_aircraft', $relations, true)) {
+            $with = array_merge($with, [
+                'flight.simbrief.aircraft',
+                'flight.simbrief.aircraft.subfleet',
+                'flight.simbrief.aircraft.subfleet.fares',
+            ]);
         }
 
         $bids = Bid::with($with)->where(['user_id' => $user->id])->get();
 
-        if (in_array('subfleets', $relations, true)) {
+        if ($loadSubfleets) {
             foreach ($bids as $bid) {
-                if ($bid->aircraft) {
-                    $bid->flight->subfleets = $this->flightSvc->getSubfleetsForBid($bid);
-                } else {
-                    // @phpstan-ignore-next-line
-                    $bid->flight = $this->flightSvc->filterSubfleets($user, $bid->flight);
+                if ($bid->flight === null) {
+                    continue;
                 }
 
-                // @phpstan-ignore-next-line
-                $bid->flight = $this->fareSvc->getReconciledFaresForFlight($bid->flight);
+                // If the bid is for a specific aircraft, narrow the subfleet list
+                // to that aircraft's subfleet only — preserves the historic UX of
+                // showing only the booked aircraft on the bid card.
+                if ($bid->aircraft !== null) {
+                    $bid->flight->setRelation(
+                        'subfleets',
+                        $bid->flight->subfleets->where('id', $bid->aircraft->subfleet_id)->values(),
+                    );
+                }
+
+                $this->fareSvc->getReconciledFaresForFlight($bid->flight);
             }
         }
 

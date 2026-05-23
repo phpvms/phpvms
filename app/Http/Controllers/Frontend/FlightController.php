@@ -15,7 +15,6 @@ use App\Queries\FlightSearchQuery;
 use App\Services\FlightService;
 use App\Services\GeoService;
 use App\Services\ModuleService;
-use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -30,7 +29,6 @@ class FlightController extends Controller
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
         private readonly ModuleService $moduleSvc,
-        private readonly UserService $userSvc
     ) {}
 
     public function index(SearchFlightsRequest $request): View
@@ -66,7 +64,7 @@ class FlightController extends Controller
 
         if ($filter_by_user) {
             // Get allowed subfleets for the user
-            $user_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->toArray();
+            $user_subfleets = $user->allowedSubfleets()->pluck('id')->all();
             $allowed_flights = $this->flightSvc->getAccessibleFlightIds($user);
             // Build aircraft icao codes by considering allowed subfleets
             $icao_codes = Aircraft::whereIn('subfleet_id', $user_subfleets)->groupBy('icao')->orderBy('icao')->pluck('icao')->toArray();
@@ -214,9 +212,10 @@ class FlightController extends Controller
             return redirect(route('frontend.dashboard.index'));
         }
 
-        if (setting('flights.only_company_aircraft', false)) {
-            $flight = $this->flightSvc->filterSubfleets($user, $flight);
-        }
+        $flight->setRelation(
+            'subfleets',
+            $flight->accessibleSubfleetsFor($user, ['airline']),
+        );
 
         $map_features = $this->geoSvc->flightGeoJson($flight);
 
