@@ -25,6 +25,7 @@
         </include>
     </source>
     <php>
+        <server name="APP_ENV" value="testing" force="true"/>
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>

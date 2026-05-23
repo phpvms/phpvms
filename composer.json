@@ -76,7 +76,6 @@
     "staudenmeir/eloquent-has-many-deep": "1.22.1",
     "spatie/laravel-ignition": "^2.12.0",
     "kyslik/column-sortable": "^8.0",
-    "jlorente/laravel-data-migrations": "^2.0",
     "filament/filament": "^5.4.1",
     "flowframe/laravel-trend": "^0.5.0",
     "bezhansalleh/filament-shield": "^4.2",
@@ -174,6 +173,8 @@
       "npx npm-check-updates -u -t minor && npm install"
     ],
     "lint": "pint --parallel",
+    "pint": "pint --parallel",
+    "pint:test": "pint --test --parallel",
     "refactor": "rector",
     "test:lint": "pint --test --parallel",
     "test:refactor": "rector --dry-run",

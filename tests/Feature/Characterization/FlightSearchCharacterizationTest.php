@@ -266,15 +266,15 @@ test('honors legacy multi-column orderBy syntax', function (): void {
 test('only active true excludes inactive flights', function (): void {
     /** @var Flight $active_visible */
     $active_visible = Flight::factory()->create([
-        'active'  => true,
+        'enabled' => true,
         'visible' => true,
     ]);
     Flight::factory()->create([
-        'active'  => false,
-        'visible' => true,
+        'enabled' => false,
+        'visible' => false,
     ]);
     Flight::factory()->create([
-        'active'  => true,
+        'enabled' => true,
         'visible' => false,
     ]);
 
@@ -289,17 +289,16 @@ test('only active true excludes inactive flights', function (): void {
 test('only active false includes inactive flights', function (): void {
     /** @var Flight $active_visible */
     $active_visible = Flight::factory()->create([
-        'active'  => true,
+        'enabled' => true,
         'visible' => true,
     ]);
-    /** @var Flight $inactive_visible */
     $inactive_visible = Flight::factory()->create([
-        'active'  => false,
-        'visible' => true,
+        'enabled' => false,
+        'visible' => false,
     ]);
     /** @var Flight $active_hidden */
     $active_hidden = Flight::factory()->create([
-        'active'  => true,
+        'enabled' => true,
         'visible' => false,
     ]);
 

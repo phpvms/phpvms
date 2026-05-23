@@ -45,6 +45,11 @@ class FlightExporter extends ImportExport
         $ret['distance'] = $row->distance->internal();
         $ret['flight_type'] = $row->flight_type->value;
 
+        // Legacy CSV headers keep their names but the underlying values come
+        // from the structured TIME columns, formatted back to the legacy `Hi`.
+        $ret['dpt_time'] = $row->departure_time?->format('Hi');
+        $ret['arr_time'] = $row->arrival_time?->format('Hi');
+
         if ($row->alt_airport) {
             $ret['alt_airport'] = $row->alt_airport_id;
         }

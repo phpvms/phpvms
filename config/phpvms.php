@@ -210,6 +210,17 @@ return [
     ],
 
     /**
+     * RouteForge default values for NULL capability columns
+     */
+    'routeforge' => [
+        'cruise_speed_kt'      => 450,
+        'climb_descent_buffer' => 20,
+        'turnaround_minutes'   => 60,
+        'mesh_warn_count'      => 50,
+        'mesh_max_count'       => 100,
+    ],
+
+    /**
      * Available languages
      */
     'languages' => [
