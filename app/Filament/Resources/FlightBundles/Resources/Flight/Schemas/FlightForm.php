@@ -128,11 +128,11 @@ class FlightForm
                                 ->multiple()
                                 ->native(false),
 
-                            TimePicker::make('dpt_time')
+                            TimePicker::make('departure_time')
                                 ->seconds(false)
                                 ->label(__('flights.departuretime')),
 
-                            TimePicker::make('arr_time')
+                            TimePicker::make('arrival_time')
                                 ->seconds(false)
                                 ->label(__('flights.arrivaltime')),
                         ])

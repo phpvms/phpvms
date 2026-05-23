@@ -7,7 +7,6 @@ use App\Contracts\Model;
 use App\Enums\FlightType;
 use App\Observers\FlightObserver;
 use App\Support\Days;
-use App\Support\FlightTimeParser;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -158,11 +157,13 @@ class Flight extends Model
 
     public $minutes;
 
-    protected $appends = [
-        'dpt_time',
-        'arr_time',
-    ];
-
+    /**
+     * Hide the structured TIME columns from default Eloquent serialization.
+     * The API resource layer (FlightResource) is responsible for projecting
+     * them as legacy `dpt_time`/`arr_time` `Hi` strings; outside the API
+     * response they are accessed directly as Carbon instances via
+     * `$flight->departure_time` / `$flight->arrival_time`.
+     */
     protected $hidden = [
         'departure_time',
         'arrival_time',
@@ -325,32 +326,6 @@ class Flight extends Model
 
                 return $value;
             }
-        );
-    }
-
-    /**
-     * Legacy `dpt_time` virtual attribute: reads as an `Hi` string and
-     * writes parse free-form input via FlightTimeParser. Backed by the
-     * structured `departure_time` TIME column.
-     */
-    protected function dptTime(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): ?string => $this->departure_time?->format('Hi'),
-            set: fn (mixed $value): array => ['departure_time' => FlightTimeParser::parse((string) $value)],
-        );
-    }
-
-    /**
-     * Legacy `arr_time` virtual attribute: reads as an `Hi` string and
-     * writes parse free-form input via FlightTimeParser. Backed by the
-     * structured `arrival_time` TIME column.
-     */
-    protected function arrTime(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): ?string => $this->arrival_time?->format('Hi'),
-            set: fn (mixed $value): array => ['arrival_time' => FlightTimeParser::parse((string) $value)],
         );
     }
 

@@ -15,6 +15,7 @@ use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
 use App\Support\Days;
+use App\Support\FlightTimeParser;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -88,6 +89,24 @@ class FlightImporter extends ImportExport
      */
     public function import(array $row, int $index): bool
     {
+        // Map legacy `dpt_time` / `arr_time` CSV columns onto the structured
+        // `departure_time` / `arrival_time` columns by parsing the free-form
+        // input through FlightTimeParser. Preserves backward CSV compatibility
+        // for re-imports of archived exports.
+        if (array_key_exists('dpt_time', $row)) {
+            $row['departure_time'] = filled($row['dpt_time'])
+                ? FlightTimeParser::parse((string) $row['dpt_time'])
+                : null;
+            unset($row['dpt_time']);
+        }
+
+        if (array_key_exists('arr_time', $row)) {
+            $row['arrival_time'] = filled($row['arr_time'])
+                ? FlightTimeParser::parse((string) $row['arr_time'])
+                : null;
+            unset($row['arr_time']);
+        }
+
         // Get the airline ID from the ICAO code
         $airline = $this->getAirline($row['airline']);
 

@@ -47,6 +47,13 @@ class FlightResource extends Resource
         // Backwards-compat alias: 'active' mirrors 'enabled' for existing API consumers.
         $res['active'] = $res['enabled'] ?? null;
 
+        // Project the structured TIME columns onto the legacy `Hi`-formatted
+        // keys for API consumers (ACARS clients, third-party integrations).
+        // `departure_time` / `arrival_time` themselves are kept out of the
+        // response via Flight::$hidden.
+        $res['dpt_time'] = $this->departure_time?->format('Hi');
+        $res['arr_time'] = $this->arrival_time?->format('Hi');
+
         // Display flight callsign if pilot ident usage is not forced by VA
         // Check if there is a callsign too
         if (!empty($this->callsign) && !setting('simbrief.callsign', true)) {

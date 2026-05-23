@@ -11,6 +11,7 @@ use App\Services\AirportService;
 use App\Services\FareService;
 use App\Services\FlightService;
 use App\Support\Days;
+use App\Support\FlightTimeParser;
 use App\Support\Utils;
 use Filament\Actions\Imports\Exceptions\RowImportFailedException;
 use Filament\Actions\Imports\ImportColumn;
@@ -91,10 +92,20 @@ class FlightImporter extends Importer
                 }),
 
             ImportColumn::make('dpt_time')
-                ->rules(['max:10']),
+                ->rules(['max:10'])
+                ->fillRecordUsing(function (Flight $record, ?string $state): void {
+                    if ($state !== null && $state !== '') {
+                        $record->setAttribute('departure_time', FlightTimeParser::parse($state));
+                    }
+                }),
 
             ImportColumn::make('arr_time')
-                ->rules(['max:10']),
+                ->rules(['max:10'])
+                ->fillRecordUsing(function (Flight $record, ?string $state): void {
+                    if ($state !== null && $state !== '') {
+                        $record->setAttribute('arrival_time', FlightTimeParser::parse($state));
+                    }
+                }),
 
             ImportColumn::make('level')
                 ->numeric()

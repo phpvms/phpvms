@@ -25,8 +25,13 @@ class FlightExporter extends Exporter
             ExportColumn::make('dpt_airport.icao'),
             ExportColumn::make('arr_airport.icao'),
             ExportColumn::make('alt_airport.icao'),
-            ExportColumn::make('dpt_time'),
-            ExportColumn::make('arr_time'),
+            // Project the structured TIME columns onto the legacy CSV headers
+            // so downstream consumers (re-imports, archived templates) keep
+            // working without re-formatting.
+            ExportColumn::make('dpt_time')
+                ->state(fn (Flight $record): ?string => $record->departure_time?->format('Hi')),
+            ExportColumn::make('arr_time')
+                ->state(fn (Flight $record): ?string => $record->arrival_time?->format('Hi')),
             ExportColumn::make('bundle_id'),
             ExportColumn::make('level'),
             ExportColumn::make('distance'),

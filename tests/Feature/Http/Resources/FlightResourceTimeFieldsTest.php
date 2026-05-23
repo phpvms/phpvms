@@ -7,8 +7,8 @@ use App\Models\Flight;
 
 test('flight resource serializes dpt_time as legacy Hi string from new column', function (): void {
     $flight = Flight::factory()->create([
-        'dpt_time' => '08:30',
-        'arr_time' => '14:15',
+        'departure_time' => '08:30:00',
+        'arrival_time'   => '14:15:00',
     ]);
 
     $resource = (new FlightResource($flight))->toArray(request());
@@ -22,8 +22,8 @@ test('flight resource serializes dpt_time as legacy Hi string from new column', 
 
 test('flight resource serializes null time columns as null', function (): void {
     $flight = Flight::factory()->create([
-        'dpt_time' => null,
-        'arr_time' => null,
+        'departure_time' => null,
+        'arrival_time'   => null,
     ]);
 
     $resource = (new FlightResource($flight))->toArray(request());

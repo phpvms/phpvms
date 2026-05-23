@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\LegacyImporter;
 
 use App\Models\Flight;
+use App\Support\FlightTimeParser;
 use Exception;
 
 class FlightImporter extends BaseImporter
@@ -44,8 +45,8 @@ class FlightImporter extends BaseImporter
                 'route'          => $row->route ?: '',
                 'distance'       => round($row->distance ?: 0, 2),
                 'level'          => $row->flightlevel ?: 0,
-                'dpt_time'       => $row->deptime ?: '',
-                'arr_time'       => $row->arrtime ?: '',
+                'departure_time' => filled($row->deptime) ? FlightTimeParser::parse((string) $row->deptime) : null,
+                'arrival_time'   => filled($row->arrtime) ? FlightTimeParser::parse((string) $row->arrtime) : null,
                 'flight_time'    => $this->convertDuration($row->flighttime) ?: '',
                 'notes'          => $row->notes ?: '',
                 'enabled'        => $row->enabled ?: true,
