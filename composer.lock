@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dacdbeab51d660ba371dc490164e5a79",
+    "content-hash": "d1a840b0de45f11d8d8388a1ddf16c55",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -4005,6 +4005,54 @@
                 }
             ],
             "time": "2025-04-26T11:19:48+00:00"
+        },
+        {
+            "name": "jlorente/laravel-data-migrations",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jlorente/laravel-data-migrations.git",
+                "reference": "22a3c90c20c7d2d1511700087f81639e8af8c0cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jlorente/laravel-data-migrations/zipball/22a3c90c20c7d2d1511700087f81639e8af8c0cd",
+                "reference": "22a3c90c20c7d2d1511700087f81639e8af8c0cd",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": ">=8.0",
+                "php": ">=7.4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Jlorente\\DataMigrations\\DataMigrationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Jlorente\\DataMigrations\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jose Lorente",
+                    "email": "jose.lorente.martin@gmail.com"
+                }
+            ],
+            "description": "An extension to allow you to separate data migrations from structure migrations",
+            "support": {
+                "issues": "https://github.com/jlorente/laravel-data-migrations/issues",
+                "source": "https://github.com/jlorente/laravel-data-migrations/tree/2.0.2"
+            },
+            "time": "2024-10-19T10:03:31+00:00"
         },
         {
             "name": "jmikola/geojson",

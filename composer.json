@@ -93,7 +93,8 @@
     "socialiteproviders/ivao": "^4.0",
     "mailersend/laravel-driver": "^3.1",
     "opcodesio/log-viewer": "^3.24",
-    "spatie/laravel-data": "^4.22.1"
+    "spatie/laravel-data": "^4.22.1",
+    "jlorente/laravel-data-migrations": "^2.0"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
