@@ -137,6 +137,19 @@ return [
             'disabled'              => 'Disabled',
             'disabled_by_bundle'    => 'Disabled by Bundle',
         ],
+        'bulk_actions' => [
+            'move_to_bundle'   => 'Move to Bundle',
+            'attach_subfleets' => 'Attach Subfleets',
+            'detach_subfleets' => 'Detach Subfleets',
+            'subfleets_field'  => 'Subfleets',
+        ],
+        'notifications' => [
+            'enabled'  => ':count flights enabled.',
+            'disabled' => ':count flights disabled.',
+            'moved'    => ':count flights moved to :bundle.',
+            'attached' => 'Attached :subfleets subfleet(s) to :count flights.',
+            'detached' => 'Detached :subfleets subfleet(s) from :count flights.',
+        ],
     ],
     'routeforge' => [
         'default_bundle_name' => 'Default',
