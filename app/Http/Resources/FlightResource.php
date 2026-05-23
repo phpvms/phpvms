@@ -47,10 +47,12 @@ class FlightResource extends Resource
         // Backwards-compat alias: 'active' mirrors 'enabled' for existing API consumers.
         $res['active'] = $res['enabled'] ?? null;
 
-        // Project the structured TIME columns onto the legacy `Hi`-formatted
-        // keys for API consumers (ACARS clients, third-party integrations).
-        // `departure_time` / `arrival_time` themselves are kept out of the
-        // response via Flight::$hidden.
+        // Expose both the structured TIME columns (canonical `H:i:s` strings)
+        // and the legacy `Hi`-formatted aliases consumed by ACARS clients and
+        // third-party integrations. The legacy keys are projected here rather
+        // than via a model accessor so the model stays free of API concerns.
+        $res['departure_time'] = $this->departure_time?->format('H:i:s');
+        $res['arrival_time'] = $this->arrival_time?->format('H:i:s');
         $res['dpt_time'] = $this->departure_time?->format('Hi');
         $res['arr_time'] = $this->arrival_time?->format('Hi');
 
