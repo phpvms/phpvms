@@ -5,12 +5,13 @@ declare(strict_types=1);
 use App\Enums\FlightType;
 use App\Models\Subfleet;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 it('creates subfleet with capability values and round-trips route_types through cast', function (): void {
     $subfleet = Subfleet::factory()->create([
         'cruise_speed' => 450,
         'max_range_nm' => 3200,
-        'route_types'  => collect([FlightType::SCHED_PAX, FlightType::CHARTER_PAX_ONLY]),
+        'route_types'  => [FlightType::SCHED_PAX, FlightType::CHARTER_PAX_ONLY],
     ]);
 
     $subfleet->refresh();
@@ -22,12 +23,10 @@ it('creates subfleet with capability values and round-trips route_types through 
         ->and($subfleet->route_types->contains(FlightType::SCHED_PAX))->toBeTrue()
         ->and($subfleet->route_types->contains(FlightType::CHARTER_PAX_ONLY))->toBeTrue();
 
-    $this->assertDatabaseHas('subfleets', [
-        'id'           => $subfleet->id,
-        'cruise_speed' => 450,
-        'max_range_nm' => 3200,
-        'route_types'  => 'C,J',
-    ]);
+    // Storage is JSON via Laravel's native AsEnumCollection cast.
+    $rawJson = DB::table('subfleets')->where('id', $subfleet->id)->value('route_types');
+    expect(json_decode((string) $rawJson, true))
+        ->toMatchArray([FlightType::SCHED_PAX->value, FlightType::CHARTER_PAX_ONLY->value]);
 });
 
 it('treats null route_types as unrestricted', function (): void {
@@ -40,19 +39,17 @@ it('treats null route_types as unrestricted', function (): void {
     expect($subfleet->route_types)->toBeNull();
 });
 
-it('collapses empty selection to null', function (): void {
+it('persists empty selection as an empty collection (native AsEnumCollection semantic)', function (): void {
     $subfleet = Subfleet::factory()->create([
-        'route_types' => collect([]),
+        'route_types' => [],
     ]);
 
     $subfleet->refresh();
 
-    expect($subfleet->route_types)->toBeNull();
-
-    $this->assertDatabaseHas('subfleets', [
-        'id'          => $subfleet->id,
-        'route_types' => null,
-    ]);
+    // Native AsEnumCollection stores `[]` distinct from null. Consumers must
+    // treat both as "no restriction" if that's the desired UX.
+    expect($subfleet->route_types)->toBeInstanceOf(Collection::class)
+        ->and($subfleet->route_types)->toHaveCount(0);
 });
 
 it('falls back to config defaults when columns are null', function (): void {

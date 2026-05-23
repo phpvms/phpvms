@@ -7,6 +7,7 @@ use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Models\Subfleet;
 use Database\Seeders\ShieldSeeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 it('renders the operational capability section with new fields', function (): void {
@@ -46,20 +47,18 @@ it('persists capability values through the cast', function (): void {
         ->and($subfleet->route_types->contains(FlightType::SCHED_PAX))->toBeTrue()
         ->and($subfleet->route_types->contains(FlightType::CHARTER_PAX_ONLY))->toBeTrue();
 
-    $this->assertDatabaseHas('subfleets', [
-        'id'           => $subfleet->id,
-        'cruise_speed' => 450,
-        'max_range_nm' => 3200,
-        'route_types'  => 'C,J',
-    ]);
+    // JSON-encoded storage via native AsEnumCollection.
+    $rawJson = DB::table('subfleets')->where('id', $subfleet->id)->value('route_types');
+    expect(json_decode((string) $rawJson, true))
+        ->toMatchArray([FlightType::SCHED_PAX->value, FlightType::CHARTER_PAX_ONLY->value]);
 });
 
-it('persists empty route_types selection as null', function (): void {
+it('persists empty route_types selection as empty collection', function (): void {
     $this->seed(ShieldSeeder::class);
 
     $admin = createAdminUser();
     $subfleet = Subfleet::factory()->create([
-        'route_types' => collect([FlightType::SCHED_PAX]),
+        'route_types' => [FlightType::SCHED_PAX],
     ]);
 
     Livewire::test(EditSubfleet::class, ['record' => $subfleet->id])
@@ -72,10 +71,9 @@ it('persists empty route_types selection as null', function (): void {
 
     $subfleet->refresh();
 
-    expect($subfleet->route_types)->toBeNull();
-
-    $this->assertDatabaseHas('subfleets', [
-        'id'          => $subfleet->id,
-        'route_types' => null,
-    ]);
+    // Native AsEnumCollection stores `[]` as JSON `[]`, not null. The
+    // "unrestricted" sentinel is null only. Consumers should treat both
+    // as "no restriction" if that semantic is desired.
+    expect($subfleet->route_types)->toBeInstanceOf(Collection::class)
+        ->and($subfleet->route_types)->toHaveCount(0);
 });

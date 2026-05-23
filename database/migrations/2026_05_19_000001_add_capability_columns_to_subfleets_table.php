@@ -11,7 +11,10 @@ return new class() extends Migration
         Schema::table('subfleets', function (Blueprint $table): void {
             $table->unsignedSmallInteger('cruise_speed')->nullable()->after('gross_weight');
             $table->unsignedInteger('max_range_nm')->nullable()->after('cruise_speed');
-            $table->string('route_types', 64)->nullable()->after('max_range_nm');
+            // JSON column holding an array of FlightType enum values (e.g. ["J","C"]).
+            // Portable across MySQL (JSON), PostgreSQL (JSON), and SQLite (TEXT with JSON1).
+            // NULL = unrestricted; empty array = no types permitted (consumer's responsibility to interpret).
+            $table->json('route_types')->nullable()->after('max_range_nm');
         });
     }
 

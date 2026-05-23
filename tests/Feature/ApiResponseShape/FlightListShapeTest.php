@@ -47,6 +47,7 @@ test('flight list returns expected json structure', function (): void {
                 ],
                 'flight_time',
                 'active',
+                'enabled',
                 'visible',
                 'ident',
                 'load_factor',

@@ -49,13 +49,20 @@ function insertLegacyFlight(array $attributes): int
 
 it('backfills departure_time from various dpt_time formats and warns on unparseable input', function (): void {
     Log::shouldReceive('channel')->andReturnSelf()->zeroOrMoreTimes();
-    Log::shouldReceive('warning')->zeroOrMoreTimes();
     Log::shouldReceive('info')->zeroOrMoreTimes();
 
     $f1 = insertLegacyFlight(['dpt_time' => '0800']);
     $f2 = insertLegacyFlight(['dpt_time' => '08:00']);
     $f3 = insertLegacyFlight(['dpt_time' => '8am']);
     $f4 = insertLegacyFlight(['dpt_time' => 'not a time']);
+
+    Log::shouldReceive('warning')
+        ->once()
+        ->with(
+            'flights:time-backfill unparseable dpt_time',
+            Mockery::on(fn (array $context): bool => (int) $context['flight_id'] === $f4
+                && $context['value'] === 'not a time'),
+        );
 
     $result = FlightTimeBackfiller::run();
 

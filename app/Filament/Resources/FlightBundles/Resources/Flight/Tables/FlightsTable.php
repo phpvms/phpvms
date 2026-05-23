@@ -33,7 +33,7 @@ class FlightsTable
     {
 
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('airline'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['airline', 'bundle']))
             ->columns([
                 TextColumn::make('ident')
                     ->label(trans_choice('common.flight', 1).' #')
@@ -72,24 +72,8 @@ class FlightsTable
                 TextColumn::make('status_badge')
                     ->label(__('common.status'))
                     ->badge()
-                    ->state(function (Flight $record): string {
-                        if (!$record->enabled) {
-                            return __('filament.flights.status.disabled');
-                        }
-
-                        if ($record->visible) {
-                            return __('filament.flights.status.enabled_in_window');
-                        }
-
-                        return __('filament.flights.status.enabled_out_of_window');
-                    })
-                    ->color(function (Flight $record): string {
-                        if (!$record->enabled) {
-                            return 'danger';
-                        }
-
-                        return $record->visible ? 'success' : 'warning';
-                    }),
+                    ->state(fn (Flight $record): string => self::flightStatusBadge($record)[0])
+                    ->color(fn (Flight $record): string => self::flightStatusBadge($record)[1]),
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -202,6 +186,35 @@ class FlightsTable
             ])
             ->emptyStateActions([
             ]);
+    }
+
+    /**
+     * Four-state status badge derived from flight + bundle state. Mirrors
+     * `FlightForm::flightStatusBadge()` so the column and the edit-page badge
+     * stay in lockstep. The `bundle` relation is eager-loaded via
+     * `modifyQueryUsing()` so this incurs no extra query per row.
+     *
+     * @return array{0: string, 1: string} [label, color]
+     */
+    protected static function flightStatusBadge(Flight $record): array
+    {
+        if (!$record->enabled) {
+            return [__('filament.flights.status.disabled'), 'danger'];
+        }
+
+        $bundle = $record->bundle;
+        $bundleBlocking = $bundle instanceof FlightBundle
+            && ($bundle->deleted_at !== null || !$bundle->enabled);
+
+        if ($bundleBlocking) {
+            return [__('filament.flights.status.disabled_by_bundle'), 'danger'];
+        }
+
+        if ($record->visible) {
+            return [__('filament.flights.status.enabled_in_window'), 'success'];
+        }
+
+        return [__('filament.flights.status.enabled_out_of_window'), 'warning'];
     }
 
     /**

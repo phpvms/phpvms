@@ -26,17 +26,6 @@ use Illuminate\Support\HtmlString;
 
 class FlightForm
 {
-    /**
-     * @var array<string, FlightBundle|null>
-     *
-     * In-request cache for resolveParentBundle(). The Create page has 4
-     * visibility/content closures that each call resolveParentBundle() →
-     * FlightBundle::query()->find($value). Memoizing collapses those 4
-     * queries into 1 per form render. The form is short-lived per request
-     * so no explicit invalidation needed.
-     */
-    private static array $bundleCache = [];
-
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -112,13 +101,19 @@ class FlightForm
                                 ->label(__('common.start_date'))
                                 ->live()
                                 ->native(false)
-                                ->minDate(now())
+                                ->minDate(fn (?Flight $record): ?Carbon => $record instanceof Flight ? null : now())
                                 ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
 
                             DatePicker::make('end_date')
                                 ->label(__('common.end_date'))
                                 ->native(false)
-                                ->minDate(fn (Get $get): Carbon|string => $get('start_date') ?? now())
+                                ->minDate(function (Get $get, ?Flight $record): Carbon|string|null {
+                                    if ($record instanceof Flight) {
+                                        return $get('start_date');
+                                    }
+
+                                    return $get('start_date') ?? now();
+                                })
                                 ->visible(fn (?Flight $record): bool => !self::parentBundleOwnsDates($record)),
 
                             TextEntry::make('bundle_dates_message')
@@ -205,20 +200,9 @@ class FlightForm
                         TextEntry::make('status_badge')
                             ->label(__('common.status'))
                             ->visible(fn (?Flight $record): bool => $record instanceof Flight)
-                            ->state(function (?Flight $record): HtmlString {
-                                if (!$record instanceof Flight) {
-                                    return new HtmlString('');
-                                }
-
-                                [$label, $color] = self::flightStatusBadge($record);
-
-                                return new HtmlString(sprintf(
-                                    '<span class="fi-badge fi-color-%s inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">%s</span>',
-                                    e($color),
-                                    e($label),
-                                ));
-                            })
-                            ->html(),
+                            ->badge()
+                            ->state(fn (Flight $record): string => self::flightStatusBadge($record)[0])
+                            ->color(fn (Flight $record): string => self::flightStatusBadge($record)[1]),
 
                         Toggle::make('enabled')
                             ->label(__('common.enabled'))
@@ -235,13 +219,15 @@ class FlightForm
     /**
      * Resolve the parent FlightBundle from the record or route.
      *
-     * Memoized via self::$bundleCache because 4 form closures invoke this
-     * during a single Create page render; without the cache that would be
-     * 4 identical FlightBundle::find queries per render.
+     * Per-request memoization is provided by Laravel's container; we register
+     * a shared instance keyed by the route parameter on first lookup so the 4
+     * form closures that consult this method don't each hit the DB. The
+     * container is reset between requests, between Pest tests, and per queue
+     * job, so stale-instance leaks (the bug a `static` cache would cause when
+     * PKs are reused across tests) are not possible.
      */
     private static function resolveParentBundle(?Flight $record = null): ?FlightBundle
     {
-        // Use the record's bundle relationship (works in edit + Livewire tests).
         if ($record instanceof Flight) {
             if ($record->relationLoaded('bundle')) {
                 $bundle = $record->bundle;
@@ -250,13 +236,11 @@ class FlightForm
                 }
             }
 
-            // Lazy-load if not already loaded.
             if ($record->bundle_id !== null) {
                 return $record->bundle;
             }
         }
 
-        // Fall back to route resolution (works on create page + production requests).
         $route = request()->route();
         if ($route !== null) {
             $value = $route->parameter('flight_bundle');
@@ -265,12 +249,15 @@ class FlightForm
             }
 
             if (is_scalar($value)) {
-                $cacheKey = (string) $value;
-                if (array_key_exists($cacheKey, self::$bundleCache)) {
-                    return self::$bundleCache[$cacheKey];
+                $key = 'phpvms.flight_form.bundle.'.$value;
+                if (app()->bound($key)) {
+                    return app($key);
                 }
 
-                return self::$bundleCache[$cacheKey] = FlightBundle::query()->find($value);
+                $bundle = FlightBundle::query()->find($value);
+                app()->instance($key, $bundle);
+
+                return $bundle;
             }
         }
 
@@ -281,7 +268,7 @@ class FlightForm
     {
         $bundle = self::resolveParentBundle($record);
 
-        return $bundle instanceof FlightBundle && $bundle->hasDates();
+        return $bundle instanceof FlightBundle && $bundle->has_dates;
     }
 
     private static function parentBundleOwnedDatesMessage(?Flight $record = null): string
@@ -296,7 +283,7 @@ class FlightForm
             'bundle' => e($bundle->name),
             'start'  => e($bundle->start_date?->toFormattedDateString() ?? '—'),
             'end'    => e($bundle->end_date?->toFormattedDateString() ?? '—'),
-            'url'    => FlightBundleResource::getUrl('edit', ['record' => $bundle]),
+            'url'    => e(FlightBundleResource::getUrl('edit', ['record' => $bundle])),
         ]);
     }
 

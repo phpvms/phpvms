@@ -7,7 +7,9 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Observers\BundleObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Flight> $flights
  * @property-read User|null $creator
+ * @property-read bool $has_dates
  * @property int|null $enabled_flights_count
  * @property int|null $disabled_flights_count
  */
@@ -73,14 +76,22 @@ class FlightBundle extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function scopeVisible(Builder $query): Builder
+    #[Scope]
+    protected function visible(Builder $query): Builder
     {
         return $query->where('visible', true);
     }
 
-    public function hasDates(): bool
+    /**
+     * True when this bundle has any schedule window set (start_date or end_date
+     * is non-null). Drives FlightForm's "bundle owns schedule" UI branch and
+     * SetVisibleFlights' case-B/case-C dispatch.
+     */
+    protected function hasDates(): Attribute
     {
-        return filled($this->start_date) || filled($this->end_date);
+        return Attribute::make(
+            get: fn (): bool => filled($this->start_date) || filled($this->end_date),
+        );
     }
 
     #[\Override]

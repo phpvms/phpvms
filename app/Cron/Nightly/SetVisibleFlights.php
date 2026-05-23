@@ -6,6 +6,7 @@ namespace App\Cron\Nightly;
 
 use App\Contracts\Listener;
 use App\Events\CronNightly;
+use App\Models\Flight;
 use App\Models\FlightBundle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -85,7 +86,7 @@ class SetVisibleFlights extends Listener
 
         // Case A: bundle is soft-deleted or disabled → all flights invisible.
         if ($bundle->deleted_at !== null || !$bundle->enabled) {
-            DB::table('flights')
+            Flight::query()
                 ->where('bundle_id', $bundleId)
                 ->update(['visible' => false]);
 
@@ -97,7 +98,7 @@ class SetVisibleFlights extends Listener
             $bundleInWindow = self::inWindow($bundle->start_date, $bundle->end_date, $now);
 
             if (!$bundleInWindow) {
-                DB::table('flights')
+                Flight::query()
                     ->where('bundle_id', $bundleId)
                     ->update(['visible' => false]);
 
@@ -105,7 +106,7 @@ class SetVisibleFlights extends Listener
             }
 
             // Bundle window is open: visible = enabled.
-            DB::table('flights')
+            Flight::query()
                 ->where('bundle_id', $bundleId)
                 ->update(['visible' => DB::raw('enabled')]);
 
@@ -114,7 +115,7 @@ class SetVisibleFlights extends Listener
 
         // Case C: bundle has no dates → flight window applies.
         // C1: flights with no start_date and no end_date → visible = enabled.
-        DB::table('flights')
+        Flight::query()
             ->where('bundle_id', $bundleId)
             ->whereNull('start_date')
             ->whereNull('end_date')
@@ -125,7 +126,7 @@ class SetVisibleFlights extends Listener
         $trueLit = self::sqlBool(true);
         $falseLit = self::sqlBool(false);
 
-        DB::table('flights')
+        Flight::query()
             ->where('bundle_id', $bundleId)
             ->where(function ($q): void {
                 $q->whereNotNull('start_date')->orWhereNotNull('end_date');

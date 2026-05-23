@@ -16,7 +16,7 @@ it('disables flights that were hidden but enabled', function (): void {
         'enabled' => true,
     ]);
 
-    Artisan::call('flights:preserve-hidden-visibility');
+    Artisan::call('phpvms:preserve-hidden-visibility');
 
     $hiddenEnabled->refresh();
     $visibleEnabled->refresh();

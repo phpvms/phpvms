@@ -35,7 +35,7 @@ Parses legacy `dpt_time` / `arr_time` string columns into the new `departure_tim
 #### 3. Preserve hidden-visibility intent (opt-in)
 
 ```bash
-php artisan flights:preserve-hidden-visibility
+php artisan phpvms:preserve-hidden-visibility
 ```
 
 Disables (`enabled = false`) any flight whose pre-migration `visible` value was `false`. Use this only if your prior workflow used the now-removed Filament "Visible" toggle to hide flights. Idempotent.

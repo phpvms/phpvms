@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
 class ShieldSeeder extends Seeder
@@ -15,9 +13,6 @@ class ShieldSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $tenants = [];
-        $users = [];
-        $userTenantPivot = [];
         $rolesWithPermissions = [
             [
                 'name'        => 'super_admin',
@@ -43,104 +38,10 @@ class ShieldSeeder extends Seeder
             ],
         ];
 
-        $directPermissions = [];
-
-        // 1. Seed tenants first (if present)
-        if ($tenants !== []) {
-            static::seedTenants($tenants);
-        }
-
-        // 2. Seed roles with permissions
         static::makeRolesWithPermissions($rolesWithPermissions);
-
-        // 3. Seed direct permissions
-        static::makeDirectPermissions($directPermissions);
-
-        // 4. Seed users with their roles/permissions (if present)
-        if ($users !== []) {
-            static::seedUsers($users);
-        }
-
-        // 5. Seed user-tenant pivot (if present)
-        if ($userTenantPivot !== []) {
-            static::seedUserTenantPivot($userTenantPivot);
-        }
+        static::makeDirectPermissions([]);
 
         $this->command->info('Shield Seeding Completed.');
-    }
-
-    protected static function seedTenants(array $tenants): void {}
-
-    protected static function seedUsers(array $users): void
-    {
-        $tenancyEnabled = false;
-
-        foreach ($users as $data) {
-            // Extract role/permission data before creating user
-            $roles = $data['roles'] ?? [];
-            $permissions = $data['permissions'] ?? [];
-            $tenantRoles = $data['tenant_roles'] ?? [];
-            $tenantPermissions = $data['tenant_permissions'] ?? [];
-            unset($data['roles'], $data['permissions'], $data['tenant_roles'], $data['tenant_permissions']);
-
-            $user = User::firstOrCreate(
-                ['email' => $data['email']],
-                $data
-            );
-
-            // Handle tenancy mode - sync roles/permissions per tenant
-            if ($tenancyEnabled && (!empty($tenantRoles) || !empty($tenantPermissions))) {
-                foreach ($tenantRoles as $tenantId => $roleNames) {
-                    $contextId = $tenantId === '_global' ? null : $tenantId;
-                    setPermissionsTeamId($contextId);
-                    $user->syncRoles($roleNames);
-                }
-
-                foreach ($tenantPermissions as $tenantId => $permissionNames) {
-                    $contextId = $tenantId === '_global' ? null : $tenantId;
-                    setPermissionsTeamId($contextId);
-                    $user->syncPermissions($permissionNames);
-                }
-            } else {
-                // Non-tenancy mode
-                if (!empty($roles)) {
-                    $user->syncRoles($roles);
-                }
-
-                if (!empty($permissions)) {
-                    $user->syncPermissions($permissions);
-                }
-            }
-        }
-    }
-
-    protected static function seedUserTenantPivot(string $pivot): void
-    {
-        if (blank($pivotData = json_decode($pivot, true))) {
-            return;
-        }
-
-        $pivotTable = '';
-        if (blank($pivotTable)) {
-            return;
-        }
-
-        foreach ($pivotData as $row) {
-            $uniqueKeys = [];
-
-            if (isset($row['user_id'])) {
-                $uniqueKeys['user_id'] = $row['user_id'];
-            }
-
-            $tenantForeignKey = 'team_id';
-            if (!blank($tenantForeignKey) && isset($row[$tenantForeignKey])) {
-                $uniqueKeys[$tenantForeignKey] = $row[$tenantForeignKey];
-            }
-
-            if ($uniqueKeys !== []) {
-                DB::table($pivotTable)->updateOrInsert($uniqueKeys, $row);
-            }
-        }
     }
 
     protected static function makeRolesWithPermissions(array $rolesWithPermissions): void

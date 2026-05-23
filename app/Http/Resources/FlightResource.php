@@ -6,10 +6,10 @@ use App\Contracts\Resource;
 use App\Http\Resources\SimBriefResource as SimbriefResource;
 use App\Models\Flight;
 use App\Support\Units\Distance;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use PhpUnitsOfMeasure\Exception\NonNumericValue;
-use PhpUnitsOfMeasure\Exception\NonStringUnitName;
+use Override;
 use stdClass;
 
 /**
@@ -37,13 +37,10 @@ class FlightResource extends Resource
     }
 
     /**
-     * @return array
-     *
-     * @throws NonNumericValue
-     * @throws NonStringUnitName
+     * @throws Exception
      */
-    #[\Override]
-    public function toArray(Request $request)
+    #[Override]
+    public function toArray(Request $request): array
     {
         $res = parent::toArray($request);
 

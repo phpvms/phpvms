@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 class PreserveHiddenVisibility extends Command
 {
-    protected $signature = 'flights:preserve-hidden-visibility';
+    protected $signature = 'phpvms:preserve-hidden-visibility';
 
     protected $description = 'One-shot: disable flights that were previously hidden (visible=false), preserving admin intent post-visibility-rename';
 

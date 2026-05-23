@@ -66,7 +66,7 @@ class FlightImporter extends Importer
 
             ImportColumn::make('bundle_id')
                 ->numeric()
-                ->rules(['nullable', 'integer'])
+                ->rules(['nullable', 'integer', 'exists:flight_bundles,id'])
                 ->fillRecordUsing(function (Flight $record, ?string $state, FlightImporter $importer): void {
                     if ($state !== null && $state !== '') {
                         $record->bundle_id = (int) $state;

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Casts\FlightTypesCast;
 use App\Contracts\Model;
 use App\Enums\AircraftStatus;
 use App\Enums\FlightType;
@@ -11,6 +10,7 @@ use App\Observers\SubfleetObserver;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -221,7 +221,7 @@ class Subfleet extends Model
             'gross_weight'               => 'float',
             'cruise_speed'               => 'integer',
             'max_range_nm'               => 'integer',
-            'route_types'                => FlightTypesCast::class,
+            'route_types'                => AsEnumCollection::of(FlightType::class),
         ];
     }
 }

@@ -27,12 +27,14 @@ class FlightsRelationManager extends RelationManager
         return FlightsTable::configure($table)
             ->headerActions([
                 OldExportAction::make('old-export')
+                    ->visible(fn (): bool => !config('phpvms.use_queued_filament_imports'))
                     ->arguments([
                         'resourceTitle' => 'flights',
                         'exportType'    => ImportExportType::FLIGHTS,
                     ]),
 
                 OldImportAction::make('old-import')
+                    ->visible(fn (): bool => !config('phpvms.use_queued_filament_imports'))
                     ->arguments([
                         'resourceTitle' => 'flights',
                         'importType'    => ImportExportType::FLIGHTS,

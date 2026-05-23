@@ -20,6 +20,11 @@ class FlightTimeBackfiller
     /**
      * Run the backfill in chunks of 1000.
      *
+     * Counter semantics:
+     *   - `parsed`   counts individual time *fields* successfully parsed and written.
+     *   - `failures` counts individual time *fields* that failed to parse.
+     * A single row can contribute up to two of either (one each for dpt + arr).
+     *
      * @return array{parsed: int, failures: int}
      */
     public static function run(): array
@@ -38,6 +43,7 @@ class FlightTimeBackfiller
                         $result = FlightTimeParser::parse($row->dpt_time);
                         if ($result !== null) {
                             $updates['departure_time'] = $result;
+                            $parsed++;
                         } else {
                             $failures++;
                             Log::warning('flights:time-backfill unparseable dpt_time', [
@@ -51,6 +57,7 @@ class FlightTimeBackfiller
                         $result = FlightTimeParser::parse($row->arr_time);
                         if ($result !== null) {
                             $updates['arrival_time'] = $result;
+                            $parsed++;
                         } else {
                             $failures++;
                             Log::warning('flights:time-backfill unparseable arr_time', [
@@ -62,7 +69,6 @@ class FlightTimeBackfiller
 
                     if ($updates !== []) {
                         DB::table('flights')->where('id', $row->id)->update($updates);
-                        $parsed++;
                     }
                 }
             });

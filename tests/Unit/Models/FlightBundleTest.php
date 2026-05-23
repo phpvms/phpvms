@@ -39,6 +39,6 @@ it('hasDates reflects date presence', function (): void {
         'end_date'   => null,
     ]);
 
-    expect($noDates->hasDates())->toBeFalse()
-        ->and($withDates->hasDates())->toBeTrue();
+    expect($noDates->has_dates)->toBeFalse()
+        ->and($withDates->has_dates)->toBeTrue();
 });

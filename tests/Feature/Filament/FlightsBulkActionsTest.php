@@ -44,7 +44,11 @@ it('bulk-enables selected flights and dispatches visibility recompute', function
         expect($flight->fresh()->enabled)->toBeTrue();
     });
 
-    Queue::assertPushed(RecomputeBundleVisibility::class, 1);
+    Queue::assertPushed(
+        RecomputeBundleVisibility::class,
+        fn (RecomputeBundleVisibility $job): bool => $job->bundleId === $bundle->id,
+    );
+    Queue::assertPushedTimes(RecomputeBundleVisibility::class, 1);
 });
 
 it('bulk-disables selected flights and dispatches visibility recompute', function (): void {
@@ -69,7 +73,11 @@ it('bulk-disables selected flights and dispatches visibility recompute', functio
         expect($flight->fresh()->enabled)->toBeFalse();
     });
 
-    Queue::assertPushed(RecomputeBundleVisibility::class, 1);
+    Queue::assertPushed(
+        RecomputeBundleVisibility::class,
+        fn (RecomputeBundleVisibility $job): bool => $job->bundleId === $bundle->id,
+    );
+    Queue::assertPushedTimes(RecomputeBundleVisibility::class, 1);
 });
 
 it('bulk-moves selected flights to another bundle and recomputes both bundles', function (): void {
@@ -103,6 +111,7 @@ it('bulk-moves selected flights to another bundle and recomputes both bundles', 
         RecomputeBundleVisibility::class,
         fn (RecomputeBundleVisibility $job): bool => $job->bundleId === $destination->id,
     );
+    Queue::assertPushedTimes(RecomputeBundleVisibility::class, 2);
 });
 
 it('bulk-attaches subfleets to selected flights idempotently', function (): void {
