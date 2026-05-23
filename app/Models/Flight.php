@@ -157,18 +157,6 @@ class Flight extends Model
 
     public $minutes;
 
-    /**
-     * Hide the structured TIME columns from default Eloquent serialization.
-     * The API resource layer (FlightResource) is responsible for projecting
-     * them as legacy `dpt_time`/`arr_time` `Hi` strings; outside the API
-     * response they are accessed directly as Carbon instances via
-     * `$flight->departure_time` / `$flight->arrival_time`.
-     */
-    protected $hidden = [
-        'departure_time',
-        'arrival_time',
-    ];
-
     protected $keyType = 'string';
 
     public $incrementing = false;
