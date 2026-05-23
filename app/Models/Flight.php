@@ -38,8 +38,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null       $alt_airport_id
  * @property string|null       $dpt_time
  * @property string|null       $arr_time
- * @property string|null       $departure_time
- * @property string|null       $arrival_time
+ * @property Carbon|null       $departure_time
+ * @property Carbon|null       $arrival_time
  * @property int|null          $level
  * @property mixed|null        $distance
  * @property int|null          $flight_time
@@ -329,35 +329,29 @@ class Flight extends Model
     }
 
     /**
-     * Read departure_time and return as legacy Hi string.
+     * Legacy `dpt_time` virtual attribute: reads as an `Hi` string and
+     * writes parse free-form input via FlightTimeParser. Backed by the
+     * structured `departure_time` TIME column.
      */
-    public function getDptTimeAttribute(): ?string
+    protected function dptTime(): Attribute
     {
-        return optional($this->departure_time)->format('Hi');
+        return Attribute::make(
+            get: fn (): ?string => $this->departure_time?->format('Hi'),
+            set: fn (mixed $value): array => ['departure_time' => FlightTimeParser::parse((string) $value)],
+        );
     }
 
     /**
-     * Parse free-form input and write to departure_time.
+     * Legacy `arr_time` virtual attribute: reads as an `Hi` string and
+     * writes parse free-form input via FlightTimeParser. Backed by the
+     * structured `arrival_time` TIME column.
      */
-    public function setDptTimeAttribute(mixed $value): void
+    protected function arrTime(): Attribute
     {
-        $this->attributes['departure_time'] = FlightTimeParser::parse((string) $value);
-    }
-
-    /**
-     * Read arrival_time and return as legacy Hi string.
-     */
-    public function getArrTimeAttribute(): ?string
-    {
-        return optional($this->arrival_time)->format('Hi');
-    }
-
-    /**
-     * Parse free-form input and write to arrival_time.
-     */
-    public function setArrTimeAttribute(mixed $value): void
-    {
-        $this->attributes['arrival_time'] = FlightTimeParser::parse((string) $value);
+        return Attribute::make(
+            get: fn (): ?string => $this->arrival_time?->format('Hi'),
+            set: fn (mixed $value): array => ['arrival_time' => FlightTimeParser::parse((string) $value)],
+        );
     }
 
     public function getActivitylogOptions(): LogOptions
