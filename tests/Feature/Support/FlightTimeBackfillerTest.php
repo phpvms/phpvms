@@ -20,7 +20,7 @@ function insertLegacyFlight(array $attributes): int
     $airline = Airline::factory()->create();
     $dpt = Airport::factory()->create();
     $arr = Airport::factory()->create();
-    $bundle = FlightBundle::factory()->create(['is_default' => true]);
+    $bundle = FlightBundle::query()->where('name', 'Default')->firstOrFail();
 
     $defaults = [
         'id'             => fake()->unique()->numberBetween(10, 10000000),

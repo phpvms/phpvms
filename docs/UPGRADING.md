@@ -93,7 +93,7 @@ Replaced by `App\Cron\Nightly\SetVisibleFlights`. The new cron has two passes: b
 
 ### New: Route bundles
 
-Flights now belong to a `FlightBundle`. Every existing flight is backfilled to the seeded default bundle (name `"Default"`, `is_default = true`). The default bundle cannot be disabled or deleted (enforced by `BundleObserver`).
+Flights now belong to a `FlightBundle`. Every existing flight is backfilled to a seeded bundle named `"Default"`. The seeded bundle has no special protection — admins may rename, disable, or delete it like any other bundle (deleting requires reassigning child flights first since `bundle_id` has a `restrictOnDelete` foreign key).
 
 Bundles can carry their own `start_date` / `end_date`. When a bundle has any date set, the bundle's window **overrides** the flight's own dates for visibility computation. The Filament `FlightForm` hides the per-flight date pickers when the chosen bundle owns dates.
 

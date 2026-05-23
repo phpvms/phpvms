@@ -9,8 +9,8 @@ return new class() extends Migration
 {
     /**
      * Consolidated migration: rename active->enabled, add bundle_id (nullable),
-     * seed default bundle, backfill bundle_id, tighten bundle_id to NOT NULL,
-     * and create all related indexes.
+     * seed a bundle named "Default", backfill bundle_id, tighten bundle_id to
+     * NOT NULL, and create all related indexes.
      *
      * Performed in a single migration so the index creation references the
      * post-rename column name (avoids MySQL ER_BAD_FIELD_ERROR on `enabled`).
@@ -27,12 +27,11 @@ return new class() extends Migration
             $table->foreignId('bundle_id')->nullable()->after('user_id')->constrained('flight_bundles')->restrictOnDelete();
         });
 
-        // 3. Ensure a default bundle exists (idempotent).
-        $defaultId = DB::table('flight_bundles')->where('is_default', true)->value('id');
+        // 3. Ensure a "Default" bundle exists (idempotent by name).
+        $defaultId = DB::table('flight_bundles')->where('name', 'Default')->value('id');
         if ($defaultId === null) {
             $defaultId = DB::table('flight_bundles')->insertGetId([
                 'name'       => 'Default',
-                'is_default' => true,
                 'enabled'    => true,
                 'visible'    => true,
                 'created_at' => now(),

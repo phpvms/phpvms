@@ -30,9 +30,9 @@ class FlightFactory extends Factory
     private function defaultBundleId(): int
     {
         if (self::$defaultBundleId === null || !FlightBundle::query()->whereKey(self::$defaultBundleId)->exists()) {
-            $id = FlightBundle::query()->where('is_default', true)->value('id');
+            $id = FlightBundle::query()->where('name', 'Default')->value('id');
             if ($id === null) {
-                $id = FlightBundle::factory()->create(['is_default' => true])->id;
+                $id = FlightBundle::factory()->create(['name' => 'Default'])->id;
             }
 
             self::$defaultBundleId = (int) $id;

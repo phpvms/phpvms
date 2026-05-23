@@ -6,11 +6,10 @@ use App\Models\Flight;
 use App\Models\FlightBundle;
 use Illuminate\Support\Carbon;
 
-it('seeds a default bundle post-migration', function (): void {
-    $default = FlightBundle::where('is_default', true)->first();
+it('seeds a bundle named Default post-migration', function (): void {
+    $default = FlightBundle::where('name', 'Default')->first();
 
     expect($default)->not->toBeNull()
-        ->and($default->name)->toBe('Default')
         ->and($default->enabled)->toBeTrue()
         ->and($default->visible)->toBeTrue();
 });

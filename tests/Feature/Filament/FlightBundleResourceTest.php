@@ -53,13 +53,13 @@ it('renders the edit page happy path', function (): void {
         ->assertSuccessful();
 });
 
-it('shows delete action for default bundle', function (): void {
+it('shows delete action for the seeded Default bundle', function (): void {
     $this->seed(ShieldSeeder::class);
 
     $admin = createAdminUser();
 
-    // The default bundle is seeded by migration 2026_05_19_100003
-    $defaultBundle = FlightBundle::query()->where('is_default', true)->first();
+    // The "Default" bundle is seeded by migration 2026_05_19_100002.
+    $defaultBundle = FlightBundle::query()->where('name', 'Default')->first();
 
     expect($defaultBundle)->not->toBeNull();
 
@@ -67,16 +67,15 @@ it('shows delete action for default bundle', function (): void {
         ->assertTableActionVisible('delete', $defaultBundle);
 });
 
-it('enabled toggle is editable on default bundle edit page', function (): void {
+it('enabled toggle is editable on the seeded Default bundle edit page', function (): void {
     $this->seed(ShieldSeeder::class);
 
     $admin = createAdminUser();
 
-    $default = FlightBundle::query()->where('is_default', true)->first();
+    $default = FlightBundle::query()->where('name', 'Default')->first();
 
     expect($default)->not->toBeNull();
 
-    // Page renders successfully — enabled toggle is no longer disabled.
     Livewire::test(EditFlightBundle::class, ['record' => $default->getRouteKey()])
         ->assertSuccessful()
         ->assertFormFieldExists('enabled');

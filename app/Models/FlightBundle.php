@@ -27,7 +27,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool        $visible
  * @property Carbon|null $start_date
  * @property Carbon|null $end_date
- * @property bool        $is_default
  * @property int|null    $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -54,7 +53,6 @@ class FlightBundle extends Model
         'visible',
         'start_date',
         'end_date',
-        'is_default',
         'created_by',
     ];
 
@@ -102,7 +100,6 @@ class FlightBundle extends Model
             'visible'    => 'boolean',
             'start_date' => 'datetime',
             'end_date'   => 'datetime',
-            'is_default' => 'boolean',
         ];
     }
 }

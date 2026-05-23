@@ -25,7 +25,6 @@ class FlightBundleFactory extends Factory
             'visible'     => true,
             'start_date'  => null,
             'end_date'    => null,
-            'is_default'  => false,
             'created_by'  => null,
         ];
     }

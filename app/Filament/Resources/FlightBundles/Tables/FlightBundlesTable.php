@@ -27,8 +27,7 @@ class FlightBundlesTable
                     ->searchable()
                     ->sortable()
                     ->label(__('filament.bundles.fields.name'))
-                    ->badge()
-                    ->color(fn (FlightBundle $record): ?string => $record->is_default ? 'gray' : null),
+                    ->badge(),
 
                 TextColumn::make('flights_count_display')
                     ->label(__('filament.bundles.fields.flights_count'))

@@ -78,7 +78,7 @@ class FlightImporter extends Importer
                     $fallback = $importer->getImportBundleId();
 
                     if ($fallback === null) {
-                        throw new RowImportFailedException('No flight bundle resolved for row; ensure a default bundle exists or select one in the import options.');
+                        throw new RowImportFailedException('No flight bundle resolved for row; ensure a bundle named "Default" exists or select one in the import options.');
                     }
 
                     $record->bundle_id = $fallback;
@@ -345,7 +345,7 @@ class FlightImporter extends Importer
 
     /**
      * Filament import-options form: lets the admin pick a target bundle for rows
-     * whose `bundle_id` column is empty. Defaults to the seeded default bundle.
+     * whose `bundle_id` column is empty. Defaults to the seeded "Default" bundle.
      */
     #[\Override]
     public static function getOptionsFormComponents(): array
@@ -354,7 +354,7 @@ class FlightImporter extends Importer
             Select::make('bundle_id')
                 ->label(__('filament.flights.fields.bundle'))
                 ->relationship('bundle', 'name', modifyQueryUsing: fn ($query) => $query->orderBy('name'))
-                ->default(fn (): ?int => FlightBundle::query()->where('is_default', true)->value('id'))
+                ->default(fn (): ?int => FlightBundle::query()->where('name', 'Default')->value('id'))
                 ->preload()
                 ->required(),
         ];
@@ -362,7 +362,7 @@ class FlightImporter extends Importer
 
     /**
      * Resolve the bundle id to use for a row whose CSV `bundle_id` is empty.
-     * Reads from the import-options form first, falls back to the default bundle.
+     * Reads from the import-options form first, falls back to the "Default" bundle.
      */
     public function getImportBundleId(): ?int
     {
@@ -372,7 +372,7 @@ class FlightImporter extends Importer
             return (int) $optionId;
         }
 
-        $id = FlightBundle::query()->where('is_default', true)->value('id');
+        $id = FlightBundle::query()->where('name', 'Default')->value('id');
 
         return $id === null ? null : (int) $id;
     }

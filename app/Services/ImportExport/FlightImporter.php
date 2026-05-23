@@ -68,9 +68,10 @@ class FlightImporter extends ImportExport
     private readonly FlightService $flightSvc;
 
     /**
-     * Memoized default-bundle id used as the bundle_id fallback for rows whose
-     * CSV value is blank. Cached per importer instance to avoid an N+1 lookup
-     * across imports of many rows. `false` sentinel = lookup not yet attempted.
+     * Memoized id of the bundle named "Default", used as the bundle_id fallback
+     * for rows whose CSV value is blank. Cached per importer instance to avoid
+     * an N+1 lookup across imports of many rows. `false` sentinel = lookup not
+     * yet attempted.
      */
     private int|false|null $defaultBundleId = false;
 
@@ -235,16 +236,16 @@ class FlightImporter extends ImportExport
     }
 
     /**
-     * Resolve the default bundle id once per importer instance.
+     * Resolve the id of the bundle named "Default" once per importer instance.
      *
      * `bundle_id` resolution precedence: explicit CSV value > existing flight
-     * value > this default bundle. Returns null only when no default bundle
-     * exists in the database (rare; usually the migration seeds one).
+     * value > this "Default" bundle. Returns null only when no bundle named
+     * "Default" exists in the database (rare; usually the migration seeds one).
      */
     private function getDefaultBundleId(): ?int
     {
         if ($this->defaultBundleId === false) {
-            $id = FlightBundle::query()->where('is_default', true)->value('id');
+            $id = FlightBundle::query()->where('name', 'Default')->value('id');
             $this->defaultBundleId = $id === null ? null : (int) $id;
         }
 

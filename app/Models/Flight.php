@@ -10,6 +10,7 @@ use App\Support\Days;
 use App\Traits\HashIdTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -142,6 +143,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 #[ObservedBy(FlightObserver::class)]
+#[WithoutIncrementing]
 class Flight extends Model
 {
     use HasFactory;
@@ -158,8 +160,6 @@ class Flight extends Model
     public $minutes;
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'id',
@@ -427,6 +427,8 @@ class Flight extends Model
     /**
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
+     *
+     * @deprecated use ->visible()
      */
     #[Scope]
     protected function active(Builder $query): Builder
