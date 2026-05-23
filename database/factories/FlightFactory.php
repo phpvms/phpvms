@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -8,6 +10,7 @@ use App\Contracts\Factory;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use DateTime;
 
 /**
@@ -21,6 +24,22 @@ class FlightFactory extends Factory
      * @var string
      */
     protected $model = Flight::class;
+
+    private static ?int $defaultBundleId = null;
+
+    private function defaultBundleId(): int
+    {
+        if (self::$defaultBundleId === null || !FlightBundle::query()->whereKey(self::$defaultBundleId)->exists()) {
+            $id = FlightBundle::query()->where('name', 'Default')->value('id');
+            if ($id === null) {
+                $id = FlightBundle::factory()->create(['name' => 'Default'])->id;
+            }
+
+            self::$defaultBundleId = (int) $id;
+        }
+
+        return self::$defaultBundleId;
+    }
 
     /**
      * Define the model's default state.
@@ -43,13 +62,13 @@ class FlightFactory extends Factory
             'distance'             => fake()->numberBetween(1, 1000),
             'route'                => null,
             'level'                => 0,
-            'dpt_time'             => fake()->time(),
-            'arr_time'             => fake()->time(),
+            'departure_time'       => fake()->time(),
+            'arrival_time'         => fake()->time(),
             'flight_time'          => fake()->numberBetween(60, 360),
             'load_factor'          => fake()->randomElement([15, 20, 50, 90, 100]),
             'load_factor_variance' => fake()->randomElement([15, 20, 50, 90, 100]),
             'has_bid'              => false,
-            'active'               => true,
+            'enabled'              => true,
             'visible'              => true,
             'days'                 => 0,
             'start_date'           => null,
@@ -60,6 +79,7 @@ class FlightFactory extends Factory
             'updated_at' => static fn (array $flight) => $flight['created_at'],
             'owner_type' => null,
             'owner_id'   => null,
+            'bundle_id'  => $this->defaultBundleId(...),
         ];
     }
 }

@@ -8,13 +8,11 @@ use App\Contracts\Service;
 use App\Enums\PirepState;
 use App\Enums\PirepStatus;
 use App\Exceptions\DuplicateFlight;
-use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\Navdata;
 use App\Models\Pirep;
-use App\Models\Subfleet;
 use App\Models\User;
 use App\Support\Days;
 use App\Support\Units\Time;
@@ -25,7 +23,6 @@ class FlightService extends Service
 {
     public function __construct(
         private readonly AirportService $airportSvc,
-        private readonly UserService $userSvc
     ) {}
 
     /**
@@ -122,7 +119,7 @@ class FlightService extends Service
      */
     public function getAccessibleFlightIds(User $user): array
     {
-        $userSubfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->all();
+        $userSubfleets = $user->allowedSubfleets()->pluck('id')->all();
 
         $userFlights = Flight::query()
             ->whereHas('subfleets', static function ($query) use ($userSubfleets): void {
@@ -140,88 +137,6 @@ class FlightService extends Service
             ->all();
 
         return array_values(array_unique(array_merge($userFlights, $openFlights)));
-    }
-
-    /**
-     * Return the proper subfleets for the given bid
-     *
-     *
-     * @return mixed
-     */
-    public function getSubfleetsForBid(Bid $bid)
-    {
-        return Subfleet::with([
-            'fares',
-            'aircraft' => function ($query) use ($bid): void {
-                $query->where('id', $bid->aircraft_id);
-            }])
-            ->where('id', $bid->aircraft->subfleet_id)
-            ->get();
-    }
-
-    /**
-     * Filter out subfleets to only include aircraft that a user has access to
-     */
-    public function filterSubfleets(User $user, Flight $flight): Flight
-    {
-        // Eager load some of the relationships needed
-        // $flight->load(['flight.subfleets', 'flight.subfleets.aircraft', 'flight.subfleets.fares']);
-        $subfleets = $flight->subfleets;
-
-        // If no subfleets assigned and airline subfleets are forced, get airline subfleets
-        if ($subfleets->count() === 0 && setting('flights.only_company_aircraft', false)) {
-            $subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->get();
-        }
-
-        // If no subfleets assigned to a flight get users allowed subfleets
-        if ($subfleets->count() === 0) {
-            $subfleets = $this->userSvc->getAllowableSubfleets($user);
-        }
-
-        // If subfleets are still empty return the flight
-        if ($subfleets->count() === 0) {
-            return $flight;
-        }
-
-        // Only allow aircraft that the user has access to by their rank or type rating
-        if (setting('pireps.restrict_aircraft_to_rank', false) || setting('pireps.restrict_aircraft_to_typerating', false)) {
-            $allowed_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id');
-            $subfleets = $subfleets->filter(fn (Subfleet $subfleet, $i) => $allowed_subfleets->contains($subfleet->id));
-        }
-
-        /*
-         * Only allow aircraft that are at the current departure airport
-         */
-        $aircraft_at_dpt_airport = setting('pireps.only_aircraft_at_dpt_airport', false);
-        $aircraft_not_booked = setting('bids.block_aircraft', false);
-
-        if ($aircraft_at_dpt_airport || $aircraft_not_booked) {
-            // @phpstan-ignore-next-line
-            $subfleets->loadMissing('aircraft');
-
-            foreach ($subfleets as $subfleet) {
-                /** @var Subfleet $subfleet */
-                // @phpstan-ignore-next-line
-                $subfleet->aircraft = $subfleet->aircraft->filter(
-                    function ($aircraft, $i) use ($user, $flight, $aircraft_at_dpt_airport, $aircraft_not_booked): bool {
-                        if ($aircraft_at_dpt_airport && $aircraft->airport_id !== $flight->dpt_airport_id) {
-                            return false;
-                        }
-
-                        if ($aircraft_not_booked && $aircraft->bid && $aircraft->bid->user_id !== $user->id) {
-                            return false;
-                        }
-
-                        return true;
-                    }
-                )->sortBy(fn (Aircraft $ac, int $_): bool => !empty($ac->bid));
-            }
-        }
-
-        /** @phpstan-ignore-next-line  */
-        $flight->subfleets = $subfleets;
-
-        return $flight;
     }
 
     /**

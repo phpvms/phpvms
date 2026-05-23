@@ -1,6 +1,6 @@
 <?php
 
-use App\Cron\Nightly\SetActiveFlights;
+use App\Cron\Nightly\SetVisibleFlights;
 use App\Enums\NavaidType;
 use App\Events\CronNightly;
 use App\Models\Airline;
@@ -418,7 +418,7 @@ test('day of week active', function (): void {
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetActiveFlights())->handle($event);
+    (new SetVisibleFlights())->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');
@@ -470,7 +470,7 @@ test('start end date', function (): void {
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetActiveFlights())->handle($event);
+    (new SetVisibleFlights())->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');
@@ -500,16 +500,16 @@ test('start end date day of week', function (): void {
         'days'       => Days::$isoDayMap[date('N')],
     ]);
 
-    // Not active because of days of week not today
+    // Not visible because date window is expired (days mask no longer affects visibility)
     $flight_not_active = Flight::factory()->create([
-        'start_date' => Carbon::now('UTC')->subDays(1),
-        'end_date'   => Carbon::now('UTC')->addDays(1),
+        'start_date' => Carbon::now('UTC')->subDays(10),
+        'end_date'   => Carbon::now('UTC')->subDays(2),
         'days'       => $days,
     ]);
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetActiveFlights())->handle($event);
+    (new SetVisibleFlights())->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');

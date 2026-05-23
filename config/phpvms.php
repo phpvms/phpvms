@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Services\AirportLookup\VaCentralLookup;
 use App\Services\Metar\AviationWeather;
 
 /**
@@ -43,12 +42,6 @@ return [
      * goes inactive at some date, it can be replaced
      */
     'metar_lookup' => AviationWeather::class,
-
-    /*
-     * Point to the class used to retrieve the airport information.
-     * If this goes inactive at some date, it can be replaced
-     */
-    'airport_lookup' => VaCentralLookup::class,
 
     /*
      * URL for where to lookup the Simbrief flight plans
@@ -214,6 +207,17 @@ return [
             storage_path('framework/views'),
             storage_path('logs'),
         ],
+    ],
+
+    /**
+     * RouteForge default values for NULL capability columns
+     */
+    'routeforge' => [
+        'cruise_speed_kt'      => 450,
+        'climb_descent_buffer' => 20,
+        'turnaround_minutes'   => 60,
+        'mesh_warn_count'      => 50,
+        'mesh_max_count'       => 100,
     ],
 
     /**

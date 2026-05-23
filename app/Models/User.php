@@ -446,6 +446,26 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasManyDeep(Subfleet::class, ['typerating_user', Typerating::class, 'typerating_subfleet']);
     }
 
+    /**
+     * Composable query for the subfleets this user is allowed to operate, given
+     * the current restrict_aircraft_to_rank / restrict_aircraft_to_typerating
+     * settings. Callers chain ->get(), ->paginate($per), ->pluck('id'), etc.
+     */
+    public function allowedSubfleets(): Builder
+    {
+        return Subfleet::query()->allowedFor($this);
+    }
+
+    /**
+     * Composable query for the aircraft this user is allowed to operate.
+     * Pass a Flight to apply the only_aircraft_at_dpt_airport setting against
+     * that flight's departure airport.
+     */
+    public function allowedAircraft(?Flight $flight = null): Builder
+    {
+        return Aircraft::query()->allowedFor($this, $flight);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         // For phpvms panels

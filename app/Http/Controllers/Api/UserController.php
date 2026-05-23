@@ -159,7 +159,9 @@ class UserController extends Controller
 
         $perPage = paginate_limit($request->integer('limit') ?: null);
 
-        $subfleets = $this->userSvc->getAllowableSubfleets($user, true, $perPage)
+        $subfleets = $user->allowedSubfleets()
+            ->with(['aircraft', 'aircraft.bid', 'fares'])
+            ->paginate($perPage)
             ->appends($request->except(['page', 'user']));
 
         return SubfleetResource::collection($subfleets);

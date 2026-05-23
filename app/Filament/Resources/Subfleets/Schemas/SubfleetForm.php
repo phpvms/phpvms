@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Schemas;
 
+use App\Enums\FlightType;
 use App\Enums\FuelType;
 use App\Models\Airport;
 use Filament\Forms\Components\Select;
@@ -71,6 +72,32 @@ class SubfleetForm
                             ->helperText(__('filament.subfleet_expense_multiplier_hint'))
                             ->minValue(0)
                             ->integer(),
+                    ])
+                    ->columnSpanFull()
+                    ->columns(3),
+
+                Section::make(__('filament.subfleets.sections.operational_capability'))
+                    ->schema([
+                        TextInput::make('cruise_speed')
+                            ->label(__('filament.subfleets.fields.cruise_speed'))
+                            ->helperText(__('filament.subfleets.fields.cruise_speed_helper'))
+                            ->suffix('kt')
+                            ->integer()
+                            ->minValue(0),
+
+                        TextInput::make('max_range_nm')
+                            ->label(__('filament.subfleets.fields.max_range_nm'))
+                            ->helperText(__('filament.subfleets.fields.max_range_nm_helper'))
+                            ->suffix('nm')
+                            ->integer()
+                            ->minValue(0),
+
+                        Select::make('route_types')
+                            ->label(__('filament.subfleets.fields.route_types'))
+                            ->helperText(__('filament.subfleets.fields.route_types_helper'))
+                            ->multiple()
+                            ->options(FlightType::class)
+                            ->native(false),
                     ])
                     ->columnSpanFull()
                     ->columns(3),

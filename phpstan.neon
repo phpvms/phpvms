@@ -20,6 +20,7 @@ parameters:
         # work at runtime. Models using FilesTrait: Aircraft, Airline, Airport, Subfleet.
         - identifier: larastan.relationExistence
           message: '#Relation ''files'' is not found in App\\Models\\(Aircraft|Airline|Airport|Subfleet) model\.#'
+
 #        - '#PHPDoc tag @var#'
 #
 #    excludePaths:

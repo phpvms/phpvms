@@ -62,7 +62,7 @@ class FlightSearchQuery
         $query = Flight::query();
 
         if ($onlyActive) {
-            $query->active()->visible();
+            $query->visible();
         }
 
         $this->applySearch($query, $request);

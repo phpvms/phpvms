@@ -11,13 +11,11 @@ use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Exceptions\PilotIdNotFound;
 use App\Exceptions\UserPilotIdExists;
-use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Bid;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Role;
-use App\Models\Subfleet;
 use App\Models\Typerating;
 use App\Models\User;
 use App\Models\UserField;
@@ -30,16 +28,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class UserService extends Service
 {
-    public function __construct(
-        private readonly FareService $fareSvc,
-    ) {}
-
     /**
      * Find the user and return them with all of the data properly attached
      */
@@ -62,11 +55,11 @@ class UserService extends Service
             return null;
         }
 
-        if ($with_subfleets) {
-            // Load the proper subfleets to the rank
-            $user->rank->subfleets = $this->getAllowableSubfleets($user);
-            // @phpstan-ignore-next-line
-            $user->subfleets = $user->rank->subfleets;
+        if ($with_subfleets && $user->rank !== null) {
+            $user->rank->setRelation(
+                'subfleets',
+                $user->allowedSubfleets()->with(['aircraft', 'fares'])->get(),
+            );
         }
 
         return $user;
@@ -330,63 +323,6 @@ class UserService extends Service
             // See if the difference is larger than what the setting calls for
             return abs($date->diffInDays($diff_date)) > $leave_days;
         });
-    }
-
-    /**
-     * Return the subfleets this user is allowed access to,
-     * based on their current Rank and/or by Type Rating
-     *
-     * @param  int|null                                                      $perPage Page size when paginating; null uses Laravel's default
-     * @return LengthAwarePaginator<int, Subfleet>|Collection<int, Subfleet>
-     */
-    public function getAllowableSubfleets($user, bool $paginate = false, ?int $perPage = null)
-    {
-        $restrict_rank = setting('pireps.restrict_aircraft_to_rank', true);
-        $restrict_type = setting('pireps.restrict_aircraft_to_typerating', false);
-        $restricted_to = [];
-
-        if ($user) {
-            $rank_sf_array = $restrict_rank ? $user->rank->subfleets()->pluck('id')->toArray() : [];
-            $type_sf_array = $restrict_type ? $user->rated_subfleets->pluck('id')->toArray() : [];
-
-            if ($restrict_rank && !$restrict_type) {
-                $restricted_to = $rank_sf_array;
-            } elseif (!$restrict_rank && $restrict_type) {
-                $restricted_to = $type_sf_array;
-            } elseif ($restrict_rank && $restrict_type) {
-                $restricted_to = array_intersect($rank_sf_array, $type_sf_array);
-            }
-        } else {
-            $restrict_rank = false;
-            $restrict_type = false;
-        }
-
-        $subfleetsQuery = Subfleet::when($restrict_rank || $restrict_type, fn ($query) => $query->whereIn('id', $restricted_to))->with(['aircraft', 'aircraft.bid', 'fares']);
-
-        $mapper = function (Subfleet $sf): Subfleet {
-            // @phpstan-ignore-next-line
-            $sf->fares = $this->fareSvc->getForSubfleet($sf);
-
-            return $sf;
-        };
-
-        // through() preserves the paginator wrapper (links + meta);
-        // transform() on a non-paginated collection mutates it in place.
-        return $paginate
-            ? $subfleetsQuery->paginate($perPage)->through($mapper)
-            : $subfleetsQuery->get()->transform($mapper);
-    }
-
-    /**
-     * Return a bool if a user is allowed to fly the current aircraft
-     */
-    public function aircraftAllowed($user, $aircraft_id): bool
-    {
-        $aircraft = Aircraft::findOrFail($aircraft_id, ['subfleet_id']);
-        $subfleets = $this->getAllowableSubfleets($user);
-        $subfleet_ids = $subfleets->pluck('id')->toArray();
-
-        return \in_array($aircraft->subfleet_id, $subfleet_ids, true);
     }
 
     /**
