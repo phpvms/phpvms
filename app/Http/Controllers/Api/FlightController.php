@@ -16,7 +16,6 @@ use App\Models\User;
 use App\Queries\FlightSearchQuery;
 use App\Services\FareService;
 use App\Services\FlightService;
-use App\Services\UserService;
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
@@ -31,7 +30,6 @@ class FlightController extends Controller
         private readonly FareService $fareSvc,
         private readonly FlightSearchQuery $flightSearchQuery,
         private readonly FlightService $flightSvc,
-        private readonly UserService $userSvc
     ) {}
 
     /**
@@ -48,15 +46,20 @@ class FlightController extends Controller
         $user = Auth::user();
 
         /** @var Flight $flight */
-        $flight = Flight::with([
-            'airline',
-            'fares',
-            'subfleets' => ['aircraft.bid', 'fares'],
-            'field_values',
-            'simbrief' => fn ($query) => $query->with('aircraft')->where('user_id', $user->id),
-        ])->findOrFail($id);
+        $flight = Flight::query()
+            ->with([
+                'airline',
+                'fares',
+                'field_values',
+                'simbrief' => fn ($query) => $query->with('aircraft')->where('user_id', $user->id),
+            ])
+            ->findOrFail($id);
 
-        $flight = $this->flightSvc->filterSubfleets($user, $flight);
+        $flight->setRelation(
+            'subfleets',
+            $flight->accessibleSubfleetsFor($user, ['aircraft', 'fares']),
+        );
+
         $flight = $this->fareSvc->getReconciledFaresForFlight($flight);
 
         return new FlightResource($flight);
@@ -100,26 +103,16 @@ class FlightController extends Controller
             $relations = explode(',', (string) $request->input('with', ''));
         }
 
-        foreach ($relations as $relation) {
-            $with = array_merge($with, match ($relation) {
-                'subfleets' => [
-                    'subfleets',
-                    'subfleets.aircraft',
-                    'subfleets.aircraft.bid',
-                    'subfleets.fares',
-                ],
-                default => [],
-            });
+        $query->with($with);
+
+        if (in_array('subfleets', $relations, true)) {
+            $query->withAccessibleSubfleets($user);
         }
 
         $perPage = paginate_limit($request->integer('limit') ?: null);
-        $flights = $query->with($with)->paginate($perPage);
+        $flights = $query->paginate($perPage);
 
         foreach ($flights as $flight) {
-            if (in_array('subfleets', $relations)) {
-                $this->flightSvc->filterSubfleets($user, $flight);
-            }
-
             $this->fareSvc->getReconciledFaresForFlight($flight);
         }
 
@@ -168,33 +161,29 @@ class FlightController extends Controller
     public function aircraft(string $id, Request $request)
     {
         /** @var Flight $flight */
-        $flight = Flight::with('subfleets')->findOrFail($id);
+        $flight = Flight::findOrFail($id);
 
-        $user_subfleets = $this->userSvc->getAllowableSubfleets(Auth::user())->pluck('id')->toArray();
-        $flight_subfleets = $flight->subfleets->pluck('id')->toArray();
+        /** @var User $user */
+        $user = Auth::user();
 
-        $subfleet_ids = filled($flight_subfleets) ? array_intersect($user_subfleets, $flight_subfleets) : $user_subfleets;
-
-        // Prepare variables for single aircraft query
-        $where = [];
-        $where['state'] = AircraftState::PARKED;
-        $where['status'] = AircraftStatus::ACTIVE;
-
-        if (setting('pireps.only_aircraft_at_dpt_airport')) {
-            $where['airport_id'] = $flight->dpt_airport_id;
-        }
-
-        $withCount = ['bid', 'simbriefs' => function ($query): void {
-            $query->whereNull('pirep_id');
-        }];
-
-        // Build proper aircraft collection considering all possible settings
-        // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
-        $aircraft = Aircraft::withCount($withCount)->where($where)
-            ->when(setting('simbrief.block_aircraft'), fn ($query) => $query->having('simbriefs_count', 0))->when(setting('bids.block_aircraft'), fn ($query) => $query->having('bid_count', 0))->whereIn('subfleet_id', $subfleet_ids)
-            ->orderby('icao')->orderby('registration')
+        return Aircraft::query()
+            ->allowedFor($user, $flight)
+            ->where('state', AircraftState::PARKED)
+            ->where('status', AircraftStatus::ACTIVE)
+            ->when(
+                $flight->subfleets()->exists(),
+                fn ($q) => $q->whereIn('subfleet_id', $flight->subfleets()->pluck('subfleets.id')),
+            )
+            ->withCount([
+                'bid',
+                'simbriefs' => fn ($q) => $q->whereNull('pirep_id'),
+            ])
+            ->when(
+                setting('simbrief.block_aircraft'),
+                fn ($q) => $q->having('simbriefs_count', 0),
+            )
+            ->orderBy('icao')
+            ->orderBy('registration')
             ->get();
-
-        return $aircraft;
     }
 }

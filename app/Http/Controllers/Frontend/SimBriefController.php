@@ -19,7 +19,6 @@ use App\Models\User;
 use App\Services\FareService;
 use App\Services\ModuleService;
 use App\Services\SimBriefService;
-use App\Services\UserService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +32,6 @@ class SimBriefController
         private readonly FareService $fareSvc,
         private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
-        private readonly UserService $userSvc
     ) {}
 
     /**
@@ -85,35 +83,23 @@ class SimBriefController
 
         // No aircraft selected, show selection form
         if (!$aircraft_id) {
-            // Get user's allowed subfleets and intersect it with flight subfleets
-            // so we will have a proper list which the user is allowed to fly
-            $user_subfleets = $this->userSvc->getAllowableSubfleets($user)->pluck('id')->toArray();
-            $flight_subfleets = $flight->subfleets->pluck('id')->toArray();
+            $subfleet_ids = $flight->accessibleSubfleetsFor($user)->pluck('id');
 
-            if ((blank($flight_subfleets) || count($flight_subfleets) === 0) && setting('flights.only_company_aircraft', false)) {
-                $flight_subfleets = Subfleet::where(['airline_id' => $flight->airline_id])->pluck('id')->toArray();
-            }
-
-            $subfleet_ids = filled($flight_subfleets) ? array_intersect($user_subfleets, $flight_subfleets) : $user_subfleets;
-
-            // Prepare variables for single aircraft query
-            $where = [];
-            $where['state'] = AircraftState::PARKED;
-            $where['status'] = AircraftStatus::ACTIVE;
-
-            if (setting('pireps.only_aircraft_at_dpt_airport')) {
-                $where['airport_id'] = $flight->dpt_airport_id;
-            }
-
-            $withCount = ['simbriefs' => function ($query): void {
-                $query->whereNull('pirep_id');
-            }];
-
-            // Build proper aircraft collection considering all possible settings
-            // Flight subfleets, user subfleet restrictions, pirep restrictions, simbrief blocking etc
-            $aircraft = Aircraft::withCount($withCount)->with(['sbaircraft', 'sbairframes'])->where($where)
-                ->when(setting('simbrief.block_aircraft'), fn ($query) => $query->having('simbriefs_count', 0))->whereIn('subfleet_id', $subfleet_ids)
-                ->orderby('icao')->orderby('registration')
+            $aircraft = Aircraft::query()
+                ->allowedFor($user, $flight)
+                ->where('state', AircraftState::PARKED)
+                ->where('status', AircraftStatus::ACTIVE)
+                ->whereIn('subfleet_id', $subfleet_ids)
+                ->with(['sbaircraft', 'sbairframes'])
+                ->withCount([
+                    'simbriefs' => fn ($q) => $q->whereNull('pirep_id'),
+                ])
+                ->when(
+                    setting('simbrief.block_aircraft'),
+                    fn ($q) => $q->having('simbriefs_count', 0),
+                )
+                ->orderBy('icao')
+                ->orderBy('registration')
                 ->get();
 
             return view('flights.simbrief_aircraft', [

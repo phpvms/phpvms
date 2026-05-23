@@ -6,9 +6,12 @@ use App\Contracts\Model;
 use App\Enums\AircraftStatus;
 use App\Enums\FuelType;
 use App\Observers\SubfleetObserver;
+use App\Support\SubfleetAccessPolicy;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -193,6 +196,16 @@ class Subfleet extends Model
             'subfleet_id',
             'typerating_id'
         );
+    }
+
+    /**
+     * Restrict to subfleets the given user is allowed to operate, based on
+     * rank and type-rating settings. See SubfleetAccessPolicy.
+     */
+    #[Scope]
+    protected function allowedFor(Builder $query, User $user): Builder
+    {
+        return (new SubfleetAccessPolicy($user))->applyToSubfleets($query);
     }
 
     /**
