@@ -97,10 +97,7 @@ class BidService extends Service
         if ($loadSubfleets) {
             // Eager-load filtered subfleets + their fares + aircraft via the
             // access-policy scope in a single query plan per relation.
-            $with['flight'] = fn ($q) => $q->withAccessibleSubfleets($user)->with([
-                'subfleets.fares',
-                'subfleets.aircraft.bid',
-            ]);
+            $with['flight'] = fn ($q) => $q->withAccessibleSubfleets($user);
         }
 
         if (in_array('simbrief_aircraft', $relations, true)) {

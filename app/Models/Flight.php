@@ -545,11 +545,16 @@ class Flight extends Model
     }
 
     /**
-     * Eager-load subfleets and their aircraft constrained to the user's access policy.
-     * No flight context is passed to the aircraft scope here — airport restriction
-     * is a per-flight concern handled by single-flight callers via
-     * `Aircraft::allowedFor($user, $flight)`. Rank, type-rating, and bid-block
-     * constraints still apply.
+     * Eager-load subfleets, their aircraft, and their fares constrained to the
+     * user's access policy. No flight context is passed to the aircraft scope
+     * here — airport restriction is a per-flight concern handled by
+     * single-flight callers via `Aircraft::allowedFor($user, $flight)`. Rank,
+     * type-rating, and bid-block constraints still apply.
+     *
+     * `fares` is eager-loaded because callers commonly run the result through
+     * `FareService::getReconciledFaresForFlight()`, which reads
+     * `$subfleet->fares`. Without that load, lazy-loading kicks in and trips
+     * `preventLazyLoading()` in non-prod environments.
      */
     #[Scope]
     protected function withAccessibleSubfleets(Builder $query, User $user): Builder
@@ -557,6 +562,8 @@ class Flight extends Model
         return $query->with([
             'subfleets' => fn ($sq) => $sq->allowedFor($user)->with([
                 'aircraft' => fn ($aq) => $aq->allowedFor($user),
+                'aircraft.bid',
+                'fares',
             ]),
         ]);
     }
