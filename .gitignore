@@ -106,3 +106,4 @@ modules_statuses.json
 
 # Local SQLite scratch db (test artifact)
 /phpvms
+.env.testing
