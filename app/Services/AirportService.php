@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Contracts\AirportLookup;
 use App\Contracts\Metar as MetarProvider;
 use App\Contracts\Service;
 use App\Exceptions\AirportNotFound;
 use App\Models\Airport;
+use App\Support\Dto\PhpvmsApi\AirportData;
 use App\Support\Metar;
 use App\Support\Units\Distance;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use League\Geotools\Coordinate\Coordinate;
 use League\Geotools\Geotools;
 use PhpUnitsOfMeasure\Exception\NonNumericValue;
@@ -20,7 +21,6 @@ use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 class AirportService extends Service
 {
     public function __construct(
-        private readonly AirportLookup $lookupProvider,
         private readonly MetarProvider $metarProvider
     ) {}
 
@@ -71,11 +71,8 @@ class AirportService extends Service
     /**
      * Lookup an airport's information from a remote provider. This handles caching
      * the data internally
-     *
-     * @param  string $icao ICAO
-     * @return mixed
      */
-    public function lookupAirport(string $icao)
+    public function lookupAirport(string $icao): array
     {
         $key = config('cache.keys.AIRPORT_VACENTRAL_LOOKUP.key').$icao;
 
@@ -84,12 +81,15 @@ class AirportService extends Service
             return $airport;
         }
 
-        $airport = $this->lookupProvider->getAirport($icao);
-        if ($airport === []) {
+        $response = Http::get('https://api.phpvms.net/v1/airports/'.$icao);
+
+        if (!$response->successful()) {
             return [];
         }
 
-        $airport = (array) $airport;
+        $airportData = AirportData::from($response->json());
+
+        $airport = $airportData->toArray();
 
         Cache::add(
             $key,
@@ -129,7 +129,7 @@ class AirportService extends Service
         }
 
         $lookup = $this->lookupAirport($icao);
-        if (empty($lookup)) {
+        if ($lookup === []) {
             return null;
         }
 

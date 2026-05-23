@@ -179,9 +179,6 @@
     "myclabs/deep-copy": {
         "version": "1.10.2"
     },
-    "nabeel/vacentral": {
-        "version": "2.1.0"
-    },
     "nesbot/carbon": {
         "version": "2.57.0"
     },

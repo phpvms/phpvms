@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Contracts\AirportLookup;
 use App\Contracts\Metar;
 use App\Enums\ActiveState;
 use App\Enums\PirepSource;
@@ -44,8 +43,6 @@ use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Yaml\Yaml;
-use VaCentral\Contracts\IVaCentral;
-use VaCentral\VaCentral;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -144,28 +141,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             Metar::class,
             config('phpvms.metar_lookup')
-        );
-
-        /*
-         * Bind the class used to fullfill the AirportLookup class contract
-         */
-        $this->app->bind(
-            AirportLookup::class,
-            config('phpvms.airport_lookup')
-        );
-
-        $this->app->bind(
-            IVaCentral::class,
-            function ($app): VaCentral {
-                $client = new VaCentral();
-
-                // Set API if exists
-                if (filled(config('vacentral.api_key'))) {
-                    $client->setApiKey(config('vacentral.api_key'));
-                }
-
-                return $client;
-            }
         );
 
         /**
