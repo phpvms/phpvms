@@ -11,12 +11,25 @@
 # delete the `command:` line below and recreate the `app` container. No
 # rebuild required.
 #
+# This file builds the image locally from the repository's Dockerfile and
+# tags it as `phpvms:local`. The `task` and `queue` services reuse the
+# same tag, so the build happens once. To deploy against the published
+# image instead (CI-built, signed), replace `image: phpvms:local` with
+# `image: ghcr.io/phpvms/phpvms:main` and delete the `build:` block on
+# the `app` service.
+#
 # For local development, see `compose.sail.yml` (Laravel Sail).
 services:
   app:
     container_name: phpvms-app
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: ghcr.io/phpvms/phpvms:main
+    image: phpvms:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WWWUSER: "${WWWUSER:-1000}"
+        WWWGROUP: "${WWWGROUP:-1000}"
     hostname: app
     restart: unless-stopped
     # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
@@ -71,7 +84,7 @@ services:
   task:
     container_name: phpvms-task
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: ghcr.io/phpvms/phpvms:main
+    image: phpvms:local
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
@@ -91,7 +104,7 @@ services:
   queue:
     container_name: phpvms-queue
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
-    image: ghcr.io/phpvms/phpvms:main
+    image: phpvms:local
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
