@@ -15,6 +15,7 @@ use App\Enums\PirepStatus;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
 use App\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -150,6 +151,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
 class Pirep extends Model
 {
     use AttributeEvents;
@@ -163,8 +165,6 @@ class Pirep extends Model
     public $table = 'pireps';
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
 
     /** The form wants this */
     public $hours;

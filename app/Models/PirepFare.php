@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\FareType;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -38,11 +39,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
+#[WithoutTimestamps]
 class PirepFare extends Model
 {
     public $table = 'pirep_fares';
-
-    public $timestamps = false;
 
     protected $fillable = [
         'pirep_id',

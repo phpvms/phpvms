@@ -10,6 +10,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Observers\JournalTransactionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -50,13 +51,12 @@ use Illuminate\Support\Carbon;
  * @mixin \Eloquent
  */
 #[ObservedBy(JournalTransactionObserver::class)]
+#[WithoutIncrementing]
 class JournalTransaction extends Model
 {
     use HasFactory;
 
     protected $table = 'journal_transactions';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'transaction_group',

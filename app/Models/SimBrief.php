@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Observers\SimBriefObserver;
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,13 +49,12 @@ use Illuminate\Support\Facades\Storage;
  * @mixin \Eloquent
  */
 #[ObservedBy(SimBriefObserver::class)]
+#[WithoutIncrementing]
 class SimBrief extends Model
 {
     use HasFactory;
 
     public $table = 'simbrief';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'id',

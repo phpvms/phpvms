@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Traits\HashIdTrait;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -45,6 +46,7 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
 class File extends Model
 {
     use HasFactory;
@@ -53,8 +55,6 @@ class File extends Model
     public $table = 'files';
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'id',

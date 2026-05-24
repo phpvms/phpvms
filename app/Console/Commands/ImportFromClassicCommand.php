@@ -4,23 +4,20 @@ namespace App\Console\Commands;
 
 use App\Services\LegacyImporterService;
 use Exception;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'phpvms:importer', description: 'Import data from an older version of phpVMS')]
-class ImportFromClassicCommand extends Command
-{
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'phpvms:importer 
+#[Signature('phpvms:importer 
                             {db_host : The legacy database host} 
                             {db_name : The legacy database name} 
                             {db_user : The legacy database user} 
                             {db_pass? : The legacy database password} 
-                            {table_prefix=phpvms_ : The legacy database table prefix}';
-
+                            {table_prefix=phpvms_ : The legacy database table prefix}')]
+class ImportFromClassicCommand extends Command
+{
     /**
      * Execute the console command.
      */

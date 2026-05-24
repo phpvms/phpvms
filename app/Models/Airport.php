@@ -8,6 +8,8 @@ use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -94,6 +96,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 #[ObservedBy(AirportObserver::class)]
+#[WithoutIncrementing]
+#[WithoutTimestamps]
 class Airport extends Model
 {
     use ExpensableTrait;
@@ -106,10 +110,6 @@ class Airport extends Model
     public $table = 'airports';
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
-
-    public $timestamps = false;
 
     protected $fillable = [
         'id',
