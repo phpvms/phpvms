@@ -18,17 +18,18 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepField;
 use App\Models\SimBrief;
+use App\Models\Subfleet;
 use App\Models\User;
 use App\Queries\PirepSearchQuery;
 use App\Services\FareService;
 use App\Services\GeoService;
 use App\Services\PirepService;
 use App\Services\SimBriefService;
-use App\Services\UserService;
 use App\Support\Units\Fuel;
 use App\Support\Units\Time;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,6 @@ class PirepController extends Controller
         private readonly GeoService $geoSvc,
         private readonly PirepSearchQuery $pirepSearchQuery,
         private readonly PirepService $pirepSvc,
-        private readonly UserService $userSvc
     ) {}
 
     /**
@@ -59,18 +59,25 @@ class PirepController extends Controller
         $location_check = setting('pireps.only_aircraft_at_dpt_airport', false);
 
         $aircraft = [];
-        $subfleets = $this->userSvc->getAllowableSubfleets($user);
 
         if ($add_blank) {
             $aircraft[''] = '';
         }
 
-        $subfleets->loadMissing('aircraft');
+        /** @var Collection<int, Subfleet> $subfleets */
+        $subfleets = $user->allowedSubfleets()
+            ->with([
+                'aircraft' => fn ($q) => $q->when(
+                    $location_check,
+                    fn ($q2) => $q2->where('airport_id', $user_loc),
+                ),
+            ])
+            ->get();
 
         foreach ($subfleets as $subfleet) {
             $tmp = [];
-            foreach ($subfleet->aircraft->when($location_check, fn ($query) => $query->where('airport_id', $user_loc)) as $ac) {
-                $tmp[$ac->id] = $ac['name'].' - '.$ac['registration'];
+            foreach ($subfleet->aircraft as $ac) {
+                $tmp[$ac->id] = $ac->name.' - '.$ac->registration;
             }
 
             $aircraft[$subfleet->type] = $tmp;
@@ -322,7 +329,7 @@ class PirepController extends Controller
 
             // Can they fly this aircraft?
             if (setting('pireps.restrict_aircraft_to_rank', false)
-                && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id)) {
+                && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
                 Log::info('Pilot '.$user->id.' not allowed to fly aircraft');
 
                 return $this->flashError(

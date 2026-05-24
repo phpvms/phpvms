@@ -112,7 +112,7 @@ class PirepService extends Service
 
         // See if this user is allowed to fly this aircraft
         if (setting('pireps.restrict_aircraft_to_rank', false)
-            && !$this->userSvc->aircraftAllowed($user, $pirep->aircraft_id)) {
+            && !$user->allowedAircraft()->whereKey($pirep->aircraft_id)->exists()) {
             throw new AircraftPermissionDenied($user, $pirep->aircraft);
         }
 
