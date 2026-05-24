@@ -72,7 +72,13 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrap();
 
-        activity()->disableLogging();
+        // Activity logging defaults to disabled for every request. The reset
+        // lives in App\Http\Middleware\DisableActivityLoggingByDefault (wired
+        // in bootstrap/app.php) instead of here, because Octane runs boot()
+        // only once per worker — the per-request reset has to live in the
+        // request pipeline. The middleware reapplies the default before any
+        // opt-in (EnableActivityLogging middleware, Filament panel boot)
+        // gets a chance to flip it on.
 
         /**
          * Inject the extra display + monospace fonts used by the docs design
