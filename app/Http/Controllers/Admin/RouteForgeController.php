@@ -355,6 +355,7 @@ final class RouteForgeController extends Controller
             fareMultiplier: $fareMultiplier,
             flightType: $ctx->flightType,
             airlineStats: $ctx->airlineStats,
+            causerId: auth()->id() !== null ? (int) auth()->id() : null,
         );
     }
 

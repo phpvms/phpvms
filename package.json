@@ -11,7 +11,8 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
@@ -37,13 +38,16 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.10.5",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^25.9.1",
     "esbuild": "^0.28.0",
+    "happy-dom": "^20.9.0",
     "laravel-vite-plugin": "^3.0.0",
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
     "sass": "^1.54.5",
     "tailwindcss": "^4.1.11",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vitest": "^4.1.7"
   }
 }

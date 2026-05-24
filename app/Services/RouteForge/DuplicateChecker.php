@@ -52,7 +52,11 @@ final class DuplicateChecker
         }
 
         $existing = Flight::query()
-            ->with('airline:id,code')
+            // Flight::ident reads `airline->code`, which is an accessor over
+            // `iata ?? icao`. Eager-load both backing columns; selecting the
+            // accessor name directly returns the airline with NEITHER backing
+            // column populated, and ident drops the airline prefix.
+            ->with('airline:id,iata,icao')
             ->whereIn('airline_id', $airlineIds)
             ->whereIn('flight_number', $flightNumbers)
             ->whereNull('owner_type')

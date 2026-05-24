@@ -57,10 +57,13 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
         $allowedSubfleetIds = $this->allowedSubfleetIds();
 
         return [
-            'airline_id'     => ['required', 'integer', 'exists:airlines,id'],
-            'event_id'       => ['nullable', 'integer', 'exists:events,id'],
-            'flight_type'    => ['nullable', Rule::enum(FlightType::class)],
-            'subfleet_ids'   => ['required', 'array', 'min:0'],
+            'airline_id'  => ['required', 'integer', 'exists:airlines,id'],
+            'event_id'    => ['nullable', 'integer', 'exists:events,id'],
+            'flight_type' => ['nullable', Rule::enum(FlightType::class)],
+            // 'present' (not 'required') so an empty array passes — L3 lint
+            // catches "no subfleets selected" downstream as a warning rather
+            // than blocking the payload at the validation layer.
+            'subfleet_ids'   => ['present', 'array'],
             'subfleet_ids.*' => ['integer', Rule::in($allowedSubfleetIds)],
 
             'origins'        => ['required', 'array', 'min:1'],

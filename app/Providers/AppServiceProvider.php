@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\ModuleService;
+use App\Services\RouteForge\LintRunner;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -163,6 +164,14 @@ class AppServiceProvider extends ServiceProvider
             $app['files'],
             $app['config']['view.paths']
         ));
+
+        // RouteForge LintRunner: the constructor takes an array of registered
+        // rules with no container-resolvable shape; bind it to the defaults()
+        // factory so controllers + services can inject by type.
+        $this->app->singleton(
+            LintRunner::class,
+            static fn (): LintRunner => LintRunner::defaults(),
+        );
 
         // Load the aliases
         $loader = AliasLoader::getInstance();

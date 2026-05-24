@@ -7,6 +7,7 @@ namespace App\Services\RouteForge;
 use App\Cron\Nightly\SetVisibleFlights;
 use App\Models\Flight;
 use App\Models\FlightBundle;
+use App\Models\User;
 use App\Services\RouteForge\Exceptions\LintFailedException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -89,9 +90,13 @@ final readonly class RouteForgeService
             // Single bundle-level audit entry; per-flight LogsActivity hooks
             // were suppressed inside withoutEvents above. `appended_to_existing`
             // distinguishes attach-existing batches in the audit trail.
+            // Causer resolved from $input->causerId (stamped by the controller
+            // from auth()->id()) so this service stays auth-helper-free per
+            // the tests/Arch/GlobalTest http-helpers rule.
+            $causer = $input->causerId !== null ? User::query()->find($input->causerId) : null;
             activity('routeforge')
                 ->performedOn($bundle)
-                ->causedBy(auth()->user())
+                ->causedBy($causer)
                 ->withProperties([
                     'batch_id'             => $batchId,
                     'count'                => count($flightIds),

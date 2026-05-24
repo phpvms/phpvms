@@ -45,6 +45,7 @@ final readonly class CommitInput
      * @param string|null                      $fareMultiplier    Percent-string ("+10%", "-5%", "20%") stamped into `flight_fare.price` for each inherited subfleet fare. Null/empty = pure subfleet inheritance, no flight_fare rows created.
      * @param FlightType|null                  $flightType        Batch-wide flight type (mirrors $rows[*]['flight_type']).
      * @param array<string, mixed>             $airlineStats      L1 snapshot: existing_active_flights_count, hub_airports, home_airport.
+     * @param int|null                         $causerId          User id stamped onto the activity log entry as `causer_id`. Resolved by the controller from the authenticated request; null when no user context (e.g. system commits, tests bypassing auth).
      */
     public function __construct(
         public FlightBundle $bundle,
@@ -57,6 +58,7 @@ final readonly class CommitInput
         public ?string $fareMultiplier,
         public ?FlightType $flightType,
         public array $airlineStats,
+        public ?int $causerId = null,
     ) {}
 
     /**
