@@ -98,18 +98,7 @@ Route::group([
 Route::get('/logout', [LoginController::class, 'logout'])->name(Logout::class);
 Auth::routes(['verify' => true]);
 
-/*
- * RouteForge admin API.
- *
- * All endpoints gated by `permission:create:flight` — the same Spatie Shield
- * permission that protects the Filament Flight resource's create action and
- * the RouteForge Filament page itself (see App\Filament\Pages\RouteForge::
- * canAccess). Permission name uses the kebab+colon Shield convention
- * (e.g. `create:flight`, not `create_flight`).
- *
- * Mounted at /admin/route-forge/api/ — sits under the Filament admin
- * panel's URL prefix so same-origin session auth applies via the web group.
- */
+/** RouteForge admin API endpoints (gated by `permission:create:flight`). */
 Route::middleware(['web', 'auth', 'permission:create:flight'])
     ->prefix('admin/route-forge/api')
     ->name('admin.routeforge.api.')

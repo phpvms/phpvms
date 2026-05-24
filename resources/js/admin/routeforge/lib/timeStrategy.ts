@@ -112,9 +112,14 @@ function jitterOffset(rowIndex: number, jitter: JitterConfig): number {
 
 function parseHHMM(s: string): number {
   const parts = s.split(":");
-  const h = Number(parts[0] ?? 0);
-  const m = Number(parts[1] ?? 0);
-  if (!Number.isFinite(h) || !Number.isFinite(m)) {
+  if (parts.length !== 2) {
+    return 0;
+  }
+  const h = Number((parts[0] ?? "").trim());
+  const m = Number((parts[1] ?? "").trim());
+  // Reject non-integers and out-of-range hours/minutes. Bare Number.isFinite
+  // accepts "99:99" which would silently wrap to an unrelated time downstream.
+  if (!Number.isInteger(h) || !Number.isInteger(m) || h < 0 || h > 23 || m < 0 || m > 59) {
     return 0;
   }
   return h * 60 + m;

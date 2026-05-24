@@ -33,6 +33,12 @@ final class DuplicateChecker
      * relation is eager-loaded so the Flight::ident accessor (which reads
      * airline->code) stays free of N+1.
      *
+     * Each returned row carries `conflict_field => 'flight_number'`. The
+     * strict-key match is the full 4-tuple, but flight_number is the
+     * operationally meaningful field surfaced to the admin (airline scoping
+     * is implicit, route_code/leg are usually null). UI renders this as
+     * "flight_number 1234 is taken".
+     *
      * @param  array<int, array<string, mixed>>                                                                 $rows Submitted rows; each row MUST carry
      *                                                                                                                airline_id and flight_number, and MAY
      *                                                                                                                carry route_code / route_leg.
@@ -82,11 +88,7 @@ final class DuplicateChecker
                 'index'              => $index,
                 'existing_flight_id' => $hit->id,
                 'ident'              => $hit->ident,
-                // The strict-key match is the full 4-tuple, but flight_number
-                // is the operationally meaningful field surfaced to the admin
-                // (airline scoping is implicit, route_code/leg are usually
-                // null). UI renders this as "flight_number 1234 is taken".
-                'conflict_field' => 'flight_number',
+                'conflict_field'     => 'flight_number',
             ];
         }
 

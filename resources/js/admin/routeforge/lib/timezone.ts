@@ -98,7 +98,9 @@ function parseHHMM(s: string): [number, number] | [null, null] {
   }
   const h = Number(parts[0]);
   const m = Number(parts[1]);
-  if (!Number.isFinite(h) || !Number.isFinite(m)) {
+  // Bounds before TZ math: "24:90" would otherwise produce unintended
+  // cross-day results when added to the flight_time block.
+  if (!Number.isInteger(h) || !Number.isInteger(m) || h < 0 || h > 23 || m < 0 || m > 59) {
     return [null, null];
   }
   return [h, m];

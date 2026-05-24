@@ -19,7 +19,7 @@ describe("computeArrTime", () => {
     // 22:00 + 11h + 16h = 49h offset → day_shift = 2.
     const result = computeArrTime("22:00", "America/Los_Angeles", "Asia/Tokyo", 660, genDate);
     expect(result.fallback).toBe(false);
-    expect(result.day_shift).toBeGreaterThanOrEqual(1);
+    expect(result.day_shift).toBe(2);
   });
 
   it("falls back to naive math when destination timezone is null", () => {

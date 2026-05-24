@@ -25,6 +25,13 @@ use Illuminate\Http\Request;
  * AirportSearchQueryV1 contracts unchanged — admin-only fields surface only
  * when the caller hits this resource path.
  *
+ * Reads of the stamped attributes use `getAttribute()` so PHPStan sees the
+ * Eloquent API rather than a phantom property access. The controller stamped
+ * via `setAttribute()`; parent::toArray() also surfaces them through
+ * Eloquent's attribute serialization, but the explicit read keeps the wire
+ * contract documented and lets future field-shape changes (e.g. unit
+ * conversion) live in one place.
+ *
  * @mixin Airport
  */
 final class RouteForgeAirportResource extends AirportResource
@@ -34,12 +41,6 @@ final class RouteForgeAirportResource extends AirportResource
     {
         $res = parent::toArray($request);
 
-        // Read via getAttribute() so PHPStan sees the proper Eloquent API
-        // rather than a phantom property access. Controller stamped these
-        // via setAttribute(); parent::toArray() also surfaces them through
-        // Eloquent's attribute serialization, but the explicit read keeps
-        // the wire contract documented and lets future field-shape changes
-        // (e.g. unit conversion) live in one place.
         $distance = $this->resource->getAttribute('distance_from_origin_nm');
         if ($distance !== null) {
             $res['distance_from_origin_nm'] = $distance;

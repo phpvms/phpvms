@@ -11,7 +11,9 @@ use App\Models\User;
 use App\Services\RouteForge\Exceptions\LintFailedException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Orchestrates the RouteForge commit pipeline (design.md Decision 10).
@@ -119,8 +121,20 @@ final readonly class RouteForgeService
         // Run AFTER the transaction commits so the bundle row is visible to
         // the recompute's own queries. runForBundle is synchronous and
         // idempotent with the queued RecomputeBundleVisibility job that
-        // BundleObserver::created already dispatched.
-        SetVisibleFlights::runForBundle($committed['bundle']);
+        // BundleObserver::created already dispatched. Wrap defensively: the
+        // batch is already persisted at this point, and surfacing a recompute
+        // failure to the client would cause clients to retry and create a
+        // duplicate batch. The queued RecomputeBundleVisibility job will
+        // settle visibility on the next run.
+        try {
+            SetVisibleFlights::runForBundle($committed['bundle']);
+        } catch (Throwable $throwable) {
+            Log::warning('RouteForge: post-commit visibility recompute failed', [
+                'bundle_id' => $committed['bundle']->id,
+                'batch_id'  => $batchId,
+                'exception' => $throwable,
+            ]);
+        }
 
         return $committed['result'];
     }
@@ -163,12 +177,20 @@ final readonly class RouteForgeService
         // Fare multiplier: stamp the percent-string into flight_fare.price
         // for each inherited subfleet fare. FareService::getFareWithPivot
         // parses %-suffix syntax on read; no arithmetic happens here.
+        // Dedup fare IDs across subfleets because flight_fare has a composite
+        // PK (flight_id, fare_id); the same fare attached via two different
+        // subfleets would hit a duplicate-key violation.
         $multiplier = $input->fareMultiplier;
         if ($multiplier !== null && $multiplier !== '') {
+            $fareIds = [];
             foreach ($input->selectedSubfleets as $subfleet) {
                 foreach ($subfleet->fares as $fare) {
-                    $flight->fares()->attach($fare->id, ['price' => $multiplier]);
+                    $fareIds[$fare->id] = true;
                 }
+            }
+
+            foreach (array_keys($fareIds) as $fareId) {
+                $flight->fares()->attach($fareId, ['price' => $multiplier]);
             }
         }
 

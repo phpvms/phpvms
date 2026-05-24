@@ -33,6 +33,7 @@ use App\Services\RouteForge\RouteForgeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Backend HTTP entry points for the RouteForge admin tool.
@@ -273,7 +274,7 @@ final class RouteForgeController extends Controller
      *
      * @param array<string, mixed> $validated
      */
-    private function buildLintContext(array $validated): LintContext
+    private function buildLintContext(array $validated, ?FlightBundle $existingBundle = null): LintContext
     {
         $airline = Airline::query()->findOrFail((int) $validated['airline_id']);
 
@@ -293,7 +294,7 @@ final class RouteForgeController extends Controller
             ? FlightType::tryFrom((string) $validated['flight_type'])
             : null;
 
-        $bundle = $this->hydrateUnsavedBundle($validated['bundle'] ?? []);
+        $bundle = $this->hydrateUnsavedBundle($validated['bundle'] ?? [], $existingBundle);
 
         return new LintContext(
             bundle: $bundle,
@@ -324,9 +325,10 @@ final class RouteForgeController extends Controller
      */
     private function buildCommitInput(array $validated): CommitInput
     {
-        $ctx = $this->buildLintContext($validated);
+        $bundleData = (array) ($validated['bundle'] ?? []);
+        $existingBundle = $this->resolveExistingBundle($bundleData);
 
-        $existingBundle = $this->resolveExistingBundle((array) ($validated['bundle'] ?? []));
+        $ctx = $this->buildLintContext($validated, $existingBundle);
 
         $bundle = $ctx->bundle;
         if (!$existingBundle instanceof FlightBundle) {
@@ -336,7 +338,6 @@ final class RouteForgeController extends Controller
         /** @var list<int> $subfleetIds */
         $subfleetIds = array_map(static fn ($id): int => (int) $id, (array) ($validated['subfleet_ids'] ?? []));
 
-        $bundleData = (array) ($validated['bundle'] ?? []);
         // In attach-existing mode the fare_multiplier input is hidden by the
         // v1 UI; if a client somehow submits one we still honor it because
         // fare_multiplier is per-batch, not per-bundle (Decision 9).
@@ -364,9 +365,13 @@ final class RouteForgeController extends Controller
      *
      * Returns null when the field is absent or null. The Form Request already
      * validated the id with `exists:flight_bundles,id (whereNull deleted_at)`,
-     * so this lookup is safe to assume non-null when the id was present.
+     * but the row may have been soft-deleted between validation and this
+     * lookup. Single lookup with 422 on miss avoids TOCTOU drift into
+     * unintended commit paths and avoids redundant queries for the same id.
      *
      * @param array<string, mixed> $bundleData
+     *
+     * @throws ValidationException When existing_bundle_id is set but no longer resolves.
      */
     private function resolveExistingBundle(array $bundleData): ?FlightBundle
     {
@@ -375,7 +380,14 @@ final class RouteForgeController extends Controller
             return null;
         }
 
-        return FlightBundle::query()->find((int) $existingId);
+        $bundle = FlightBundle::query()->find((int) $existingId);
+        if ($bundle === null) {
+            throw ValidationException::withMessages([
+                'bundle.existing_bundle_id' => __('filament.routeforge.bundle.existing_missing'),
+            ]);
+        }
+
+        return $bundle;
     }
 
     /**
@@ -385,14 +397,26 @@ final class RouteForgeController extends Controller
      * fields can be set. Note: `created_by` is added by the caller (commit
      * only); lint runs against the bundle as-supplied without persistence.
      *
-     * Dual-mode: when `existing_bundle_id` is set, we mirror the existing
-     * row's values into the unsaved bundle so the LintContext (L8) reads
-     * the right window even though the create path won't be taken.
+     * Dual-mode: when an `$existingBundle` is supplied (attach-existing path),
+     * we mirror its values into the unsaved bundle so the LintContext (L8)
+     * reads the right window even though the create path won't be taken.
      *
      * @param array<string, mixed> $bundleData
      */
-    private function hydrateUnsavedBundle(array $bundleData): FlightBundle
+    private function hydrateUnsavedBundle(array $bundleData, ?FlightBundle $existingBundle = null): FlightBundle
     {
+        if ($existingBundle instanceof FlightBundle) {
+            return new FlightBundle([
+                'name'        => $existingBundle->name,
+                'description' => $existingBundle->description,
+                'enabled'     => $existingBundle->enabled,
+                'start_date'  => $existingBundle->start_date,
+                'end_date'    => $existingBundle->end_date,
+            ]);
+        }
+
+        // The lint endpoint does not pass a pre-resolved bundle; resolve here
+        // so /lint still picks up the existing bundle's date window.
         $existingId = $bundleData['existing_bundle_id'] ?? null;
         if ($existingId !== null && $existingId !== '') {
             $existing = FlightBundle::query()->find((int) $existingId);

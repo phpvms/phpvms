@@ -5,10 +5,10 @@
  * (created count, batch_id, ids) then navigates to the new bundle's edit
  * page after a short delay. User can also click the manual link.
  *
- * The redirect URL is hardcoded against the standard Filament resource
- * route convention (`/admin/flight-bundles/{id}/edit`). If the prereq
- * change moves the bundle resource elsewhere, swap to a config-driven URL
- * template (window.routeforgeConfig.routes.bundle_edit_template or similar).
+ * The redirect URL is built from the backend-provided template
+ * `window.routeforgeConfig.routes.bundle_edit_template` (with `:id` swapped
+ * for the new bundle id). Falls back to the canonical Filament route shape
+ * if the template is somehow missing.
  *
  * Caller is responsible for clearDraft() — the redirect doesn't unmount
  * the React tree fast enough to rely on cleanup hooks.
@@ -26,7 +26,11 @@ export type CommitSuccessRedirectProps = {
 };
 
 export function CommitSuccessRedirect({ result }: CommitSuccessRedirectProps) {
-  const redirectUrl = `/admin/flight-bundles/${result.bundle_id}/edit`;
+  const template = window.routeforgeConfig?.routes?.bundle_edit_template;
+  const redirectUrl =
+    template !== undefined && template !== ""
+      ? template.replace(":id", String(result.bundle_id))
+      : `/admin/flight-bundles/${result.bundle_id}/edit`;
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -43,7 +43,10 @@ final class L6OriginEqualsDestination implements LintRule
                 continue;
             }
 
-            if ($dpt !== $arr) {
+            // Normalize to string before comparison: payload values may arrive
+            // as int 42 or string "42" depending on serialization. Strict !==
+            // would skip a true self-loop in that mixed-type case.
+            if ((string) $dpt !== (string) $arr) {
                 continue;
             }
 

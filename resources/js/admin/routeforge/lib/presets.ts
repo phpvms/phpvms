@@ -26,7 +26,15 @@ import type {
 export type RoutePresetPatch = Partial<Pick<Form, "flight_type" | "create_returns">>;
 export type FrequencyPresetPatch = Partial<Pick<Form, "days_mask" | "time_strategy">>;
 
-const DEFAULT_JITTER = { enabled: false, minutes: 5, seed: 1 };
+/**
+ * Returns a fresh default jitter object per call. Returning a shared singleton
+ * leaks mutations between presets — any downstream code that mutates
+ * `time_strategy.jitter` would otherwise propagate state across unrelated
+ * preset patches.
+ */
+function makeDefaultJitter(): { enabled: false; minutes: number; seed: number } {
+  return { enabled: false, minutes: 5, seed: 1 };
+}
 
 // ─── Days mask helpers (Mon = 1<<0 ... Sun = 1<<6, total 127) ─────────────
 
@@ -113,19 +121,19 @@ export function frequencyPresetPatch(preset: FrequencyPreset): FrequencyPresetPa
   const fixed = (base_time: string): TimeStrategy => ({
     kind: "fixed",
     base_time,
-    jitter: DEFAULT_JITTER,
+    jitter: makeDefaultJitter(),
   });
   const spread = (base_time: string, interval_minutes: number): TimeStrategy => ({
     kind: "spread",
     base_time,
     interval_minutes,
-    jitter: DEFAULT_JITTER,
+    jitter: makeDefaultJitter(),
   });
   const redeye = (base_time: string, window_minutes: number): TimeStrategy => ({
     kind: "redeye",
     base_time,
     window_minutes,
-    jitter: DEFAULT_JITTER,
+    jitter: makeDefaultJitter(),
   });
 
   switch (preset) {

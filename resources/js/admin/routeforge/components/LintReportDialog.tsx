@@ -56,9 +56,9 @@ export function LintReportDialog({
 
   const hasErrors = report.errors.length > 0;
   const title = t(hasErrors ? "lint_dialog.errors_title" : "lint_dialog.warnings_title");
-  const subtitle = hasErrors
-    ? "Fix the errors below before committing. Warnings can be accepted."
-    : "Review the warnings and proceed when ready. Server will re-validate.";
+  const subtitle = t(
+    hasErrors ? "lint_dialog_extra.subtitle_errors" : "lint_dialog_extra.subtitle_warnings",
+  );
 
   return (
     <ModalBackdrop onClick={onCancel}>
@@ -76,13 +76,27 @@ export function LintReportDialog({
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
         </header>
         <div class="flex-1 overflow-auto px-5 py-3">
-          <IssueSection title="Errors" severity="error" issues={report.errors} />
-          <IssueSection title="Warnings" severity="warning" issues={report.warnings} />
-          <IssueSection title="Info" severity="info" issues={report.info} />
+          <IssueSection
+            title={t("lint_dialog_extra.section_errors")}
+            severity="error"
+            issues={report.errors}
+          />
+          <IssueSection
+            title={t("lint_dialog_extra.section_warnings")}
+            severity="warning"
+            issues={report.warnings}
+          />
+          <IssueSection
+            title={t("lint_dialog_extra.section_info")}
+            severity="info"
+            issues={report.info}
+          />
           {report.errors.length === 0 &&
             report.warnings.length === 0 &&
             report.info.length === 0 && (
-              <p class="text-sm text-gray-500 dark:text-gray-400">No issues found.</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {t("lint_dialog_extra.no_issues")}
+              </p>
             )}
         </div>
         <footer class="flex justify-end gap-2 border-t border-gray-200 px-5 py-3 dark:border-gray-700">
@@ -91,7 +105,7 @@ export function LintReportDialog({
             class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             onClick={onCancel}
           >
-            {readOnly === true ? "Close" : t("lint_dialog.cancel")}
+            {readOnly === true ? t("lint_dialog_extra.close") : t("lint_dialog.cancel")}
           </button>
           {readOnly !== true && (
             <button
@@ -144,7 +158,7 @@ function IssueSection({ title, severity, issues }: IssueSectionProps) {
                 </span>
                 {issue.row_index !== null && (
                   <span class="text-xs text-gray-500 dark:text-gray-400">
-                    row {issue.row_index + 1}
+                    {t("lint_dialog_extra.row")} {issue.row_index + 1}
                   </span>
                 )}
               </div>

@@ -142,22 +142,24 @@ class RouteForge extends Page
     }
 
     /**
-     * Hardcoded API URLs. Section 5 registers them as named routes; once
-     * those land we can swap to `route('admin.routeforge.api.*')` calls.
+     * Named API URLs exposed to the TypeScript bundle. Resolved via Laravel's
+     * route() helper so prefix or group changes flow through automatically.
+     *
+     * The bundle-edit URL is a template — `:id` gets substituted client-side
+     * in CommitSuccessRedirect once the commit response carries bundle_id.
      *
      * @return array<string, string>
      */
     protected function buildRoutesPayload(): array
     {
-        $base = url('/admin/route-forge/api');
-
         return [
-            'preview_airports' => $base.'/preview-airports',
-            'subfleets'        => $base.'/subfleets',
-            'airline_stats'    => $base.'/airline-stats',
-            'check_duplicates' => $base.'/check-duplicates',
-            'lint'             => $base.'/lint',
-            'commit'           => $base.'/commit',
+            'preview_airports'     => route('admin.routeforge.api.preview-airports'),
+            'subfleets'            => route('admin.routeforge.api.subfleets'),
+            'airline_stats'        => route('admin.routeforge.api.airline-stats'),
+            'check_duplicates'     => route('admin.routeforge.api.check-duplicates'),
+            'lint'                 => route('admin.routeforge.api.lint'),
+            'commit'               => route('admin.routeforge.api.commit'),
+            'bundle_edit_template' => '/admin/flight-bundles/:id/edit',
         ];
     }
 

@@ -49,5 +49,15 @@ export function assignFlightNumbers(rows: Row[], strategy: FlightNumberStrategy)
     case "manual":
       // User-provided per row; preserve whatever the caller set.
       return rows.map((r) => ({ ...r }));
+
+    default: {
+      // Defensive fallback: a stale or corrupt persisted draft could carry
+      // an unknown `kind`. TypeScript's exhaustive check would catch this
+      // at compile time, but the runtime guard prevents `undefined` rows
+      // from reaching downstream consumers.
+      // eslint-disable-next-line no-console
+      console.warn("assignFlightNumbers: unknown strategy.kind", strategy);
+      return rows.map((r) => ({ ...r }));
+    }
   }
 }

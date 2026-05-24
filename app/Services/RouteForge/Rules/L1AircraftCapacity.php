@@ -44,8 +44,9 @@ final class L1AircraftCapacity implements LintRule
             fn (Subfleet $subfleet): int => (int) ($subfleet->aircraft_count ?? $subfleet->aircraft->count()),
         );
 
-        // Half-ratio threshold: integer division mirrors the TS Math.floor semantic.
-        $threshold = intdiv($rowCount, 2);
+        // Half-ratio threshold, rounded up: a 3-row batch with 1 aircraft is
+        // genuinely under-capacity but intdiv(3, 2) = 1 would silently pass.
+        $threshold = intdiv($rowCount + 1, 2);
 
         if ($selectedAircraftCount >= $threshold) {
             return [];

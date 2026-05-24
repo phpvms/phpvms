@@ -58,8 +58,8 @@ import { RowTable } from "./RowTable";
 type CommitState =
   | { kind: "idle" }
   | { kind: "linting" }
-  | { kind: "lint_review" }
-  | { kind: "committing" }
+  | { kind: "lint_review"; lintedPayload: LintPayload }
+  | { kind: "committing"; lintedPayload: LintPayload }
   | { kind: "committed"; result: CommitResponse }
   | { kind: "error"; message: string };
 
@@ -93,22 +93,25 @@ export function PreviewPanel() {
       const res = await postLint(payload);
       lintReport.value = res.data;
       if (res.data.errors.length > 0 || res.data.warnings.length > 0) {
-        setState({ kind: "lint_review" });
+        setState({ kind: "lint_review", lintedPayload: payload });
         return;
       }
-      // Clean lint → proceed straight to commit; no extra dialog.
-      await doCommit();
+      // Clean lint → proceed straight to commit; no extra dialog. Pass the
+      // same payload that was just linted so the committed batch matches
+      // what the server validated (live store edits in flight are deferred).
+      await doCommit(payload);
     } catch (err) {
       setState({ kind: "error", message: describeError(err) });
     }
   }
 
-  async function doCommit(): Promise<void> {
-    const payload = buildCommitPayload();
-    if (payload === null) {
-      return;
-    }
-    setState({ kind: "committing" });
+  async function doCommit(lintedPayload: LintPayload): Promise<void> {
+    // Commit the exact snapshot the user just reviewed/linted, not a fresh
+    // rebuild from live store state. The store can drift between lint and
+    // commit (e.g., the user types in a row); diverging here would commit
+    // something the server didn't validate.
+    const payload: CommitPayload = { ...lintedPayload, on_conflict: "abort" };
+    setState({ kind: "committing", lintedPayload });
     try {
       const res = await postCommit(payload);
       // Clear UI state so a stray browser-back doesn't resurrect rows.
@@ -122,7 +125,7 @@ export function PreviewPanel() {
         const body = err.body as { data?: LintReport } | null;
         if (body !== null && body.data !== undefined) {
           lintReport.value = body.data;
-          setState({ kind: "lint_review" });
+          setState({ kind: "lint_review", lintedPayload });
           return;
         }
       }
@@ -253,7 +256,11 @@ export function PreviewPanel() {
         open={lintDialogOpen}
         busy={state.kind === "committing"}
         onCancel={handleLintCancel}
-        onProceed={() => void doCommit()}
+        onProceed={() => {
+          if (state.kind === "lint_review") {
+            void doCommit(state.lintedPayload);
+          }
+        }}
       />
       <LintReportDialog
         open={reviewDialogOpen && !lintDialogOpen}
@@ -327,14 +334,6 @@ function buildLintPayload(): LintPayload | null {
     bundle: f.bundle,
     rows: rows.value.map(toPayloadRow),
   };
-}
-
-function buildCommitPayload(): CommitPayload | null {
-  const base = buildLintPayload();
-  if (base === null) {
-    return null;
-  }
-  return { ...base, on_conflict: "abort" };
 }
 
 /**

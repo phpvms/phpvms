@@ -388,6 +388,8 @@ export type RouteForgeRoutes = {
   check_duplicates: string;
   lint: string;
   commit: string;
+  /** Template URL with `:id` placeholder for the bundle edit page. */
+  bundle_edit_template: string;
 };
 
 export type RouteForgeServerConfig = {

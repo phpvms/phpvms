@@ -186,13 +186,19 @@ function buildCartesianPairs(
 
 function buildChainPairs(origins: string[]): Pair[] {
   const pairs: Pair[] = [];
+  // Contiguous pair_index across emitted pairs: using the loop index `i`
+  // leaves gaps when adjacent duplicates are skipped, which would shift
+  // flight-number strategy math (even_odd_by_direction / even_outbound_only)
+  // for subsequent rows.
+  let pairIndex = 0;
   for (let i = 0; i < origins.length - 1; i++) {
     const origin = origins[i] as string;
     const destination = origins[i + 1] as string;
     if (origin === destination) {
       continue;
     }
-    pairs.push({ origin, destination, direction: "outbound", pair_index: i });
+    pairs.push({ origin, destination, direction: "outbound", pair_index: pairIndex });
+    pairIndex++;
   }
   return pairs;
 }

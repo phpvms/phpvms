@@ -258,7 +258,10 @@ export function TimeStrategyControls() {
                 value={ts.jitter.seed}
                 onInput={(e) =>
                   changeJitter({
-                    seed: Number.parseInt((e.currentTarget as HTMLInputElement).value, 10) || 1,
+                    seed: Math.max(
+                      1,
+                      Number.parseInt((e.currentTarget as HTMLInputElement).value, 10) || 1,
+                    ),
                   })
                 }
               />

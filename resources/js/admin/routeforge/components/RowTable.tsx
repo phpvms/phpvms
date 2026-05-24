@@ -66,7 +66,9 @@ export function RowTable() {
     if (Number.isNaN(n)) {
       return;
     }
-    updateRow(index, { flight_number: n });
+    // Clamp to >= 1: typed input allows 0 and negatives even with min={1} on
+    // the input element. State stays valid regardless of how the value got in.
+    updateRow(index, { flight_number: Math.max(1, n) });
   }
 
   function setDptTime(index: number, dpt: string): void {
@@ -89,7 +91,12 @@ export function RowTable() {
   }
 
   function toggleAll(checked: boolean): void {
-    rows.value = list.map((r) => ({ ...r, enabled: checked }));
+    // Stamp `edited: true` so the dirty tracker treats bulk toggles like
+    // any other row edit — regenerate-confirmation should still fire if the
+    // user bulk-toggles and then changes the form.
+    rows.value = list.map((r) =>
+      r.enabled === checked ? r : { ...r, enabled: checked, edited: true },
+    );
   }
 
   const allChecked = list.every((r) => r.enabled);

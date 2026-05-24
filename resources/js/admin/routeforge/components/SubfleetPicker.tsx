@@ -17,7 +17,7 @@
  *   - Fetch the new airline's subfleet list.
  */
 
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import { ApiError, getSubfleets } from "../lib/api";
 import { form, subfleetCache } from "../state/store";
@@ -34,8 +34,21 @@ export function SubfleetPicker() {
   const f = form.value;
   const airlineId = f.airline_id;
   const [state, setState] = useState<LoadState>({ kind: "idle" });
+  // Tracks the airline this component last loaded subfleets for. Stays null
+  // on first mount so draft resume (which arrives with airline_id and
+  // subfleet_ids already populated) does NOT clear the persisted selections.
+  // Subsequent airline changes do clear them, preserving the invariant
+  // "subfleet_ids belong to airline_id".
+  const prevAirlineId = useRef<number | null>(null);
 
   useEffect(() => {
+    if (prevAirlineId.current !== null && prevAirlineId.current !== airlineId) {
+      if (form.value.subfleet_ids.length > 0) {
+        form.value = { ...form.value, subfleet_ids: [] };
+      }
+    }
+    prevAirlineId.current = airlineId;
+
     if (airlineId === null) {
       setState({ kind: "idle" });
       return;

@@ -31,6 +31,11 @@ export function ReturnFlightsToggle() {
       : f.topology === "chain"
         ? "Chain mode does not produce return legs."
         : null;
+  // For forced topologies the displayed value MUST match the enforced value
+  // so the checkbox can't show stale `f.create_returns` from a different
+  // topology. TopologyPicker.deriveCreateReturns also stamps the right value
+  // into form state, but using the derived value here is defense-in-depth.
+  const displayChecked = returnsForced ? f.topology === "hub_and_spokes" : f.create_returns;
 
   return (
     <div class="mb-3">
@@ -44,7 +49,7 @@ export function ReturnFlightsToggle() {
         <input
           type="checkbox"
           class="h-4 w-4 disabled:cursor-not-allowed"
-          checked={f.create_returns}
+          checked={displayChecked}
           disabled={returnsForced}
           onChange={handleChange}
         />

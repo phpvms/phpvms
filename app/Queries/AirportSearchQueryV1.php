@@ -20,6 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
  *   'icao:K;name:Inter'      LIKE %K% on icao OR LIKE %Inter% on name
  *   'searchJoin=and'         switch multi-field clauses to AND
  *
+ * Search-mode wrapping (applies to `like` / `ilike` operators only; `=`
+ * comparisons ignore it):
+ *   'substring' (default) → "%value%"  preserves /api/airports contract
+ *   'prefix'              → "value%"   RouteForge typeahead starts-with
+ *
  * Allowed search fields and sort columns are validated by SearchAirportsRequest.
  */
 class AirportSearchQueryV1
@@ -78,10 +83,6 @@ class AirportSearchQueryV1
                     continue;
                 }
 
-                // `searchMode=prefix` produces "value%" (starts-with) so the
-                // RouteForge typeahead matches only by prefix. Default
-                // substring wrapping ("%value%") preserves the existing
-                // /api/airports endpoint contract.
                 if (in_array($operator, ['like', 'ilike'], true)) {
                     $value = $prefixMode ? $value.'%' : '%'.$value.'%';
                 }

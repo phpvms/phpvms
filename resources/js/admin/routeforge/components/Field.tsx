@@ -73,7 +73,7 @@ export function Field({ label, hint, htmlFor, children, error, required, tooltip
         )}
       </label>
       {children}
-      {hint !== undefined && error === undefined && (
+      {hint !== undefined && (error === undefined || error === null || error === "") && (
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
       )}
       {error !== undefined && error !== null && error !== "" && (

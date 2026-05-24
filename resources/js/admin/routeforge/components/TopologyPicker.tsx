@@ -45,11 +45,15 @@ export function TopologyPicker() {
 
   function handleChange(e: Event): void {
     const next = (e.currentTarget as HTMLSelectElement).value as Topology;
+    // Read the freshest form value at apply time so concurrent edits (e.g.,
+    // an airport picker mutating origins between render and event) survive
+    // this update instead of being clobbered by the captured `f` snapshot.
+    const current = form.value;
     form.value = {
-      ...f,
+      ...current,
       topology: next,
       mode: deriveMode(next),
-      create_returns: deriveCreateReturns(next, f.create_returns),
+      create_returns: deriveCreateReturns(next, current.create_returns),
     };
   }
 

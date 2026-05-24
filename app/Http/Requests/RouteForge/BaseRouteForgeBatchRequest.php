@@ -109,6 +109,40 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
     }
 
     /**
+     * Custom error messages for the shared batch rules.
+     *
+     * Centralized so /lint and /commit emit consistent wording for the
+     * nested row + bundle scopes that fan out across many keys via
+     * wildcards. Subclasses MAY override to layer on additional keys.
+     *
+     * @return array<string, string>
+     */
+    #[\Override]
+    public function messages(): array
+    {
+        return [
+            'airline_id.exists'                => __('validation.exists', ['attribute' => 'airline']),
+            'subfleet_ids.*.in'                => __('filament.routeforge.validation.subfleet_not_in_airline'),
+            'origins.required'                 => __('filament.routeforge.validation.origins_required'),
+            'origins.*.exists'                 => __('filament.routeforge.validation.airport_unknown'),
+            'destinations.required'            => __('filament.routeforge.validation.destinations_required'),
+            'destinations.*.exists'            => __('filament.routeforge.validation.airport_unknown'),
+            'bundle.existing_bundle_id.exists' => __('filament.routeforge.bundle.existing_missing'),
+            'bundle.name.required_without'     => __('filament.routeforge.validation.bundle_name_required'),
+            'bundle.enabled.required_without'  => __('filament.routeforge.validation.bundle_enabled_required'),
+            'bundle.end_date.after_or_equal'   => __('filament.routeforge.validation.bundle_dates_inverted'),
+            'rows.required'                    => __('filament.routeforge.validation.rows_required'),
+            'rows.max'                         => __('filament.routeforge.validation.rows_too_many'),
+            'rows.*.airline_id.in'             => __('filament.routeforge.validation.row_airline_mismatch'),
+            'rows.*.flight_number.min'         => __('filament.routeforge.validation.flight_number_min'),
+            'rows.*.flight_number.max'         => __('filament.routeforge.validation.flight_number_max'),
+            'rows.*.dpt_airport_id.in'         => __('filament.routeforge.validation.row_airport_out_of_scope'),
+            'rows.*.arr_airport_id.in'         => __('filament.routeforge.validation.row_airport_out_of_scope'),
+            'rows.*.end_date.after_or_equal'   => __('filament.routeforge.validation.row_dates_inverted'),
+        ];
+    }
+
+    /**
      * Normalize all ICAO-bearing fields to uppercase before validation runs.
      * Mirrors FlightObserver's at-rest convention so `exists` + Rule::in
      * checks succeed regardless of casing on the wire.

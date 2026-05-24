@@ -41,9 +41,12 @@ final class L2RangeMismatch implements LintRule
             return [];
         }
 
+        // Filter nulls only — Collection::filter() with no callback also drops
+        // `0`, but max_range_nm === 0 is a legitimate "grounded" subfleet whose
+        // row contributes to maxRange selection logic.
         $maxRange = $ctx->selectedSubfleets
             ->pluck('max_range_nm')
-            ->filter()
+            ->filter(static fn ($value): bool => $value !== null)
             ->max();
 
         if ($maxRange === null) {
