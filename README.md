@@ -36,6 +36,37 @@ A full distribution, with all the composer dependencies, is available at this
 
 [View installation details](https://docs.phpvms.net/installation)
 
+## Production Deployment with Docker
+
+The reference production stack is `compose.deploy.yml`. It runs the official
+phpVMS image (built from the repo `Dockerfile`, based on
+`serversideup/php:8.5-frankenphp`) with Laravel Octane worker mode enabled,
+plus MariaDB and Redis. No separate web-server sidecar is needed — FrankenPHP
+serves HTTP/HTTPS directly.
+
+```bash
+docker compose -f compose.deploy.yml up -d
+```
+
+### Octane worker mode
+
+Octane (FrankenPHP) is **on by default** in the production image. To fall
+back to classic FrankenPHP + PHP-worker mode (matches the prior PHP-FPM
+request semantics), set `PHPVMS_OCTANE_ENABLED=false` in the `app`
+service environment and restart the container.
+
+Under worker mode, `KvpService` (the JSON-backed key/value store used for
+non-hot settings) is eventually consistent: writes from one worker
+propagate to other workers on their next read of the same key. If your
+deployment requires strong consistency for KVP, run with one worker or
+disable Octane.
+
+Module authors: under Octane the framework stays booted across requests,
+so avoid per-request data in singleton-bound services, `static` array
+accumulators, and `boot()`-time toggles without a matching per-request
+reset. See `app/Http/Middleware/DisableActivityLoggingByDefault.php` for
+the pattern used to keep activity logging request-scoped.
+
 ## Development Environment with Docker
 
 A full development environment can be brought up using Docker and
