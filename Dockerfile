@@ -16,7 +16,7 @@ RUN composer install \
     --no-scripts \
     --prefer-dist
 
-FROM serversideup/php:8.4-fpm
+FROM serversideup/php:8.5-frankenphp
 
 ARG WWWUSER=1000
 ARG WWWGROUP=1000
@@ -36,7 +36,7 @@ RUN apt-get update; \
 # Install nodejs
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
   && apt-get install -y nodejs \
-  && rm -rf /var/lib/apt/lists/* 
+  && rm -rf /var/lib/apt/lists/*
 
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \
@@ -51,13 +51,9 @@ COPY --chown=www-data:www-data . /var/www/html
 # Copy deps from the composer build stage
 COPY --chown=www-data:www-data --from=vendor /app/vendor/ /var/www/html/vendor/
 
-# Build assets
-# Note: the assets are moved to the build directory in the image, they'll be moved back to
-# the public directory in the entrypoint script. This allows to overwrite the volume
-# so that the assets are also updated in caddy.
+# Build assets directly into their final location (public/build). No
+# separate web container means no asset-handoff step.
+RUN npm install && npm run build
 
-RUN npm install && npm run build && \
-    cp -R ./public/build/ ./build
-
+COPY --chmod=755 ./resources/docker/pick-runtime-mode.sh /etc/entrypoint.d/05-pick-runtime-mode.sh
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
-COPY --chmod=755 ./resources/docker/copy-assets.sh /etc/entrypoint.d/30-copy-assets.sh
