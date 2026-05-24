@@ -25,6 +25,15 @@ export type FieldProps = {
   required?: boolean;
   /** Renders a `?` help icon after the label; hover shows the native browser tooltip with this text. */
   tooltip?: string;
+  /**
+   * Renders a `?` help button after the label that calls this handler when
+   * clicked. Use this when the help content is too long for a tooltip and
+   * should open a modal instead. Takes precedence over `tooltip` when both
+   * are set.
+   */
+  onHelpClick?: () => void;
+  /** Accessible label for the help button (defaults to "Help"). */
+  helpAriaLabel?: string;
 };
 
 /**
@@ -44,7 +53,20 @@ export const INPUT_CLASS_ERROR = INPUT_CLASS.replace("border-gray-300", "border-
   "dark:border-red-500",
 );
 
-export function Field({ label, hint, htmlFor, children, error, required, tooltip }: FieldProps) {
+export function Field({
+  label,
+  hint,
+  htmlFor,
+  children,
+  error,
+  required,
+  tooltip,
+  onHelpClick,
+  helpAriaLabel,
+}: FieldProps) {
+  const helpIconClass =
+    "inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
+
   return (
     <div class="mb-3">
       <label
@@ -59,17 +81,29 @@ export function Field({ label, hint, htmlFor, children, error, required, tooltip
             </span>
           )}
         </span>
-        {tooltip !== undefined && tooltip !== "" && (
-          <Tooltip text={tooltip}>
-            <span
-              role="img"
-              aria-label={tooltip}
-              tabIndex={0}
-              class="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-            >
-              ?
-            </span>
-          </Tooltip>
+        {onHelpClick !== undefined ? (
+          <button
+            type="button"
+            aria-label={helpAriaLabel ?? "Help"}
+            onClick={onHelpClick}
+            class={`${helpIconClass} cursor-pointer border-0 p-0`}
+          >
+            ?
+          </button>
+        ) : (
+          tooltip !== undefined &&
+          tooltip !== "" && (
+            <Tooltip text={tooltip}>
+              <span
+                role="img"
+                aria-label={tooltip}
+                tabIndex={0}
+                class={`${helpIconClass} cursor-help`}
+              >
+                ?
+              </span>
+            </Tooltip>
+          )
         )}
       </label>
       {children}

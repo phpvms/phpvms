@@ -15,10 +15,13 @@
  * modal (task 6.3.15, Chunk C) catches the case where rows already exist.
  */
 
+import { useState } from "preact/hooks";
+
 import { t } from "../lib/i18n";
 import { form } from "../state/store";
 import type { Topology } from "../state/types";
 import { Field, INPUT_CLASS } from "./Field";
+import { HelpModal, type HelpModalItem } from "./HelpModal";
 
 const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "chain"];
 
@@ -42,6 +45,7 @@ function deriveCreateReturns(topology: Topology, current: boolean): boolean {
 
 export function TopologyPicker() {
   const f = form.value;
+  const [helpOpen, setHelpOpen] = useState<boolean>(false);
 
   function handleChange(e: Event): void {
     const next = (e.currentTarget as HTMLSelectElement).value as Topology;
@@ -57,20 +61,38 @@ export function TopologyPicker() {
     };
   }
 
+  const helpItems: HelpModalItem[] = TOPOLOGY_ORDER.map((topo) => ({
+    key: topo,
+    label: t(`topology_options.${topo}`),
+    description: t(`topology_helper.${topo}`),
+  }));
+
   return (
-    <Field
-      label={t("form.topology")}
-      htmlFor="rf-topology"
-      hint={t(`topology_helper.${f.topology}`)}
-      required
-    >
-      <select id="rf-topology" class={INPUT_CLASS} value={f.topology} onChange={handleChange}>
-        {TOPOLOGY_ORDER.map((topo) => (
-          <option key={topo} value={topo}>
-            {t(`topology_options.${topo}`)}
-          </option>
-        ))}
-      </select>
-    </Field>
+    <>
+      <Field
+        label={t("form.topology")}
+        htmlFor="rf-topology"
+        hint={t(`topology_helper.${f.topology}`)}
+        required
+        onHelpClick={() => setHelpOpen(true)}
+        helpAriaLabel="About topologies"
+      >
+        <select id="rf-topology" class={INPUT_CLASS} value={f.topology} onChange={handleChange}>
+          {TOPOLOGY_ORDER.map((topo) => (
+            <option key={topo} value={topo}>
+              {t(`topology_options.${topo}`)}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <HelpModal
+        open={helpOpen}
+        title={t("form.topology")}
+        subtitle="How origins and destinations combine into rows."
+        items={helpItems}
+        currentKey={f.topology}
+        onClose={() => setHelpOpen(false)}
+      />
+    </>
   );
 }

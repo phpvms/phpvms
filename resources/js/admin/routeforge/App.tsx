@@ -96,7 +96,7 @@ export function App() {
       <div>
         <FormPanel />
       </div>
-      <div>
+      <div class="generated-flights sticky top-40 self-start">
         <PreviewPanel />
       </div>
     </div>
