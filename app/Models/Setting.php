@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Observers\SettingObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -52,6 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 #[ObservedBy(SettingObserver::class)]
+#[WithoutIncrementing]
 class Setting extends Model
 {
     use LogsActivity;
@@ -59,8 +61,6 @@ class Setting extends Model
     public $table = 'settings';
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'name',

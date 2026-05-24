@@ -5,17 +5,14 @@ namespace App\Console\Commands;
 use App\Events\NewsAdded;
 use App\Listeners\NotificationsSubscriber;
 use App\Models\News;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'phpvms:email-test', description: 'Send a test notification to admins')]
+#[Signature('phpvms:email-test')]
 class EmailTest extends Command
 {
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'phpvms:email-test';
-
     /**
      * Execute the console command.
      */

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\VersionService;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -12,17 +13,13 @@ use Version\Extension\PreRelease;
 use Version\Version as SemanticVersion;
 
 #[AsCommand(name: 'phpvms:version', description: 'Get or update the current application version')]
-class Version extends Command
-{
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'phpvms:version 
+#[Signature('phpvms:version 
                             {version? : The semantic version string to apply}
                             {--write : Write the updated version/build number to the version.yml file} 
                             {--base-only : Only output the base version without build metadata} 
-                            {--write-full-version : Update the major, minor, and patch values in the file}';
-
+                            {--write-full-version : Update the major, minor, and patch values in the file}')]
+class Version extends Command
+{
     /**
      * Execute the console command.
      */

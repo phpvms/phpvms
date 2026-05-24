@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\NavaidType;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -30,6 +32,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
+#[WithoutTimestamps]
 class Navdata extends Model
 {
     use HasFactory;
@@ -37,10 +41,6 @@ class Navdata extends Model
     public $table = 'navdata';
 
     protected $keyType = 'string';
-
-    public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $fillable = [
         'id',

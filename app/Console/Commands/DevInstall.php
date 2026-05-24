@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 use function Laravel\Prompts\confirm;
 
 #[AsCommand(name: 'phpvms:dev-install', description: 'Create a fresh development install and run the sample migration')]
+#[Signature('phpvms:dev-install 
+                            {--reset-db : Completely drop and recreate the database}
+                            {--force : Force the operation to run without prompts}')]
 class DevInstall extends Command
 {
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'phpvms:dev-install 
-                            {--reset-db : Completely drop and recreate the database}
-                            {--force : Force the operation to run without prompts}';
-
     /**
      * Execute the console command.
      */

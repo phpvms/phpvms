@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
@@ -12,16 +13,12 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use function Laravel\Prompts\confirm;
 
 #[AsCommand(name: 'db:create', description: 'Create a new database based on your configuration')]
-class CreateDatabase extends Command
-{
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'db:create 
+#[Signature('db:create 
                             {--reset : Drop the database before creating it} 
                             {--force : Force the operation to run without prompts} 
-                            {--connection= : The database connection to use}';
-
+                            {--connection= : The database connection to use}')]
+class CreateDatabase extends Command
+{
     public function __construct(private readonly Filesystem $file)
     {
         parent::__construct();

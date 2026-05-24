@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Console\Concerns\PromptsForMissingInput;
 use Illuminate\Contracts\Console\PromptsForMissingInput as PromptsForMissingInputContract;
@@ -11,14 +12,10 @@ use Nwidart\Modules\Module;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'module:setup-filament', description: 'Add Filament Support to a Module')]
+#[Signature('module:setup-filament {module : The name of the module}')]
 class ModuleSetupFilament extends Command implements PromptsForMissingInputContract
 {
     use PromptsForMissingInput;
-
-    /**
-     * The console command signature.
-     */
-    protected $signature = 'module:setup-filament {module : The name of the module}';
 
     protected string $basePath = 'Providers/Filament';
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
@@ -25,14 +26,13 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
+#[WithoutTimestamps]
 class FlightField extends Model
 {
     use HasFactory;
     use HasSlug;
 
     public $table = 'flight_fields';
-
-    public $timestamps = false;
 
     protected $fillable = [
         'name',

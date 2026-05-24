@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 
 /**
  * @property string $key
@@ -18,13 +20,11 @@ use App\Contracts\Model;
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
+#[WithoutTimestamps]
 class Kvp extends Model
 {
     public $table = 'kvp';
-
-    public $timestamps = false;
-
-    public $incrementing = false;
 
     protected $keyType = 'string';
 
