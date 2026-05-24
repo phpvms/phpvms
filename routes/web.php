@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\RouteForgeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Frontend\AirportController;
@@ -96,5 +97,29 @@ Route::group([
 
 Route::get('/logout', [LoginController::class, 'logout'])->name(Logout::class);
 Auth::routes(['verify' => true]);
+
+/*
+ * RouteForge admin API.
+ *
+ * All endpoints gated by `permission:create:flight` — the same Spatie Shield
+ * permission that protects the Filament Flight resource's create action and
+ * the RouteForge Filament page itself (see App\Filament\Pages\RouteForge::
+ * canAccess). Permission name uses the kebab+colon Shield convention
+ * (e.g. `create:flight`, not `create_flight`).
+ *
+ * Mounted at /admin/route-forge/api/ — sits under the Filament admin
+ * panel's URL prefix so same-origin session auth applies via the web group.
+ */
+Route::middleware(['web', 'auth', 'permission:create:flight'])
+    ->prefix('admin/route-forge/api')
+    ->name('admin.routeforge.api.')
+    ->group(function (): void {
+        Route::get('preview-airports', [RouteForgeController::class, 'previewAirports'])->name('preview-airports');
+        Route::get('subfleets', [RouteForgeController::class, 'subfleets'])->name('subfleets');
+        Route::get('airline-stats', [RouteForgeController::class, 'airlineStats'])->name('airline-stats');
+        Route::post('check-duplicates', [RouteForgeController::class, 'checkDuplicates'])->name('check-duplicates');
+        Route::post('lint', [RouteForgeController::class, 'lint'])->name('lint');
+        Route::post('commit', [RouteForgeController::class, 'commit'])->name('commit');
+    });
 
 Route::get('/update', fn (): Redirector|\Illuminate\Http\RedirectResponse => redirect('/system/update'));

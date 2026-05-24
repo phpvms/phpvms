@@ -28,6 +28,8 @@ class SearchAirportsRequest extends FormRequest
 
     public const array SEARCHABLE_OPERATORS = ['=', 'like'];
 
+    public const array SEARCH_MODES = ['substring', 'prefix'];
+
     public const array ORDERABLE_FIELDS = [
         'id',
         'iata',
@@ -61,6 +63,16 @@ class SearchAirportsRequest extends FormRequest
                 'sometimes',
                 'string',
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateSearchJoin($attribute, $value, $fail),
+            ],
+            // Controls how `like` operator values are wrapped:
+            //   'substring' (default, backward compat) -> "%value%"
+            //   'prefix'                               -> "value%"
+            // Exact `=` operators ignore this. RouteForge passes 'prefix' so
+            // its airport typeahead matches starts-with only.
+            'searchMode' => [
+                'sometimes',
+                'string',
+                fn (string $attribute, mixed $value, Closure $fail) => $this->validateDelimitedValues($attribute, $value, $fail, self::SEARCH_MODES, lowercase: true),
             ],
             // hub/hubs intentionally permissive: get_truth_state() in the
             // Query class preserves the legacy endpoint behavior.

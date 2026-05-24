@@ -1,0 +1,72 @@
+/**
+ * Topology selector.
+ *
+ * Topology is a UX shaping concern (per Decision 5): the user picks one of
+ * five conceptual shapes, and this component translates that into the unified
+ * (mode, create_returns) the generator actually consumes. The mapping:
+ *
+ *   hub_spokes     → cartesian, no returns       (single origin, many dests)
+ *   spokes_hub     → cartesian, no returns       (many origins, single dest)
+ *   hub_and_spokes → cartesian, WITH returns     (auto-paired outbound/return)
+ *   mesh           → cartesian, no returns       (every origin × every dest)
+ *   chain          → chain mode                  (sequential origins[i] → [i+1])
+ *
+ * Setting create_returns is a generator-affecting change; the dirty-warning
+ * modal (task 6.3.15, Chunk C) catches the case where rows already exist.
+ */
+
+import { t } from "../lib/i18n";
+import { form } from "../state/store";
+import type { Topology } from "../state/types";
+import { Field, INPUT_CLASS } from "./Field";
+
+const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "chain"];
+
+function deriveMode(topology: Topology): "cartesian" | "chain" {
+  return topology === "chain" ? "chain" : "cartesian";
+}
+
+function deriveCreateReturns(topology: Topology, current: boolean): boolean {
+  // hub_and_spokes is the only topology that forces returns on; everything
+  // else respects whatever the user previously chose (so toggling between
+  // hub_spokes and mesh doesn't silently flip a user-set returns flag).
+  if (topology === "hub_and_spokes") {
+    return true;
+  }
+  if (topology === "chain") {
+    // Chain v1 does not produce return legs (see generator.ts buildChainPairs).
+    return false;
+  }
+  return current;
+}
+
+export function TopologyPicker() {
+  const f = form.value;
+
+  function handleChange(e: Event): void {
+    const next = (e.currentTarget as HTMLSelectElement).value as Topology;
+    form.value = {
+      ...f,
+      topology: next,
+      mode: deriveMode(next),
+      create_returns: deriveCreateReturns(next, f.create_returns),
+    };
+  }
+
+  return (
+    <Field
+      label={t("form.topology")}
+      htmlFor="rf-topology"
+      hint={t(`topology_helper.${f.topology}`)}
+      required
+    >
+      <select id="rf-topology" class={INPUT_CLASS} value={f.topology} onChange={handleChange}>
+        {TOPOLOGY_ORDER.map((topo) => (
+          <option key={topo} value={topo}>
+            {t(`topology_options.${topo}`)}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}

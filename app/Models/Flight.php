@@ -221,6 +221,33 @@ class Flight extends Model
         'fares_count',
     ];
 
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'flight_number'        => 'integer',
+            'days'                 => 'integer',
+            'level'                => 'integer',
+            'distance'             => DistanceCast::class,
+            'flight_time'          => 'integer',
+            'flight_type'          => FlightType::class,
+            'departure_time'       => 'datetime:H:i:s',
+            'arrival_time'         => 'datetime:H:i:s',
+            'start_date'           => 'datetime',
+            'end_date'             => 'datetime',
+            'load_factor'          => 'double',
+            'load_factor_variance' => 'double',
+            'pilot_pay'            => 'float',
+            'has_bid'              => 'boolean',
+            'route_leg'            => 'integer',
+            'enabled'              => 'boolean',
+            'visible'              => 'boolean',
+            'event_id'             => 'integer',
+            'user_id'              => 'integer',
+            'bundle_id'            => 'integer',
+        ];
+    }
+
     /**
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
@@ -424,33 +451,6 @@ class Flight extends Model
         return $this->morphTo('owner', 'owner_type', 'owner_id');
     }
 
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'flight_number'        => 'integer',
-            'days'                 => 'integer',
-            'level'                => 'integer',
-            'distance'             => DistanceCast::class,
-            'flight_time'          => 'integer',
-            'flight_type'          => FlightType::class,
-            'departure_time'       => 'datetime:H:i:s',
-            'arrival_time'         => 'datetime:H:i:s',
-            'start_date'           => 'datetime',
-            'end_date'             => 'datetime',
-            'load_factor'          => 'double',
-            'load_factor_variance' => 'double',
-            'pilot_pay'            => 'float',
-            'has_bid'              => 'boolean',
-            'route_leg'            => 'integer',
-            'enabled'              => 'boolean',
-            'visible'              => 'boolean',
-            'event_id'             => 'integer',
-            'user_id'              => 'integer',
-            'bundle_id'            => 'integer',
-        ];
-    }
-
     /*
      * Query scopes
      */
@@ -459,7 +459,7 @@ class Flight extends Model
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
      *
-     * @deprecated use ->visible()
+     * @deprecated use visible()
      */
     #[Scope]
     protected function active(Builder $query): Builder

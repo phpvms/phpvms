@@ -63,8 +63,9 @@ class AirportSearchQueryV1
         $searchValue = $this->parseSearchValue($search);
         $fields = $this->resolveSearchFields($data['searchFields'] ?? null, array_keys($searchData));
         $forceAnd = strtolower((string) ($data['searchJoin'] ?? 'or')) === 'and';
+        $prefixMode = strtolower((string) ($data['searchMode'] ?? 'substring')) === 'prefix';
 
-        $query->where(function (Builder $sub) use ($fields, $forceAnd, $searchData, $searchValue): void {
+        $query->where(function (Builder $sub) use ($fields, $forceAnd, $searchData, $searchValue, $prefixMode): void {
             $isFirstClause = true;
 
             foreach ($fields as $field => $operator) {
@@ -77,9 +78,13 @@ class AirportSearchQueryV1
                     continue;
                 }
 
-                $value = in_array($operator, ['like', 'ilike'], true)
-                    ? '%'.$value.'%'
-                    : $value;
+                // `searchMode=prefix` produces "value%" (starts-with) so the
+                // RouteForge typeahead matches only by prefix. Default
+                // substring wrapping ("%value%") preserves the existing
+                // /api/airports endpoint contract.
+                if (in_array($operator, ['like', 'ilike'], true)) {
+                    $value = $prefixMode ? $value.'%' : '%'.$value.'%';
+                }
 
                 if ($isFirstClause || $forceAnd) {
                     $sub->where($field, $operator, $value);

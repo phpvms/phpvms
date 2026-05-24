@@ -153,5 +153,111 @@ return [
     ],
     'routeforge' => [
         'default_bundle_name' => 'Default',
+        'page_title'          => 'RouteForge',
+        'navigation_label'    => 'RouteForge',
+        'page_subtitle'       => 'Compose a batch of scheduled flights across a chosen topology, preview the rows, lint for operational issues, and commit them as a single Flight Bundle.',
+
+        'form' => [
+            'topology'               => 'Topology',
+            'route_preset'           => 'Route preset',
+            'frequency_preset'       => 'Frequency preset',
+            'origins'                => 'Origins',
+            'destinations'           => 'Destinations',
+            'airline'                => 'Airline',
+            'subfleets'              => 'Subfleets',
+            'flight_type'            => 'Flight type',
+            'event'                  => 'Event',
+            'days'                   => 'Days',
+            'time_strategy'          => 'Time strategy',
+            'flight_number_strategy' => 'Flight number strategy',
+            'bundle_config'          => 'Bundle config',
+        ],
+
+        'topology_options' => [
+            'hub_spokes'     => 'Hub → Spokes',
+            'spokes_hub'     => 'Spokes → Hub',
+            'hub_and_spokes' => 'Hub & Spokes (auto returns)',
+            'mesh'           => 'Mesh',
+            'chain'          => 'Chain',
+        ],
+
+        'topology_helper' => [
+            'hub_spokes'     => 'One origin, many destinations. One leg per destination.',
+            'spokes_hub'     => 'Many origins, one destination. One leg per origin.',
+            'hub_and_spokes' => 'One origin, many destinations, with automatic return legs.',
+            'mesh'           => 'Every origin to every destination, no returns.',
+            'chain'          => 'Sequential A→B→C…; destinations are ignored.',
+        ],
+
+        'preview' => [
+            'generate'      => 'Generate',
+            'regenerate'    => 'Regenerate',
+            'stale'         => 'Form has changed since last generation. Click Regenerate to apply.',
+            'create_button' => 'Create :count flights',
+            'working'       => 'Working…',
+            'activate'      => 'Activate on save (visible to pilots immediately)',
+            'row_singular'  => 'row',
+            'row_plural'    => 'rows',
+        ],
+
+        'lint' => [
+            'l1_capacity'           => 'Only :selected active aircraft selected for :count flights (threshold :threshold).',
+            'l2_range_mismatch'     => 'Row distance :distance nm exceeds best subfleet range :range nm.',
+            'l2b_type_mismatch'     => "Flight type :type not covered by any selected subfleet's route types.",
+            'l3_empty_subfleets'    => 'No subfleets selected; flights will have no flyable aircraft.',
+            'l4_duplicate_in_batch' => 'Flight number :flight_number is duplicated (rows :first and :second).',
+            'l5_existing_duplicate' => 'Flight number :flight_number already exists (:ident).',
+            'l6_origin_equals_dest' => 'Origin equals destination (:airport).',
+            'l7_no_fares'           => 'Selected subfleets have no fares attached.',
+            'l8_event_outside'      => 'Bundle window does not overlap event (event :start…:end).',
+            'l9_batch_over_50'      => 'Batch size :count exceeds soft cap :threshold.',
+            'l10_batch_over_100'    => 'Batch size :count exceeds hard cap :cap. Reduce row count to commit.',
+            'l11_timezone_missing'  => 'Airport timezone missing (:airports); arrival time is a naïve fallback.',
+        ],
+
+        'dirty' => [
+            'title'   => 'Regenerate will discard your edits',
+            'body'    => 'The form has changed. Regenerating produces fresh rows from the new form values and will wipe :count edited row(s).',
+            'cancel'  => 'Keep edits (cancel)',
+            'confirm' => 'Confirm regenerate',
+        ],
+
+        'lint_dialog' => [
+            'errors_title'   => 'Cannot commit',
+            'warnings_title' => 'Lint warnings',
+            'proceed'        => 'Proceed',
+            'cancel'         => 'Cancel',
+        ],
+
+        'commit' => [
+            'success' => ':count flight(s) created · batch :batch_id',
+            'go_now'  => 'Go to bundle now',
+            'error'   => 'Request failed (HTTP :status). Please try again.',
+        ],
+
+        'banner' => [
+            'title'         => 'Draft available',
+            'saved_at'      => 'You have a saved draft from :date.',
+            'stale_warning' => 'This draft is over 30 days old. The airports and subfleets it references may have changed since.',
+            'resume'        => 'Resume draft',
+            'discard'       => 'Discard and start fresh',
+        ],
+
+        'bundle' => [
+            'picker_label'       => 'Bundle',
+            'picker_placeholder' => 'Search bundles or type a new name…',
+            'picker_hint'        => 'Pick an existing bundle to append flights, or type a new name to create one.',
+            'create_new_hint'    => 'Will create a new bundle: ":name"',
+            'existing_label'     => 'Attaching to existing bundle',
+            'change_selection'   => 'Change',
+            'field_description'  => 'Description',
+            'field_start_date'   => 'Start date',
+            'field_end_date'     => 'End date',
+            'field_enabled'      => 'Enabled',
+            'value_yes'          => 'Yes',
+            'value_no'           => 'No',
+            'value_empty'        => '—',
+            'no_matches'         => 'No matching bundles. Press Enter to use this as a new bundle name.',
+        ],
     ],
 ];

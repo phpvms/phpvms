@@ -9,6 +9,7 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/js/admin/routeforge/**/*';
 
 /* Alpine x-cloak — hides elements until Alpine initializes */
 [x-cloak] {

@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Contracts\Model;
-use Hashids\Hashids;
+use Hidehalo\Nanoid\Client;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Nwidart\Modules\Facades\Module;
 use Pdp\Rules;
@@ -22,10 +22,9 @@ class Utils
             $length = Model::ID_MAX_LENGTH;
         }
 
-        $hashids = new Hashids(bin2hex(random_bytes(8)), $length);
-        $mt = str_replace('.', '', (string) microtime(true));
+        $client = new Client($length);
 
-        return $hashids->encode($mt);
+        return $client->formattedId('0123456789abcdefghijklmnopqrstuvwxyz', $length);
     }
 
     /**
