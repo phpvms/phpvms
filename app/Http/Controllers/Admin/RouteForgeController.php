@@ -218,9 +218,11 @@ final class RouteForgeController extends Controller
             if ($airport->lat === null) {
                 continue;
             }
+
             if ($airport->lon === null) {
                 continue;
             }
+
             $distance = $this->haversineNm(
                 latA: (float) $origin->lat,
                 lonA: (float) $origin->lon,

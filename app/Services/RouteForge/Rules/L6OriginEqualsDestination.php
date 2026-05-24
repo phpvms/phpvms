@@ -38,6 +38,7 @@ final class L6OriginEqualsDestination implements LintRule
             if ($dpt === null) {
                 continue;
             }
+
             if ($arr === null) {
                 continue;
             }
