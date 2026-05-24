@@ -14,6 +14,8 @@ use App\Services\ModuleService;
  *
  * @group octane
  */
+pest()->group('octane');
+
 test('admin link count is stable across repeated reads', function (): void {
     /** @var ModuleService $service */
     $service = app(ModuleService::class);

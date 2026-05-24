@@ -15,6 +15,8 @@ use Illuminate\Http\Response;
  *
  * @group octane
  */
+pest()->group('octane');
+
 test('admin path does not inherit theme from a prior frontend request', function (): void {
     updateSetting('general.theme', 'seven');
 

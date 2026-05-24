@@ -16,6 +16,8 @@ use Spatie\Activitylog\ActivityLogStatus;
  *
  * @group octane
  */
+pest()->group('octane');
+
 test('disable middleware turns activity logging off at request start', function (): void {
     activity()->enableLogging();
 
