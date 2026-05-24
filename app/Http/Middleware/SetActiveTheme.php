@@ -41,14 +41,16 @@ class SetActiveTheme implements Middleware
     }
 
     /**
-     * Set the theme for the current middleware
+     * Set the theme for the current middleware.
+     *
+     * Octane keeps the application booted across requests, so the underlying
+     * igaster/laravel-theme singleton retains whatever theme the previous
+     * request set. Skipped paths (admin/api/install) must therefore reset
+     * to the configured default explicitly — early-returning would let a
+     * prior frontend request's theme leak into the next admin/api response.
      */
     public function setTheme(Request $request): void
     {
-        if ($request->is(self::$skip)) {
-            return;
-        }
-
         try {
             $theme = setting('general.theme', 'seven');
         } catch (Exception $exception) {
@@ -56,8 +58,18 @@ class SetActiveTheme implements Middleware
             $theme = 'seven';
         }
 
-        if (!empty($theme)) {
-            Theme::set($theme);
+        if (empty($theme)) {
+            $theme = 'seven';
         }
+
+        if ($request->is(self::$skip)) {
+            // Skipped paths don't pick a per-request theme but still need a
+            // deterministic baseline under Octane (see method PHPDoc).
+            Theme::set($theme);
+
+            return;
+        }
+
+        Theme::set($theme);
     }
 }
