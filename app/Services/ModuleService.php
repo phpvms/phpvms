@@ -22,12 +22,16 @@ use PharData;
 
 class ModuleService extends Service
 {
-    protected static array $adminLinks = [];
+    /**
+     * Module-registered admin nav links. Populated once per worker via each
+     * module's boot()->registerLinks() call; not a per-request accumulator.
+     */
+    protected array $adminLinks = [];
 
     /**
      * @var array 0 == logged out, 1 == logged in
      */
-    protected static array $frontendLinks = [
+    protected array $frontendLinks = [
         0 => [],
         1 => [],
     ];
@@ -37,7 +41,7 @@ class ModuleService extends Service
      */
     public function addFrontendLink(string $title, string $url, string $icon = 'bi bi-people', bool $logged_in = true): void
     {
-        self::$frontendLinks[$logged_in][] = [
+        $this->frontendLinks[$logged_in][] = [
             'title' => $title,
             'url'   => $url,
             'icon'  => $icon,
@@ -49,7 +53,7 @@ class ModuleService extends Service
      */
     public function getFrontendLinks(mixed $logged_in): array
     {
-        return self::$frontendLinks[$logged_in];
+        return $this->frontendLinks[$logged_in];
     }
 
     /**
@@ -57,7 +61,7 @@ class ModuleService extends Service
      */
     public function addAdminLink(string $title, string $url, string $icon = 'bi bi-people'): void
     {
-        self::$adminLinks[] = [
+        $this->adminLinks[] = [
             'title' => $title,
             'url'   => $url,
             'icon'  => $icon,
@@ -69,7 +73,7 @@ class ModuleService extends Service
      */
     public function getAdminLinks(): array
     {
-        return self::$adminLinks;
+        return $this->adminLinks;
     }
 
     /**
