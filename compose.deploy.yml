@@ -1,5 +1,10 @@
-# This Docker Compose file is an example of what a setup for running phpVMS in production could look like.
-# It is based on the image created in the Dockerfile. You can find more examples in phpvms' documentation.
+# Production reference Compose stack for phpVMS.
+#
+# Runs the FrankenPHP image with Laravel Octane worker mode enabled by
+# default. To deploy: `docker compose -f compose.deploy.yml up -d`.
+#
+# For local development, see compose.sail.yml (Laravel Sail), which is the
+# recommended dev environment.
 services:
   app:
     container_name: phpvms-app
@@ -7,18 +12,24 @@ services:
     image: ghcr.io/phpvms/phpvms:main
     hostname: app
     restart: unless-stopped
+    ports:
+      - "${FORWARD_HTTP_PORT:-80}:80"
+      - "${FORWARD_HTTPS_PORT:-443}:443"
     environment:
       PHP_OPCACHE_ENABLE: 1
       # some basic laravel stuff
       AUTORUN_ENABLED: 1
+      # Set to "false" to fall back to classic FrankenPHP + PHP-worker mode
+      # if a worker-mode bug hits. The image default is also "true"; this
+      # line is here so the runtime choice is visible to operators reading
+      # the file.
+      PHPVMS_OCTANE_ENABLED: "true"
     env_file: .env
     volumes:
-      - phpvms_assets:/var/www/html/public/build:rw
       - ./modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
     depends_on:
-      - caddy
       - mariadb
       - redis
     networks:
@@ -64,24 +75,6 @@ services:
     networks:
       - phpvms
 
-  caddy:
-    container_name: phpvms-caddy
-    image: caddy:2
-    restart: unless-stopped
-    env_file: .env
-    ports:
-      - "${FORWARD_HTTP_PORT:-80}:80"
-      - "${FORWARD_HTTPS_PORT:-443}:443"
-    volumes:
-      - ./public/:/var/www/html/public
-      - phpvms_assets:/var/www/html/public/build
-      - ./resources/docker/Caddyfile:/etc/caddy/Caddyfile
-      - caddy_config:/config
-      - caddy_data:/data
-    networks:
-      - default
-      - phpvms
-
   mariadb:
     container_name: phpvms-mariadb
     image: mariadb:11
@@ -120,12 +113,9 @@ services:
       timeout: 5s
 
 volumes:
-  caddy_data:
-  caddy_config:
   mariadb:
   phpvms_storage:
   phpvms_uploads:
-  phpvms_assets:
   redis:
 
 networks:
