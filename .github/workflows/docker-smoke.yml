@@ -11,17 +11,21 @@ on:
       - "config/octane.php"
       - ".github/workflows/docker-smoke.yml"
 
-# Exercises the production image in both runtime modes (Octane on by default,
-# classic via PHPVMS_OCTANE_ENABLED=false). Checks for:
+# Exercises the production image in both runtime modes:
+#   - Classic (image default — Serversideup's FrankenPHP entrypoint).
+#   - Octane worker mode (compose.deploy.yml's command: override).
+#
+# Checks for:
 #   - The image actually builds.
 #   - The container reaches a healthy state and serves /.
-#   - Sequential requests on the same container return stable response sizes,
-#     a quick heuristic for nav-list accumulation or other per-request state
-#     leaks under Octane worker mode.
+#   - Sequential requests on the same container return stable response
+#     sizes (a quick heuristic for nav-list accumulation or other
+#     per-request state leaks under Octane worker mode).
 #
-# Not a full integration test — the database is SQLite in-memory, no migrations
-# are run, and any route that requires DB will fail. The bar here is "the
-# entrypoint hook doesn't crash and FrankenPHP serves something."
+# Not a full integration test — the database is SQLite in-memory, no
+# migrations are run, and any route that requires DB will fail. The bar
+# here is "the entrypoint hook doesn't crash and FrankenPHP serves
+# something."
 
 concurrency:
   group: docker-smoke-${{ github.ref }}
@@ -57,8 +61,8 @@ jobs:
           path: /tmp/phpvms-smoke.tar
           retention-days: 1
 
-  smoke-octane:
-    name: Smoke (Octane default)
+  smoke-classic:
+    name: Smoke (image default — classic FrankenPHP)
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -73,11 +77,11 @@ jobs:
       - name: Load image
         run: docker load -i /tmp/phpvms-smoke.tar
 
-      - name: Run container (Octane on by default)
+      - name: Run container (classic FrankenPHP, image default)
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
-          docker run -d --name phpvms-smoke \
-            -p 8080:80 \
+          docker run -d --name phpvms-smoke-classic \
+            -p 8080:8080 \
             -e APP_KEY="$APP_KEY" \
             -e APP_ENV=production \
             -e APP_DEBUG=false \
@@ -95,7 +99,7 @@ jobs:
             sleep 2
           done
           echo "Container did not become responsive"
-          docker logs phpvms-smoke
+          docker logs phpvms-smoke-classic
           exit 1
 
       - name: Sequential request stability (3 hits, response sizes must match)
@@ -109,26 +113,29 @@ jobs:
           echo "Response sizes:$sizes"
           uniq_count=$(echo $sizes | tr ' ' '\n' | sort -u | wc -l)
           if [ "$uniq_count" -ne 1 ]; then
-            echo "Response sizes differed across sequential requests — possible state leak."
-            docker logs phpvms-smoke
+            echo "Response sizes differed across sequential requests."
+            docker logs phpvms-smoke-classic
             exit 1
           fi
 
-      - name: Verify Octane is the foreground process
+      - name: Verify Octane is NOT running (classic mode is image default)
         run: |
-          docker exec phpvms-smoke sh -c 'ps -ef | grep -q "octane:frankenphp"' \
-            || { echo "octane:frankenphp not running"; docker exec phpvms-smoke ps -ef; exit 1; }
+          if docker exec phpvms-smoke-classic sh -c 'ps -ef | grep -v grep | grep -q "octane:start\|octane:frankenphp"'; then
+            echo "octane is running but no command: override was passed — image default leaked Octane"
+            docker exec phpvms-smoke-classic ps -ef
+            exit 1
+          fi
 
       - name: Container logs (on failure)
         if: failure()
-        run: docker logs phpvms-smoke
+        run: docker logs phpvms-smoke-classic
 
       - name: Tear down
         if: always()
-        run: docker rm -f phpvms-smoke || true
+        run: docker rm -f phpvms-smoke-classic || true
 
-  smoke-classic:
-    name: Smoke (PHPVMS_OCTANE_ENABLED=false)
+  smoke-octane:
+    name: Smoke (Octane via command override — compose.deploy.yml mode)
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -143,18 +150,18 @@ jobs:
       - name: Load image
         run: docker load -i /tmp/phpvms-smoke.tar
 
-      - name: Run container (classic mode)
+      - name: Run container (Octane via command override)
         run: |
           APP_KEY="base64:$(openssl rand -base64 32)"
-          docker run -d --name phpvms-smoke-classic \
-            -p 8081:80 \
+          docker run -d --name phpvms-smoke-octane \
+            -p 8081:8080 \
             -e APP_KEY="$APP_KEY" \
             -e APP_ENV=production \
             -e APP_DEBUG=false \
             -e DB_CONNECTION=sqlite \
             -e DB_DATABASE=:memory: \
-            -e PHPVMS_OCTANE_ENABLED=false \
-            phpvms-smoke:latest
+            phpvms-smoke:latest \
+            php /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --workers=2 --max-requests=500
 
       - name: Wait for HTTP
         run: |
@@ -166,7 +173,7 @@ jobs:
             sleep 2
           done
           echo "Container did not become responsive"
-          docker logs phpvms-smoke-classic
+          docker logs phpvms-smoke-octane
           exit 1
 
       - name: Sequential request stability (3 hits, response sizes must match)
@@ -180,23 +187,20 @@ jobs:
           echo "Response sizes:$sizes"
           uniq_count=$(echo $sizes | tr ' ' '\n' | sort -u | wc -l)
           if [ "$uniq_count" -ne 1 ]; then
-            echo "Response sizes differed across sequential requests."
-            docker logs phpvms-smoke-classic
+            echo "Response sizes differed across sequential requests — possible state leak."
+            docker logs phpvms-smoke-octane
             exit 1
           fi
 
-      - name: Verify Octane is NOT running (classic mode)
+      - name: Verify Octane is the foreground process
         run: |
-          if docker exec phpvms-smoke-classic sh -c 'ps -ef | grep -q "[o]ctane:frankenphp"'; then
-            echo "octane:frankenphp is running but PHPVMS_OCTANE_ENABLED=false — escape hatch broken"
-            docker exec phpvms-smoke-classic ps -ef
-            exit 1
-          fi
+          docker exec phpvms-smoke-octane sh -c 'ps -ef | grep -v grep | grep -q "octane:start"' \
+            || { echo "octane:start not running"; docker exec phpvms-smoke-octane ps -ef; exit 1; }
 
       - name: Container logs (on failure)
         if: failure()
-        run: docker logs phpvms-smoke-classic
+        run: docker logs phpvms-smoke-octane
 
       - name: Tear down
         if: always()
-        run: docker rm -f phpvms-smoke-classic || true
+        run: docker rm -f phpvms-smoke-octane || true

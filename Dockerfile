@@ -55,5 +55,12 @@ COPY --chown=www-data:www-data --from=vendor /app/vendor/ /var/www/html/vendor/
 # separate web container means no asset-handoff step.
 RUN npm install && npm run build
 
-COPY --chmod=755 ./resources/docker/pick-runtime-mode.sh /etc/entrypoint.d/05-pick-runtime-mode.sh
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
+
+# The image keeps Serversideup's default FrankenPHP entrypoint (classic mode:
+# one PHP worker per request, identical request semantics to the prior FPM
+# setup). Production deployments override the container `command:` to launch
+# Laravel Octane worker mode — see `compose.deploy.yml` for the canonical
+# invocation. Octane is not started by this Dockerfile so that anyone
+# pulling the bare image (k8s, custom Compose, Swarm) gets a predictable,
+# documented runtime without surprise behaviour.

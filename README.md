@@ -50,16 +50,27 @@ docker compose -f compose.deploy.yml up -d
 
 ### Octane worker mode
 
-Octane (FrankenPHP) is **on by default** in the production image. To fall
-back to classic FrankenPHP + PHP-worker mode (matches the prior PHP-FPM
-request semantics), set `PHPVMS_OCTANE_ENABLED=false` in the `app`
-service environment and restart the container.
+The image itself ships with serversideup's default classic FrankenPHP entry
+point (one PHP worker per request). `compose.deploy.yml` opts into Laravel
+Octane worker mode via a `command:` override on the `app` service — the
+[pattern documented upstream](https://serversideup.net/open-source/docker-php/docs/framework-guides/laravel/octane).
+
+To fall back to classic FrankenPHP + PHP-worker mode (matches the prior
+PHP-FPM request semantics — slower per request but bulletproof if a
+worker-mode bug hits), delete the `command:` line from the `app` service
+and recreate the container:
+
+```yaml
+services:
+  app:
+    # command: [...octane:start...]   # remove this line
+```
 
 Under worker mode, `KvpService` (the JSON-backed key/value store used for
 non-hot settings) is eventually consistent: writes from one worker
 propagate to other workers on their next read of the same key. If your
-deployment requires strong consistency for KVP, run with one worker or
-disable Octane.
+deployment requires strong consistency for KVP, run with `--workers=1` or
+remove the `command:` override.
 
 Module authors: under Octane the framework stays booted across requests,
 so avoid per-request data in singleton-bound services, `static` array
