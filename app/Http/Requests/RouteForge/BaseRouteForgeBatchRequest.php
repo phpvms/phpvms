@@ -144,7 +144,8 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
 
     /**
      * Normalize all ICAO-bearing fields to uppercase before validation runs.
-     * Mirrors FlightObserver's at-rest convention so `exists` + Rule::in
+     * Mirrors the at-rest convention enforced by the `Flight` model's
+     * `dptAirportId` / `arrAirportId` mutators so `exists` + Rule::in
      * checks succeed regardless of casing on the wire.
      */
     #[\Override]

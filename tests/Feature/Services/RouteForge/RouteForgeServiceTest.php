@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\RecomputeBundleVisibility;
 use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Fare;
@@ -13,6 +14,7 @@ use App\Services\RouteForge\Exceptions\LintFailedException;
 use App\Services\RouteForge\LintRunner;
 use App\Services\RouteForge\RouteForgeService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
 
 /*
  * Full RouteForgeService::commit pipeline coverage. Hits DB via SQLite
@@ -260,7 +262,7 @@ it('routes departure_time/arrival_time payload keys to the structured Flight col
         ->and($flight->arr_time)->toBeNull();
 });
 
-it('suppresses per-flight activity log entries via withoutEvents', function (): void {
+it('suppresses per-flight activity log entries via bulk-insert event bypass', function (): void {
     $airline = Airline::factory()->create();
     $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
     $sfo = Airport::factory()->create();
@@ -276,10 +278,138 @@ it('suppresses per-flight activity log entries via withoutEvents', function (): 
 
     // Per-flight Spatie ActivityLog entries would set subject_type = Flight;
     // we only want ONE entry on the bundle, none on individual flights.
+    // Flight::insert() is a query-builder call, so it bypasses Eloquent
+    // model events at the framework level (replacing the prior explicit
+    // Flight::withoutEvents() closure).
     $perFlightActivity = DB::table('activity_log')
         ->where('subject_type', Flight::class)
         ->whereIn('subject_id', $result->flightIds)
         ->count();
 
     expect($perFlightActivity)->toBe(0);
+});
+
+it('bulk-inserts the batch inside a bounded query count (≤5 INSERTs for 100 rows × 2 subfleets, no fare multiplier)', function (): void {
+    $airline = Airline::factory()->create();
+    $subfleetA = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $subfleetB = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $sfo = Airport::factory()->create();
+    $jfk = Airport::factory()->create();
+
+    $rows = [];
+    for ($flightNumber = 1000; $flightNumber < 1100; $flightNumber++) {
+        $rows[] = svcRow($flightNumber, $airline, $sfo->id, $jfk->id);
+    }
+
+    $bundle = new FlightBundle([
+        'name'    => 'Bulk-insert query-count test',
+        'enabled' => true,
+    ]);
+    $bundle->created_by = null;
+
+    $input = new CommitInput(
+        bundle: $bundle,
+        existingBundle: null,
+        rows: $rows,
+        airline: $airline,
+        selectedSubfleets: new Collection([
+            $subfleetA->loadMissing(['aircraft', 'fares']),
+            $subfleetB->loadMissing(['aircraft', 'fares']),
+        ]),
+        event: null,
+        subfleetIds: [$subfleetA->id, $subfleetB->id],
+        fareMultiplier: null,
+        flightType: null,
+        airlineStats: [
+            'existing_active_flights_count' => 0,
+            'hub_airports'                  => [],
+            'home_airport'                  => null,
+        ],
+    );
+
+    /** @var list<string> $insertQueries */
+    $insertQueries = [];
+    DB::listen(function ($query) use (&$insertQueries): void {
+        // Track INSERT statements only; SELECTs from lint preflight aren't
+        // part of the persistence budget. Match leading `insert` (Eloquent
+        // emits lower-cased SQL).
+        if (str_starts_with(ltrim((string) $query->sql), 'insert')) {
+            $insertQueries[] = $query->sql;
+        }
+    });
+
+    $result = svc()->commit($input);
+
+    expect($result->createdCount)->toBe(100)
+        // 5 INSERTs: 1 flight_bundles, 1 flights (multi-row), 1
+        // flight_subfleet (multi-row), 0 flight_fare (no multiplier),
+        // 1 activity_log. Budget is ≤5 to allow headroom for cases
+        // where Spatie emits an extra row.
+        ->and(count($insertQueries))->toBeLessThanOrEqual(5);
+});
+
+it('normalizes ICAO codes during bulk insert (mixed case + whitespace persists uppercase + trimmed)', function (): void {
+    $airline = Airline::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    Airport::factory()->create(['id' => 'KSFO']);
+    Airport::factory()->create(['id' => 'KLAX']);
+
+    $row = svcRow(100, $airline, ' ksfo ', 'klax');
+    $input = makeCommitInput($airline, $subfleet, [$row]);
+
+    $result = svc()->commit($input);
+
+    /** @var Flight $flight */
+    $flight = Flight::query()->findOrFail($result->flightIds[0]);
+
+    expect($flight->dpt_airport_id)->toBe('KSFO')
+        ->and($flight->arr_airport_id)->toBe('KLAX');
+});
+
+it('dispatches RecomputeBundleVisibility instead of calling SetVisibleFlights synchronously', function (): void {
+    Queue::fake();
+
+    $airline = Airline::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $sfo = Airport::factory()->create();
+    $jfk = Airport::factory()->create();
+
+    $input = makeCommitInput($airline, $subfleet, [
+        svcRow(100, $airline, $sfo->id, $jfk->id),
+    ]);
+
+    svc()->commit($input);
+
+    // BundleObserver::created dispatches the queued job during the bundle
+    // save inside the transaction. The post-transaction synchronous
+    // SetVisibleFlights::runForBundle call no longer exists; visibility
+    // settlement is delegated entirely to this queued job.
+    Queue::assertPushed(RecomputeBundleVisibility::class);
+});
+
+it('dispatches RecomputeBundleVisibility explicitly in attach-existing mode', function (): void {
+    Queue::fake();
+
+    $airline = Airline::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $sfo = Airport::factory()->create();
+    $jfk = Airport::factory()->create();
+    $existing = FlightBundle::factory()->create([
+        'name'    => 'Attach-existing visibility recompute target',
+        'enabled' => true,
+    ]);
+
+    $input = makeCommitInput($airline, $subfleet, [
+        svcRow(200, $airline, $sfo->id, $jfk->id),
+    ], existing: $existing);
+
+    svc()->commit($input);
+
+    // In attach-existing mode, BundleObserver::created does not fire (no new
+    // bundle persisted), so RouteForgeService dispatches the recompute
+    // explicitly post-transaction.
+    Queue::assertPushed(
+        RecomputeBundleVisibility::class,
+        fn (RecomputeBundleVisibility $job): bool => true,
+    );
 });

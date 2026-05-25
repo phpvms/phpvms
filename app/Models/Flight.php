@@ -5,10 +5,8 @@ namespace App\Models;
 use App\Casts\DistanceCast;
 use App\Contracts\Model;
 use App\Enums\FlightType;
-use App\Observers\FlightObserver;
 use App\Support\Days;
 use App\Traits\HashIdTrait;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -142,7 +140,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
-#[ObservedBy(FlightObserver::class)]
 #[WithoutIncrementing]
 class Flight extends Model
 {
@@ -306,6 +303,35 @@ class Flight extends Model
 
                 return $flight_atc;
             }
+        );
+    }
+
+    /**
+     * Normalize departure airport ICAO at write time: uppercase + trim.
+     * Single-row write paths (admin form, FlightImporter, manual save) flow
+     * through this mutator; the RouteForge bulk-insert path normalizes
+     * explicitly in `RouteForgeService::buildFlightAttrs()` because
+     * `Model::insert()` bypasses Eloquent's attribute machinery.
+     */
+    protected function dptAirportId(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null
+                ? null
+                : strtoupper(trim($value)),
+        );
+    }
+
+    /**
+     * Normalize arrival airport ICAO at write time: uppercase + trim.
+     * Same single-row-vs-bulk caveat as `dptAirportId()`.
+     */
+    protected function arrAirportId(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null
+                ? null
+                : strtoupper(trim($value)),
         );
     }
 
