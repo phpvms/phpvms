@@ -8,7 +8,7 @@
  *   redeye   per-origin: rows distribute evenly across `window_minutes`
  *            starting at base (typically a late-night base time)
  *
- * Per-origin slotting matters as soon as you have >1 origin (mesh, chain):
+ * Per-origin slotting matters as soon as you have >1 origin (mesh, tour):
  * without it, a mesh of 3 origins × 5 destinations under "spread @ 60min"
  * would stack 3 flights at 08:00, 3 at 09:00, etc. — same origin getting
  * one departure but with 3 origins all running the same wall clock.
@@ -23,8 +23,8 @@ import type { JitterConfig, Row, TimeStrategy } from "../state/types";
 const MINS_PER_DAY = 1440;
 
 /**
- * Returns a new row list with `dpt_time` assigned per the strategy.
- * Input rows are not mutated. Does NOT touch `arr_time` — that is the
+ * Returns a new row list with `departure_time` assigned per the strategy.
+ * Input rows are not mutated. Does NOT touch `arrival_time` — that is the
  * timezone module's job, called by the generator AFTER this.
  */
 export function assignDepartureTimes(rows: Row[], strategy: TimeStrategy): Row[] {
@@ -41,7 +41,7 @@ export function assignDepartureTimes(rows: Row[], strategy: TimeStrategy): Row[]
       depMins += jitterOffset(r.index, strategy.jitter);
     }
 
-    return { ...r, dpt_time: fmtHHMM(depMins) };
+    return { ...r, departure_time: fmtHHMM(depMins) };
   });
 }
 

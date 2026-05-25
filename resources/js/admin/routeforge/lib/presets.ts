@@ -22,8 +22,18 @@ import type {
   TimeStrategy,
 } from "../state/types";
 
-/** Partial form patch applied on preset selection. Custom = empty. */
-export type RoutePresetPatch = Partial<Pick<Form, "flight_type" | "create_returns">>;
+/**
+ * Partial form patch applied on preset selection. Custom = empty.
+ *
+ * Route presets may patch schedule fields (`days_mask`, `time_strategy`) when
+ * the preset name implies a schedule — e.g. `weekend_leisure` sets weekend
+ * days, `cargo_night` sets a nightly redeye window. Users can still pick a
+ * frequency preset afterward to override (PresetPicker applies the patch via
+ * splat, so the most recently picked preset wins on overlapping fields).
+ */
+export type RoutePresetPatch = Partial<
+  Pick<Form, "flight_type" | "create_returns" | "days_mask" | "time_strategy">
+>;
 export type FrequencyPresetPatch = Partial<Pick<Form, "days_mask" | "time_strategy">>;
 
 /**
@@ -75,15 +85,50 @@ export const ROUTE_PRESET_ORDER: RoutePreset[] = [
 ];
 
 export function routePresetPatch(preset: RoutePreset): RoutePresetPatch {
+  const fixed = (base_time: string): TimeStrategy => ({
+    kind: "fixed",
+    base_time,
+    jitter: makeDefaultJitter(),
+  });
+  const spread = (base_time: string, interval_minutes: number): TimeStrategy => ({
+    kind: "spread",
+    base_time,
+    interval_minutes,
+    jitter: makeDefaultJitter(),
+  });
+  const redeye = (base_time: string, window_minutes: number): TimeStrategy => ({
+    kind: "redeye",
+    base_time,
+    window_minutes,
+    jitter: makeDefaultJitter(),
+  });
+
   switch (preset) {
     case "regional_spoke":
       return { flight_type: "J" as FlightTypeCode, create_returns: true };
     case "long_haul_daily":
-      return { flight_type: "J" as FlightTypeCode, create_returns: true };
+      // "daily" implies every day. Explicit so a prior weekend mask gets cleared.
+      return {
+        flight_type: "J" as FlightTypeCode,
+        create_returns: true,
+        days_mask: DAYS_ALL,
+        time_strategy: fixed("08:00"),
+      };
     case "weekend_leisure":
-      return { flight_type: "J" as FlightTypeCode, create_returns: true };
+      // Name says Sat/Sun. Spread departures across late morning.
+      return {
+        flight_type: "J" as FlightTypeCode,
+        create_returns: true,
+        days_mask: DAYS_WEEKENDS,
+        time_strategy: spread("10:00", 30),
+      };
     case "cargo_night":
-      return { flight_type: "F" as FlightTypeCode, create_returns: false };
+      // Cargo runs any night — leave days_mask alone, set a redeye window.
+      return {
+        flight_type: "F" as FlightTypeCode,
+        create_returns: false,
+        time_strategy: redeye("22:00", 240),
+      };
     case "training":
       return { flight_type: "K" as FlightTypeCode, create_returns: false };
     case "positioning":

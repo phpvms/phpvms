@@ -1,10 +1,21 @@
 /**
- * Subfleet multi-select.
+ * Subfleet multi-select with click-to-open dropdown + checkbox rows.
+ *
+ * Mirrors AirportPicker's interaction model (chips + searchable dropdown +
+ * checkboxes) so the form's two multi-selects feel identical. Differences
+ * from AirportPicker:
+ *
+ *   - Source list is bounded (one airline's subfleets) and already arrives
+ *     in a single fetch, so filtering is purely client-side: no debounce,
+ *     no per-keystroke network round-trip.
+ *   - Chips render from `subfleetCache` (not the load result) so persisted
+ *     draft selections stay visible during the load → loaded transition
+ *     when an airline change refetches.
  *
  * Pre-populates from `/admin/route-forge/api/subfleets?airline_id=N` whenever
  * the airline changes. Results land in `subfleetCache` (so a resume from
- * draft doesn't have to refetch) and the live <select multiple> binds to
- * `form.subfleet_ids`.
+ * draft doesn't have to refetch) and `form.subfleet_ids` is the source of
+ * truth for selection.
  *
  * No capability filter (Decision 7): every subfleet for the chosen airline
  * shows. Lint rules L2 (range mismatch) and L2b (type mismatch) surface
@@ -30,10 +41,15 @@ type LoadState =
   | { kind: "loaded"; subfleets: SubfleetSummary[] }
   | { kind: "error"; message: string };
 
+const BLUR_CLOSE_DELAY_MS = 150;
+
 export function SubfleetPicker() {
   const f = form.value;
   const airlineId = f.airline_id;
   const [state, setState] = useState<LoadState>({ kind: "idle" });
+  const [query, setQuery] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   // Tracks the airline this component last loaded subfleets for. Stays null
   // on first mount so draft resume (which arrives with airline_id and
   // subfleet_ids already populated) does NOT clear the persisted selections.
@@ -85,78 +101,184 @@ export function SubfleetPicker() {
     };
   }, [airlineId]);
 
-  function handleChange(e: Event): void {
-    const select = e.currentTarget as HTMLSelectElement;
-    const ids: number[] = [];
-    for (const opt of Array.from(select.selectedOptions)) {
-      const id = Number.parseInt(opt.value, 10);
-      if (!Number.isNaN(id)) {
-        ids.push(id);
+  // Click-outside detector: close the dropdown when the user clicks
+  // anywhere outside the picker's container. Attached only while open.
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+    function onDocPointerDown(event: PointerEvent): void {
+      const target = event.target;
+      if (target === null || !(target instanceof Node)) {
+        return;
+      }
+      if (containerRef.current !== null && !containerRef.current.contains(target)) {
+        setOpen(false);
       }
     }
-    form.value = { ...f, subfleet_ids: ids };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown);
+  }, [open]);
+
+  function toggleSubfleet(id: number): void {
+    // Read freshest form value at apply time so concurrent edits survive.
+    const current = form.value;
+    const next = current.subfleet_ids.includes(id)
+      ? current.subfleet_ids.filter((x) => x !== id)
+      : [...current.subfleet_ids, id];
+    form.value = { ...current, subfleet_ids: next };
   }
 
-  const baseHint =
-    "Hold Cmd / Ctrl to multi-select. Lint warns about range or type mismatches after generation.";
+  function removeSubfleet(id: number): void {
+    const current = form.value;
+    form.value = {
+      ...current,
+      subfleet_ids: current.subfleet_ids.filter((x) => x !== id),
+    };
+  }
 
+  // Early-return branches that don't render the searchable dropdown.
   if (airlineId === null) {
     return (
-      <Field label="Subfleets" hint="Pick an airline first.">
-        <select class={INPUT_CLASS} disabled multiple size={4} />
-      </Field>
-    );
-  }
-
-  if (state.kind === "loading") {
-    return (
-      <Field label="Subfleets" hint="Loading…">
-        <select class={INPUT_CLASS} disabled multiple size={4} />
+      <Field label="Subfleets" htmlFor="rf-subfleets" hint="Pick an airline first.">
+        <input
+          id="rf-subfleets"
+          type="search"
+          disabled
+          placeholder="Pick an airline first…"
+          class={INPUT_CLASS}
+        />
       </Field>
     );
   }
 
   if (state.kind === "error") {
     return (
-      <Field label="Subfleets" error={state.message}>
-        <select class={INPUT_CLASS} disabled multiple size={4} />
+      <Field label="Subfleets" htmlFor="rf-subfleets" error={state.message}>
+        <input id="rf-subfleets" type="search" disabled class={INPUT_CLASS} />
       </Field>
     );
   }
 
-  if (state.kind === "idle") {
-    // Shouldn't normally reach this branch when airlineId is set.
-    return (
-      <Field label="Subfleets" hint="Loading…">
-        <select class={INPUT_CLASS} disabled multiple size={4} />
-      </Field>
-    );
-  }
+  const loading = state.kind === "loading" || state.kind === "idle";
+  const subfleets = state.kind === "loaded" ? state.subfleets : [];
+  const trimmedQuery = query.trim().toLowerCase();
+  const filteredResults =
+    trimmedQuery === ""
+      ? subfleets
+      : subfleets.filter(
+          (s) =>
+            s.name.toLowerCase().includes(trimmedQuery) ||
+            s.type.toLowerCase().includes(trimmedQuery),
+        );
+  const noSubfleetsAtAll = state.kind === "loaded" && subfleets.length === 0;
+  const selected = f.subfleet_ids;
+
+  const hint =
+    "Click to browse or type to filter. Tick to add. Lint warns about range or type mismatches after generation.";
 
   return (
-    <Field label="Subfleets" htmlFor="rf-subfleets" hint={baseHint}>
-      <select
-        id="rf-subfleets"
-        class={INPUT_CLASS}
-        multiple
-        size={Math.min(8, Math.max(4, state.subfleets.length))}
-        onChange={handleChange}
-      >
-        {state.subfleets.length === 0 && (
-          <option disabled value="">
-            No subfleets attached to this airline.
-          </option>
+    <Field label="Subfleets" htmlFor="rf-subfleets" hint={hint}>
+      {/* Selected chips — render from cache so they survive load transitions. */}
+      {selected.length > 0 && (
+        <div class="mb-2 flex flex-wrap gap-1.5">
+          {selected.map((id) => {
+            const s = subfleetCache.value[id];
+            const display = s !== undefined ? `${s.name} (${s.type})` : `#${id}`;
+            return (
+              <span
+                key={id}
+                class="inline-flex items-center gap-1 rounded bg-primary-100 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-900/40 dark:text-primary-200"
+              >
+                <span>{display}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${display}`}
+                  class="text-primary-600 hover:text-red-600 dark:text-primary-300 dark:hover:text-red-400"
+                  onClick={() => removeSubfleet(id)}
+                >
+                  ×
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Search input + dropdown */}
+      <div class="relative" ref={containerRef}>
+        <input
+          id="rf-subfleets"
+          type="search"
+          autocomplete="off"
+          placeholder={loading ? "Loading subfleets…" : "Subfleet name or type…"}
+          disabled={loading}
+          class={INPUT_CLASS}
+          value={query}
+          onInput={(e) => {
+            setQuery((e.currentTarget as HTMLInputElement).value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setOpen(false);
+              (e.currentTarget as HTMLInputElement).blur();
+            }
+          }}
+          onBlur={() => {
+            // Defer so an item click inside the dropdown registers
+            // before close. Click-outside handler does the primary
+            // closing work; this is a fallback for tab-out.
+            setTimeout(() => {
+              const active = document.activeElement;
+              if (
+                containerRef.current !== null &&
+                active !== null &&
+                containerRef.current.contains(active)
+              ) {
+                return;
+              }
+              setOpen(false);
+            }, BLUR_CLOSE_DELAY_MS);
+          }}
+        />
+        {open && !loading && (
+          <div class="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+            {noSubfleetsAtAll && (
+              <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                No subfleets attached to this airline.
+              </div>
+            )}
+            {!noSubfleetsAtAll && filteredResults.length === 0 && (
+              <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">No matches.</div>
+            )}
+            {filteredResults.map((s) => {
+              const isSelected = selected.includes(s.id);
+              return (
+                <label
+                  key={s.id}
+                  class="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                >
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4"
+                    checked={isSelected}
+                    onChange={() => toggleSubfleet(s.id)}
+                  />
+                  <span class="font-mono text-xs text-gray-600 dark:text-gray-400">{s.type}</span>
+                  <span>{s.name}</span>
+                  <span class="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                    {s.aircraft_count} ac
+                    {s.max_range_nm !== null ? ` · ${s.max_range_nm}nm` : ""}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
         )}
-        {state.subfleets.map((s) => {
-          const selected = f.subfleet_ids.includes(s.id);
-          return (
-            <option key={s.id} value={s.id} selected={selected}>
-              {s.name} ({s.type}) · {s.aircraft_count} ac
-              {s.max_range_nm !== null ? ` · ${s.max_range_nm}nm` : ""}
-            </option>
-          );
-        })}
-      </select>
+      </div>
     </Field>
   );
 }

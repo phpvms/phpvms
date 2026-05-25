@@ -33,9 +33,12 @@ import { HelpModal, type HelpModalItem } from "./HelpModal";
 const ROUTE_PRESET_DESCRIPTIONS: Record<RoutePreset, string> = {
   custom: "Keeps your current flight type and return-leg flag untouched.",
   regional_spoke: "Short out-and-back sectors. Scheduled passenger with auto return legs.",
-  long_haul_daily: "Long sectors flown daily. Scheduled passenger with auto return legs.",
-  weekend_leisure: "Leisure routes for Sat/Sun. Scheduled passenger with auto return legs.",
-  cargo_night: "Overnight freight operations. Cargo flight type, no return legs.",
+  long_haul_daily:
+    "Long sectors flown every day. Scheduled passenger with auto return legs, all 7 days, fixed 08:00 departure.",
+  weekend_leisure:
+    "Leisure routes for Sat/Sun only. Scheduled passenger with auto return legs, weekends, 10:00 spread.",
+  cargo_night:
+    "Overnight freight operations. Cargo flight type, no return legs, redeye window starting 22:00.",
   training: "Currency and training flights. Training flight type, no return legs.",
   positioning: "Empty repositioning legs. Positioning flight type, no return legs.",
 };
@@ -76,7 +79,7 @@ function RoutePresetPicker() {
       <Field
         label="Route preset"
         htmlFor="rf-route-preset"
-        hint="Prefills flight type and return-leg defaults."
+        hint="Prefills flight type, return-leg flag, and (when the name implies it) days + time strategy."
         onHelpClick={() => setHelpOpen(true)}
         helpAriaLabel="About route presets"
       >

@@ -115,8 +115,11 @@ export async function postCheckDuplicates(
   return postJson<SingleResponse<DuplicateCheckResponse>>(routes().check_duplicates, params);
 }
 
-export async function postLint(payload: LintPayload): Promise<SingleResponse<LintReport>> {
-  return postJson<SingleResponse<LintReport>>(routes().lint, payload);
+export async function postLint(
+  payload: LintPayload,
+  options: { signal?: AbortSignal } = {},
+): Promise<SingleResponse<LintReport>> {
+  return postJson<SingleResponse<LintReport>>(routes().lint, payload, options.signal);
 }
 
 /**
@@ -141,7 +144,7 @@ async function getJson<T>(url: string): Promise<T> {
   return handleResponse<T>(res, url);
 }
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+async function postJson<T>(url: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     credentials: "same-origin",
@@ -152,6 +155,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
       "X-Requested-With": "XMLHttpRequest",
     },
     body: JSON.stringify(body),
+    signal,
   });
   return handleResponse<T>(res, url);
 }

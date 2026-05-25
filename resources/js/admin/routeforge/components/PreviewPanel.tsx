@@ -39,17 +39,10 @@ import { useState } from "preact/hooks";
 
 import { ApiError, postCommit, postLint } from "../lib/api";
 import { t } from "../lib/i18n";
-import { formStaleSinceGenerate, regenerateRows, resetLifecycleState } from "../lib/lifecycle";
+import { buildLintPayload, regenerateRows, resetLifecycleState } from "../lib/lifecycle";
 import { clearDraft, flushDraft } from "../state/persistence";
-import { form, lintReport, rows } from "../state/store";
-import type {
-  CommitPayload,
-  CommitResponse,
-  LintPayload,
-  LintReport,
-  PayloadRow,
-  Row,
-} from "../state/types";
+import { form, lintError, lintReport, rows } from "../state/store";
+import type { CommitPayload, CommitResponse, LintPayload, LintReport } from "../state/types";
 import { CommitSuccessRedirect } from "./CommitSuccessRedirect";
 import { DirtyWarningDialog } from "./DirtyWarningDialog";
 import { LintReportDialog } from "./LintReportDialog";
@@ -68,12 +61,12 @@ export function PreviewPanel() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState<boolean>(false);
   const list = rows.value;
   const report = lintReport.value;
+  const lintErrMsg = lintError.value;
   const f = form.value;
 
   const rowCount = list.length;
   const errorCount = report?.errors.length ?? 0;
   const warningCount = report?.warnings.length ?? 0;
-  const stale = formStaleSinceGenerate.value;
 
   function handleGenerate(): void {
     regenerateRows();
@@ -199,10 +192,12 @@ export function PreviewPanel() {
         </div>
       )}
 
-      {/* Stale banner */}
-      {stale && rowCount > 0 && (
+      {/* Background lint-check failure — non-blocking. Server commit is the
+          authoritative gate, so Create stays clickable; this just tells the
+          user RowLintIcon is unreliable until the next debounce lands. */}
+      {lintErrMsg !== null && rowCount > 0 && (
         <div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
-          {t("preview.stale")}
+          {lintErrMsg}
         </div>
       )}
 
@@ -314,27 +309,7 @@ function LintCountButton({ tone, count, disabled, onClick }: LintCountButtonProp
   );
 }
 
-// ─── Payload builders ─────────────────────────────────────────────────────
-
-function toPayloadRow(r: Row): PayloadRow {
-  const { edited: _edited, ...rest } = r;
-  return rest;
-}
-
-function buildLintPayload(): LintPayload | null {
-  const f = form.value;
-  if (f.airline_id === null) {
-    return null;
-  }
-  return {
-    airline_id: f.airline_id,
-    event_id: f.event_id,
-    subfleet_ids: f.subfleet_ids,
-    flight_type: f.flight_type,
-    bundle: f.bundle,
-    rows: rows.value.map(toPayloadRow),
-  };
-}
+// ─── Generate-button blocker hint ─────────────────────────────────────────
 
 /**
  * Return the first reason the Generate button is disabled, or null when the
@@ -349,11 +324,11 @@ function describeGenerateBlocker(f: typeof form.value): string | null {
   if (f.origins.length === 0) {
     return "Add at least one origin airport.";
   }
-  if (f.destinations.length === 0 && f.topology !== "chain") {
+  if (f.destinations.length === 0 && f.topology !== "tour") {
     return "Add at least one destination airport.";
   }
-  if (f.topology === "chain" && f.origins.length < 2) {
-    return "Chain mode needs at least 2 origins (A → B).";
+  if (f.topology === "tour" && f.origins.length < 2) {
+    return "Tour mode needs at least 2 origins (A → B).";
   }
   return null;
 }

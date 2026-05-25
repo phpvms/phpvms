@@ -29,8 +29,10 @@ use Illuminate\Support\Collection;
  *     'arr_airport_id' => string,         // ICAO, uppercased
  *     'dpt_timezone'   => ?string,        // IANA, may be null → L11
  *     'arr_timezone'   => ?string,        // IANA, may be null → L11
+ *     'departure_time' => ?string,        // origin-local HH:MM, persists to Flight.departure_time
+ *     'arrival_time'   => ?string,        // destination-local HH:MM, persists to Flight.arrival_time
  *     'distance_nm'    => int|float,      // client-computed haversine
- *     // ...time fields, days mask, etc.
+ *     // ...flight_time, days mask, etc.
  *   ]
  */
 final readonly class LintContext

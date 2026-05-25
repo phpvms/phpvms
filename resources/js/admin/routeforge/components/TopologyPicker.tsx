@@ -9,7 +9,7 @@
  *   spokes_hub     → cartesian, no returns       (many origins, single dest)
  *   hub_and_spokes → cartesian, WITH returns     (auto-paired outbound/return)
  *   mesh           → cartesian, no returns       (every origin × every dest)
- *   chain          → chain mode                  (sequential origins[i] → [i+1])
+ *   tour          → tour mode                  (sequential origins[i] → [i+1])
  *
  * Setting create_returns is a generator-affecting change; the dirty-warning
  * modal (task 6.3.15, Chunk C) catches the case where rows already exist.
@@ -23,10 +23,10 @@ import type { Topology } from "../state/types";
 import { Field, INPUT_CLASS } from "./Field";
 import { HelpModal, type HelpModalItem } from "./HelpModal";
 
-const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "chain"];
+const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "tour"];
 
-function deriveMode(topology: Topology): "cartesian" | "chain" {
-  return topology === "chain" ? "chain" : "cartesian";
+function deriveMode(topology: Topology): "cartesian" | "tour" {
+  return topology === "tour" ? "tour" : "cartesian";
 }
 
 function deriveCreateReturns(topology: Topology, current: boolean): boolean {
@@ -36,8 +36,8 @@ function deriveCreateReturns(topology: Topology, current: boolean): boolean {
   if (topology === "hub_and_spokes") {
     return true;
   }
-  if (topology === "chain") {
-    // Chain v1 does not produce return legs (see generator.ts buildChainPairs).
+  if (topology === "tour") {
+    // Tour v1 does not produce return legs (see generator.ts buildTourPairs).
     return false;
   }
   return current;

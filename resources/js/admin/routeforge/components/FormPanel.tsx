@@ -21,6 +21,10 @@
 import type { ComponentChildren } from "preact";
 
 import { AirportPicker } from "./AirportPicker";
+// "tour" is the internal Topology discriminator; the user-facing label is
+// "Tour" (resources/lang/en/filament.php → topology_options.tour). Tour mode
+// builds rows as sequential origins[i]→origins[i+1] and ignores destinations.
+const TOUR_TOPOLOGY = "tour";
 import { BundleConfigSection } from "./BundleConfigSection";
 import { DaysPicker } from "./DaysPicker";
 import { Field, INPUT_CLASS } from "./Field";
@@ -64,12 +68,14 @@ const FLIGHT_TYPE_LABELS: Array<[FlightTypeCode, string]> = [
 ];
 
 export function FormPanel() {
+  const f = form.value;
+  const destinationsDisabled = f.topology === TOUR_TOPOLOGY;
+
   return (
     <div class="space-y-6">
       <SectionShell title="Topology & presets">
         <TopologyPicker />
         <PresetPicker kind="route" />
-        <PresetPicker kind="frequency" />
       </SectionShell>
 
       <SectionShell title="Bundle">
@@ -85,11 +91,20 @@ export function FormPanel() {
 
       <SectionShell title="Airports">
         <AirportPicker mode="origin" />
-        <AirportPicker mode="destination" />
+        <AirportPicker
+          mode="destination"
+          disabled={destinationsDisabled}
+          hint={
+            destinationsDisabled
+              ? "Not used for Tour topology — rows traverse Origins sequentially (A→B→C)."
+              : undefined
+          }
+        />
         <ReturnFlightsToggle />
       </SectionShell>
 
       <SectionShell title="Schedule">
+        <PresetPicker kind="frequency" />
         <DaysPicker />
         <TimeStrategyControls />
       </SectionShell>

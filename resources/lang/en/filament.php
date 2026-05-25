@@ -178,7 +178,7 @@ return [
             'spokes_hub'     => 'Spokes → Hub',
             'hub_and_spokes' => 'Hub & Spokes (auto returns)',
             'mesh'           => 'Mesh',
-            'chain'          => 'Chain',
+            'tour'           => 'Tour',
         ],
 
         'topology_helper' => [
@@ -186,7 +186,7 @@ return [
             'spokes_hub'     => 'Many origins, one destination. One leg per origin.',
             'hub_and_spokes' => 'One origin, many destinations, with automatic return legs.',
             'mesh'           => 'Every origin to every destination, no returns.',
-            'chain'          => 'Sequential A→B→C…; destinations are ignored.',
+            'tour'           => 'Sequential A→B→C tour through origins. Destinations not used.',
         ],
 
         'preview' => [

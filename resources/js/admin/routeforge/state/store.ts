@@ -80,6 +80,13 @@ export function defaultForm(): Form {
 export const form = signal<Form>(defaultForm());
 export const rows = signal<Row[]>([]);
 export const lintReport = signal<LintReport | null>(null);
+/**
+ * Surfaces failures from the debounced POST /lint background call (network
+ * error, 422, etc.). Components can render a "lint check unavailable" hint
+ * without blocking commit — server re-runs lint at /commit and is the
+ * authoritative gate. Cleared whenever a fresh /lint response lands.
+ */
+export const lintError = signal<string | null>(null);
 export const isDirty = signal<boolean>(false);
 export const draftLoaded = signal<boolean>(false);
 export const lastSavedAt = signal<Date | null>(null);
@@ -99,12 +106,14 @@ export const selectedRowCount = computed<number>(() =>
 /**
  * UI commit-button gate. Requires:
  *   - at least one row
- *   - a lint pass has run (lintReport !== null) so the user isn't committing
- *     a payload that hasn't been validated client-side
- *   - no errors in the most recent lint
+ *   - no known lint errors in the most recent server response
  *
- * The server re-runs lint at commit time, so this gate is UX only. Falsely
- * letting a commit through here just produces a 422 from the endpoint.
+ * `lintReport === null` is allowed (debounce hasn't fired yet, or the
+ * background call errored) — the Create-click flow runs an explicit
+ * `/lint` POST before committing and the server re-runs lint inside
+ * `/commit` itself. Both layers are authoritative; this signal is UX
+ * only. Falsely letting a commit through here just produces a 422 from
+ * the endpoint.
  */
 export const canCommit = computed<boolean>(() => {
   if (rowCount.value === 0) {
@@ -112,7 +121,7 @@ export const canCommit = computed<boolean>(() => {
   }
   const report = lintReport.value;
   if (report === null) {
-    return false;
+    return true;
   }
   return report.errors.length === 0;
 });
@@ -125,6 +134,7 @@ export function resetStore(): void {
   form.value = defaultForm();
   rows.value = [];
   lintReport.value = null;
+  lintError.value = null;
   isDirty.value = false;
   draftLoaded.value = false;
   lastSavedAt.value = null;

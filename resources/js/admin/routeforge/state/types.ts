@@ -64,7 +64,7 @@ export type Topology =
   | "spokes_hub" // N origins → 1 destination
   | "hub_and_spokes" // hub_spokes with auto-return legs
   | "mesh" // N origins × M destinations cartesian
-  | "chain"; // origins[0]→origins[1]→…→origins[N-1]
+  | "tour"; // origins[0]→origins[1]→…→origins[N-1]
 
 export type RoutePreset =
   | "regional_spoke"
@@ -186,7 +186,7 @@ export type BundleSummary = {
 
 /**
  * The full client form. `mode` is derived from `topology` by the generator
- * (cartesian for hub/spokes/mesh; chain for chain) but stored explicitly so
+ * (cartesian for hub/spokes/mesh; tour for tour) but stored explicitly so
  * the unified internal generator path stays trivial.
  */
 export type Form = {
@@ -194,7 +194,7 @@ export type Form = {
   topology: Topology;
   origins: Icao[];
   destinations: Icao[];
-  mode: "cartesian" | "chain";
+  mode: "cartesian" | "tour";
   create_returns: boolean;
   subfleet_ids: number[];
   flight_type: FlightTypeCode | null;
@@ -235,10 +235,10 @@ export type Row = {
   dpt_timezone: string | null;
   arr_timezone: string | null;
 
-  /** Origin-local HH:MM. */
-  dpt_time: string;
-  /** Destination-local HH:MM. */
-  arr_time: string;
+  /** Origin-local HH:MM. Persists to Flight.departure_time (datetime cast). */
+  departure_time: string;
+  /** Destination-local HH:MM. Persists to Flight.arrival_time (datetime cast). */
+  arrival_time: string;
   /** +N calendar days from departure local date. 0 for same-day arrivals. */
   arr_day_shift: number;
 
@@ -372,6 +372,10 @@ export type LintPayload = {
   subfleet_ids: number[];
   flight_type: FlightTypeCode | null;
   bundle: BundleConfig;
+  /** User-picked origin ICAOs. Server enforces min:1 in BaseRouteForgeBatchRequest. */
+  origins: Icao[];
+  /** User-picked destination ICAOs. Server enforces min:1 in BaseRouteForgeBatchRequest. */
+  destinations: Icao[];
   rows: PayloadRow[];
 };
 
@@ -421,7 +425,13 @@ declare global {
 // ─── Draft envelope (localStorage shape) ───────────────────────────────────
 
 export const DRAFT_KEY = "routeforge:draft:v1";
-export const DRAFT_VERSION = 1 as const;
+// Version history:
+//   v1 → v2: Row.dpt_time/arr_time renamed → departure_time/arrival_time.
+//   v2 → v3: Topology value "chain" renamed → "tour"; Form.mode value
+//            "chain" → "tour". Older drafts carrying the legacy discriminator
+//            would fail the Topology union check on resume — bumping the
+//            version makes DraftResumeBanner discard them safely.
+export const DRAFT_VERSION = 3 as const;
 export const DRAFT_STALE_DAYS = 30;
 
 /**

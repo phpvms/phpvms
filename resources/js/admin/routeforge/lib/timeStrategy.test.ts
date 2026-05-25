@@ -20,8 +20,8 @@ function makeRow(overrides: Partial<Row>): Row {
     arr_airport_id: "KLAX",
     dpt_timezone: "America/Los_Angeles",
     arr_timezone: "America/Los_Angeles",
-    dpt_time: "00:00",
-    arr_time: "00:00",
+    departure_time: "00:00",
+    arrival_time: "00:00",
     arr_day_shift: 0,
     distance_nm: 337,
     flight_time: 90,
@@ -45,7 +45,7 @@ describe("assignDepartureTimes", () => {
 
       const out = assignDepartureTimes(rows, strategy);
 
-      expect(out.map((r) => r.dpt_time)).toEqual(["08:00", "08:00", "08:00"]);
+      expect(out.map((r) => r.departure_time)).toEqual(["08:00", "08:00", "08:00"]);
     });
   });
 
@@ -66,7 +66,7 @@ describe("assignDepartureTimes", () => {
 
       const out = assignDepartureTimes(rows, strategy);
 
-      expect(out.map((r) => r.dpt_time)).toEqual(["08:00", "09:00", "10:00", "11:00"]);
+      expect(out.map((r) => r.departure_time)).toEqual(["08:00", "09:00", "10:00", "11:00"]);
     });
 
     it("slots independently per origin (mesh scenario)", () => {
@@ -88,7 +88,7 @@ describe("assignDepartureTimes", () => {
       const out = assignDepartureTimes(rows, strategy);
 
       // Each origin gets slot 0 → 08:00. Distinct origins don't share counters.
-      expect(out.map((r) => r.dpt_time)).toEqual(["08:00", "08:00", "08:00"]);
+      expect(out.map((r) => r.departure_time)).toEqual(["08:00", "08:00", "08:00"]);
     });
   });
 
@@ -111,7 +111,7 @@ describe("assignDepartureTimes", () => {
       const out = assignDepartureTimes(rows, strategy);
 
       // Slot 0 → bank 0 → 06:00; slot 1 → bank 1 → 09:00; slot 2 → bank 0; ...
-      expect(out.map((r) => r.dpt_time)).toEqual(["06:00", "09:00", "06:00", "09:00"]);
+      expect(out.map((r) => r.departure_time)).toEqual(["06:00", "09:00", "06:00", "09:00"]);
     });
   });
 
@@ -132,9 +132,9 @@ describe("assignDepartureTimes", () => {
       const out = assignDepartureTimes(rows, strategy);
 
       // Step = 180 / 3 = 60min: 22:00, 23:00, 00:00 (wraps).
-      expect(out[0]?.dpt_time).toBe("22:00");
-      expect(out[1]?.dpt_time).toBe("23:00");
-      expect(out[2]?.dpt_time).toBe("00:00");
+      expect(out[0]?.departure_time).toBe("22:00");
+      expect(out[1]?.departure_time).toBe("23:00");
+      expect(out[2]?.departure_time).toBe("00:00");
     });
   });
 
@@ -147,8 +147,8 @@ describe("assignDepartureTimes", () => {
         jitter: jitter(true, 10, 42),
       };
 
-      const a = assignDepartureTimes(rows, strategy).map((r) => r.dpt_time);
-      const b = assignDepartureTimes(rows, strategy).map((r) => r.dpt_time);
+      const a = assignDepartureTimes(rows, strategy).map((r) => r.departure_time);
+      const b = assignDepartureTimes(rows, strategy).map((r) => r.departure_time);
 
       expect(a).toEqual(b);
     });
@@ -159,12 +159,12 @@ describe("assignDepartureTimes", () => {
         kind: "fixed",
         base_time: "08:00",
         jitter: jitter(true, 30, 1),
-      }).map((r) => r.dpt_time);
+      }).map((r) => r.departure_time);
       const b = assignDepartureTimes(rows, {
         kind: "fixed",
         base_time: "08:00",
         jitter: jitter(true, 30, 2),
-      }).map((r) => r.dpt_time);
+      }).map((r) => r.departure_time);
 
       // At least one row's offset differs between seed 1 and seed 2.
       expect(a).not.toEqual(b);
@@ -181,7 +181,10 @@ describe("assignDepartureTimes", () => {
       const out = assignDepartureTimes(rows, strategy);
 
       for (const r of out) {
-        const [h, m] = r.dpt_time.split(":").map((x) => Number.parseInt(x, 10)) as [number, number];
+        const [h, m] = r.departure_time.split(":").map((x) => Number.parseInt(x, 10)) as [
+          number,
+          number,
+        ];
         const totalMins = h * 60 + m;
         // 12:00 = 720 mins. With jitter ±5, range is [715, 725].
         expect(totalMins).toBeGreaterThanOrEqual(715);

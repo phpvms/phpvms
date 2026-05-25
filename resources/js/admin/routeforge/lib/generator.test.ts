@@ -149,9 +149,9 @@ describe("generator.generate", () => {
     expect(rows[0]?.pair_index).toBe(rows[1]?.pair_index);
   });
 
-  it("Chain mode connects origins in order", () => {
+  it("Tour mode connects origins in order", () => {
     const form = baseForm({
-      mode: "chain",
+      mode: "tour",
       origins: ["KSFO", "KLAX", "KPHX", "KDFW"],
       destinations: [],
     });

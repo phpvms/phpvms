@@ -11,9 +11,9 @@
  *                  falling back to config.cruise_speed_kt. Buffer is added
  *                  for climb + descent from config.climb_descent_buffer.
  *   3. Base rows   Materialize Row objects with all non-time fields populated.
- *   4. Times       assignDepartureTimes() sets dpt_time per the time strategy.
- *                  computeArrTime() then derives arr_time + arr_day_shift
- *                  from dpt_time + flight_time using @date-fns/tz.
+ *   4. Times       assignDepartureTimes() sets departure_time per the time strategy.
+ *                  computeArrTime() then derives arrival_time + arr_day_shift
+ *                  from departure_time + flight_time using @date-fns/tz.
  *   5. Numbers     assignFlightNumbers() sets flight_number per strategy.
  *
  * Determinism: every step is pure for a given input. The only environmental
@@ -97,10 +97,10 @@ export function generate(input: GenerateInput): Row[] {
       arr_airport_id: p.destination,
       dpt_timezone: dptAirport?.timezone ?? null,
       arr_timezone: arrAirport?.timezone ?? null,
-      // dpt_time placeholder — assignDepartureTimes fills.
-      dpt_time: "00:00",
-      // arr_time placeholder — computeArrTime fills via the map below.
-      arr_time: "00:00",
+      // departure_time placeholder — assignDepartureTimes fills.
+      departure_time: "00:00",
+      // arrival_time placeholder — computeArrTime fills via the map below.
+      arrival_time: "00:00",
       arr_day_shift: 0,
       distance_nm: distance,
       flight_time: flightTime,
@@ -114,10 +114,10 @@ export function generate(input: GenerateInput): Row[] {
   // Step 4a: departure times (per-origin slot logic + jitter).
   const withDpt = assignDepartureTimes(baseRows, form.time_strategy);
 
-  // Step 4b: derived arrival times using the freshly-assigned dpt_time.
+  // Step 4b: derived arrival times using the freshly-assigned departure_time.
   const withArr = withDpt.map((r) => {
     const arr = computeArrTime(
-      r.dpt_time,
+      r.departure_time,
       r.dpt_timezone,
       r.arr_timezone,
       r.flight_time,
@@ -125,7 +125,7 @@ export function generate(input: GenerateInput): Row[] {
     );
     return {
       ...r,
-      arr_time: arr.arr_local,
+      arrival_time: arr.arr_local,
       arr_day_shift: arr.day_shift,
     };
   });
@@ -145,13 +145,13 @@ export function generate(input: GenerateInput): Row[] {
  *             If create_returns: each (O,D) pair emits [outbound, return]
  *             interleaved so flight-number strategy 2 produces the
  *             documented even/odd parity (spec scenario).
- * chain:      sequential pairs (origins[0]→origins[1], [1]→[2], ...).
+ * tour:      sequential pairs (origins[0]→origins[1], [1]→[2], ...).
  *             Destinations list is ignored. create_returns has no v1
- *             semantic for chain (spec doesn't define it); ignored.
+ *             semantic for tour (spec doesn't define it); ignored.
  */
 function buildPairs(form: Form): Pair[] {
-  if (form.mode === "chain") {
-    return buildChainPairs(form.origins);
+  if (form.mode === "tour") {
+    return buildTourPairs(form.origins);
   }
   return buildCartesianPairs(form.origins, form.destinations, form.create_returns);
 }
@@ -184,7 +184,7 @@ function buildCartesianPairs(
   return pairs;
 }
 
-function buildChainPairs(origins: string[]): Pair[] {
+function buildTourPairs(origins: string[]): Pair[] {
   const pairs: Pair[] = [];
   // Contiguous pair_index across emitted pairs: using the loop index `i`
   // leaves gaps when adjacent duplicates are skipped, which would shift

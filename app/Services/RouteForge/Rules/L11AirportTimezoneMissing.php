@@ -14,7 +14,7 @@ use App\Services\RouteForge\LintIssue;
  * Fires when the row's origin OR destination airport has `timezone = NULL`.
  * The presence of this warning signals that the arrival time was computed
  * with a "no shift" naïve fallback (origin-local + block time, no DST or
- * timezone-offset adjustment) — the arr_time on the row is informational,
+ * timezone-offset adjustment) — the arrival_time on the row is informational,
  * not accurate.
  *
  * The row payload carries `dpt_timezone` / `arr_timezone` (populated by the
@@ -56,7 +56,7 @@ final class L11AirportTimezoneMissing implements LintRule
             $issues[] = new LintIssue(
                 ruleId: $this->id(),
                 severity: $this->severity(),
-                message: __('filament.routeforge.lint.l11_airport_timezone_missing', [
+                message: __('filament.routeforge.lint.l11_timezone_missing', [
                     'airports' => implode(', ', $missing),
                 ]),
                 rowIndex: $index,

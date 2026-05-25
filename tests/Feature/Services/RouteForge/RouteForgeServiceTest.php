@@ -231,6 +231,35 @@ it('stamps the fare multiplier verbatim onto flight_fare pivot rows for each sub
     }
 });
 
+it('routes departure_time/arrival_time payload keys to the structured Flight columns (legacy strings stay NULL)', function (): void {
+    $airline = Airline::factory()->create();
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);
+    $sfo = Airport::factory()->create();
+    $jfk = Airport::factory()->create();
+
+    $row = svcRow(100, $airline, $sfo->id, $jfk->id);
+    $row['departure_time'] = '08:30';
+    $row['arrival_time'] = '17:15';
+
+    $input = makeCommitInput($airline, $subfleet, [$row]);
+
+    $result = svc()->commit($input);
+
+    /** @var Flight $flight */
+    $flight = Flight::query()->findOrFail($result->flightIds[0]);
+
+    // Modern structured columns populated via Laravel datetime cast.
+    expect($flight->departure_time)->not->toBeNull()
+        ->and($flight->departure_time->format('H:i'))->toBe('08:30')
+        ->and($flight->arrival_time)->not->toBeNull()
+        ->and($flight->arrival_time->format('H:i'))->toBe('17:15')
+        // Legacy free-form columns NOT populated by RouteForge (Decision: new
+        // flights write only modern columns; FlightResource synthesizes the
+        // legacy keys on-the-wire from the structured values).
+        ->and($flight->dpt_time)->toBeNull()
+        ->and($flight->arr_time)->toBeNull();
+});
+
 it('suppresses per-flight activity log entries via withoutEvents', function (): void {
     $airline = Airline::factory()->create();
     $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id]);

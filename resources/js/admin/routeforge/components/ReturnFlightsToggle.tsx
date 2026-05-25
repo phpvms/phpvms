@@ -2,12 +2,12 @@
  * Visible "Create return flights" checkbox.
  *
  * Was previously sourced silently from the topology selection
- * (`hub_and_spokes` → true, `chain` → false, others → undefined user choice).
+ * (`hub_and_spokes` → true, `tour` → false, others → undefined user choice).
  * Now lives next to the airport pickers — it's a property of the airport
  * graph, not the topology dropdown.
  *
  * The checkbox stays disabled with an explanatory line when the topology
- * forces a value (`hub_and_spokes` always with returns; `chain` never),
+ * forces a value (`hub_and_spokes` always with returns; `tour` never),
  * so the user understands why it's not editable. For the three free
  * topologies (`hub_spokes`, `spokes_hub`, `mesh`) the user toggles freely.
  */
@@ -24,12 +24,12 @@ export function ReturnFlightsToggle() {
     };
   }
 
-  const returnsForced = f.topology === "hub_and_spokes" || f.topology === "chain";
+  const returnsForced = f.topology === "hub_and_spokes" || f.topology === "tour";
   const returnsLockedReason =
     f.topology === "hub_and_spokes"
       ? "Hub & Spokes always includes return legs."
-      : f.topology === "chain"
-        ? "Chain mode does not produce return legs."
+      : f.topology === "tour"
+        ? "Tour mode does not produce return legs."
         : null;
   // For forced topologies the displayed value MUST match the enforced value
   // so the checkbox can't show stale `f.create_returns` from a different
