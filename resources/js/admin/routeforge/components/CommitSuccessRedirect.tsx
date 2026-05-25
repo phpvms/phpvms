@@ -27,10 +27,14 @@ export type CommitSuccessRedirectProps = {
 
 export function CommitSuccessRedirect({ result }: CommitSuccessRedirectProps) {
   const template = window.routeforgeConfig?.routes?.bundle_edit_template;
+  // Fallback path matches FlightBundleResource's actual slug ("flights"),
+  // not the resource's class name ("FlightBundles"). The backend template
+  // is derived from FlightBundleResource::getUrl() so this fallback should
+  // only fire if the config payload is malformed.
   const redirectUrl =
     template !== undefined && template !== ""
       ? template.replace(":id", String(result.bundle_id))
-      : `/admin/flight-bundles/${result.bundle_id}/edit`;
+      : `/admin/flights/${result.bundle_id}/edit`;
 
   useEffect(() => {
     const timer = setTimeout(() => {

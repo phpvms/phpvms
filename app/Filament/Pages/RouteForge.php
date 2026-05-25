@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Models\Airline;
 use App\Models\FlightBundle;
 use Filament\Pages\Page;
@@ -147,11 +148,24 @@ class RouteForge extends Page
      *
      * The bundle-edit URL is a template — `:id` gets substituted client-side
      * in CommitSuccessRedirect once the commit response carries bundle_id.
+     * We derive the path from FlightBundleResource::getUrl() rather than
+     * hardcoding `/admin/flight-bundles/...` because the resource's `$slug`
+     * is `flights` (not `flight-bundles`) — hardcoding would silently
+     * redirect to a 404. The sentinel `__RF_BUNDLE_ID__` is alphanumeric so
+     * Laravel's URL generator leaves it untouched, after which we swap it
+     * for the `:id` placeholder the TS template expects.
      *
      * @return array<string, string>
      */
     protected function buildRoutesPayload(): array
     {
+        $sentinel = '__RF_BUNDLE_ID__';
+        $bundleEditTemplate = str_replace(
+            $sentinel,
+            ':id',
+            FlightBundleResource::getUrl('edit', ['record' => $sentinel]),
+        );
+
         return [
             'preview_airports'     => route('admin.routeforge.api.preview-airports'),
             'subfleets'            => route('admin.routeforge.api.subfleets'),
@@ -159,7 +173,7 @@ class RouteForge extends Page
             'check_duplicates'     => route('admin.routeforge.api.check-duplicates'),
             'lint'                 => route('admin.routeforge.api.lint'),
             'commit'               => route('admin.routeforge.api.commit'),
-            'bundle_edit_template' => '/admin/flight-bundles/:id/edit',
+            'bundle_edit_template' => $bundleEditTemplate,
         ];
     }
 
