@@ -63,6 +63,15 @@ services:
       PHP_OPCACHE_INTERNED_STRINGS_BUFFER: "16"
       PHP_OPCACHE_JIT: "tracing"
       PHP_OPCACHE_JIT_BUFFER_SIZE: "64M"
+      # Caddy (bundled in FrankenPHP) writes its instance ID, ACME certs, and
+      # autosaved admin config under $XDG_DATA_HOME/caddy + $XDG_CONFIG_HOME/caddy.
+      # The image's www-data user has no $HOME with those defaults, so Caddy
+      # logs "could not clean default/global storage" + "unable to autosave
+      # config" on every boot. Point both at the storage volume so the data
+      # is writable AND persists across container recreations — important if
+      # SERVER_NAME is later set and Caddy starts managing TLS certs.
+      XDG_DATA_HOME: "/var/www/html/storage"
+      XDG_CONFIG_HOME: "/var/www/html/storage"
     env_file: .env
     volumes:
       - ./modules:/var/www/html/modules:ro
