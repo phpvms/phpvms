@@ -8,7 +8,7 @@
  * own files (one-line <select>s with pre-loaded option lists).
  *
  * Event picker is intentionally deferred for v1: `/admin/route-forge/api`
- * has no events endpoint, and `window.routeforgeConfig` does not expose an
+ * has no events endpoint, and the /boot envelope does not expose an
  * events list. Server-side L8 still gates commits with event-date checks
  * when an event_id is set out-of-band (e.g., via a v2 add-on). The
  * placeholder below makes the deferral explicit in the UI.
@@ -35,11 +35,12 @@ import { SubfleetPicker } from "./SubfleetPicker";
 import { TimeStrategyControls } from "./TimeStrategyControls";
 import { TopologyPicker } from "./TopologyPicker";
 import { t } from "../lib/i18n";
+import { getBootOrThrow } from "../state/boot";
 import { form } from "../state/store";
 import type { FlightTypeCode } from "../state/types";
 
 // FlightType labels — hardcoded English v1. Section 8 swaps for the existing
-// `flights.type.*` translation keys via window.routeforgeConfig.translations.
+// `flights.type.*` translation keys served via the /boot envelope.
 const FLIGHT_TYPE_LABELS: Array<[FlightTypeCode, string]> = [
   ["J", "Scheduled passenger"],
   ["F", "Scheduled cargo"],
@@ -129,7 +130,7 @@ function SectionShell({ title, children }: { title: string; children: ComponentC
 
 function AirlineSelect() {
   const f = form.value;
-  const airlines = window.routeforgeConfig?.airlines ?? [];
+  const airlines = getBootOrThrow().airlines;
 
   function handleChange(e: Event): void {
     const raw = (e.currentTarget as HTMLSelectElement).value;

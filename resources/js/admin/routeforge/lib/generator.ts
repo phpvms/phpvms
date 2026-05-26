@@ -42,7 +42,7 @@ export type GenerateInput = {
   options: {
     /** Reference calendar date for DST-aware TZ math. Typically `new Date()`. */
     gen_date: Date;
-    /** From window.routeforgeConfig.config; supplies defaults for missing capability data. */
+    /** From the boot envelope (`getBootOrThrow().config`); supplies defaults for missing capability data. */
     server_config: RouteForgeServerConfig;
   };
 };

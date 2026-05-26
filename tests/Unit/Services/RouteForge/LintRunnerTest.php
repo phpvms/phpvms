@@ -18,7 +18,7 @@ use Tests\Support\RouteForgeTestHelpers as RF;
  * Rules themselves are exercised in tests/Unit/Services/RouteForge/Rules/*Test.php;
  * the runner test focuses on: rules iterate in registration order, every
  * issue lands in the right severity bucket, an empty rule set produces an
- * empty report, and the defaults() factory wires all 12 v1 rules.
+ * empty report, and the defaults() factory wires all 13 v1 rules.
  */
 
 it('runs zero rules and returns an empty report', function (): void {
@@ -109,9 +109,9 @@ it('exposes the full v1 catalog via defaults()', function (): void {
     $ids = array_map(static fn (LintRule $rule): string => $rule->id(), $runner->rules);
 
     expect($ids)->toEqualCanonicalizing([
-        'L1', 'L2', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11',
+        'L1', 'L2', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12',
     ])
-        ->and($runner->rules)->toHaveCount(12);
+        ->and($runner->rules)->toHaveCount(13);
 });
 
 it('canProceed is true only when no errors are present', function (): void {

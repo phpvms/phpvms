@@ -11,10 +11,14 @@ use Illuminate\Validation\Rule;
  * JSON body validation for /admin/route-forge/api/check-duplicates.
  *
  * Body shape (top-level `airline_id` is the batch-wide constraint; rows must
- * match it):
+ * match it). `bundle_id` is OPTIONAL — provide it when the batch targets an
+ * existing bundle so same-bundle conflicts surface as ERROR vs WARNING for
+ * cross-bundle hits. Omit / null when creating a new bundle (every match
+ * becomes cross-bundle WARNING).
  *
  *   {
  *     "airline_id": 1,
+ *     "bundle_id": 42,            // optional
  *     "rows": [
  *       { "airline_id": 1, "flight_number": 100,
  *         "route_code": null, "route_leg": null,
@@ -41,6 +45,7 @@ final class CheckDuplicatesRequest extends FormRequest
 
         return [
             'airline_id'            => ['required', 'integer', 'exists:airlines,id'],
+            'bundle_id'             => ['nullable', 'integer', 'exists:flight_bundles,id'],
             'rows'                  => ['required', 'array', 'min:1', 'max:'.$maxRows],
             'rows.*.airline_id'     => ['required', 'integer', Rule::in([$batchAirlineId])],
             'rows.*.flight_number'  => ['required', 'integer', 'min:1', 'max:9999'],

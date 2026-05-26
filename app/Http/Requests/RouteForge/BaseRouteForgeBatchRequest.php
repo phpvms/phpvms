@@ -6,7 +6,6 @@ namespace App\Http\Requests\RouteForge;
 
 use App\Contracts\FormRequest;
 use App\Enums\FlightType;
-use App\Models\Airline;
 use Illuminate\Validation\Rule;
 
 /**
@@ -27,23 +26,19 @@ use Illuminate\Validation\Rule;
  *   - subfleet_ids.* MUST belong to the chosen airline.
  *
  * The first two are evaluated against $this->input(...) at rules() call
- * time. The subfleet ownership constraint loads the airline once via the
- * cached lookup so the array-of-allowed-ids isn't recomputed per element.
+ * time. The subfleet ownership constraint is expressed declaratively via
+ * `Rule::exists('subfleets', 'id')->where('airline_id', ...)` — the database
+ * scopes per row, no PHP-side enumeration / pre-load of allowed ids inside
+ * `rules()` itself. `rules()` runs zero Eloquent queries.
  *
  * Empty / missing scopes (e.g. malformed payload) fall through harmlessly:
- * Rule::in([]) rejects every value, so a row pointing at an empty scope
- * fails closed with a clear "field is invalid" error.
+ * Rule::in([]) rejects every value for the airline/airport scopes, and the
+ * scoped Rule::exists matches nothing when airline_id is null, so a row
+ * pointing at an empty scope fails closed with a clear "field is invalid"
+ * error.
  */
 abstract class BaseRouteForgeBatchRequest extends FormRequest
 {
-    /**
-     * Memoized list of subfleet IDs owned by the batch's airline. Avoids a
-     * round-trip per row when Rule::in is evaluated for subfleet_ids.*.
-     *
-     * @var list<int>|null
-     */
-    private ?array $allowedSubfleetIds = null;
-
     /**
      * Subclasses MAY override to layer additional rules onto the base set.
      */
@@ -54,7 +49,6 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
         $airlineId = $this->input('airline_id');
         $allowedAirlineIds = $airlineId !== null ? [$airlineId] : [];
         $allowedIcaos = $this->buildIcaoScope();
-        $allowedSubfleetIds = $this->allowedSubfleetIds();
 
         return [
             'airline_id'  => ['required', 'integer', 'exists:airlines,id'],
@@ -63,8 +57,17 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             // 'present' (not 'required') so an empty array passes — L3 lint
             // catches "no subfleets selected" downstream as a warning rather
             // than blocking the payload at the validation layer.
-            'subfleet_ids'   => ['present', 'array'],
-            'subfleet_ids.*' => ['integer', Rule::in($allowedSubfleetIds)],
+            'subfleet_ids' => ['present', 'array'],
+            // Scoped exists: the DB does the airline-ownership check per row.
+            // When airline_id is null/invalid the query becomes
+            // `WHERE airline_id IS NULL` and matches no real subfleets —
+            // fail-closed, parallel to the prior `Rule::in([])` behavior.
+            'subfleet_ids.*' => [
+                'integer',
+                Rule::exists('subfleets', 'id')->where(
+                    fn ($q) => $q->where('airline_id', $this->input('airline_id'))
+                ),
+            ],
 
             'origins'        => ['required', 'array', 'min:1'],
             'origins.*'      => ['string', 'size:4', 'alpha', 'exists:airports,id'],
@@ -122,7 +125,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
     {
         return [
             'airline_id.exists'                => __('validation.exists', ['attribute' => 'airline']),
-            'subfleet_ids.*.in'                => __('filament.routeforge.validation.subfleet_not_in_airline'),
+            'subfleet_ids.*.exists'            => __('filament.routeforge.validation.subfleet_not_in_airline'),
             'origins.required'                 => __('filament.routeforge.validation.origins_required'),
             'origins.*.exists'                 => __('filament.routeforge.validation.airport_unknown'),
             'destinations.required'            => __('filament.routeforge.validation.destinations_required'),
@@ -205,35 +208,5 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
         $strings = array_filter($merged, is_string(...));
 
         return array_values(array_unique($strings));
-    }
-
-    /**
-     * Load (once) the list of subfleet ids belonging to the batch's airline.
-     * Returns [] when airline_id is missing/invalid so Rule::in rejects every
-     * submitted subfleet_id with a clear validation error.
-     *
-     * @return list<int>
-     */
-    private function allowedSubfleetIds(): array
-    {
-        if ($this->allowedSubfleetIds !== null) {
-            return $this->allowedSubfleetIds;
-        }
-
-        $airlineId = $this->input('airline_id');
-        if (!is_numeric($airlineId)) {
-            return $this->allowedSubfleetIds = [];
-        }
-
-        $airline = Airline::query()->find((int) $airlineId);
-        if ($airline === null) {
-            return $this->allowedSubfleetIds = [];
-        }
-
-        return $this->allowedSubfleetIds = $airline->subfleets()
-            ->pluck('id')
-            ->map(static fn ($id): int => (int) $id)
-            ->values()
-            ->all();
     }
 }

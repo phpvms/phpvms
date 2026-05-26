@@ -6,7 +6,7 @@
  * page after a short delay. User can also click the manual link.
  *
  * The redirect URL is built from the backend-provided template
- * `window.routeforgeConfig.routes.bundle_edit_template` (with `:id` swapped
+ * `getBootOrThrow().routes.bundle_edit_template` (with `:id` swapped
  * for the new bundle id). Falls back to the canonical Filament route shape
  * if the template is somehow missing.
  *
@@ -17,6 +17,7 @@
 import { useEffect } from "preact/hooks";
 
 import { t } from "../lib/i18n";
+import { getBootOrThrow } from "../state/boot";
 import type { CommitResponse } from "../state/types";
 
 const REDIRECT_DELAY_MS = 1500;
@@ -26,13 +27,13 @@ export type CommitSuccessRedirectProps = {
 };
 
 export function CommitSuccessRedirect({ result }: CommitSuccessRedirectProps) {
-  const template = window.routeforgeConfig?.routes?.bundle_edit_template;
+  const template = getBootOrThrow().routes.bundle_edit_template;
   // Fallback path matches FlightBundleResource's actual slug ("flights"),
   // not the resource's class name ("FlightBundles"). The backend template
   // is derived from FlightBundleResource::getUrl() so this fallback should
-  // only fire if the config payload is malformed.
+  // only fire if the boot payload is malformed.
   const redirectUrl =
-    template !== undefined && template !== ""
+    template !== ""
       ? template.replace(":id", String(result.bundle_id))
       : `/admin/flights/${result.bundle_id}/edit`;
 

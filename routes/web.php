@@ -98,11 +98,25 @@ Route::group([
 Route::get('/logout', [LoginController::class, 'logout'])->name(Logout::class);
 Auth::routes(['verify' => true]);
 
-/** RouteForge admin API endpoints (gated by `permission:create:flight`). */
+/**
+ * RouteForge admin API endpoints.
+ *
+ * Session-authenticated **RPC** endpoints — NOT a public REST API. They live
+ * in routes/web.php (not routes/api.php) so the cookie session and CSRF
+ * protection apply, are gated by `permission:create:flight`, and have no
+ * public consumers or versioned contract guarantee outside this codebase.
+ *
+ * The `/boot` endpoint is the SPA's bootstrap entry point — replaces the
+ * legacy `window.routeforgeConfig` global and ships every piece of mount-time
+ * state the React/Preact app needs in one round-trip. Bundles are NOT in the
+ * boot envelope (paginated + searchable via `/bundles` instead).
+ */
 Route::middleware(['web', 'auth', 'permission:create:flight'])
     ->prefix('admin/route-forge/api')
     ->name('admin.routeforge.api.')
     ->group(function (): void {
+        Route::get('boot', [RouteForgeController::class, 'boot'])->name('boot');
+        Route::get('bundles', [RouteForgeController::class, 'bundles'])->name('bundles');
         Route::get('preview-airports', [RouteForgeController::class, 'previewAirports'])->name('preview-airports');
         Route::get('subfleets', [RouteForgeController::class, 'subfleets'])->name('subfleets');
         Route::get('airline-stats', [RouteForgeController::class, 'airlineStats'])->name('airline-stats');

@@ -1,12 +1,14 @@
 /**
- * Typed fetch wrappers for the six /admin/route-forge/api/* endpoints.
+ * Typed fetch wrappers for the /admin/route-forge/api/* endpoints.
  *
- * Reads CSRF token + endpoint URLs from window.routeforgeConfig (populated
- * by RouteForge::buildConfig() in the Filament Blade view). All POSTs send
- * the X-CSRF-TOKEN header to clear Laravel's web middleware; GETs go through
- * the same session cookie. Non-2xx responses throw `ApiError` carrying the
- * status + parsed body so callers can switch on 422 (Form Request / lint
- * failure) vs 403/401 (auth) vs everything else.
+ * Reads CSRF token + endpoint URLs from the hydrated boot envelope (see
+ * `state/boot.ts`). The boot envelope is fetched once at SPA mount by
+ * `main.tsx`; every subsequent POST in this file reads the CSRF token from
+ * the in-memory store, not from `window.*`.
+ *
+ * Non-2xx responses throw `ApiError` carrying the status + parsed body so
+ * callers can switch on 422 (Form Request / lint failure) vs 403/401 (auth)
+ * vs everything else.
  *
  * The commit endpoint is special: it can respond 422 with the LintReport
  * envelope (when server-side lint catches errors). Callers should catch
@@ -14,17 +16,20 @@
  * shape is identical to the /lint endpoint's success body.
  */
 
+import { getBootOrThrow } from "../state/boot";
 import type {
   AirlineStats,
   AirportSummary,
+  BootEnvelope,
+  BundleSummary,
   CommitPayload,
   CommitResponse,
   DuplicateCheckResponse,
   LintPayload,
   LintReport,
   PayloadRow,
+  RouteForgeRoutes,
   SubfleetSummary,
-  WindowConfig,
 } from "../state/types";
 
 /** Thrown for any non-2xx response. `body` is the parsed JSON (or null on parse fail). */
@@ -64,7 +69,22 @@ export type AirlineStatsParams = {
   airline_id: number;
 };
 
+export type BundlesParams = {
+  search?: string;
+  page?: number;
+  per_page?: number;
+};
+
 export type CheckDuplicatesParams = {
+  /** Batch-wide airline id. Server enforces every row matches this. */
+  airline_id: number;
+  /**
+   * Bundle id the batch will commit to. Omit / null when creating a new
+   * bundle — every existing match then surfaces as cross-bundle warning.
+   * When set, full-tuple matches in this bundle surface as same-bundle
+   * errors.
+   */
+  bundle_id?: number | null;
   rows: Pick<
     PayloadRow,
     | "airline_id"
@@ -85,6 +105,56 @@ export type PaginatedResponse<T> = {
 };
 
 export type SingleResponse<T> = { data: T };
+
+// ─── Boot fetch (special: read before store hydration) ────────────────────
+
+/** Cached after first read; null until main.tsx asks for it. */
+let cachedBootUrl: string | null = null;
+
+/**
+ * Read the `data-boot-url` attribute off `#routeforge-root` (rendered by the
+ * Filament Blade view). Cached after first call so retries inside a single
+ * page load skip the DOM walk.
+ */
+function readBootUrl(): string {
+  if (cachedBootUrl !== null) {
+    return cachedBootUrl;
+  }
+  const root = document.getElementById("routeforge-root");
+  const url = root?.dataset.bootUrl;
+  if (url === undefined || url === "") {
+    throw new Error(
+      "RouteForge mount point is missing the data-boot-url attribute; the Filament Blade view did not render correctly.",
+    );
+  }
+  cachedBootUrl = url;
+  return url;
+}
+
+/**
+ * Fetch the boot envelope. Throws `ApiError` on non-2xx, or a plain `Error`
+ * if the bootstrap URL itself is missing (broken Blade view).
+ *
+ * Callers MUST call `hydrateBoot()` with the resolved envelope before
+ * touching any other helper in this module.
+ */
+export async function getBoot(): Promise<BootEnvelope> {
+  const url = readBootUrl();
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "same-origin",
+    headers: {
+      Accept: "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+  const envelope = await handleResponse<{ data?: BootEnvelope } | BootEnvelope>(res, url);
+  // The Laravel JsonResource wraps payloads under `data` by default.
+  if (envelope !== null && typeof envelope === "object" && "data" in envelope) {
+    return (envelope as { data: BootEnvelope }).data;
+  }
+  return envelope as BootEnvelope;
+}
 
 // ─── Endpoint wrappers ────────────────────────────────────────────────────
 
@@ -107,6 +177,18 @@ export async function getAirlineStats(
 ): Promise<SingleResponse<AirlineStats>> {
   const url = buildUrl(routes().airline_stats, params);
   return getJson<SingleResponse<AirlineStats>>(url);
+}
+
+/**
+ * Paginated + searchable feed of non-soft-deleted FlightBundles. Backs the
+ * existing-bundle picker in BundleConfigSection. Server applies a case-
+ * insensitive LIKE filter on `name` when `search` is set.
+ */
+export async function getBundles(
+  params: BundlesParams = {},
+): Promise<PaginatedResponse<BundleSummary>> {
+  const url = buildUrl(routes().bundles, params);
+  return getJson<PaginatedResponse<BundleSummary>>(url);
 }
 
 export async function postCheckDuplicates(
@@ -151,7 +233,7 @@ async function postJson<T>(url: string, body: unknown, signal?: AbortSignal): Pr
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      "X-CSRF-TOKEN": config().csrf_token,
+      "X-CSRF-TOKEN": getBootOrThrow().csrf_token,
       "X-Requested-With": "XMLHttpRequest",
     },
     body: JSON.stringify(body),
@@ -188,20 +270,6 @@ function buildUrl(base: string, params: Record<string, unknown>): string {
   return qsStr === "" ? base : `${base}?${qsStr}`;
 }
 
-/**
- * Read window.routeforgeConfig; throws clearly if the Filament page didn't
- * inject it (would mean the Blade view broke between deploy and load).
- */
-function config(): WindowConfig {
-  const cfg = window.routeforgeConfig;
-  if (cfg === undefined) {
-    throw new Error(
-      "window.routeforgeConfig is not set; RouteForge page may have failed to render.",
-    );
-  }
-  return cfg;
-}
-
-function routes(): WindowConfig["routes"] {
-  return config().routes;
+function routes(): RouteForgeRoutes {
+  return getBootOrThrow().routes;
 }

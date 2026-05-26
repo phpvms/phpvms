@@ -7,14 +7,23 @@ namespace App\Services\RouteForge\Rules;
 use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Support\StrictDuplicateKey;
 
 /**
  * L4 — Duplicate flight numbers within the submitted batch (ERROR).
  *
- * Strict duplicate key is `(airline_id, flight_number, route_code, route_leg)`.
- * Two rows in the same batch that share this tuple cannot both be persisted —
- * the unique constraint on the flights table would reject the second. This is
- * a commit-blocking error.
+ * Strict duplicate key is the 5-tuple
+ * `(bundle_id, airline_id, flight_number, route_code, route_leg)` provided by
+ * `StrictDuplicateKey`. Two rows in the same batch that share this tuple
+ * cannot both be persisted — the DB UNIQUE index on `flights._dup_key` (and
+ * the legacy strict-duplicate semantics on `(airline_id, flight_number,
+ * route_code, route_leg)` for org-level flights) would reject the second.
+ * This is a commit-blocking error.
+ *
+ * `bundle_id` is included in the key for correctness-by-construction. The
+ * batch always commits to a single bundle today, so within one batch every
+ * row shares the same `bundle_id` and the field is effectively constant;
+ * including it in the key future-proofs against multi-bundle batches.
  *
  * Per the spec, the issue identifies BOTH row indices involved; the UI
  * highlights the conflicting pair. When N rows collide on the same key, we
@@ -39,8 +48,10 @@ final class L4DuplicateFlightNumbersInBatch implements LintRule
         $seen = [];
         $issues = [];
 
+        $bundleId = $ctx->bundle->id;
+
         foreach ($ctx->rows as $index => $row) {
-            $key = $this->dupKey($row);
+            $key = (string) StrictDuplicateKey::forRow($row, $bundleId);
 
             if (!isset($seen[$key])) {
                 $seen[$key] = $index;
@@ -71,29 +82,5 @@ final class L4DuplicateFlightNumbersInBatch implements LintRule
         }
 
         return $issues;
-    }
-
-    /**
-     * @param array<string, mixed> $row
-     */
-    private function dupKey(array $row): string
-    {
-        return implode('|', [
-            (string) ($row['airline_id'] ?? ''),
-            (string) ($row['flight_number'] ?? ''),
-            // Normalize null/empty/0 to a single canonical token so the strict
-            // key matches the FlightService duplicate semantics (NULL ≡ '' ≡ 0).
-            $this->normalize($row['route_code'] ?? null),
-            $this->normalize($row['route_leg'] ?? null),
-        ]);
-    }
-
-    private function normalize(mixed $value): string
-    {
-        if (in_array($value, [null, '', 0, '0'], true)) {
-            return '∅';
-        }
-
-        return (string) $value;
     }
 }

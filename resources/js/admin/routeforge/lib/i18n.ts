@@ -1,12 +1,12 @@
 /**
  * Tiny translation helper for the RouteForge TS bundle.
  *
- * Reads from `window.routeforgeConfig.translations`, a nested object
- * populated server-side by `App\Filament\Pages\RouteForge::buildTranslationsPayload()`
- * via `trans('filament.routeforge')`. The same key tree therefore lives in
- * `resources/lang/<locale>/filament.php` under the `routeforge` key, and
- * RouteForge auto-picks up new translations + new locales without any TS
- * changes.
+ * Reads from the hydrated boot envelope (`bootEnvelope.value.translations`),
+ * a nested object populated server-side by the /boot endpoint's
+ * `buildTranslationsPayload()` via `trans('filament.routeforge')`. The same
+ * key tree therefore lives in `resources/lang/<locale>/filament.php` under
+ * the `routeforge` key, and RouteForge auto-picks up new translations + new
+ * locales without any TS changes.
  *
  * Usage:
  *
@@ -20,14 +20,17 @@
  * `:name` occurrence with `String(params[name])`; missing params are left
  * verbatim so the omission is visible during development.
  *
- * Missing keys fall back to the dot-path itself — visible enough to spot
- * during dev, harmless in prod.
+ * If called before boot hydration (only possible during the brief loading
+ * window) OR if the key is missing, the helper falls back to the dot-path
+ * itself — visible enough to spot during dev, harmless in prod.
  */
+
+import { bootEnvelope } from "../state/boot";
 
 export type TranslationParams = Record<string, string | number>;
 
 export function t(key: string, params?: TranslationParams): string {
-  const translations = window.routeforgeConfig?.translations;
+  const translations = bootEnvelope.value?.translations;
   let node: unknown = translations;
   for (const segment of key.split(".")) {
     if (node === null || typeof node !== "object") {

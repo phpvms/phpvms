@@ -25,7 +25,7 @@ A full distribution, with all the composer dependencies, is available at this
   - intl
   - zip
 - Database:
-  - MySQL 5.7+ (or MySQL variant, including MariaDB and Percona)
+  - MySQL 8.0+ (or MySQL variant, including MariaDB 10.2+ and Percona 8.0+)
 
 [View more details on requirements](https://docs.phpvms.net/requirements)
 

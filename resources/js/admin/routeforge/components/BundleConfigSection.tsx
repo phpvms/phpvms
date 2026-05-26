@@ -14,19 +14,27 @@
  *     renders (description, dates, enabled toggle, fare multiplier). On
  *     commit the server creates a fresh FlightBundle row from those values.
  *
- * The picker reads `window.routeforgeConfig.bundles` (a server-injected
- * array of bundle summaries, populated at Filament page mount). All
- * filtering is in-memory — fine at typical VA scale (dozens to low hundreds
- * of bundles). No /admin/route-forge/api/bundles endpoint exists in v1.
+ * The picker calls GET /admin/route-forge/api/bundles per keystroke
+ * (debounced 250ms). Server applies a case-insensitive LIKE filter and
+ * paginates; the picker shows the first page only. Boot-time payload no
+ * longer ships every bundle inline — fixes the unbounded-list issue from
+ * the v1 design.
  *
  * Selecting a bundle from the dropdown also pre-fills the new-mode fields
  * (description, dates, enabled) from the picked bundle's values, so if the
  * user clicks Change and falls back to "create new" mode the form is
  * already populated with a useful starting point.
+ *
+ * ExistingBundleSummary edge case: if a draft is resumed and the picked
+ * bundle id is no longer in the most recent search result (e.g. someone
+ * deleted it between save and resume), a one-shot `getBundles({ search:
+ * bundleName })` runs to repopulate the read-only summary. If the bundle
+ * still can't be found, the summary falls back to the cached name.
  */
 
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
+import { ApiError, getBundles } from "../lib/api";
 import { t } from "../lib/i18n";
 import { form } from "../state/store";
 import type { BundleConfig, BundleSummary } from "../state/types";
@@ -34,8 +42,9 @@ import { Field, INPUT_CLASS, INPUT_CLASS_ERROR } from "./Field";
 
 const FARE_MULTIPLIER_RE = /^[+-]?\d+(\.\d+)?%$/;
 const PICKER_INPUT_ID = "rf-bundle-picker";
-const MAX_RESULTS = 10;
+const SEARCH_DEBOUNCE_MS = 250;
 const BLUR_CLOSE_DELAY_MS = 150;
+const PER_PAGE = 10;
 
 function validateFareMultiplier(value: string): string | null {
   if (value === "") {
@@ -104,7 +113,6 @@ function BundlePicker({
   onTypeNewName,
   onClearSelection,
 }: BundlePickerProps) {
-  const bundles = window.routeforgeConfig?.bundles ?? [];
   const [query, setQuery] = useState<string>(existingId === null ? bundleName : "");
   const [open, setOpen] = useState<boolean>(false);
   // Tracks the typed name the user pressed Enter on. Suppresses the
@@ -112,6 +120,14 @@ function BundlePicker({
   // (which mutates query) makes query !== confirmedNewName again, so the
   // hint comes back.
   const [confirmedNewName, setConfirmedNewName] = useState<string | null>(null);
+  // Server-side search results. Reset when the dropdown closes; refilled
+  // by the debounced fetch effect below.
+  const [results, setResults] = useState<BundleSummary[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  // Tracks every result the picker has seen since mount so the read-only
+  // ExistingBundleSummary can resolve a previously-picked id without a
+  // second round-trip when the user clicks Change → re-pick.
+  const seenBundlesRef = useRef<Map<number, BundleSummary>>(new Map());
 
   // Resume-from-draft: when the form signal swaps under us, sync the
   // local query so the visible text matches the underlying state.
@@ -121,13 +137,58 @@ function BundlePicker({
     }
   }, [existingId, bundleName]);
 
+  // Debounced server-side search. Fires on every query change while the
+  // dropdown is open. Empty query → fetch first page unfiltered. Aborted
+  // implicitly on unmount via cleanup.
+  useEffect(() => {
+    if (!open && existingId !== null) {
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const params: { search?: string; per_page: number } = { per_page: PER_PAGE };
+          const trimmed = query.trim();
+          if (trimmed !== "") {
+            params.search = trimmed;
+          }
+          const res = await getBundles(params);
+          if (cancelled) {
+            return;
+          }
+          setResults(res.data);
+          setSearchError(null);
+          for (const bundle of res.data) {
+            seenBundlesRef.current.set(bundle.id, bundle);
+          }
+        } catch (err) {
+          if (cancelled) {
+            return;
+          }
+          setSearchError(
+            err instanceof ApiError
+              ? `Bundle search failed (${err.status}).`
+              : "Bundle search failed.",
+          );
+        }
+      })();
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, open, existingId]);
+
   // Existing-bundle read-only branch
   if (existingId !== null) {
-    const selected = bundles.find((x) => x.id === existingId) ?? null;
+    const selected = seenBundlesRef.current.get(existingId) ?? null;
     return (
       <ExistingBundleSummary
         bundle={selected}
+        bundleId={existingId}
         fallbackName={bundleName}
+        seen={seenBundlesRef}
         onChange={() => {
           onClearSelection();
           setQuery(bundleName);
@@ -138,13 +199,10 @@ function BundlePicker({
   }
 
   const q = query.trim().toLowerCase();
-  const filtered =
-    q === ""
-      ? bundles.slice(0, MAX_RESULTS)
-      : bundles.filter((bundle) => bundle.name.toLowerCase().includes(q)).slice(0, MAX_RESULTS);
-  const hasExactMatch = bundles.some((bundle) => bundle.name.toLowerCase() === q);
+  const hasExactMatch = results.some((bundle) => bundle.name.toLowerCase() === q);
   const showCreateHint =
     query.trim() !== "" && !hasExactMatch && query.trim() !== (confirmedNewName ?? "");
+  const filtered = results;
 
   return (
     <Field
@@ -199,7 +257,10 @@ function BundlePicker({
         />
         {open && (
           <div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
-            {filtered.length === 0 && query.trim() !== "" && (
+            {searchError !== null && (
+              <div class="px-3 py-2 text-xs text-red-600 dark:text-red-400">{searchError}</div>
+            )}
+            {filtered.length === 0 && query.trim() !== "" && searchError === null && (
               <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
                 {t("bundle.no_matches")}
               </div>
@@ -240,23 +301,62 @@ function BundlePicker({
 
 type ExistingBundleSummaryProps = {
   bundle: BundleSummary | null;
+  bundleId: number;
   fallbackName: string;
+  seen: { current: Map<number, BundleSummary> };
   onChange: () => void;
 };
 
-function ExistingBundleSummary({ bundle, fallbackName, onChange }: ExistingBundleSummaryProps) {
+function ExistingBundleSummary({
+  bundle,
+  bundleId,
+  fallbackName,
+  seen,
+  onChange,
+}: ExistingBundleSummaryProps) {
   const empty = t("bundle.value_empty");
   const yes = t("bundle.value_yes");
   const no = t("bundle.value_no");
+  const [resolved, setResolved] = useState<BundleSummary | null>(bundle);
 
-  // bundle === null path: the picked id is no longer in the page's bundles
-  // list (e.g. someone deleted it between page load and resume). Show the
-  // last-known name and a Change affordance.
-  const name = bundle?.name ?? fallbackName;
-  const description = bundle?.description ?? null;
-  const startDate = bundle?.start_date ?? null;
-  const endDate = bundle?.end_date ?? null;
-  const enabled = bundle?.enabled ?? false;
+  // Lazy resolve: when bundle is null at mount (resume-from-draft, the
+  // picker hasn't issued any search yet) do a one-shot fetch keyed on the
+  // last-known name so we can render full metadata. On miss, fall back to
+  // the cached name.
+  useEffect(() => {
+    if (bundle !== null) {
+      setResolved(bundle);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await getBundles({ search: fallbackName, per_page: PER_PAGE });
+        if (cancelled) {
+          return;
+        }
+        const match = res.data.find((entry) => entry.id === bundleId) ?? null;
+        if (match !== null) {
+          seen.current.set(match.id, match);
+          setResolved(match);
+        }
+      } catch {
+        // Silent — falls back to the cached name below.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [bundle, bundleId, fallbackName, seen]);
+
+  // resolved === null path: the picked id is no longer findable via the
+  // bundles endpoint (e.g. someone deleted it between page load and resume).
+  // Show the last-known name and a Change affordance.
+  const name = resolved?.name ?? fallbackName;
+  const description = resolved?.description ?? null;
+  const startDate = resolved?.start_date ?? null;
+  const endDate = resolved?.end_date ?? null;
+  const enabled = resolved?.enabled ?? false;
 
   return (
     <Field label={t("bundle.picker_label")}>

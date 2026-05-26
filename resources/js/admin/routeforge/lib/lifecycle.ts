@@ -48,6 +48,7 @@ import { effect, signal } from "@preact/signals";
 
 import { ApiError, postLint } from "./api";
 import { generate } from "./generator";
+import { getBootOrThrow } from "../state/boot";
 import {
   airlineStats,
   airportCache,
@@ -122,7 +123,7 @@ function fingerprint(f: Form): string {
 }
 
 function readServerConfig() {
-  return window.routeforgeConfig?.config ?? {};
+  return getBootOrThrow().config;
 }
 
 function toPayloadRow(r: Row): PayloadRow {

@@ -6,31 +6,36 @@ namespace App\Http\Resources\RouteForge;
 
 use App\Http\Resources\AirportResource;
 use App\Models\Airport;
+use App\Support\Geo;
 use Illuminate\Http\Request;
 
 /**
  * Admin RouteForge variant of AirportResource.
  *
- * Extends the public AirportResource and conditionally appends two computed
- * fields:
+ * Extends the public AirportResource and conditionally appends two
+ * computed fields:
  *
- *   - distance_from_origin_nm: haversine distance (nautical miles) from the
- *     `near` ICAO supplied as a query parameter to /preview-airports.
- *   - in_subfleet_range: true iff `distance_from_origin_nm` is ≤ the
+ *   - `distance_from_origin_nm`: great-circle distance (nautical miles)
+ *     from the `near` ICAO supplied to /preview-airports.
+ *   - `in_subfleet_range`: true iff `distance_from_origin_nm` ≤ the
  *     `max_range_nm` query parameter.
  *
- * Both values are stamped onto the Airport model instance by
- * RouteForgeController::previewAirports() AFTER the paginator runs, as
- * dynamic attributes. This keeps the public AirportResource and shared
- * AirportSearchQueryV1 contracts unchanged — admin-only fields surface only
- * when the caller hits this resource path.
+ * Decoration context is passed in via the request attribute bag:
  *
- * Reads of the stamped attributes use `getAttribute()` so PHPStan sees the
- * Eloquent API rather than a phantom property access. The controller stamped
- * via `setAttribute()`; parent::toArray() also surfaces them through
- * Eloquent's attribute serialization, but the explicit read keeps the wire
- * contract documented and lets future field-shape changes (e.g. unit
- * conversion) live in one place.
+ *   - `$request->attributes->get('routeforge.origin')` — `?Airport` model
+ *     with non-null lat/lon, or `null` when no `near` was supplied (or it
+ *     didn't resolve).
+ *   - `$request->attributes->get('routeforge.max_range_nm')` — `?int`, or
+ *     `null` when the parameter was absent.
+ *
+ * `RouteForgeController::previewAirports()` stashes both on the global
+ * `app('request')` instance (the Form Request's attribute bag does NOT
+ * propagate — Laravel's FormRequest is a separate Request instance from
+ * the container-bound `request` singleton the resource resolves during
+ * serialization). The resource then computes distance per row via
+ * `App\Support\Geo::haversineNm()`. The underlying `Airport` model's
+ * attribute bag is left untouched — these fields exist only on the wire,
+ * not on the Eloquent model.
  *
  * @mixin Airport
  */
@@ -41,14 +46,32 @@ final class RouteForgeAirportResource extends AirportResource
     {
         $res = parent::toArray($request);
 
-        $distance = $this->resource->getAttribute('distance_from_origin_nm');
-        if ($distance !== null) {
-            $res['distance_from_origin_nm'] = $distance;
+        /** @var ?Airport $origin */
+        $origin = $request->attributes->get('routeforge.origin');
+        if (!$origin instanceof Airport) {
+            return $res;
         }
 
-        $inRange = $this->resource->getAttribute('in_subfleet_range');
-        if ($inRange !== null) {
-            $res['in_subfleet_range'] = $inRange;
+        if ($origin->lat === null || $origin->lon === null) {
+            return $res;
+        }
+
+        if ($this->resource->lat === null || $this->resource->lon === null) {
+            return $res;
+        }
+
+        $distance = Geo::haversineNm(
+            latA: (float) $origin->lat,
+            lonA: (float) $origin->lon,
+            latB: (float) $this->resource->lat,
+            lonB: (float) $this->resource->lon,
+        );
+
+        $res['distance_from_origin_nm'] = round($distance, 1);
+
+        $maxRangeNm = $request->attributes->get('routeforge.max_range_nm');
+        if (is_int($maxRangeNm)) {
+            $res['in_subfleet_range'] = $distance <= $maxRangeNm;
         }
 
         return $res;

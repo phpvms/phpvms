@@ -168,10 +168,11 @@ export type BundleConfig = {
 };
 
 /**
- * Subset of a FlightBundle row served by the Filament page at mount time
- * (window.routeforgeConfig.bundles). Drives the existing-bundle picker.
- * Dates are ISO strings (YYYY-MM-DD) so the read-only display can render
- * them without parsing.
+ * Subset of a FlightBundle row served by the
+ * GET /admin/route-forge/api/bundles endpoint. Drives the existing-bundle
+ * picker (server-side searched + paginated; the picker debounces typeahead
+ * and re-queries per keystroke). Dates are ISO strings (YYYY-MM-DD) so the
+ * read-only display can render them without parsing.
  */
 export type BundleSummary = {
   id: number;
@@ -343,12 +344,27 @@ export type AirlineSummary = {
 
 // ─── Duplicate-check wire shapes ───────────────────────────────────────────
 
+/**
+ * Severity-classified, bundle-aware duplicate match from
+ * `/admin/route-forge/api/check-duplicates`.
+ *
+ * - `severity = 'error', kind = 'same_bundle'`: full 5-tuple match in the
+ *   batch's bundle. DB UNIQUE constraint would reject commit; UI should
+ *   block submission or render a red icon (mirrors lint rule L5).
+ * - `severity = 'warning', kind = 'cross_bundle'`: `(airline_id,
+ *   flight_number)` match in a DIFFERENT bundle. UI renders the existing
+ *   yellow warning icon; admin can commit with awareness (mirrors L12).
+ */
 export type DuplicateMatch = {
   index: number;
   existing_flight_id: string;
   ident: string;
   /** Always 'flight_number' in v1. */
-  conflict_field: string;
+  conflict_field: "flight_number";
+  severity: "error" | "warning";
+  kind: "same_bundle" | "cross_bundle";
+  existing_bundle_id: number;
+  existing_bundle_name: string;
 };
 
 export type DuplicateCheckResponse = {
@@ -383,7 +399,7 @@ export type CommitPayload = LintPayload & {
   on_conflict: "skip" | "abort";
 };
 
-// ─── window.routeforgeConfig (set by Filament Blade view) ──────────────────
+// ─── Boot envelope (GET /admin/route-forge/api/boot) ──────────────────────
 
 export type RouteForgeRoutes = {
   preview_airports: string;
@@ -392,6 +408,8 @@ export type RouteForgeRoutes = {
   check_duplicates: string;
   lint: string;
   commit: string;
+  /** Paginated + searchable feed of non-soft-deleted FlightBundles. */
+  bundles: string;
   /** Template URL with `:id` placeholder for the bundle edit page. */
   bundle_edit_template: string;
 };
@@ -405,22 +423,22 @@ export type RouteForgeServerConfig = {
   [k: string]: unknown;
 };
 
-export type WindowConfig = {
+/**
+ * Shape of the JSON returned by GET /admin/route-forge/api/boot.
+ *
+ * Hydrated into the in-memory store ONCE at SPA mount (replaces the legacy
+ * `window.routeforgeConfig` global). Bundles intentionally NOT included —
+ * served paginated via the separate /bundles endpoint.
+ */
+export type BootEnvelope = {
   csrf_token: string;
   locale: string;
   user: { id: number; name: string | null; can_commit: boolean };
   airlines: AirlineSummary[];
-  bundles: BundleSummary[];
   routes: RouteForgeRoutes;
   config: RouteForgeServerConfig;
   translations: Record<string, unknown>;
 };
-
-declare global {
-  interface Window {
-    routeforgeConfig?: WindowConfig;
-  }
-}
 
 // ─── Draft envelope (localStorage shape) ───────────────────────────────────
 

@@ -7,6 +7,7 @@ namespace App\Services\RouteForge;
 use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\Rules\L10BatchOver100;
 use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
+use App\Services\RouteForge\Rules\L12ExistingDuplicateCrossBundle;
 use App\Services\RouteForge\Rules\L1AircraftCapacity;
 use App\Services\RouteForge\Rules\L2bTypeMismatch;
 use App\Services\RouteForge\Rules\L2RangeMismatch;
@@ -55,6 +56,7 @@ final readonly class LintRunner
             new L9BatchOver50(),
             new L10BatchOver100(),
             new L11AirportTimezoneMissing(),
+            new L12ExistingDuplicateCrossBundle(),
         ]);
     }
 

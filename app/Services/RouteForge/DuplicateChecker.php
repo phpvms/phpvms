@@ -5,46 +5,70 @@ declare(strict_types=1);
 namespace App\Services\RouteForge;
 
 use App\Models\Flight;
-use Illuminate\Support\Collection;
+use App\Services\RouteForge\Support\StrictDuplicateKey;
 
 /**
  * Detects collisions between submitted RouteForge rows and existing flights.
  *
- * Mirrors the bulk-query shape of the L5 lint rule but lives as a standalone
- * service so the /admin/route-forge/api/check-duplicates endpoint can answer
- * the interactive UI "is this flight number taken?" question without spinning
- * up a full LintContext. Both use the strict 4-tuple key
- * `(airline_id, flight_number, route_code, route_leg)` scoped to
- * `owner_type IS NULL`; that namespace is what the spec defines as a
- * "duplicate flight" for the bulk-creation path.
+ * Mirrors the bulk-query shape of the L5 / L12 lint rules but lives as a
+ * standalone service so the `/admin/route-forge/api/check-duplicates` endpoint
+ * can answer the interactive UI "is this flight number taken?" question
+ * without spinning up a full LintContext.
  *
- * NOT used during commit. Commit-time integrity flows through Form Request
- * validation and the LintRunner (L4 + L5); this service exists purely to
- * power the typing-time UI check.
+ * Classification (post-refinement):
+ *   - **same_bundle, error**: existing enabled, non-owner flight in the same
+ *     bundle as the batch matches the submitted row on the full 5-tuple
+ *     `(bundle_id, airline_id, flight_number, route_code, route_leg)`.
+ *     Mirrors L5 ERROR semantics — DB UNIQUE index would reject the commit.
+ *   - **cross_bundle, warning**: existing enabled, non-owner flight in a
+ *     DIFFERENT bundle shares `(airline_id, flight_number)` with the
+ *     submitted row. Mirrors L12 WARNING — surfaces the soft conflict so the
+ *     admin can review before commit.
+ *   - **no match**: row is absent from the response.
+ *
+ * Disabled flights and owner-typed flights (charter/personal) are excluded;
+ * they don't occupy the org-level flight-number namespace.
+ *
+ * New-bundle path: when `$batchBundleId` is null (creating a new bundle), no
+ * same-bundle match is possible by definition. Every cross-bundle airline+
+ * flight match becomes a `cross_bundle` warning.
+ *
+ * NOT used during commit. Commit-time integrity flows through the
+ * `LintRunner` (L4 + L5 + L12) and the DB-level UNIQUE constraint on
+ * `flights._dup_key`. This service exists purely to power the typing-time
+ * UI check.
  */
 final class DuplicateChecker
 {
     /**
      * Find existing-flight collisions for each submitted row.
      *
-     * One round-trip: pull every non-owner flight in the candidate
-     * (airline_id, flight_number) space — bounded by the batch row cap — then
-     * narrow in-memory by route_code/route_leg null-equivalence. The airline
-     * relation is eager-loaded so the Flight::ident accessor (which reads
-     * airline->code) stays free of N+1.
+     * One round-trip: pull every enabled, non-owner flight in the candidate
+     * `(airline_id, flight_number)` space — bounded by the batch row cap —
+     * then classify each submitted row in memory by comparing the full
+     * 5-tuple (for same-bundle hits) and the airline+flight pair (for
+     * cross-bundle hits). The airline relation is eager-loaded so the
+     * `Flight::ident` accessor stays free of N+1. The bundle relation is
+     * eager-loaded for the `existing_bundle_name` field in the response.
      *
-     * Each returned row carries `conflict_field => 'flight_number'`. The
-     * strict-key match is the full 4-tuple, but flight_number is the
-     * operationally meaningful field surfaced to the admin (airline scoping
-     * is implicit, route_code/leg are usually null). UI renders this as
-     * "flight_number 1234 is taken".
+     * The returned array is keyed by submitted row index. When a row matches
+     * multiple existing flights (e.g. one in the same bundle + one in a
+     * different bundle), the same-bundle ERROR entry takes precedence; the
+     * caller already has L5 / L12 to surface the full set if needed.
      *
-     * @param  array<int, array<string, mixed>>                                                                 $rows Submitted rows; each row MUST carry
-     *                                                                                                                airline_id and flight_number, and MAY
-     *                                                                                                                carry route_code / route_leg.
-     * @return array<int, array{index: int, existing_flight_id: string, ident: string, conflict_field: string}> Keyed by submitted row index.
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array{
+     *     index: int,
+     *     existing_flight_id: string,
+     *     ident: string,
+     *     conflict_field: 'flight_number',
+     *     severity: 'error'|'warning',
+     *     kind: 'same_bundle'|'cross_bundle',
+     *     existing_bundle_id: int,
+     *     existing_bundle_name: string,
+     * }>
      */
-    public function check(array $rows): array
+    public function check(array $rows, ?int $batchBundleId): array
     {
         if ($rows === []) {
             return [];
@@ -62,37 +86,105 @@ final class DuplicateChecker
             // `iata ?? icao`. Eager-load both backing columns; selecting the
             // accessor name directly returns the airline with NEITHER backing
             // column populated, and ident drops the airline prefix.
-            ->with('airline:id,iata,icao')
+            ->with(['airline:id,iata,icao', 'bundle:id,name'])
+            ->where('enabled', true)
+            ->whereNull('owner_type')
             ->whereIn('airline_id', $airlineIds)
             ->whereIn('flight_number', $flightNumbers)
-            ->whereNull('owner_type')
-            ->get(['id', 'airline_id', 'flight_number', 'route_code', 'route_leg']);
+            ->get(['id', 'bundle_id', 'airline_id', 'flight_number', 'route_code', 'route_leg']);
 
-        $byKey = $this->indexByStrictKey($existing);
+        if ($existing->isEmpty()) {
+            return [];
+        }
+
+        // Two indexes:
+        //   - Full 5-tuple → Flight: O(1) same-bundle ERROR lookup
+        //   - (airline, flight) → list<Flight>: cross-bundle WARNING lookup
+        /** @var array<string, Flight> $byStrictKey */
+        $byStrictKey = StrictDuplicateKey::index(
+            $existing,
+            static fn (Flight $flight): StrictDuplicateKey => StrictDuplicateKey::forFlight($flight),
+        );
+
+        /** @var array<string, list<Flight>> $byCrossKey */
+        $byCrossKey = [];
+        foreach ($existing as $flight) {
+            $key = StrictDuplicateKey::crossBundleKey(
+                (int) $flight->airline_id,
+                (int) $flight->flight_number,
+            );
+            $byCrossKey[$key][] = $flight;
+        }
 
         $duplicates = [];
         foreach ($rows as $index => $row) {
-            $key = $this->dupKey(
-                airlineId: $row['airline_id'] ?? null,
-                flightNumber: $row['flight_number'] ?? null,
-                routeCode: $row['route_code'] ?? null,
-                routeLeg: $row['route_leg'] ?? null,
-            );
+            $airlineId = $row['airline_id'] ?? null;
+            $flightNumber = $row['flight_number'] ?? null;
 
-            $hit = $byKey[$key] ?? null;
-            if ($hit === null) {
+            // Same-bundle full-key match takes precedence (ERROR).
+            if ($batchBundleId !== null) {
+                $strictKey = (string) StrictDuplicateKey::forRow($row, $batchBundleId);
+                $hit = $byStrictKey[$strictKey] ?? null;
+                if ($hit !== null && (int) $hit->bundle_id === $batchBundleId) {
+                    $duplicates[$index] = $this->entry($index, $hit, 'error', 'same_bundle');
+
+                    continue;
+                }
+            }
+            // Cross-bundle airline+flight match (WARNING). When batch bundle
+            // is null (new-bundle path), every hit is cross-bundle. When the
+            // batch bundle is set, exclude same-bundle hits (they belong to
+            // L5 / the same-bundle path above and would only collide if the
+            // full 5-tuple didn't match — in that case they don't surface).
+            if (!is_numeric($airlineId)) {
+                continue;
+            }
+            if (!is_numeric($flightNumber)) {
                 continue;
             }
 
-            $duplicates[$index] = [
-                'index'              => $index,
-                'existing_flight_id' => $hit->id,
-                'ident'              => $hit->ident,
-                'conflict_field'     => 'flight_number',
-            ];
+            $crossKey = StrictDuplicateKey::crossBundleKey((int) $airlineId, (int) $flightNumber);
+            $crossHits = $byCrossKey[$crossKey] ?? [];
+
+            foreach ($crossHits as $hit) {
+                if ($batchBundleId !== null && (int) $hit->bundle_id === $batchBundleId) {
+                    continue;
+                }
+
+                $duplicates[$index] = $this->entry($index, $hit, 'warning', 'cross_bundle');
+                break;
+            }
         }
 
         return $duplicates;
+    }
+
+    /**
+     * @return array{
+     *     index: int,
+     *     existing_flight_id: string,
+     *     ident: string,
+     *     conflict_field: 'flight_number',
+     *     severity: 'error'|'warning',
+     *     kind: 'same_bundle'|'cross_bundle',
+     *     existing_bundle_id: int,
+     *     existing_bundle_name: string,
+     * }
+     */
+    private function entry(int $index, Flight $hit, string $severity, string $kind): array
+    {
+        return [
+            'index'              => $index,
+            'existing_flight_id' => (string) $hit->id,
+            'ident'              => (string) $hit->ident,
+            'conflict_field'     => 'flight_number',
+            'severity'           => $severity,
+            'kind'               => $kind,
+            'existing_bundle_id' => (int) $hit->bundle_id,
+            // bundle_id is NOT NULL (FK) and `bundle` is eager-loaded by
+            // the query above, so the relation is guaranteed non-null here.
+            'existing_bundle_name' => (string) $hit->bundle->name,
+        ];
     }
 
     /**
@@ -127,54 +219,5 @@ final class DuplicateChecker
         }
 
         return array_keys($nums);
-    }
-
-    /**
-     * @param  Collection<int, Flight> $existing
-     * @return array<string, Flight>
-     */
-    private function indexByStrictKey(Collection $existing): array
-    {
-        $byKey = [];
-        foreach ($existing as $flight) {
-            $key = $this->dupKey(
-                airlineId: $flight->airline_id,
-                flightNumber: $flight->flight_number,
-                routeCode: $flight->route_code,
-                routeLeg: $flight->route_leg,
-            );
-            $byKey[$key] = $flight;
-        }
-
-        return $byKey;
-    }
-
-    private function dupKey(
-        mixed $airlineId,
-        mixed $flightNumber,
-        mixed $routeCode,
-        mixed $routeLeg,
-    ): string {
-        return implode('|', [
-            (string) ($airlineId ?? ''),
-            (string) ($flightNumber ?? ''),
-            $this->normalize($routeCode),
-            $this->normalize($routeLeg),
-        ]);
-    }
-
-    /**
-     * Collapse null / empty-string / zero-equivalent values to a single
-     * sentinel so the strict-key match treats them as the same "absent" value.
-     * Matches L5's normalization and the legacy isFlightDuplicate semantics
-     * where stored values may be NULL, '', or 0 depending on history.
-     */
-    private function normalize(mixed $value): string
-    {
-        if (in_array($value, [null, '', 0, '0'], true)) {
-            return '∅';
-        }
-
-        return (string) $value;
     }
 }
