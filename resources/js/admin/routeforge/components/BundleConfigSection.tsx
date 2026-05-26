@@ -51,7 +51,7 @@ function validateFareMultiplier(value: string): string | null {
     return null;
   }
   if (!FARE_MULTIPLIER_RE.test(value)) {
-    return 'Must look like "+10%", "-5%", or "20%". Empty = no multiplier.';
+    return t("bundle.fare_multiplier_help");
   }
   return null;
 }

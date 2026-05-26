@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Contracts\Controller;
+use App\Enums\FlightType;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Http\Requests\RouteForge\AirlineStatsRequest;
 use App\Http\Requests\RouteForge\BundlesRequest;
@@ -210,15 +211,32 @@ final class RouteForgeController extends Controller
     }
 
     /**
-     * Collect the full `filament.routeforge.*` translation tree for the SPA.
+     * Collect the full `filament.routeforge.*` translation tree for the SPA,
+     * plus a runtime-resolved `flight_types` map keyed by IATA service-type
+     * code.
+     *
+     * The `flight_types` sub-tree is built by iterating `FlightType::cases()`
+     * and invoking `->getLabel()` on each case, which routes through
+     * `__('flights.type.<semantic_name>')` and therefore honors the active
+     * locale. Keying by IATA code (the enum's backing value) matches the
+     * SPA call site (`t('flight_types.J')`) without forcing the TS bundle
+     * to duplicate the enum's IATA→semantic mapping.
      *
      * @return array<string, mixed>
      */
     private function buildTranslationsPayload(): array
     {
         $translations = trans('filament.routeforge');
+        $translations = is_array($translations) ? $translations : [];
 
-        return is_array($translations) ? $translations : [];
+        $flightTypes = [];
+        foreach (FlightType::cases() as $case) {
+            $flightTypes[$case->value] = $case->getLabel();
+        }
+
+        $translations['flight_types'] = $flightTypes;
+
+        return $translations;
     }
 
     /**

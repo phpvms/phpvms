@@ -244,22 +244,31 @@ return [
             'discard'       => 'Discard and start fresh',
         ],
 
+        'airline_picker' => [
+            'placeholder' => '— Select airline —',
+        ],
+
+        'airport_picker' => [
+            'placeholder' => 'ICAO or airport name…',
+        ],
+
         'bundle' => [
-            'picker_label'       => 'Bundle',
-            'picker_placeholder' => 'Search bundles or type a new name…',
-            'picker_hint'        => 'Pick an existing bundle to append flights, or type a new name to create one.',
-            'create_new_hint'    => 'Will create a new bundle: ":name"',
-            'existing_label'     => 'Attaching to existing bundle',
-            'change_selection'   => 'Change',
-            'field_description'  => 'Description',
-            'field_start_date'   => 'Start date',
-            'field_end_date'     => 'End date',
-            'field_enabled'      => 'Enabled',
-            'value_yes'          => 'Yes',
-            'value_no'           => 'No',
-            'value_empty'        => '—',
-            'no_matches'         => 'No matching bundles. Press Enter to use this as a new bundle name.',
-            'existing_missing'   => 'The selected bundle no longer exists. Pick another bundle or create a new one.',
+            'picker_label'         => 'Bundle',
+            'picker_placeholder'   => 'Search bundles or type a new name…',
+            'picker_hint'          => 'Pick an existing bundle to append flights, or type a new name to create one.',
+            'create_new_hint'      => 'Will create a new bundle: ":name"',
+            'existing_label'       => 'Attaching to existing bundle',
+            'change_selection'     => 'Change',
+            'field_description'    => 'Description',
+            'field_start_date'     => 'Start date',
+            'field_end_date'       => 'End date',
+            'field_enabled'        => 'Enabled',
+            'value_yes'            => 'Yes',
+            'value_no'             => 'No',
+            'value_empty'          => '—',
+            'no_matches'           => 'No matching bundles. Press Enter to use this as a new bundle name.',
+            'existing_missing'     => 'The selected bundle no longer exists. Pick another bundle or create a new one.',
+            'fare_multiplier_help' => 'Must look like "+10%", "-5%", or "20%". Empty = no multiplier.',
         ],
 
         'lint_dialog_extra' => [

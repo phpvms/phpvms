@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FlightType;
 use App\Models\Airline;
 use App\Models\User;
 use Database\Seeders\ShieldSeeder;
@@ -88,4 +89,34 @@ it('reports can_commit=true on the user payload for an authorized user', functio
 
     expect($user['id'])->toBe($admin->id)
         ->and($user['can_commit'])->toBeTrue();
+});
+
+it('includes a flight_types IATA→label map in the boot translations payload', function (): void {
+    $this->actingAs(createAdminUser());
+
+    $flightTypes = $this->getJson('/admin/route-forge/api/boot')
+        ->assertSuccessful()
+        ->json('data.translations.flight_types');
+
+    $expectedCodes = array_map(static fn (FlightType $case): string => $case->value, FlightType::cases());
+
+    expect($flightTypes)->toBeArray()
+        ->and(array_keys($flightTypes))->toEqualCanonicalizing($expectedCodes)
+        ->and($flightTypes)->toHaveCount(count($expectedCodes));
+
+    foreach ($flightTypes as $value) {
+        expect($value)->toBeString()->not->toBe('');
+    }
+});
+
+it('resolves each flight_types entry to its FlightType::getLabel() value', function (): void {
+    $this->actingAs(createAdminUser());
+
+    $flightTypes = $this->getJson('/admin/route-forge/api/boot')
+        ->assertSuccessful()
+        ->json('data.translations.flight_types');
+
+    foreach (FlightType::cases() as $case) {
+        expect($flightTypes[$case->value])->toBe($case->getLabel());
+    }
 });

@@ -39,35 +39,6 @@ import { getBootOrThrow } from "../state/boot";
 import { form } from "../state/store";
 import type { FlightTypeCode } from "../state/types";
 
-// FlightType labels — hardcoded English v1. Section 8 swaps for the existing
-// `flights.type.*` translation keys served via the /boot envelope.
-const FLIGHT_TYPE_LABELS: Array<[FlightTypeCode, string]> = [
-  ["J", "Scheduled passenger"],
-  ["F", "Scheduled cargo"],
-  ["C", "Charter passenger only"],
-  ["A", "Additional cargo / mail"],
-  ["E", "VIP / special"],
-  ["G", "Additional passenger"],
-  ["H", "Charter cargo / mail"],
-  ["I", "Ambulance"],
-  ["K", "Training"],
-  ["M", "Mail service"],
-  ["O", "Charter special"],
-  ["P", "Positioning"],
-  ["T", "Technical test"],
-  ["W", "Military"],
-  ["X", "Technical stop"],
-  ["S", "Shuttle"],
-  ["B", "Additional shuttle"],
-  ["Q", "Cargo in cabin"],
-  ["R", "Additional cargo in cabin"],
-  ["L", "Charter cargo in cabin"],
-  ["D", "General aviation"],
-  ["N", "Air taxi"],
-  ["Y", "Company specific"],
-  ["Z", "Other"],
-];
-
 export function FormPanel() {
   const f = form.value;
   const destinationsDisabled = f.topology === TOUR_TOPOLOGY;
@@ -161,7 +132,7 @@ function AirlineSelect() {
         value={f.airline_id === null ? "" : String(f.airline_id)}
         onChange={handleChange}
       >
-        <option value="">— Select airline —</option>
+        <option value="">{t("airline_picker.placeholder")}</option>
         {airlines.map((a) => (
           <option key={a.id} value={a.id}>
             {a.icao !== null && a.icao !== "" ? `${a.icao} · ` : ""}
@@ -175,6 +146,14 @@ function AirlineSelect() {
 
 function FlightTypeSelect() {
   const f = form.value;
+  // Server pre-resolves FlightType::cases() → IATA → localized label and
+  // ships the map under `translations.flight_types`. We iterate the map's
+  // own keys (server emits them in enum declaration order via
+  // `foreach (FlightType::cases())`) so the option ordering stays stable
+  // and matches admin Filament selects elsewhere.
+  const flightTypeMap =
+    (getBootOrThrow().translations as { flight_types?: Record<string, string> }).flight_types ?? {};
+  const flightTypeCodes = Object.keys(flightTypeMap) as FlightTypeCode[];
 
   function handleChange(e: Event): void {
     const raw = (e.currentTarget as HTMLSelectElement).value;
@@ -197,9 +176,9 @@ function FlightTypeSelect() {
         onChange={handleChange}
       >
         <option value="">— None —</option>
-        {FLIGHT_TYPE_LABELS.map(([code, label]) => (
+        {flightTypeCodes.map((code) => (
           <option key={code} value={code}>
-            {code} — {label}
+            {code} — {t(`flight_types.${code}`)}
           </option>
         ))}
       </select>

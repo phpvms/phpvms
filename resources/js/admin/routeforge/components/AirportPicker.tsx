@@ -35,6 +35,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { getPreviewAirports } from "../lib/api";
+import { t } from "../lib/i18n";
 import { airportCache, form } from "../state/store";
 import type { AirportSummary, Icao } from "../state/types";
 import { Field, INPUT_CLASS } from "./Field";
@@ -230,7 +231,7 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
             id={inputId}
             type="search"
             autocomplete="off"
-            placeholder="ICAO or airport name…"
+            placeholder={t("airport_picker.placeholder")}
             class={`${INPUT_CLASS} ${disabled ? "cursor-not-allowed" : ""}`}
             value={query}
             disabled={disabled}
