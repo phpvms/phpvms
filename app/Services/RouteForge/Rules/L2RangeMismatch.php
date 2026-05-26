@@ -6,6 +6,7 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Subfleet;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -19,15 +20,9 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L2RangeMismatch implements LintRule
 {
-    public function id(): string
-    {
-        return 'L2';
-    }
+    public const string ID = 'L2';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -56,21 +51,21 @@ final class L2RangeMismatch implements LintRule
         }
 
         $issues = [];
-        foreach ($ctx->rows as $index => $row) {
-            $distance = (float) ($row['distance_nm'] ?? 0);
+        foreach ($ctx->rows as $row) {
+            $distance = $row->distanceNm;
 
             if ($distance <= (float) $maxRange) {
                 continue;
             }
 
             $issues[] = new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l2_range_mismatch', [
                     'distance'  => (int) $distance,
                     'max_range' => (int) $maxRange,
                 ]),
-                rowIndex: $index,
+                rowIndex: $row->index,
                 details: [
                     'distance_nm'        => $distance,
                     'max_subfleet_range' => (int) $maxRange,

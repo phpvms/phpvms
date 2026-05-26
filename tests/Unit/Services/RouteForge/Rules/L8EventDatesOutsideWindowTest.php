@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Event;
 use App\Models\FlightBundle;
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use Illuminate\Support\Carbon;
 use Tests\Support\RouteForgeTestHelpers as RF;
@@ -37,7 +37,7 @@ it('fires when bundle window is fully before the event window', function (): voi
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L8')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->rowIndex)->toBeNull();
 });
 

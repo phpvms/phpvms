@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
@@ -14,7 +14,7 @@ it('fires per row when destination timezone is null', function (): void {
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L11')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->rowIndex)->toBe(0)
         ->and($issues[0]->details)->toBe(['missing_timezone_airports' => ['KLAX']]);
 });

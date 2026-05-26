@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\RouteForge\Rules;
 
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -18,15 +19,9 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L10BatchOver100 implements LintRule
 {
-    public function id(): string
-    {
-        return 'L10';
-    }
+    public const string ID = 'L10';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_ERROR;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Error;
 
     public function check(LintContext $ctx): array
     {
@@ -39,8 +34,8 @@ final class L10BatchOver100 implements LintRule
 
         return [
             new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l10_batch_over_hard_cap', [
                     'count' => $count,
                     'cap'   => $cap,

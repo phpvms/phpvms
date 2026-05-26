@@ -19,34 +19,24 @@ use Illuminate\Support\Collection;
  * this object as read-only; mutating any collection or model in place breaks
  * the parallel-rule semantics the LintRunner assumes.
  *
- * Row shape (one entry in $rows):
- *   [
- *     'airline_id'     => int,            // strict-dup key part
- *     'flight_number'  => int,            // strict-dup key part
- *     'route_code'     => ?string,        // strict-dup key part
- *     'route_leg'      => ?int,           // strict-dup key part
- *     'dpt_airport_id' => string,         // ICAO, uppercased
- *     'arr_airport_id' => string,         // ICAO, uppercased
- *     'dpt_timezone'   => ?string,        // IANA, may be null → L11
- *     'arr_timezone'   => ?string,        // IANA, may be null → L11
- *     'departure_time' => ?string,        // origin-local HH:MM, persists to Flight.departure_time
- *     'arrival_time'   => ?string,        // destination-local HH:MM, persists to Flight.arrival_time
- *     'distance_nm'    => int|float,      // client-computed haversine
- *     // ...flight_time, days mask, etc.
- *   ]
+ * Row shape is the `LintRow` value object — each entry exposes typed
+ * accessors (`$row->flightNumber`, `$row->routeCode`, ...) and the
+ * untyped escape-hatch `$row->raw` array carrying the original payload
+ * (used by `StrictDuplicateKey::forRow($row->raw, ...)` to avoid changing
+ * the key VO's array-input signature for this change).
  */
 final readonly class LintContext
 {
     /**
-     * @param array<int, array<string, mixed>> $rows              Generated/edited rows for the batch.
-     * @param Collection<int, Subfleet>        $selectedSubfleets Eager-loaded with `aircraft` and `fares`.
-     * @param array<string, mixed>             $airlineStats      Snapshot of airline stats from
-     *                                                            /airline-stats endpoint:
-     *                                                            [
-     *                                                            'existing_active_flights_count' => int,
-     *                                                            'hub_airports'                  => list<string>,
-     *                                                            'home_airport'                  => string|null,
-     *                                                            ]
+     * @param list<LintRow>             $rows              Generated/edited rows for the batch.
+     * @param Collection<int, Subfleet> $selectedSubfleets Eager-loaded with `aircraft` and `fares`.
+     * @param array<string, mixed>      $airlineStats      Snapshot of airline stats from
+     *                                                     /airline-stats endpoint:
+     *                                                     [
+     *                                                     'existing_active_flights_count' => int,
+     *                                                     'hub_airports'                  => list<string>,
+     *                                                     'home_airport'                  => string|null,
+     *                                                     ]
      */
     public function __construct(
         public FlightBundle $bundle,

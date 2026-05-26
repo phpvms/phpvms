@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\FlightType;
 use App\Models\Subfleet;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\Rules\L2bTypeMismatch;
 use Illuminate\Support\Collection;
@@ -34,7 +35,7 @@ it('fires per row when every selected subfleet restricts to other flight types',
 
     expect($issues)->toHaveCount(3)
         ->and($issues[0]->ruleId)->toBe('L2b')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and(array_map(static fn (LintIssue $i): int => $i->rowIndex, $issues))->toBe([0, 1, 2])
         ->and($issues[0]->details)->toBe(['flight_type' => FlightType::CHARTER_CARGO_MAIL->value]);
 });

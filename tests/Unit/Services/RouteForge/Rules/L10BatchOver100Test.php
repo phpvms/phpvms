@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L10BatchOver100;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
@@ -13,7 +13,7 @@ it('fires an error when row count strictly exceeds mesh_max_count', function ():
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L10')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_ERROR)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Error)
         ->and($issues[0]->rowIndex)->toBeNull()
         ->and($issues[0]->details)->toBe(['row_count' => 150, 'cap' => 100]);
 });

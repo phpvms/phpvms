@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\RouteForge\Rules;
 
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\Support\StrictDuplicateKey;
@@ -32,15 +33,9 @@ use App\Services\RouteForge\Support\StrictDuplicateKey;
  */
 final class L4DuplicateFlightNumbersInBatch implements LintRule
 {
-    public function id(): string
-    {
-        return 'L4';
-    }
+    public const string ID = 'L4';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_ERROR;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Error;
 
     public function check(LintContext $ctx): array
     {
@@ -50,11 +45,11 @@ final class L4DuplicateFlightNumbersInBatch implements LintRule
 
         $bundleId = $ctx->bundle->id;
 
-        foreach ($ctx->rows as $index => $row) {
-            $key = (string) StrictDuplicateKey::forRow($row, $bundleId);
+        foreach ($ctx->rows as $row) {
+            $key = (string) StrictDuplicateKey::forRow($row->raw, $bundleId);
 
             if (!isset($seen[$key])) {
-                $seen[$key] = $index;
+                $seen[$key] = $row->index;
 
                 continue;
             }
@@ -62,21 +57,21 @@ final class L4DuplicateFlightNumbersInBatch implements LintRule
             $firstIndex = $seen[$key];
 
             $issues[] = new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l4_duplicate_in_batch', [
-                    'flight_number' => $row['flight_number'] ?? '',
+                    'flight_number' => $row->flightNumber ?? '',
                     'first'         => $firstIndex,
-                    'second'        => $index,
+                    'second'        => $row->index,
                 ]),
-                rowIndex: $index,
+                rowIndex: $row->index,
                 details: [
-                    'flight_number'       => $row['flight_number'] ?? null,
-                    'airline_id'          => $row['airline_id'] ?? null,
-                    'route_code'          => $row['route_code'] ?? null,
-                    'route_leg'           => $row['route_leg'] ?? null,
+                    'flight_number'       => $row->flightNumber,
+                    'airline_id'          => $row->airlineId,
+                    'route_code'          => $row->routeCode,
+                    'route_leg'           => $row->routeLeg,
                     'first_row_index'     => $firstIndex,
-                    'duplicate_row_index' => $index,
+                    'duplicate_row_index' => $row->index,
                 ],
             );
         }

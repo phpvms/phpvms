@@ -6,6 +6,7 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Event;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 use Illuminate\Support\Carbon;
@@ -26,15 +27,9 @@ use Illuminate\Support\Carbon;
  */
 final class L8EventDatesOutsideWindow implements LintRule
 {
-    public function id(): string
-    {
-        return 'L8';
-    }
+    public const string ID = 'L8';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -64,8 +59,8 @@ final class L8EventDatesOutsideWindow implements LintRule
 
         return [
             new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l8_event_dates_outside_window', [
                     'event' => $event->name,
                 ]),

@@ -67,9 +67,16 @@ final readonly class LintContextFactory
 
         $bundle = $this->hydrateUnsavedBundle((array) ($validated['bundle'] ?? []), $existingBundle);
 
+        /** @var list<array<string, mixed>> $rawRows */
+        $rawRows = array_values((array) ($validated['rows'] ?? []));
+        $rows = [];
+        foreach ($rawRows as $index => $rawRow) {
+            $rows[] = LintRow::fromArray($index, $rawRow);
+        }
+
         return new LintContext(
             bundle: $bundle,
-            rows: (array) ($validated['rows'] ?? []),
+            rows: $rows,
             selectedSubfleets: $selectedSubfleets,
             airline: $airline,
             event: $event,

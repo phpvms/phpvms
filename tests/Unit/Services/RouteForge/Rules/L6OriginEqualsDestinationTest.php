@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
@@ -16,7 +16,7 @@ it('emits an error for any row where origin equals destination', function (): vo
 
     expect($issues)->toHaveCount(2)
         ->and($issues[0]->ruleId)->toBe('L6')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_ERROR)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Error)
         ->and($issues[0]->rowIndex)->toBe(1)
         ->and($issues[0]->details)->toBe(['airport' => 'KJFK'])
         ->and($issues[1]->rowIndex)->toBe(3)

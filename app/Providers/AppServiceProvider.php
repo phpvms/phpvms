@@ -14,7 +14,21 @@ use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\ModuleService;
+use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\LintRunner;
+use App\Services\RouteForge\Rules\L10BatchOver100;
+use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
+use App\Services\RouteForge\Rules\L12ExistingDuplicateCrossBundle;
+use App\Services\RouteForge\Rules\L1AircraftCapacity;
+use App\Services\RouteForge\Rules\L2bTypeMismatch;
+use App\Services\RouteForge\Rules\L2RangeMismatch;
+use App\Services\RouteForge\Rules\L3EmptySubfleets;
+use App\Services\RouteForge\Rules\L4DuplicateFlightNumbersInBatch;
+use App\Services\RouteForge\Rules\L5ExistingDuplicate;
+use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
+use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
+use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
+use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -165,12 +179,34 @@ class AppServiceProvider extends ServiceProvider
             $app['config']['view.paths']
         ));
 
-        // RouteForge LintRunner: the constructor takes an array of registered
-        // rules with no container-resolvable shape; bind it to the defaults()
-        // factory so controllers + services can inject by type.
-        $this->app->singleton(
+        // RouteForge lint catalog: tag every concrete rule class so adding a
+        // rule means appending one entry here, not editing LintRunner. The
+        // bind below materializes the tagged generator into the runner's
+        // `$rules` array.
+        $this->app->tag([
+            L1AircraftCapacity::class,
+            L2RangeMismatch::class,
+            L2bTypeMismatch::class,
+            L3EmptySubfleets::class,
+            L4DuplicateFlightNumbersInBatch::class,
+            L5ExistingDuplicate::class,
+            L6OriginEqualsDestination::class,
+            L7SubfleetsHaveNoFares::class,
+            L8EventDatesOutsideWindow::class,
+            L9BatchOver50::class,
+            L10BatchOver100::class,
+            L11AirportTimezoneMissing::class,
+            L12ExistingDuplicateCrossBundle::class,
+        ], 'routeforge.lint_rules');
+
+        $this->app->bind(
             LintRunner::class,
-            static fn (): LintRunner => LintRunner::defaults(),
+            static function ($app): LintRunner {
+                /** @var iterable<LintRule> $tagged */
+                $tagged = $app->tagged('routeforge.lint_rules');
+
+                return new LintRunner(iterator_to_array($tagged, preserve_keys: false));
+            },
         );
 
         // Load the aliases

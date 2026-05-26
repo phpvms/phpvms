@@ -70,9 +70,14 @@ final readonly class CommitInput
      */
     public function toLintContext(): LintContext
     {
+        $rows = [];
+        foreach (array_values($this->rows) as $index => $rawRow) {
+            $rows[] = LintRow::fromArray($index, $rawRow);
+        }
+
         return new LintContext(
             bundle: $this->bundle,
-            rows: $this->rows,
+            rows: $rows,
             selectedSubfleets: $this->selectedSubfleets,
             airline: $this->airline,
             event: $this->event,

@@ -13,28 +13,18 @@ use App\Services\RouteForge\LintIssue;
  * Each rule is a focused, side-effect-free check that inspects a LintContext
  * (form + rows + selected subfleets + airline + event + airline stats) and
  * returns zero or more LintIssue values. Rules are wired together by the
- * LintRunner; each rule owns one concern from the v1 catalog (L1–L11).
+ * LintRunner; each rule owns one concern from the v1 catalog (L1–L12).
+ *
+ * Rule metadata (rule id, default severity) lives on each concrete class as
+ * typed constants `public const string ID` and
+ * `public const \App\Services\RouteForge\Enums\LintSeverity SEVERITY`.
+ * Callers that need them read the constants directly (e.g.
+ * `L4DuplicateFlightNumbersInBatch::ID`) — there is no `id()` / `severity()`
+ * method on the interface because both values are static data with no logic
+ * to test.
  */
 interface LintRule
 {
-    /**
-     * Stable identifier for the rule (e.g. "L1", "L2b", "L11").
-     *
-     * Mirrored verbatim in the TypeScript client-side lint output so reports
-     * stay comparable across both implementations.
-     */
-    public function id(): string;
-
-    /**
-     * Default severity of the issues emitted by this rule.
-     *
-     * One of LintIssue::SEVERITY_ERROR, SEVERITY_WARNING, or SEVERITY_INFO.
-     * A rule MAY override severity per emitted issue when an edge case warrants
-     * it (e.g. a "warning" rule that escalates to "error" under specific
-     * conditions), but the default returned here drives UI grouping.
-     */
-    public function severity(): string;
-
     /**
      * Run the rule against the given context.
      *

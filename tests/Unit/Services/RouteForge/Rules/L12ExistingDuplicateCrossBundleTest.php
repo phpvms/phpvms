@@ -6,6 +6,7 @@ use App\Models\Airline;
 use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Models\User;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\Rules\L12ExistingDuplicateCrossBundle;
 use Tests\Support\RouteForgeTestHelpers as RF;
@@ -37,7 +38,7 @@ it('fires WARNING when a row matches airline+flight in another enabled bundle', 
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L12')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->rowIndex)->toBe(0)
         ->and((string) $issues[0]->details['existing_flight_id'])->toBe((string) $existing->id)
         ->and($issues[0]->details['existing_bundle_id'])->toBe($bundleA->id)

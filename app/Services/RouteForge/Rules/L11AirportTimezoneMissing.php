@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\RouteForge\Rules;
 
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -22,23 +23,17 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L11AirportTimezoneMissing implements LintRule
 {
-    public function id(): string
-    {
-        return 'L11';
-    }
+    public const string ID = 'L11';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
         $issues = [];
 
-        foreach ($ctx->rows as $index => $row) {
-            $dptTz = $row['dpt_timezone'] ?? null;
-            $arrTz = $row['arr_timezone'] ?? null;
+        foreach ($ctx->rows as $row) {
+            $dptTz = $row->dptTimezone;
+            $arrTz = $row->arrTimezone;
 
             if ($dptTz !== null && $arrTz !== null) {
                 continue;
@@ -46,20 +41,20 @@ final class L11AirportTimezoneMissing implements LintRule
 
             $missing = [];
             if ($dptTz === null) {
-                $missing[] = $row['dpt_airport_id'] ?? 'origin';
+                $missing[] = $row->dptAirportId ?? 'origin';
             }
 
             if ($arrTz === null) {
-                $missing[] = $row['arr_airport_id'] ?? 'destination';
+                $missing[] = $row->arrAirportId ?? 'destination';
             }
 
             $issues[] = new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l11_timezone_missing', [
                     'airports' => implode(', ', $missing),
                 ]),
-                rowIndex: $index,
+                rowIndex: $row->index,
                 details: [
                     'missing_timezone_airports' => $missing,
                 ],

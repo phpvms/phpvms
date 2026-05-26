@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\RouteForge;
 
+use App\Services\RouteForge\Enums\LintSeverity;
 use Illuminate\Support\Collection;
 
 /**
@@ -40,10 +41,9 @@ final readonly class LintReport
 
         foreach ($issues as $issue) {
             match ($issue->severity) {
-                LintIssue::SEVERITY_ERROR   => $errors->push($issue),
-                LintIssue::SEVERITY_WARNING => $warnings->push($issue),
-                LintIssue::SEVERITY_INFO    => $info->push($issue),
-                default                     => $warnings->push($issue),
+                LintSeverity::Error   => $errors->push($issue),
+                LintSeverity::Warning => $warnings->push($issue),
+                LintSeverity::Info    => $info->push($issue),
             };
         }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\RouteForge;
 
+use App\Services\RouteForge\Enums\LintSeverity;
+
 /**
  * A single lint finding emitted by a LintRule.
  *
@@ -14,15 +16,10 @@ namespace App\Services\RouteForge;
  */
 final readonly class LintIssue
 {
-    public const string SEVERITY_ERROR = 'error';
-
-    public const string SEVERITY_WARNING = 'warning';
-
-    public const string SEVERITY_INFO = 'info';
-
     /**
      * @param string               $ruleId   Rule identifier (e.g. "L1", "L2b").
-     * @param string               $severity One of the SEVERITY_* constants.
+     * @param LintSeverity         $severity Backed enum; serialized as its `.value` string
+     *                                       (`'error'` / `'warning'` / `'info'`) on the wire.
      * @param string               $message  Human-readable, already-translated message.
      * @param int|null             $rowIndex Zero-based index into the submitted rows array,
      *                                       or null for batch-wide issues.
@@ -32,7 +29,7 @@ final readonly class LintIssue
      */
     public function __construct(
         public string $ruleId,
-        public string $severity,
+        public LintSeverity $severity,
         public string $message,
         public ?int $rowIndex = null,
         public array $details = [],
@@ -45,7 +42,7 @@ final readonly class LintIssue
     {
         return [
             'rule'      => $this->ruleId,
-            'severity'  => $this->severity,
+            'severity'  => $this->severity->value,
             'message'   => $this->message,
             'row_index' => $this->rowIndex,
             'details'   => $this->details,

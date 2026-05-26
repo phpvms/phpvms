@@ -60,10 +60,17 @@ final readonly class CommitInputFactory
             ? (string) $bundleData['fare_multiplier']
             : null;
 
+        // CommitInput stores the original raw row arrays (not LintRow): the
+        // persistence path in RouteForgeService::commit() maps array keys
+        // directly onto the Flight model. toLintContext() re-hydrates LintRow
+        // for the in-transaction lint re-run. Double-hydration is microseconds.
+        /** @var list<array<string, mixed>> $rawRows */
+        $rawRows = array_values((array) ($validated['rows'] ?? []));
+
         return new CommitInput(
             bundle: $bundle,
             existingBundle: $existingBundle,
-            rows: $ctx->rows,
+            rows: $rawRows,
             airline: $ctx->airline,
             selectedSubfleets: $ctx->selectedSubfleets,
             event: $ctx->event,

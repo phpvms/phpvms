@@ -6,6 +6,7 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Subfleet;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -21,15 +22,9 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L7SubfleetsHaveNoFares implements LintRule
 {
-    public function id(): string
-    {
-        return 'L7';
-    }
+    public const string ID = 'L7';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -48,8 +43,8 @@ final class L7SubfleetsHaveNoFares implements LintRule
 
         return [
             new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l7_no_fares'),
                 rowIndex: null,
                 details: [

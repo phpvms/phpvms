@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Subfleet;
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L1AircraftCapacity;
 use Illuminate\Support\Collection;
 use Tests\Support\RouteForgeTestHelpers as RF;
@@ -29,7 +29,7 @@ it('fires when selected aircraft are below half the row count', function (): voi
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L1')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->rowIndex)->toBeNull()
         ->and($issues[0]->details)->toMatchArray([
             'selected_aircraft_count' => 9,

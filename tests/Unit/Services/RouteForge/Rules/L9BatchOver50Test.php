@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
@@ -13,7 +13,7 @@ it('fires when row count strictly exceeds mesh_warn_count', function (): void {
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L9')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->rowIndex)->toBeNull()
         ->and($issues[0]->details)->toBe(['row_count' => 75, 'threshold' => 50]);
 });

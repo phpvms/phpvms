@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\Rules\L4DuplicateFlightNumbersInBatch;
 use Tests\Support\RouteForgeTestHelpers as RF;
@@ -17,7 +18,7 @@ it('fires an error for intra-batch dup on the strict 4-tuple key', function (): 
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L4')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_ERROR)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Error)
         ->and($issues[0]->rowIndex)->toBe(3)
         ->and($issues[0]->details)->toMatchArray([
             'flight_number'       => 100,

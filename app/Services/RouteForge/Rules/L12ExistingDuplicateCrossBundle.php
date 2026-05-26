@@ -6,8 +6,10 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Flight;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\LintRow;
 use App\Services\RouteForge\Support\StrictDuplicateKey;
 
 /**
@@ -38,15 +40,9 @@ use App\Services\RouteForge\Support\StrictDuplicateKey;
  */
 final class L12ExistingDuplicateCrossBundle implements LintRule
 {
-    public function id(): string
-    {
-        return 'L12';
-    }
+    public const string ID = 'L12';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -101,17 +97,14 @@ final class L12ExistingDuplicateCrossBundle implements LintRule
         }
 
         $issues = [];
-        foreach ($ctx->rows as $index => $row) {
-            $airlineId = $row['airline_id'] ?? null;
-            $flightNumber = $row['flight_number'] ?? null;
-            if (!is_numeric($airlineId)) {
+        foreach ($ctx->rows as $row) {
+            if ($row->airlineId === null) {
                 continue;
             }
-            if (!is_numeric($flightNumber)) {
+            if ($row->flightNumber === null) {
                 continue;
             }
-
-            $key = StrictDuplicateKey::crossBundleKey((int) $airlineId, (int) $flightNumber);
+            $key = StrictDuplicateKey::crossBundleKey($row->airlineId, $row->flightNumber);
             $hits = $byKey[$key] ?? null;
             if ($hits === null) {
                 continue;
@@ -123,17 +116,17 @@ final class L12ExistingDuplicateCrossBundle implements LintRule
                 $bundleName = $hit->bundle->name;
 
                 $issues[] = new LintIssue(
-                    ruleId: $this->id(),
-                    severity: $this->severity(),
+                    ruleId: self::ID,
+                    severity: self::SEVERITY,
                     message: __('filament.routeforge.lint.l12_existing_duplicate_cross_bundle', [
-                        'flight_number' => $row['flight_number'] ?? '',
+                        'flight_number' => $row->flightNumber,
                         'bundle_name'   => $bundleName,
                     ]),
-                    rowIndex: $index,
+                    rowIndex: $row->index,
                     details: [
                         'existing_flight_id'   => $hit->id,
-                        'flight_number'        => $row['flight_number'] ?? null,
-                        'airline_id'           => $row['airline_id'] ?? null,
+                        'flight_number'        => $row->flightNumber,
+                        'airline_id'           => $row->airlineId,
                         'existing_bundle_id'   => $hit->bundle_id,
                         'existing_bundle_name' => $bundleName,
                     ],
@@ -145,16 +138,15 @@ final class L12ExistingDuplicateCrossBundle implements LintRule
     }
 
     /**
-     * @param  array<int, array<string, mixed>> $rows
+     * @param  list<LintRow> $rows
      * @return list<int>
      */
     private function uniqueAirlineIds(array $rows): array
     {
         $ids = [];
         foreach ($rows as $row) {
-            $id = $row['airline_id'] ?? null;
-            if (is_numeric($id)) {
-                $ids[(int) $id] = true;
+            if ($row->airlineId !== null) {
+                $ids[$row->airlineId] = true;
             }
         }
 
@@ -162,16 +154,15 @@ final class L12ExistingDuplicateCrossBundle implements LintRule
     }
 
     /**
-     * @param  array<int, array<string, mixed>> $rows
+     * @param  list<LintRow> $rows
      * @return list<int>
      */
     private function uniqueFlightNumbers(array $rows): array
     {
         $nums = [];
         foreach ($rows as $row) {
-            $num = $row['flight_number'] ?? null;
-            if (is_numeric($num)) {
-                $nums[(int) $num] = true;
+            if ($row->flightNumber !== null) {
+                $nums[$row->flightNumber] = true;
             }
         }
 

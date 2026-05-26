@@ -6,6 +6,7 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Subfleet;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -23,15 +24,9 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L1AircraftCapacity implements LintRule
 {
-    public function id(): string
-    {
-        return 'L1';
-    }
+    public const string ID = 'L1';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -54,8 +49,8 @@ final class L1AircraftCapacity implements LintRule
 
         return [
             new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l1_capacity', [
                     'selected' => $selectedAircraftCount,
                     'needed'   => $threshold,

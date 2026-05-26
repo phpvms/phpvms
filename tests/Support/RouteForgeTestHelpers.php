@@ -10,6 +10,7 @@ use App\Models\Airport;
 use App\Models\Event;
 use App\Models\FlightBundle;
 use App\Services\RouteForge\LintContext;
+use App\Services\RouteForge\LintRow;
 use Illuminate\Support\Collection;
 
 /**
@@ -26,9 +27,14 @@ final class RouteForgeTestHelpers
      * Build a LintContext with sensible defaults. Override only what each
      * test cares about; the rest stays a stable baseline.
      *
-     * @param array<int, array<string, mixed>> $rows
-     * @param Collection<int, mixed>|null      $selectedSubfleets
-     * @param array<string, mixed>             $airlineStats
+     * Rows may be passed as either raw `array<string, mixed>` (auto-hydrated
+     * to `LintRow` here) or pre-built `LintRow` instances. The auto-hydration
+     * keeps existing call sites — `RF::ctx(rows: [RF::row(...)])` — valid
+     * without forcing every rule test to rebuild its row literals.
+     *
+     * @param list<array<string, mixed>|LintRow> $rows
+     * @param Collection<int, mixed>|null        $selectedSubfleets
+     * @param array<string, mixed>               $airlineStats
      */
     public static function ctx(
         array $rows = [],
@@ -43,9 +49,16 @@ final class RouteForgeTestHelpers
         ],
         ?FlightType $flightType = null,
     ): LintContext {
+        $lintRows = [];
+        foreach (array_values($rows) as $index => $row) {
+            $lintRows[] = $row instanceof LintRow
+                ? $row
+                : LintRow::fromArray($index, $row);
+        }
+
         return new LintContext(
             bundle: $bundle ?? self::unsavedBundle(),
-            rows: $rows,
+            rows: $lintRows,
             selectedSubfleets: $selectedSubfleets ?? new Collection(),
             airline: $airline ?? self::unsavedAirline(),
             event: $event,
@@ -146,11 +159,20 @@ final class RouteForgeTestHelpers
      * /commit endpoints. Caller supplies the airline_id + airport ICAO ids;
      * the helper fills the rest with safe defaults.
      *
+     * `onConflict` defaults to `'abort'` (the L4 commit-blocking path used by
+     * the bulk of existing commit tests). Tests SHALL pass `onConflict:` to
+     * the helper rather than poking `$payload['on_conflict']` after the call.
+     *
      * @param  array<string, mixed> $overrides Replace any top-level key.
      * @return array<string, mixed>
      */
-    public static function batchPayload(int $airlineId, string $dpt, string $arr, array $overrides = []): array
-    {
+    public static function batchPayload(
+        int $airlineId,
+        string $dpt,
+        string $arr,
+        array $overrides = [],
+        string $onConflict = 'abort',
+    ): array {
         return array_replace_recursive([
             'airline_id'   => $airlineId,
             'subfleet_ids' => [],
@@ -158,6 +180,7 @@ final class RouteForgeTestHelpers
             'event_id'     => null,
             'origins'      => [$dpt],
             'destinations' => [$arr],
+            'on_conflict'  => $onConflict,
             'bundle'       => [
                 'existing_bundle_id' => null,
                 'name'               => 'Test Bundle',

@@ -7,6 +7,7 @@ namespace App\Services\RouteForge\Rules;
 use App\Enums\FlightType;
 use App\Models\Subfleet;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 use Illuminate\Support\Collection;
@@ -22,15 +23,9 @@ use Illuminate\Support\Collection;
  */
 final class L2bTypeMismatch implements LintRule
 {
-    public function id(): string
-    {
-        return 'L2b';
-    }
+    public const string ID = 'L2b';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -52,14 +47,14 @@ final class L2bTypeMismatch implements LintRule
         }
 
         $issues = [];
-        foreach (array_keys($ctx->rows) as $index) {
+        foreach ($ctx->rows as $row) {
             $issues[] = new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l2b_type_mismatch', [
                     'type' => $flightType->value,
                 ]),
-                rowIndex: $index,
+                rowIndex: $row->index,
                 details: [
                     'flight_type' => $flightType->value,
                 ],

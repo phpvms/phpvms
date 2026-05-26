@@ -27,7 +27,6 @@ it('commits a happy-path batch and returns 201 with the wire envelope', function
             ['airline_id' => $airline->id, 'flight_number' => 101, 'dpt_airport_id' => $arr->id, 'arr_airport_id' => $dpt->id],
         ],
     ]);
-    $payload['on_conflict'] = 'abort';
 
     $response = $this->postJson('/admin/route-forge/api/commit', $payload)
         ->assertStatus(201);
@@ -58,7 +57,6 @@ it('returns 422 with a LintReport body when rows violate an error rule (L6)', fu
             ['airline_id' => $airline->id, 'flight_number' => 100, 'dpt_airport_id' => $dpt->id, 'arr_airport_id' => $dpt->id],
         ],
     ]);
-    $payload['on_conflict'] = 'abort';
 
     $bundleCountBefore = FlightBundle::query()->count();
     $flightCountBefore = Flight::query()->count();
@@ -89,7 +87,6 @@ it('returns 422 with an L4 error when rows include intra-batch duplicates', func
             ['airline_id' => $airline->id, 'flight_number' => 100, 'dpt_airport_id' => $dpt->id, 'arr_airport_id' => $arr->id],
         ],
     ]);
-    $payload['on_conflict'] = 'abort';
 
     $body = $this->postJson('/admin/route-forge/api/commit', $payload)
         ->assertStatus(422)
@@ -118,7 +115,6 @@ it('attaches to an existing bundle in attach-existing mode without persisting a 
             ['airline_id' => $airline->id, 'flight_number' => 201, 'dpt_airport_id' => $arr->id, 'arr_airport_id' => $dpt->id],
         ],
     ]);
-    $payload['on_conflict'] = 'abort';
 
     $bundleCountBefore = FlightBundle::query()->count();
 
@@ -146,7 +142,6 @@ it('rejects bundle.existing_bundle_id that points at a soft-deleted bundle', fun
             'enabled'            => null,
         ],
     ]);
-    $payload['on_conflict'] = 'abort';
 
     $this->postJson('/admin/route-forge/api/commit', $payload)
         ->assertStatus(422);

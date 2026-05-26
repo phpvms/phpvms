@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\RouteForge\Rules;
 
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 
@@ -17,15 +18,9 @@ use App\Services\RouteForge\LintIssue;
  */
 final class L9BatchOver50 implements LintRule
 {
-    public function id(): string
-    {
-        return 'L9';
-    }
+    public const string ID = 'L9';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_WARNING;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Warning;
 
     public function check(LintContext $ctx): array
     {
@@ -38,8 +33,8 @@ final class L9BatchOver50 implements LintRule
 
         return [
             new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l9_batch_over_soft_cap', [
                     'count'     => $count,
                     'threshold' => $threshold,

@@ -5,60 +5,26 @@ declare(strict_types=1);
 namespace App\Services\RouteForge;
 
 use App\Services\RouteForge\Contracts\LintRule;
-use App\Services\RouteForge\Rules\L10BatchOver100;
-use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
-use App\Services\RouteForge\Rules\L12ExistingDuplicateCrossBundle;
-use App\Services\RouteForge\Rules\L1AircraftCapacity;
-use App\Services\RouteForge\Rules\L2bTypeMismatch;
-use App\Services\RouteForge\Rules\L2RangeMismatch;
-use App\Services\RouteForge\Rules\L3EmptySubfleets;
-use App\Services\RouteForge\Rules\L4DuplicateFlightNumbersInBatch;
-use App\Services\RouteForge\Rules\L5ExistingDuplicate;
-use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
-use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
-use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
-use App\Services\RouteForge\Rules\L9BatchOver50;
 
 /**
  * Orchestrates a single lint pass: runs every registered LintRule against the
  * given LintContext and aggregates the resulting issues into a LintReport.
  *
- * Rules are passed in via constructor for explicit DI control. The static
- * `defaults()` factory wires the full v1 catalog and is the production path
- * used by the controller and commit pipeline; tests are free to construct a
- * runner with a tailored subset of rules.
+ * Rules arrive via constructor injection. Production wires the full v1
+ * catalog through the `routeforge.lint_rules` container tag (see
+ * `AppServiceProvider::register()`); tests are free to construct
+ * `new LintRunner([$customRule, ...])` directly for a tailored subset.
+ *
+ * Not declared `final readonly` — tests may mock the class. `$rules` stays
+ * `public` (acknowledged surface) so existing assertions that read the
+ * catalog continue to work.
  */
-final readonly class LintRunner
+class LintRunner
 {
     /**
-     * @param list<LintRule> $rules
+     * @param array<int, LintRule> $rules
      */
     public function __construct(public array $rules) {}
-
-    /**
-     * Build a runner with the full v1 lint catalog.
-     *
-     * Order is documentation-only — rules do not depend on each other and
-     * issue ordering inside the report is not part of the public contract.
-     */
-    public static function defaults(): self
-    {
-        return new self([
-            new L1AircraftCapacity(),
-            new L2RangeMismatch(),
-            new L2bTypeMismatch(),
-            new L3EmptySubfleets(),
-            new L4DuplicateFlightNumbersInBatch(),
-            new L5ExistingDuplicate(),
-            new L6OriginEqualsDestination(),
-            new L7SubfleetsHaveNoFares(),
-            new L8EventDatesOutsideWindow(),
-            new L9BatchOver50(),
-            new L10BatchOver100(),
-            new L11AirportTimezoneMissing(),
-            new L12ExistingDuplicateCrossBundle(),
-        ]);
-    }
 
     public function run(LintContext $ctx): LintReport
     {

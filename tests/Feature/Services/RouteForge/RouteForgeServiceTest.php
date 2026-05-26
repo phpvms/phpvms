@@ -87,7 +87,7 @@ function svcRow(int $flightNumber, Airline $airline, string $dpt, string $arr): 
 
 function svc(): RouteForgeService
 {
-    return new RouteForgeService(LintRunner::defaults());
+    return new RouteForgeService(app(LintRunner::class));
 }
 
 it('commits a happy-path batch creating bundle + flights + subfleet pivots + one activity log entry', function (): void {

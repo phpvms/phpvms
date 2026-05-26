@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\LintReport;
@@ -43,9 +44,9 @@ it('dispatches every registered rule against the context', function (): void {
             return 'PROBE';
         }
 
-        public function severity(): string
+        public function severity(): LintSeverity
         {
-            return LintIssue::SEVERITY_WARNING;
+            return LintSeverity::Warning;
         }
 
         public function check(LintContext $ctx): array
@@ -103,10 +104,16 @@ it('preserves issue order within each bucket as rules emit them', function (): v
         ->and($report->errors[1]->rowIndex)->toBe(2);
 });
 
-it('exposes the full v1 catalog via defaults()', function (): void {
-    $runner = LintRunner::defaults();
+it('resolves the full v1 catalog via container tag', function (): void {
+    $runner = app(LintRunner::class);
 
-    $ids = array_map(static fn (LintRule $rule): string => $rule->id(), $runner->rules);
+    // Constants live on each concrete rule class (the LintRule interface
+    // only declares `check()`); read via `constant()` + `::class` to satisfy
+    // PHPStan which can't prove the constant exists on the interface type.
+    $ids = array_map(
+        static fn (LintRule $rule): string => (string) constant($rule::class.'::ID'),
+        $runner->rules,
+    );
 
     expect($ids)->toEqualCanonicalizing([
         'L1', 'L2', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12',
@@ -116,14 +123,24 @@ it('exposes the full v1 catalog via defaults()', function (): void {
 
 it('canProceed is true only when no errors are present', function (): void {
     $okReport = LintReport::fromIssues([
-        new LintIssue('L1', LintIssue::SEVERITY_WARNING, 'soft'),
-        new LintIssue('L7', LintIssue::SEVERITY_INFO, 'info'),
+        new LintIssue('L1', LintSeverity::Warning, 'soft'),
+        new LintIssue('L7', LintSeverity::Info, 'info'),
     ]);
 
     $blockedReport = LintReport::fromIssues([
-        new LintIssue('L6', LintIssue::SEVERITY_ERROR, 'hard', 1),
+        new LintIssue('L6', LintSeverity::Error, 'hard', 1),
     ]);
 
     expect($okReport->canProceed())->toBeTrue()
         ->and($blockedReport->canProceed())->toBeFalse();
+});
+
+it('can be substituted in the container (non-final, mockable)', function (): void {
+    // Dropping `final readonly` from LintRunner means the container can swap
+    // the binding for tests that inject a stub runner. Smoke-test by binding
+    // an instance with zero rules and confirming app() resolves it.
+    $stub = new LintRunner([]);
+    app()->instance(LintRunner::class, $stub);
+
+    expect(app(LintRunner::class))->toBe($stub);
 });

@@ -6,8 +6,10 @@ namespace App\Services\RouteForge\Rules;
 
 use App\Models\Flight;
 use App\Services\RouteForge\Contracts\LintRule;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
+use App\Services\RouteForge\LintRow;
 use App\Services\RouteForge\Support\StrictDuplicateKey;
 
 /**
@@ -39,15 +41,9 @@ use App\Services\RouteForge\Support\StrictDuplicateKey;
  */
 final class L5ExistingDuplicate implements LintRule
 {
-    public function id(): string
-    {
-        return 'L5';
-    }
+    public const string ID = 'L5';
 
-    public function severity(): string
-    {
-        return LintIssue::SEVERITY_ERROR;
-    }
+    public const LintSeverity SEVERITY = LintSeverity::Error;
 
     public function check(LintContext $ctx): array
     {
@@ -91,8 +87,8 @@ final class L5ExistingDuplicate implements LintRule
         );
 
         $issues = [];
-        foreach ($ctx->rows as $index => $row) {
-            $key = (string) StrictDuplicateKey::forRow($row, $bundleId);
+        foreach ($ctx->rows as $row) {
+            $key = (string) StrictDuplicateKey::forRow($row->raw, $bundleId);
 
             $hit = $byKey[$key] ?? null;
             if ($hit === null) {
@@ -100,16 +96,16 @@ final class L5ExistingDuplicate implements LintRule
             }
 
             $issues[] = new LintIssue(
-                ruleId: $this->id(),
-                severity: $this->severity(),
+                ruleId: self::ID,
+                severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l5_existing_duplicate', [
-                    'flight_number' => $row['flight_number'] ?? '',
+                    'flight_number' => $row->flightNumber ?? '',
                 ]),
-                rowIndex: $index,
+                rowIndex: $row->index,
                 details: [
                     'existing_flight_id' => $hit->id,
-                    'flight_number'      => $row['flight_number'] ?? null,
-                    'airline_id'         => $row['airline_id'] ?? null,
+                    'flight_number'      => $row->flightNumber,
+                    'airline_id'         => $row->airlineId,
                 ],
             );
         }
@@ -118,16 +114,15 @@ final class L5ExistingDuplicate implements LintRule
     }
 
     /**
-     * @param  array<int, array<string, mixed>> $rows
+     * @param  list<LintRow> $rows
      * @return list<int>
      */
     private function uniqueAirlineIds(array $rows): array
     {
         $ids = [];
         foreach ($rows as $row) {
-            $id = $row['airline_id'] ?? null;
-            if (is_numeric($id)) {
-                $ids[(int) $id] = true;
+            if ($row->airlineId !== null) {
+                $ids[$row->airlineId] = true;
             }
         }
 
@@ -135,16 +130,15 @@ final class L5ExistingDuplicate implements LintRule
     }
 
     /**
-     * @param  array<int, array<string, mixed>> $rows
+     * @param  list<LintRow> $rows
      * @return list<int>
      */
     private function uniqueFlightNumbers(array $rows): array
     {
         $nums = [];
         foreach ($rows as $row) {
-            $num = $row['flight_number'] ?? null;
-            if (is_numeric($num)) {
-                $nums[(int) $num] = true;
+            if ($row->flightNumber !== null) {
+                $nums[$row->flightNumber] = true;
             }
         }
 

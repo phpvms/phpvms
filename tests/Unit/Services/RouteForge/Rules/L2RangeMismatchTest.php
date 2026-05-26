@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Subfleet;
+use App\Services\RouteForge\Enums\LintSeverity;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\Rules\L2RangeMismatch;
 use Illuminate\Support\Collection;
@@ -29,7 +30,7 @@ it('fires per row when every selected subfleet falls short of the distance', fun
     expect($issues)->toHaveCount(2)
         ->and(array_map(static fn (LintIssue $i): int => $i->rowIndex, $issues))->toBe([0, 2])
         ->and($issues[0]->ruleId)->toBe('L2')
-        ->and($issues[0]->severity)->toBe(LintIssue::SEVERITY_WARNING)
+        ->and($issues[0]->severity)->toBe(LintSeverity::Warning)
         ->and($issues[0]->details)->toMatchArray([
             'distance_nm'        => 3500.0,
             'max_subfleet_range' => 2000,
