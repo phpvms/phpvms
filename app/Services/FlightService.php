@@ -27,15 +27,22 @@ class FlightService extends Service
 
     /**
      * Create a new flight
+     *
+     * ICAO normalization (uppercase + trim) is handled by the `dpt_airport_id`
+     * / `arr_airport_id` Attribute mutators on `Flight`, which fire during
+     * `new Flight($fields)` → `fill()` below. After fill, the canonical
+     * values are mirrored back into `$fields` so the downstream airport
+     * lookup + `transformFlightFields` distance calc both see the normalized
+     * ICAOs (AirportService::calculateDistance does not case-fold its inputs).
      */
     public function createFlight(array $fields): Flight
     {
-        $fields = $this->normalizeAirportIds($fields);
-
         $flightTmp = new Flight($fields);
         if ($this->isFlightDuplicate($flightTmp)) {
             throw new DuplicateFlight($flightTmp);
         }
+
+        $fields = $this->syncNormalizedAirportIds($fields, $flightTmp);
 
         $this->airportSvc->lookupAirportIfNotFound($fields['dpt_airport_id']);
         $this->airportSvc->lookupAirportIfNotFound($fields['arr_airport_id']);
@@ -47,14 +54,15 @@ class FlightService extends Service
 
     /**
      * Update a flight with values from the given fields
+     *
+     * Same mutator-driven ICAO normalization as `createFlight`: `fill()`
+     * triggers the `dpt_airport_id` / `arr_airport_id` Attribute setters
+     * before the duplicate check reads the normalized values, then the
+     * canonical values get mirrored back into `$fields` for the downstream
+     * distance calc.
      */
     public function updateFlight(Flight $flight, array $fields): Flight
     {
-        // Normalize airport IDs the same way createFlight does so the
-        // in-memory duplicate check sees normalized values and we don't
-        // persist mixed-case IDs.
-        $fields = $this->normalizeAirportIds($fields);
-
         // apply the updates here temporarily, don't save
         // the duplicate check uses the in-memory state
         $flight->fill($fields);
@@ -63,26 +71,33 @@ class FlightService extends Service
             throw new DuplicateFlight($flight);
         }
 
+        $fields = $this->syncNormalizedAirportIds($fields, $flight);
+
         $fields = $this->transformFlightFields($fields);
+
         $flight->update($fields);
 
         return $flight->refresh();
     }
 
     /**
-     * Uppercase departure/arrival airport IDs if present.
+     * Mirror the model's mutator-normalized ICAOs back into the `$fields`
+     * array. `transformFlightFields` reads `$fields['dpt_airport_id']` /
+     * `$fields['arr_airport_id']` to compute distance via
+     * `AirportService::calculateDistance`, which does NOT case-fold its
+     * inputs — so the array values need to match the model's canonical form.
      *
      * @param  array<string, mixed> $fields
      * @return array<string, mixed>
      */
-    private function normalizeAirportIds(array $fields): array
+    private function syncNormalizedAirportIds(array $fields, Flight $flight): array
     {
-        if (array_key_exists('dpt_airport_id', $fields) && is_string($fields['dpt_airport_id'])) {
-            $fields['dpt_airport_id'] = strtoupper($fields['dpt_airport_id']);
+        if (array_key_exists('dpt_airport_id', $fields)) {
+            $fields['dpt_airport_id'] = $flight->dpt_airport_id;
         }
 
-        if (array_key_exists('arr_airport_id', $fields) && is_string($fields['arr_airport_id'])) {
-            $fields['arr_airport_id'] = strtoupper($fields['arr_airport_id']);
+        if (array_key_exists('arr_airport_id', $fields)) {
+            $fields['arr_airport_id'] = $flight->arr_airport_id;
         }
 
         return $fields;

@@ -50,13 +50,15 @@ class FlightsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('dpt_time')
+                TextColumn::make('departure_time')
                     ->label(__('flights.departuretime'))
+                    ->time('H:i')
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('arr_time')
+                TextColumn::make('arrival_time')
                     ->label(__('flights.arrivaltime'))
+                    ->time('H:i')
                     ->sortable()
                     ->toggleable(),
 

@@ -5,10 +5,8 @@ namespace App\Models;
 use App\Casts\DistanceCast;
 use App\Contracts\Model;
 use App\Enums\FlightType;
-use App\Observers\FlightObserver;
 use App\Support\Days;
 use App\Traits\HashIdTrait;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -142,7 +140,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
-#[ObservedBy(FlightObserver::class)]
 #[WithoutIncrementing]
 class Flight extends Model
 {
@@ -221,6 +218,34 @@ class Flight extends Model
         'fares_count',
     ];
 
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'flight_number'        => 'integer',
+            'days'                 => 'integer',
+            'level'                => 'integer',
+            'distance'             => DistanceCast::class,
+            'flight_time'          => 'integer',
+            'flight_type'          => FlightType::class,
+            'departure_time'       => 'datetime:H:i:s',
+            'arrival_time'         => 'datetime:H:i:s',
+            'start_date'           => 'datetime',
+            'end_date'             => 'datetime',
+            'load_factor'          => 'double',
+            'load_factor_variance' => 'double',
+            'pilot_pay'            => 'float',
+            'has_bid'              => 'boolean',
+            // `route_leg` int cast is handled by the routeLeg() Attribute
+            // mutator so empty / '0' inputs canonicalize to NULL rather than 0.
+            'enabled'   => 'boolean',
+            'visible'   => 'boolean',
+            'event_id'  => 'integer',
+            'user_id'   => 'integer',
+            'bundle_id' => 'integer',
+        ];
+    }
+
     /**
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
@@ -280,6 +305,115 @@ class Flight extends Model
                 return $flight_atc;
             }
         );
+    }
+
+    /**
+     * Normalize departure airport ICAO at write time: uppercase + trim.
+     * Single-row write paths (admin form, FlightImporter, manual save) flow
+     * through this mutator; the RouteForge bulk-insert path normalizes
+     * explicitly in `RouteForgeService::buildFlightAttrs()` because
+     * `Model::insert()` bypasses Eloquent's attribute machinery.
+     */
+    protected function dptAirportId(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null
+                ? null
+                : strtoupper(trim($value)),
+        );
+    }
+
+    /**
+     * Normalize arrival airport ICAO at write time: uppercase + trim.
+     * Same single-row-vs-bulk caveat as `dptAirportId()`.
+     */
+    protected function arrAirportId(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null
+                ? null
+                : strtoupper(trim($value)),
+        );
+    }
+
+    /**
+     * Canonicalize `route_code` to NULL when the input is empty / '0' / 0.
+     *
+     * Single source of truth for the strict-duplicate namespace: a missing
+     * `route_code` is stored as NULL, never as '' or '0'. The `flights._dup_key`
+     * generated column (UNIQUE index `flights_dup_key_unique`) depends on this
+     * canonicalization so the index key is deterministic across historical and
+     * new rows.
+     *
+     * Applies on `$flight->route_code = X` and during `$flight->fill([...])`.
+     * `Model::insert()` (used by the RouteForge bulk-insert path) calls
+     * `fill()` first inside `RouteForgeService::buildFlightAttrs()`, so this
+     * mutator is in effect for that path as well.
+     */
+    protected function routeCode(): Attribute
+    {
+        return Attribute::make(
+            set: fn (mixed $value): ?string => self::canonicalizeRoutePart($value),
+        );
+    }
+
+    /**
+     * Canonicalize `route_leg` to NULL when the input is empty / '0' / 0,
+     * otherwise cast to int.
+     *
+     * Replaces the legacy `'route_leg' => 'integer'` cast, which converted
+     * empty strings to `0` and broke the strict-duplicate namespace (two rows
+     * with `route_leg = '' and route_leg = 0` would store as the same `0`,
+     * blocking distinct "absent" vs "leg-zero" semantics; in practice the
+     * codebase has no leg-zero so collapsing both to NULL is correct).
+     */
+    protected function routeLeg(): Attribute
+    {
+        return Attribute::make(
+            get: static fn (mixed $value): ?int => $value === null ? null : (int) $value,
+            set: static function (mixed $value): ?int {
+                $canonical = self::canonicalizeRoutePart($value);
+
+                return $canonical === null ? null : (int) $canonical;
+            },
+        );
+    }
+
+    /**
+     * Collapse null / '' / 0 / '0' to canonical NULL for route-key fields.
+     *
+     * Used by `routeCode()` and `routeLeg()` mutators above. The strict-equal
+     * `in_array(..., strict: true)` matters: it distinguishes `0` (int zero,
+     * the legacy "leg zero or empty" sentinel) from `'0'` (string), both of
+     * which we collapse, from a real string `'abc'` that we preserve.
+     *
+     * Backed enums (e.g. `PirepStatus::DIVERTED` set on `route_code` by the
+     * diversion handler) are coerced via their backing `->value`. Pure unit
+     * enums fall back to their `->name`. This keeps legacy callers working
+     * without forcing them to pre-stringify enum values.
+     */
+    private static function canonicalizeRoutePart(mixed $value): ?string
+    {
+        if (in_array($value, [null, '', 0, '0'], true)) {
+            return null;
+        }
+
+        if ($value instanceof \BackedEnum) {
+            $string = (string) $value->value;
+        } elseif ($value instanceof \UnitEnum) {
+            $string = $value->name;
+        } elseif (is_scalar($value) || $value instanceof \Stringable) {
+            $string = (string) $value;
+        } else {
+            // Non-stringable object — defer to PHP's cast and let it raise.
+            // Callers passing arbitrary objects into route_code/route_leg are
+            // out of contract and should fail loudly rather than silently NULL.
+            $string = (string) $value;
+        }
+
+        // Re-check after coercion: an enum whose value is '' or '0' (unlikely
+        // but possible) collapses to NULL same as a literal '' input.
+        return ($string === '' || $string === '0') ? null : $string;
     }
 
     public function on_day($day): bool
@@ -424,33 +558,6 @@ class Flight extends Model
         return $this->morphTo('owner', 'owner_type', 'owner_id');
     }
 
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'flight_number'        => 'integer',
-            'days'                 => 'integer',
-            'level'                => 'integer',
-            'distance'             => DistanceCast::class,
-            'flight_time'          => 'integer',
-            'flight_type'          => FlightType::class,
-            'departure_time'       => 'datetime:H:i:s',
-            'arrival_time'         => 'datetime:H:i:s',
-            'start_date'           => 'datetime',
-            'end_date'             => 'datetime',
-            'load_factor'          => 'double',
-            'load_factor_variance' => 'double',
-            'pilot_pay'            => 'float',
-            'has_bid'              => 'boolean',
-            'route_leg'            => 'integer',
-            'enabled'              => 'boolean',
-            'visible'              => 'boolean',
-            'event_id'             => 'integer',
-            'user_id'              => 'integer',
-            'bundle_id'            => 'integer',
-        ];
-    }
-
     /*
      * Query scopes
      */
@@ -459,7 +566,7 @@ class Flight extends Model
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
      *
-     * @deprecated use ->visible()
+     * @deprecated use visible()
      */
     #[Scope]
     protected function active(Builder $query): Builder

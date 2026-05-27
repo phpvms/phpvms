@@ -20,6 +20,11 @@ use Illuminate\Database\Eloquent\Builder;
  *   'icao:K;name:Inter'      LIKE %K% on icao OR LIKE %Inter% on name
  *   'searchJoin=and'         switch multi-field clauses to AND
  *
+ * Search-mode wrapping (applies to `like` / `ilike` operators only; `=`
+ * comparisons ignore it):
+ *   'substring' (default) → "%value%"  preserves /api/airports contract
+ *   'prefix'              → "value%"   RouteForge typeahead starts-with
+ *
  * Allowed search fields and sort columns are validated by SearchAirportsRequest.
  */
 class AirportSearchQueryV1
@@ -63,8 +68,9 @@ class AirportSearchQueryV1
         $searchValue = $this->parseSearchValue($search);
         $fields = $this->resolveSearchFields($data['searchFields'] ?? null, array_keys($searchData));
         $forceAnd = strtolower((string) ($data['searchJoin'] ?? 'or')) === 'and';
+        $prefixMode = strtolower((string) ($data['searchMode'] ?? 'substring')) === 'prefix';
 
-        $query->where(function (Builder $sub) use ($fields, $forceAnd, $searchData, $searchValue): void {
+        $query->where(function (Builder $sub) use ($fields, $forceAnd, $searchData, $searchValue, $prefixMode): void {
             $isFirstClause = true;
 
             foreach ($fields as $field => $operator) {
@@ -77,9 +83,9 @@ class AirportSearchQueryV1
                     continue;
                 }
 
-                $value = in_array($operator, ['like', 'ilike'], true)
-                    ? '%'.$value.'%'
-                    : $value;
+                if (in_array($operator, ['like', 'ilike'], true)) {
+                    $value = $prefixMode ? $value.'%' : '%'.$value.'%';
+                }
 
                 if ($isFirstClause || $forceAnd) {
                     $sub->where($field, $operator, $value);

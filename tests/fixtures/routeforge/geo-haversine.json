@@ -1,0 +1,87 @@
+{
+  "_doc": "Cross-language haversine parity fixture. PHP (App\\Support\\Geo) and TS (resources/js/admin/routeforge/lib/geo.ts) both load this file in their test suites and assert their own output matches `expected_nm` to within `tolerance_nm`. Drift in either implementation fails its own test, not the other's — but BOTH expected values were computed once with R = 3440.065 nm + the canonical haversine formula, so a divergence anywhere surfaces as a parity break.",
+  "earth_radius_nm": 3440.065,
+  "tolerance_nm": 1e-9,
+  "cases": [
+    {
+      "name": "identical_points",
+      "lat_a": 37.6213,
+      "lon_a": -122.379,
+      "lat_b": 37.6213,
+      "lon_b": -122.379,
+      "expected_nm": 0
+    },
+    {
+      "name": "ksfo_klax_west_coast",
+      "lat_a": 37.6213,
+      "lon_a": -122.379,
+      "lat_b": 33.9416,
+      "lon_b": -118.4085,
+      "expected_nm": 293.5543044315327
+    },
+    {
+      "name": "ksfo_kord_transcon",
+      "lat_a": 37.6213,
+      "lon_a": -122.379,
+      "lat_b": 41.9786,
+      "lon_b": -87.9048,
+      "expected_nm": 1600.5426613032282
+    },
+    {
+      "name": "kjfk_egll_north_atlantic",
+      "lat_a": 40.6413,
+      "lon_a": -73.7781,
+      "lat_b": 51.4775,
+      "lon_b": -0.4614,
+      "expected_nm": 2990.975677127996
+    },
+    {
+      "name": "ksfo_egll_polar_long_haul",
+      "lat_a": 37.6213,
+      "lon_a": -122.379,
+      "lat_b": 51.4775,
+      "lon_b": -0.4614,
+      "expected_nm": 4651.967644417661
+    },
+    {
+      "name": "antipodal_pacific",
+      "lat_a": 0,
+      "lon_a": 0,
+      "lat_b": 0,
+      "lon_b": 180,
+      "expected_nm": 10807.282931871372
+    },
+    {
+      "name": "equator_one_degree_east",
+      "lat_a": 0,
+      "lon_a": 0,
+      "lat_b": 0,
+      "lon_b": 1,
+      "expected_nm": 60.04046073261873
+    },
+    {
+      "name": "pole_to_equator",
+      "lat_a": 90,
+      "lon_a": 0,
+      "lat_b": 0,
+      "lon_b": 0,
+      "expected_nm": 5403.641465935685
+    },
+    {
+      "name": "southern_hemisphere_short",
+      "lat_a": -33.9416,
+      "lon_a": 151.1753,
+      "lat_b": -37.0082,
+      "lon_b": 174.785,
+      "expected_nm": 1165.900339742305
+    },
+    {
+      "name": "near_dateline_crossing",
+      "lat_a": 35.772,
+      "lon_a": 140.3929,
+      "lat_b": 21.3187,
+      "lon_b": -157.9224,
+      "expected_nm": 3312.9133734326006
+    }
+  ]
+}
