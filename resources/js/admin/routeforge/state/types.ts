@@ -9,7 +9,7 @@
  *   LintIssue   ↔ App\Services\RouteForge\LintIssue::toArray()
  *   LintReport  ↔ App\Services\RouteForge\LintReport::toArray()
  *   CommitResp  ↔ App\Services\RouteForge\CommitResult::toArray()
- *   AirportSummary, SubfleetSummary, AirlineStats, DuplicateMatch ↔
+ *   AirportSummary, SubfleetSummary, AirlineStats ↔
  *                 corresponding RouteForge Resources under
  *                 app/Http/Resources/RouteForge.
  *
@@ -131,12 +131,19 @@ export type TimeStrategy =
 /**
  * Strategy assignments are positional: the generator emits rows in
  * `[outbound, return, outbound, return, ...]` order when `create_returns` is
- * true, and the assigner relies on that ordering for the even/odd strategies.
+ * true, and the assigner relies on that ordering for the even/odd strategy.
+ *
+ * `same_number_incrementing_legs` assigns the SAME `flight_number = base` to
+ * every row and an incrementing `route_leg` (base_leg + row.index). The
+ * strict-duplicate key includes `route_leg`, so distinct legs disambiguate
+ * the otherwise-identical (airline_id, flight_number) pair. Tour topology
+ * defaults to this strategy because tours are conceptually one flight
+ * number flown across many legs.
  */
 export type FlightNumberStrategy =
   | { kind: "sequential"; base: number }
   | { kind: "even_odd_by_direction"; base: number }
-  | { kind: "even_outbound_only"; base: number }
+  | { kind: "same_number_incrementing_legs"; base: number; base_leg: number }
   | { kind: "manual" };
 
 // ─── Bundle config ─────────────────────────────────────────────────────────
@@ -342,35 +349,6 @@ export type AirlineSummary = {
   iata: string | null;
 };
 
-// ─── Duplicate-check wire shapes ───────────────────────────────────────────
-
-/**
- * Severity-classified, bundle-aware duplicate match from
- * `/admin/route-forge/api/check-duplicates`.
- *
- * - `severity = 'error', kind = 'same_bundle'`: full 5-tuple match in the
- *   batch's bundle. DB UNIQUE constraint would reject commit; UI should
- *   block submission or render a red icon (mirrors lint rule L5).
- * - `severity = 'warning', kind = 'cross_bundle'`: `(airline_id,
- *   flight_number)` match in a DIFFERENT bundle. UI renders the existing
- *   yellow warning icon; admin can commit with awareness (mirrors L12).
- */
-export type DuplicateMatch = {
-  index: number;
-  existing_flight_id: string;
-  ident: string;
-  /** Always 'flight_number' in v1. */
-  conflict_field: "flight_number";
-  severity: "error" | "warning";
-  kind: "same_bundle" | "cross_bundle";
-  existing_bundle_id: number;
-  existing_bundle_name: string;
-};
-
-export type DuplicateCheckResponse = {
-  duplicates: DuplicateMatch[];
-};
-
 // ─── Commit wire shapes ────────────────────────────────────────────────────
 
 export type CommitResponse = {
@@ -405,7 +383,6 @@ export type RouteForgeRoutes = {
   preview_airports: string;
   subfleets: string;
   airline_stats: string;
-  check_duplicates: string;
   lint: string;
   commit: string;
   /** Paginated + searchable feed of non-soft-deleted FlightBundles. */
@@ -449,7 +426,13 @@ export const DRAFT_KEY = "routeforge:draft:v1";
 //            "chain" → "tour". Older drafts carrying the legacy discriminator
 //            would fail the Topology union check on resume — bumping the
 //            version makes DraftResumeBanner discard them safely.
-export const DRAFT_VERSION = 3 as const;
+//   v3 → v4: FlightNumberStrategy "even_outbound_only" removed (strategy
+//            unconditionally produced L4 duplicate-key errors against
+//            phpvms's (bundle_id, airline_id, flight_number, route_code,
+//            route_leg) UNIQUE constraint; never committable). Drafts
+//            carrying that kind would leave the picker in an out-of-union
+//            state on resume — version bump discards them.
+export const DRAFT_VERSION = 4 as const;
 export const DRAFT_STALE_DAYS = 30;
 
 /**

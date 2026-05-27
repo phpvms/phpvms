@@ -53,7 +53,6 @@ it('exposes every RouteForge endpoint URL on the routes payload', function (): v
         'preview_airports',
         'subfleets',
         'airline_stats',
-        'check_duplicates',
         'lint',
         'commit',
         'bundles',

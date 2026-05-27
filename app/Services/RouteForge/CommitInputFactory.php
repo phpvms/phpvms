@@ -13,13 +13,14 @@ use Illuminate\Validation\ValidationException;
  * Composes `LintContextFactory` to avoid duplicating airline / event /
  * subfleet / bundle resolution. Owns commit-only concerns:
  *
- * - Resolving the attach-existing bundle in exactly one DB lookup. The
- *   Form Request already validated `exists:flight_bundles,id` (with the
- *   soft-delete filter); the previous controller did a second defensive
- *   lookup to guard against a microsecond TOCTOU window between validation
- *   and resolution. That defensive lookup is dropped — the recovery path
- *   (raising a `ValidationException`) is now anchored here and produces
- *   the same observable 422 if the row was soft-deleted in the gap.
+ * - Resolving the attach-existing bundle. `BaseRouteForgeBatchRequest::
+ *   passedValidation()` pre-resolves and stashes the bundle on the request
+ *   attribute bag; the controller passes it down to `fromValidatedPayload`
+ *   and this factory skips the DB lookup. When called WITHOUT a pre-
+ *   resolved bundle (legacy callers, tests), the factory falls back to its
+ *   own `FlightBundle::find()` with the same TOCTOU recovery path: raises
+ *   a `ValidationException` (→ 422) if the row was soft-deleted between
+ *   validation and resolution.
  * - Stamping `created_by` on the unsaved bundle only in create-new mode.
  * - Extracting `fare_multiplier` (string or null) and `subfleet_ids`
  *   (list<int>) from the payload.
@@ -33,11 +34,18 @@ final readonly class CommitInputFactory
 
     /**
      * @param array<string, mixed> $validated
+     * @param ?FlightBundle        $existingBundle Pre-resolved attach-existing
+     *                                             bundle from the Form Request,
+     *                                             or null to let this factory
+     *                                             resolve it from the payload.
      */
-    public function fromValidatedPayload(array $validated, ?int $causerId): CommitInput
-    {
+    public function fromValidatedPayload(
+        array $validated,
+        ?int $causerId,
+        ?FlightBundle $existingBundle = null,
+    ): CommitInput {
         $bundleData = (array) ($validated['bundle'] ?? []);
-        $existingBundle = $this->resolveExistingBundle($bundleData);
+        $existingBundle ??= $this->resolveExistingBundle($bundleData);
 
         $ctx = $this->lintContextFactory->fromValidatedPayload($validated, $existingBundle);
 

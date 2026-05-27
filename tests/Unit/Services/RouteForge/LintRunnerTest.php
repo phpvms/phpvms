@@ -8,6 +8,7 @@ use App\Services\RouteForge\LintContext;
 use App\Services\RouteForge\LintIssue;
 use App\Services\RouteForge\LintReport;
 use App\Services\RouteForge\LintRunner;
+use App\Services\RouteForge\Rules\ExistingDuplicates;
 use App\Services\RouteForge\Rules\L10BatchOver100;
 use App\Services\RouteForge\Rules\L3EmptySubfleets;
 use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
@@ -107,18 +108,27 @@ it('preserves issue order within each bucket as rules emit them', function (): v
 it('resolves the full v1 catalog via container tag', function (): void {
     $runner = app(LintRunner::class);
 
-    // Constants live on each concrete rule class (the LintRule interface
-    // only declares `check()`); read via `constant()` + `::class` to satisfy
-    // PHPStan which can't prove the constant exists on the interface type.
-    $ids = array_map(
-        static fn (LintRule $rule): string => (string) constant($rule::class.'::ID'),
-        $runner->rules,
-    );
+    // After the L5+L12 merge, `ExistingDuplicates` emits two rule ids from
+    // one registered class — collect emitted ids per rule. The other 11
+    // rules each carry a single `::ID` constant; read via `constant()` +
+    // `::class` to satisfy PHPStan which can't prove the constant exists on
+    // the interface type.
+    $ids = [];
+    foreach ($runner->rules as $rule) {
+        if ($rule instanceof ExistingDuplicates) {
+            $ids[] = ExistingDuplicates::SAME_BUNDLE_RULE_ID;
+            $ids[] = ExistingDuplicates::CROSS_BUNDLE_RULE_ID;
+
+            continue;
+        }
+
+        $ids[] = (string) constant($rule::class.'::ID');
+    }
 
     expect($ids)->toEqualCanonicalizing([
         'L1', 'L2', 'L2b', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12',
     ])
-        ->and($runner->rules)->toHaveCount(13);
+        ->and($runner->rules)->toHaveCount(12);
 });
 
 it('canProceed is true only when no errors are present', function (): void {

@@ -23,15 +23,18 @@ use Illuminate\Support\Collection;
  *
  * Lookup discipline:
  *
- * - When `$existingBundle` is passed in (commit path, already resolved by
- *   `CommitInputFactory`), the factory does NOT re-query `flight_bundles`.
+ * - When `$existingBundle` is passed in (both `/lint` and `/commit`
+ *   controllers pass the pre-resolved instance from
+ *   `BaseRouteForgeBatchRequest::passedValidation()`), the factory does NOT
+ *   re-query `flight_bundles`.
  * - When `$existingBundle` is null but the validated payload carries
- *   `bundle.existing_bundle_id` (lint path), the factory issues a single
- *   `FlightBundle::find()` so date-dependent rules (L8) still read the
- *   existing window. If the find misses (soft-deleted between validation
- *   and lookup), the factory falls back to the request-body bundle data —
- *   linting is non-destructive, so a stale id surfaces as L8 emitting
- *   against the request's own date columns rather than blowing up.
+ *   `bundle.existing_bundle_id` (legacy direct callers, tests), the factory
+ *   issues a single `FlightBundle::find()` so date-dependent rules (L8)
+ *   still read the existing window. If the find misses (soft-deleted
+ *   between validation and lookup), the factory falls back to the request-
+ *   body bundle data — linting is non-destructive, so a stale id surfaces
+ *   as L8 emitting against the request's own date columns rather than
+ *   blowing up.
  */
 final readonly class LintContextFactory
 {

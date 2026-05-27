@@ -48,9 +48,10 @@ use Illuminate\Support\Str;
  *      the queued job (typical sub-second eventual consistency on a healthy
  *      queue, nightly cron fallback worst-case).
  *
- * NOT in scope: PHP-side row regeneration and DuplicateChecker integration
- * (the L5 lint rule already handles DB collisions as warnings;
- * on_conflict='skip' is reserved for a later iteration).
+ * NOT in scope: PHP-side row regeneration (`on_conflict='skip'` is reserved
+ * for a later iteration; the `ExistingDuplicates` rule already surfaces L5
+ * same-bundle errors + L12 cross-bundle warnings against fresh DB state on
+ * every lint pass and inside the commit txn).
  */
 final readonly class RouteForgeService
 {

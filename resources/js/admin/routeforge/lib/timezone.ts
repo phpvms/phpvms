@@ -1,9 +1,12 @@
 /**
  * Timezone-aware arrival time math (Decision 12).
  *
- * Client uses `@date-fns/tz` (3 KB add-on to existing date-fns) to compute
- * the destination-local arrival from an origin-local departure + block time.
- * Server uses native DateTimeZone for the equivalent commit-time recompute.
+ * Uses `@date-fns/tz` (3 KB add-on to existing date-fns) to compute the
+ * destination-local arrival from an origin-local departure + block time.
+ * The client is the sole authority for this calculation — the server
+ * persists `departure_time`, `arrival_time`, and `arr_day_shift` from the
+ * commit payload verbatim, gated by `permission:create:flight` and lint
+ * validation. There is no parallel server-side recompute.
  *
  * Generation date for DST resolution: today in the application's configured
  * timezone, NOT the bundle's start_date. Using start_date would create

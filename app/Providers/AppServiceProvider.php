@@ -16,15 +16,14 @@ use App\Policies\Filament\ActivityPolicy;
 use App\Services\ModuleService;
 use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\LintRunner;
+use App\Services\RouteForge\Rules\ExistingDuplicates;
 use App\Services\RouteForge\Rules\L10BatchOver100;
 use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
-use App\Services\RouteForge\Rules\L12ExistingDuplicateCrossBundle;
 use App\Services\RouteForge\Rules\L1AircraftCapacity;
 use App\Services\RouteForge\Rules\L2bTypeMismatch;
 use App\Services\RouteForge\Rules\L2RangeMismatch;
 use App\Services\RouteForge\Rules\L3EmptySubfleets;
 use App\Services\RouteForge\Rules\L4DuplicateFlightNumbersInBatch;
-use App\Services\RouteForge\Rules\L5ExistingDuplicate;
 use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
 use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
@@ -189,14 +188,17 @@ class AppServiceProvider extends ServiceProvider
             L2bTypeMismatch::class,
             L3EmptySubfleets::class,
             L4DuplicateFlightNumbersInBatch::class,
-            L5ExistingDuplicate::class,
+            // ExistingDuplicates emits L5 (ERROR same-bundle) + L12 (WARNING
+            // cross-bundle) issues from one merged query, replacing the
+            // separate L5ExistingDuplicate + L12ExistingDuplicateCrossBundle
+            // rules from the pre-cleanup catalog.
+            ExistingDuplicates::class,
             L6OriginEqualsDestination::class,
             L7SubfleetsHaveNoFares::class,
             L8EventDatesOutsideWindow::class,
             L9BatchOver50::class,
             L10BatchOver100::class,
             L11AirportTimezoneMissing::class,
-            L12ExistingDuplicateCrossBundle::class,
         ], 'routeforge.lint_rules');
 
         $this->app->bind(

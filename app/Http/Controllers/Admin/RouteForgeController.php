@@ -9,14 +9,12 @@ use App\Enums\FlightType;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Http\Requests\RouteForge\AirlineStatsRequest;
 use App\Http\Requests\RouteForge\BundlesRequest;
-use App\Http\Requests\RouteForge\CheckDuplicatesRequest;
 use App\Http\Requests\RouteForge\CommitRequest;
 use App\Http\Requests\RouteForge\LintRequest;
 use App\Http\Requests\RouteForge\PreviewAirportsRequest;
 use App\Http\Requests\RouteForge\SubfleetsRequest;
 use App\Http\Resources\RouteForge\AirlineStatsResource;
 use App\Http\Resources\RouteForge\CommitResponseResource;
-use App\Http\Resources\RouteForge\DuplicateCheckResource;
 use App\Http\Resources\RouteForge\LintReportResource;
 use App\Http\Resources\RouteForge\RouteForgeAirportResource;
 use App\Http\Resources\RouteForge\RouteForgeBootResource;
@@ -29,7 +27,6 @@ use App\Models\Subfleet;
 use App\Queries\AirportSearchQueryV1;
 use App\Services\RouteForge\AirlineStatsService;
 use App\Services\RouteForge\CommitInputFactory;
-use App\Services\RouteForge\DuplicateChecker;
 use App\Services\RouteForge\Exceptions\LintFailedException;
 use App\Services\RouteForge\LintContextFactory;
 use App\Services\RouteForge\LintRunner;
@@ -53,7 +50,6 @@ use Illuminate\Support\Facades\App;
  *   GET  /preview-airports   Typeahead + optional near / max_range_nm decoration.
  *   GET  /subfleets          All subfleets for the given airline (no v1 capability filter).
  *   GET  /airline-stats      L1 capacity snapshot + hub list for the form.
- *   POST /check-duplicates   Bulk strict-4-tuple collision check for the UI.
  *   POST /lint               Full L1–L11 lint pass; returns errors + warnings.
  *   POST /commit             Atomic batch create. Re-runs lint inside the txn.
  *
@@ -202,7 +198,6 @@ final class RouteForgeController extends Controller
             'preview_airports'     => route('admin.routeforge.api.preview-airports'),
             'subfleets'            => route('admin.routeforge.api.subfleets'),
             'airline_stats'        => route('admin.routeforge.api.airline-stats'),
-            'check_duplicates'     => route('admin.routeforge.api.check-duplicates'),
             'lint'                 => route('admin.routeforge.api.lint'),
             'commit'               => route('admin.routeforge.api.commit'),
             'bundles'              => route('admin.routeforge.api.bundles'),
@@ -311,35 +306,20 @@ final class RouteForgeController extends Controller
     }
 
     /**
-     * Bulk duplicate-check against existing flights.
-     *
-     * Delegates to `DuplicateChecker` which classifies each row as either
-     * same-bundle ERROR (full 5-tuple match in the batch's bundle) or
-     * cross-bundle WARNING (airline+flight match in a different bundle),
-     * filtered to `enabled = true AND owner_type IS NULL`. Not invoked from
-     * the commit pipeline; commit relies on the `LintRunner` (L4 + L5 + L12)
-     * and the DB-level UNIQUE constraint on `flights._dup_key`.
-     *
-     * `bundle_id` is optional — null indicates a new-bundle batch where every
-     * existing match is cross-bundle by definition.
-     */
-    public function checkDuplicates(
-        CheckDuplicatesRequest $request,
-        DuplicateChecker $checker,
-    ): JsonResponse {
-        $rows = (array) $request->validated('rows');
-        $bundleId = $request->validated('bundle_id');
-        $duplicates = $checker->check($rows, $bundleId === null ? null : (int) $bundleId);
-
-        return (new DuplicateCheckResource($duplicates))->response();
-    }
-
-    /**
      * Run the full L1–L11 lint catalog against the submitted batch.
+     *
+     * `$request->resolvedExistingBundle()` returns the pre-resolved
+     * attach-existing bundle that `BaseRouteForgeBatchRequest::
+     * passedValidation()` stashed during validation, or null when the
+     * batch creates a new bundle. Threading it through saves a DB
+     * round-trip per /lint call (which the SPA fires on every keystroke).
      */
     public function lint(LintRequest $request, LintContextFactory $contextFactory, LintRunner $runner): JsonResponse
     {
-        $ctx = $contextFactory->fromValidatedPayload($request->validated());
+        $ctx = $contextFactory->fromValidatedPayload(
+            $request->validated(),
+            $request->resolvedExistingBundle(),
+        );
         $report = $runner->run($ctx);
 
         return (new LintReportResource($report))->response();
@@ -359,7 +339,14 @@ final class RouteForgeController extends Controller
         RouteForgeService $service,
     ): JsonResponse {
         $causerId = auth()->id() !== null ? (int) auth()->id() : null;
-        $input = $inputFactory->fromValidatedPayload($request->validated(), $causerId);
+        // Same pre-resolved bundle thread-through as /lint — saves a
+        // second `FlightBundle::find()` on every commit when attaching to
+        // an existing bundle.
+        $input = $inputFactory->fromValidatedPayload(
+            $request->validated(),
+            $causerId,
+            $request->resolvedExistingBundle(),
+        );
 
         try {
             $result = $service->commit($input);

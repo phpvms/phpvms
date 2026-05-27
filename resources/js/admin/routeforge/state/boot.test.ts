@@ -24,7 +24,6 @@ const sampleEnvelope: BootEnvelope = {
     preview_airports: "/preview",
     subfleets: "/subfleets",
     airline_stats: "/stats",
-    check_duplicates: "/dupes",
     lint: "/lint",
     commit: "/commit",
     bundles: "/bundles",

@@ -4,13 +4,24 @@
  * Each logical row renders as a single grid row with four columns. Column 3
  * holds two visual lines:
  *
- *   Line 1: ⟨FL ####⟩  ICAO → ICAO  [RET]
+ *   Line 1: ⟨FL ####⟩ [/L.⟨leg⟩]  ICAO → ICAO  [RET]
  *   Line 2: Dpt ⟨HH:MM⟩  Arr HH:MM +Nd  ·  ####nm  ·  MTWTFSS
  *
  * Editable fields (click-to-edit, one cell active at a time):
  *   - `enabled`        — checkbox column (always interactive; no swap)
  *   - `flight_number`  — text → number input on click; Enter / blur commits;
  *                         Esc cancels
+ *   - `route_leg`      — rendered as `/L.<n>` after the flight number when
+ *                         the row has a leg set (the
+ *                         `same_number_incrementing_legs` strategy populates
+ *                         it; other strategies leave it null). Click to edit
+ *                         as a number input; blank / 0 / negative clears it
+ *                         back to null (matches the server's
+ *                         `canonicalizeRoutePart()` rules in Flight.php).
+ *                         Adding a leg to a row that doesn't have one is
+ *                         done by selecting the legs strategy, not by row
+ *                         edit — keeps the row UI uncluttered when most
+ *                         flights don't use legs.
  *   - `departure_time` — text → time input on click. Editing recomputes
  *                         `arrival_time` + `arr_day_shift` via
  *                         lib/timezone.computeArrTime so the user sees the
@@ -35,7 +46,7 @@ import { rows } from "../state/store";
 import type { Row } from "../state/types";
 import { RowLintIcon } from "./RowLintIcon";
 
-type EditableField = "flight_number" | "departure_time";
+type EditableField = "flight_number" | "route_leg" | "departure_time";
 type EditingCell = { rowIndex: number; field: EditableField } | null;
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -83,6 +94,25 @@ export function RowTable() {
       // on the input element. State stays valid regardless of how the value
       // got in.
       updateRow(index, { flight_number: Math.max(1, n) });
+    }
+    setEditing(null);
+  }
+
+  function commitRouteLeg(index: number, raw: string): void {
+    // Empty / 0 / negative all canonicalize to null on the server
+    // (Flight.canonicalizeRoutePart). Mirror that here so the displayed
+    // state matches what would persist on commit.
+    const trimmed = raw.trim();
+    if (trimmed === "") {
+      updateRow(index, { route_leg: null });
+      setEditing(null);
+      return;
+    }
+    const n = Number.parseInt(trimmed, 10);
+    if (Number.isNaN(n) || n <= 0) {
+      updateRow(index, { route_leg: null });
+    } else {
+      updateRow(index, { route_leg: String(n) });
     }
     setEditing(null);
   }
@@ -158,6 +188,7 @@ export function RowTable() {
           onCancelEdit={() => setEditing(null)}
           onToggleEnabled={(checked) => setEnabled(r.index, checked)}
           onCommitFlightNumber={(raw) => commitFlightNumber(r.index, raw)}
+          onCommitRouteLeg={(raw) => commitRouteLeg(r.index, raw)}
           onCommitDepartureTime={(time) => commitDepartureTime(r.index, time)}
         />
       ))}
@@ -172,6 +203,7 @@ type RowItemProps = {
   onCancelEdit: () => void;
   onToggleEnabled: (checked: boolean) => void;
   onCommitFlightNumber: (raw: string) => void;
+  onCommitRouteLeg: (raw: string) => void;
   onCommitDepartureTime: (time: string) => void;
 };
 
@@ -182,6 +214,7 @@ function RowItem({
   onCancelEdit,
   onToggleEnabled,
   onCommitFlightNumber,
+  onCommitRouteLeg,
   onCommitDepartureTime,
 }: RowItemProps) {
   const arrLabel =
@@ -217,24 +250,53 @@ function RowItem({
 
       {/* Col 3: two-line content */}
       <div role="gridcell" class="flex min-w-0 flex-col gap-0.5">
-        {/* Line 1: flight number + route */}
+        {/* Line 1: flight number (+ optional leg) + route */}
         <div class="flex flex-wrap items-baseline gap-x-3">
-          {editing === "flight_number" ? (
-            <FlightNumberEditor
-              initial={row.flight_number}
-              onCommit={onCommitFlightNumber}
-              onCancel={onCancelEdit}
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => onStartEdit("flight_number")}
-              class={`${CLICKABLE_CELL} font-medium text-gray-900 dark:text-gray-100`}
-              aria-label={`Edit flight number (currently ${row.flight_number})`}
-            >
-              {row.flight_number}
-            </button>
-          )}
+          {/* Flight number + leg form one composite identifier, so they
+              share a tighter visual group (gap-x-0.5) — matches the
+              `<num>/L.<leg>` rendering in Flight::flight_id. Routing
+              metadata after the group keeps the original spacing. */}
+          <span class="inline-flex items-baseline gap-x-0.5">
+            {editing === "flight_number" ? (
+              <FlightNumberEditor
+                initial={row.flight_number}
+                onCommit={onCommitFlightNumber}
+                onCancel={onCancelEdit}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => onStartEdit("flight_number")}
+                class={`${CLICKABLE_CELL} font-medium text-gray-900 dark:text-gray-100`}
+                aria-label={`Edit flight number (currently ${row.flight_number})`}
+              >
+                {row.flight_number}
+              </button>
+            )}
+            {(editing === "route_leg" || row.route_leg !== null) && (
+              <>
+                <span aria-hidden="true" class="text-xs text-gray-400 dark:text-gray-500">
+                  /L.
+                </span>
+                {editing === "route_leg" ? (
+                  <RouteLegEditor
+                    initial={row.route_leg ?? ""}
+                    onCommit={onCommitRouteLeg}
+                    onCancel={onCancelEdit}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onStartEdit("route_leg")}
+                    class={`${CLICKABLE_CELL} text-sm text-gray-700 dark:text-gray-200`}
+                    aria-label={`Edit route leg (currently ${row.route_leg ?? "none"})`}
+                  >
+                    {row.route_leg}
+                  </button>
+                )}
+              </>
+            )}
+          </span>
           <span class="font-mono text-xs text-gray-700 dark:text-gray-200">
             {row.dpt_airport_id}
             <span class="px-1 text-gray-400">→</span>
@@ -321,6 +383,47 @@ function FlightNumberEditor({ initial, onCommit, onCancel }: FlightNumberEditorP
         }
       }}
       class="w-20 rounded border border-primary-500 bg-white px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-900 dark:text-gray-100"
+    />
+  );
+}
+
+type RouteLegEditorProps = {
+  initial: string;
+  onCommit: (raw: string) => void;
+  onCancel: () => void;
+};
+
+function RouteLegEditor({ initial, onCommit, onCancel }: RouteLegEditorProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [val, setVal] = useState<string>(initial);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  return (
+    <input
+      ref={inputRef}
+      type="number"
+      // min=0 (not 1) so the user can type 0 to intentionally clear the
+      // leg. commitRouteLeg() maps 0/empty/negative to null per the
+      // server's canonicalizeRoutePart() rules.
+      min={0}
+      step={1}
+      value={val}
+      onInput={(e) => setVal((e.currentTarget as HTMLInputElement).value)}
+      onBlur={() => onCommit(val)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          onCommit(val);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          onCancel();
+        }
+      }}
+      class="w-14 rounded border border-primary-500 bg-white px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-900 dark:text-gray-100"
     />
   );
 }

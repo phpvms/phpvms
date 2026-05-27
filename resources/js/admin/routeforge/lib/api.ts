@@ -24,10 +24,8 @@ import type {
   BundleSummary,
   CommitPayload,
   CommitResponse,
-  DuplicateCheckResponse,
   LintPayload,
   LintReport,
-  PayloadRow,
   RouteForgeRoutes,
   SubfleetSummary,
 } from "../state/types";
@@ -73,27 +71,6 @@ export type BundlesParams = {
   search?: string;
   page?: number;
   per_page?: number;
-};
-
-export type CheckDuplicatesParams = {
-  /** Batch-wide airline id. Server enforces every row matches this. */
-  airline_id: number;
-  /**
-   * Bundle id the batch will commit to. Omit / null when creating a new
-   * bundle — every existing match then surfaces as cross-bundle warning.
-   * When set, full-tuple matches in this bundle surface as same-bundle
-   * errors.
-   */
-  bundle_id?: number | null;
-  rows: Pick<
-    PayloadRow,
-    | "airline_id"
-    | "flight_number"
-    | "route_code"
-    | "route_leg"
-    | "dpt_airport_id"
-    | "arr_airport_id"
-  >[];
 };
 
 // ─── Endpoint responses (paginated airports follows Laravel default) ──────
@@ -189,12 +166,6 @@ export async function getBundles(
 ): Promise<PaginatedResponse<BundleSummary>> {
   const url = buildUrl(routes().bundles, params);
   return getJson<PaginatedResponse<BundleSummary>>(url);
-}
-
-export async function postCheckDuplicates(
-  params: CheckDuplicatesParams,
-): Promise<SingleResponse<DuplicateCheckResponse>> {
-  return postJson<SingleResponse<DuplicateCheckResponse>>(routes().check_duplicates, params);
 }
 
 export async function postLint(

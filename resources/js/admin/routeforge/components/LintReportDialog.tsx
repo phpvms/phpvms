@@ -1,8 +1,9 @@
 /**
  * Pre-commit lint summary modal.
  *
- * Opens from PreviewPanel's commit flow after the server-side /lint call
- * returns. Two cases:
+ * Opens from PreviewPanel's commit flow when the background lint report
+ * (refreshed on a 400ms debounce by the auto-lint effect) carries any
+ * errors or warnings. Two cases:
  *
  *   - **errors present** — header reads "Cannot commit". Proceed button
  *     disabled. User clicks Cancel + fixes the form / rows.
@@ -11,10 +12,11 @@
  *     enabled, runs the commit POST.
  *
  * Per spec scenario "Server commit rejects payload with lint errors", the
- * server is the authoritative gate — this dialog mirrors what the server
- * already decided. If the user somehow forces a commit anyway (e.g., via
- * direct API call), the server returns 422 + LintReport and PreviewPanel
- * re-opens this dialog with the new report.
+ * server is the authoritative gate — this dialog mirrors what the background
+ * lint already showed. If the user forces a commit anyway, /commit re-runs
+ * the full lint catalog inside its txn and returns 422 + LintReport, at
+ * which point PreviewPanel pushes the fresh report into `lintReport.value`
+ * and re-opens this dialog.
  *
  * Issues group by severity for scannability. Rule code surfaces in mono
  * font so admin can cross-reference design.md's lint catalog.

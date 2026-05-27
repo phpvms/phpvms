@@ -55,4 +55,39 @@ final readonly class LintContext
     {
         return count($this->rows);
     }
+
+    /**
+     * Distinct non-null `airline_id` values across the batch rows. Used by
+     * duplicate-detection rules to scope their bulk-query `whereIn` clauses.
+     *
+     * @return list<int>
+     */
+    public function uniqueAirlineIds(): array
+    {
+        $ids = [];
+        foreach ($this->rows as $row) {
+            if ($row->airlineId !== null) {
+                $ids[$row->airlineId] = true;
+            }
+        }
+
+        return array_keys($ids);
+    }
+
+    /**
+     * Distinct non-null `flight_number` values across the batch rows.
+     *
+     * @return list<int>
+     */
+    public function uniqueFlightNumbers(): array
+    {
+        $nums = [];
+        foreach ($this->rows as $row) {
+            if ($row->flightNumber !== null) {
+                $nums[$row->flightNumber] = true;
+            }
+        }
+
+        return array_keys($nums);
+    }
 }

@@ -58,18 +58,36 @@ describe("assignFlightNumbers", () => {
     expect(out.map((r) => r.flight_number)).toEqual([100, 101, 102, 103]);
   });
 
-  it("even_outbound_only assigns the same number to both legs of a pair", () => {
+  it("same_number_incrementing_legs assigns one flight number with incrementing legs", () => {
     const rows = [
       makeRow({ index: 0, pair_index: 0, direction: "outbound" }),
-      makeRow({ index: 1, pair_index: 0, direction: "return" }),
-      makeRow({ index: 2, pair_index: 1, direction: "outbound" }),
-      makeRow({ index: 3, pair_index: 1, direction: "return" }),
+      makeRow({ index: 1, pair_index: 1, direction: "outbound" }),
+      makeRow({ index: 2, pair_index: 2, direction: "outbound" }),
     ];
-    const strategy: FlightNumberStrategy = { kind: "even_outbound_only", base: 100 };
+    const strategy: FlightNumberStrategy = {
+      kind: "same_number_incrementing_legs",
+      base: 100,
+      base_leg: 1,
+    };
 
     const out = assignFlightNumbers(rows, strategy);
 
-    expect(out.map((r) => r.flight_number)).toEqual([100, 100, 102, 102]);
+    expect(out.map((r) => r.flight_number)).toEqual([100, 100, 100]);
+    expect(out.map((r) => r.route_leg)).toEqual(["1", "2", "3"]);
+  });
+
+  it("same_number_incrementing_legs respects a non-default base_leg", () => {
+    const rows = [makeRow({ index: 0 }), makeRow({ index: 1 })];
+    const strategy: FlightNumberStrategy = {
+      kind: "same_number_incrementing_legs",
+      base: 200,
+      base_leg: 5,
+    };
+
+    const out = assignFlightNumbers(rows, strategy);
+
+    expect(out.map((r) => r.flight_number)).toEqual([200, 200]);
+    expect(out.map((r) => r.route_leg)).toEqual(["5", "6"]);
   });
 
   it("manual strategy preserves caller-supplied flight numbers verbatim", () => {

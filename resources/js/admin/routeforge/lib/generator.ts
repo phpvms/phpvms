@@ -188,8 +188,7 @@ function buildTourPairs(origins: string[]): Pair[] {
   const pairs: Pair[] = [];
   // Contiguous pair_index across emitted pairs: using the loop index `i`
   // leaves gaps when adjacent duplicates are skipped, which would shift
-  // flight-number strategy math (even_odd_by_direction / even_outbound_only)
-  // for subsequent rows.
+  // the even_odd_by_direction flight-number math for subsequent rows.
   let pairIndex = 0;
   for (let i = 0; i < origins.length - 1; i++) {
     const origin = origins[i] as string;

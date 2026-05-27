@@ -45,3 +45,46 @@ test('haversineNm matches the client-side geo.ts pinned reference value (KSFO �
 test('haversineNm exposes the canonical Earth radius constant', function (): void {
     expect(Geo::EARTH_RADIUS_NM)->toBe(3440.065);
 });
+
+/*
+ * Cross-language parity:
+ *
+ * `tests/fixtures/routeforge/geo-haversine.json` defines a set of
+ * (lat/lon, lat/lon) → expected_nm cases. The companion vitest spec
+ * (`resources/js/admin/routeforge/lib/geo.test.ts`) loads the same JSON
+ * and asserts the TS implementation matches `expected_nm` to within
+ * `tolerance_nm`. Both implementations passing means PHP `Geo` and TS
+ * `geo.ts` agree at floating-point precision — drift in either
+ * direction surfaces as a fixture mismatch in its own suite.
+ *
+ * Add new edge cases to the JSON and both halves pick them up; no test
+ * code change required.
+ */
+test('haversineNm matches the cross-language parity fixture', function (): void {
+    /** @var array{earth_radius_nm: float, tolerance_nm: float, cases: list<array{name: string, lat_a: float, lon_a: float, lat_b: float, lon_b: float, expected_nm: float}>} $fixture */
+    $fixture = json_decode(
+        (string) file_get_contents(base_path('tests/fixtures/routeforge/geo-haversine.json')),
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+
+    expect($fixture['earth_radius_nm'])->toBe(Geo::EARTH_RADIUS_NM);
+
+    $tolerance = $fixture['tolerance_nm'];
+    foreach ($fixture['cases'] as $case) {
+        $actual = Geo::haversineNm(
+            $case['lat_a'],
+            $case['lon_a'],
+            $case['lat_b'],
+            $case['lon_b'],
+        );
+
+        expect(abs($actual - $case['expected_nm']))
+            ->toBeLessThanOrEqual($tolerance, sprintf(
+                'haversineNm(%s) drifted from fixture: got %.12f, expected %.12f',
+                $case['name'],
+                $actual,
+                $case['expected_nm'],
+            ));
+    }
+});

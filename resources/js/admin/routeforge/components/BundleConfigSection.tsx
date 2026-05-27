@@ -56,6 +56,24 @@ function validateFareMultiplier(value: string): string | null {
   return null;
 }
 
+/**
+ * Mirrors the server-side `bundle.end_date.after_or_equal:bundle.start_date`
+ * rule from `BaseRouteForgeBatchRequest`. Both dates are `YYYY-MM-DD`
+ * strings produced by `<input type="date">`, so a lexicographic compare is
+ * a correct chronological compare. Equal dates are allowed (matches
+ * `after_or_equal`). Returns null when either bound is missing — the
+ * window is open-ended in that case and the constraint does not apply.
+ */
+function validateDateRange(start: string | null, end: string | null): string | null {
+  if (start === null || start === "" || end === null || end === "") {
+    return null;
+  }
+  if (end < start) {
+    return t("validation.bundle_dates_inverted");
+  }
+  return null;
+}
+
 export function BundleConfigSection() {
   const f = form.value;
   const b = f.bundle;
@@ -427,6 +445,7 @@ function NewBundleFields({ b, patch }: NewBundleFieldsProps) {
   }
 
   const fareError = validateFareMultiplier(b.fare_multiplier);
+  const dateError = validateDateRange(b.start_date, b.end_date);
 
   return (
     <>
@@ -456,17 +475,24 @@ function NewBundleFields({ b, patch }: NewBundleFieldsProps) {
           <input
             id="rf-bundle-start"
             type="date"
-            class={INPUT_CLASS}
+            class={dateError !== null ? INPUT_CLASS_ERROR : INPUT_CLASS}
             value={b.start_date ?? ""}
+            max={b.end_date ?? undefined}
             onInput={changeStartDate}
           />
         </Field>
-        <Field label="End date" htmlFor="rf-bundle-end" hint="Optional window end.">
+        <Field
+          label="End date"
+          htmlFor="rf-bundle-end"
+          hint="Optional window end."
+          error={dateError}
+        >
           <input
             id="rf-bundle-end"
             type="date"
-            class={INPUT_CLASS}
+            class={dateError !== null ? INPUT_CLASS_ERROR : INPUT_CLASS}
             value={b.end_date ?? ""}
+            min={b.start_date ?? undefined}
             onInput={changeEndDate}
           />
         </Field>

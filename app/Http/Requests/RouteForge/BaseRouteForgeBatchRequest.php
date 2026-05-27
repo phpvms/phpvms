@@ -6,6 +6,7 @@ namespace App\Http\Requests\RouteForge;
 
 use App\Contracts\FormRequest;
 use App\Enums\FlightType;
+use App\Models\FlightBundle;
 use Illuminate\Validation\Rule;
 
 /**
@@ -143,6 +144,59 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             'rows.*.arr_airport_id.in'         => __('filament.routeforge.validation.row_airport_out_of_scope'),
             'rows.*.end_date.after_or_equal'   => __('filament.routeforge.validation.row_dates_inverted'),
         ];
+    }
+
+    /**
+     * Attribute-bag key under which the pre-resolved attach-existing
+     * `FlightBundle` is stashed by `passedValidation()` below. Downstream
+     * factories (`LintContextFactory`, `CommitInputFactory`) read from here
+     * to avoid a second DB lookup of a bundle the Form Request already
+     * `exists`-validated and resolved.
+     */
+    public const string RESOLVED_BUNDLE_ATTRIBUTE = 'routeforge.existing_bundle';
+
+    /**
+     * Resolve the attach-existing `FlightBundle` exactly once (after the
+     * `bundle.existing_bundle_id` `exists` rule has passed) and stash it on
+     * the request attribute bag. Both the lint controller and commit
+     * controller pull from here and pass the resolved instance down into
+     * their respective factories.
+     *
+     * The previous wiring did this lookup in two places — once in
+     * `LintContextFactory::hydrateUnsavedBundle` (lint path) and once in
+     * `CommitInputFactory::resolveExistingBundle` (commit path) — duplicating
+     * work on every commit and adding an extra round-trip per /lint POST
+     * (which the SPA's auto-lint effect fires on every keystroke).
+     *
+     * If a microsecond TOCTOU window between validation and lookup
+     * soft-deletes the row, the stash stays null and the factories'
+     * existing recovery paths handle the miss (commit raises 422 via
+     * `CommitInputFactory::resolveExistingBundle`; lint falls through to
+     * request-body bundle data).
+     */
+    #[\Override]
+    protected function passedValidation(): void
+    {
+        $existingId = $this->input('bundle.existing_bundle_id');
+        if ($existingId === null || $existingId === '') {
+            return;
+        }
+
+        $bundle = FlightBundle::query()->find((int) $existingId);
+        if ($bundle instanceof FlightBundle) {
+            $this->attributes->set(self::RESOLVED_BUNDLE_ATTRIBUTE, $bundle);
+        }
+    }
+
+    /**
+     * Pre-resolved attach-existing bundle, or null if the batch is
+     * creating a new bundle (or the soft-delete TOCTOU path landed).
+     */
+    public function resolvedExistingBundle(): ?FlightBundle
+    {
+        $bundle = $this->attributes->get(self::RESOLVED_BUNDLE_ATTRIBUTE);
+
+        return $bundle instanceof FlightBundle ? $bundle : null;
     }
 
     /**

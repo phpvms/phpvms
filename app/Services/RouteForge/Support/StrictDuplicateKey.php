@@ -11,8 +11,9 @@ use App\Models\Flight;
  *
  * Single source of truth for the 5-tuple
  * `(bundle_id, airline_id, flight_number, route_code, route_leg)`
- * used by L4 (intra-batch duplicate), L5 (same-bundle existing duplicate),
- * L12 (cross-bundle existing duplicate), and `DuplicateChecker`.
+ * used by L4 (intra-batch duplicate) and `ExistingDuplicates` (L5 same-bundle
+ * + L12 cross-bundle existing-flight collisions, both emitted from one
+ * merged rule).
  *
  * String form: `bundleId|airlineId|flightNumber|routeCode|routeLeg`
  * with empty string for null `routeCode` / `routeLeg`.
@@ -65,8 +66,8 @@ final readonly class StrictDuplicateKey implements \Stringable
     /**
      * Build the strict key from a persisted Flight model.
      *
-     * Used by L5, L12, and DuplicateChecker to index existing-DB matches.
-     * The Flight's bundle_id is non-null in production storage (NOT NULL FK).
+     * Used by `ExistingDuplicates` to index existing-DB matches. The
+     * Flight's bundle_id is non-null in production storage (NOT NULL FK).
      */
     public static function forFlight(Flight $flight): self
     {

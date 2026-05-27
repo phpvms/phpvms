@@ -10,14 +10,11 @@
  *     → user clicks "Create flights"
  *     → flushDraft so the in-flight typing is persisted in case the commit
  *       fails (Decision 4 / persistence.ts docblock)
- *     → POST /lint  (server-side authoritative; ALWAYS runs, even if client
- *                    lint is clean — server has access to L5 against fresh
- *                    DB state)
+ *     → inspect lintReport.value (already kept fresh by the auto-lint
+ *       effect on 400ms debounce — no extra HTTP round-trip)
  *
- *   linting --(response with errors)--> lint_review (block)
- *   linting --(response with warnings)--> lint_review (confirm)
- *   linting --(response clean)----------> doCommit() (no extra dialog)
- *   linting --(network error)-----------> error
+ *   lintReport has errors or warnings  → lint_review (dialog)
+ *   lintReport clean OR null           → doCommit() immediately
  *
  *   lint_review --(user clicks Proceed)--> doCommit()
  *   lint_review --(user clicks Cancel)---> idle
@@ -25,19 +22,20 @@
  *   doCommit
  *     → POST /commit
  *     → 200: result stored, draft cleared, render <CommitSuccessRedirect/>
- *     → 422 with body.data: { errors/warnings/info }: server-side lint
- *       caught something the client missed (e.g., a race on flight number).
- *       Push the new report back into lintReport and reopen the dialog.
+ *     → 422 with body.data: { errors/warnings/info }: server-side in-txn lint
+ *       caught something the background lint missed (race on flight number,
+ *       stale rows, etc.). Push the new report back into lintReport and
+ *       reopen the dialog — `/commit` is the authoritative gate.
  *     → other error: surface to user, return to idle.
  *
  * `lintReport` is a store signal so the auto-lint effect can drive
  * RowLintIcon continuously; the dialog reads from it AND we write to it
- * after every /lint or /commit response so live + dialog stay in sync.
+ * after a /commit 422 response so live + dialog stay in sync.
  */
 
 import { useState } from "preact/hooks";
 
-import { ApiError, postCommit, postLint } from "../lib/api";
+import { ApiError, postCommit } from "../lib/api";
 import { t } from "../lib/i18n";
 import { buildLintPayload, regenerateRows, resetLifecycleState } from "../lib/lifecycle";
 import { clearDraft, flushDraft } from "../state/persistence";
@@ -50,7 +48,6 @@ import { RowTable } from "./RowTable";
 
 type CommitState =
   | { kind: "idle" }
-  | { kind: "linting" }
   | { kind: "lint_review"; lintedPayload: LintPayload }
   | { kind: "committing"; lintedPayload: LintPayload }
   | { kind: "committed"; result: CommitResponse }
@@ -81,21 +78,22 @@ export function PreviewPanel() {
       return;
     }
     flushDraft();
-    setState({ kind: "linting" });
-    try {
-      const res = await postLint(payload);
-      lintReport.value = res.data;
-      if (res.data.errors.length > 0 || res.data.warnings.length > 0) {
-        setState({ kind: "lint_review", lintedPayload: payload });
-        return;
-      }
-      // Clean lint → proceed straight to commit; no extra dialog. Pass the
-      // same payload that was just linted so the committed batch matches
-      // what the server validated (live store edits in flight are deferred).
-      await doCommit(payload);
-    } catch (err) {
-      setState({ kind: "error", message: describeError(err) });
+    // Reuse the background-lint report instead of a synchronous pre-commit
+    // POST /lint. The auto-lint effect refreshes lintReport on a 400ms
+    // debounce, so a user who just clicked Create is reading a recent
+    // snapshot. /commit re-runs the full lint catalog inside its txn and
+    // returns 422 with the fresh report if anything raced — that path is
+    // the authoritative gate, so the pre-commit /lint round-trip adds
+    // latency without adding safety.
+    const currentReport = lintReport.value;
+    if (
+      currentReport !== null &&
+      (currentReport.errors.length > 0 || currentReport.warnings.length > 0)
+    ) {
+      setState({ kind: "lint_review", lintedPayload: payload });
+      return;
     }
+    await doCommit(payload);
   }
 
   async function doCommit(lintedPayload: LintPayload): Promise<void> {
@@ -140,7 +138,7 @@ export function PreviewPanel() {
   }
 
   const lintDialogOpen = state.kind === "lint_review" || state.kind === "committing";
-  const busy = state.kind === "linting" || state.kind === "committing";
+  const busy = state.kind === "committing";
   const canCreate = rowCount > 0 && f.airline_id !== null && errorCount === 0 && !busy;
 
   // Surface the first blocking reason next to the Generate button so the

@@ -19,11 +19,13 @@ import { useState } from "preact/hooks";
 
 import { t } from "../lib/i18n";
 import { form } from "../state/store";
-import type { Topology } from "../state/types";
+import type { FlightNumberStrategy, Topology } from "../state/types";
 import { Field, INPUT_CLASS } from "./Field";
 import { HelpModal, type HelpModalItem } from "./HelpModal";
 
 const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "tour"];
+
+const TOUR_DEFAULT_BASE_LEG = 1;
 
 function deriveMode(topology: Topology): "cartesian" | "tour" {
   return topology === "tour" ? "tour" : "cartesian";
@@ -43,6 +45,28 @@ function deriveCreateReturns(topology: Topology, current: boolean): boolean {
   return current;
 }
 
+/**
+ * Tour topology models one flight flown across many legs (e.g. round-the-
+ * world tour), so the natural numbering is `flight_number=base, route_leg
+ * walks 1..N`. Auto-default to `same_number_incrementing_legs` on tour
+ * selection — but only when the user hasn't already chosen that strategy
+ * (preserve their `base` / `base_leg` if they have). Leaving tour does NOT
+ * revert; the user keeps the strategy they had on tour if they liked it.
+ */
+function deriveFlightNumberStrategy(
+  topology: Topology,
+  current: FlightNumberStrategy,
+): FlightNumberStrategy {
+  if (topology !== "tour") {
+    return current;
+  }
+  if (current.kind === "same_number_incrementing_legs") {
+    return current;
+  }
+  const base = current.kind === "manual" ? 100 : current.base;
+  return { kind: "same_number_incrementing_legs", base, base_leg: TOUR_DEFAULT_BASE_LEG };
+}
+
 export function TopologyPicker() {
   const f = form.value;
   const [helpOpen, setHelpOpen] = useState<boolean>(false);
@@ -58,6 +82,7 @@ export function TopologyPicker() {
       topology: next,
       mode: deriveMode(next),
       create_returns: deriveCreateReturns(next, current.create_returns),
+      flight_number_strategy: deriveFlightNumberStrategy(next, current.flight_number_strategy),
     };
   }
 

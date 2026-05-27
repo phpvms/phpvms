@@ -110,6 +110,14 @@ Auth::routes(['verify' => true]);
  * legacy `window.routeforgeConfig` global and ships every piece of mount-time
  * state the React/Preact app needs in one round-trip. Bundles are NOT in the
  * boot envelope (paginated + searchable via `/bundles` instead).
+ *
+ * `/lint` and `/commit` carry an additional `throttle:60,1` (60 requests /
+ * minute / user). The SPA's auto-lint effect debounces at 400ms, so normal
+ * typing peaks well below the cap; the throttle exists to bound the
+ * database load when a fast typist, stuck key, or buggy client fires lint
+ * continuously. AbortController cancels in-flight requests client-side but
+ * already-started server queries finish, so the throttle is the only
+ * server-side backstop.
  */
 Route::middleware(['web', 'auth', 'permission:create:flight'])
     ->prefix('admin/route-forge/api')
@@ -120,9 +128,12 @@ Route::middleware(['web', 'auth', 'permission:create:flight'])
         Route::get('preview-airports', [RouteForgeController::class, 'previewAirports'])->name('preview-airports');
         Route::get('subfleets', [RouteForgeController::class, 'subfleets'])->name('subfleets');
         Route::get('airline-stats', [RouteForgeController::class, 'airlineStats'])->name('airline-stats');
-        Route::post('check-duplicates', [RouteForgeController::class, 'checkDuplicates'])->name('check-duplicates');
-        Route::post('lint', [RouteForgeController::class, 'lint'])->name('lint');
-        Route::post('commit', [RouteForgeController::class, 'commit'])->name('commit');
+        Route::post('lint', [RouteForgeController::class, 'lint'])
+            ->middleware('throttle:60,1')
+            ->name('lint');
+        Route::post('commit', [RouteForgeController::class, 'commit'])
+            ->middleware('throttle:60,1')
+            ->name('commit');
     });
 
 Route::get('/update', fn (): Redirector|\Illuminate\Http\RedirectResponse => redirect('/system/update'));
