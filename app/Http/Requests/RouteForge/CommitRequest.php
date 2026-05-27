@@ -30,4 +30,19 @@ final class CommitRequest extends BaseRouteForgeBatchRequest
             'on_conflict'            => ['sometimes', 'string', Rule::in(['skip', 'abort'])],
         ]);
     }
+
+    /**
+     * Layer commit-only messages on top of the shared batch messages so
+     * the SPA's lint and commit error renderers stay aligned.
+     *
+     * @return array<string, string>
+     */
+    #[\Override]
+    public function messages(): array
+    {
+        return array_merge(parent::messages(), [
+            'bundle.fare_multiplier.regex' => __('filament.routeforge.validation.fare_multiplier_format'),
+            'on_conflict.in'               => __('filament.routeforge.validation.on_conflict_invalid'),
+        ]);
+    }
 }

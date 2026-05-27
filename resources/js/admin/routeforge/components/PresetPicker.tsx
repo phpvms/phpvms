@@ -61,8 +61,12 @@ function RoutePresetPicker() {
   function handleChange(e: Event): void {
     const next = (e.currentTarget as HTMLSelectElement).value as RoutePreset;
     const patch = routePresetPatch(next);
+    // Read the freshest form value at apply time so concurrent edits
+    // (an airport picker mutating origins between render and event) survive
+    // this update instead of being clobbered by the captured `f` snapshot.
+    const current = form.value;
     form.value = {
-      ...f,
+      ...current,
       route_preset: next,
       ...patch,
     };
@@ -114,8 +118,9 @@ function FrequencyPresetPicker() {
   function handleChange(e: Event): void {
     const next = (e.currentTarget as HTMLSelectElement).value as FrequencyPreset;
     const patch = frequencyPresetPatch(next);
+    const current = form.value;
     form.value = {
-      ...f,
+      ...current,
       frequency_preset: next,
       ...patch,
     };

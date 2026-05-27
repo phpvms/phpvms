@@ -30,16 +30,21 @@ export function DaysPicker() {
   const f = form.value;
   const mask = f.days_mask;
 
+  // All three handlers read form.value at apply time so concurrent updates
+  // from other controls (e.g. a debounced auto-regen) aren't clobbered by
+  // the captured `f` snapshot.
   function toggle(bit: number): void {
-    const next = (mask & bit) !== 0 ? mask & ~bit : mask | bit;
-    form.value = { ...f, days_mask: next };
+    const current = form.value;
+    const currentMask = current.days_mask;
+    const next = (currentMask & bit) !== 0 ? currentMask & ~bit : currentMask | bit;
+    form.value = { ...current, days_mask: next };
   }
 
   function selectAll(): void {
-    form.value = { ...f, days_mask: 127 };
+    form.value = { ...form.value, days_mask: 127 };
   }
   function clearAll(): void {
-    form.value = { ...f, days_mask: 0 };
+    form.value = { ...form.value, days_mask: 0 };
   }
 
   return (

@@ -105,7 +105,8 @@ export const selectedRowCount = computed<number>(() =>
 
 /**
  * UI commit-button gate. Requires:
- *   - at least one row
+ *   - at least one ENABLED row (disabled rows don't ship to /commit, so a
+ *     batch of 100 rows where every row is unchecked is effectively empty)
  *   - no known lint errors in the most recent server response
  *
  * `lintReport === null` is allowed (debounce hasn't fired yet, or the
@@ -116,7 +117,7 @@ export const selectedRowCount = computed<number>(() =>
  * the endpoint.
  */
 export const canCommit = computed<boolean>(() => {
-  if (rowCount.value === 0) {
+  if (selectedRowCount.value === 0) {
     return false;
   }
   const report = lintReport.value;

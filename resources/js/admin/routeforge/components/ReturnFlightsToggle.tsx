@@ -12,30 +12,46 @@
  * topologies (`hub_spokes`, `spokes_hub`, `mesh`) the user toggles freely.
  */
 
+import { useEffect } from "preact/hooks";
+
 import { form } from "../state/store";
 
 export function ReturnFlightsToggle() {
   const f = form.value;
 
-  function handleChange(e: Event): void {
-    form.value = {
-      ...f,
-      create_returns: (e.currentTarget as HTMLInputElement).checked,
-    };
-  }
-
-  const returnsForced = f.topology === "hub_and_spokes" || f.topology === "tour";
+  const enforcedReturns =
+    f.topology === "hub_and_spokes" ? true : f.topology === "tour" ? false : null;
+  const returnsForced = enforcedReturns !== null;
   const returnsLockedReason =
     f.topology === "hub_and_spokes"
       ? "Hub & Spokes always includes return legs."
       : f.topology === "tour"
         ? "Tour mode does not produce return legs."
         : null;
-  // For forced topologies the displayed value MUST match the enforced value
-  // so the checkbox can't show stale `f.create_returns` from a different
-  // topology. TopologyPicker.deriveCreateReturns also stamps the right value
-  // into form state, but using the derived value here is defense-in-depth.
-  const displayChecked = returnsForced ? f.topology === "hub_and_spokes" : f.create_returns;
+  const displayChecked = enforcedReturns ?? f.create_returns;
+
+  // Keep form.value.create_returns in lockstep with the enforced value for
+  // forced topologies. TopologyPicker.deriveCreateReturns already stamps the
+  // right value on topology change, but a stale draft resume can land here
+  // with a mismatch (older drafts persisted `create_returns: true` while the
+  // user was on tour). Without this effect a stale draft would commit a value
+  // that contradicts the disabled checkbox.
+  useEffect(() => {
+    if (enforcedReturns === null || f.create_returns === enforcedReturns) {
+      return;
+    }
+    form.value = { ...form.value, create_returns: enforcedReturns };
+  }, [enforcedReturns, f.create_returns]);
+
+  function handleChange(e: Event): void {
+    const checkbox = (e.currentTarget as HTMLInputElement).checked;
+    // Honor the forced value even if the disabled attribute is bypassed (a
+    // user with devtools, an automation tool, or a future a11y workflow).
+    form.value = {
+      ...form.value,
+      create_returns: enforcedReturns ?? checkbox,
+    };
+  }
 
   return (
     <div class="mb-3">

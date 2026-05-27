@@ -16,6 +16,10 @@ use App\Services\RouteForge\LintIssue;
  * The generator itself excludes these per the route-forge-tool spec, so this
  * rule's primary value is catching user-edited rows or hand-crafted commit
  * payloads. Commit-blocking error.
+ *
+ * Equality is checked after casting both sides to string. Hand-crafted commit
+ * payloads can carry mixed types (`"42"` vs `42`) that strict `!==` would
+ * treat as distinct, letting a true self-loop slip past the rule.
  */
 final class L6OriginEqualsDestination implements LintRule
 {
@@ -38,7 +42,7 @@ final class L6OriginEqualsDestination implements LintRule
                 continue;
             }
 
-            if ($dpt !== $arr) {
+            if ((string) $dpt !== (string) $arr) {
                 continue;
             }
 

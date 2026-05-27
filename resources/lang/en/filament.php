@@ -297,6 +297,10 @@ return [
             'flight_number_max'        => 'Flight numbers cannot exceed 9999.',
             'row_airport_out_of_scope' => 'A row references an airport outside the chosen origins/destinations.',
             'row_dates_inverted'       => "A row's end date must be on or after its start date.",
+            'fare_multiplier_format'   => 'Fare multiplier must look like "+10%", "-5%", or "20%".',
+            'on_conflict_invalid'      => 'Conflict mode must be either "skip" or "abort".',
+            'near_invalid'             => 'The "near" airport must be a valid 4-letter ICAO that exists.',
+            'max_range_nm_invalid'     => 'Max range (nm) must be an integer between 0 and 20000.',
         ],
     ],
 ];

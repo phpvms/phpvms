@@ -78,6 +78,10 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [hasFetchedInitial, setHasFetchedInitial] = useState<boolean>(false);
+  // Tracks whether the currently displayed `results` are the unfiltered
+  // initial page (true) or a typed-query slice (false). Used to decide
+  // whether clearing the query needs a refetch to restore the alpha page.
+  const [showingUnfiltered, setShowingUnfiltered] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Force dropdown closed whenever the picker becomes disabled. Prevents a
@@ -96,10 +100,12 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
     if (!open) {
       return;
     }
-    // If query is empty AND we've already loaded the initial page,
-    // don't refetch (the results stay valid until the user types).
+    // If query is empty AND the unfiltered initial page is already on
+    // screen, skip the refetch. If results currently show a filtered
+    // slice (showingUnfiltered === false), we MUST refetch so clearing
+    // the query restores the alpha-sorted page.
     const trimmed = query.trim();
-    if (trimmed === "" && hasFetchedInitial) {
+    if (trimmed === "" && hasFetchedInitial && showingUnfiltered) {
       return;
     }
     setLoading(true);
@@ -128,6 +134,9 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
           setResults(list);
           if (trimmed === "") {
             setHasFetchedInitial(true);
+            setShowingUnfiltered(true);
+          } else {
+            setShowingUnfiltered(false);
           }
         })
         .catch(() => {
@@ -146,7 +155,7 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query, open, hasFetchedInitial]);
+  }, [query, open, hasFetchedInitial, showingUnfiltered]);
 
   // Click-outside detector: close the dropdown when the user clicks
   // anywhere outside the picker's container. Stays attached only while

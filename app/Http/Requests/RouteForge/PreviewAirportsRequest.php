@@ -45,6 +45,25 @@ final class PreviewAirportsRequest extends SearchAirportsRequest
     }
 
     /**
+     * Custom error messages for the RouteForge-specific filters layered on
+     * top of the shared SearchAirportsRequest rules.
+     *
+     * @return array<string, string>
+     */
+    #[\Override]
+    public function messages(): array
+    {
+        return [
+            'near.size'            => __('filament.routeforge.validation.near_invalid'),
+            'near.alpha'           => __('filament.routeforge.validation.near_invalid'),
+            'near.exists'          => __('filament.routeforge.validation.near_invalid'),
+            'max_range_nm.integer' => __('filament.routeforge.validation.max_range_nm_invalid'),
+            'max_range_nm.min'     => __('filament.routeforge.validation.max_range_nm_invalid'),
+            'max_range_nm.max'     => __('filament.routeforge.validation.max_range_nm_invalid'),
+        ];
+    }
+
+    /**
      * Normalize `near` to uppercase ICAO so the `exists` rule and downstream
      * Airport lookup work regardless of how the client cased the input.
      */
