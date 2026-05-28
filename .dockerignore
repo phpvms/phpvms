@@ -55,10 +55,10 @@ out/
 .oxfmtrc.json
 .oxlintrc.json
 tsconfig.json
-vite.config.js
 vitest.config.ts
 
 ### Docker
+.docker
 Dockerfile
 compose.yaml
 compose.*
