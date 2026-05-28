@@ -62,13 +62,13 @@ class SetActiveTheme implements Middleware
             $theme = config('themes.default');
         }
 
-        /*if ($request->is(self::$skip)) {
+        if ($request->is(self::$skip)) {
             // Skipped paths don't pick a per-request theme but still need a
             // deterministic baseline under Octane (see method PHPDoc).
-            Theme::set($theme);
+            Theme::set(config('themes.default'));
 
             return;
-        }*/
+        }
 
         Theme::set($theme);
     }
