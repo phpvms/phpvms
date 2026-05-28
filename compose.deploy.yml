@@ -31,7 +31,7 @@ services:
     pull_policy: build
 
     # Build from the local repository
-    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms}:latest
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
 
     # Build from the local repository
     build:
@@ -108,7 +108,7 @@ services:
       retries: 3
 
   task:
-    image: phpvms/phpvms:latest
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
@@ -125,7 +125,7 @@ services:
       - phpvms_storage:/var/www/html/storage:rw
 
   queue:
-    image: phpvms/phpvms:latest
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
     user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
