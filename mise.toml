@@ -1,14 +1,5 @@
 [env]
 BUILDKIT_HOST = "docker-container://buildkit"
-APP_ENV = "local"
-
-[tools]
-php = "8.5"
-node = "24"
-
-[settings]
-activate_aggressive = true
-env_shell_expand = true
 
 [tasks.setup]
 run = ["mise install", "mise run run-buildkit-container || true"]

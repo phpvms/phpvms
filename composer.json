@@ -154,7 +154,8 @@
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi",
       "@php artisan ide-helper:generate || true",
-      "@php artisan ide-helper:meta || true"
+      "@php artisan ide-helper:meta || true",
+      ".hooks/setup-git-hooks.sh || true"
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",

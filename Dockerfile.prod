@@ -1,12 +1,14 @@
 # This Dockerfile is used to create the base phpVMS image for Docker in production.
 # It is based on https://serversideup.net/open-source/docker-php/.
+#
+# I highly recommend using the Railpack instead!
 FROM serversideup/php:8.5-cli AS build
 
 LABEL org.opencontainers.image.description="The official phpvms image"
 
 USER root
-COPY --from=node:lts-slim /usr/local/bin /usr/local/bin
-COPY --from=node:lts-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 
 RUN install-php-extensions intl bcmath
 
@@ -20,22 +22,7 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader
 
-RUN npm install && npm run build
-
-# -----------------------------------------------------------------------------
-#
-# Run the npm build
-#
-
-#FROM node:lts AS npm
-#
-#WORKDIR /app
-#
-#COPY --chown=www-data:www-data --from=compose /build/ .
-#
-## Build assets directly into their final location (public/build). No
-## separate web container means no asset-handoff step.
-#RUN npm install && npm run build
+RUN bun install && bun run build
 
 # -----------------------------------------------------------------------------
 #
@@ -59,10 +46,7 @@ RUN apt-get update; \
         apt-get install -yqq --no-install-recommends --show-progress \
         mariadb-client
 
-# Install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-  && apt-get install -y nodejs \
-  && rm -rf /var/lib/apt/lists/*
+COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \

@@ -8,5 +8,4 @@ return [
     'default'         => env('DEFAULT_THEME', 'seven'),
     'cache'           => true,
     'themes'          => [],
-
 ];
