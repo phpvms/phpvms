@@ -173,7 +173,7 @@
     ],
     "bump:minor": [
       "composer update && composer bump",
-      "npx npm-check-updates -u -t minor && npm install"
+      "bum x npm-check-updates -u -t minor && npm install"
     ],
     "lint": "pint --parallel",
     "pint": "pint --parallel",
