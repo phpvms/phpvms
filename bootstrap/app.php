@@ -7,6 +7,7 @@ use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
 use App\Exceptions\Unauthenticated;
 use App\Http\Middleware\ApiAuth;
+use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
 use App\Http\Middleware\SetActiveLanguage;
 use App\Http\Middleware\SetActiveTheme;
@@ -33,6 +34,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Prepend the activity-logging reset to both groups so every request
+        // starts with logging disabled. EnableActivityLogging (and Filament's
+        // panel boot hook) then opt in for the request that wants it. Required
+        // for Octane safety — see config/octane.php and the change at
+        // openspec/changes/switch-to-frankenphp-image/design.md.
+        $middleware->prependToGroup('web', DisableActivityLoggingByDefault::class);
+        $middleware->prependToGroup('api', DisableActivityLoggingByDefault::class);
+
         $middleware->appendToGroup('web', [
             InstalledCheck::class,
             SetActiveTheme::class,

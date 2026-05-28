@@ -1,0 +1,68 @@
+# This Dockerfile is used to create the base phpVMS image for Docker in production.
+# It is based on https://serversideup.net/open-source/docker-php/.
+#
+# I highly recommend using the Railpack instead!
+FROM serversideup/php:8.5-cli AS build
+
+LABEL org.opencontainers.image.description="The official phpvms image"
+
+USER root
+
+COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
+
+RUN install-php-extensions intl bcmath
+
+WORKDIR /build
+
+COPY . ./
+
+RUN composer install \
+    --no-interaction \
+    --prefer-dist \
+    --no-dev \
+    --optimize-autoloader
+
+RUN bun install && bun run build
+
+# -----------------------------------------------------------------------------
+#
+# Final image
+#
+
+FROM serversideup/php:8.5-frankenphp
+
+ARG WWWUSER=1000
+ARG WWWGROUP=1000
+
+# Switch to root so we can do root things
+USER root
+
+# Install missing extensions with root permissions
+RUN install-php-extensions intl bcmath
+
+# Install mariadb client (required for backups)
+RUN apt-get update; \
+        apt-get upgrade -yqq; \
+        apt-get install -yqq --no-install-recommends --show-progress \
+        mariadb-client
+
+COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
+
+# Deal with permissions
+RUN usermod -ou $WWWUSER www-data \
+    && groupmod -og $WWWGROUP www-data
+
+# Drop back to our unprivileged user
+USER www-data
+
+# Copy application files
+COPY --chown=www-data:www-data --from=build /build/ /var/www/html/
+COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
+
+# The image keeps Serversideup's default FrankenPHP entrypoint (classic mode:
+# one PHP worker per request, identical request semantics to the prior FPM
+# setup). Production deployments override the container `command:` to launch
+# Laravel Octane worker mode — see `compose.deploy.yml` for the canonical
+# invocation. Octane is not started by this Dockerfile so that anyone
+# pulling the bare image (k8s, custom Compose, Swarm) gets a predictable,
+# documented runtime without surprise behaviour.

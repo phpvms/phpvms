@@ -95,7 +95,8 @@
     "opcodesio/log-viewer": "^3.24",
     "spatie/laravel-data": "^4.22.1",
     "jlorente/laravel-data-migrations": "^2.0",
-    "hidehalo/nanoid-php": "^2.0"
+    "hidehalo/nanoid-php": "^2.0",
+    "laravel/octane": "^2.13"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
@@ -152,9 +153,9 @@
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi",
-      "@php artisan ide-helper:generate",
-      "@php artisan ide-helper:meta",
-      ".hooks/setup-git-hooks.sh"
+      "@php artisan ide-helper:generate || true",
+      "@php artisan ide-helper:meta || true",
+      ".hooks/setup-git-hooks.sh || true"
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
@@ -172,7 +173,7 @@
     ],
     "bump:minor": [
       "composer update && composer bump",
-      "npx npm-check-updates -u -t minor && npm install"
+      "bum x npm-check-updates -u -t minor && npm install"
     ],
     "lint": "pint --parallel",
     "pint": "pint --parallel",

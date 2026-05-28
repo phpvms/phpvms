@@ -10,6 +10,13 @@ class KvpService
 {
     private readonly Valuestore $valueStore;
 
+    // TODO(octane): re-resolve per request or move to Redis-backed KV.
+    // Spatie\Valuestore is a JSON-file wrapper that caches parsed contents
+    // in-memory after writes. Under Octane the same instance lives for the
+    // worker's lifetime, so writes from worker A propagate to worker B only
+    // on B's next read of the same key — KVP is eventually consistent under
+    // worker mode. See README.md > "Octane worker mode" for the operator-
+    // facing note.
     public function __construct()
     {
         $this->valueStore = Valuestore::make(config('phpvms.kvp_storage_path'));

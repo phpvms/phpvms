@@ -31,11 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/nerdbank-gitversioning
-      - name: Nerdbank.GitVersioning
-        uses: dotnet/nbgv@v0.4.2
-        with:
-          setAllVars: true
+      - uses: oven-sh/setup-bun@v2
 
       # Configure Caching
       - name: Setup cache environment
@@ -89,23 +85,16 @@ jobs:
           composer install --dev --no-interaction --no-scripts --verbose
           composer global require laravel/pint
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-
       - name: Install NPM dependencies
         run: |
-          npm install
-          npm run fmt config/version.yml
-        # Need to lint version.yml since it’s updated in CI
+          bun install
+          bun run fmt config/version.yml
 
       - name: Lint & Format Check
-        run: npm run lint && npm run fmt:check
+        run: bun run lint && bun run fmt:check
 
       - name: Compile assets
-        run: npm run build
+        run: bun run build
 
       - name: Run Composer post-autoload scripts
         run: |
@@ -125,10 +114,6 @@ jobs:
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=2G
 
-  #     - name: Run Rector
-  #       run: |
-  #         vendor/bin/rector --dry-run
-
   # This runs after all of the tests, run have run. Creates a cleaned up version of the
   # distro, and then creates the artifact to push up to S3 or wherever
   artifacts:
@@ -147,11 +132,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://github.com/marketplace/actions/nerdbank-gitversioning
-      - name: Nerdbank.GitVersioning
-        uses: dotnet/nbgv@v0.4.2
-        with:
-          setAllVars: true
+      - uses: oven-sh/setup-bun@v2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -183,17 +164,11 @@ jobs:
           composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
           sudo chmod +x ./.github/scripts/*
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-
       - name: Install NPM dependencies
-        run: npm install
+        run: bun install
 
       - name: Compile assets
-        run: npm run build
+        run: bun run build
 
       - name: Run Composer post-autoload scripts
         run: composer dump-autoload
@@ -245,53 +220,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Configure Caching
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      # Three-step bootstrap (see `build` job comment for full rationale):
-      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
-      #   2. npm build: writes public/build manifest + dist files
-      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
-      - name: "Install Release Dependencies (no scripts)"
-        run: |
-          rm -rf vendor
-          composer install --no-dev --prefer-dist --no-interaction --no-scripts --verbose
-          sudo chmod +x ./.github/scripts/*
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-
-      - name: Install NPM dependencies
-        run: npm install
-
-      - name: Compile assets
-        run: npm run build
-
-      - name: Run Composer post-autoload scripts
-        run: composer dump-autoload
-
-      # https://github.com/marketplace/actions/nerdbank-gitversioning
-      - name: Nerdbank.GitVersioning
-        uses: dotnet/nbgv@v0.4.2
-        with:
-          setAllVars: true
-
-      - id: version
-        name: Get version
-        run: .github/scripts/version.sh
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -299,28 +227,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Build and push Docker images
+        uses: iloveitaly/github-action-railpack@master
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          push: false
           tags: |
-            type=semver,pattern={{version}},value=${{ env.NBGV_SemVer2 }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.NBGV_SemVer2 }}
-            type=ref,event=branch
+            ${{ env.IMAGE_NAME }}:latest
 
-      - name: Build and push
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+#      - name: Generate artifact attestation
+#        uses: actions/attest-build-provenance@v2
+#        with:
+#          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+#          subject-digest: ${{ steps.push.outputs.digest }}
+#          push-to-registry: true

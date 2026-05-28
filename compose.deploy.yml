@@ -1,0 +1,192 @@
+# Production Reference Compose stack for phpVMS.
+#
+# The `app` service runs the FrankenPHP image with Laravel Octane worker
+# mode enabled via a `command:` override (the upstream-documented way to
+# launch Octane with serversideup/php:8.5-frankenphp). Octane keeps the
+# framework booted across requests, which materially helps Filament /
+# Livewire-heavy admin paths.
+#
+# To fall back to classic FrankenPHP + PHP-worker mode (matches the prior
+# PHP-FPM request semantics — slower but bulletproof if an Octane bug hits):
+# delete the `command:` line below and recreate the `app` container. No
+# rebuild is required.
+#
+# Depending on your host, you might have to enter the contents of `.env`
+# into their environment variable configuration; for example, that's the
+# case for Railway or Dokploy. Dokploy creates a `.env` from the environment
+# variables that you set in the interface, so the reading of `.env` is required
+# regardless
+#
+# This compose file also includes a MariaDB and Redis container. You can
+# run this within this stack, if you really want to. You *must* back up the
+# Docker volumes listed at the bottom, but I highly recommend against it.
+# Production deployments should use dedicated services for these components.
+#
+# For local development, see `compose.sail.yml` (Laravel Sail).
+#
+services:
+  app:
+    # If you want to use the remote image from Docker Hub, comment out this line
+    # or set it to "always" to pull the latest version
+    pull_policy: build
+
+    # Build from the local repository
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
+
+    # Build from the local repository
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        WWWUSER: "${WWWUSER:-1000}"
+        WWWGROUP: "${WWWGROUP:-1000}"
+
+    restart: unless-stopped
+
+    environment:
+      AUTORUN_ENABLED: "true"
+
+      # Enable this if you're having startup trouble...
+      AUTORUN_DEBUG: "false"
+
+      # OPcache tuned for Octane: code is loaded once and stays in memory, so
+      # disable timestamp revalidation (deploys replace the container) and
+      # raise the file cap to cover Filament + module trees.
+      PHP_OPCACHE_ENABLE: "1"
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: "0"
+      PHP_OPCACHE_MAX_ACCELERATED_FILES: "20000"
+      PHP_OPCACHE_INTERNED_STRINGS_BUFFER: "16"
+      PHP_OPCACHE_JIT: "tracing"
+      PHP_OPCACHE_JIT_BUFFER_SIZE: "64M"
+
+      # For Caddy, no need to change
+      XDG_DATA_HOME: "/var/www/html/storage"
+      XDG_CONFIG_HOME: "/var/www/html/storage"
+
+      # This is the database connection to use
+      DB_CONNECTION: mysql
+
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-phpvms}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+    # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
+    command:
+      [
+        "php",
+        "/var/www/html/artisan",
+        "octane:start",
+        "--server=frankenphp",
+        "--host=0.0.0.0",
+        "--workers=auto",
+        "--max-requests=500",
+      ]
+    ports:
+      # The image binds to 8000/8443 internally (unprivileged); host ports
+      # 80/443 are mapped at the Compose layer.
+      - "${FORWARD_HTTP_PORT:-80}:8000"
+      - "${FORWARD_HTTPS_PORT:-443}:8443"
+
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
+    env_file:
+      - .env
+    volumes:
+      - ./modules:/var/www/html/modules:ro
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
+    depends_on:
+      - mariadb
+      - redis
+    healthcheck:
+      # Native health check script for Octane shipped by serversideup/php.
+      test: ["CMD", "healthcheck-octane"]
+      start_period: 30s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  task:
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    environment:
+      PHP_OPCACHE_ENABLE: "1"
+    healthcheck:
+      # This is our native health check script for the scheduler
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+    env_file: .env
+    volumes:
+      - ./modules:/var/www/html/modules:ro
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
+
+  queue:
+    image: ${PHPVMS_IMAGE_NAME:-phpvms/phpvms:latest}
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
+    environment:
+      PHP_OPCACHE_ENABLE: "1"
+    healthcheck:
+      # This is our native health check script for the queue
+      test: ["CMD", "healthcheck-queue"]
+      start_period: 10s
+    env_file: .env
+    volumes:
+      - ./modules:/var/www/html/modules:ro
+      - phpvms_uploads:/var/www/html/public/uploads:rw
+      - phpvms_storage:/var/www/html/storage:rw
+
+  # ----------------------------------------------------------
+  # BELOW HERE ARE THE CONTAINERS FOR THE DATABASE AND REDIS
+  #
+  # If you are planning to run this in production, I **highly**
+  # recommend using a managed database service like AWS RDS or
+  # Google Cloud SQL. These services offer high availability,
+  # automatic backups, and other features that are not available
+  # with self-hosted solutions.
+  #
+  # ----------------------------------------------------------
+
+  #  You can also use PostgreSQL
+  mariadb:
+    hostname: mysql
+    image: mariadb:11.8 # lts
+    restart: unless-stopped
+    expose:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    container_name: phpvms-redis
+    image: redis:8.8-alpine3.23
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s
+
+volumes:
+  database:
+  phpvms_storage:
+  phpvms_uploads:
+  redis:
