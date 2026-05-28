@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "install": {
+      "commands": ["install-php-extensions intl bcmath", "npm install"]
+    },
+    "build": {
+      "inputs": [{ "step": "install" }],
+      "commands": ["...", "./my-custom-build.sh"]
+    }
+  },
+  "deploy": {
+    "startCommand": "node dist/index.js"
+  }
+}

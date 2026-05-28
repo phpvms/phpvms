@@ -1,20 +1,46 @@
 # This Dockerfile is used to create the base phpVMS image for Docker in production.
 # It is based on https://serversideup.net/open-source/docker-php/.
-FROM composer:latest AS vendor
+FROM serversideup/php:8.5-cli AS build
 
-LABEL org.opencontainers.image.description="The official phpVMS image"
+LABEL org.opencontainers.image.description="The official phpvms image"
 
-COPY composer.json composer.json
-COPY composer.lock composer.lock
+USER root
+COPY --from=node:lts-slim /usr/local/bin /usr/local/bin
+COPY --from=node:lts-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
 
-COPY database database
+RUN install-php-extensions intl bcmath
+
+WORKDIR /build
+
+COPY . ./
 
 RUN composer install \
-    --ignore-platform-reqs \
     --no-interaction \
-    --no-plugins \
-    --no-scripts \
-    --prefer-dist
+    --prefer-dist \
+    --no-dev \
+    --optimize-autoloader
+
+RUN npm install && npm run build
+
+# -----------------------------------------------------------------------------
+#
+# Run the npm build
+#
+
+#FROM node:lts AS npm
+#
+#WORKDIR /app
+#
+#COPY --chown=www-data:www-data --from=compose /build/ .
+#
+## Build assets directly into their final location (public/build). No
+## separate web container means no asset-handoff step.
+#RUN npm install && npm run build
+
+# -----------------------------------------------------------------------------
+#
+# Final image
+#
 
 FROM serversideup/php:8.5-frankenphp
 
@@ -46,15 +72,7 @@ RUN usermod -ou $WWWUSER www-data \
 USER www-data
 
 # Copy application files
-COPY --chown=www-data:www-data . /var/www/html
-
-# Copy deps from the composer build stage
-COPY --chown=www-data:www-data --from=vendor /app/vendor/ /var/www/html/vendor/
-
-# Build assets directly into their final location (public/build). No
-# separate web container means no asset-handoff step.
-RUN npm install && npm run build
-
+COPY --chown=www-data:www-data --from=build /build/ /var/www/html/
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
 
 # The image keeps Serversideup's default FrankenPHP entrypoint (classic mode:
