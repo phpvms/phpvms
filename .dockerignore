@@ -16,10 +16,34 @@ credentials
 secrets.yml
 secrets.yaml
 
+# Laravel/PHP
+.phpunit.cache
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+public/build
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+storage/*.key
+.phpstorm.meta.php
+.phpunit.result.cache
+.editorconfig
+.htaccess
+_ide_helper.php
+boost.json
+phpstan.neon
+phpunit.xml
+pint.json
+railpack.json
+rector.php
+version.json
+
 # Node.js
 node_modules/
 .npm/
 .yarn/
+.bun/
 .pnp.*
 dist/
 build/
@@ -28,6 +52,16 @@ build/
 .cache/
 .turbo/
 out/
+.oxfmtrc.json
+.oxlintrc.json
+tsconfig.json
+vite.config.js
+vitest.config.ts
+
+### Docker
+Dockerfile
+compose.yaml
+compose.*
 
 # Version control
 .git/
@@ -56,6 +90,17 @@ docs/
 documentation/
 .readthedocs.yml
 mkdocs.yml
+
+# Misc
+.agents
+.lean-ctx
+.opencode
+.rtk
+.serena
+.superpowers
+docs/superpowers
+openspec
+CHANGELOG.md
 
 # Tests & Coverage
 test/
