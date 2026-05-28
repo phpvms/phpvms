@@ -17,8 +17,10 @@
 # variables that you set in the interface, so the reading of `.env` is required
 # regardless
 #
-# This compose file also includes a MariaDB and Redis container. You can
-# run this within this stack, if you really want to. You *must* back up the
+# This compose file also includes a MariaDB and Redis containers, but they are
+# commented out.
+#
+# You can run this within this stack, if you really want to. You *must* back up the
 # Docker volumes listed at the bottom, but I highly recommend against it.
 # Production deployments should use dedicated services for these components.
 #
@@ -63,14 +65,9 @@ services:
       XDG_DATA_HOME: "/var/www/html/storage"
       XDG_CONFIG_HOME: "/var/www/html/storage"
 
-      # This is the database connection to use
-      DB_CONNECTION: mysql
-
-      DB_HOST: ${DB_HOST:-mysql}
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-phpvms}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      # Uncomment these lines if you're using MariaDB or Redis in this compose
+      #DB_HOST=mysql
+      #REDIS_HOST=redis
 
     # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
     command:
@@ -93,7 +90,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./modules:/var/www/html/modules:ro
+      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
     depends_on:
@@ -120,7 +117,7 @@ services:
       start_period: 10s
     env_file: .env
     volumes:
-      - ./modules:/var/www/html/modules:ro
+      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
 
@@ -137,7 +134,7 @@ services:
       start_period: 10s
     env_file: .env
     volumes:
-      - ./modules:/var/www/html/modules:ro
+      - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
 
@@ -153,40 +150,42 @@ services:
   # ----------------------------------------------------------
 
   #  You can also use PostgreSQL
-  mariadb:
-    hostname: mysql
-    image: mariadb:11.8 # lts
-    restart: unless-stopped
-    expose:
-      - 3306
-    environment:
-      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_DATABASE: "${DB_DATABASE}"
-      MYSQL_USER: "${DB_USERNAME}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-    volumes:
-      - database:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
+#  mariadb:
+#    hostname: mysql
+#    image: mariadb:11.8 # lts
+#    restart: unless-stopped
+#    expose:
+#      - 3306
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+#      MYSQL_DATABASE: "${DB_DATABASE}"
+#      MYSQL_USER: "${DB_USERNAME}"
+#      MYSQL_PASSWORD: "${DB_PASSWORD}"
+#      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+#    volumes:
+#      - database:/var/lib/mysql
+#    healthcheck:
+#      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+#      start_period: 10s
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3
 
-  redis:
-    container_name: phpvms-redis
-    image: redis:8.8-alpine3.23
-    restart: unless-stopped
-    volumes:
-      - redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      retries: 3
-      timeout: 5s
+#  redis:
+#    image: redis:8.8-alpine3.23
+#    restart: unless-stopped
+#    volumes:
+#      - redis:/data
+#    healthcheck:
+#      test: ["CMD", "redis-cli", "ping"]
+#      retries: 3
+#      timeout: 5s
 
 volumes:
-  database:
+  phpvms_modules:
   phpvms_storage:
   phpvms_uploads:
-  redis:
+
+# Un-comment these lines to use the above containers
+#  database:
+#  redis:
