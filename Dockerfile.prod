@@ -53,7 +53,7 @@ RUN usermod -ou $WWWUSER www-data \
     && groupmod -og $WWWGROUP www-data
 
 RUN mkdir -p /usr/local/etc/php/conf.d && \
-    chmod -R 777 /usr/local/etc/php/conf.d \
+    chmod -R 777 /usr/local/etc/php/conf.d
 
 # Drop back to our unprivileged user
 USER www-data
