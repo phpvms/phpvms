@@ -205,11 +205,13 @@ class FlightForm
                             ->color(fn (Flight $record): string => self::flightStatusBadge($record)[1]),
 
                         Toggle::make('enabled')
+                            ->inline()
                             ->label(__('common.enabled'))
                             ->offIcon(Heroicon::XCircle)
                             ->offColor('danger')
                             ->onIcon(Heroicon::CheckCircle)
-                            ->onColor('success'),
+                            ->onColor('success')
+                            ->default(true),
                     ])
                     ->columnSpanFull()
                     ->columns(2),

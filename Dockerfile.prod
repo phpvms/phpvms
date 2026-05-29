@@ -47,6 +47,7 @@ RUN apt-get update; \
         apt-get install -yqq --no-install-recommends --show-progress \
         mariadb-client
 
+COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
 COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 
 # Deal with permissions
@@ -58,15 +59,15 @@ RUN mkdir -p /usr/local/etc/php/conf.d && \
 
 # Drop back to our unprivileged user
 USER www-data
+WORKDIR /var/www/html/
 
 # Copy application files
-COPY --chown=www-data:www-data --from=build /build/ /var/www/html/
-COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
+COPY --chown=www-data:www-data --from=build /build/ .
 
 # The image keeps Serversideup's default FrankenPHP entrypoint (classic mode:
 # one PHP worker per request, identical request semantics to the prior FPM
 # setup). Production deployments override the container `command:` to launch
-# Laravel Octane worker mode — see `compose.deploy.yml` for the canonical
-# invocation. Octane is not started by this Dockerfile so that anyone
-# pulling the bare image (k8s, custom Compose, Swarm) gets a predictable,
-# documented runtime without surprise behaviour.
+# Laravel Octane worker mode - see `compose.deploy.yml` for the command.
+# Octane is not started by this Dockerfile so that anyone pulling the bare
+# image (k8s, custom Compose, Swarm) gets a predictable, documented runtime
+# without surprise behaviour.

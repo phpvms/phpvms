@@ -20,6 +20,7 @@ return new class() extends Migration
         // 1. Rename active -> enabled first.
         Schema::table('flights', function (Blueprint $table): void {
             $table->renameColumn('active', 'enabled');
+            $table->boolean('enabled')->default(true)->change();
         });
 
         // 2. Add bundle_id (nullable temporarily so we can backfill) and bundle FK.
