@@ -1,0 +1,22 @@
+#
+# Initial minimal data required. You probably don't
+# want to modify or erase any of this here
+#
+
+airlines:
+  - id: 1
+    icao: VMS
+    iata: VM
+    name: phpvms airlines
+    country: us
+    active: 1
+    created_at: now
+    updated_at: now
+  - id: 2
+    icao: XXX
+    iata: XX
+    name: inactive airline
+    country: us
+    active: 0
+    created_at: now
+    updated_at: now

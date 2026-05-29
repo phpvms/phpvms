@@ -1,0 +1,57 @@
+acars:
+  id_column: id
+  data:
+    - id: acars_1
+      pirep_id: pirepid_1
+      type: 1
+      nav_type: 2
+      name: TNV
+      lat: 30.28852
+      lon: -96.058239
+      created_at: now
+      updated_at: now
+    - id: acars_2
+      pirep_id: pirepid_1
+      type: 1
+      nav_type: 2
+      name: IAH
+      lat: 29.95691
+      lon: -95.345719
+      created_at: now
+      updated_at: now
+    - id: acars_3
+      pirep_id: pirepid_1
+      type: 1
+      nav_type: 2
+      name: LCH
+      lat: 30.14151
+      lon: -93.105569
+      created_at: now
+      updated_at: now
+    - id: acars_4
+      pirep_id: pirepid_1
+      type: 1
+      nav_type: 2
+      name: MEI
+      lat: 32.37843
+      lon: -88.804267
+      created_at: now
+      updated_at: now
+    - id: acars_5
+      pirep_id: pirepid_1
+      type: 1
+      nav_type: 2
+      name: ATL
+      lat: 33.62907
+      lon: -84.435064
+      created_at: now
+      updated_at: now
+    - id: acars_6
+      pirep_id: b68R5gwVzpVe
+      type: 1
+      nav_type: 2
+      name: SIE
+      lat: 39.0955
+      lon: -74.800344
+      created_at: now
+      updated_at: now

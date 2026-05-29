@@ -1,0 +1,26 @@
+ranks:
+  - id: 1
+    name: New Pilot
+    hours: 0
+    acars_base_pay_rate: 50
+    manual_base_pay_rate: 25
+  - id: 2
+    name: Junior First Officer
+    hours: 10
+    acars_base_pay_rate: 100
+    manual_base_pay_rate: 90
+  - id: 3
+    name: First Officer
+    hours: 15
+    acars_base_pay_rate: 250
+    manual_base_pay_rate: 200
+    auto_approve_acars: 1
+    auto_approve_manual: 1
+  - id: 4
+    name: Senior Captain
+    hours: 20
+    acars_base_pay_rate: 500
+    manual_base_pay_rate: 400
+    auto_approve_acars: 1
+    auto_approve_manual: 1
+    auto_promote: 0
