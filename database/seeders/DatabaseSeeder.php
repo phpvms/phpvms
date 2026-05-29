@@ -21,10 +21,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             ShieldSeeder::class,
             YamlSeeder::class,
-        ]);
+        ];
+
+        // Always insert the samples in the demo environment
+        if (app()->environment('demo')) {
+            $seeders[] = SampleDataSeeder::class;
+        }
+
+        $this->call($seeders);
 
         if ($this->migrationSvc->dataMigrationsAvailable()) {
             $this->migrationSvc->runAllDataMigrations();
