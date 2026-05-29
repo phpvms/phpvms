@@ -93,9 +93,9 @@ services:
       - phpvms_modules:/var/www/html/modules:ro
       - phpvms_uploads:/var/www/html/public/uploads:rw
       - phpvms_storage:/var/www/html/storage:rw
-    depends_on:
-      - mariadb
-      - redis
+    #    depends_on:
+    #      - mariadb
+    #      - redis
     healthcheck:
       # Native health check script for Octane shipped by serversideup/php.
       test: ["CMD", "healthcheck-octane"]
