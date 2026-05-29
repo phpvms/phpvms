@@ -48,6 +48,7 @@ services:
     environment:
       AUTORUN_ENABLED: "true"
       AUTORUN_DEBUG: "false"
+      DISABLE_DEFAULT_CONFIG: "false"
 
       # Octane configurations
       OCTANE_HTTPS: "true"
