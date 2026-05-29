@@ -52,9 +52,6 @@ COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 RUN usermod -ou $WWWUSER www-data \
     && groupmod -og $WWWGROUP www-data
 
-# Drop back to our unprivileged user
-USER www-data
-
 # Copy application files
 COPY --chown=www-data:www-data --from=build /build/ /var/www/html/
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
