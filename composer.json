@@ -96,7 +96,7 @@
     "spatie/laravel-data": "^4.22.1",
     "jlorente/laravel-data-migrations": "^2.0",
     "hidehalo/nanoid-php": "^2.0",
-    "laravel/octane": "^2.13"
+    "laravel/octane": "^2.17"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
