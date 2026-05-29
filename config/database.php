@@ -7,7 +7,7 @@ use Pdo\Mysql;
 
 return [
 
-    'default'     => env('DB_CONNECTION', ''),
+    'default'     => env('DB_CONNECTION', 'sqlite'),
     'connections' => [
 
         'sqlite' => [
