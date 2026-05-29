@@ -46,9 +46,9 @@ services:
     restart: unless-stopped
 
     environment:
-      AUTORUN_ENABLED: "true"
-      AUTORUN_DEBUG: "false"
-      DISABLE_DEFAULT_CONFIG: "false"
+      AUTORUN_ENABLED: "${AUTORUN_ENABLED:-true}"
+      AUTORUN_DEBUG: "${AUTORUN_DEBUG:-false}"
+      DISABLE_DEFAULT_CONFIG: "${DISABLE_DEFAULT_CONFIG:-false}"
 
       # Octane configurations
       OCTANE_HTTPS: "true"
@@ -68,8 +68,8 @@ services:
       XDG_CONFIG_HOME: "/var/www/html/storage"
 
       # Uncomment these lines if you're using MariaDB or Redis in this compose
-      #DB_HOST=mysql
-      #REDIS_HOST=redis
+      DB_URL: "${DB_URI}"
+      REDIS_URL: "${REDIS_URI}"
 
     # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
     command:
