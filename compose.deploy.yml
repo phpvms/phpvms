@@ -47,9 +47,10 @@ services:
 
     environment:
       AUTORUN_ENABLED: "true"
-
-      # Enable this if you're having startup trouble...
       AUTORUN_DEBUG: "false"
+
+      # Octane configurations
+      OCTANE_HTTPS: "true"
 
       # OPcache tuned for Octane: code is loaded once and stays in memory, so
       # disable timestamp revalidation (deploys replace the container) and
