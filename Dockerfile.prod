@@ -31,6 +31,10 @@ RUN bun install && bun run build
 
 FROM serversideup/php:8.5-frankenphp
 
+# https://serversideup.net/open-source/docker-php/docs/getting-started/default-configurations
+ARG WWWUSER=1000
+ARG WWWGROUP=1000
+
 # Switch to root so we can do root things
 USER root
 

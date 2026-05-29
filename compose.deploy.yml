@@ -89,7 +89,7 @@ services:
       - "${FORWARD_HTTPS_PORT:-8443}:8443"
 
     # UIDs and GIDs of the serversideup images
-    #    user: "${WWWUSER:-33}:${WWWGROUP:-33}"
+    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
     env_file:
       - .env
     volumes:
