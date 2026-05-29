@@ -473,6 +473,7 @@ flights:
     updated_at: NOW
   - id: flightid_2
     airline_id: 1
+    bundle_id: 1
     flight_number: 101
     dpt_airport_id: KAUS
     arr_airport_id: KJFK
