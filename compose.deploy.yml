@@ -68,8 +68,8 @@ services:
       XDG_CONFIG_HOME: "/var/www/html/storage"
 
       # Uncomment these lines if you're using MariaDB or Redis in this compose
-      DB_URL: "${DB_URI}"
-      REDIS_URL: "${REDIS_URI}"
+      DB_URL: "${DB_URL}"
+      REDIS_URL: "${REDIS_URL}"
 
     # Delete this line to revert to classic FrankenPHP + PHP-worker mode.
     command:
@@ -84,11 +84,12 @@ services:
       ]
     ports:
       # The image binds to 8000/8443 internally (unprivileged); host ports
-      # 80/443 are mapped at the Compose layer.
-      - "${FORWARD_HTTP_PORT:-8000}:8000"
+      # 8000/8443 are mapped at the Compose layer.
+      - "${FORWARD_HTTP_PORT:-8080}:8080"
       - "${FORWARD_HTTPS_PORT:-8443}:8443"
 
-    user: "${WWWUSER:-1000}:${WWWGROUP:-1000}"
+    # UIDs and GIDs of the serversideup images
+    user: "${WWWUSER:-33}:${WWWGROUP:-33}"
     env_file:
       - .env
     volumes:
