@@ -7,11 +7,8 @@ namespace App\Services\Installer;
 use App\Contracts\Service;
 use App\Models\Setting;
 use App\Services\DatabaseService;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 
 use function trim;
@@ -45,36 +42,12 @@ class SeederService extends Service
         $this->syncAllSettings();
 
         // Seed base
-        $this->databaseSvc->seedFromYamlFile(database_path('seeders/base.yml'));
-
-        $this->syncAllYamlFileSeeds();
-    }
-
-    /**
-     * Read all of the YAML files from disk and seed them
-     */
-    public function syncAllYamlFileSeeds(): void
-    {
-        Log::info('Running seeder');
-        $env = App::environment();
-
-        $seedPath = database_path('seeders/'.$env);
-        if (!File::isDirectory($seedPath)) {
-            return;
-        }
-
-        collect(File::allFiles($seedPath))
-            ->filter(fn (SplFileInfo $file): bool => $file->getExtension() === 'yml')
-            ->each(function (SplFileInfo $file): void {
-                $path = $file->getPathname();
-                Log::info('Seeding '.$path);
-                $this->databaseSvc->seedFromYamlFile($path);
-            });
+        $this->databaseSvc->seedFromYamlFile(database_path('seeders/base/base.yml'));
     }
 
     public function syncAllSettings(): void
     {
-        $data = file_get_contents(database_path('/seeders/settings.yml'));
+        $data = file_get_contents(database_path('/seeders/base/settings.yml'));
         $yml = Yaml::parse($data);
         foreach ($yml as $setting) {
             if (trim((string) $setting['key']) === '') {

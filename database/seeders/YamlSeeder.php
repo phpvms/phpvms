@@ -38,7 +38,7 @@ class YamlSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seedFromYamlFile(database_path('seeders/base.yml'));
+        $this->seedFromYamlFile(database_path('seeders/base/base.yml'));
 
         // Special method to sync the settings
         $this->seederSvc->syncAllSettings();
