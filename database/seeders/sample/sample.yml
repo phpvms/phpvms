@@ -596,10 +596,10 @@ flights:
     visible: 1
     created_at: now
     updated_at: now
-  - id: flightid_4
+  - id: flightid_7
     airline_id: 1
     bundle_id: 1
-    flight_number: 100
+    flight_number: 102
     dpt_airport_id: KHPN
     arr_airport_id: KLGA
     route: DCT CMK V374 DENNA V44 BELTT/N0346F140 V44 DPK DCT
