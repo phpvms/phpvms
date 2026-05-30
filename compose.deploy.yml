@@ -113,6 +113,7 @@ services:
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
+      AUTORUN_ENABLED: "false"
       PHP_OPCACHE_ENABLE: "1"
     healthcheck:
       # This is our native health check script for the scheduler
@@ -130,6 +131,7 @@ services:
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
+      AUTORUN_ENABLED: "false"
       PHP_OPCACHE_ENABLE: "1"
     healthcheck:
       # This is our native health check script for the queue

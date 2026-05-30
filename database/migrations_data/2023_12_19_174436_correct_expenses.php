@@ -13,8 +13,12 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        /** @var Expense[] $all_expenses */
-        $all_expenses = Expense::all();
+        $all_expenses = Expense::with(['ref_model' => function ($morphTo): void {
+            $morphTo->morphWith([
+                Subfleet::class => ['airline'],
+                Aircraft::class => ['airline'],
+            ]);
+        }])->get();
         foreach ($all_expenses as $expense) {
             $this->getAirlineId($expense);
         }
