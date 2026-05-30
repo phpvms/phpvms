@@ -27,6 +27,18 @@ class YamlSeeder extends Seeder
         'pireps',
     ];
 
+    /**
+     * Columns whose names end with `_time` that genuinely store datetime/timestamp
+     * values (not integer durations like `flight_time`).
+     */
+    protected array $datetimeTimeColumns = [
+        'arrival_time',
+        'block_off_time',
+        'block_on_time',
+        'departure_time',
+        'landing_time',
+    ];
+
     public function __construct(
         private readonly SeederService $seederSvc
     ) {}
@@ -157,14 +169,15 @@ class YamlSeeder extends Seeder
         }
 
         // Convert datetime fields. Only process columns whose names indicate
-        // they hold timestamps (ending in _at or _time) to avoid attempting
-        // to parse arbitrary string values (e.g. airline codes, UUIDs).
+        // they hold timestamps (ending in _at, or specific _time columns
+        // that are actual datetime types, not integer durations).
         foreach ($row as $column => $value) {
             if (empty($value)) {
                 continue;
             }
 
-            $isDateTimeColumn = str_ends_with((string) $column, '_at') || str_ends_with((string) $column, '_time');
+            $isDateTimeColumn = str_ends_with((string) $column, '_at')
+                || in_array($column, $this->datetimeTimeColumns, true);
             if (!$isDateTimeColumn) {
                 continue;
             }
