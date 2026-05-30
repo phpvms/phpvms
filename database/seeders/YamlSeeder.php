@@ -156,10 +156,23 @@ class YamlSeeder extends Seeder
             $row['password'] = bcrypt($row['password']);
         }
 
-        // if any time fields are == to "now", then insert the right time
+        // Convert datetime fields. Only process columns whose names indicate
+        // they hold timestamps (ending in _at or _time) to avoid attempting
+        // to parse arbitrary string values (e.g. airline codes, UUIDs).
         foreach ($row as $column => $value) {
-            if (!empty($value) && strtolower((string) $value) === 'now') {
+            if (empty($value)) {
+                continue;
+            }
+
+            $isDateTimeColumn = str_ends_with((string) $column, '_at') || str_ends_with((string) $column, '_time');
+            if (!$isDateTimeColumn) {
+                continue;
+            }
+
+            if (strtolower((string) $value) === 'now') {
                 $row[$column] = Carbon::now('UTC');
+            } else {
+                $row[$column] = Carbon::parse($value)->toIso8601ZuluString();
             }
         }
 
