@@ -47,6 +47,8 @@ class FareService extends Service
         Log::info('Finance: PIREP: '.$pirep->id.', flight fares: ', $fares->toArray());
 
         // Read the original fare and get this information from it
+        $pirep->loadMissing('flight.fares', 'aircraft.subfleet.fares');
+
         $all_fares = $this->getAllFares($pirep->flight, $pirep->aircraft->subfleet);
         $all_fares->map(function ($fare, $_) use ($fares, $pirep): void {
             /**
@@ -162,6 +164,7 @@ class FareService extends Service
      */
     public function getReconciledFaresForFlight(Flight $flight): Flight
     {
+        $flight->loadMissing('subfleets.fares', 'fares');
         $subfleets = $flight->subfleets;
         $flight_fares = $flight->fares;
 
@@ -169,8 +172,7 @@ class FareService extends Service
          * @var Subfleet $subfleet
          */
         foreach ($subfleets as $subfleet) {
-            // @phpstan-ignore-next-line
-            $subfleet->fares = $this->getFareWithOverrides($subfleet->fares, $flight_fares);
+            $subfleet->setRelation('fares', $this->getFareWithOverrides($subfleet->fares, $flight_fares));
         }
 
         // @phpstan-ignore-next-line
@@ -187,6 +189,12 @@ class FareService extends Service
      */
     public function getAllFares($flight, $subfleet): Collection
     {
+        if ($flight) {
+            $flight->loadMissing('fares');
+        }
+
+        $subfleet->loadMissing('fares');
+
         $flight_fares = $flight ? $flight->fares : collect();
 
         if (empty($subfleet)) {
@@ -249,6 +257,8 @@ class FareService extends Service
      */
     public function getForSubfleet(Subfleet $subfleet)
     {
+        $subfleet->loadMissing('fares');
+
         return $subfleet->fares->map(fn (Fare $fare): Fare => $this->getFares($fare));
     }
 

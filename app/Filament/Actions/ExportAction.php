@@ -60,11 +60,13 @@ class ExportAction extends Action
                     $path = $exportSvc->exportFares($data);
                     break;
                 case ImportExportType::FLIGHTS:
-                    $data = Flight::orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')->get();
+                    $data = Flight::orderBy('airline_id')->orderBy('flight_number')->orderBy('route_code')->orderBy('route_leg')
+                        ->with(['fares', 'subfleets.fares', 'subfleets.ranks'])
+                        ->get();
                     $path = $exportSvc->exportFlights($data);
                     break;
                 case ImportExportType::SUBFLEETS:
-                    $data = Subfleet::all();
+                    $data = Subfleet::with(['fares', 'ranks'])->get();
                     $path = $exportSvc->exportSubfleets($data);
                     break;
             }

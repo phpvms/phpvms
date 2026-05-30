@@ -121,7 +121,7 @@ class SimBriefController
         // SimBrief profile does not exists and everything else is ok
         // Select aircraft which will be used for calculations and details
         /** @var Aircraft $aircraft */
-        $aircraft = Aircraft::with(['airline', 'sbaircraft', 'sbairframes'])->where('id', $aircraft_id)->first();
+        $aircraft = Aircraft::with(['airline', 'sbaircraft', 'sbairframes', 'subfleet.fares'])->where('id', $aircraft_id)->first();
 
         // Figure out the proper fares to use for this flight/aircraft
         $all_fares = $this->fareSvc->getFareWithOverrides($aircraft->subfleet->fares, $flight->fares);

@@ -120,6 +120,7 @@ class PirepController extends Controller
     protected function saveFares(Pirep $pirep, Request $request): void
     {
         $fares = [];
+        $pirep->loadMissing('aircraft.subfleet.fares');
         if (!$pirep->aircraft) {
             return;
         }
@@ -215,7 +216,7 @@ class PirepController extends Controller
     public function fares(Request $request): View
     {
         $aircraft_id = $request->input('aircraft_id');
-        $aircraft = Aircraft::findOrFail($aircraft_id);
+        $aircraft = Aircraft::with('subfleet.fares')->findOrFail($aircraft_id);
 
         return view('pireps.fares', [
             'aircraft'  => $aircraft,
@@ -246,7 +247,7 @@ class PirepController extends Controller
         $aircraft = null;
         if ($request->has('sb_id')) {
             $simbrief_id = $request->input('sb_id');
-            $simbrief = SimBrief::find($simbrief_id);
+            $simbrief = SimBrief::with('aircraft.subfleet.fares')->find($simbrief_id);
             $pirep = Pirep::fromSimBrief($simbrief);
 
             $aircraft = $simbrief->aircraft;
@@ -435,7 +436,7 @@ class PirepController extends Controller
     public function edit(string $id): RedirectResponse|View
     {
         /** @var ?Pirep $pirep */
-        $pirep = Pirep::with(['dpt_airport', 'arr_airport', 'alt_airport'])->find($id);
+        $pirep = Pirep::with(['dpt_airport', 'arr_airport', 'alt_airport', 'fares', 'fields'])->find($id);
 
         if (!$pirep) {
             Flash::error('Pirep not found');
@@ -449,9 +450,8 @@ class PirepController extends Controller
             return redirect(PirepResource::getUrl());
         }
 
-        // Eager load the subfleet and fares under it
         if ($pirep->aircraft) {
-            $pirep->aircraft->load('subfleet.fares');
+            $pirep->aircraft->loadMissing('subfleet.fares');
         }
 
         $simbrief_id = null;

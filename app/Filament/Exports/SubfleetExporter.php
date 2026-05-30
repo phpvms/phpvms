@@ -7,11 +7,18 @@ use App\Support\Utils;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Number;
 
 class SubfleetExporter extends Exporter
 {
     protected static ?string $model = Subfleet::class;
+
+    #[\Override]
+    public static function modifyQuery(Builder $query): Builder
+    {
+        return $query->with(['fares', 'ranks']);
+    }
 
     public static function getColumns(): array
     {
