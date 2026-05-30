@@ -170,9 +170,9 @@ class YamlSeeder extends Seeder
             }
 
             if (strtolower((string) $value) === 'now') {
-                $row[$column] = Carbon::now('UTC');
+                $row[$column] = Carbon::now('UTC')->toDateTimeString();
             } else {
-                $row[$column] = Carbon::parse($value)->toIso8601ZuluString();
+                $row[$column] = Carbon::parse($value)->toDateTimeString();
             }
         }
 
