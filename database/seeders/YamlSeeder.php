@@ -37,6 +37,7 @@ class YamlSeeder extends Seeder
         'block_on_time',
         'departure_time',
         'landing_time',
+        'post_date',
     ];
 
     public function __construct(
