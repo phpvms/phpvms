@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Services\Installer\SeederService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -27,10 +26,6 @@ class YamlSeeder extends Seeder
         'pireps',
     ];
 
-    /**
-     * Columns whose names end with `_time` that genuinely store datetime/timestamp
-     * values (not integer durations like `flight_time`).
-     */
     protected array $datetimeTimeColumns = [
         'arrival_time',
         'block_off_time',
@@ -40,10 +35,6 @@ class YamlSeeder extends Seeder
         'post_date',
     ];
 
-    public function __construct(
-        private readonly SeederService $seederSvc
-    ) {}
-
     /**
      * Run the database seeds.
      *
@@ -52,9 +43,6 @@ class YamlSeeder extends Seeder
     public function run(): void
     {
         $this->seedFromYamlFile(database_path('seeders/base/base.yml'));
-
-        // Special method to sync the settings
-        $this->seederSvc->syncAllSettings();
 
         $env = App::environment();
         $seedPath = database_path('seeders/'.$env);

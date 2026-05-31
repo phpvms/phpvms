@@ -8,6 +8,18 @@
     "brick/math": {
         "version": "0.9.3"
     },
+    "carthage-software/mago": {
+        "version": "1.29",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "0be125d45ff145f21b54f21d33f7e62846940db6"
+        },
+        "files": [
+            "mago.toml"
+        ]
+    },
     "composer/ca-bundle": {
         "version": "1.3.1"
     },

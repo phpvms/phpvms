@@ -10,6 +10,7 @@ use App\Services\KvpService;
 use App\Services\VersionService;
 use App\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Database\Seeders\SettingsSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -235,6 +236,7 @@ class Maintenance extends Page
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
             ->action(function (): void {
+                app(SettingsSeeder::class)->run();
                 app(SeederService::class)->syncAllSeeds();
 
                 Notification::make()

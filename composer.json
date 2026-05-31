@@ -117,7 +117,8 @@
     "larastan/larastan": "^3.9.6",
     "fruitcake/laravel-debugbar": "^4.2.8",
     "laravel/boost": "^2.0",
-    "laravel/tinker": "^3.0"
+    "laravel/tinker": "^3.0",
+    "carthage-software/mago": "^1.29.0"
   },
   "autoload": {
     "files": [
