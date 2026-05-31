@@ -5,24 +5,19 @@ declare(strict_types=1);
 namespace App\Services\Installer;
 
 use App\Contracts\Service;
+use Database\Seeders\BaseDataSeeder;
 use Database\Seeders\SettingsSeeder;
 
 class SeederService extends Service
 {
-    public function __construct(
-        private readonly DatabaseService $databaseSvc
-    ) {}
-
     /**
      * Synchronize all the seed files, run this after the migrations
      * and on first install.
-     *
-     * @throws \Exception
      */
     public function syncAllSeeds(): void
     {
-        // Seed base
-        $this->databaseSvc->seedFromYamlFile(database_path('seeders/base/base.yml'));
+        app(BaseDataSeeder::class)->run();
+        app(SettingsSeeder::class)->run();
     }
 
     /**

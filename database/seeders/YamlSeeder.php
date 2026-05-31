@@ -42,8 +42,6 @@ class YamlSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seedFromYamlFile(database_path('seeders/base/base.yml'));
-
         $env = App::environment();
         $seedPath = database_path('seeders/'.$env);
         if (!File::isDirectory($seedPath)) {

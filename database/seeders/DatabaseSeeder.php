@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         $seeders = [
             ShieldSeeder::class,
             SettingsSeeder::class,
+            BaseDataSeeder::class,
             YamlSeeder::class,
         ];
 

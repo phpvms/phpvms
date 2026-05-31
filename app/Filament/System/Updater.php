@@ -7,7 +7,6 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\Installer\StreamedCommandsService;
-use Database\Seeders\SettingsSeeder;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
@@ -100,7 +99,6 @@ class Updater extends Page
                     }
                 }
 
-                app(SettingsSeeder::class)->run();
                 $seederSvc->syncAllSeeds();
 
                 if (count($dataMigrationsPending) !== 0) {
