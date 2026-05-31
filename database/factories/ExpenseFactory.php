@@ -30,7 +30,6 @@ class ExpenseFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'             => null,
             'airline_id'     => null,
             'name'           => fake()->text(20),
             'amount'         => fake()->randomFloat(2, 100, 1000),

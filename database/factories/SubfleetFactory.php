@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -28,7 +30,6 @@ class SubfleetFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'                         => null,
             'airline_id'                 => fn () => Airline::factory()->create()->id,
             'name'                       => fake()->unique()->text(50),
             'type'                       => fake()->unique()->text(7),
