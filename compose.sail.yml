@@ -37,7 +37,6 @@ services:
     ports:
       - "${FORWARD_DB_PORT:-5432}:5432"
     environment:
-      PGPASSWORD: phpvms
       POSTGRES_DB: phpvms
       POSTGRES_USER: phpvms
       POSTGRES_PASSWORD: password
