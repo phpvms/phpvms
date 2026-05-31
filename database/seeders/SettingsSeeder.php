@@ -846,7 +846,7 @@ class SettingsSeeder extends Seeder
             $id = Setting::formatKey($setting['key']);
 
             if (Setting::where('id', $id)->doesntExist()) {
-                Log::info('Setting '.$id.' missing, update available');
+                Log::info('Setting '.$setting['name'].' missing, update available');
 
                 return true;
             }
