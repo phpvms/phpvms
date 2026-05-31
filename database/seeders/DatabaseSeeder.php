@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
             ShieldSeeder::class,
             SettingsSeeder::class,
             BaseDataSeeder::class,
-            YamlSeeder::class,
         ];
 
         // Always insert the samples in the demo environment
