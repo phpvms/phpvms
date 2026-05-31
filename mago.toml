@@ -15,7 +15,7 @@ excludes = [
   "node_modules/**",
   ".git/**",
   "tests/Fixtures/**",
-  "packages/*/tests/Examples/**",
+  "modules/**",
   "tmp/**",
 ]
 
@@ -61,10 +61,6 @@ preserve-breaking-parameter-list = true
 
 # Array formatting - preserve existing multi-line formatting
 preserve-breaking-array-like = true
-
-# Method chaining - preserve existing multi-line formatting
-
-excludes = ["modules"]
 
 [linter]
 integrations = ["symfony", "laravel", "pest"]
