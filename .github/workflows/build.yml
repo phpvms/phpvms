@@ -259,8 +259,8 @@ jobs:
         env:
           PHP_CS_FIXER_IGNORE_ENV: "1"
         run: |
-          vendor/bin/pest --parallel --ci --exclude-suite=Arch
-          vendor/bin/pest --ci --testsuite=Arch
+          vendor/bin/pest --parallel --ci
+          #vendor/bin/pest --ci --testsuite=Arch
 
   # ── Release artifacts (only on main/dev) ──────────────────────────────────
   artifacts:
