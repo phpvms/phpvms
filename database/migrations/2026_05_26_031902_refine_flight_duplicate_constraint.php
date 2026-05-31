@@ -44,6 +44,11 @@ return new class() extends Migration
         DB::table('flights')->whereIn('route_code', ['', '0'])->update(['route_code' => null]);
         DB::table('flights')->whereIn('route_leg', ['0', 0])->update(['route_leg' => null]);
 
+        // SQLite's type affinity allows '' in integer columns; other drivers reject it.
+        if ($driver === 'sqlite') {
+            DB::table('flights')->where('route_leg', '')->update(['route_leg' => null]);
+        }
+
         // Phase 2: auto-disable pre-existing duplicates.
         //
         // Single window-function pass classifies every enabled, non-owner row:
