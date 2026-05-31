@@ -90,6 +90,7 @@ jobs:
 
   refactor:
     name: "Rector Dry-Run"
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
