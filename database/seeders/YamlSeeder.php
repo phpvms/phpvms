@@ -140,6 +140,8 @@ class YamlSeeder extends Seeder
 
                 $imported[$table]++;
             }
+
+            $this->resetPostgresSequence($table, $id_column);
         }
 
         return $imported;
@@ -221,5 +223,25 @@ class YamlSeeder extends Seeder
         }
 
         return $row;
+    }
+
+    /**
+     * Reset a PostgreSQL sequence after inserting rows with explicit IDs.
+     * Raw DB::table()->insert() with explicit IDs bypasses auto-increment
+     * sequences, so subsequent Eloquent creates would collide on the PK.
+     */
+    protected function resetPostgresSequence(string $table, string $idColumn = 'id'): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        try {
+            $fullTable = DB::getTablePrefix().$table;
+            $sequence = $fullTable.'_'.$idColumn.'_seq';
+            DB::statement(sprintf("SELECT setval('%s', COALESCE((SELECT MAX(%s) FROM %s), 1))", $sequence, $idColumn, $fullTable));
+        } catch (QueryException) {
+            // Table may not have a serial column; ignore.
+        }
     }
 }
