@@ -17,7 +17,13 @@ services:
       XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
       XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
       IGNITION_LOCAL_SITES_PATH: "${PWD}"
-      DB_URL:
+      DB_CONNECTION: pgsql
+      DB_URL: postgres://phpvms:password@pgsql:5432/phpvms
+      DB_HOST: pgsql
+      DB_PORT: 5432
+      DB_DATABASE: phpvms
+      DB_USERNAME: phpvms
+      DB_PASSWORD: password
     volumes:
       - ".:/var/www/html"
     networks:
@@ -31,10 +37,10 @@ services:
     ports:
       - "${FORWARD_DB_PORT:-5432}:5432"
     environment:
-      PGPASSWORD: "${DB_PASSWORD:-secret}"
-      POSTGRES_DB: "${DB_DATABASE}"
-      POSTGRES_USER: "${DB_USERNAME}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+      PGPASSWORD: phpvms
+      POSTGRES_DB: phpvms
+      POSTGRES_USER: phpvms
+      POSTGRES_PASSWORD: password
     volumes:
       - "sail-pgsql:/var/lib/postgresql"
       - "./vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql"
@@ -46,9 +52,9 @@ services:
         - pg_isready
         - "-q"
         - "-d"
-        - "${DB_DATABASE}"
+        - "phpvms"
         - "-U"
-        - "${DB_USERNAME}"
+        - "phpvms"
       retries: 3
       timeout: 5s
   redis:
@@ -73,6 +79,7 @@ services:
       - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
     networks:
       - sail
+
 networks:
   sail:
     driver: bridge
