@@ -31,8 +31,8 @@ class NewsFactory extends Factory
     {
         return [
             'user_id' => fn () => User::factory()->create()->id,
-            'subject' => fake()->text(),
-            'body'    => fake()->sentence(),
+            'subject' => fake()->sentence(),
+            'body'    => fake()->text(),
         ];
     }
 }

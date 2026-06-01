@@ -32,7 +32,7 @@ class ExpenseFactory extends Factory
         return [
             'airline_id'     => null,
             'name'           => fake()->text(20),
-            'amount'         => fake()->randomFloat(2, 100, 1000),
+            'amount'         => fake()->numberBetween(100, 1000),
             'type'           => ExpenseType::FLIGHT,
             'multiplier'     => false,
             'ref_model_type' => Expense::class,

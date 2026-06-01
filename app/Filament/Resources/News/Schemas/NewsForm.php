@@ -18,6 +18,7 @@ class NewsForm
                     ->label(__('filament.news_subject'))
                     ->string()
                     ->required()
+                    ->maxLength(200)
                     ->columnSpanFull(),
 
                 RichEditor::make('body')

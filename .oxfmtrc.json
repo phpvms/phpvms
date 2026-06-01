@@ -5,6 +5,7 @@
     "modules/**",
     "resources/js/dist/**",
     ".github/skills/*",
-    ".github/copilot-instructions.md"
+    ".github/copilot-instructions.md",
+    "*.toml"
   ]
 }

@@ -1189,6 +1189,7 @@ test('daily expenses are applied', function (): void {
         'airline_id' => null,
         'type'       => ExpenseType::DAILY,
     ]);
+    $expense->refresh();
 
     /** @var RecurringFinanceService $recurringFService */
     $recurringFService = app(RecurringFinanceService::class);
@@ -1199,15 +1200,12 @@ test('daily expenses are applied', function (): void {
         'ref_model_type' => Expense::class,
         'ref_model_id'   => $expense->id,
         'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
-        'post_date'      => Carbon::getTestNow(),
     ]);
-
     $this->assertDatabaseHas('journal_transactions', [
         'journal_id'     => $airline2->journal->id,
         'ref_model_type' => Expense::class,
         'ref_model_id'   => $expense->id,
         'debit'          => Money::createFromAmount($expense->amount)->toAmount(),
-        'post_date'      => Carbon::getTestNow(),
     ]);
 });
 

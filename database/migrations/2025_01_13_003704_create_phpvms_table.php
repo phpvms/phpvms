@@ -12,7 +12,7 @@ return new class() extends Migration
     public function up(): void
     {
         if (!Schema::hasTable('migrations_data')) {
-            Schema::create('migrations_data', function (Blueprint $table) {
+            Schema::create('migrations_data', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -23,7 +23,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('users')) {
-            Schema::create('users', function (Blueprint $table) {
+            Schema::create('users', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -67,7 +67,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('acars')) {
-            Schema::create('acars', function (Blueprint $table) {
+            Schema::create('acars', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -100,7 +100,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('activity_log')) {
-            Schema::create('activity_log', function (Blueprint $table) {
+            Schema::create('activity_log', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -122,7 +122,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('aircraft')) {
-            Schema::create('aircraft', function (Blueprint $table) {
+            Schema::create('aircraft', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -145,7 +145,7 @@ return new class() extends Migration
                 $table->string('simbrief_type', 25)->nullable();
                 $table->decimal('fuel_onboard')->unsigned()->nullable()->default(0);
                 $table->unsignedBigInteger('flight_time')->nullable()->default(0);
-                $table->char('status', 1)->default('A');
+                $table->string('status', 1)->default('A');
                 $table->unsignedTinyInteger('state')->default(0);
                 $table->timestamps();
                 $table->softDeletes();
@@ -153,7 +153,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('airlines')) {
-            Schema::create('airlines', function (Blueprint $table) {
+            Schema::create('airlines', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -175,7 +175,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('airports')) {
-            Schema::create('airports', function (Blueprint $table) {
+            Schema::create('airports', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -201,7 +201,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('awards')) {
-            Schema::create('awards', function (Blueprint $table) {
+            Schema::create('awards', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -218,7 +218,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('bids')) {
-            Schema::create('bids', function (Blueprint $table) {
+            Schema::create('bids', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -233,7 +233,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('events')) {
-            Schema::create('events', function (Blueprint $table) {
+            Schema::create('events', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -249,7 +249,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('expenses')) {
-            Schema::create('expenses', function (Blueprint $table) {
+            Schema::create('expenses', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -257,7 +257,7 @@ return new class() extends Migration
                 $table->unsignedInteger('airline_id')->nullable();
                 $table->string('name');
                 $table->unsignedInteger('amount');
-                $table->char('type');
+                $table->string('type', 1);
                 $table->string('flight_type', 50)->nullable();
                 $table->boolean('charge_to_user')->nullable()->default(false);
                 $table->boolean('multiplier')->nullable()->default(false);
@@ -271,7 +271,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('failed_jobs')) {
-            Schema::create('failed_jobs', function (Blueprint $table) {
+            Schema::create('failed_jobs', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -285,7 +285,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('fares')) {
-            Schema::create('fares', function (Blueprint $table) {
+            Schema::create('fares', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -304,7 +304,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('files')) {
-            Schema::create('files', function (Blueprint $table) {
+            Schema::create('files', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -324,7 +324,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('flight_fare')) {
-            Schema::create('flight_fare', function (Blueprint $table) {
+            Schema::create('flight_fare', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -340,7 +340,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('flight_field_values')) {
-            Schema::create('flight_field_values', function (Blueprint $table) {
+            Schema::create('flight_field_values', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -354,7 +354,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('flight_fields')) {
-            Schema::create('flight_fields', function (Blueprint $table) {
+            Schema::create('flight_fields', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -365,7 +365,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('flight_subfleet')) {
-            Schema::create('flight_subfleet', function (Blueprint $table) {
+            Schema::create('flight_subfleet', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -379,7 +379,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('flights')) {
-            Schema::create('flights', function (Blueprint $table) {
+            Schema::create('flights', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -397,7 +397,7 @@ return new class() extends Migration
                 $table->unsignedInteger('level')->nullable()->default(0);
                 $table->decimal('distance')->unsigned()->nullable()->default(0);
                 $table->unsignedInteger('flight_time')->nullable();
-                $table->char('flight_type', 1)->default('J');
+                $table->string('flight_type', 1)->default('J');
                 $table->decimal('load_factor', 5)->nullable();
                 $table->decimal('load_factor_variance', 5)->nullable();
                 $table->text('route')->nullable();
@@ -422,7 +422,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('invites')) {
-            Schema::create('invites', function (Blueprint $table) {
+            Schema::create('invites', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -437,7 +437,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('jobs')) {
-            Schema::create('jobs', function (Blueprint $table) {
+            Schema::create('jobs', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -452,7 +452,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('journal_transactions')) {
-            Schema::create('journal_transactions', function (Blueprint $table) {
+            Schema::create('journal_transactions', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -475,7 +475,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('journals')) {
-            Schema::create('journals', function (Blueprint $table) {
+            Schema::create('journals', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -493,7 +493,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('kvp')) {
-            Schema::create('kvp', function (Blueprint $table) {
+            Schema::create('kvp', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -503,7 +503,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('ledgers')) {
-            Schema::create('ledgers', function (Blueprint $table) {
+            Schema::create('ledgers', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -515,7 +515,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('navdata')) {
-            Schema::create('navdata', function (Blueprint $table) {
+            Schema::create('navdata', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -531,7 +531,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('news')) {
-            Schema::create('news', function (Blueprint $table) {
+            Schema::create('news', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -544,7 +544,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('notifications')) {
-            Schema::create('notifications', function (Blueprint $table) {
+            Schema::create('notifications', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -552,7 +552,7 @@ return new class() extends Migration
                 $table->string('type');
                 $table->string('notifiable_type');
                 $table->unsignedBigInteger('notifiable_id');
-                $table->text('data');
+                $table->json('data');
                 $table->timestamp('read_at')->nullable();
                 $table->timestamps();
 
@@ -561,7 +561,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('pages')) {
-            Schema::create('pages', function (Blueprint $table) {
+            Schema::create('pages', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -580,7 +580,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('password_resets')) {
-            Schema::create('password_resets', function (Blueprint $table) {
+            Schema::create('password_resets', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -633,7 +633,7 @@ return new class() extends Migration
         }*/
 
         if (!Schema::hasTable('pirep_comments')) {
-            Schema::create('pirep_comments', function (Blueprint $table) {
+            Schema::create('pirep_comments', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -646,7 +646,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('pirep_fares')) {
-            Schema::create('pirep_fares', function (Blueprint $table) {
+            Schema::create('pirep_fares', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -665,7 +665,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('pirep_field_values')) {
-            Schema::create('pirep_field_values', function (Blueprint $table) {
+            Schema::create('pirep_field_values', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -680,7 +680,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('pirep_fields')) {
-            Schema::create('pirep_fields', function (Blueprint $table) {
+            Schema::create('pirep_fields', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -694,7 +694,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('pireps')) {
-            Schema::create('pireps', function (Blueprint $table) {
+            Schema::create('pireps', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -707,7 +707,7 @@ return new class() extends Migration
                 $table->string('flight_number', 10)->nullable()->index();
                 $table->string('route_code', 5)->nullable();
                 $table->string('route_leg', 5)->nullable();
-                $table->char('flight_type', 1)->default('J');
+                $table->string('flight_type', 1)->default('J');
                 $table->string('dpt_airport_id', 5)->index();
                 $table->string('arr_airport_id', 5)->index();
                 $table->string('alt_airport_id', 5)->nullable();
@@ -726,7 +726,7 @@ return new class() extends Migration
                 $table->unsignedTinyInteger('source')->nullable()->default(0);
                 $table->string('source_name', 50)->nullable();
                 $table->unsignedSmallInteger('state')->default(1);
-                $table->char('status', 3)->default('SCH');
+                $table->string('status', 3)->default('SCH');
                 $table->dateTime('submitted_at')->nullable();
                 $table->dateTime('block_off_time')->nullable();
                 $table->dateTime('block_on_time')->nullable();
@@ -736,7 +736,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('ranks')) {
-            Schema::create('ranks', function (Blueprint $table) {
+            Schema::create('ranks', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -786,7 +786,7 @@ return new class() extends Migration
         }*/
 
         if (!Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
+            Schema::create('sessions', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -800,7 +800,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('settings')) {
-            Schema::create('settings', function (Blueprint $table) {
+            Schema::create('settings', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -820,7 +820,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('simbrief')) {
-            Schema::create('simbrief', function (Blueprint $table) {
+            Schema::create('simbrief', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -840,7 +840,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('simbrief_aircraft')) {
-            Schema::create('simbrief_aircraft', function (Blueprint $table) {
+            Schema::create('simbrief_aircraft', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -853,7 +853,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('simbrief_airframes')) {
-            Schema::create('simbrief_airframes', function (Blueprint $table) {
+            Schema::create('simbrief_airframes', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -869,7 +869,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('simbrief_layouts')) {
-            Schema::create('simbrief_layouts', function (Blueprint $table) {
+            Schema::create('simbrief_layouts', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -881,7 +881,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('stats')) {
-            Schema::create('stats', function (Blueprint $table) {
+            Schema::create('stats', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -895,7 +895,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('subfleet_fare')) {
-            Schema::create('subfleet_fare', function (Blueprint $table) {
+            Schema::create('subfleet_fare', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -912,7 +912,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('subfleet_rank')) {
-            Schema::create('subfleet_rank', function (Blueprint $table) {
+            Schema::create('subfleet_rank', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -927,7 +927,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('subfleets')) {
-            Schema::create('subfleets', function (Blueprint $table) {
+            Schema::create('subfleets', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -950,7 +950,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('typerating_subfleet')) {
-            Schema::create('typerating_subfleet', function (Blueprint $table) {
+            Schema::create('typerating_subfleet', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -963,7 +963,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('typerating_user')) {
-            Schema::create('typerating_user', function (Blueprint $table) {
+            Schema::create('typerating_user', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -976,7 +976,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('typeratings')) {
-            Schema::create('typeratings', function (Blueprint $table) {
+            Schema::create('typeratings', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -993,7 +993,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('user_awards')) {
-            Schema::create('user_awards', function (Blueprint $table) {
+            Schema::create('user_awards', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -1007,7 +1007,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('user_field_values')) {
-            Schema::create('user_field_values', function (Blueprint $table) {
+            Schema::create('user_field_values', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -1022,7 +1022,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('user_fields')) {
-            Schema::create('user_fields', function (Blueprint $table) {
+            Schema::create('user_fields', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -1039,7 +1039,7 @@ return new class() extends Migration
         }
 
         if (!Schema::hasTable('user_oauth_tokens')) {
-            Schema::create('user_oauth_tokens', function (Blueprint $table) {
+            Schema::create('user_oauth_tokens', function (Blueprint $table): void {
                 $table->collation = 'utf8mb4_unicode_ci';
                 $table->charset = 'utf8mb4';
 
@@ -1054,7 +1054,7 @@ return new class() extends Migration
         }
 
         if (Schema::hasTable('permission_role')) {
-            Schema::table('permission_role', function (Blueprint $table) {
+            Schema::table('permission_role', function (Blueprint $table): void {
                 // Check if the foreign key already exists
                 // See https://github.com/laravel/framework/discussions/43443
                 $foreignKeys = collect(Schema::getForeignKeys('permission_role'));
@@ -1074,7 +1074,7 @@ return new class() extends Migration
         }
 
         if (Schema::hasTable('permission_user')) {
-            Schema::table('permission_user', function (Blueprint $table) {
+            Schema::table('permission_user', function (Blueprint $table): void {
                 $foreignKeys = collect(Schema::getForeignKeys('permission_user'));
 
                 if ($foreignKeys->where('name', 'permission_user_permission_id_foreign')->count() === 0) {
@@ -1086,7 +1086,7 @@ return new class() extends Migration
         }
 
         if (Schema::hasTable('role_user')) {
-            Schema::table('role_user', function (Blueprint $table) {
+            Schema::table('role_user', function (Blueprint $table): void {
                 $foreignKeys = collect(Schema::getForeignKeys('role_user'));
 
                 if ($foreignKeys->where('name', 'role_user_role_id_foreign')->count() === 0) {

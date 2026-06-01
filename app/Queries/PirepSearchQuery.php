@@ -7,6 +7,7 @@ namespace App\Queries;
 use App\Http\Requests\SearchPirepsRequest;
 use App\Models\Pirep;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Builds the Eloquent query for PIREP list endpoints.
@@ -36,6 +37,11 @@ class PirepSearchQuery
      * @var list<string>
      */
     private const array FREE_TEXT_COLUMNS = ['id', 'flight_number'];
+
+    private function likeOperator(): string
+    {
+        return DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+    }
 
     public function build(SearchPirepsRequest $request): Builder
     {
@@ -92,8 +98,9 @@ class PirepSearchQuery
         }
 
         $query->where(function (Builder $q) use ($search): void {
+            $like = $this->likeOperator();
             foreach (self::FREE_TEXT_COLUMNS as $col) {
-                $q->orWhere($col, 'like', '%'.$search.'%');
+                $q->orWhere($col, $like, '%'.$search.'%');
             }
         });
     }

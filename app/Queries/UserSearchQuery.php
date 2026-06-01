@@ -8,6 +8,7 @@ use App\Enums\UserState;
 use App\Http\Requests\SearchUsersRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Builds the Eloquent query for the public pilots list (`/users`).
@@ -37,12 +38,26 @@ class UserSearchQuery
         'state'           => '=',
     ];
 
+    private function resolveOperator(string $operator): string
+    {
+        if ($operator !== 'like') {
+            return $operator;
+        }
+
+        return $this->likeOperator();
+    }
+
     /**
      * Free-text search columns (when search has no `field:` prefix).
      *
      * @var list<string>
      */
     private const array FREE_TEXT_COLUMNS = ['name', 'email'];
+
+    private function likeOperator(): string
+    {
+        return DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+    }
 
     public function build(SearchUsersRequest $request): Builder
     {
@@ -109,14 +124,14 @@ class UserSearchQuery
                     continue;
                 }
 
-                $clauses[] = [$field, self::FIELD_SEARCH[$field], $value];
+                $clauses[] = [$field, $this->resolveOperator(self::FIELD_SEARCH[$field]), $value];
             }
 
             if ($clauses !== []) {
                 $query->where(function (Builder $q) use ($clauses): void {
                     foreach ($clauses as [$field, $operator, $value]) {
-                        if ($operator === 'like') {
-                            $q->orWhere($field, 'like', '%'.$value.'%');
+                        if (in_array($operator, ['like', 'ilike'], true)) {
+                            $q->orWhere($field, $operator, '%'.$value.'%');
                         } else {
                             $q->orWhere($field, '=', $value);
                         }
@@ -130,9 +145,10 @@ class UserSearchQuery
         }
 
         // Free-text: OR across name + email
-        $query->where(function (Builder $q) use ($search): void {
+        $like = $this->likeOperator();
+        $query->where(function (Builder $q) use ($search, $like): void {
             foreach (self::FREE_TEXT_COLUMNS as $col) {
-                $q->orWhere($col, 'like', '%'.$search.'%');
+                $q->orWhere($col, $like, '%'.$search.'%');
             }
         });
     }

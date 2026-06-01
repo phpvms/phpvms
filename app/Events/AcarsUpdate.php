@@ -10,5 +10,5 @@ use App\Models\Pirep;
 
 class AcarsUpdate extends Event
 {
-    public function __construct(public Pirep $pirep, public Acars $acars) {}
+    public function __construct(public Pirep $pirep, public ?Acars $acars = null) {}
 }

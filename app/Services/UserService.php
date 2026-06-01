@@ -28,6 +28,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -208,12 +209,15 @@ class UserService extends Service
             return $user;
         }
 
-        $user->pilot_id = $this->getNextAvailablePilotId();
-        $user->save();
+        return DB::transaction(function () use ($user): User {
+            $maxPilotId = (int) User::withTrashed()->max('pilot_id');
+            $user->pilot_id = $maxPilotId + 1;
+            $user->save();
 
-        Log::info('Set pilot ID for user '.$user->id.' to '.$user->pilot_id);
+            Log::info('Set pilot ID for user '.$user->id.' to '.$user->pilot_id);
 
-        return $user;
+            return $user;
+        });
     }
 
     /**
@@ -236,19 +240,21 @@ class UserService extends Service
             return $user;
         }
 
-        if ($this->isPilotIdAlreadyUsed($pilot_id)) {
-            Log::error('User with id '.$pilot_id.' already exists');
+        return DB::transaction(function () use ($user, $pilot_id): User {
+            if (User::where('pilot_id', '=', $pilot_id)->exists()) {
+                Log::error('User with id '.$pilot_id.' already exists');
 
-            throw new UserPilotIdExists($user);
-        }
+                throw new UserPilotIdExists($user);
+            }
 
-        $old_id = $user->pilot_id;
-        $user->pilot_id = $pilot_id;
-        $user->save();
+            $old_id = $user->pilot_id;
+            $user->pilot_id = $pilot_id;
+            $user->save();
 
-        Log::info('Changed pilot ID for user '.$user->id.' from '.$old_id.' to '.$user->pilot_id);
+            Log::info('Changed pilot ID for user '.$user->id.' from '.$old_id.' to '.$user->pilot_id);
 
-        return $user;
+            return $user;
+        });
     }
 
     /**
@@ -268,12 +274,12 @@ class UserService extends Service
 
         /** @var Airline $airline */
         foreach ($airlines as $airline) {
-            if (str_contains($pilot_id, $airline->icao)) {
+            if (str_starts_with($pilot_id, $airline->icao)) {
                 $ident_str = $airline->icao;
                 break;
             }
 
-            if (!empty($airline->iata) && str_contains($pilot_id, (string) $airline->iata)) {
+            if (!empty($airline->iata) && str_starts_with($pilot_id, (string) $airline->iata)) {
                 $ident_str = $airline->iata;
                 break;
             }
@@ -284,6 +290,10 @@ class UserService extends Service
         }
 
         $parsed_pilot_id = str_replace($ident_str, '', $pilot_id);
+        if ($parsed_pilot_id === '' || !ctype_digit($parsed_pilot_id)) {
+            throw new PilotIdNotFound($pilot_id);
+        }
+
         $user = User::where(['airline_id' => $airline->id, 'pilot_id' => $parsed_pilot_id])->first();
         if (empty($user)) {
             throw new PilotIdNotFound($pilot_id);

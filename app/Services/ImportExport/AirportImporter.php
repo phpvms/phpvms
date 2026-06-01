@@ -58,6 +58,10 @@ class AirportImporter extends ImportExport
             $row['fuel_jeta_cost'] = (float) $row['fuel_jeta_cost'];
         }
 
+        $row['elevation'] = is_numeric($row['elevation'] ?? '') ? (int) $row['elevation'] : null;
+        $row['fuel_100ll_cost'] = is_numeric($row['fuel_100ll_cost'] ?? '') ? (float) $row['fuel_100ll_cost'] : null;
+        $row['fuel_mogas_cost'] = is_numeric($row['fuel_mogas_cost'] ?? '') ? (float) $row['fuel_mogas_cost'] : null;
+
         try {
             Airport::updateOrCreate([
                 'id' => $row['icao'],

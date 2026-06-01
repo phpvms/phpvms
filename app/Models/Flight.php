@@ -222,20 +222,21 @@ class Flight extends Model
     protected function casts(): array
     {
         return [
-            'flight_number'        => 'integer',
-            'days'                 => 'integer',
-            'level'                => 'integer',
-            'distance'             => DistanceCast::class,
-            'flight_time'          => 'integer',
-            'flight_type'          => FlightType::class,
-            'departure_time'       => 'datetime:H:i:s',
-            'arrival_time'         => 'datetime:H:i:s',
-            'start_date'           => 'datetime',
-            'end_date'             => 'datetime',
-            'load_factor'          => 'double',
-            'load_factor_variance' => 'double',
-            'pilot_pay'            => 'float',
-            'has_bid'              => 'boolean',
+            'flight_number'  => 'integer',
+            'days'           => 'integer',
+            'level'          => 'integer',
+            'distance'       => DistanceCast::class,
+            'flight_time'    => 'integer',
+            'flight_type'    => FlightType::class,
+            'departure_time' => 'datetime:H:i:s',
+            'arrival_time'   => 'datetime:H:i:s',
+            'start_date'     => 'datetime',
+            'end_date'       => 'datetime',
+            // `load_factor` and `load_factor_variance` double casts are handled by
+            // their Attribute mutators so blank string inputs canonicalize to NULL
+            // rather than causing MySQL strict-mode errors on DECIMAL columns.
+            'pilot_pay' => 'float',
+            'has_bid'   => 'boolean',
             // `route_leg` int cast is handled by the routeLeg() Attribute
             // mutator so empty / '0' inputs canonicalize to NULL rather than 0.
             'enabled'   => 'boolean',
@@ -258,7 +259,7 @@ class Flight extends Model
         /** @noinspection DynamicInvocationViaScopeResolutionInspection */
         $flights = self::where('enabled', true);
         foreach ($days as $day) {
-            $flights = $flights->where('days', '&', $day);
+            $flights = $flights->whereRaw('("days" & ?) > 0', [$day]);
         }
 
         return $flights;
@@ -376,6 +377,32 @@ class Flight extends Model
 
                 return $canonical === null ? null : (int) $canonical;
             },
+        );
+    }
+
+    /**
+     * Canonicalize `load_factor` — convert blank strings to null
+     * so MySQL strict mode doesn't reject them for the DECIMAL column.
+     * Also handles float casting now that the `double` cast is removed.
+     */
+    protected function loadFactor(): Attribute
+    {
+        return Attribute::make(
+            get: static fn (mixed $value): ?float => $value === null ? null : (float) $value,
+            set: static fn (mixed $value): ?float => blank($value) ? null : (float) $value,
+        );
+    }
+
+    /**
+     * Canonicalize `load_factor_variance` — convert blank strings to null
+     * so MySQL strict mode doesn't reject them for the DECIMAL column.
+     * Also handles float casting now that the `double` cast is removed.
+     */
+    protected function loadFactorVariance(): Attribute
+    {
+        return Attribute::make(
+            get: static fn (mixed $value): ?float => $value === null ? null : (float) $value,
+            set: static fn (mixed $value): ?float => blank($value) ? null : (float) $value,
         );
     }
 

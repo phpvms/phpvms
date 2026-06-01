@@ -1,8 +1,0 @@
-[env]
-BUILDKIT_HOST = "docker-container://buildkit"
-
-[tasks.setup]
-run = ["mise install", "mise run run-buildkit-container || true"]
-
-[tasks.run-buildkit-container]
-run = "docker run --rm --privileged -d --name buildkit -e BUILDKIT_DEBUG=1 moby/buildkit:latest"
