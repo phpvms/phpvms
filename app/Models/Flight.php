@@ -259,7 +259,7 @@ class Flight extends Model
         /** @noinspection DynamicInvocationViaScopeResolutionInspection */
         $flights = self::where('enabled', true);
         foreach ($days as $day) {
-            $flights = $flights->whereRaw('("days" & ?) > 0', [$day]);
+            $flights = $flights->whereRaw('(days & ?) > 0', [$day]);
         }
 
         return $flights;
