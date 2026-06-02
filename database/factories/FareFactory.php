@@ -30,7 +30,6 @@ class FareFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'       => null,
             'code'     => fake()->unique()->text(50),
             'name'     => fake()->text(50),
             'price'    => fake()->randomFloat(2, 100, 1000),

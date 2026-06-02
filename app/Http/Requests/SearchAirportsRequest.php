@@ -31,7 +31,7 @@ class SearchAirportsRequest extends FormRequest
 {
     public const array SEARCHABLE_FIELDS = ['iata', 'icao', 'name'];
 
-    public const array SEARCHABLE_OPERATORS = ['=', 'like'];
+    public const array SEARCHABLE_OPERATORS = ['=', 'like', 'ilike'];
 
     public const array SEARCH_MODES = ['substring', 'prefix'];
 

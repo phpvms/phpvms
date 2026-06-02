@@ -27,17 +27,14 @@ class CarbonCast implements CastsAttributes
         return new Carbon($value);
     }
 
-    /**
-     * Transform the attribute to its underlying model values.
-     *
-     * @param  Model $model
-     * @param  mixed $value
-     * @return mixed
-     */
     public function set($model, string $key, $value, array $attributes)
     {
         if ($value instanceof Carbon) {
-            return $value->toIso8601ZuluString();
+            return $value->toDateTimeString();
+        }
+
+        if (is_string($value)) {
+            return (new Carbon($value))->toDateTimeString();
         }
 
         return $value;

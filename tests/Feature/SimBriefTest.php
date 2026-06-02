@@ -270,8 +270,8 @@ test('attach to pirep', function (): void {
 
     $fix = $acars->firstWhere('name', 'BOMUP');
     expect($fix['name'])->toEqual('BOMUP')
-        ->and($fix['lat'])->toEqual(24.484639)
-        ->and($fix['lon'])->toEqual(54.578444)
+        ->and($fix['lat'])->toEqualWithDelta(24.484639, 0.00001)
+        ->and($fix['lon'])->toEqualWithDelta(54.578444, 0.00001)
         ->and($fix['order'])->toEqual(1);
 
     $briefing->refresh();

@@ -179,16 +179,32 @@ class FlightService extends Service
         }
 
         // Match nullable scalar columns including legacy empty-string values.
-        // Stored values may be NULL, '', or an actual scalar; treat empty as
-        // equivalent to null so casts that coerce '' to 0 (e.g. integer cast
-        // on route_leg) still resolve correctly.
-        foreach (['route_code', 'route_leg', 'days'] as $column) {
+        // route_code is a string column — empty strings are valid on all DBs.
+        // route_leg and days are integer columns — PG cannot compare int to '',
+        // so only check null and 0.
+        $stringColumns = ['route_code'];
+        $integerColumns = ['route_leg', 'days'];
+
+        foreach ($stringColumns as $column) {
+            $value = $flight->{$column};
+
+            if (in_array($value, [null, '', '0'], true)) {
+                $query->where(function ($q) use ($column): void {
+                    $q->whereNull($column)
+                        ->orWhere($column, '')
+                        ->orWhere($column, 0);
+                });
+            } else {
+                $query->where($column, $value);
+            }
+        }
+
+        foreach ($integerColumns as $column) {
             $value = $flight->{$column};
 
             if (in_array($value, [null, '', 0, '0'], true)) {
                 $query->where(function ($q) use ($column): void {
                     $q->whereNull($column)
-                        ->orWhere($column, '')
                         ->orWhere($column, 0);
                 });
             } else {

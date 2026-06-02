@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
     {
         $seeders = [
             ShieldSeeder::class,
-            YamlSeeder::class,
+            SettingsSeeder::class,
+            BaseDataSeeder::class,
         ];
 
         // Always insert the samples in the demo environment

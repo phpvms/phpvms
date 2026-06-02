@@ -46,8 +46,8 @@ class FlightImporter extends ImportExport
         'distance'             => 'nullable|numeric',
         'flight_time'          => 'required|integer',
         'flight_type'          => 'required|alpha',
-        'load_factor'          => 'nullable',
-        'load_factor_variance' => 'nullable',
+        'load_factor'          => 'nullable|numeric|min:0|max:100',
+        'load_factor_variance' => 'nullable|numeric|min:0|max:100',
         'pilot_pay'            => 'nullable',
         'route'                => 'nullable',
         'notes'                => 'nullable',
@@ -226,9 +226,9 @@ class FlightImporter extends ImportExport
             $this->processAirport($row['alt_airport']);
         }
 
-        $this->processSubfleets($flight, $row['subfleets']);
-        $this->processFares($flight, $row['fares']);
-        $this->processFields($flight, $row['fields']);
+        $this->processSubfleets($flight, $row['subfleets'] ?? '');
+        $this->processFares($flight, $row['fares'] ?? '');
+        $this->processFields($flight, $row['fields'] ?? '');
 
         $this->log('Imported row '.($index + 1));
 

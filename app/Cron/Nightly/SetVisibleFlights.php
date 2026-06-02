@@ -173,6 +173,12 @@ class SetVisibleFlights extends Listener
      */
     private static function sqlBool(bool $value): string
     {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            return $value ? 'TRUE' : 'FALSE';
+        }
+
         return $value ? '1' : '0';
     }
 }

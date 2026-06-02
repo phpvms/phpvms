@@ -42,7 +42,12 @@ return new class() extends Migration
 
         // Phase 1: canonicalize route_code / route_leg storage.
         DB::table('flights')->whereIn('route_code', ['', '0'])->update(['route_code' => null]);
-        DB::table('flights')->whereIn('route_leg', ['', '0', 0])->update(['route_leg' => null]);
+        DB::table('flights')->whereIn('route_leg', ['0', 0])->update(['route_leg' => null]);
+
+        // SQLite's type affinity allows '' in integer columns; other drivers reject it.
+        if ($driver === 'sqlite') {
+            DB::table('flights')->where('route_leg', '')->update(['route_leg' => null]);
+        }
 
         // Phase 2: auto-disable pre-existing duplicates.
         //
@@ -59,8 +64,8 @@ return new class() extends Migration
         // matching the strict-duplicate key semantics.
         $rankedSubquery = DB::table('flights')
             ->select('id')
-            ->selectRaw("FIRST_VALUE(id) OVER (PARTITION BY bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg, '') ORDER BY id) as kept_id")
-            ->selectRaw("ROW_NUMBER() OVER (PARTITION BY bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg, '') ORDER BY id) as rn")
+            ->selectRaw("FIRST_VALUE(id) OVER (PARTITION BY bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg, 0) ORDER BY id) as kept_id")
+            ->selectRaw("ROW_NUMBER() OVER (PARTITION BY bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg, 0) ORDER BY id) as rn")
             ->where('enabled', true)
             ->whereNull('owner_type');
 
@@ -162,8 +167,12 @@ return new class() extends Migration
             'mysql', 'mariadb' => 'CASE WHEN enabled = 1 AND owner_type IS NULL '
                 ."THEN CONCAT_WS('|', bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg, '')) "
                 .'ELSE NULL END',
+            // PostgreSQL marks CONCAT_WS as STABLE (not IMMUTABLE) because of
+            // implicit type coercions, which disqualifies it from STORED
+            // generated columns. The `||` operator over text is IMMUTABLE, so
+            // we cast non-text columns explicitly and COALESCE nullable ones.
             'pgsql' => 'CASE WHEN enabled = TRUE AND owner_type IS NULL '
-                ."THEN CONCAT_WS('|', bundle_id, airline_id, flight_number, COALESCE(route_code, ''), COALESCE(route_leg::text, '')) "
+                ."THEN bundle_id::text || '|' || airline_id::text || '|' || flight_number::text || '|' || COALESCE(route_code::text, '') || '|' || COALESCE(route_leg::text, '') "
                 .'ELSE NULL END',
             'sqlite' => 'CASE WHEN enabled = 1 AND owner_type IS NULL '
                 ."THEN (bundle_id || '|' || airline_id || '|' || flight_number || '|' || COALESCE(route_code, '') || '|' || COALESCE(route_leg, '')) "
