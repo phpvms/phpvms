@@ -24,6 +24,7 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
 use App\Models\Subfleet;
+use App\Services\YamlDatabaseService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -32,6 +33,12 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class SampleDataSeeder extends YamlSeeder
 {
+    public function __construct(
+        private readonly YamlDatabaseService $yamlDbSvc
+    ) {
+        parent::__construct($this->yamlDbSvc);
+    }
+
     #[\Override]
     public function run(): void
     {
@@ -44,7 +51,7 @@ class SampleDataSeeder extends YamlSeeder
             ->filter(fn (SplFileInfo $file): bool => $file->getExtension() === 'yml')
             ->each(function (SplFileInfo $file): void {
                 $path = $file->getPathname();
-                $this->seedFromYamlFile($path);
+                $this->yamlDbSvc->seedFromYamlFile($path);
             });
 
         $this->seedSamplePireps();
