@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -27,7 +29,6 @@ class RankFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'                   => null,
             'name'                 => fake()->unique()->text(50),
             'hours'                => fake()->numberBetween(10, 50),
             'acars_base_pay_rate'  => fake()->numberBetween(10, 100),

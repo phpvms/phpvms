@@ -1,0 +1,40 @@
+name: phpvms-test
+services:
+  mysql:
+    image: mysql:8.4
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: phpvms_test
+      MYSQL_USER: phpvms
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--password=password"]
+      retries: 5
+      timeout: 5s
+      start_period: 15s
+
+  pgsql:
+    image: postgres:18-alpine
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_DB: phpvms_test
+      POSTGRES_USER: phpvms
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql:ro
+      - pgsql-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "phpvms", "-U", "phpvms"]
+      retries: 3
+      timeout: 5s
+      start_period: 10s
+
+volumes:
+  mysql-data:
+  pgsql-data:

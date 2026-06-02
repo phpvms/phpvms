@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Services\Installer\SeederService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -27,10 +26,6 @@ class YamlSeeder extends Seeder
         'pireps',
     ];
 
-    /**
-     * Columns whose names end with `_time` that genuinely store datetime/timestamp
-     * values (not integer durations like `flight_time`).
-     */
     protected array $datetimeTimeColumns = [
         'arrival_time',
         'block_off_time',
@@ -40,10 +35,6 @@ class YamlSeeder extends Seeder
         'post_date',
     ];
 
-    public function __construct(
-        private readonly SeederService $seederSvc
-    ) {}
-
     /**
      * Run the database seeds.
      *
@@ -51,11 +42,6 @@ class YamlSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seedFromYamlFile(database_path('seeders/base/base.yml'));
-
-        // Special method to sync the settings
-        $this->seederSvc->syncAllSettings();
-
         $env = App::environment();
         $seedPath = database_path('seeders/'.$env);
         if (!File::isDirectory($seedPath)) {
@@ -140,6 +126,8 @@ class YamlSeeder extends Seeder
 
                 $imported[$table]++;
             }
+
+            $this->resetPostgresSequence($table, $id_column);
         }
 
         return $imported;
@@ -221,5 +209,25 @@ class YamlSeeder extends Seeder
         }
 
         return $row;
+    }
+
+    /**
+     * Reset a PostgreSQL sequence after inserting rows with explicit IDs.
+     * Raw DB::table()->insert() with explicit IDs bypasses auto-increment
+     * sequences, so subsequent Eloquent creates would collide on the PK.
+     */
+    protected function resetPostgresSequence(string $table, string $idColumn = 'id'): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        try {
+            $fullTable = DB::getTablePrefix().$table;
+            $sequence = $fullTable.'_'.$idColumn.'_seq';
+            DB::statement(sprintf("SELECT setval('%s', COALESCE((SELECT MAX(%s) FROM %s), 1))", $sequence, $idColumn, $fullTable));
+        } catch (QueryException) {
+            // Table may not have a serial column; ignore.
+        }
     }
 }

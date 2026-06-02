@@ -5,6 +5,7 @@ namespace App\Queries;
 use App\Http\Requests\SearchAirportsRequest;
 use App\Models\Airport;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Build an Eloquent\Builder for airport listing/search endpoints.
@@ -30,6 +31,11 @@ use Illuminate\Database\Eloquent\Builder;
 class AirportSearchQueryV1
 {
     public function __construct(private readonly SearchAirportsRequest $request) {}
+
+    private function likeOperator(): string
+    {
+        return DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+    }
 
     public function build(): Builder
     {
@@ -114,7 +120,7 @@ class AirportSearchQueryV1
      */
     private function resolveSearchFields(?string $searchFields, array $searchDataKeys): array
     {
-        $defaultFields = array_fill_keys(SearchAirportsRequest::SEARCHABLE_FIELDS, 'like');
+        $defaultFields = array_fill_keys(SearchAirportsRequest::SEARCHABLE_FIELDS, $this->likeOperator());
         if ($searchFields === null || $searchFields === '') {
             return $defaultFields;
         }

@@ -13,7 +13,7 @@ declare(strict_types=1);
 |
 */
 
-use App\Services\Installer\SeederService;
+use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,6 +21,6 @@ pest()
     ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->beforeEach(function (): void {
-        app(SeederService::class)->syncAllSettings();
+        $this->seed(SettingsSeeder::class);
     })
     ->in('Unit', 'Feature', 'Arch', '../resources/views');

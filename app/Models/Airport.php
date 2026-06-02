@@ -294,6 +294,7 @@ class Airport extends Model
         return [
             'lat'                  => 'float',
             'lon'                  => 'float',
+            'elevation'            => 'integer',
             'hub'                  => 'boolean',
             'ground_handling_cost' => 'float',
             'fuel_100ll_cost'      => 'float',

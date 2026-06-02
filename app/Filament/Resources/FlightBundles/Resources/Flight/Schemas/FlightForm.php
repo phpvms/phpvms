@@ -51,7 +51,7 @@ class FlightForm
                             TextInput::make('callsign')
                                 ->label(__('flights.callsign'))
                                 ->string()
-                                ->maxLength(4),
+                                ->maxLength(10),
 
                             TextInput::make('flight_number')
                                 ->label(__('flights.flightnumber'))
@@ -82,10 +82,16 @@ class FlightForm
                             Grid::make()->schema([
                                 TextInput::make('load_factor')
                                     ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->stripCharacters('%')
                                     ->helperText(__('filament.flight_load_factor_hint')),
 
                                 TextInput::make('load_factor_variance')
                                     ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->stripCharacters('%')
                                     ->helperText(__('filament.flight_load_factor_variance_hint')),
 
                             ])

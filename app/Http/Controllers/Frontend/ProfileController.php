@@ -153,6 +153,10 @@ class ProfileController extends Controller
             $rules['field_'.$field->slug] = 'required';
         }
 
+        $request->merge([
+            'email' => mb_strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $validated = $request->validate($rules);
 
         if (array_key_exists('password', $validated) && $validated['password'] !== null) {

@@ -1,0 +1,96 @@
+
+[env]
+BUILDKIT_HOST = "docker-container://buildkit"
+PHPRC = "resources/mise"
+_.php = {
+    prebuilt_static = true,
+    prebuilt_static_flavor = "bulk",
+    extra_configure_options = "--with-pdo-mysql --with-pdo-pgsql",
+    pie_extensions = "redis/phpredis xdebug/xdebug"
+}
+
+[tools]
+php = "8.5.6"
+#bun = "system"
+
+[plugins]
+php = "https://github.com/verzly/mise-php#latest"
+
+# -----------------------------------------------
+# Local tasks
+# mise run setup
+# -----------------------------------------------
+
+[tasks.setup]
+run = [
+    "mise install",
+    "mise run run-buildkit-container || true"
+]
+
+[tasks.run-buildkit-container]
+run = "docker run --rm --privileged -d --name buildkit -e BUILDKIT_DEBUG=1 moby/buildkit:latest"
+
+[tasks.railpack]
+run = "railpack build ."
+
+# Run the github workflows locally using act
+[tasks.gh-actions]
+run = '''
+act \
+--container-architecture linux/amd64 pull_request \
+--action-offline-mode
+'''
+
+# -----------------------------------------------
+# Test against real databases
+# -----------------------------------------------
+
+[tasks.test-db-up]
+description = "Start MySQL and PostgreSQL for testing"
+usage='''
+arg "[db]" help="Run on mysql or pgsql?" {
+  choices "mysql" "pgsql"
+}
+'''
+run = "docker compose -f compose.test.yml up ${usage_db} -d --wait"
+
+[tasks.test-db-down]
+description = "Stop test databases and remove volumes"
+usage='''
+arg "[db]" help="Run on mysql or pgsql?" {
+  choices "mysql" "pgsql"
+}
+'''
+run = "docker compose -f compose.test.yml down ${usage_db} -v"
+
+[tasks.'tests:mysql']
+description = "Run tests against MySQL (port 13306)"
+depends = [{ task = "test-db-up", args = ["mysql"]}]
+depends_post = [{ task = "test-db-down", args = ["mysql"]}]
+env = {
+    DB_CONNECTION = 'mysql',
+    DB_HOST = '127.0.0.1',
+    DB_PORT = "13306",
+    DB_DATABASE = "phpvms_test",
+    DB_USERNAME = "phpvms",
+    DB_PASSWORD = "password"
+}
+run = [
+    "vendor/bin/pest --compact"
+]
+
+[tasks.'tests:pgsql']
+description = "Run tests against PostgreSQL (port 15432)"
+depends = [{ task = "test-db-up", args = ["mysql"]}]
+depends_post = [{ task = "test-db-down", args = ["mysql"]}]
+env = {
+    DB_CONNECTION = 'pgsql',
+    DB_HOST = '127.0.0.1',
+    DB_PORT = "15432",
+    DB_DATABASE = "phpvms_test",
+    DB_USERNAME = "phpvms",
+    DB_PASSWORD = "password"
+}
+run = [
+    "vendor/bin/pest --compact"
+]

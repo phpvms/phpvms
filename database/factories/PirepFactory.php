@@ -56,7 +56,7 @@ class PirepFactory extends Factory
             'planned_distance'    => fake()->randomFloat(2, 0, 6000),
             'flight_time'         => fake()->numberBetween(60, 360),
             'planned_flight_time' => fake()->numberBetween(60, 360),
-            'zfw'                 => fake()->randomFloat(2),
+            'zfw'                 => fake()->randomFloat(2, 0, 500000),
             'block_fuel'          => fake()->randomFloat(2, 0, 1000),
             'fuel_used'           => fn (array $pirep): float => round($pirep['block_fuel'] * .9, 2),
             'block_on_time'       => Carbon::now('UTC'),

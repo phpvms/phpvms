@@ -20,6 +20,7 @@ use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -168,15 +169,16 @@ class AcarsController extends Controller
             }
 
             try {
-                if (!empty($position['id'])) {
-                    Acars::updateOrInsert(
-                        ['id' => $position['id']],
-                        $position
-                    );
-                } else {
-                    $update = Acars::create($position);
-                    $update->save();
-                }
+                DB::transaction(function () use ($position): void {
+                    if (!empty($position['id'])) {
+                        Acars::updateOrInsert(
+                            ['id' => $position['id']],
+                            $position
+                        );
+                    } else {
+                        Acars::create($position);
+                    }
+                });
 
                 $count++;
             } catch (QueryException $ex) {
@@ -229,15 +231,16 @@ class AcarsController extends Controller
             }
 
             try {
-                if (isset($log['id'])) {
-                    Acars::updateOrInsert(
-                        ['id' => $log['id']],
-                        $log
-                    );
-                } else {
-                    $acars = Acars::create($log);
-                    $acars->save();
-                }
+                DB::transaction(function () use ($log): void {
+                    if (isset($log['id'])) {
+                        Acars::updateOrInsert(
+                            ['id' => $log['id']],
+                            $log
+                        );
+                    } else {
+                        Acars::create($log);
+                    }
+                });
 
                 $count++;
             } catch (QueryException $ex) {
@@ -281,15 +284,16 @@ class AcarsController extends Controller
             }
 
             try {
-                if (isset($log['id'])) {
-                    Acars::updateOrInsert(
-                        ['id' => $log['id']],
-                        $log
-                    );
-                } else {
-                    $acars = Acars::create($log);
-                    $acars->save();
-                }
+                DB::transaction(function () use ($log): void {
+                    if (isset($log['id'])) {
+                        Acars::updateOrInsert(
+                            ['id' => $log['id']],
+                            $log
+                        );
+                    } else {
+                        Acars::create($log);
+                    }
+                });
 
                 $count++;
             } catch (QueryException $ex) {

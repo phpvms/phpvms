@@ -37,7 +37,6 @@ class UserFactory extends Factory
         }
 
         return [
-            'id'                => null,
             'pilot_id'          => null,
             'name'              => fake()->name(),
             'email'             => fake()->safeEmail(),

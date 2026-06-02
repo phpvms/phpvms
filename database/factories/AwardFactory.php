@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -27,8 +29,7 @@ class AwardFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'               => null,
-            'name'             => fake()->name,
+            'name'             => fake()->name(),
             'description'      => fake()->text(10),
             'ref_model_type'   => null,
             'ref_model_params' => null,

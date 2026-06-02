@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -28,10 +30,9 @@ class NewsFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'      => null,
             'user_id' => fn () => User::factory()->create()->id,
-            'subject' => fake()->text(),
-            'body'    => fake()->sentence,
+            'subject' => fake()->sentence(),
+            'body'    => fake()->text(),
         ];
     }
 }

@@ -112,7 +112,8 @@ class OAuthController extends Controller
             return redirect(route('frontend.profile.index'));
         }
 
-        $user = User::where($provider.'_id', $providerUser->getId())->orWhere('email', $providerUser->getEmail())->first();
+        $providerEmail = mb_strtolower(trim((string) $providerUser->getEmail()));
+        $user = User::where($provider.'_id', $providerUser->getId())->orWhere('email', $providerEmail)->first();
 
         if ($user) {
             $user->update([

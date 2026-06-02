@@ -250,7 +250,7 @@ test('aircraft exporter', function (): void {
     $collection = collect([$aircraft]);
     $file = $exporter->exportAircraft($collection);
 
-    $status = $importer->importAircraft($file);
+    $status = $importer->importAircraft($file, delete_previous: false);
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(0);
 });
@@ -272,7 +272,7 @@ test('airport exporter', function (): void {
     $importer = app(ImportService::class);
     $exporter = app(ExportService::class);
     $file = $exporter->exportAirports(collect([$airport]));
-    $status = $importer->importAirports($file);
+    $status = $importer->importAirports($file, delete_previous: false);
 
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(0);
@@ -330,7 +330,7 @@ test('flight exporter', function (): void {
     $importer = app(ImportService::class);
     $exporter = app(ExportService::class);
     $file = $exporter->exportFlights(collect([$flight]));
-    $status = $importer->importFlights($file);
+    $status = $importer->importFlights($file, delete_previous: '');
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(0);
 });
@@ -339,14 +339,14 @@ test('invalid file import', function (): void {
     // $this->expectException(ValidationException::class);
     $file_path = base_path('tests/data/aircraft.csv');
     $importer = app(ImportService::class);
-    $status = $importer->importAirports($file_path);
+    $status = $importer->importAirports($file_path, delete_previous: false);
     expect($status['errors'])->toHaveCount(2);
 });
 
 test('empty cols', function (): void {
     $file_path = base_path('tests/data/expenses_empty_rows.csv');
     $importer = app(ImportService::class);
-    $status = $importer->importExpenses($file_path);
+    $status = $importer->importExpenses($file_path, delete_previous: false);
     expect($status['success'])->toHaveCount(8)
         ->and($status['errors'])->toHaveCount(0);
 });
@@ -367,7 +367,7 @@ test('expense exporter', function (): void {
     $importer = app(ImportService::class);
     $exporter = app(ExportService::class);
     $file = $exporter->exportExpenses(collect([$expense]));
-    $status = $importer->importExpenses($file);
+    $status = $importer->importExpenses($file, delete_previous: false);
 
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(0);
@@ -383,7 +383,7 @@ test('expense importer', function (): void {
 
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/expenses.csv');
-    $status = $importer->importExpenses($file_path);
+    $status = $importer->importExpenses($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(8)
         ->and($status['errors'])->toHaveCount(0);
@@ -414,7 +414,7 @@ test('expense importer', function (): void {
 test('fare importer', function (): void {
     $file_path = base_path('tests/data/fares.csv');
     $importer = app(ImportService::class);
-    $status = $importer->importFares($file_path);
+    $status = $importer->importFares($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(4)
         ->and($status['errors'])->toHaveCount(0);
@@ -591,7 +591,7 @@ test('aircraft importer', function (): void {
     $importer = app(ImportService::class);
     // $subfleet = \App\Models\Subfleet::factory()->create(['type' => 'A32X']);
     $file_path = base_path('tests/data/aircraft.csv');
-    $status = $importer->importAircraft($file_path);
+    $status = $importer->importAircraft($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(1);
@@ -615,7 +615,7 @@ test('aircraft importer', function (): void {
     // Now try importing the updated file, the status for the aircraft should change
     // to being stored
     $file_path = base_path('tests/data/aircraft-update.csv');
-    $status = $importer->importAircraft($file_path);
+    $status = $importer->importAircraft($file_path, delete_previous: false);
     expect($status['success'])->toHaveCount(1);
 
     $aircraft = Aircraft::where([
@@ -628,7 +628,7 @@ test('aircraft importer', function (): void {
 test('airport importer', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports.csv');
-    $status = $importer->importAirports($file_path);
+    $status = $importer->importAirports($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(2)
         ->and($status['errors'])->toHaveCount(1);
@@ -648,8 +648,8 @@ test('airport importer', function (): void {
         ->and($airport->country)->toEqual('US')
         ->and($airport->timezone)->toEqual('America/Chicago')
         ->and($airport->hub)->toBeTrue()
-        ->and($airport->lat)->toEqual('30.1945')
-        ->and($airport->lon)->toEqual('-97.6699')
+        ->and($airport->lat)->toEqualWithDelta(30.1945, 0.001)
+        ->and($airport->lon)->toEqualWithDelta(-97.6699, 0.001)
         ->and($airport->ground_handling_cost)->toEqual(0.0)
         ->and($airport->fuel_jeta_cost)->toEqual(setting('airports.default_jet_a_fuel_cost'))
         ->and($airport->notes)->toEqual('Test Note');
@@ -668,7 +668,7 @@ test('airport importer', function (): void {
 test('airport importer invalid inputs', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports_errors.csv');
-    $status = $importer->importAirports($file_path);
+    $status = $importer->importAirports($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(5)
         ->and($status['errors'])->toHaveCount(1);
@@ -683,8 +683,8 @@ test('airport importer invalid inputs', function (): void {
         ->and($airport->iata)->toEqual('')
         ->and($airport->timezone)->toEqual('America/Winnipeg')
         ->and($airport->hub)->toBeFalse()
-        ->and($airport->lat)->toEqual('50.0564003')
-        ->and($airport->lon)->toEqual('-97.03250122');
+        ->and($airport->lat)->toEqualWithDelta(50.0564, 0.001)
+        ->and($airport->lon)->toEqualWithDelta(-97.03250, 0.001);
 });
 
 test('subfleet importer', function (): void {
@@ -696,7 +696,7 @@ test('subfleet importer', function (): void {
 
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/subfleets.csv');
-    $status = $importer->importSubfleets($file_path);
+    $status = $importer->importSubfleets($file_path, delete_previous: false);
 
     expect($status['success'])->toHaveCount(1)
         ->and($status['errors'])->toHaveCount(1);
@@ -707,7 +707,7 @@ test('subfleet importer', function (): void {
     ])->first();
 
     expect($subfleet)->not->toBeNull()
-        ->and($subfleet->id)->toEqual($airline->id)
+        ->and($subfleet->airline_id)->toEqual($airline->id)
         ->and($subfleet->type)->toEqual('A32X')
         ->and($subfleet->name)->toEqual('Airbus A320');
 
@@ -749,7 +749,7 @@ test('subfleet importer', function (): void {
 test('airport special chars importer', function (): void {
     $importer = app(ImportService::class);
     $file_path = base_path('tests/data/airports_special_chars.csv');
-    $status = $importer->importAirports($file_path);
+    $status = $importer->importAirports($file_path, delete_previous: false);
 
     // See if it imported
     $airport = Airport::where([
