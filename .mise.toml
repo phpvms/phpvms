@@ -11,10 +11,15 @@ _.php = {
 
 [tools]
 php = "8.5.6"
-#bun = "system"
 
 [plugins]
 php = "https://github.com/verzly/mise-php#latest"
+
+[hooks]
+postinstall = "composer install"
+
+[settings]
+task_output = "interleave"
 
 # -----------------------------------------------
 # Local tasks
@@ -33,14 +38,6 @@ run = "docker run --rm --privileged -d --name buildkit -e BUILDKIT_DEBUG=1 moby/
 [tasks.railpack]
 run = "railpack build ."
 
-# Run the github workflows locally using act
-[tasks.gh-actions]
-run = '''
-act \
---container-architecture linux/amd64 pull_request \
---action-offline-mode
-'''
-
 # -----------------------------------------------
 # Test against real databases
 # -----------------------------------------------
@@ -48,20 +45,24 @@ act \
 [tasks.test-db-up]
 description = "Start MySQL and PostgreSQL for testing"
 usage='''
-arg "[db]" help="Run on mysql or pgsql?" {
+arg "[db]" default="mysql" help="Run on mysql or pgsql?" {
   choices "mysql" "pgsql"
 }
 '''
-run = "docker compose -f compose.test.yml up ${usage_db} -d --wait"
+run = '''
+docker compose -f compose.test.yml up {{ usage.db }} -d --wait
+'''
 
 [tasks.test-db-down]
 description = "Stop test databases and remove volumes"
 usage='''
-arg "[db]" help="Run on mysql or pgsql?" {
+arg "[db]" default="mysql" help="Run on mysql or pgsql?" {
   choices "mysql" "pgsql"
 }
 '''
-run = "docker compose -f compose.test.yml down ${usage_db} -v"
+run = '''
+docker compose -f compose.test.yml down {{ usage.db }} -v
+'''
 
 [tasks.'tests:mysql']
 description = "Run tests against MySQL (port 13306)"
@@ -71,26 +72,34 @@ env = {
     DB_CONNECTION = 'mysql',
     DB_HOST = '127.0.0.1',
     DB_PORT = "13306",
-    DB_DATABASE = "phpvms_test",
-    DB_USERNAME = "phpvms",
+    DB_DATABASE = "testing",
+    DB_USERNAME = "root",
     DB_PASSWORD = "password"
 }
 run = [
-    "vendor/bin/pest --compact"
+    "vendor/bin/pest --compact --parallel --bail"
 ]
 
 [tasks.'tests:pgsql']
 description = "Run tests against PostgreSQL (port 15432)"
-depends = [{ task = "test-db-up", args = ["mysql"]}]
-depends_post = [{ task = "test-db-down", args = ["mysql"]}]
+depends = [{ task = "test-db-up", args = ["pgsql"]}]
+depends_post = [{ task = "test-db-down", args = ["pgsql"]}]
 env = {
     DB_CONNECTION = 'pgsql',
     DB_HOST = '127.0.0.1',
     DB_PORT = "15432",
-    DB_DATABASE = "phpvms_test",
+    DB_DATABASE = "testing",
     DB_USERNAME = "phpvms",
     DB_PASSWORD = "password"
 }
 run = [
-    "vendor/bin/pest --compact"
+    "vendor/bin/pest --compact --parallel --bail"
 ]
+
+# Run the github workflows locally using act
+[tasks.'tests:actions']
+run = '''
+act \
+--rm \
+--container-architecture linux/amd64 pull_request
+'''

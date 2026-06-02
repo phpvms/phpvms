@@ -4,9 +4,9 @@ use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Models\User;
-use App\Services\DatabaseService;
 use App\Services\SettingService;
 use App\Services\UserService;
+use App\Services\YamlDatabaseService;
 
 /**
  * Load the given yaml file into the database
@@ -14,7 +14,7 @@ use App\Services\UserService;
 function loadYamlIntoDb(string $file): void
 {
     $file_path = base_path('tests/data/'.$file.'.yml');
-    app(DatabaseService::class)->seedFromYamlFile($file_path);
+    app(YamlDatabaseService::class)->seedFromYamlFile($file_path);
 }
 
 /**

@@ -28,7 +28,6 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "fisharebest/ext-calendar": "^2.5",
-    "symfony/flex": "^2.4.1",
     "symfony/polyfill-iconv": "*",
     "symfony/polyfill-intl-icu": "*",
     "symfony/polyfill-intl-idn": "*",
