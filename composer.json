@@ -199,7 +199,8 @@
       "@php artisan key:generate",
       "@php artisan migrate --force",
       "npm install --ignore-scripts",
-      "npm run build"
+      "npm run build",
+      "@php artisan filament:assets"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
