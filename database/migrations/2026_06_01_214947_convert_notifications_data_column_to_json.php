@@ -9,6 +9,21 @@ return new class() extends Migration
     {
         $driver = DB::getDriverName();
 
+        // 1. Normalize existing values so the cast to JSON can't fail.
+        // Null/blank or non-decodable payloads become an empty JSON object.
+        DB::table('notifications')->orderBy('id')->chunk(100, function ($notifications): void {
+            foreach ($notifications as $notification) {
+                $value = $notification->data;
+
+                if (blank($value) || json_decode((string) $value) === null) {
+                    DB::table('notifications')
+                        ->where('id', $notification->id)
+                        ->update(['data' => '{}']);
+                }
+            }
+        });
+
+        // 2. Officially change the column type to JSON.
         if ($driver === 'pgsql') {
             DB::statement('ALTER TABLE notifications ALTER COLUMN data TYPE json USING data::json');
         } elseif ($driver === 'mysql') {

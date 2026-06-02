@@ -285,6 +285,17 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
+     * Normalize email to lowercase so lookups and the unique constraint behave
+     * consistently across case-sensitive (PostgreSQL) and case-insensitive (MySQL) drivers.
+     */
+    public function email(): Attribute
+    {
+        return Attribute::make(
+            set: static fn (?string $value): ?string => $value === null ? null : mb_strtolower(trim($value)),
+        );
+    }
+
+    /**
      * Return a "privatized" version of someones name - First and middle names full, last name initials
      */
     public function namePrivate(): Attribute

@@ -17,6 +17,13 @@ return new class() extends Migration
             DB::statement('ALTER TABLE flights ALTER COLUMN flight_type TYPE varchar(1) USING flight_type::varchar(1)');
             DB::statement('ALTER TABLE pireps ALTER COLUMN flight_type TYPE varchar(1) USING flight_type::varchar(1)');
             DB::statement('ALTER TABLE pireps ALTER COLUMN status TYPE varchar(3) USING status::varchar(3)');
+
+            // Re-assert column defaults explicitly so they survive the type change
+            // regardless of PostgreSQL version behavior.
+            DB::statement("ALTER TABLE aircraft ALTER COLUMN status SET DEFAULT 'A'");
+            DB::statement("ALTER TABLE flights ALTER COLUMN flight_type SET DEFAULT 'J'");
+            DB::statement("ALTER TABLE pireps ALTER COLUMN flight_type SET DEFAULT 'J'");
+            DB::statement("ALTER TABLE pireps ALTER COLUMN status SET DEFAULT 'SCH'");
         } else {
             Schema::table('expenses', function (Blueprint $table): void {
                 $table->string('type', 1)->change();
@@ -47,6 +54,11 @@ return new class() extends Migration
             DB::statement('ALTER TABLE flights ALTER COLUMN flight_type TYPE character(1) USING flight_type::character(1)');
             DB::statement('ALTER TABLE aircraft ALTER COLUMN status TYPE character(1) USING status::character(1)');
             DB::statement('ALTER TABLE expenses ALTER COLUMN type TYPE character(1) USING type::character(1)');
+
+            DB::statement("ALTER TABLE aircraft ALTER COLUMN status SET DEFAULT 'A'");
+            DB::statement("ALTER TABLE flights ALTER COLUMN flight_type SET DEFAULT 'J'");
+            DB::statement("ALTER TABLE pireps ALTER COLUMN flight_type SET DEFAULT 'J'");
+            DB::statement("ALTER TABLE pireps ALTER COLUMN status SET DEFAULT 'SCH'");
         } else {
             Schema::table('pireps', function (Blueprint $table): void {
                 $table->char('status', 3)->default('SCH')->change();

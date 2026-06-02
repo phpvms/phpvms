@@ -68,7 +68,7 @@ class LoginController extends Controller
          */
         if (str_contains((string) $id_field, '@')) {
             $validations[] = 'email';
-            $this->loginFieldValue = $request->input('email');
+            $this->loginFieldValue = mb_strtolower(trim((string) $request->input('email')));
         } else {
             $validations[] = function ($attr, string $value, $fail) use ($request): void {
                 try {

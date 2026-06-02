@@ -96,6 +96,10 @@ class RegisterController extends Controller
      */
     protected function validator(array $data): Validator
     {
+        if (isset($data['email'])) {
+            $data['email'] = mb_strtolower(trim((string) $data['email']));
+        }
+
         $rules = [
             'name'            => 'required|max:255',
             'email'           => 'required|email|max:255|unique:users,email',
@@ -152,6 +156,10 @@ class RegisterController extends Controller
         if (setting('general.disable_registrations', false)) {
             abort(403, 'Registrations are disabled');
         }
+
+        $request->merge([
+            'email' => mb_strtolower(trim((string) $request->input('email'))),
+        ]);
 
         if (setting('general.invite_only_registrations', false)) {
             if (!$request->has('invite') && !$request->has('invite_token')) {

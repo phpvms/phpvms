@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
-use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 
@@ -36,7 +35,6 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-#[WithoutIncrementing]
 class Event extends Model
 {
     use HasFactory;

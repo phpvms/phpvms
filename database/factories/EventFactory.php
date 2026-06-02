@@ -22,7 +22,6 @@ class EventFactory extends Factory
         $startDate = fake()->dateTimeBetween('-1 month', '+1 month');
 
         return [
-            'id'          => fake()->unique()->randomNumber(5),
             'type'        => fake()->numberBetween(),
             'name'        => fake()->text(50),
             'description' => fake()->text(150),

@@ -88,6 +88,8 @@ class DatabaseService extends Service
 
                 $imported[$table]++;
             }
+
+            $this->resetPostgresSequence($table, $id_column);
         }
 
         return $imported;
@@ -160,5 +162,20 @@ class DatabaseService extends Service
         }
 
         return $row;
+    }
+
+    protected function resetPostgresSequence(string $table, string $idColumn = 'id'): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        try {
+            $fullTable = DB::getTablePrefix().$table;
+            $sequence = $fullTable.'_'.$idColumn.'_seq';
+            DB::statement(sprintf("SELECT setval('%s', COALESCE((SELECT MAX(%s) FROM %s), 1))", $sequence, $idColumn, $fullTable));
+        } catch (QueryException) {
+            // Table may not have a serial column; ignore.
+        }
     }
 }

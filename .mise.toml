@@ -35,10 +35,6 @@ run = "railpack build ."
 
 # Run the github workflows locally using act
 [tasks.gh-actions]
-env = {
-    DOCKER_HOST = 'ssh://twilight.zsh.ad'
-}
-
 run = '''
 act \
 --container-architecture linux/amd64 pull_request \
@@ -51,16 +47,26 @@ act \
 
 [tasks.test-db-up]
 description = "Start MySQL and PostgreSQL for testing"
-run = "docker compose -f compose.test.yml up -d --wait"
+usage='''
+arg "[db]" help="Run on mysql or pgsql?" {
+  choices "mysql" "pgsql"
+}
+'''
+run = "docker compose -f compose.test.yml up ${usage_db} -d --wait"
 
 [tasks.test-db-down]
 description = "Stop test databases and remove volumes"
-run = "docker compose -f compose.test.yml down -v"
+usage='''
+arg "[db]" help="Run on mysql or pgsql?" {
+  choices "mysql" "pgsql"
+}
+'''
+run = "docker compose -f compose.test.yml down ${usage_db} -v"
 
 [tasks.'tests:mysql']
 description = "Run tests against MySQL (port 13306)"
-#depends = ["test-db-up"]
-#depends_post = ["test-db-down"]
+depends = [{ task = "test-db-up", args = ["mysql"]}]
+depends_post = [{ task = "test-db-down", args = ["mysql"]}]
 env = {
     DB_CONNECTION = 'mysql',
     DB_HOST = '127.0.0.1',
@@ -70,14 +76,13 @@ env = {
     DB_PASSWORD = "password"
 }
 run = [
-    "docker compose -f compose.test.yml up mysql -d --wait",
     "vendor/bin/pest --compact"
 ]
 
 [tasks.'tests:pgsql']
 description = "Run tests against PostgreSQL (port 15432)"
-#depends = ["test-db-up"]
-#depends_post = ["test-db-down"]
+depends = [{ task = "test-db-up", args = ["mysql"]}]
+depends_post = [{ task = "test-db-down", args = ["mysql"]}]
 env = {
     DB_CONNECTION = 'pgsql',
     DB_HOST = '127.0.0.1',
@@ -87,14 +92,5 @@ env = {
     DB_PASSWORD = "password"
 }
 run = [
-    "docker compose -f compose.test.yml up pgsql -d --wait",
     "vendor/bin/pest --compact"
 ]
-
-[tasks.test-db]
-description = "Run tests against MySQL and PostgreSQL"
-depends = ["test-mysql", "test-pgsql"]
-run = '''
-echo ""
-echo "All database tests passed."
-'''
