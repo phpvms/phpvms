@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -27,8 +29,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'         => null,
-            'name'       => fake()->name,
+            'name'       => fake()->name(),
             'guard_name' => 'web',
         ];
     }

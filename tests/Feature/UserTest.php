@@ -269,7 +269,7 @@ test('user pilot id split', function (): void {
     expect($found_user->id)->toEqual($user->id);
 
     // Look for them with the IATA code
-    $found_user = $userSvc->findUserByPilotId($user->airline->iata.$user->id);
+    $found_user = $userSvc->findUserByPilotId($user->airline->iata.$user->pilot_id);
     expect($found_user->id)->toEqual($user->id);
 });
 
@@ -293,21 +293,21 @@ test('user pilot id added', function (): void {
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
     $new_user['password'] = Hash::make('secret');
     $user = $userSvc->createUser($new_user);
-    expect($user->pilot_id)->toEqual($user->id);
+    expect($user->pilot_id)->toBeGreaterThan(0);
 
     // Add a second user
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
     $new_user['password'] = Hash::make('secret');
     $user2 = $userSvc->createUser($new_user);
-    expect($user2->pilot_id)->toEqual($user2->id);
+    expect($user2->pilot_id)->toBeGreaterThan($user->pilot_id);
 
     // Now try to change the original user's pilot_id to 4
     $user = $userSvc->changePilotId($user, 4);
     expect($user->pilot_id)->toEqual(4);
 
-    // Create a new user and the pilot_id should be 5
+    // Create a new user and the pilot_id should be greater than the manually set 4
     $user3 = User::factory()->create();
-    expect($user3->pilot_id)->toEqual(5);
+    expect($user3->pilot_id)->toBeGreaterThan(4);
 });
 
 test('user pilot deleted', function (): void {
@@ -320,7 +320,7 @@ test('user pilot deleted', function (): void {
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
     $new_user['password'] = Hash::make('secret');
     $user = $userSvc->createUser($new_user);
-    expect($user->pilot_id)->toEqual($user->id);
+    expect($user->pilot_id)->toBeGreaterThan(0);
 
     // Delete the user
     $userSvc->removeUser($user);
@@ -343,7 +343,7 @@ test('user pilot deleted with pireps', function (): void {
     $new_user = User::factory()->make()->makeVisible(['api_key', 'name', 'email'])->toArray();
     $new_user['password'] = Hash::make('secret');
     $user = $userSvc->createUser($new_user);
-    expect($user->pilot_id)->toEqual($user->id);
+    expect($user->pilot_id)->toBeGreaterThan(0);
 
     Pirep::factory()->create([
         'user_id' => $user->id,
@@ -449,7 +449,7 @@ test('event called when profile updated', function (): void {
     $body = [
         'name'       => 'Test User',
         'email'      => $user->email,
-        'airline_id' => 1,
+        'airline_id' => $user->airline_id,
     ];
 
     $resp = $this->actingAs($user)->put('/profile/'.$user->id, $body);

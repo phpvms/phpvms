@@ -234,11 +234,11 @@ test('plain search matches free text columns', function (): void {
     /** @var Flight $target */
     $target = Flight::factory()->create([
         'dpt_airport_id' => 'KLAX',
-        'callsign'       => 'SEARCHME',
+        'callsign'       => 'SCH',
     ]);
     Flight::factory()->create([
         'dpt_airport_id' => 'KJFK',
-        'callsign'       => 'IGNOREME',
+        'callsign'       => 'IGN',
     ]);
 
     $results = flightSearchRun(['search' => 'LAX']);

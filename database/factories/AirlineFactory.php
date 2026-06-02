@@ -13,22 +13,11 @@ use Hashids\Hashids;
  */
 class AirlineFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = Airline::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'id'   => null,
             'icao' => function (array $apt): string {
                 $hashids = new Hashids(microtime(), 5);
                 $mt = str_replace('.', '', microtime(true));
@@ -36,8 +25,8 @@ class AirlineFactory extends Factory
                 return $hashids->encode($mt);
             },
             'iata'    => fn (array $apt) => $apt['icao'],
-            'name'    => fake()->sentence(3),
-            'country' => fake()->country,
+            'name'    => fake()->company(),
+            'country' => fake()->countryCode(),
             'active'  => 1,
         ];
     }

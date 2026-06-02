@@ -38,11 +38,10 @@ class AircraftFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'           => null,
             'subfleet_id'  => fn () => Subfleet::factory()->create()->id,
             'airport_id'   => fn () => Airport::factory()->create()->id,
-            'iata'         => fake()->unique()->text(5),
-            'icao'         => fake()->unique()->text(5),
+            'iata'         => fake()->unique()->lexify('???'),
+            'icao'         => fake()->unique()->lexify('????'),
             'name'         => fake()->text(50),
             'registration' => fake()->unique()->text(10),
             'hex_code'     => ICAO::createHexCode(),

@@ -34,6 +34,7 @@ use App\Services\RouteForge\RouteForgeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Backend HTTP entry points for the RouteForge admin tool.
@@ -125,10 +126,8 @@ final class RouteForgeController extends Controller
         $query = FlightBundle::query()->orderBy('name');
 
         if (is_string($search) && $search !== '') {
-            // SQLite + MySQL both fold LIKE case-insensitively for ASCII; the
-            // picker payload is name-keyed so non-ASCII picker UX is a non-issue
-            // at the VA scale this is sized for.
-            $query->where('name', 'like', '%'.$search.'%');
+            $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where('name', $like, '%'.$search.'%');
         }
 
         $paginated = $query->paginate($perPage);

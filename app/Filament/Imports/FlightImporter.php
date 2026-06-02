@@ -42,7 +42,7 @@ class FlightImporter extends Importer
                 ->rules(['required', 'integer']),
 
             ImportColumn::make('callsign')
-                ->rules(['max:4']),
+                ->rules(['max:10']),
 
             ImportColumn::make('route_code')
                 ->rules(['max:5']),
@@ -125,11 +125,11 @@ class FlightImporter extends Importer
 
             ImportColumn::make('load_factor')
                 ->numeric()
-                ->rules(['nullable', 'integer']),
+                ->rules(['nullable', 'numeric', 'min:0', 'max:100']),
 
             ImportColumn::make('load_factor_variance')
                 ->numeric()
-                ->rules(['nullable', 'integer']),
+                ->rules(['nullable', 'numeric', 'min:0', 'max:100']),
 
             ImportColumn::make('route')
                 ->fillRecordUsing(function (Flight $record, ?string $state): void {

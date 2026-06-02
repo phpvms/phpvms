@@ -86,7 +86,17 @@ it('canonicalizes route_code = "" to NULL during the cleanup pass', function ():
 });
 
 it('canonicalizes route_leg = "" / "0" to NULL during the cleanup pass', function (): void {
-    DB::table('flights')->insert(($this->flightTuple)(['flight_number' => 300, 'route_leg' => '']));
+    // SQLite's loose typing allows '' in integer columns; PostgreSQL rejects it outright.
+    // On strict-typed drivers, '' can never exist in route_leg so the canonicalization
+    // path for '' is only testable on SQLite.
+    $canInsertEmptyString = DB::connection()->getDriverName() === 'sqlite';
+
+    if ($canInsertEmptyString) {
+        DB::table('flights')->insert(($this->flightTuple)(['flight_number' => 300, 'route_leg' => '']));
+    } else {
+        DB::table('flights')->insert(($this->flightTuple)(['flight_number' => 300, 'route_leg' => 0]));
+    }
+
     DB::table('flights')->insert(($this->flightTuple)(['flight_number' => 301, 'route_leg' => '0']));
     DB::table('flights')->insert(($this->flightTuple)(['flight_number' => 302, 'route_leg' => 5]));
 

@@ -241,11 +241,13 @@ test('pirep notifications', function (): void {
 
     Notification::fake();
 
+    $rank = Rank::factory()->create();
+
     $user = User::factory()->create([
         'name'        => 'testPirepNotifications user',
         'flights'     => 0,
         'flight_time' => 0,
-        'rank_id'     => 1,
+        'rank_id'     => $rank->id,
     ]);
 
     $admin = createAdminUser(['name' => 'testPirepNotifications Admin']);
@@ -709,7 +711,7 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
         'airline_id'     => $airline->id,
         'dpt_airport_id' => $departureAirport->id,
         'arr_airport_id' => $originalArrivalAirport->id,
-        'callsign'       => 'TEST6000',
+        'callsign'       => 'TST6',
         'flight_number'  => 6000,
     ]);
     $flight->subfleets()->syncWithoutDetaching([$subfleet->id]);

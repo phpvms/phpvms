@@ -70,8 +70,8 @@ class SubfleetImporter extends ImportExport
             return false;
         }
 
-        $this->processFares($subfleet, $row['fares']);
-        $this->processRanks($subfleet, $row['ranks']);
+        $this->processFares($subfleet, $row['fares'] ?? '');
+        $this->processRanks($subfleet, $row['ranks'] ?? '');
 
         $this->log('Imported '.$row['type']);
 

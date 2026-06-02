@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -29,9 +31,9 @@ class AcarsFactory extends Factory
             'id'           => null,
             'pirep_id'     => null,
             'log'          => fake()->text(100),
-            'lat'          => fake()->latitude,
-            'lon'          => fake()->longitude,
-            'distance'     => fake()->randomFloat(2, 0, 6000),
+            'lat'          => fake()->latitude(),
+            'lon'          => fake()->longitude(),
+            'distance'     => fake()->numberBetween(0, 6000),
             'heading'      => fake()->numberBetween(0, 359),
             'altitude_agl' => fake()->numberBetween(20, 400),
             'altitude_msl' => fake()->numberBetween(20, 400),
