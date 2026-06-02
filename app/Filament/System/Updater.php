@@ -7,7 +7,6 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use App\Services\Installer\StreamedCommandsService;
-use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -26,14 +25,18 @@ class Updater extends Page
 
     private string $stream = 'console_output';
 
+    public bool $updateStarted = false;
+
+    public string $updateOutput = '';
+
     #[\Override]
     public function content(FilamentSchema $schema): FilamentSchema
     {
         return $schema->components([
             StreamEntry::make('output')
-                ->state(fn (): string => __('installer.click_update_to_run'))
-                ->afterLabel($this->update())
+                ->state(fn (): string => $this->updateOutput)
                 ->label(__('installer.output'))
+                ->extraAttributes($this->updateStarted ? [] : ['wire:init' => 'runUpdate'])
                 ->viewData([
                     'stream' => $this->stream,
                 ]),
@@ -73,71 +76,77 @@ class Updater extends Page
         }
     }
 
-    public function update(): Action
+    /**
+     * Runs migrations, seeds, data migrations, and cache rebuild — streaming output.
+     * Idempotent within a single Livewire lifecycle via $updateStarted.
+     */
+    public function runUpdate(): void
     {
-        return Action::make('update')
-            ->label(__('installer.update'))
-            ->action(function (): void {
-                $this->stream(content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL, to: $this->stream);
+        if ($this->updateStarted) {
+            return;
+        }
 
-                $migrationSvc = app(MigrationService::class);
-                $seederSvc = app(SeederService::class);
+        $this->updateStarted = true;
 
-                $migrationsPending = $migrationSvc->migrationsAvailable();
-                $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
+        $this->stream(content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL, to: $this->stream);
 
-                $streamCallback = function (string $buffer): void {
-                    $this->stream(content: $buffer.PHP_EOL, to: $this->stream);
-                };
+        $migrationSvc = app(MigrationService::class);
+        $seederSvc = app(SeederService::class);
 
-                if (count($migrationsPending) !== 0) {
-                    if (function_exists('proc_open')) {
-                        // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
-                        $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
-                    } else {
-                        $migrationSvc->runAllMigrations();
-                    }
-                }
+        $migrationsPending = $migrationSvc->migrationsAvailable();
+        $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
 
-                $seederSvc->syncAllSeeds();
+        $streamCallback = function (string $buffer): void {
+            $this->stream(content: $buffer.PHP_EOL, to: $this->stream);
+        };
 
-                if (count($dataMigrationsPending) !== 0) {
-                    if (function_exists('proc_open')) {
-                        // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
-                        $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
-                    } else {
-                        $migrationSvc->runAllDataMigrations();
-                    }
-                }
+        if (count($migrationsPending) !== 0) {
+            if (function_exists('proc_open')) {
+                // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+                $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
+            } else {
+                $migrationSvc->runAllMigrations();
+            }
+        }
 
-                $this->stream(content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL, to: $this->stream);
+        $seederSvc->syncAllSeeds();
 
-                if (function_exists('proc_open')) {
-                    // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
-                    app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
-                    app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
-                } else {
-                    $this->stream(content: PHP_EOL.__('installer.cache_build_background').PHP_EOL, to: $this->stream);
+        if (count($dataMigrationsPending) !== 0) {
+            if (function_exists('proc_open')) {
+                // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+                $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
+            } else {
+                $migrationSvc->runAllDataMigrations();
+            }
+        }
 
-                    // Clearing the cache immediately sends the response, thus killing the request. So we defer it, it's executed at the end of the request in the background.
-                    defer(function (): void {
-                        Artisan::call('optimize:clear');
-                        $clearOutput = Artisan::output();
+        $this->stream(content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL, to: $this->stream);
 
-                        Artisan::call('optimize');
-                        $optimizeOutput = Artisan::output();
+        if (function_exists('proc_open')) {
+            // Streaming the output of the command is only available with proc_open (relies on Symfony Process)
+            app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
+            app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
+        } else {
+            $this->stream(content: PHP_EOL.__('installer.cache_build_background').PHP_EOL, to: $this->stream);
 
-                        // Combine both outputs for better logging
-                        $output = "Optimize:clear Output:\n".$clearOutput."\nOptimize Output:\n".$optimizeOutput;
+            // Clearing the cache immediately sends the response, thus killing the request. So we defer it, it's executed at the end of the request in the background.
+            defer(function (): void {
+                Artisan::call('optimize:clear');
+                $clearOutput = Artisan::output();
 
-                        Log::info('Optimized cache successfully', ['output' => $output]);
-                    });
-                }
+                Artisan::call('optimize');
+                $optimizeOutput = Artisan::output();
 
-                $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
-                sleep(10);
-                $this->redirect(Filament::getDefaultPanel()->getUrl());
+                // Combine both outputs for better logging
+                $output = "Optimize:clear Output:\n".$clearOutput."\nOptimize Output:\n".$optimizeOutput;
+
+                Log::info('Optimized cache successfully', ['output' => $output]);
             });
+        }
+
+        $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
+        sleep(10);
+        $this->redirect(Filament::getDefaultPanel()->getUrl());
     }
 
     #[\Override]
