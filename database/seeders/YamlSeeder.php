@@ -14,21 +14,6 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class YamlSeeder extends Seeder
 {
-    protected array $uuidTables = [
-        'acars',
-        'flights',
-        'pireps',
-    ];
-
-    protected array $datetimeTimeColumns = [
-        'arrival_time',
-        'block_off_time',
-        'block_on_time',
-        'departure_time',
-        'landing_time',
-        'post_date',
-    ];
-
     public function __construct(
         private readonly YamlDatabaseService $databaseSvc
     ) {}

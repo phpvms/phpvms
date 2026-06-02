@@ -80,6 +80,9 @@ jobs:
       - name: Compile assets
         run: npm run build
 
+      - name: Publish Filament assets
+        run: php artisan filament:assets
+
       - name: Get version
         run: .github/scripts/version.sh
 

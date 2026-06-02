@@ -147,7 +147,7 @@ return [
     /*
      * Whether to use prefetching in the admin panel (can use a lot of bandwidth)
      */
-    'use_prefetching_in_admin' => env('USE_PREFETCHING_IN_ADMIN', false),
+    'use_prefetching_in_admin' => env('USE_PREFETCHING_IN_ADMIN', true),
 
     /**
      * Whether to use the built-in filament import system (relies on laravel queue worker)
