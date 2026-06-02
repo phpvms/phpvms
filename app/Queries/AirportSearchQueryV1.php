@@ -37,6 +37,17 @@ class AirportSearchQueryV1
         return DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
     }
 
+    /**
+     * Normalize a client-supplied search operator to one the active driver
+     * understands. Any `like`/`ilike` request collapses to the driver-correct
+     * pattern operator so a client cannot force a raw `ilike` onto MySQL/SQLite
+     * (syntax error) or a case-sensitive `like` onto PostgreSQL.
+     */
+    private function normalizeOperator(string $operator): string
+    {
+        return strtolower($operator) === '=' ? '=' : $this->likeOperator();
+    }
+
     public function build(): Builder
     {
         $data = $this->request->validated();
@@ -130,7 +141,7 @@ class AirportSearchQueryV1
         foreach ($this->splitDelimitedValues($searchFields) as $part) {
             [$field, $operator] = array_pad(explode(':', $part, 2), 2, null);
             $resolvedFields[$field] = $operator !== null && $operator !== ''
-                ? strtolower($operator)
+                ? $this->normalizeOperator($operator)
                 : $defaultFields[$field];
         }
 

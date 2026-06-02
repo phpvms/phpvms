@@ -108,7 +108,7 @@ jobs:
           --health-retries=5
 
       postgres:
-        image: postgres:17
+        image: postgres:18.0-alpine
         env:
           POSTGRES_DB: phpvms
           POSTGRES_USER: phpvms
@@ -220,6 +220,9 @@ jobs:
       - name: Run Pest
         env:
           PHP_CS_FIXER_IGNORE_ENV: "1"
+          # Source of truth from the matrix, independent of the phpunit.xml
+          # DB wiring above, so a silent sqlite fallback fails the shard.
+          EXPECTED_DB_DRIVER: ${{ matrix.db == 'postgres' && 'pgsql' || matrix.db }}
         run: |
           vendor/bin/pest --ci --parallel --bail
           #vendor/bin/pest --ci --testsuite=Arch
