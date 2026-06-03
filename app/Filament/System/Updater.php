@@ -112,8 +112,9 @@ class Updater extends Page
         app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
 
         $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
-        sleep(10);
-        $this->redirect(Filament::getDefaultPanel()->getUrl());
+
+        $panelUrl = Filament::getDefaultPanel()->getUrl();
+        $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 10000)');
     }
 
     #[\Override]
