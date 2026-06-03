@@ -19,43 +19,50 @@ Schedule::call(static function (): void {
     event(new CronFiveMinute());
 })
     ->name('cron-five-minutes')
-    ->everyFiveMinutes();
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10);
 
 Schedule::call(static function (): void {
     event(new CronFifteenMinute());
 })
     ->name('cron-fifteen-minutes')
-    ->everyFifteenMinutes();
+    ->everyFifteenMinutes()
+    ->withoutOverlapping(15);
 
 Schedule::call(static function (): void {
     event(new CronThirtyMinute());
 })
     ->name('cron-thirty-minutes')
-    ->everyThirtyMinutes();
+    ->everyThirtyMinutes()
+    ->withoutOverlapping(30);
 
 Schedule::call(static function (): void {
     event(new CronHourly());
 })
     ->name('cron-hourly')
-    ->hourly();
+    ->hourly()
+    ->withoutOverlapping(55);
 
 Schedule::call(static function (): void {
     event(new CronNightly());
 })
     ->name('cron-nightly')
-    ->dailyAt('01:00');
+    ->dailyAt('01:00')
+    ->withoutOverlapping(120);
 
 Schedule::call(static function (): void {
     event(new CronWeekly());
 })
     ->name('cron-weekly')
-    ->weekly();
+    ->weekly()
+    ->withoutOverlapping(120);
 
 Schedule::call(static function (): void {
     event(new CronMonthly());
 })
     ->name('cron-monthly')
-    ->monthly();
+    ->monthly()
+    ->withoutOverlapping(120);
 
 if (config('backup.backup.enabled', false)) {
     Schedule::command('backup:run')->dailyAt('01:15');
