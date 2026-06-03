@@ -20,5 +20,5 @@
         data-boot-url="{{ $this->bootUrl }}"
     ></div>
 
-    @vite('public/js/admin/routeforge/main.tsx')
+    @vite('resources/js/admin/routeforge/main.tsx')
 </x-filament-panels::page>
