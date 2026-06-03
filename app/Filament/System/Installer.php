@@ -5,6 +5,7 @@ namespace App\Filament\System;
 use App\Filament\Infolists\Components\StreamEntry;
 use App\Models\User;
 use App\Services\AirlineService;
+use App\Services\Installer\InstallerService;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\RequirementsService;
 use App\Services\Installer\StreamedCommandsService;
@@ -15,7 +16,6 @@ use Database\Seeders\DatabaseSeeder;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\Entry;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -49,6 +49,14 @@ class Installer extends Page
 
     public ?array $user = null;
 
+    public bool $shouldAutoMigrate = false;
+
+    public bool $autoMigrationStarted = false;
+
+    public string $migrationOutput = '';
+
+    private ?array $cachedRequirementsData = null;
+
     /**
      * Called whenever the component is loaded
      */
@@ -68,7 +76,41 @@ class Installer extends Page
         } catch (QueryException) {
         }
 
+        if ($this->requirementsMet()) {
+            try {
+                $this->shouldAutoMigrate = app(InstallerService::class)->isUpgradePending();
+            } catch (\Throwable) {
+                $this->shouldAutoMigrate = true;
+            }
+        }
+
         $this->form->fill();
+    }
+
+    /**
+     * Compute the wizard step the user should land on initially.
+     * Skips requirements when satisfied, and skips migrations when nothing is pending.
+     */
+    private function computeStartStep(): int
+    {
+        if (!$this->requirementsMet()) {
+            return 1;
+        }
+
+        return $this->shouldAutoMigrate ? 2 : 3;
+    }
+
+    /**
+     * True when PHP, extensions, directory perms, and the DB connection all pass.
+     */
+    private function requirementsMet(): bool
+    {
+        $data = $this->getRequirementsData();
+
+        return $data['php']['passed']
+            && $data['extensionsPassed']
+            && $data['directoriesPassed']
+            && $data['db']['passed'];
     }
 
     #[\Override]
@@ -94,6 +136,7 @@ class Installer extends Page
 
                 $this->getUserAndAirlineSetupStep(),
             ])
+                ->startOnStep(fn (): int => $this->computeStartStep())
                 ->persistStepInQueryString()
                 ->submitAction(
                     new HtmlString(
@@ -117,6 +160,10 @@ class Installer extends Page
      */
     private function getRequirementsData(): array
     {
+        if ($this->cachedRequirementsData !== null) {
+            return $this->cachedRequirementsData;
+        }
+
         $reqSvc = app(RequirementsService::class);
 
         $php_version = $reqSvc->checkPHPVersion();
@@ -153,7 +200,7 @@ class Installer extends Page
             ];
         }
 
-        return [
+        return $this->cachedRequirementsData = [
             'php'               => $php_version,
             'extensions'        => $ext,
             'extensionsPassed'  => $extensionsPassed,
@@ -177,41 +224,45 @@ class Installer extends Page
         return true;
     }
 
-    public function migrate(): Action
+    /**
+     * Run migrations + seeds, streaming output. Returns the full collected output.
+     * Idempotent within a single Livewire lifecycle via $autoMigrationStarted.
+     */
+    public function runMigrations(): string
     {
-        return Action::make('migrate')
-            ->label(__('installer.update'))
-            ->action(function (Entry $component): true {
-                $output = __('installer.starting_migration_process').PHP_EOL;
-                $this->stream(
-                    content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL,
-                    to: $this->stream
-                );
+        if ($this->autoMigrationStarted) {
+            return $this->migrationOutput;
+        }
 
-                app(MigrationService::class)
-                    ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
-                        $output .= $buffer;
-                        $this->stream(content: $buffer, to: $this->stream);
-                    });
+        $this->autoMigrationStarted = true;
 
-                app(StreamedCommandsService::class)->streamArtisanCommand(
-                    ['db:seed', '--force', '--class='.DatabaseSeeder::class],
-                    function (string $buffer) use (&$output): void {
-                        $output .= $buffer;
-                        $this->stream(content: $buffer, to: $this->stream);
-                    }
-                );
+        $output = __('installer.starting_migration_process').PHP_EOL;
+        $this->stream(
+            content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL,
+            to: $this->stream
+        );
 
-                $output .= __('installer.migrations_completed').PHP_EOL;
-                $this->stream(
-                    content: __('installer.migrations_completed').PHP_EOL,
-                    to: $this->stream
-                );
-
-                $component->state(fn (): string => $output);
-
-                return true;
+        app(MigrationService::class)
+            ->runAllMigrationsWithStreaming(function (string $buffer) use (&$output): void {
+                $output .= $buffer;
+                $this->stream(content: $buffer, to: $this->stream);
             });
+
+        app(StreamedCommandsService::class)->streamArtisanCommand(
+            ['db:seed', '--force', '--class='.DatabaseSeeder::class],
+            function (string $buffer) use (&$output): void {
+                $output .= $buffer;
+                $this->stream(content: $buffer, to: $this->stream);
+            }
+        );
+
+        $output .= __('installer.migrations_completed').PHP_EOL;
+        $this->stream(
+            content: __('installer.migrations_completed').PHP_EOL,
+            to: $this->stream
+        );
+
+        return $this->migrationOutput = $output;
     }
 
     /**
@@ -391,16 +442,24 @@ class Installer extends Page
 
                         throw new Halt();
                     }
+                })
+                ->afterValidation(function (): void {
+                    try {
+                        if (app(InstallerService::class)->isUpgradePending()) {
+                            $this->runMigrations();
+                        }
+                    } catch (\Throwable $throwable) {
+                        Log::error('Auto-migration trigger from requirements step failed', [$throwable]);
+                    }
                 });
     }
 
     private function getMigrationStep(): Step
     {
-        return Step::make(__('installer.migrations'))
+        $step = Step::make(__('installer.migrations'))
             ->schema([
                 StreamEntry::make('output')
-                    ->state(fn (): string => __('installer.click_update_to_run'))
-                    ->afterLabel($this->migrate())
+                    ->state(fn (): string => $this->migrationOutput)
                     ->label(__('installer.output'))
                     ->viewData([
                         'stream' => $this->stream,
@@ -425,6 +484,12 @@ class Installer extends Page
                     throw new Halt();
                 }
             });
+
+        if ($this->shouldAutoMigrate && !$this->autoMigrationStarted) {
+            $step->extraAttributes(['wire:init' => 'runMigrations']);
+        }
+
+        return $step;
     }
 
     private function getUserAndAirlineSetupStep(): Step
