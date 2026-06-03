@@ -169,3 +169,35 @@ test('AirportSearchQueryV1 does not add empty-value LIKE clauses', function (): 
     // The fix: SQL contains no LIKE clause at all
     expect($sql)->not->toContain("like '%%'");
 });
+
+test('AirportSearchQueryV1 normalizes a client-supplied ilike operator to the driver operator', function (): void {
+    foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
+        Airport::factory()->create(['id' => $a, 'icao' => $a]);
+    }
+
+    // A client may request `ilike` (valid on PostgreSQL only). It must be
+    // normalized to the driver's operator so the query never emits raw ILIKE
+    // on MySQL, which has no such operator and would throw a syntax error.
+    $results = airportSearchQueryV1For([
+        'search'       => 'kj',
+        'searchFields' => 'icao:ilike',
+    ])->build()->get();
+
+    expect($results->pluck('icao')->all())->toBe(['KJFK']);
+});
+
+test('AirportSearchQueryV1 keeps a client-supplied like operator case-insensitive on every driver', function (): void {
+    foreach (['EGLL', 'KAUS', 'KJFK', 'KSFO'] as $a) {
+        Airport::factory()->create(['id' => $a, 'icao' => $a]);
+    }
+
+    // A client `like` must resolve to the driver-correct operator too, so
+    // PostgreSQL stays case-insensitive (ILIKE) instead of a case-sensitive
+    // LIKE that would miss the upper-cased data.
+    $results = airportSearchQueryV1For([
+        'search'       => 'kj',
+        'searchFields' => 'icao:like',
+    ])->build()->get();
+
+    expect($results->pluck('icao')->all())->toBe(['KJFK']);
+});

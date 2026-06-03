@@ -436,7 +436,7 @@ class PirepController extends Controller
     public function edit(string $id): RedirectResponse|View
     {
         /** @var ?Pirep $pirep */
-        $pirep = Pirep::with(['dpt_airport', 'arr_airport', 'alt_airport', 'fares', 'fields'])->find($id);
+        $pirep = Pirep::with(['dpt_airport', 'arr_airport', 'alt_airport', 'fares'])->find($id);
 
         if (!$pirep) {
             Flash::error('Pirep not found');

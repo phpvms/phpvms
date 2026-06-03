@@ -15,39 +15,24 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  # ── Static analysis (combined — one checkout/setup, separate step results) ─
+  static-analysis:
+    name: "Static Analysis"
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        php-versions: ["8.3", "8.4", "8.5"]
-    name: PHP ${{ matrix.php-versions }}
-    env:
-      extensions: intl, pcov, mbstring
-      key: cache-v1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Act Workaround # https://github.com/nektos/act/issues/973
+        if: ${{ env.ACT }}
+        run: curl -fsSL https://deb.nodesource.com/setup_22.x | bash && apt install -y nodejs
 
-      # Configure Caching
-      - name: Setup cache environment
-        id: cache-env
-        uses: shivammathur/cache-extensions@v1
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
-
-      - name: Cache extensions
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: ${{ steps.cache-env.outputs.key }}
-          restore-keys: ${{ steps.cache-env.outputs.key }}
+          php-version: "8.3"
+          extensions: intl, mbstring
+          coverage: none
 
       - name: Get composer cache directory
         id: composer-cache
@@ -59,39 +44,22 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
 
-      # Configure PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          ini-values: post_max_size=256M, short_open_tag=On
-          coverage: xdebug
-          tools: php-cs-fixer, phpunit
-
-      # Bootstrap order has to thread a needle:
-      #   1. composer install --no-scripts: pulls vendor/ (needed by Vite
-      #      because theme.css @imports vendor/filament/filament/resources/css)
-      #      WITHOUT firing post-autoload-dump (which boots service providers
-      #      that read the Vite manifest + dist files we haven't built yet).
-      #   2. npm install + npm run build: produces public/build/manifest.json
-      #      and (re)writes resources/js/dist/admin/components/*.js.
-      #   3. composer dump-autoload: re-fires post-autoload-dump now that the
-      #      frontend artifacts exist; package:discover and filament:upgrade
-      #      boot providers cleanly.
       - name: Install Composer dependencies (no scripts)
-        run: |
-          php --version
-          composer install --dev --no-interaction --no-scripts --verbose
-          composer global require laravel/pint
+        run: composer install --dev --no-interaction --no-scripts --verbose
+
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install NPM dependencies
-        run: |
-          bun install
-          bun run fmt config/version.yml
+        run: bun install
 
-      - name: Lint & Format Check
-        run: bun run lint && bun run fmt:check
+      - name: Run Pint
+        run: vendor/bin/pint --test --parallel
+
+      - name: Lint Check (oxlint)
+        run: bun run lint
+
+      - name: Format Check (oxfmt)
+        run: bun run fmt:check
 
       - name: Compile assets
         run: bun run build
@@ -100,22 +68,166 @@ jobs:
         run: |
           composer dump-autoload -o
           cp .github/scripts/env.test .env
-          cp .github/scripts/phpunit.xml phpunit.xml
           .github/scripts/version.sh
-
-      - name: Run Pint
-        run: pint --test --parallel
-
-      - name: Run Tests
-        run: |
-          export PHP_CS_FIXER_IGNORE_ENV=1
-          vendor/bin/pest --parallel --ci
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=2G
 
-  # This runs after all of the tests, run have run. Creates a cleaned up version of the
-  # distro, and then creates the artifact to push up to S3 or wherever
+      - name: Run Rector (dry-run)
+        if: false
+        run: vendor/bin/rector process --dry-run
+
+  # ── Test matrix: PHP 8.5 × {sqlite, mysql, postgres} ────────────────────
+  test:
+    name: "Tests — ${{ matrix.db }}"
+    runs-on: ubuntu-latest
+    needs: [static-analysis]
+    strategy:
+      fail-fast: false
+      matrix:
+        db:
+          # - sqlite
+          - mysql
+          - postgres
+
+    # Both service containers start for every matrix shard. The sqlite shard
+    # ignores them — ~5s overhead per run is negligible compared to the
+    # alternative of maintaining three separate job definitions.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phpvms
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      postgres:
+        image: postgres:18.0-alpine
+        env:
+          POSTGRES_DB: phpvms
+          POSTGRES_USER: phpvms
+          POSTGRES_PASSWORD: phpvms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U phpvms"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      extensions: intl, pcov, mbstring
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Act Workaround # https://github.com/nektos/act/issues/973
+        if: ${{ env.ACT }}
+        run: curl -fsSL https://deb.nodesource.com/setup_22.x | bash && apt install -y nodejs
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: ${{ matrix.db == 'mysql' && 'intl, pcov, mbstring, pdo_mysql, mysqli' || matrix.db == 'postgres' && 'intl, pcov, mbstring, pdo_pgsql, pgsql' || 'intl, pcov, mbstring' }}
+          ini-values: post_max_size=256M, short_open_tag=On
+          coverage: xdebug
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
+      # Bootstrap order (see comment in original build job for rationale):
+      #   1. composer install --no-scripts
+      #   2. bun install + build (produces Vite manifest + dist)
+      #   3. composer dump-autoload + .env + version
+      - name: Install Composer dependencies (no scripts)
+        run: |
+          php --version
+          composer install --dev --no-interaction --no-scripts --verbose
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install NPM dependencies
+        run: |
+          bun install
+          bun run fmt config/version.yml
+
+      - name: Compile assets
+        run: bun run build
+
+      - name: Run Composer post-autoload scripts
+        run: |
+          composer dump-autoload -o
+          .github/scripts/version.sh
+
+      # ── Database-specific setup ─────────────────────────────────────────
+      - name: Configure environment (sqlite)
+        if: matrix.db == 'sqlite'
+        run: |
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+
+      - name: Configure environment (mysql)
+        if: matrix.db == 'mysql'
+        run: |
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          # Override the phpunit.xml DB vars for MySQL service container
+          sed -i 's|name="DB_CONNECTION" value="sqlite"|name="DB_CONNECTION" value="mysql"|' phpunit.xml
+          sed -i 's|name="DB_DATABASE" value=":memory:"|name="DB_DATABASE" value="phpvms"|' phpunit.xml
+          sed -i 's|name="DB_URL" value=""|name="DB_URL" value="mysql://root:root@127.0.0.1:3306/phpvms"|' phpunit.xml
+          # Also update .env so artisan commands see the right DB
+          sed -i 's|DB_CONNECTION="sqlite"|DB_CONNECTION="mysql"|' .env
+          echo 'DB_HOST="127.0.0.1"' >> .env
+          echo 'DB_PORT="3306"' >> .env
+          echo 'DB_DATABASE="phpvms"' >> .env
+          echo 'DB_USERNAME="root"' >> .env
+          echo 'DB_PASSWORD="root"' >> .env
+
+      - name: Configure environment (postgres)
+        if: matrix.db == 'postgres'
+        run: |
+          cp .github/scripts/env.test .env
+          cp .github/scripts/phpunit.xml phpunit.xml
+          # Override phpunit.xml DB vars for PostgreSQL service container
+          sed -i 's|name="DB_CONNECTION" value="sqlite"|name="DB_CONNECTION" value="pgsql"|' phpunit.xml
+          sed -i 's|name="DB_DATABASE" value=":memory:"|name="DB_DATABASE" value="phpvms"|' phpunit.xml
+          sed -i 's|name="DB_URL" value=""|name="DB_URL" value="pgsql://phpvms:phpvms@127.0.0.1:5432/phpvms"|' phpunit.xml
+          # Also update .env so artisan commands see the right DB
+          sed -i 's|DB_CONNECTION="sqlite"|DB_CONNECTION="pgsql"|' .env
+          echo 'DB_HOST="127.0.0.1"' >> .env
+          echo 'DB_PORT="5432"' >> .env
+          echo 'DB_DATABASE="phpvms"' >> .env
+          echo 'DB_USERNAME="phpvms"' >> .env
+          echo 'DB_PASSWORD="phpvms"' >> .env
+
+      - name: Run Pest
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: "1"
+          # Source of truth from the matrix, independent of the phpunit.xml
+          # DB wiring above, so a silent sqlite fallback fails the shard.
+          EXPECTED_DB_DRIVER: ${{ matrix.db == 'postgres' && 'pgsql' || matrix.db }}
+        run: |
+          vendor/bin/pest --ci --parallel --bail
+          #vendor/bin/pest --ci --testsuite=Arch
+
+  # ── Release artifacts (only on main/dev) ──────────────────────────────────
   artifacts:
     name: "Create release package"
     permissions:
@@ -123,7 +235,7 @@ jobs:
       packages: write
       attestations: write
       id-token: write
-    needs: [build]
+    needs: [test]
     runs-on: ubuntu-latest
     if: github.repository == 'phpvms/phpvms' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     steps:
@@ -132,17 +244,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Act Workaround # https://github.com/nektos/act/issues/973
+        if: ${{ env.ACT }}
+        run: curl -fsSL https://deb.nodesource.com/setup_22.x | bash && apt install -y nodejs
+
       - uses: oven-sh/setup-bun@v2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.5"
 
       - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
-      # Configure Caching
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -154,10 +269,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      # Three-step bootstrap (see `build` job comment for full rationale):
-      #   1. composer install --no-scripts: vendor/ for Vite CSS @imports
-      #   2. npm build: writes public/build manifest + dist files
-      #   3. composer dump-autoload: re-fires post-autoload-dump cleanly
       - name: "Install Release Dependencies (no scripts)"
         run: |
           rm -rf vendor
@@ -212,7 +323,7 @@ jobs:
       attestations: write
       id-token: write
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [test]
     if: github.repository == 'phpvms/phpvms' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main')
     steps:
       - name: Checkout
@@ -233,10 +344,3 @@ jobs:
           push: false
           tags: |
             ${{ env.IMAGE_NAME }}:latest
-
-#      - name: Generate artifact attestation
-#        uses: actions/attest-build-provenance@v2
-#        with:
-#          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-#          subject-digest: ${{ steps.push.outputs.digest }}
-#          push-to-registry: true

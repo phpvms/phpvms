@@ -40,7 +40,7 @@ async function bootstrap(mount: HTMLElement): Promise<void> {
   // Initial loading state. Plain text instead of a styled spinner — the
   // boot fetch is sub-300ms on a healthy connection and a heavier loader
   // would flash unpleasantly.
-  mount.textContent = "Loading RouteForge…";
+  mount.textContent = "Loading RouteForge...";
 
   try {
     const envelope = await getBoot();

@@ -1,0 +1,1 @@
+ALTER ROLE phpvms SUPERUSER;

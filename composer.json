@@ -1,6 +1,7 @@
 {
   "name": "phpvms/phpvms",
   "description": "phpVMS - Virtual Airline Administration",
+  "version": "8.0",
   "keywords": [
     "phpvms",
     "virtual",
@@ -27,7 +28,6 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "fisharebest/ext-calendar": "^2.5",
-    "symfony/flex": "^2.4.1",
     "symfony/polyfill-iconv": "*",
     "symfony/polyfill-intl-icu": "*",
     "symfony/polyfill-intl-idn": "*",
@@ -117,7 +117,8 @@
     "larastan/larastan": "^3.9.6",
     "fruitcake/laravel-debugbar": "^4.2.8",
     "laravel/boost": "^2.0",
-    "laravel/tinker": "^3.0"
+    "laravel/tinker": "^3.0",
+    "carthage-software/mago": "^1.29.0"
   },
   "autoload": {
     "files": [
@@ -198,7 +199,8 @@
       "@php artisan key:generate",
       "@php artisan migrate --force",
       "npm install --ignore-scripts",
-      "npm run build"
+      "npm run build",
+      "@php artisan filament:assets"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",

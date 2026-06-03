@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int         $id
  * @property int         $user_field_id
- * @property string      $user_id
+ * @property int         $user_id
  * @property string|null $value
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -41,6 +41,14 @@ class UserFieldValue extends Model
     ];
 
     public static array $rules = [];
+
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+        ];
+    }
 
     /**
      * Return related field's name along with field values

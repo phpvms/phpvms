@@ -85,10 +85,11 @@ class ImportService extends Service
         $records = $reader->getRecords($header_rows);
         foreach ($records as $offset => $row) {
             // turn it into a collection and run some filtering
-            $row = collect($row)->map(function ($val, $index): string {
+            $row = collect($row)->map(function ($val, $index): ?string {
                 $val = trim($val);
+                $val = str_ireplace(['\\n', '\\r'], '', $val);
 
-                return str_ireplace(['\\n', '\\r'], '', $val);
+                return $val === '' ? null : $val;
             })->toArray();
 
             // Try to validate

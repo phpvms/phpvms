@@ -261,6 +261,7 @@ it('can retrieve an airport', function (): void {
     apiAs($user);
 
     $airport = Airport::factory()->create();
+    $airport->refresh();
 
     $response = $this->get('/api/airports/'.$airport->icao);
 

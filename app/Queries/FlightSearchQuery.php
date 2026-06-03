@@ -7,6 +7,7 @@ namespace App\Queries;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Flight;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Builds the Eloquent query for Flight list/search endpoints.
@@ -19,14 +20,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class FlightSearchQuery
 {
-    /**
-     * Field-specific search allowlist. Mirrors the old
-     * FlightRepository::$fieldSearchable + RequestCriteria's
-     * `?search=field:value;...` syntax. The 'like' entries match the
-     * legacy LIKE behavior; everything else is exact match.
-     *
-     * @var array<string, 'exact'|'like'>
-     */
     private const array FIELD_SEARCH = [
         'arr_airport_id' => 'exact',
         'callsign'       => 'exact',
@@ -40,6 +33,11 @@ class FlightSearchQuery
         'route'          => 'like',
         'notes'          => 'like',
     ];
+
+    private function likeOperator(): string
+    {
+        return DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+    }
 
     /**
      * @var list<string>
@@ -75,18 +73,14 @@ class FlightSearchQuery
         return $query;
     }
 
-    /**
-     * Restore the legacy `?search=field:value;field:value` syntax.
-     * Mirrors PirepSearchQuery / UserSearchQuery from earlier phases.
-     *
-     * @param Builder<Flight> $query
-     */
     private function applySearch(Builder $query, SearchFlightsRequest $request): void
     {
         $search = trim((string) $request->input('search', ''));
         if ($search === '') {
             return;
         }
+
+        $like = $this->likeOperator();
 
         if (str_contains($search, ':')) {
             $clauses = [];
@@ -114,10 +108,10 @@ class FlightSearchQuery
             }
 
             if ($clauses !== []) {
-                $query->where(function (Builder $q) use ($clauses): void {
+                $query->where(function (Builder $q) use ($clauses, $like): void {
                     foreach ($clauses as [$field, $value, $mode]) {
                         if ($mode === 'like') {
-                            $q->orWhere($field, 'like', '%'.$value.'%');
+                            $q->orWhere($field, $like, '%'.$value.'%');
                         } else {
                             $q->orWhere($field, '=', $value);
                         }
@@ -128,9 +122,9 @@ class FlightSearchQuery
             }
         }
 
-        $query->where(function (Builder $q) use ($search): void {
+        $query->where(function (Builder $q) use ($search, $like): void {
             foreach (self::FREE_TEXT_COLUMNS as $column) {
-                $q->orWhere($column, 'like', '%'.$search.'%');
+                $q->orWhere($column, $like, '%'.$search.'%');
             }
         });
     }
