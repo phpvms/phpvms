@@ -22,13 +22,19 @@ class YamlDatabaseService extends Service
         'pireps',
     ];
 
-    protected array $datetimeTimeColumns = [
+    protected array $timeColumns = [
         'arrival_time',
+        'departure_time',
+    ];
+
+    protected array $dateColumns = [
+        'post_date',
+    ];
+
+    protected array $datetimeColumns = [
         'block_off_time',
         'block_on_time',
-        'departure_time',
         'landing_time',
-        'post_date',
     ];
 
     protected function time(): string
@@ -39,7 +45,7 @@ class YamlDatabaseService extends Service
     /**
      * @throws Exception
      */
-    public function seedFromYamlFile(string $yaml_file, bool $ignore_errors = false): array
+    public function seedFromYamlFile(string $yaml_file, bool $ignore_errors = true): array
     {
         $yml = file_get_contents($yaml_file);
         $yml = Yaml::parse($yml);
@@ -50,7 +56,7 @@ class YamlDatabaseService extends Service
     /**
      * @throws Exception
      */
-    public function seedFromYaml(mixed $yml, bool $ignore_errors = false): array
+    public function seedFromYaml(mixed $yml, bool $ignore_errors = true): array
     {
         $imported = [];
 
@@ -85,7 +91,7 @@ class YamlDatabaseService extends Service
                         $row,
                         $id_column,
                         $ignore_on_update,
-                        true,
+                        $ignore_errors,
                         $ignore_if_exists
                     );
                 } catch (QueryException $e) {
@@ -129,23 +135,25 @@ class YamlDatabaseService extends Service
             $row['password'] = bcrypt($row['password']);
         }
 
-        // if any time fields are == to "now", then insert the right time
+        // Normalize date/time fields, narrowing each value to its column's real
+        // type. "now" resolves to the current UTC instant; everything else is
+        // parsed. Passing a full datetime into a PostgreSQL `time` or `date`
+        // column otherwise raises an "invalid input syntax" error.
         foreach ($row as $column => $value) {
             if (empty($value)) {
                 continue;
             }
 
-            $isDateTimeColumn = str_ends_with((string) $column, '_at')
-                || in_array($column, $this->datetimeTimeColumns, true);
-            if (!$isDateTimeColumn) {
+            $format = $this->dateTimeFormatFor((string) $column);
+            if ($format === null) {
                 continue;
             }
 
-            if (strtolower((string) $value) === 'now') {
-                $row[$column] = Carbon::now('UTC')->toDateTimeString();
-            } else {
-                $row[$column] = Carbon::parse($value)->toDateTimeString();
-            }
+            $carbon = strtolower((string) $value) === 'now'
+                ? Carbon::now('UTC')
+                : Carbon::parse($value);
+
+            $row[$column] = $carbon->format($format);
         }
 
         $count = 0;
@@ -190,6 +198,21 @@ class YamlDatabaseService extends Service
         return $row;
     }
 
+    /**
+     * Resolve the storage format for a date/time column, or null when the
+     * column is not a date/time field.
+     */
+    private function dateTimeFormatFor(string $column): ?string
+    {
+        return match (true) {
+            in_array($column, $this->timeColumns, true) => 'H:i:s',
+            in_array($column, $this->dateColumns, true) => 'Y-m-d',
+            str_ends_with($column, '_at'),
+            in_array($column, $this->datetimeColumns, true) => 'Y-m-d H:i:s',
+            default                                         => null,
+        };
+    }
+
     protected function resetPostgresSequence(string $table, string $idColumn = 'id'): void
     {
         if (DB::getDriverName() !== 'pgsql') {
@@ -216,6 +239,15 @@ class YamlDatabaseService extends Service
             return;
         }
 
-        DB::statement(sprintf("SELECT setval('%s', COALESCE((SELECT MAX(%s) FROM %s), 1))", $sequence, $idColumn, $fullTable));
+        // The third `is_called` argument is false for an empty table so the
+        // next id starts at 1 instead of skipping to 2. For a populated table
+        // it is true, so the next id is MAX + 1.
+        DB::statement(sprintf(
+            "SELECT setval('%s', COALESCE(MAX(%s), 1), MAX(%s) IS NOT NULL) FROM %s",
+            $sequence,
+            $idColumn,
+            $idColumn,
+            $fullTable
+        ));
     }
 }
