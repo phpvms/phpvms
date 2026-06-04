@@ -10,7 +10,6 @@ use App\Exceptions\ModuleInstallationError;
 use App\Exceptions\ModuleInvalidFileType;
 use Exception;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -209,11 +208,11 @@ class ModuleService extends Service
             return;
         }
 
+        // setActive() flips the enabled flag, persists to DB, and regenerates the boot cache
+        // (via ModuleShim::setActive() → PrimeService::run()). The per-module migrate command
+        // (module:migrate) belonged to nwidart and no longer exists. Addon migration execution
+        // is owned by the standard `php artisan migrate` path (Phase 5 lifecycle).
         $module->setActive($enabled);
-
-        if ($enabled) {
-            Artisan::call('module:migrate', ['module' => $name, '--force' => true]);
-        }
 
         if (file_exists(base_path('bootstrap/cache/modules.php'))) {
             unlink(base_path('bootstrap/cache/modules.php'));
