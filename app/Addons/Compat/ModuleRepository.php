@@ -1,0 +1,131 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Addons\Compat;
+
+use App\Addons\AddonRegistry;
+use App\Addons\ManifestParser;
+use App\Contracts\Service;
+use App\Models\Addon;
+use Illuminate\Support\Collection;
+use Nwidart\Modules\Exceptions\ModuleNotFoundException;
+
+/**
+ * Compatibility repository satisfying the duck-typed surface of the nwidart
+ * Module facade (container key: 'modules').
+ *
+ * Backed by AddonRegistry + ManifestParser; stateless and Octane-safe.
+ * Do NOT bind this to the 'modules' key while nwidart is still active —
+ * the binding is deferred to a later cutover task (Phase 8).
+ */
+class ModuleRepository extends Service
+{
+    public function __construct(
+        private readonly AddonRegistry $registry,
+        private readonly ManifestParser $parser,
+    ) {}
+
+    /**
+     * Return all addon shims keyed by module name.
+     *
+     * @return Collection<string, ModuleShim>
+     */
+    public function all(): Collection
+    {
+        return $this->registry->all()
+            ->mapWithKeys(function (Addon $addon): array {
+                $shim = $this->resolveShim($addon);
+
+                return [$shim->getName() => $shim];
+            });
+    }
+
+    /**
+     * Return enabled addon shims keyed by module name.
+     *
+     * NOTE: reads from DB + parses manifests (cold/admin path). A future
+     * optimisation could build from AddonRegistry::enabled() (boot cache)
+     * once ModuleShim can be constructed from a cache row, avoiding the
+     * per-row manifest parse entirely.
+     *
+     * @return Collection<string, ModuleShim>
+     */
+    public function allEnabled(): Collection
+    {
+        // Intentionally reads from DB (addons table), not the boot cache — the cache may
+        // be absent during installer/migration flows where DB is the only source of truth.
+        return $this->registry->all()
+            ->filter(fn (Addon $addon): bool => $addon->enabled)
+            ->mapWithKeys(function (Addon $addon): array {
+                $shim = $this->resolveShim($addon);
+
+                return [$shim->getName() => $shim];
+            });
+    }
+
+    /**
+     * Find a module shim by name; returns null when not found.
+     *
+     * Matches by manifest name (case-sensitive), falling back to basename(path).
+     * Iteration order follows Eloquent default (no explicit ORDER BY).
+     */
+    public function find(string $name): ?ModuleShim
+    {
+        foreach ($this->registry->all() as $addon) {
+            $shim = $this->resolveShim($addon);
+
+            if ($shim->getName() === $name) {
+                return $shim;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find a module shim by name; throws when not found.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function findOrFail(string $name): ModuleShim
+    {
+        $shim = $this->find($name);
+
+        if (!$shim instanceof ModuleShim) {
+            throw new ModuleNotFoundException($name);
+        }
+
+        return $shim;
+    }
+
+    /**
+     * Check whether a module is enabled by name.
+     */
+    public function isEnabled(string $name): bool
+    {
+        return $this->find($name)?->isEnabled() ?? false;
+    }
+
+    /**
+     * Return config values for the nwidart module configuration surface.
+     *
+     * Supports: 'namespace' → 'Modules'; all other keys return $default.
+     */
+    public function config(string $key, mixed $default = null): mixed
+    {
+        if ($key === 'namespace') {
+            return 'Modules';
+        }
+
+        return $default;
+    }
+
+    /**
+     * Build a ModuleShim for the given Addon row.
+     */
+    private function resolveShim(Addon $addon): ModuleShim
+    {
+        return new ModuleShim($addon, $this->parser);
+    }
+}

@@ -148,6 +148,11 @@
     "module-dir": "modules",
     "symfony": {
       "require": "^7.4"
+    },
+    "laravel": {
+      "dont-discover": [
+        "nwidart/laravel-modules"
+      ]
     }
   },
   "scripts": {
