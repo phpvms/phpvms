@@ -84,4 +84,13 @@ class Addon extends Model
             'installed_at' => 'datetime',
         ];
     }
+
+    /**
+     * If no registry id -> assume it's a legacy addon
+     * TODO: Add a "version" column
+     */
+    public function isLegacy(): bool
+    {
+        return blank($this->registry_id);
+    }
 }

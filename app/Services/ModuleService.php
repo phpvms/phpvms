@@ -74,7 +74,7 @@ class ModuleService extends Service
      */
     public function updateModule(string $name, bool $enabled): void
     {
-        /** @var ?\Nwidart\Modules\Module $module */
+        /** @var ?Module $module */
         $module = $this->addonRegistry->find($name);
 
         if (!$module) {
@@ -82,7 +82,7 @@ class ModuleService extends Service
         }
 
         // setActive() flips the enabled flag, persists to DB, and regenerates the boot cache
-        // (via ModuleShim::setActive() → PrimeService::run()). The per-module migrate command
+        // (via ModuleShim::setActive() → AddonBootService::run()). The per-module migrate command
         // (module:migrate) belonged to nwidart and no longer exists. Addon migration execution
         // is owned by the standard `php artisan migrate` path (Phase 5 lifecycle).
         $module->setActive($enabled);
@@ -97,7 +97,7 @@ class ModuleService extends Service
      */
     public function deleteModule(string $name): void
     {
-        /** @var ?\Nwidart\Modules\Module $module */
+        /** @var ?Module $module */
         $module = $this->addonRegistry->find($name);
 
         if (!$module) {

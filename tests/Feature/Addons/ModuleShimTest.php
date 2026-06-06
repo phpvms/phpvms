@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Addons\Compat\Module;
 use App\Addons\Compat\ModuleRepository;
 use App\Addons\ManifestParser;
+use App\Addons\Models\AddonBootService;
 use App\Addons\Models\BootCache;
-use App\Addons\Models\PrimeService;
 use App\Models\Addon;
 use Nwidart\Modules\Exceptions\ModuleNotFoundException;
 
@@ -14,8 +14,8 @@ beforeEach(function (): void {
     // Ensure a fresh boot cache for each test.
     app(BootCache::class)->delete();
 
-    // Seed DB rows + boot cache via PrimeService so tests start from a known state.
-    app(PrimeService::class)->run();
+    // Seed DB rows + boot cache via AddonBootService so tests start from a known state.
+    app(AddonBootService::class)->run();
 });
 
 afterEach(function (): void {
@@ -221,7 +221,7 @@ it('getStudlyName() returns StudlyCase of the module name', function (): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 it('delete() removes the Addon DB row and the boot cache no longer lists it', function (): void {
-    // Create a temporary addon directory with a valid module.json so PrimeService
+    // Create a temporary addon directory with a valid module.json so AddonBootService
     // can discover it and write it into the boot cache.
     $tmpDir = storage_path('app/addons/ThrowawayTest'.uniqid());
     mkdir($tmpDir, 0755, true);
@@ -231,10 +231,10 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
         'providers' => [],
     ]));
 
-    // Run PrimeService so the temp addon is discovered, upserted, and cached.
-    app(PrimeService::class)->run();
+    // Run AddonBootService so the temp addon is discovered, upserted, and cached.
+    app(AddonBootService::class)->run();
 
-    // Fetch the DB row PrimeService created for the temp addon.
+    // Fetch the DB row AddonBootService created for the temp addon.
     $throwaway = Addon::query()->where('path', $tmpDir)->firstOrFail();
     $throwawayId = $throwaway->id;
 

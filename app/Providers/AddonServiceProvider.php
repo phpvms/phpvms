@@ -6,12 +6,12 @@ namespace App\Providers;
 
 use App\Addons\AddonLoader;
 use App\Addons\AddonRegistry;
+use App\Addons\AddonRuntimeService;
 use App\Addons\AutoloadGuard;
 use App\Addons\BootCache;
 use App\Addons\Compat\ModuleRepository;
 use App\Addons\Filament\FilamentPanelExtender;
 use App\Addons\ManifestParser;
-use App\Addons\PrimeService;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -50,7 +50,7 @@ class AddonServiceProvider extends ServiceProvider
         $this->app->singleton(ManifestParser::class);
         $this->app->singleton(AutoloadGuard::class);
         $this->app->singleton(AddonRegistry::class);
-        $this->app->singleton(PrimeService::class);
+        $this->app->singleton(AddonRuntimeService::class);
 
         // ── Phase 2 singletons ──────────────────────────────────────────────
         $this->app->singleton(AddonLoader::class);
@@ -95,7 +95,7 @@ class AddonServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (!$this->app->runningInConsole()) {
-            $this->app->make(PrimeService::class)->primeIfNeeded();
+            $this->app->make(AddonRuntimeService::class)->primeIfNeeded();
         }
     }
 }

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Addons\Models\AddonBootService;
 use App\Addons\Models\BootCache;
-use App\Addons\Models\PrimeService;
 use App\Models\Addon;
 use App\Services\ModuleService;
 
 beforeEach(function (): void {
     // Fresh boot cache + DB rows for each test.
     app(BootCache::class)->delete();
-    app(PrimeService::class)->run();
+    app(AddonBootService::class)->run();
 });
 
 afterEach(function (): void {
@@ -69,12 +69,12 @@ it('deleteModule() does not throw and removes the addon DB row', function (): vo
         'providers' => [],
     ]));
 
-    app(PrimeService::class)->run();
+    app(AddonBootService::class)->run();
 
     $throwaway = Addon::query()->where('path', $tmpDir)->firstOrFail();
     $throwawayId = $throwaway->id;
 
-    // Remove module.json so PrimeService won't re-discover it on next prime.
+    // Remove module.json so AddonBootService won't re-discover it on next prime.
     unlink($tmpDir.'/module.json');
 
     $service = app(ModuleService::class);
