@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
+use App\Addons\Compat\Module;
 use App\Addons\Compat\ModuleRepository;
-use App\Addons\Compat\ModuleShim;
 use App\Addons\ManifestParser;
-use App\Addons\PrimeService;
+use App\Addons\Models\BootCache;
+use App\Addons\Models\PrimeService;
 use App\Models\Addon;
 use Nwidart\Modules\Exceptions\ModuleNotFoundException;
 
@@ -239,7 +239,7 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
     $throwawayId = $throwaway->id;
 
     // Build a shim around it.
-    $shim = new ModuleShim($throwaway, app(ManifestParser::class));
+    $shim = new Module($throwaway, app(ManifestParser::class));
 
     // Confirm it's in the cache before delete.
     $before = app(BootCache::class)->read();

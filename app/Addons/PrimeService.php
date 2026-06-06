@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
+use App\Addons\Models\ManifestData;
 use App\Models\Addon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Stateless and Octane-safe: no mutable instance properties.
  */
-class PrimeService extends Service
+class PrimeService
 {
     public function __construct(
         private readonly ManifestParser $parser,
@@ -30,14 +30,20 @@ class PrimeService extends Service
     ) {}
 
     /**
-     * Scan both addon locations, upsert all discovered addons, and write the
-     * enabled-only boot cache with enriched rows.
+     * Scan all addon locations and write the boot cache.
+     *
+     * When the application is not yet installed, all discovered addons are
+     * written as enabled (scenario 1).
+     *
+     * When installed, the enabled flag is read from the DB (scenarios 2/3).
+     * Addons present on disk but absent from the DB are upserted as disabled
+     * — they require explicit operator activation.
      */
     public function run(): void
     {
         $locations = [
             base_path('modules'),
-            storage_path('app/addons'),
+            // storage_path('app/addons'),
         ];
 
         /** @var ManifestData[] $manifests */
@@ -45,49 +51,66 @@ class PrimeService extends Service
 
         foreach ($locations as $baseDir) {
             foreach ($this->scanLocation($baseDir) as $manifest) {
-                $this->upsert($manifest);
                 $manifests[] = $manifest;
             }
         }
 
-        // Build a lookup of enabled addon DB rows keyed by registry_id and path.
-        $enabledByRegistryId = [];
-        $enabledByPath = [];
+        /** @var list<AddonRuntime> $rows */
+        $rows = [];
 
-        foreach (Addon::query()->where('enabled', true)->get() as $addon) {
+        // Scenario 1: fresh install, all found addons are enabled
+        if (!installed()) {
+            foreach ($manifests as $m) {
+                $rows[] = $this->buildRow($m, true);
+            }
+
+            $this->bootCache->write($rows);
+
+            return;
+        }
+
+        // Scenario 2/3: installed, all addons are enabled or disabled
+
+        // Build a lookup of all DB rows keyed by registry_id and path.
+        $dbByRegistryId = [];
+        $dbByPath = [];
+
+        foreach (Addon::query()->get() as $addon) {
             if ($addon->registry_id !== null) {
-                $enabledByRegistryId[$addon->registry_id] = true;
+                $dbByRegistryId[$addon->registry_id] = (bool) $addon->enabled;
             } else {
-                $enabledByPath[$addon->path] = true;
+                $dbByPath[$addon->path] = (bool) $addon->enabled;
             }
         }
 
-        $rows = [];
-
+        /** @var ManifestData $m */
         foreach ($manifests as $m) {
-            $isEnabled = $m->registryId !== null
-                ? isset($enabledByRegistryId[$m->registryId])
-                : isset($enabledByPath[$m->path]);
 
-            if (!$isEnabled) {
-                continue;
+            // The addon does have  a registry_id - so it's a legacy addon
+            if ($m->registryId !== null) {
+                // If the addon is already in the DB, use its enabled flag.
+                if (array_key_exists($m->registryId, $dbByRegistryId)) {
+                    $enabled = $dbByRegistryId[$m->registryId];
+                }
+                // Otherwise, it's a new addon, so it's disabled by default
+                else {
+                    $this->upsert($m);
+                    $enabled = false;
+                }
             }
 
-            $rows[] = [
-                'registry_id'   => $m->registryId,
-                'type'          => $m->type,
-                'version'       => $m->version,
-                'namespace'     => $m->namespace,
-                'path'          => $m->path,
-                'enabled'       => true,
-                'providers'     => $m->providers,
-                'autoload_path' => $m->autoloadPath,
-                'layout'        => $m->layout,
-                'filament'      => $this->probeFilament($m),
-                'name'          => $m->name,
-                'alias'         => $m->alias,
-                'description'   => $m->description,
-            ];
+            // The addon does not have a registry_id - so it's legacy
+            else {
+                // If the addon is already in the DB (search by the path), use its enabled flag.
+                if (array_key_exists($m->path, $dbByPath)) {
+                    $enabled = $dbByPath[$m->path];
+                } else {
+                    $this->upsert($m);
+                    $enabled = false;
+                }
+            }
+
+            $rows[] = $this->buildRow($m, $enabled);
         }
 
         $this->bootCache->write($rows);
@@ -159,6 +182,28 @@ class PrimeService extends Service
     }
 
     /**
+     * Build an AddonCacheEntry from a manifest and an explicit enabled flag.
+     */
+    private function buildRow(ManifestData $m, bool $enabled): AddonRuntime
+    {
+        return new AddonRuntime(
+            name: $m->name,
+            alias: $m->alias,
+            type: $m->type,
+            registryId: $m->registryId,
+            version: $m->version,
+            namespace: $m->namespace,
+            providers: $m->providers,
+            path: $m->path,
+            autoloadPath: $m->autoloadPath,
+            layout: $m->layout,
+            description: $m->description,
+            enabled: $enabled,
+            filament: $this->probeFilament($m),
+        );
+    }
+
+    /**
      * Upsert one addon row into the DB, preserving the operator's enabled flag (D-12).
      *
      * Match key:
@@ -185,7 +230,7 @@ class PrimeService extends Service
         $addon->path = $m->path;
 
         if ($isNew) {
-            $addon->enabled = true;
+            $addon->enabled = false;
             $addon->installed_at = now();
         }
 

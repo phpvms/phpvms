@@ -214,6 +214,7 @@
   },
   "config": {
     "bin-dir": "vendor/bin/",
+    "classmap-authoritative": false,
     "allow-plugins": {
       "composer/installers": true,
       "joshbrw/laravel-module-installer": true,

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Addons\AddonRegistry;
-use App\Addons\BootCache;
 use App\Addons\Filament\FilamentPanelExtender;
+use App\Addons\Models\BootCache;
 
 // ---------------------------------------------------------------------------
 // Helpers

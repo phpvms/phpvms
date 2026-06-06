@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\AutoloadGuard;
+use App\Addons\Models\AutoloadGuard;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 

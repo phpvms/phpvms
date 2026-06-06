@@ -9,7 +9,7 @@ namespace App\Contracts;
  */
 abstract class Migration extends \Illuminate\Database\Migrations\Migration
 {
-    abstract public function up(): void;
+    abstract public function up();
 
-    public function down(): void {}
+    public function down() {}
 }

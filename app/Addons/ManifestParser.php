@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
+use App\Addons\Models\ManifestData;
 
 /**
  * Lenient parser for addon module.json + composer.json manifests.
@@ -14,7 +14,7 @@ use App\Contracts\Service;
  *
  * Stateless and Octane-safe: no mutable instance properties.
  */
-class ManifestParser extends Service
+class ManifestParser
 {
     /**
      * Parse a module directory's manifest files into a typed ManifestData.

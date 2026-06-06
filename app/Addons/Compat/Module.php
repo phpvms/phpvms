@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Addons\Compat;
 
-use App\Addons\ManifestData;
 use App\Addons\ManifestParser;
+use App\Addons\Models\ManifestData;
 use App\Addons\PrimeService;
 use App\Models\Addon;
 use Illuminate\Support\Str;
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  * Octane-safe: instances are request-scoped value objects — no static
  * or global accumulators.
  */
-class ModuleShim
+class Module
 {
     /** @var ManifestData|false|null false = parse attempted but failed; null = not yet parsed */
     private ManifestData|false|null $manifest = null;

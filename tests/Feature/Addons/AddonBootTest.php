@@ -7,10 +7,12 @@ use App\Addons\Compat\ModuleRepository;
 use App\Models\Addon;
 use App\Providers\AddonServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
-use App\Providers\ModulesServiceProvider; // imported only for the negative "absent from providers.php" assertion below
+use App\Providers\ModulesServiceProvider;
 use Illuminate\Support\Collection;
 use Nwidart\Modules\Facades\Module;
 use Nwidart\Modules\LaravelModulesServiceProvider;
+
+// imported only for the negative "absent from providers.php" assertion below
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Task 6: Cutover — nwidart loader retired, addon engine is live

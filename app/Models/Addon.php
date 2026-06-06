@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Addons\Models\AddonRuntime;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -61,6 +62,19 @@ class Addon extends Model
         'enabled'      => 'boolean',
         'installed_at' => 'nullable|date',
     ];
+
+    public static function fromBootCache(AddonRuntime $runtime): Addon
+    {
+        $addon = new Addon();
+        $addon->registry_id = $runtime->registryId;
+        $addon->type = $runtime->type;
+        $addon->version = $runtime->version;
+        $addon->namespace = $runtime->namespace;
+        $addon->path = $runtime->path;
+        $addon->enabled = $runtime->enabled;
+
+        return $addon;
+    }
 
     #[\Override]
     protected function casts(): array

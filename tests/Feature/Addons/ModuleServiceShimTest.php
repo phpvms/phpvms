@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
-use App\Addons\PrimeService;
+use App\Addons\Models\BootCache;
+use App\Addons\Models\PrimeService;
 use App\Models\Addon;
 use App\Services\ModuleService;
 
