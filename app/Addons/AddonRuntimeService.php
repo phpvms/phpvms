@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
+use App\Addons\Models\AddonRuntime;
 use App\Addons\Models\ManifestData;
 use App\Models\Addon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Stateless and Octane-safe: no mutable instance properties.
  */
-class PrimeService
+class AddonRuntimeService
 {
     public function __construct(
         private readonly ManifestParser $parser,
@@ -30,31 +32,20 @@ class PrimeService
     ) {}
 
     /**
-     * Scan all addon locations and write the boot cache.
+     * Scan all addon locations and write the boot cache for a fresh install,
+     * and they're all marked as enabled
      *
-     * When the application is not yet installed, all discovered addons are
-     * written as enabled (scenario 1).
+     * If not a fresh install, upsert any newly found addons into the database,
+     * and set enabled = false, and also write the boot cache
      *
-     * When installed, the enabled flag is read from the DB (scenarios 2/3).
-     * Addons present on disk but absent from the DB are upserted as disabled
-     * — they require explicit operator activation.
+     * TODO: Should any new addons only be upserted and not written into the cache?
+     *    I think at some point, we shouldn't write disabled addons in the cache
+     *    For now, we'll just write them all to make testing easier
      */
     public function run(): void
     {
-        $locations = [
-            base_path('modules'),
-            // storage_path('app/addons'),
-        ];
 
-        /** @var ManifestData[] $manifests */
-        $manifests = [];
-
-        foreach ($locations as $baseDir) {
-            foreach ($this->scanLocation($baseDir) as $manifest) {
-                $manifests[] = $manifest;
-            }
-        }
-
+        $manifests = $this->scanLocation(config('addons.base_path'));
         /** @var list<AddonRuntime> $rows */
         $rows = [];
 
@@ -85,7 +76,6 @@ class PrimeService
 
         /** @var ManifestData $m */
         foreach ($manifests as $m) {
-
             // The addon does have  a registry_id - so it's a legacy addon
             if ($m->registryId !== null) {
                 // If the addon is already in the DB, use its enabled flag.
@@ -97,17 +87,12 @@ class PrimeService
                     $this->upsert($m);
                     $enabled = false;
                 }
-            }
-
-            // The addon does not have a registry_id - so it's legacy
-            else {
+            } elseif (array_key_exists($m->path, $dbByPath)) {
                 // If the addon is already in the DB (search by the path), use its enabled flag.
-                if (array_key_exists($m->path, $dbByPath)) {
-                    $enabled = $dbByPath[$m->path];
-                } else {
-                    $this->upsert($m);
-                    $enabled = false;
-                }
+                $enabled = $dbByPath[$m->path];
+            } else {
+                $this->upsert($m);
+                $enabled = false;
             }
 
             $rows[] = $this->buildRow($m, $enabled);
@@ -130,6 +115,62 @@ class PrimeService
         $this->run();
 
         return true;
+    }
+
+    /**
+     * Discover new addons and update the boot cache.
+     *
+     * This method scans the predefined addon locations to discover new addons
+     * on disk. Detected addons are cross-referenced with the database to determine
+     * their enabled status.
+     *
+     * - Addons with a `registry_id`:
+     *   - If found in the database, the enabled state is inherited.
+     *   - If not found, the addon is considered new and disabled by default.
+     *
+     * - Addons without a `registry_id` (legacy):
+     *   - If found in the database (searched by path), the enabled state is inherited.
+     *   - If not found, the addon is treated as new and disabled by default.
+     *
+     * Newly discovered addons are upserted into the database where necessary.
+     * They're *not* inserted into the boot cache until they're installed
+     *
+     * Important: This also writes the newly discovered addons into the database
+     * but does not regenerate the boot cache. The boot cache is only regenerated
+     * when the plug-in is installed.
+     *
+     * @return Collection<Addon>
+     */
+    public function discoverNewAddons(): Collection
+    {
+        // Build a lookup of all DB rows keyed by registry_id and path.
+        $dbByPath = [];
+        $dbByRegistryId = [];
+        $newAddons = collect();
+
+        /** @var Addon $addon Get all addons from the database */
+        foreach (Addon::query()->get() as $addon) {
+            if ($addon->registry_id !== null) {
+                $dbByRegistryId[$addon->registry_id] = (bool) $addon->enabled;
+            } else {
+                $dbByPath[$addon->path] = (bool) $addon->enabled;
+            }
+        }
+
+        foreach ($this->scanLocation(config('addons.base_path')) as $manifest) {
+            // The addon does have  a registry_id - so it's a legacy addon
+            if ($manifest->registryId !== null) {
+                // Found a new addon, upsert it
+                if (!array_key_exists($manifest->registryId, $dbByRegistryId)) {
+                    $newAddons->push($this->upsert($manifest));
+                }
+            } elseif (!array_key_exists($manifest->path, $dbByPath)) {
+                // If the addon is not already in the DB, upsert it
+                $newAddons->push($this->upsert($manifest));
+            }
+        }
+
+        return $newAddons;
     }
 
     /**
@@ -162,7 +203,7 @@ class PrimeService
 
             // T-04-03: skip if the resolved path escapes the base directory.
             if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
-                Log::warning(sprintf("PrimeService: skipping '%s' — path traversal guard triggered (T-04-03)", $subDir));
+                Log::warning(sprintf("AddonBootService: skipping '%s' — path traversal guard triggered (T-04-03)", $subDir));
 
                 continue;
             }
@@ -170,7 +211,7 @@ class PrimeService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof ManifestData) {
-                Log::warning(sprintf("PrimeService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
+                Log::warning(sprintf("AddonBootService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
 
                 continue;
             }

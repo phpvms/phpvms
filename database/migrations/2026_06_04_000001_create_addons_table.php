@@ -17,7 +17,7 @@ return new class() extends Migration
     {
         Schema::create('addons', function (Blueprint $table): void {
             $table->id();
-            $table->string('registry_id')->nullable()->unique();
+            $table->string('registry_id')->nullable();
             $table->string('type')->default('module');
             $table->string('version')->nullable();
             $table->string('namespace');
@@ -72,13 +72,10 @@ return new class() extends Migration
                 // D-07: version from module.json first, then composer.json, then null.
                 $version = $manifest['version'] ?? ($composer['version'] ?? null);
 
-                // Declare them as legacy if no registry_id is present.
-                $registry_id = $manifest['registry_id'] ?? 'legacy/'.$manifest['alias'];
-
                 // T-01-03: path is sourced only from File::directories() output — never from manifest.
                 // T-01-02: bound parameters via query-builder insert() — no string concatenation.
                 DB::table('addons')->insert([
-                    'registry_id'  => $registry_id,
+                    'registry_id'  => null,
                     'type'         => $manifest['type'] ?? 'module',
                     'version'      => $version,
                     'namespace'    => $namespace,

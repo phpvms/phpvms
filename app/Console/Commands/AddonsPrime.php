@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Addons\Models\PrimeService;
+use App\Addons\AddonRuntimeService;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,7 +23,7 @@ class AddonsPrime extends Command
      *
      * Returns self::SUCCESS on completion; self::FAILURE on exception.
      */
-    public function handle(PrimeService $prime): int
+    public function handle(AddonRuntimeService $prime): int
     {
         try {
             if ($this->option('force')) {
