@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
 use App\Addons\Filament\FilamentPanelExtender;
+use App\Addons\Models\BootCache;
 use Filament\PanelRegistry;
 use Modules\Sample\Filament\Resources\SampleResource;
 

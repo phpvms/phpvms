@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
+use App\Addons\Models\AddonRuntime;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Foundation\Application;
@@ -27,7 +27,7 @@ use RuntimeException;
  *   3. Assert classmap-authoritative guard ONCE, BEFORE any addPsr4() call.
  *   4. For each row: register PSR-4 then register service providers.
  */
-class AddonLoader extends Service
+class AddonLoader
 {
     public function __construct(
         private readonly AddonRegistry $registry,
@@ -55,9 +55,9 @@ class AddonLoader extends Service
         // Guard must run once, before the first addPsr4() call (LOAD-*, D-16).
         $this->guard->assertRuntimeAutoloadSupported($loader);
 
-        foreach ($rows as $row) {
-            $this->registerPsr4($loader, $row);
-            $this->registerProviders($app, $row);
+        foreach ($rows as $entry) {
+            $this->registerPsr4($loader, $entry);
+            $this->registerProviders($app, $entry);
         }
     }
 
@@ -84,38 +84,28 @@ class AddonLoader extends Service
      *
      * Normalises the namespace prefix to end with exactly one trailing backslash.
      * Uses addPsr4() (not prependPsr4()) so core mappings retain precedence (PITFALLS #7).
-     *
-     * @param array<string, mixed> $row Boot-cache row (schema v2).
      */
-    private function registerPsr4(ClassLoader $loader, array $row): void
+    private function registerPsr4(ClassLoader $loader, AddonRuntime $entry): void
     {
-        $namespace = $row['namespace'] ?? '';
-        $autoloadPath = $row['autoload_path'] ?? '';
-
-        if ($namespace === '' || $autoloadPath === '') {
+        if ($entry->namespace === '' || $entry->autoloadPath === '') {
             return;
         }
 
-        $prefix = rtrim((string) $namespace, '\\').'\\';
+        $prefix = rtrim($entry->namespace, '\\').'\\';
 
         // Composer tolerates non-existent paths; stale-path rows simply load nothing.
-        $loader->addPsr4($prefix, $autoloadPath);
+        $loader->addPsr4($prefix, $entry->autoloadPath);
     }
 
     /**
-     * Register all service providers declared by a single addon row.
+     * Register all service providers declared by a single addon entry.
      *
      * Laravel deduplicates already-registered providers by class, so calling
-     * this method multiple times for the same row is idempotent and Octane-safe.
-     *
-     * @param array<string, mixed> $row Boot-cache row (schema v2).
+     * this method multiple times for the same entry is idempotent and Octane-safe.
      */
-    private function registerProviders(Application $app, array $row): void
+    private function registerProviders(Application $app, AddonRuntime $entry): void
     {
-        foreach ($row['providers'] ?? [] as $providerClass) {
-            if (!is_string($providerClass)) {
-                continue;
-            }
+        foreach ($entry->providers as $providerClass) {
             if ($providerClass === '') {
                 continue;
             }

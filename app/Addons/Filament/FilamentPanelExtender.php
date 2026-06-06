@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Filament;
 
 use App\Addons\AddonRegistry;
-use App\Contracts\Service;
+use App\Addons\Models\AddonRuntime;
 use Filament\PanelRegistry;
 
 /**
@@ -15,7 +15,7 @@ use Filament\PanelRegistry;
  * Stateless and Octane-safe: no mutable instance state.
  * Wiring (beforeResolving hook) is handled by AddonServiceProvider — not here.
  */
-class FilamentPanelExtender extends Service
+class FilamentPanelExtender
 {
     /** @var array<string, string> Maps component key → Panel discover method name */
     private const array COMPONENT_METHODS = [
@@ -41,26 +41,23 @@ class FilamentPanelExtender extends Service
 
     /**
      * Return a side-effect-free descriptor of what would be discovered for a
-     * single addon row, keyed by panel id.
+     * single addon entry, keyed by panel id.
      *
-     * Only panel keys / component entries present in the row's `filament` data
+     * Only panel keys / component entries present in the entry's filament data
      * are included. Returns an empty array for addons with no Filament data.
      *
-     * A row with a missing or empty `namespace` is skipped — it would produce
-     * a broken leading-double-backslash `for:` string.
+     * An entry with an empty namespace is skipped — it would produce a broken
+     * leading-double-backslash `for:` string.
      *
-     * @param  array{namespace?: string, filament?: array<string, array<string, string>>} $row
      * @return array<string, list<array{method: string, in: string, for: string}>>
      */
-    public function discoveriesFor(array $row): array
+    public function discoveriesFor(AddonRuntime $entry): array
     {
-        $filament = $row['filament'] ?? [];
-
-        if (empty($filament)) {
+        if (empty($entry->filament)) {
             return [];
         }
 
-        $ns = rtrim($row['namespace'] ?? '', '\\');
+        $ns = rtrim($entry->namespace, '\\');
 
         if ($ns === '') {
             return [];
@@ -69,7 +66,7 @@ class FilamentPanelExtender extends Service
         $result = [];
 
         foreach (self::PANEL_NAMESPACE_SEGMENT as $panelId => $nsSegment) {
-            $panelData = $filament[$panelId] ?? [];
+            $panelData = $entry->filament[$panelId] ?? [];
 
             if (empty($panelData)) {
                 continue;
@@ -115,8 +112,8 @@ class FilamentPanelExtender extends Service
 
         $allowedMethods = array_values(self::COMPONENT_METHODS);
 
-        foreach ($this->registry->enabled() as $row) {
-            $discoveries = $this->discoveriesFor($row);
+        foreach ($this->registry->enabled() as $entry) {
+            $discoveries = $this->discoveriesFor($entry);
 
             foreach ($discoveries as $panelId => $entries) {
                 if (!isset($panels[$panelId])) {

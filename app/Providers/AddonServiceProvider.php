@@ -22,15 +22,18 @@ use Illuminate\Support\ServiceProvider;
  *  1. Binds all engine singletons (Octane-safe: stateless services).
  *  2. Binds the 'modules' container key to ModuleRepository, making the
  *     nwidart Module facade route to our shim (nwidart provider retired).
- *  3. At non-console boot: runs the classmap-authoritative guard (LOAD-08),
- *     then auto-primes the boot cache if absent/stale (D2-09).
+ *  3. At non-console boot: runs the classmap-authoritative guard (LOAD-08).
  *     Skipped in console (D-17) to avoid blocking migrate/install/tests.
  *  4. Runs the AddonLoader in all contexts so artisan sees addon
  *     commands and migrations (D2-11). No-ops on empty cache.
  *  5. Hooks FilamentPanelExtender into beforeResolving('filament', ...)
  *     so addon Filament discovery is applied before panels resolve (D2-07).
  *
- * boot() is intentionally empty — all wiring belongs in register().
+ * boot() auto-primes the boot cache when absent/stale (D2-09). This is the
+ * only step that queries the database, so it is deferred out of register()
+ * — no DB access belongs in the register phase. The loader in register()
+ * reads the file cache (DB-free), so a stale cache self-heals on the next
+ * request after boot() rewrites it.
  */
 class AddonServiceProvider extends ServiceProvider
 {
@@ -58,7 +61,7 @@ class AddonServiceProvider extends ServiceProvider
         // Nwidart\Modules\Facades\Module resolves to ModuleRepository.
         $this->app->singleton('modules', fn ($app) => $app->make(ModuleRepository::class));
 
-        // ── Non-console: guard + auto-prime ─────────────────────────────────
+        // ── Non-console: autoload guard ─────────────────────────────────────
         // D-17: skip in console contexts (migrate/install/tests).
         if (!$this->app->runningInConsole()) {
             // LOAD-08 provider-level guard: halts boot before any runtime addPsr4 when
@@ -66,9 +69,6 @@ class AddonServiceProvider extends ServiceProvider
             // internal guard re-checks the resolved ClassLoader instance; this provider-level
             // call is the boot-halt fence that fires BEFORE the loader runs at all.
             $this->app->make(AutoloadGuard::class)->assertRuntimeAutoloadSupported();
-
-            // D2-09: auto-prime when cache is absent or has a stale schema.
-            $this->app->make(PrimeService::class)->primeIfNeeded();
         }
 
         // ── Loader: runs in ALL contexts (D2-11) ────────────────────────────
@@ -83,5 +83,19 @@ class AddonServiceProvider extends ServiceProvider
         $this->app->beforeResolving('filament', function (): void {
             $this->app->make(FilamentPanelExtender::class)->apply();
         });
+    }
+
+    /**
+     * Auto-prime the boot cache when it is absent or has a stale schema (D2-09).
+     *
+     * Deferred to boot() because primeIfNeeded() reconciles the addons table —
+     * the only database access in this provider — and no DB query belongs in the
+     * register phase. Skipped in console (D-17) to avoid blocking migrate/install/tests.
+     */
+    public function boot(): void
+    {
+        if (!$this->app->runningInConsole()) {
+            $this->app->make(PrimeService::class)->primeIfNeeded();
+        }
     }
 }

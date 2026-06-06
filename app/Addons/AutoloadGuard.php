@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 
@@ -19,7 +18,7 @@ use Composer\Autoload\ClassLoader;
  * NOTE: import is \Composer\Autoload\ClassLoader — NOT App\Support\ClassLoader
  * (the local class-map helper that happens to share the short name).
  */
-class AutoloadGuard extends Service
+class AutoloadGuard
 {
     /**
      * Return true if the given (or globally registered) ClassLoader is

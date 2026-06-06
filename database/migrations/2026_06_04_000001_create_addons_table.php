@@ -40,6 +40,7 @@ return new class() extends Migration
                     continue;
                 }
 
+                /** @var array{} $manifest */
                 $manifest = json_decode(File::get($moduleJsonPath), true);
 
                 // D-15: skip invalid JSON — a single bad bundled manifest must not break migrations.
@@ -71,10 +72,13 @@ return new class() extends Migration
                 // D-07: version from module.json first, then composer.json, then null.
                 $version = $manifest['version'] ?? ($composer['version'] ?? null);
 
+                // Declare them as legacy if no registry_id is present.
+                $registry_id = $manifest['registry_id'] ?? 'legacy/'.$manifest['alias'];
+
                 // T-01-03: path is sourced only from File::directories() output — never from manifest.
                 // T-01-02: bound parameters via query-builder insert() — no string concatenation.
                 DB::table('addons')->insert([
-                    'registry_id'  => null,
+                    'registry_id'  => $registry_id,
                     'type'         => $manifest['type'] ?? 'module',
                     'version'      => $version,
                     'namespace'    => $namespace,

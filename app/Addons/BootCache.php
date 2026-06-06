@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
+use App\Addons\Models\AddonRuntime;
 use RuntimeException;
 
 /**
@@ -15,7 +15,7 @@ use RuntimeException;
  * have rewritten the cache between requests; never cache contents on
  * the instance.
  */
-class BootCache extends Service
+class BootCache
 {
     /**
      * Cache schema version. Increment when the on-disk shape changes
@@ -52,13 +52,13 @@ class BootCache extends Service
     }
 
     /**
-     * Read the boot cache and return the bare enabled-addon rows list.
+     * Read the boot cache and return hydrated AddonCacheEntry rows.
      *
      * Returns an empty array when:
      *  - the file is absent (D-10 absence-only trust), or
      *  - the file's schema !== self::SCHEMA (stale/old-shape cache, D2-09).
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<AddonRuntime>
      */
     public function read(): array
     {
@@ -75,7 +75,16 @@ class BootCache extends Service
 
         $addons = $data['addons'] ?? [];
 
-        return is_array($addons) ? array_values($addons) : [];
+        if (!is_array($addons)) {
+            return [];
+        }
+
+        return array_values(
+            array_map(
+                fn (array $row) => AddonRuntime::fromArray($row),
+                $addons,
+            )
+        );
     }
 
     /**
@@ -97,7 +106,7 @@ class BootCache extends Service
     }
 
     /**
-     * Atomically write the enabled-addon array to the boot cache (D-14).
+     * Atomically write addon entries to the boot cache (D-14).
      *
      * Wraps rows in a versioned envelope with schema and generated_at fields.
      *
@@ -107,14 +116,14 @@ class BootCache extends Service
      * Uses a per-process temp file in the same directory so rename() is
      * POSIX-atomic and never crosses filesystems (T-03-02, T-03-03).
      *
-     * @param array<int, array<string, mixed>> $enabledAddons
+     * @param list<AddonRuntime> $addons
      */
-    public function write(array $enabledAddons): void
+    public function write(array $addons): void
     {
         $wrapper = [
             'schema'       => self::SCHEMA,
             'generated_at' => gmdate('c'),
-            'addons'       => array_values($enabledAddons),
+            'addons'       => array_values(array_map(fn (AddonRuntime $e) => $e->toArray(), $addons)),
         ];
 
         $content = '<?php'.PHP_EOL.'return '.var_export($wrapper, true).';'.PHP_EOL;

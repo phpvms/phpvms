@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
+use App\Addons\Models\BootCache;
 
 beforeEach(function (): void {
     $path = base_path('bootstrap/cache/addons.php');

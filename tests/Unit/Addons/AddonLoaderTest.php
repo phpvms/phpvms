@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonLoader;
 use App\Addons\AddonRegistry;
-use App\Addons\AutoloadGuard;
-use App\Addons\BootCache;
+use App\Addons\Models\AutoloadGuard;
+use App\Addons\Models\BootCache;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\ServiceProvider;

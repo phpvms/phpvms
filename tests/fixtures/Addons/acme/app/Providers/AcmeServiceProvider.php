@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpvmsAddonFixture\Providers;
 
-use App\Addons\Support\BaseAddonServiceProvider;
+use App\Addons\Models\Support\BaseAddonServiceProvider;
 
 /**
  * Fixture addon provider — extends the base to exercise all auto-wire paths.

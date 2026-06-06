@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Nwidart\Modules\Facades\Module;
 
 /*
@@ -158,7 +159,7 @@ if (!function_exists('setting')) {
             } else {
                 $value = $settingService->retrieve($key);
             }
-        } catch (SettingNotFound|Exception) {
+        } catch (SettingNotFound|Throwable) {
             return $default;
         }
 
@@ -404,6 +405,23 @@ if (!function_exists('decode_days')) {
         }
 
         return implode(', ', $days);
+    }
+}
+
+if (!function_exists('installed')) {
+    /**
+     * Determine whether the application has been installed.
+     *
+     * Uses the existence of the settings table as the installation indicator.
+     * Returns false when the database is unreachable or not yet configured.
+     */
+    function installed(): bool
+    {
+        try {
+            return Schema::hasTable('settings');
+        } catch (Throwable) {
+            return false;
+        }
     }
 }
 

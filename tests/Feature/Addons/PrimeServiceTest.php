@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
 use App\Addons\ManifestParser;
-use App\Addons\PrimeService;
+use App\Addons\Models\BootCache;
+use App\Addons\Models\PrimeService;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Log;
 use Modules\Sample\Providers\SampleServiceProvider;

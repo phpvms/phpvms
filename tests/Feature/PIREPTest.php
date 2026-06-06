@@ -1,6 +1,6 @@
 <?php
 
-use App\Addons\Compat\ModuleShim;
+use App\Addons\Compat\Module;
 use App\Enums\AcarsType;
 use App\Enums\PirepFieldSource;
 use App\Enums\PirepState;
@@ -691,7 +691,7 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
         'value' => '1',
     ]);
 
-    Module::shouldReceive('find')->andReturn(Mockery::mock(ModuleShim::class));
+    Module::shouldReceive('find')->andReturn(Mockery::mock(Module::class));
 
     $pirepSvc = app(PirepService::class);
 

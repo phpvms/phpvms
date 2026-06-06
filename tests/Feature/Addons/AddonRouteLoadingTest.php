@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonLoader;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────────────────────────────────────

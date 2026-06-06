@@ -14,10 +14,8 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\SimBriefLayout;
-use App\Models\Subfleet;
 use App\Models\User;
 use App\Services\FareService;
-use App\Services\ModuleService;
 use App\Services\SimBriefService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +28,6 @@ class SimBriefController
 {
     public function __construct(
         private readonly FareService $fareSvc,
-        private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
     ) {}
 
@@ -322,7 +319,7 @@ class SimBriefController
             'transponder'  => $transponder,
             'bid'          => $bid,
             'flight'       => $simbrief->flight,
-            'acars_plugin' => $this->moduleSvc->isModuleActive('VMSAcars'),
+            'acars_plugin' => true,
         ]);
     }
 

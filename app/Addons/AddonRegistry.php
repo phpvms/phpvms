@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Contracts\Service;
+use App\Addons\Models\AddonRuntime;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 
@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  * Stateless and Octane-safe: reads fresh on every call. No mutable instance
  * state — another Octane worker may have re-primed the cache between requests.
  */
-class AddonRegistry extends Service
+class AddonRegistry
 {
     public function __construct(
         private readonly BootCache $bootCache,
@@ -25,21 +25,26 @@ class AddonRegistry extends Service
      *
      * Returns an empty array when the cache is absent.
      *
-     * @return array<int, array<string, mixed>>
+     * @return Collection<AddonRuntime>
      */
-    public function enabled(): array
+    public function enabled(): Collection
     {
-        return $this->bootCache->read();
+        return collect(array_values(
+            array_filter(
+                $this->bootCache->read(),
+                fn (AddonRuntime $entry) => $entry->enabled,
+            )
+        ));
     }
 
     /**
      * Return an Eloquent Collection of every Addon row (enabled and disabled).
      *
-     * @return Collection<int, Addon>
+     * @return Collection<AddonRuntime>
      */
     public function all(): Collection
     {
-        return Addon::query()->get();
+        return collect(array_map(fn (AddonRuntime $record) => $record, $this->bootCache->read()));
     }
 
     /**

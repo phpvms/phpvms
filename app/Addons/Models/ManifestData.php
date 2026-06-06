@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Addons;
+namespace App\Addons\Models;
 
 /**
  * Immutable parse-result contract returned by ManifestParser.

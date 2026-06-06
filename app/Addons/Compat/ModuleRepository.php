@@ -6,7 +6,7 @@ namespace App\Addons\Compat;
 
 use App\Addons\AddonRegistry;
 use App\Addons\ManifestParser;
-use App\Contracts\Service;
+use App\Addons\Models\AddonRuntime;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Nwidart\Modules\Exceptions\ModuleNotFoundException;
@@ -19,7 +19,7 @@ use Nwidart\Modules\Exceptions\ModuleNotFoundException;
  * Do NOT bind this to the 'modules' key while nwidart is still active —
  * the binding is deferred to a later cutover task (Phase 8).
  */
-class ModuleRepository extends Service
+class ModuleRepository
 {
     public function __construct(
         private readonly AddonRegistry $registry,
@@ -29,12 +29,13 @@ class ModuleRepository extends Service
     /**
      * Return all addon shims keyed by module name.
      *
-     * @return Collection<string, ModuleShim>
+     * @return Collection<string, Module>
      */
     public function all(): Collection
     {
         return $this->registry->all()
-            ->mapWithKeys(function (Addon $addon): array {
+            ->mapWithKeys(function (AddonRuntime $runtime): array {
+                $addon = Addon::fromBootCache($runtime);
                 $shim = $this->resolveShim($addon);
 
                 return [$shim->getName() => $shim];
@@ -49,15 +50,15 @@ class ModuleRepository extends Service
      * once ModuleShim can be constructed from a cache row, avoiding the
      * per-row manifest parse entirely.
      *
-     * @return Collection<string, ModuleShim>
+     * @return Collection<string, Module>
      */
     public function allEnabled(): Collection
     {
         // Intentionally reads from DB (addons table), not the boot cache — the cache may
         // be absent during installer/migration flows where DB is the only source of truth.
-        return $this->registry->all()
-            ->filter(fn (Addon $addon): bool => $addon->enabled)
-            ->mapWithKeys(function (Addon $addon): array {
+        return $this->registry->enabled()
+            ->mapWithKeys(function (AddonRuntime $runtime): array {
+                $addon = Addon::fromBootCache($runtime);
                 $shim = $this->resolveShim($addon);
 
                 return [$shim->getName() => $shim];
@@ -70,9 +71,11 @@ class ModuleRepository extends Service
      * Matches by manifest name (case-sensitive), falling back to basename(path).
      * Iteration order follows Eloquent default (no explicit ORDER BY).
      */
-    public function find(string $name): ?ModuleShim
+    public function find(string $name): ?Module
     {
-        foreach ($this->registry->all() as $addon) {
+        /** @var AddonRuntime $runtime */
+        foreach ($this->registry->all() as $runtime) {
+            $addon = Addon::fromBootCache($runtime);
             $shim = $this->resolveShim($addon);
 
             if ($shim->getName() === $name) {
@@ -88,11 +91,11 @@ class ModuleRepository extends Service
      *
      * @throws ModuleNotFoundException
      */
-    public function findOrFail(string $name): ModuleShim
+    public function findOrFail(string $name): Module
     {
         $shim = $this->find($name);
 
-        if (!$shim instanceof ModuleShim) {
+        if (!$shim instanceof Module) {
             throw new ModuleNotFoundException($name);
         }
 
@@ -124,8 +127,8 @@ class ModuleRepository extends Service
     /**
      * Build a ModuleShim for the given Addon row.
      */
-    private function resolveShim(Addon $addon): ModuleShim
+    private function resolveShim(Addon $addon): Module
     {
-        return new ModuleShim($addon, $this->parser);
+        return new Module($addon, $this->parser);
     }
 }
