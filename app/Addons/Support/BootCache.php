@@ -81,7 +81,7 @@ class BootCache
 
         return array_values(
             array_map(
-                fn (array $row) => AddonRuntime::fromArray($row),
+                AddonRuntime::fromArray(...),
                 $addons,
             )
         );
@@ -123,7 +123,7 @@ class BootCache
         $wrapper = [
             'schema'       => self::SCHEMA,
             'generated_at' => gmdate('c'),
-            'addons'       => array_values(array_map(fn (AddonRuntime $e) => $e->toArray(), $addons)),
+            'addons'       => array_values(array_map(fn (AddonRuntime $e): array => $e->toArray(), $addons)),
         ];
 
         $content = '<?php'.PHP_EOL.'return '.var_export($wrapper, true).';'.PHP_EOL;
