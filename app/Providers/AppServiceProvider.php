@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laracasts\Flash\Flash;
+use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
 use PhpUnitsOfMeasure\PhysicalQuantity\Temperature;
@@ -160,8 +161,12 @@ class AppServiceProvider extends ServiceProvider
          * Data automatically injected in views
          */
         View::share('moduleSvc', app(ModuleService::class));
-        View::composer('nav', PageLinksComposer::class);
         View::composer('admin.sidebar', VersionComposer::class);
+
+        /** @noinspection LaravelUnknownViewInspection */
+        View::composer('nav', PageLinksComposer::class);
+
+        /** @noinspection LaravelUnknownViewInspection */
         View::composer('nav', function ($view): void {
             $view->with('languages', Config::get('phpvms.languages'));
             $view->with('locale', App::getLocale());
@@ -188,7 +193,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->app->singleton('view.finder', fn (Application $app): ThemeViewFinder => new ThemeViewFinder(
@@ -252,7 +257,6 @@ class AppServiceProvider extends ServiceProvider
         // Only load the IDE helper if it's included and enabled
         /* @noinspection NestedPositiveIfStatementsInspection */
         if (config('app.debug') === true && class_exists(IdeHelperServiceProvider::class)) {
-            /* @noinspection PhpFullyQualifiedNameUsageInspection */
             $this->app->register(IdeHelperServiceProvider::class);
         }
     }

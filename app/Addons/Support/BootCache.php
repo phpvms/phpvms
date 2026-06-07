@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Addons;
+namespace App\Addons\Support;
 
 use App\Addons\Models\AddonRuntime;
 use RuntimeException;

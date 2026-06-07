@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\ManifestParser;
-use App\Addons\Models\AddonBootService;
 use App\Addons\Models\BootCache;
+use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Log;
 use Modules\Sample\Providers\SampleServiceProvider;
@@ -23,9 +23,9 @@ afterEach(function (): void {
     }
 });
 
-function makeService(): AddonBootService
+function makeService(): AddonRuntimeService
 {
-    return new AddonBootService(new ManifestParser(), new BootCache());
+    return new AddonRuntimeService(new ManifestParser(), new BootCache());
 }
 
 it('run() registers all three bundled modules from base_path(modules)', function (): void {

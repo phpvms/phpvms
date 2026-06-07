@@ -6,8 +6,10 @@ namespace App\Models;
 
 use App\Addons\Models\AddonRuntime;
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -21,19 +23,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereEnabled($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereInstalledAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereNamespace($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon wherePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereRegistryId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereVersion($value)
+ * @method static Builder<static>|Addon newModelQuery()
+ * @method static Builder<static>|Addon newQuery()
+ * @method static Builder<static>|Addon query()
+ * @method static Builder<static>|Addon whereCreatedAt($value)
+ * @method static Builder<static>|Addon whereEnabled($value)
+ * @method static Builder<static>|Addon whereId($value)
+ * @method static Builder<static>|Addon whereInstalledAt($value)
+ * @method static Builder<static>|Addon whereNamespace($value)
+ * @method static Builder<static>|Addon wherePath($value)
+ * @method static Builder<static>|Addon whereRegistryId($value)
+ * @method static Builder<static>|Addon whereType($value)
+ * @method static Builder<static>|Addon whereUpdatedAt($value)
+ * @method static Builder<static>|Addon whereVersion($value)
  *
  * @mixin \Eloquent
  */
@@ -44,6 +46,7 @@ class Addon extends Model
     public $table = 'addons';
 
     protected $fillable = [
+        'name',
         'registry_id',
         'type',
         'version',
@@ -54,6 +57,7 @@ class Addon extends Model
     ];
 
     public static array $rules = [
+        'name'         => 'required|string',
         'registry_id'  => 'nullable|string',
         'type'         => 'required|string',
         'version'      => 'nullable|string',
@@ -66,6 +70,7 @@ class Addon extends Model
     public static function fromBootCache(AddonRuntime $runtime): Addon
     {
         $addon = new Addon();
+        $addon->name = $runtime->name;
         $addon->registry_id = $runtime->registryId;
         $addon->type = $runtime->type;
         $addon->version = $runtime->version;
@@ -76,7 +81,7 @@ class Addon extends Model
         return $addon;
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

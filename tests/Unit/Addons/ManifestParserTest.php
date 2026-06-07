@@ -1,7 +1,7 @@
 <?php
 
-use App\Addons\ManifestData;
-use App\Addons\ManifestParser;
+use App\Addons\Support\ManifestData;
+use App\Addons\Support\ManifestParser;
 use Modules\Awards\Providers\AwardServiceProvider;
 
 it('parses Awards module (legacy nwidart, no phpVMS keys, no composer.json)', function (): void {

@@ -17,6 +17,7 @@ return new class() extends Migration
     {
         Schema::create('addons', function (Blueprint $table): void {
             $table->id();
+            $table->string('name')->nullable()->index();
             $table->string('registry_id')->nullable();
             $table->string('type')->default('module');
             $table->string('version')->nullable();

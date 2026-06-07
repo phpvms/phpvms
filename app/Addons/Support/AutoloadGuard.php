@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Addons;
+namespace App\Addons\Support;
 
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;

@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\SettingNotFound;
+use App\Models\Addon;
 use App\Services\KvpService;
 use App\Services\SettingService;
 use Carbon\Carbon;
@@ -381,9 +382,10 @@ if (!function_exists('check_module')) {
      */
     function check_module($module_name): bool
     {
-        $phpvms_module = Module::find($module_name);
+        /** @var Addon $phpvms_module */
+        $phpvms_module = Addon::where('name', $module_name)->first();
 
-        return filled($phpvms_module) && $phpvms_module->isEnabled();
+        return !empty($phpvms_module) && $phpvms_module->enabled;
     }
 }
 

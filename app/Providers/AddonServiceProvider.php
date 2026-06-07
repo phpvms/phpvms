@@ -6,13 +6,14 @@ namespace App\Providers;
 
 use App\Addons\AddonLoader;
 use App\Addons\AddonRegistry;
-use App\Addons\AddonRuntimeService;
-use App\Addons\AutoloadGuard;
-use App\Addons\BootCache;
 use App\Addons\Compat\ModuleRepository;
 use App\Addons\Filament\FilamentPanelExtender;
-use App\Addons\ManifestParser;
+use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Support\AutoloadGuard;
+use App\Addons\Support\BootCache;
+use App\Addons\Support\ManifestParser;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 /**
  * Wires the Phase 2 addon engine into application boot.
@@ -42,7 +43,7 @@ class AddonServiceProvider extends ServiceProvider
      *
      * All singletons are Octane-safe: no mutable instance properties.
      */
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         // ── Phase 1 singletons ──────────────────────────────────────────────

@@ -21,17 +21,27 @@ final readonly class ManifestData
      * @param int|null             $schema_version Schema version of the module.json
      * @param string               $name           Namespace name of the module
      * @param string|null          $alias          Short machine alias, used for views
-     * @param string               $type           Addon type: 'module', 'theme', etc. (D-02: defaults to 'module').
-     * @param string|null          $registryId     Registry canonical identity; null for bundled addons (D-03).
-     * @param string|null          $compat         phpVMS version constraint (stored only in Phase 1, D-05).
-     * @param string|null          $version        Version string; null when absent from both manifests (D-07).
-     * @param string               $namespace      PSR-4 root namespace resolved from composer.json, else fallback (D-07).
+     * @param string               $type           Addon type: 'module', 'theme', etc. (D-02:
+     *                                             defaults to 'module').
+     * @param string|null          $registryId     Registry canonical identity; null for bundled
+     *                                             addons (D-03).
+     * @param string|null          $compat         phpVMS version constraint (stored only in Phase
+     *                                             1, D-05).
+     * @param string|null          $version        Version string; null when absent from both
+     *                                             manifests (D-07).
+     * @param string               $namespace      PSR-4 root namespace resolved from
+     *                                             composer.json, else fallback (D-07).
      * @param list<string>         $providers      List of Laravel service-provider class names.
      * @param string               $path           Absolute filesystem path to the addon directory.
-     * @param array<string, mixed> $raw            The decoded module.json array, kept for forward-compat.
-     * @param string               $autoloadPath   Absolute filesystem path the PSR-4 namespace resolves to.
+     * @param array<string, mixed> $raw            The decoded module.json array, kept for
+     *                                             forward-compat.
+     * @param string               $autoloadPath   Absolute filesystem path the PSR-4 namespace
+     *                                             resolves to.
      * @param string               $layout         Addon layout: always lowercase 'root' or 'app'.
-     * @param string|null          $description    Human-readable description from module.json; null when absent or blank.
+     * @param string|null          $description    Human-readable description from module.json;
+     *                                             null when absent or blank.
+     *
+     * @mago-ignore lint:excessive-parameter-list
      */
     public function __construct(
         public ?int $schema_version,

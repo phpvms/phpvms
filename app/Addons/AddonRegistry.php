@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons;
 
 use App\Addons\Models\AddonRuntime;
+use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 
@@ -32,7 +33,7 @@ class AddonRegistry
         return collect(array_values(
             array_filter(
                 $this->bootCache->read(),
-                fn (AddonRuntime $entry) => $entry->enabled,
+                fn (AddonRuntime $entry): bool => $entry->enabled,
             )
         ));
     }
@@ -44,7 +45,7 @@ class AddonRegistry
      */
     public function all(): Collection
     {
-        return collect(array_map(fn (AddonRuntime $record) => $record, $this->bootCache->read()));
+        return collect(array_map(fn (AddonRuntime $record): AddonRuntime => $record, $this->bootCache->read()));
     }
 
     /**
