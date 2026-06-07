@@ -147,11 +147,6 @@
     "module-dir": "modules",
     "symfony": {
       "require": "^7.4"
-    },
-    "laravel": {
-      "dont-discover": [
-        "nwidart/laravel-modules"
-      ]
     }
   },
   "scripts": {
@@ -221,7 +216,6 @@
       "symfony/flex": true,
       "php-http/discovery": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
-      "wikimedia/composer-merge-plugin": true,
       "pestphp/pest-plugin": true
     }
   }

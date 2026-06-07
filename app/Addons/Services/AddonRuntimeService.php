@@ -45,7 +45,7 @@ class AddonRuntimeService
     public function run(): void
     {
 
-        $manifests = $this->scanLocation(config('addons.base_path'));
+        $manifests = $this->scanLocation(config('addons.paths.base'));
         /** @var list<AddonRuntime> $rows */
         $rows = [];
 
@@ -157,7 +157,7 @@ class AddonRuntimeService
             }
         }
 
-        foreach ($this->scanLocation(config('addons.base_path')) as $manifest) {
+        foreach ($this->scanLocation(config('addons.paths.base')) as $manifest) {
             // The addon does have  a registry_id - so it's a legacy addon
             if ($manifest->registryId !== null) {
                 // Found a new addon, upsert it

@@ -47,7 +47,7 @@ class ManifestParser
             $composerData = [];
         }
 
-        // --- nwidart keys (all optional per D-01) ---
+        $schema_version = $data['schema_version'] ?? 1;
         $name = $data['name'] ?? basename($addonPath);
         $alias = $data['alias'] ?? null;
         $providers = (array) ($data['providers'] ?? []);
@@ -68,6 +68,7 @@ class ManifestParser
         $description = $this->resolveDescription($data['description'] ?? null);
 
         return new ManifestData(
+            schema_version: $schema_version,
             name: (string) $name,
             alias: $alias !== null ? (string) $alias : null,
             type: (string) $type,
