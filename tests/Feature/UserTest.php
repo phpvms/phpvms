@@ -241,7 +241,7 @@ test('api flight list excludes flights without allowable subfleets', function ()
     $response = $this->get('/api/flights');
     $response->assertOk();
 
-    $flightIds = collect($response->json('data'))->pluck('id')->map(fn ($id): int => (int) $id)->all();
+    $flightIds = collect($response->json('data'))->pluck('id')->all();
 
     expect($flightIds)
         ->toContain($allowedFlight->id)

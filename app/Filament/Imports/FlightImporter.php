@@ -191,8 +191,6 @@ class FlightImporter extends Importer
             'route_code'     => $this->data['route_code'],
             'route_leg'      => $this->data['route_leg'],
             'days'           => self::setDays($this->data['days']),
-        ], [
-            'id' => Utils::generateNewId(),
         ]);
     }
 

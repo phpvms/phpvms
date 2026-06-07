@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\Metar;
+use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
@@ -33,6 +34,7 @@ use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -49,6 +51,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laracasts\Flash\Flash;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 use PhpUnitsOfMeasure\Exception\UnknownUnitOfMeasure;
@@ -95,6 +98,15 @@ class AppServiceProvider extends ServiceProvider
                 <link rel="stylesheet" href="https://fonts.bunny.net/css?family=encode-sans:500,600,700|geist-mono:400,500|jetbrains-mono:400,500,600&display=swap">
                 HTML,
         );
+
+        /**
+         * Nano ID string helpers, mirroring Laravel's Str::uuid()/Str::ulid().
+         * Str::nanoid() generates an ID via the hidehalo/nanoid client using
+         * the project's alphabet/length; Str::isNanoid() validates one.
+         */
+        Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => (new NanoidClient($length))->formattedId(BaseModel::ID_ALPHABET, $length));
+
+        Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
 
         Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
 

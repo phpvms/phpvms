@@ -7,9 +7,8 @@ use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\NavaidType;
-use App\Traits\HashIdTrait;
+use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -83,15 +82,12 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-#[WithoutIncrementing]
 class Acars extends Model
 {
     use HasFactory;
-    use HashIdTrait;
+    use HasNanoIds;
 
     public $table = 'acars';
-
-    protected $keyType = 'string';
 
     public $fillable = [
         'id',

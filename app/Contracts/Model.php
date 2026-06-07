@@ -20,6 +20,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
     public const ID_MAX_LENGTH = 16;
 
     /**
+     * Alphabet used to generate Nano ID primary keys
+     */
+    public const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+    /**
      * For the factories, skip the mutators. Only apply to one instance
      */
     public $skip_mutator = false;

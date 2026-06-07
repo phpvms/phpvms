@@ -3,8 +3,8 @@
 namespace App\Support;
 
 use App\Contracts\Model;
-use Hidehalo\Nanoid\Client;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Str;
 use Nwidart\Modules\Facades\Module;
 use Pdp\Rules;
 
@@ -14,17 +14,13 @@ use Pdp\Rules;
 class Utils
 {
     /**
-     * Generate a new ID with a given length
+     * Generate a new Nano ID with a given length.
+     *
+     * @deprecated use Str::nanoid()
      */
     public static function generateNewId(?int $length = null): string
     {
-        if (!$length) {
-            $length = Model::ID_MAX_LENGTH;
-        }
-
-        $client = new Client($length);
-
-        return $client->formattedId('0123456789abcdefghijklmnopqrstuvwxyz', $length);
+        return Str::nanoid($length ?? Model::ID_MAX_LENGTH);
     }
 
     /**

@@ -8,7 +8,6 @@ use App\Services\Installer\InstallerService;
 use App\Services\Installer\SeederService;
 use App\Services\KvpService;
 use App\Services\VersionService;
-use App\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -23,6 +22,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 use function Illuminate\Support\defer;
@@ -133,7 +133,7 @@ class Maintenance extends Page
         return Action::make('enableWebCron')
             ->label(__('filament.maintenance_cron_change_id'))
             ->action(function (): void {
-                $id = Utils::generateNewId(24);
+                $id = Str::nanoid(24);
                 setting_save('cron.random_id', $id);
                 $this->cron['random_id'] = url(route('api.maintenance.cron', $id));
 

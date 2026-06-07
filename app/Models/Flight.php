@@ -6,9 +6,8 @@ use App\Casts\DistanceCast;
 use App\Contracts\Model;
 use App\Enums\FlightType;
 use App\Support\Days;
-use App\Traits\HashIdTrait;
+use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -140,11 +139,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
-#[WithoutIncrementing]
 class Flight extends Model
 {
     use HasFactory;
-    use HashIdTrait;
+    use HasNanoIds;
     use LogsActivity;
     use SoftDeletes;
     use Sortable;
@@ -155,8 +153,6 @@ class Flight extends Model
     public $hours;
 
     public $minutes;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
