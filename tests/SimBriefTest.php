@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Models\Acars;
 use App\Models\Aircraft;
+use App\Models\Bid;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\FareType;
 use App\Models\Enums\UserState;
@@ -267,6 +268,114 @@ final class SimBriefTest extends TestCase
         $subfleet = $body['flight']['simbrief']['subfleet'];
         $this->assertEquals($fares[0]['id'], $subfleet['fares'][0]['id']);
         $this->assertEquals($fares[0]['count'], $subfleet['fares'][0]['count']);
+    }
+
+    /**
+     * The aircraft used to generate the OFP is written back to the user's bid
+     *
+     * @throws \Exception
+     */
+    public function test_ofp_download_writes_aircraft_to_bid(): void
+    {
+        $userinfo = $this->createUserData();
+        $this->user = $userinfo['user'];
+        $aircraft = $userinfo['aircraft']->first();
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create();
+
+        $bid = Bid::create([
+            'user_id'   => $this->user->id,
+            'flight_id' => $flight->id,
+        ]);
+
+        $this->downloadOfp($this->user, $flight, $aircraft, []);
+
+        $bid->refresh();
+        $this->assertEquals($aircraft->id, $bid->aircraft_id);
+    }
+
+    /**
+     * A bid holding a different aircraft is synced to the aircraft the OFP
+     * was generated with
+     *
+     * @throws \Exception
+     */
+    public function test_ofp_download_overwrites_stale_bid_aircraft(): void
+    {
+        $userinfo = $this->createUserData();
+        $this->user = $userinfo['user'];
+        $old_aircraft = $userinfo['aircraft'][0];
+        $new_aircraft = $userinfo['aircraft'][1];
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create();
+
+        $bid = Bid::create([
+            'user_id'     => $this->user->id,
+            'flight_id'   => $flight->id,
+            'aircraft_id' => $old_aircraft->id,
+        ]);
+
+        $this->downloadOfp($this->user, $flight, $new_aircraft, []);
+
+        $bid->refresh();
+        $this->assertEquals($new_aircraft->id, $bid->aircraft_id);
+    }
+
+    /**
+     * With bids.block_aircraft enabled, the bid is left untouched when another
+     * bid already holds the OFP aircraft
+     *
+     * @throws \Exception
+     */
+    public function test_ofp_download_skips_bid_sync_when_aircraft_blocked(): void
+    {
+        $this->updateSetting('bids.block_aircraft', true);
+
+        $userinfo = $this->createUserData();
+        $this->user = $userinfo['user'];
+        $aircraft = $userinfo['aircraft']->first();
+
+        // Another user's bid already holds this aircraft
+        $other_user = User::factory()->create();
+        $other_flight = Flight::factory()->create();
+        Bid::create([
+            'user_id'     => $other_user->id,
+            'flight_id'   => $other_flight->id,
+            'aircraft_id' => $aircraft->id,
+        ]);
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create();
+
+        $bid = Bid::create([
+            'user_id'   => $this->user->id,
+            'flight_id' => $flight->id,
+        ]);
+
+        $this->downloadOfp($this->user, $flight, $aircraft, []);
+
+        $bid->refresh();
+        $this->assertNull($bid->aircraft_id);
+    }
+
+    /**
+     * Downloading an OFP without a bid on the flight never creates a bid
+     *
+     * @throws \Exception
+     */
+    public function test_ofp_download_without_bid_creates_no_bid(): void
+    {
+        $userinfo = $this->createUserData();
+        $this->user = $userinfo['user'];
+
+        /** @var Flight $flight */
+        $flight = Flight::factory()->create();
+
+        $this->downloadOfp($this->user, $flight, $userinfo['aircraft']->first(), []);
+
+        $this->assertEquals(0, Bid::count());
     }
 
     /**
