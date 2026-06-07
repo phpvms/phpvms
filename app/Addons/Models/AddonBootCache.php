@@ -10,7 +10,7 @@ namespace App\Addons\Models;
  * The on-disk format remains a plain PHP array (var_export). Use fromArray() to
  * hydrate when reading and toArray() to serialize back before writing.
  */
-final readonly class AddonRuntime
+final readonly class AddonBootCache
 {
     /**
      * @param string                               $name         Human-readable module name.
@@ -57,7 +57,7 @@ final readonly class AddonRuntime
             registryId: isset($data['registry_id']) ? (string) $data['registry_id'] : null,
             version: isset($data['version']) ? (string) $data['version'] : null,
             namespace: (string) ($data['namespace'] ?? ''),
-            providers: array_values(array_filter((array) ($data['providers'] ?? []), 'is_string')),
+            providers: array_values(array_filter((array) ($data['providers'] ?? []), is_string(...))),
             path: (string) ($data['path'] ?? ''),
             autoloadPath: (string) ($data['autoload_path'] ?? ''),
             layout: (string) ($data['layout'] ?? 'app'),

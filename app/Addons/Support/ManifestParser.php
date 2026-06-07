@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons\Support;
 
-use App\Addons\Models\ManifestData;
+use App\Addons\Models\AddonManifest;
 
 /**
  * Lenient parser for addon module.json + composer.json manifests.
@@ -22,7 +22,7 @@ class ManifestParser
      * Returns null when module.json is absent or contains invalid JSON so the
      * caller can skip-and-log rather than crashing boot (D-15).
      */
-    public function parse(string $addonPath): ?ManifestData
+    public function parse(string $addonPath): ?AddonManifest
     {
         $manifestPath = $addonPath.'/module.json';
 
@@ -68,7 +68,7 @@ class ManifestParser
         // --- description: null when absent or blank ---
         $description = $this->resolveDescription($data['description'] ?? null);
 
-        return new ManifestData(
+        return new AddonManifest(
             schema_version: $schema_version,
             name: (string) $name,
             alias: $alias !== null ? (string) $alias : null,

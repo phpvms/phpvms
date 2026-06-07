@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Filament;
 
 use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use Filament\PanelRegistry;
 
 /**
@@ -51,9 +51,9 @@ class FilamentPanelExtender
      *
      * @return array<string, list<array{method: string, in: string, for: string}>>
      */
-    public function discoveriesFor(AddonRuntime $entry): array
+    public function discoveriesFor(AddonBootCache $entry): array
     {
-        if (empty($entry->filament)) {
+        if ($entry->filament === []) {
             return [];
         }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Compat;
 
 use App\Addons\AddonRegistry;
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
@@ -33,7 +33,7 @@ class ModuleRepository
     public function all(): Collection
     {
         return $this->registry->all()
-            ->mapWithKeys(function (AddonRuntime $runtime): array {
+            ->mapWithKeys(function (AddonBootCache $runtime): array {
                 $addon = Addon::fromBootCache($runtime);
                 $shim = $this->resolveShim($addon);
 
@@ -56,7 +56,7 @@ class ModuleRepository
         // Intentionally reads from DB (addons table), not the boot cache — the cache may
         // be absent during installer/migration flows where DB is the only source of truth.
         return $this->registry->enabled()
-            ->mapWithKeys(function (AddonRuntime $runtime): array {
+            ->mapWithKeys(function (AddonBootCache $runtime): array {
                 $addon = Addon::fromBootCache($runtime);
                 $shim = $this->resolveShim($addon);
 
@@ -72,7 +72,7 @@ class ModuleRepository
      */
     public function find(string $name): ?Module
     {
-        /** @var AddonRuntime $runtime */
+        /** @var AddonBootCache $runtime */
         foreach ($this->registry->all() as $runtime) {
             $addon = Addon::fromBootCache($runtime);
             $shim = $this->resolveShim($addon);
