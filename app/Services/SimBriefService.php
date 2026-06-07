@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Service;
 use App\Models\Acars;
+use App\Models\Bid;
 use App\Models\Enums\AcarsType;
 use App\Models\Enums\AirframeSource;
 use App\Models\Pirep;
@@ -100,10 +101,40 @@ class SimBriefService extends Service
         }
 
         // Save this into the Simbrief table, if it doesn't already exist
-        return SimBrief::updateOrCreate(
+        $simbrief = SimBrief::updateOrCreate(
             ['id' => $ofp_id],
             $attrs
         );
+
+        // Sync the aircraft the OFP was generated with back to the user's bid
+        $this->syncBidAircraft($user_id, $flight_id, $ac_id);
+
+        return $simbrief;
+    }
+
+    /**
+     * Update the user's bid for a flight (if one exists) with the aircraft
+     * the OFP was generated with, so the bid always reflects the briefing
+     */
+    private function syncBidAircraft(string $user_id, string $flight_id, string $ac_id): void
+    {
+        $bid = Bid::where(['user_id' => $user_id, 'flight_id' => $flight_id])->first();
+        if (!$bid || $bid->aircraft_id === (int) $ac_id) {
+            return;
+        }
+
+        // Respect aircraft blocking, don't take an aircraft another bid already holds
+        if (setting('bids.block_aircraft')) {
+            $blocked = Bid::where('aircraft_id', $ac_id)->where('id', '!=', $bid->id)->exists();
+            if ($blocked) {
+                Log::info('SimBrief | Bid aircraft sync skipped, aircraft='.$ac_id.' is held by another bid');
+
+                return;
+            }
+        }
+
+        $bid->aircraft_id = $ac_id;
+        $bid->save();
     }
 
     /**
