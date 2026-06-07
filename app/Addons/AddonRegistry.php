@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
@@ -26,14 +26,14 @@ class AddonRegistry
      *
      * Returns an empty array when the cache is absent.
      *
-     * @return Collection<AddonRuntime>
+     * @return Collection<AddonBootCache>
      */
     public function enabled(): Collection
     {
         return collect(array_values(
             array_filter(
                 $this->bootCache->read(),
-                fn (AddonRuntime $entry): bool => $entry->enabled,
+                fn (AddonBootCache $entry): bool => $entry->enabled,
             )
         ));
     }
@@ -41,11 +41,11 @@ class AddonRegistry
     /**
      * Return an Eloquent Collection of every Addon row (enabled and disabled).
      *
-     * @return Collection<AddonRuntime>
+     * @return Collection<AddonBootCache>
      */
     public function all(): Collection
     {
-        return collect(array_map(fn (AddonRuntime $record): AddonRuntime => $record, $this->bootCache->read()));
+        return collect(array_map(fn (AddonBootCache $record): AddonBootCache => $record, $this->bootCache->read()));
     }
 
     /**

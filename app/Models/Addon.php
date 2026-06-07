@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -67,7 +67,7 @@ class Addon extends Model
         'installed_at' => 'nullable|date',
     ];
 
-    public static function fromBootCache(AddonRuntime $runtime): Addon
+    public static function fromBootCache(AddonBootCache $runtime): Addon
     {
         $addon = new Addon();
         $addon->name = $runtime->name;

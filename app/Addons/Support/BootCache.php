@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons\Support;
 
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use RuntimeException;
 
 /**
@@ -58,7 +58,7 @@ class BootCache
      *  - the file is absent (D-10 absence-only trust), or
      *  - the file's schema !== self::SCHEMA (stale/old-shape cache, D2-09).
      *
-     * @return list<AddonRuntime>
+     * @return list<AddonBootCache>
      */
     public function read(): array
     {
@@ -81,7 +81,7 @@ class BootCache
 
         return array_values(
             array_map(
-                AddonRuntime::fromArray(...),
+                AddonBootCache::fromArray(...),
                 $addons,
             )
         );
@@ -116,14 +116,14 @@ class BootCache
      * Uses a per-process temp file in the same directory so rename() is
      * POSIX-atomic and never crosses filesystems (T-03-02, T-03-03).
      *
-     * @param list<AddonRuntime> $addons
+     * @param list<AddonBootCache> $addons
      */
     public function write(array $addons): void
     {
         $wrapper = [
             'schema'       => self::SCHEMA,
             'generated_at' => gmdate('c'),
-            'addons'       => array_values(array_map(fn (AddonRuntime $e): array => $e->toArray(), $addons)),
+            'addons'       => array_values(array_map(fn (AddonBootCache $e): array => $e->toArray(), $addons)),
         ];
 
         $content = '<?php'.PHP_EOL.'return '.var_export($wrapper, true).';'.PHP_EOL;

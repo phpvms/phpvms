@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons\Compat;
 
-use App\Addons\Models\ManifestData;
+use App\Addons\Models\AddonManifest;
 use App\Addons\Services\AddonRuntimeService;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
@@ -20,8 +20,8 @@ use Illuminate\Support\Str;
  */
 class Module
 {
-    /** @var ManifestData|false|null false = parse attempted but failed; null = not yet parsed */
-    private ManifestData|false|null $manifest = null;
+    /** @var AddonManifest|false|null false = parse attempted but failed; null = not yet parsed */
+    private AddonManifest|false|null $manifest = null;
 
     public function __construct(
         private readonly Addon $addon,
@@ -144,13 +144,13 @@ class Module
      *
      * Returns null when the manifest is missing or invalid.
      */
-    private function resolveManifest(): ?ManifestData
+    private function resolveManifest(): ?AddonManifest
     {
         if ($this->manifest === null) {
             $parsed = $this->parser->parse($this->addon->path);
-            $this->manifest = $parsed instanceof ManifestData ? $parsed : false;
+            $this->manifest = $parsed instanceof AddonManifest ? $parsed : false;
         }
 
-        return $this->manifest instanceof ManifestData ? $this->manifest : null;
+        return $this->manifest instanceof AddonManifest ? $this->manifest : null;
     }
 }

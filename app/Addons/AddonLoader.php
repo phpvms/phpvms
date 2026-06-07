@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
-use App\Addons\Models\AddonRuntime;
+use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\AutoloadGuard;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
@@ -86,7 +86,7 @@ class AddonLoader
      * Normalises the namespace prefix to end with exactly one trailing backslash.
      * Uses addPsr4() (not prependPsr4()) so core mappings retain precedence (PITFALLS #7).
      */
-    private function registerPsr4(ClassLoader $loader, AddonRuntime $entry): void
+    private function registerPsr4(ClassLoader $loader, AddonBootCache $entry): void
     {
         if ($entry->namespace === '' || $entry->autoloadPath === '') {
             return;
@@ -104,7 +104,7 @@ class AddonLoader
      * Laravel deduplicates already-registered providers by class, so calling
      * this method multiple times for the same entry is idempotent and Octane-safe.
      */
-    private function registerProviders(Application $app, AddonRuntime $entry): void
+    private function registerProviders(Application $app, AddonBootCache $entry): void
     {
         foreach ($entry->providers as $providerClass) {
             if ($providerClass === '') {

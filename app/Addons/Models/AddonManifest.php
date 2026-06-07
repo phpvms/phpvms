@@ -15,7 +15,7 @@ namespace App\Addons\Models;
  *   - For bundled addons, name/alias are the human identity.
  *   - For managed addons, registryId is the canonical identity (MAN-03).
  */
-final readonly class ManifestData
+final readonly class AddonManifest
 {
     /**
      * @param int|null             $schema_version Schema version of the module.json

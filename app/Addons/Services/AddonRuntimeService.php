@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Addons\Services;
 
-use App\Addons\Models\AddonRuntime;
-use App\Addons\Models\ManifestData;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Models\AddonManifest;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
@@ -48,7 +48,7 @@ class AddonRuntimeService
     {
 
         $manifests = $this->scanLocation(config('addons.paths.base'));
-        /** @var list<AddonRuntime> $rows */
+        /** @var list<AddonBootCache> $rows */
         $rows = [];
 
         // Scenario 1: fresh install, all found addons are enabled
@@ -76,7 +76,7 @@ class AddonRuntimeService
             }
         }
 
-        /** @var ManifestData $m */
+        /** @var AddonManifest $m */
         foreach ($manifests as $m) {
             // The addon does have  a registry_id - so it's a legacy addon
             if ($m->registryId !== null) {
@@ -184,7 +184,7 @@ class AddonRuntimeService
      * Path-traversal guard (T-04-03): resolved realpath must stay within the
      * scanned base dir; suspicious directories are skipped and logged.
      *
-     * @return ManifestData[]
+     * @return AddonManifest[]
      */
     private function scanLocation(string $dir): array
     {
@@ -212,7 +212,7 @@ class AddonRuntimeService
 
             $manifest = $this->parser->parse($resolved);
 
-            if (!$manifest instanceof ManifestData) {
+            if (!$manifest instanceof AddonManifest) {
                 Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
 
                 continue;
@@ -227,9 +227,9 @@ class AddonRuntimeService
     /**
      * Build an AddonCacheEntry from a manifest and an explicit enabled flag.
      */
-    private function buildRow(ManifestData $m, bool $enabled): AddonRuntime
+    private function buildRow(AddonManifest $m, bool $enabled): AddonBootCache
     {
-        return new AddonRuntime(
+        return new AddonBootCache(
             name: $m->name,
             alias: $m->alias,
             type: $m->type,
@@ -256,7 +256,7 @@ class AddonRuntimeService
      * Uses firstOrNew + save so enabled is set only on row creation; an existing
      * operator-disabled row keeps enabled=false across re-prime (D-12).
      */
-    private function upsert(ManifestData $m): Addon
+    private function upsert(AddonManifest $m): Addon
     {
         if ($m->registryId !== null) {
             $addon = Addon::query()->firstOrNew(['registry_id' => $m->registryId]);
@@ -294,7 +294,7 @@ class AddonRuntimeService
      *
      * @return array<string, array<string, string>> panel => component => absolute path
      */
-    private function probeFilament(ManifestData $m): array
+    private function probeFilament(AddonManifest $m): array
     {
         $filamentBase = $m->autoloadPath.'/Filament';
 
