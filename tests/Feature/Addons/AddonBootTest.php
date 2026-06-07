@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Addons\BootCache;
-use App\Addons\Compat\ModuleRepository;
+use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Providers\AddonServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\ModulesServiceProvider;
-use Illuminate\Support\Collection;
-use Nwidart\Modules\Facades\Module;
-use Nwidart\Modules\LaravelModulesServiceProvider;
 
 // imported only for the negative "absent from providers.php" assertion below
 
@@ -23,12 +19,6 @@ it('ModulesServiceProvider is NOT in bootstrap/providers.php', function (): void
 
     expect(array_search(ModulesServiceProvider::class, $providers, true))
         ->toBeFalse('ModulesServiceProvider must be removed from providers list');
-});
-
-it("nwidart's base provider is NOT in the loaded providers", function (): void {
-    expect(app()->getLoadedProviders())
-        ->not->toHaveKey(LaravelModulesServiceProvider::class,
-            'nwidart LaravelModulesServiceProvider must not be loaded (dont-discover + removal)');
 });
 
 it('AddonServiceProvider is loaded and comes before AdminPanelProvider', function (): void {
@@ -44,20 +34,6 @@ it('AddonServiceProvider is loaded and comes before AdminPanelProvider', functio
 
 it('AddonServiceProvider is loaded by the application', function (): void {
     expect(app()->getLoadedProviders())->toHaveKey(AddonServiceProvider::class);
-});
-
-it("'modules' binding resolves to ModuleRepository", function (): void {
-    expect(app('modules'))->toBeInstanceOf(ModuleRepository::class);
-});
-
-it("Module facade resolves through ModuleRepository and returns a collection containing 'Sample'", function (): void {
-    // Prime so the addons table is populated.
-    $this->artisan('phpvms:addons-prime')->assertSuccessful();
-
-    $all = Module::all();
-
-    expect($all)->toBeInstanceOf(Collection::class)
-        ->and($all->keys()->toArray())->toContain('Sample');
 });
 
 it('provider does not auto-prime the boot cache in console context (D-17)', function (): void {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons;
 
 use App\Addons\Models\AddonRuntime;
+use App\Addons\Support\AutoloadGuard;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Foundation\Application;
@@ -46,7 +47,7 @@ class AddonLoader
     {
         $rows = $this->registry->enabled();
 
-        if ($rows === []) {
+        if ($rows->isEmpty()) {
             return;
         }
 
@@ -109,6 +110,7 @@ class AddonLoader
             if ($providerClass === '') {
                 continue;
             }
+
             $app->register($providerClass);
         }
     }

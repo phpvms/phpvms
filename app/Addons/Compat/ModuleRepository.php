@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Addons\Compat;
 
 use App\Addons\AddonRegistry;
-use App\Addons\ManifestParser;
 use App\Addons\Models\AddonRuntime;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
 
 /**
  * Compatibility repository satisfying the duck-typed surface of the nwidart
@@ -84,22 +83,6 @@ class ModuleRepository
         }
 
         return null;
-    }
-
-    /**
-     * Find a module shim by name; throws when not found.
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function findOrFail(string $name): Module
-    {
-        $shim = $this->find($name);
-
-        if (!$shim instanceof Module) {
-            throw new ModuleNotFoundException($name);
-        }
-
-        return $shim;
     }
 
     /**

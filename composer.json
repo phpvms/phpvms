@@ -107,7 +107,7 @@
     "rector/rector": "^2.4.2",
     "driftingly/rector-laravel": "^2.3",
     "laravel/pail": "^1.2.6",
-    "pestphp/pest": "^4.6.3",
+    "pestphp/pest": "*",
     "pestphp/pest-plugin-type-coverage": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.1",
     "pestphp/pest-plugin-livewire": "^4.0",

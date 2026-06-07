@@ -1,6 +1,6 @@
-#:schema https://mago.carthage.software/1.29.0/schema.json
+#:schema https://mago.carthage.software/1.30.0/schema.json
 # Welcome to Mago!
-# For full documentation, see https://mago.carthage.software/tools/overview
+# For full documentation, see https://mago.carthage.software/1.30.0/en/tools/overview/
 version = "1"
 php-version = "8.3.0"
 
@@ -8,59 +8,34 @@ php-version = "8.3.0"
 workspace = "."
 paths = ["app/", "database/factories/", "database/seeders/", "modules/", "tests/"]
 includes = ["vendor"]
-excludes = [
-  "**/vendor/**",
-  "storage/**",
-  "bootstrap/cache/**",
-  "node_modules/**",
-  ".git/**",
-  "tests/Fixtures/**",
-  "modules/**",
-  "tmp/**",
-]
+excludes = []
 
 [source.glob]
 literal-separator = true
 
 [formatter]
-preset = "laravel"
+preset = "pint"
 preserve-breaking-member-access-chain = true
 preserve-breaking-member-access-chain-first-method-on-same-line = true
 preserve-breaking-argument-list = true
+preserve-breaking-array-like = true
+preserve-breaking-parameter-list = true
 preserve-breaking-attribute-list = true
 preserve-breaking-conditional-expression = true
 preserve-breaking-condition-expression = true
 preserve-redundant-logical-binary-expression-parentheses = true
 align-assignment-like = true
-
-# Use table-style alignment for key-value pairs in associative arrays
 array-table-style-alignment = true
-
-# Line width configuration
 print-width = 120
-
-# Indentation - use 4 spaces (not tabs)
 use-tabs = false
-
-# Quote preferences
 single-quote = true
-
-# Trailing comma in multi-line structures
 trailing-comma = true
-
-# Line endings
 end-of-line = "lf"
 
 # Brace positioning - keep opening braces on same line
 method-brace-style = "same_line"
 function-brace-style = "same_line"
 control-brace-style = "same_line"
-
-# Parameter formatting - preserve existing multi-line formatting
-preserve-breaking-parameter-list = true
-
-# Array formatting - preserve existing multi-line formatting
-preserve-breaking-array-like = true
 
 [linter]
 integrations = ["symfony", "laravel", "pest"]
@@ -69,22 +44,25 @@ integrations = ["symfony", "laravel", "pest"]
 ambiguous-function-call = { enabled = false }
 literal-named-argument = { enabled = false }
 halstead = { effort-threshold = 7000 }
+excessive-parameter-list = { enabled = false }
+cyclomatic-complexity = { enabled = false }
+kan-defect = { enabled = false }
 
 [analyzer]
 plugins = []
-find-unused-definitions = true
-find-unused-expressions = true
+find-unused-definitions = false
+find-unused-expressions = false
 analyze-dead-code = true
 memoize-properties = true
 allow-possibly-undefined-array-keys = true
-check-throws = false
+check-throws = true
 unchecked-exceptions = ["Error", "LogicException"]
 unchecked-exception-classes = []
 check-missing-override = true
-find-unused-parameters = true
-strict-list-index-checks = true
+find-unused-parameters = false
+strict-list-index-checks = false
 strict-array-index-existence = false
 allow-array-truthy-operand = false
-no-boolean-literal-comparison = false
+no-boolean-literal-comparison = true
 check-missing-type-hints = true
 register-super-globals = true

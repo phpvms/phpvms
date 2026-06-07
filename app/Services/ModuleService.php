@@ -82,7 +82,7 @@ class ModuleService extends Service
         }
 
         // setActive() flips the enabled flag, persists to DB, and regenerates the boot cache
-        // (via ModuleShim::setActive() → AddonBootService::run()). The per-module migrate command
+        // (via ModuleShim::setActive() → AddonRuntimeService::run()). The per-module migrate command
         // (module:migrate) belonged to nwidart and no longer exists. Addon migration execution
         // is owned by the standard `php artisan migrate` path (Phase 5 lifecycle).
         $module->setActive($enabled);

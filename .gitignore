@@ -110,3 +110,4 @@ modules_statuses.json
 .env.testing
 /intellij_style.xml
 /justfile
+/package.xml

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Addons\Compat\Module;
 use App\Addons\Compat\ModuleRepository;
-use App\Addons\ManifestParser;
-use App\Addons\Models\AddonBootService;
 use App\Addons\Models\BootCache;
+use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Nwidart\Modules\Exceptions\ModuleNotFoundException;
 
@@ -14,8 +14,8 @@ beforeEach(function (): void {
     // Ensure a fresh boot cache for each test.
     app(BootCache::class)->delete();
 
-    // Seed DB rows + boot cache via AddonBootService so tests start from a known state.
-    app(AddonBootService::class)->run();
+    // Seed DB rows + boot cache via AddonRuntimeService so tests start from a known state.
+    app(AddonRuntimeService::class)->run();
 });
 
 afterEach(function (): void {
@@ -221,7 +221,7 @@ it('getStudlyName() returns StudlyCase of the module name', function (): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 it('delete() removes the Addon DB row and the boot cache no longer lists it', function (): void {
-    // Create a temporary addon directory with a valid module.json so AddonBootService
+    // Create a temporary addon directory with a valid module.json so AddonRuntimeService
     // can discover it and write it into the boot cache.
     $tmpDir = storage_path('app/addons/ThrowawayTest'.uniqid());
     mkdir($tmpDir, 0755, true);
@@ -231,10 +231,10 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
         'providers' => [],
     ]));
 
-    // Run AddonBootService so the temp addon is discovered, upserted, and cached.
-    app(AddonBootService::class)->run();
+    // Run AddonRuntimeService so the temp addon is discovered, upserted, and cached.
+    app(AddonRuntimeService::class)->run();
 
-    // Fetch the DB row AddonBootService created for the temp addon.
+    // Fetch the DB row AddonRuntimeService created for the temp addon.
     $throwaway = Addon::query()->where('path', $tmpDir)->firstOrFail();
     $throwawayId = $throwaway->id;
 

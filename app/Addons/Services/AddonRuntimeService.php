@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Addons;
+namespace App\Addons\Services;
 
 use App\Addons\Models\AddonRuntime;
 use App\Addons\Models\ManifestData;
+use App\Addons\Support\BootCache;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -203,7 +205,7 @@ class AddonRuntimeService
 
             // T-04-03: skip if the resolved path escapes the base directory.
             if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
-                Log::warning(sprintf("AddonBootService: skipping '%s' — path traversal guard triggered (T-04-03)", $subDir));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered (T-04-03)", $subDir));
 
                 continue;
             }
@@ -211,7 +213,7 @@ class AddonRuntimeService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof ManifestData) {
-                Log::warning(sprintf("AddonBootService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
 
                 continue;
             }

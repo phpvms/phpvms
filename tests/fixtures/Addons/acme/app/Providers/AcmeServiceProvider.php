@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace PhpvmsAddonFixture\Providers;
 
-use App\Addons\Models\Support\BaseAddonServiceProvider;
+use App\Contracts\Modules\ServiceProvider;
+use Override;
 
 /**
  * Fixture addon provider — extends the base to exercise all auto-wire paths.
@@ -16,15 +17,15 @@ use App\Addons\Models\Support\BaseAddonServiceProvider;
  * that the reflection walk-up logic works for this file layout:
  *   {root}/app/Providers/AcmeServiceProvider.php  → dirname(..., 3) = {root}
  */
-class AcmeServiceProvider extends BaseAddonServiceProvider
+class AcmeServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     protected function addonNamespace(): string
     {
         return 'acme';
     }
 
-    #[\Override]
+    #[Override]
     protected function addonRootNamespace(): string
     {
         return 'PhpvmsAddonFixture';

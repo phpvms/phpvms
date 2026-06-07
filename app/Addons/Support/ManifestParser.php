@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Addons;
+namespace App\Addons\Support;
 
 use App\Addons\Models\ManifestData;
 
@@ -31,6 +31,7 @@ class ManifestParser
         }
 
         $contents = file_get_contents($manifestPath);
+        /** @var array<string, mixed> $data */
         $data = json_decode((string) $contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {

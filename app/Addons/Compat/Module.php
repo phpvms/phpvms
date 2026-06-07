@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Addons\Compat;
 
-use App\Addons\AddonRuntimeService;
-use App\Addons\ManifestParser;
 use App\Addons\Models\ManifestData;
+use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Str;
 
