@@ -7,6 +7,6 @@ return [
     'scan_for_new_on_boot' => true,
     'paths'                => [
         'base'   => base_path('modules'),
-        'assets' => public_path('modules'),
+        'assets' => public_path('ext'),
     ],
 ];
