@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
-use App\Addons\Models\AutoloadGuard;
-use App\Addons\Models\BootCache;
+use App\Addons\AddonAutoLoader;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\AutoloadGuard;
+use App\Addons\Support\BootCache;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
+use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 
 // ---------------------------------------------------------------------------
@@ -14,7 +16,7 @@ use Illuminate\Support\ServiceProvider;
 // ---------------------------------------------------------------------------
 
 /**
- * Build a minimal boot-cache row for a given namespace / autoload path.
+ * Build a minimal boot-cache row array for a given namespace / autoload path.
  *
  * @param  list<string>         $providers
  * @return array<string, mixed>
@@ -39,28 +41,30 @@ function addonRow(string $namespace, string $autoloadPath, array $providers = []
 }
 
 /**
- * Build an AddonLoader with a real guard and a registry stub whose enabled()
- * returns $rows.
+ * Build an AddonLoader with a real guard and a runtime stub whose enabled()
+ * returns a Collection of AddonBootCache objects built from $rows.
  *
  * @param array<int, array<string, mixed>> $rows
  */
-function loaderWithRows(array $rows): AddonLoader
+function loaderWithRows(array $rows): AddonAutoLoader
 {
-    $registry = new class($rows) extends AddonRegistry
+    $objects = array_map(AddonBootCache::fromArray(...), $rows);
+
+    $runtime = new class($objects) extends BootCache
     {
-        /** @param array<int, array<string, mixed>> $rows */
-        public function __construct(private readonly array $rows)
+        /** @param list<AddonBootCache> $objects */
+        public function __construct(private readonly array $objects)
         {
-            // Skip parent constructor (BootCache not needed).
+            // Skip parent constructor — no file I/O needed in tests.
         }
 
-        public function enabled(): array
+        public function enabled(): Collection
         {
-            return $this->rows;
+            return collect($this->objects);
         }
     };
 
-    return new AddonLoader($registry, new AutoloadGuard());
+    return new AddonAutoLoader($runtime, new AutoloadGuard());
 }
 
 // ---------------------------------------------------------------------------
@@ -126,21 +130,24 @@ it('register() propagates the guard exception and adds no PSR-4 prefix', functio
         }
     };
 
-    $registry = new class([addonRow($namespace, $autoloadPath)]) extends AddonRegistry
+    $objects = [AddonBootCache::fromArray(addonRow($namespace, $autoloadPath))];
+
+    $runtime = new class($objects) extends BootCache
     {
-        public function __construct(private readonly array $rows)
+        /** @param list<AddonBootCache> $objects */
+        public function __construct(private readonly array $objects)
         {
-            // Skip parent constructor (BootCache not needed).
+            // Skip parent constructor.
         }
 
-        public function enabled(): array
+        public function enabled(): Collection
         {
-            return $this->rows;
+            return collect($this->objects);
         }
     };
 
     $injectedLoader = new ClassLoader();
-    $addonLoader = new AddonLoader($registry, $throwingGuard);
+    $addonLoader = new AddonAutoLoader($runtime, $throwingGuard);
 
     expect(fn () => $addonLoader->register(app(), $injectedLoader))
         ->toThrow(AutoloadModeException::class);

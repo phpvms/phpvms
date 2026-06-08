@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Addons\Compat;
 
-use App\Addons\AddonRegistry;
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
@@ -14,14 +14,14 @@ use Illuminate\Support\Collection;
  * Compatibility repository satisfying the duck-typed surface of the nwidart
  * Module facade (container key: 'modules').
  *
- * Backed by AddonRegistry + ManifestParser; stateless and Octane-safe.
+ * Backed by AddonRuntime + ManifestParser; stateless and Octane-safe.
  * Do NOT bind this to the 'modules' key while nwidart is still active —
  * the binding is deferred to a later cutover task (Phase 8).
  */
 class ModuleRepository
 {
     public function __construct(
-        private readonly AddonRegistry $registry,
+        private readonly BootCache $registry,
         private readonly ManifestParser $parser,
     ) {}
 
@@ -45,7 +45,7 @@ class ModuleRepository
      * Return enabled addon shims keyed by module name.
      *
      * NOTE: reads from DB + parses manifests (cold/admin path). A future
-     * optimisation could build from AddonRegistry::enabled() (boot cache)
+     * optimisation could build from AddonRuntime::enabled() (boot cache)
      * once ModuleShim can be constructed from a cache row, avoiding the
      * per-row manifest parse entirely.
      *

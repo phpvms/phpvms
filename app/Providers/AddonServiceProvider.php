@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Addons\AddonLoader;
-use App\Addons\AddonRegistry;
+use App\Addons\AddonAutoLoader;
 use App\Addons\Compat\ModuleRepository;
 use App\Addons\Filament\FilamentPanelExtender;
-use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
@@ -50,11 +49,10 @@ class AddonServiceProvider extends ServiceProvider
         $this->app->singleton(BootCache::class);
         $this->app->singleton(ManifestParser::class);
         $this->app->singleton(AutoloadGuard::class);
-        $this->app->singleton(AddonRegistry::class);
-        $this->app->singleton(AddonRuntimeService::class);
+        $this->app->singleton(AddonDiscoveryService::class);
 
         // ── Phase 2 singletons ──────────────────────────────────────────────
-        $this->app->singleton(AddonLoader::class);
+        $this->app->singleton(AddonAutoLoader::class);
         $this->app->singleton(FilamentPanelExtender::class);
         $this->app->singleton(ModuleRepository::class);
 
@@ -77,7 +75,7 @@ class AddonServiceProvider extends ServiceProvider
         // cache. Empty cache → no-op. Console needs this for commands/migrations.
         // The loader contains its own guard call (re-checks the resolved ClassLoader);
         // both guards are intentional — see provider-level comment above (LOAD-08).
-        $this->app->make(AddonLoader::class)->register($this->app);
+        $this->app->make(AddonAutoLoader::class)->register($this->app);
 
         // ── Filament hook (D2-07) ────────────────────────────────────────────
         // Apply addon Filament discovery paths before panels resolve.
@@ -96,7 +94,7 @@ class AddonServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (!$this->app->runningInConsole()) {
-            $this->app->make(AddonRuntimeService::class)->primeIfNeeded();
+            $this->app->make(AddonDiscoveryService::class)->primeIfNeeded();
         }
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\AddonRegistry;
 use App\Addons\Compat\Module;
+use App\Addons\Compat\ModuleRepository;
 use App\Contracts\Service;
 
 class ModuleService extends Service
 {
     public function __construct(
-        private readonly AddonRegistry $addonRegistry
+        private readonly ModuleRepository $modules
     ) {}
 
     /**
@@ -74,8 +74,7 @@ class ModuleService extends Service
      */
     public function updateModule(string $name, bool $enabled): void
     {
-        /** @var ?Module $module */
-        $module = $this->addonRegistry->find($name);
+        $module = $this->modules->find($name);
 
         if (!$module) {
             return;
@@ -97,8 +96,7 @@ class ModuleService extends Service
      */
     public function deleteModule(string $name): void
     {
-        /** @var ?Module $module */
-        $module = $this->addonRegistry->find($name);
+        $module = $this->modules->find($name);
 
         if (!$module) {
             return;

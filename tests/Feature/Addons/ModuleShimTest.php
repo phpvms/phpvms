@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 use App\Addons\Compat\Module;
 use App\Addons\Compat\ModuleRepository;
-use App\Addons\Models\BootCache;
-use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Nwidart\Modules\Exceptions\ModuleNotFoundException;
@@ -15,7 +16,7 @@ beforeEach(function (): void {
     app(BootCache::class)->delete();
 
     // Seed DB rows + boot cache via AddonRuntimeService so tests start from a known state.
-    app(AddonRuntimeService::class)->run();
+    app(AddonDiscoveryService::class)->run();
 });
 
 afterEach(function (): void {
@@ -151,7 +152,7 @@ it('config(unknown, default) returns the default', function (): void {
 
 it('setActive(false) updates DB and removes Sample from boot cache; setActive(true) re-includes it', function (): void {
     $repo = app(ModuleRepository::class);
-    $cache = app(BootCache::class);
+    $runtime = app(BootCache::class);
 
     $shim = $repo->find('Sample');
     expect($shim)->not->toBeNull();
@@ -165,8 +166,8 @@ it('setActive(false) updates DB and removes Sample from boot cache; setActive(tr
         ->and($addonRow->enabled)->toBeFalse();
 
     // Boot cache check — Sample must be absent.
-    $cached = $cache->read();
-    $names = array_column($cached, 'name');
+    $cached = $runtime->read();
+    $names = array_map(fn (AddonBootCache $r): string => $r->name, $cached);
     expect($names)->not->toContain('Sample');
 
     // Re-enable.
@@ -176,8 +177,8 @@ it('setActive(false) updates DB and removes Sample from boot cache; setActive(tr
     expect($addonRow->enabled)->toBeTrue();
 
     // Boot cache must include Sample again.
-    $cached2 = $cache->read();
-    $names2 = array_column($cached2, 'name');
+    $cached2 = $runtime->read();
+    $names2 = array_map(fn (AddonBootCache $r): string => $r->name, $cached2);
     expect($names2)->toContain('Sample');
 });
 
@@ -232,7 +233,7 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
     ]));
 
     // Run AddonRuntimeService so the temp addon is discovered, upserted, and cached.
-    app(AddonRuntimeService::class)->run();
+    app(AddonDiscoveryService::class)->run();
 
     // Fetch the DB row AddonRuntimeService created for the temp addon.
     $throwaway = Addon::query()->where('path', $tmpDir)->firstOrFail();
@@ -243,7 +244,7 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
 
     // Confirm it's in the cache before delete.
     $before = app(BootCache::class)->read();
-    $pathsBefore = array_column($before, 'path');
+    $pathsBefore = array_map(fn (AddonBootCache $r): string => $r->path, $before);
     expect($pathsBefore)->toContain($tmpDir);
 
     // Delete the DB row (also removes the dir's module.json so re-prime won't re-add it).
@@ -255,7 +256,7 @@ it('delete() removes the Addon DB row and the boot cache no longer lists it', fu
 
     // Boot cache must no longer list the deleted addon's path.
     $cached = app(BootCache::class)->read();
-    $paths = array_column($cached, 'path');
+    $paths = array_map(fn (AddonBootCache $r): string => $r->path, $cached);
     expect($paths)->not->toContain($tmpDir);
 
     // Cleanup temp dir.

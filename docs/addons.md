@@ -39,7 +39,7 @@
 │   AddonInstaller (orchestrator service)                                          │
 │      │                                                                           │
 │      ├── AddonSource (interface) ← LocalZipSource | UrlSource | DirSrc           │
-│      │   resolves & extracts to: storage/app/addons/_staging/{tmpdir}/           │
+│      │   resolves & extracts to: modules/_staging/{tmpdir}/           │
 │      │                                                                           │
 │      ├── AddonValidator                                                          │
 │      │   ├─ zip-slip / path-traversal guard                                      │

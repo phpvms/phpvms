@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use App\Addons\Models\AddonBootCache;
+use Illuminate\Support\Collection;
 use RuntimeException;
 
 /**
- * Atomic reader/writer for the exported boot manifest
+ * Low-level read/write API over the exported boot manifest
  * bootstrap/cache/addons.php (STATE-02, D-10, D-14).
  *
- * Stateless — reads from disk on every call. Another Octane worker may
- * have rewritten the cache between requests; never cache contents on
- * the instance.
+ * Merges the former BootCache (atomic file I/O) and AddonRegistry (cache-backed
+ * read helpers) into a single surface. Operates exclusively on the boot cache
+ * file — performs NO database reads.
+ *
+ * Stateless and Octane-safe: reads from disk on every call. Another Octane
+ * worker may have rewritten the cache between requests; never cache contents
+ * on the instance.
  */
 class BootCache
 {
@@ -22,6 +27,30 @@ class BootCache
      * so stale-schema files are treated as absent (D2-09).
      */
     public const int SCHEMA = 2;
+
+    /**
+     * Return enabled addons from the boot cache (DB-free hot path, D-10).
+     *
+     * Returns an empty collection when the cache is absent.
+     *
+     * @return Collection<int, AddonBootCache>
+     */
+    public function enabled(): Collection
+    {
+        return collect($this->read())
+            ->filter(fn (AddonBootCache $entry): bool => $entry->enabled)
+            ->values();
+    }
+
+    /**
+     * Return every addon entry from the boot cache (enabled and disabled).
+     *
+     * @return Collection<int, AddonBootCache>
+     */
+    public function all(): Collection
+    {
+        return collect($this->read());
+    }
 
     /**
      * Absolute path to the boot cache file.
@@ -52,7 +81,7 @@ class BootCache
     }
 
     /**
-     * Read the boot cache and return hydrated AddonCacheEntry rows.
+     * Read the boot cache and return hydrated AddonBootCache rows.
      *
      * Returns an empty array when:
      *  - the file is absent (D-10 absence-only trust), or
@@ -88,24 +117,6 @@ class BootCache
     }
 
     /**
-     * Load and return the top-level envelope array from the cache file.
-     *
-     * Returns null when the file is absent or its content is not an array.
-     *
-     * @return array<string, mixed>|null
-     */
-    private function loadEnvelope(): ?array
-    {
-        if (!$this->exists()) {
-            return null;
-        }
-
-        $data = require $this->path();
-
-        return is_array($data) ? $data : null;
-    }
-
-    /**
      * Atomically write addon entries to the boot cache (D-14).
      *
      * Wraps rows in a versioned envelope with schema and generated_at fields.
@@ -134,7 +145,7 @@ class BootCache
 
         if (!rename($tmp, $this->path())) {
             @unlink($tmp);
-            throw new RuntimeException('BootCache: failed to atomically rename cache file.');
+            throw new RuntimeException('AddonRuntime: failed to atomically rename cache file.');
         }
     }
 
@@ -146,5 +157,23 @@ class BootCache
         if ($this->exists()) {
             unlink($this->path());
         }
+    }
+
+    /**
+     * Load and return the top-level envelope array from the cache file.
+     *
+     * Returns null when the file is absent or its content is not an array.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function loadEnvelope(): ?array
+    {
+        if (!$this->exists()) {
+            return null;
+        }
+
+        $data = require $this->path();
+
+        return is_array($data) ? $data : null;
     }
 }
