@@ -6,8 +6,11 @@ use App\Casts\DistanceCast;
 use App\Contracts\Model;
 use App\Enums\FlightType;
 use App\Support\Days;
+use BackedEnum;
+use Database\Factories\FlightFactory;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,12 +22,17 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Stringable;
+use UnitEnum;
 
 /**
  * @property string            $id
+ * @property int|null          $bundle_id
+ * @property FlightBundle|null $bundle
  * @property int               $airline_id
  * @property int               $flight_number
  * @property string|null       $callsign
@@ -55,8 +63,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool              $visible
  * @property int|null          $event_id
  * @property int|null          $user_id
- * @property int|null          $bundle_id
- * @property FlightBundle|null $bundle
  * @property Carbon|null       $created_at
  * @property Carbon|null       $updated_at
  * @property Carbon|null       $deleted_at
@@ -81,64 +87,65 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $subfleets_count
  * @property-read User|null $user
  *
- * @method static Builder<static>|Flight            active()
- * @method static Builder<static>|Flight            distanceAtLeast(int $distance)
- * @method static Builder<static>|Flight            distanceAtMost(int $distance)
- * @method static \Database\Factories\FlightFactory factory($count = null, $state = [])
- * @method static Builder<static>|Flight            flightTimeAtLeast(int $minutes)
- * @method static Builder<static>|Flight            flightTimeAtMost(int $minutes)
- * @method static Builder<static>|Flight            forAirline(int $airlineId)
- * @method static Builder<static>|Flight            forTypeRating(int $typeRatingId)
- * @method static Builder<static>|Flight            fromAirport(string $icao)
- * @method static Builder<static>|Flight            newModelQuery()
- * @method static Builder<static>|Flight            newQuery()
- * @method static Builder<static>|Flight            onlyTrashed()
- * @method static Builder<static>|Flight            query()
- * @method static Builder<static>|Flight            sortable($defaultParameters = null)
- * @method static Builder<static>|Flight            toAirport(string $icao)
- * @method static Builder<static>|Flight            visible()
- * @method static Builder<static>|Flight            whereEnabled($value)
- * @method static Builder<static>|Flight            whereAirlineId($value)
- * @method static Builder<static>|Flight            whereAltAirportId($value)
- * @method static Builder<static>|Flight            whereArrAirportId($value)
- * @method static Builder<static>|Flight            whereArrTime($value)
- * @method static Builder<static>|Flight            whereCallsign($value)
- * @method static Builder<static>|Flight            whereCreatedAt($value)
- * @method static Builder<static>|Flight            whereDays($value)
- * @method static Builder<static>|Flight            whereDeletedAt($value)
- * @method static Builder<static>|Flight            whereDistance($value)
- * @method static Builder<static>|Flight            whereDptAirportId($value)
- * @method static Builder<static>|Flight            whereDptTime($value)
- * @method static Builder<static>|Flight            whereEndDate($value)
- * @method static Builder<static>|Flight            whereEventId($value)
- * @method static Builder<static>|Flight            whereFlightNumber($value)
- * @method static Builder<static>|Flight            whereFlightTime($value)
- * @method static Builder<static>|Flight            whereFlightType($value)
- * @method static Builder<static>|Flight            whereHasBid($value)
- * @method static Builder<static>|Flight            whereId($value)
- * @method static Builder<static>|Flight            whereLevel($value)
- * @method static Builder<static>|Flight            whereLoadFactor($value)
- * @method static Builder<static>|Flight            whereLoadFactorVariance($value)
- * @method static Builder<static>|Flight            whereNotes($value)
- * @method static Builder<static>|Flight            whereOwnerId($value)
- * @method static Builder<static>|Flight            whereOwnerType($value)
- * @method static Builder<static>|Flight            wherePilotPay($value)
- * @method static Builder<static>|Flight            whereRoute($value)
- * @method static Builder<static>|Flight            whereRouteCode($value)
- * @method static Builder<static>|Flight            whereRouteLeg($value)
- * @method static Builder<static>|Flight            whereScheduled($value)
- * @method static Builder<static>|Flight            whereStartDate($value)
- * @method static Builder<static>|Flight            whereUpdatedAt($value)
- * @method static Builder<static>|Flight            whereUserId($value)
- * @method static Builder<static>|Flight            whereVisible($value)
- * @method static Builder<static>|Flight            withFlightType(string $type)
- * @method static Builder<static>|Flight            withIcaoType(string $icao)
- * @method static Builder<static>|Flight            withSubfleet(int $subfleetId)
- * @method static Builder<static>|Flight            withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|Flight            withoutTrashed()
+ * @method static Builder<static>|Flight active()
+ * @method static Builder<static>|Flight distanceAtLeast(int $distance)
+ * @method static Builder<static>|Flight distanceAtMost(int $distance)
+ * @method static FlightFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Flight flightTimeAtLeast(int $minutes)
+ * @method static Builder<static>|Flight flightTimeAtMost(int $minutes)
+ * @method static Builder<static>|Flight forAirline(int $airlineId)
+ * @method static Builder<static>|Flight forTypeRating(int $typeRatingId)
+ * @method static Builder<static>|Flight fromAirport(string $icao)
+ * @method static Builder<static>|Flight newModelQuery()
+ * @method static Builder<static>|Flight newQuery()
+ * @method static Builder<static>|Flight onlyTrashed()
+ * @method static Builder<static>|Flight query()
+ * @method static Builder<static>|Flight sortable($defaultParameters = null)
+ * @method static Builder<static>|Flight toAirport(string $icao)
+ * @method static Builder<static>|Flight visible()
+ * @method static Builder<static>|Flight whereEnabled($value)
+ * @method static Builder<static>|Flight whereAirlineId($value)
+ * @method static Builder<static>|Flight whereAltAirportId($value)
+ * @method static Builder<static>|Flight whereArrAirportId($value)
+ * @method static Builder<static>|Flight whereArrTime($value)
+ * @method static Builder<static>|Flight whereCallsign($value)
+ * @method static Builder<static>|Flight whereCreatedAt($value)
+ * @method static Builder<static>|Flight whereDays($value)
+ * @method static Builder<static>|Flight whereDeletedAt($value)
+ * @method static Builder<static>|Flight whereDistance($value)
+ * @method static Builder<static>|Flight whereDptAirportId($value)
+ * @method static Builder<static>|Flight whereDptTime($value)
+ * @method static Builder<static>|Flight whereEndDate($value)
+ * @method static Builder<static>|Flight whereEventId($value)
+ * @method static Builder<static>|Flight whereFlightNumber($value)
+ * @method static Builder<static>|Flight whereFlightTime($value)
+ * @method static Builder<static>|Flight whereFlightType($value)
+ * @method static Builder<static>|Flight whereHasBid($value)
+ * @method static Builder<static>|Flight whereId($value)
+ * @method static Builder<static>|Flight whereLevel($value)
+ * @method static Builder<static>|Flight whereLoadFactor($value)
+ * @method static Builder<static>|Flight whereLoadFactorVariance($value)
+ * @method static Builder<static>|Flight whereNotes($value)
+ * @method static Builder<static>|Flight whereOwnerId($value)
+ * @method static Builder<static>|Flight whereOwnerType($value)
+ * @method static Builder<static>|Flight wherePilotPay($value)
+ * @method static Builder<static>|Flight whereRoute($value)
+ * @method static Builder<static>|Flight whereRouteCode($value)
+ * @method static Builder<static>|Flight whereRouteLeg($value)
+ * @method static Builder<static>|Flight whereScheduled($value)
+ * @method static Builder<static>|Flight whereStartDate($value)
+ * @method static Builder<static>|Flight whereUpdatedAt($value)
+ * @method static Builder<static>|Flight whereUserId($value)
+ * @method static Builder<static>|Flight whereVisible($value)
+ * @method static Builder<static>|Flight withFlightType(string $type)
+ * @method static Builder<static>|Flight withIcaoType(string $icao)
+ * @method static Builder<static>|Flight withSubfleet(int $subfleetId)
+ * @method static Builder<static>|Flight withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Flight withoutTrashed()
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
 class Flight extends Model
 {
     use HasFactory;
@@ -149,13 +156,13 @@ class Flight extends Model
 
     public $table = 'flights';
 
-    /** The form wants this */
     public $hours;
 
     public $minutes;
 
     protected $fillable = [
         'id',
+        'bundle_id',
         'airline_id',
         'flight_number',
         'callsign',
@@ -185,7 +192,6 @@ class Flight extends Model
         'visible',
         'event_id',
         'user_id',
-        'bundle_id',
         'owner_type',
         'owner_id',
     ];
@@ -214,7 +220,7 @@ class Flight extends Model
         'fares_count',
     ];
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -421,11 +427,11 @@ class Flight extends Model
             return null;
         }
 
-        if ($value instanceof \BackedEnum) {
+        if ($value instanceof BackedEnum) {
             $string = (string) $value->value;
-        } elseif ($value instanceof \UnitEnum) {
+        } elseif ($value instanceof UnitEnum) {
             $string = $value->name;
-        } elseif (is_scalar($value) || $value instanceof \Stringable) {
+        } elseif (is_scalar($value) || $value instanceof Stringable) {
             $string = (string) $value;
         } else {
             // Non-stringable object — defer to PHP's cast and let it raise.

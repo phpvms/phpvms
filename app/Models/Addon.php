@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Override;
+use Str;
 
 /**
  * @property int         $id
@@ -69,6 +70,15 @@ class Addon extends Model
         'installed_at' => 'nullable|date',
     ];
 
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'enabled'      => 'boolean',
+            'installed_at' => 'datetime',
+        ];
+    }
+
     /**
      * Create an addon from a manifest
      *
@@ -105,13 +115,25 @@ class Addon extends Model
         return $addon;
     }
 
-    #[Override]
-    protected function casts(): array
+    /**
+     * Return the lower-cased addon name
+     */
+    public function getLowerName(): string
     {
-        return [
-            'enabled'      => 'boolean',
-            'installed_at' => 'datetime',
-        ];
+        return strtolower((string) $this->name);
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    /**
+     * Return the studly-cased addon name
+     */
+    public function getStudlyName(): string
+    {
+        return Str::studly($this->name);
     }
 
     /**
@@ -152,6 +174,6 @@ class Addon extends Model
      */
     public function isEnabled(): bool
     {
-        return (bool) $this->enabled;
+        return $this->enabled;
     }
 }

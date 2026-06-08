@@ -2,17 +2,18 @@
 
 namespace App\Console\Commands;
 
+use App\Addons\AddonRegistry;
+use App\Models\Addon;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Console\Concerns\PromptsForMissingInput;
 use Illuminate\Contracts\Console\PromptsForMissingInput as PromptsForMissingInputContract;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Nwidart\Modules\Module;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'module:setup-filament', description: 'Add Filament Support to a Module')]
-#[Signature('module:setup-filament {module : The name of the module}')]
+#[AsCommand(name: 'addon:setup-filament', description: 'Add Filament Support to a Module')]
+#[Signature('addon:setup-filament {module : The name of the module}')]
 class ModuleSetupFilament extends Command implements PromptsForMissingInputContract
 {
     use PromptsForMissingInput;
@@ -23,6 +24,12 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
 
     protected string $panelStub = 'resources/stubs/modules/admin-panel-provider.stub';
 
+    public function __construct(
+        protected readonly AddonRegistry $addonRegistry,
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Execute the console command.
      */
@@ -30,18 +37,16 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
     {
         $moduleName = $this->argument('module');
 
-        /** @var Module|null $module */
-        $module = app('modules')->find($moduleName);
-
-        if (!$module) {
+        $addon = $this->addonRegistry->find($moduleName);
+        if (!$addon) {
             $this->components->error(sprintf("Module [%s] not found. Are you sure it's installed and enabled?", $moduleName));
 
             return self::FAILURE;
         }
 
-        $this->components->info('Setting up Filament for module: '.$module->getName());
+        $this->components->info('Setting up Filament for module: '.$addon->getName());
 
-        $providerPath = str($module->getExtraPath(sprintf('%s/%s', $this->basePath, $this->className)))
+        $providerPath = str($addon->getExtraPath(sprintf('%s/%s', $this->basePath, $this->className)))
             ->replace('\\', '/')
             ->append('.php')
             ->toString();
@@ -49,7 +54,7 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
         $namespace = Str::of($this->basePath)
             ->replace('/', '\\')
             ->prepend('\\')
-            ->prepend($this->getModuleNamespace($module))
+            ->prepend($addon->namespace)
             ->toString();
 
         $providerClass = sprintf('%s\%s', $namespace, $this->className);
@@ -57,8 +62,8 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
         // Step 1: Scaffold the Provider
         $stubSuccess = false;
 
-        $this->components->task('Creating Admin Panel Provider', function () use ($module, $providerPath, &$stubSuccess): bool {
-            $stubSuccess = $this->copyPanelStubToApp($module, $providerPath);
+        $this->components->task('Creating Admin Panel Provider', function () use ($addon, $providerPath, &$stubSuccess): bool {
+            $stubSuccess = $this->copyPanelStubToApp($addon, $providerPath);
 
             // Return the boolean so the task component shows a Green Check or Red X
             return $stubSuccess;
@@ -69,20 +74,20 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
         }
 
         // Step 2: Register in module.json
-        $this->components->task('Registering provider in module.json', function () use ($module, $providerClass): void {
+        $this->components->task('Registering provider in module.json', function () use ($addon, $providerClass): void {
             $this->updateJsonArray(
-                module_path($module->getName(), 'module.json'),
+                $addon->getExtraPath('module.json'),
                 'providers',
                 $providerClass
             );
         });
 
         // Step 3: Register in composer.json
-        $this->components->task('Registering provider in composer.json', function () use ($module, $providerClass): void {
-            $this->updateComposerJson($module, $providerClass);
+        $this->components->task('Registering provider in composer.json', function () use ($addon, $providerClass): void {
+            $this->updateComposerJson($addon, $providerClass);
         });
 
-        $this->components->info(sprintf('Module [%s] is now ready for Filament!', $module->getName()));
+        $this->components->info(sprintf('Module [%s] is now ready for Filament!', $addon->getName()));
 
         return self::SUCCESS;
     }
@@ -90,7 +95,7 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
     /**
      * Copy the stub file and replace placeholders.
      */
-    protected function copyPanelStubToApp(Module $module, string $targetPath): bool
+    protected function copyPanelStubToApp(Addon $addon, string $targetPath): bool
     {
         $panelStubPath = base_path($this->panelStub);
 
@@ -103,9 +108,9 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
         $stub = str(File::get($panelStubPath));
 
         $replacements = [
-            'STUDLY_NAME'      => $module->getStudlyName(),
-            'LOWER_NAME'       => $module->getLowerName(),
-            'MODULE_NAMESPACE' => app('modules')->config('namespace'),
+            'STUDLY_NAME'      => $addon->getStudlyName(),
+            'LOWER_NAME'       => $addon->getLowerName(),
+            'MODULE_NAMESPACE' => config('addons.namespace'),
         ];
 
         foreach ($replacements as $key => $replacement) {
@@ -141,9 +146,9 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
     /**
      * Helper to safely append the provider to the composer.json extra.laravel.providers array.
      */
-    protected function updateComposerJson(Module $module, string $providerClass): void
+    protected function updateComposerJson(Addon $addon, string $providerClass): void
     {
-        $path = module_path($module->getName(), 'composer.json');
+        $path = $addon->getExtraPath('composer.json');
 
         if (!File::exists($path)) {
             return;
@@ -159,13 +164,5 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
 
             File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         }
-    }
-
-    /**
-     * Get the root namespace for the module.
-     */
-    protected function getModuleNamespace(Module $module): string
-    {
-        return app('modules')->config('namespace').'\\'.$module->getName();
     }
 }

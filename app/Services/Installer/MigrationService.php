@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Service;
+use Closure;
 use Exception;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Nwidart\Modules\Facades\Module;
 
 class MigrationService extends Service
 {
@@ -40,7 +41,7 @@ class MigrationService extends Service
             'core' => App::databasePath().'/'.$dir,
         ];
 
-        $modules = Module::allEnabled();
+        $modules = app(AddonRegistry::class)->enabled();
         foreach ($modules as $module) {
             $module_path = $module->getPath().'/Database/'.$dir;
             if (file_exists($module_path)) {
@@ -93,7 +94,7 @@ class MigrationService extends Service
         return trim(Artisan::output());
     }
 
-    public function runAllMigrationsWithStreaming(\Closure $streamCallback): void
+    public function runAllMigrationsWithStreaming(Closure $streamCallback): void
     {
         $command = ['migrate', '--force', '--realpath'];
 
@@ -147,7 +148,7 @@ class MigrationService extends Service
         return trim(Artisan::output());
     }
 
-    public function runAllDataMigrationsWithStreaming(\Closure $streamCallback): void
+    public function runAllDataMigrationsWithStreaming(Closure $streamCallback): void
     {
         $command = ['migrate-data', '--force', '--realpath'];
 
