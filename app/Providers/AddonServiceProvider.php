@@ -8,6 +8,7 @@ use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
 use App\Addons\Filament\FilamentPanelExtender;
 use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
@@ -52,6 +53,7 @@ class AddonServiceProvider extends ServiceProvider
         // ── Phase 2 singletons ──────────────────────────────────────────────
         $this->app->singleton(AddonAutoLoader::class);
         $this->app->singleton(FilamentPanelExtender::class);
+        $this->app->singleton(AddonAssetLinker::class, fn (): AddonAssetLinker => AddonAssetLinker::fromConfig());
         $this->app->singleton(AddonRegistry::class);
 
         // ── Non-console: autoload guard ─────────────────────────────────────

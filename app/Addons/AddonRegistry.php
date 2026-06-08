@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons;
 
 use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\BootCache;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
@@ -21,6 +22,7 @@ class AddonRegistry
 {
     public function __construct(
         private readonly BootCache $bootCache,
+        private readonly AddonAssetLinker $assetLinker,
     ) {}
 
     /**
@@ -101,9 +103,21 @@ class AddonRegistry
             return;
         }
 
+        $this->assetLinker->unlink($addon->getName());
+
         $addon->delete();
 
         app(AddonDiscoveryService::class)->rebuildCache();
+    }
+
+    /**
+     * Rebuild public asset symlinks for every enabled addon.
+     */
+    public function relinkAssets(): void
+    {
+        foreach ($this->enabled() as $addon) {
+            $this->assetLinker->link($addon->getName(), $addon->getPath());
+        }
     }
 
     /**

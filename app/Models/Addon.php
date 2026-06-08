@@ -123,11 +123,6 @@ class Addon extends Model
         return strtolower((string) $this->name);
     }
 
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
     /**
      * Return the studly-cased addon name
      */
