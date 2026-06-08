@@ -148,6 +148,37 @@ class AddonDiscoveryService
     }
 
     /**
+     * Regenerate the boot cache from current DB enabled state.
+     *
+     * Scans manifests on disk, matches each to its DB row, and writes only the
+     * enabled addons (enabled-only cache invariant, D-13). This is the cache
+     * regeneration that lifecycle mutations (enable/disable/delete/install/update)
+     * must call — run() does NOT rewrite the cache on an installed system.
+     */
+    public function rebuildCache(): void
+    {
+        $manifests = $this->scanLocation(config('addons.paths.base'));
+
+        /** @var Collection<int, Addon> $installed */
+        $installed = Addon::where('enabled', true)->get();
+
+        /** @var list<AddonBootCache> $cacheRows */
+        $cacheRows = [];
+
+        foreach ($manifests as $m) {
+            $addon = $installed->first(fn (Addon $a): bool => ($a->registry_id === $m->registryId && $m->registryId !== null)
+                || $a->name === $m->name
+                || $a->namespace === $m->namespace);
+
+            if ($addon !== null) {
+                $cacheRows[] = $this->buildBootCacheRow($m, true);
+            }
+        }
+
+        $this->bootCache->write($cacheRows);
+    }
+
+    /**
      * Enumerate immediate subdirectories of $dir and parse each manifest.
      *
      * Returns an empty array when the directory does not exist; modules

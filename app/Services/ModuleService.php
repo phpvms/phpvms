@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Addons\Compat\Module;
-use App\Addons\Compat\ModuleRepository;
+use App\Addons\AddonRegistry;
 use App\Contracts\Service;
 
 class ModuleService extends Service
 {
-    public function __construct(
-        private readonly ModuleRepository $modules
-    ) {}
-
     /**
      * Module-registered admin nav links. Populated once per worker via each
      * module's boot()->registerLinks() call; not a per-request accumulator.
@@ -69,43 +64,26 @@ class ModuleService extends Service
     }
 
     /**
-     * Update module with the status passed by user
-     * TODO: Remove
+     * Update module with the status passed by user.
+     *
+     * @deprecated Delegate to AddonRegistry::enable()/disable() directly.
      */
     public function updateModule(string $name, bool $enabled): void
     {
-        $module = $this->modules->find($name);
-
-        if (!$module) {
-            return;
-        }
-
-        // setActive() flips the enabled flag, persists to DB, and regenerates the boot cache
-        // (via ModuleShim::setActive() → AddonRuntimeService::run()). The per-module migrate command
-        // (module:migrate) belonged to nwidart and no longer exists. Addon migration execution
-        // is owned by the standard `php artisan migrate` path (Phase 5 lifecycle).
-        $module->setActive($enabled);
-
-        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
-            unlink(base_path('bootstrap/cache/modules.php'));
+        if ($enabled) {
+            app(AddonRegistry::class)->enable($name);
+        } else {
+            app(AddonRegistry::class)->disable($name);
         }
     }
 
     /**
      * Delete Module from the Storage & Database.
+     *
+     * @deprecated Delegate to AddonRegistry::delete() directly.
      */
     public function deleteModule(string $name): void
     {
-        $module = $this->modules->find($name);
-
-        if (!$module) {
-            return;
-        }
-
-        $module->delete();
-
-        if (file_exists(base_path('bootstrap/cache/modules.php'))) {
-            unlink(base_path('bootstrap/cache/modules.php'));
-        }
+        app(AddonRegistry::class)->delete($name);
     }
 }

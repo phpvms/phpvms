@@ -2,34 +2,37 @@
 
 namespace App\Filament\Pages;
 
+use App\Addons\AddonRegistry;
 use App\Enums\NavigationGroup;
-use App\Services\ModuleService;
+use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Nwidart\Modules\Facades\Module;
+use Override;
+use UnitEnum;
 
-class Addons extends Page implements Tables\Contracts\HasTable
+class Addons extends Page implements HasTable
 {
     use HasPageShield;
-    use Tables\Concerns\InteractsWithTable;
+    use InteractsWithTable;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return Str::of(__('common.addons'))->plural();
@@ -56,7 +59,7 @@ class Addons extends Page implements Tables\Contracts\HasTable
                     ->icon(Heroicon::OutlinedCheckCircle)
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->action(function (array $record): void {
-                        app(ModuleService::class)->updateModule($record['name'], true);
+                        app(AddonRegistry::class)->enable($record['name']);
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
@@ -66,7 +69,7 @@ class Addons extends Page implements Tables\Contracts\HasTable
                     ->icon(Heroicon::OutlinedMinusCircle)
                     ->visible(fn (array $record): bool => $record['enabled'])
                     ->action(function (array $record): void {
-                        app(ModuleService::class)->updateModule($record['name'], false);
+                        app(AddonRegistry::class)->disable($record['name']);
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
@@ -77,7 +80,7 @@ class Addons extends Page implements Tables\Contracts\HasTable
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
-                        app(ModuleService::class)->deleteModule($record['name']);
+                        app(AddonRegistry::class)->delete($record['name']);
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
             ])
@@ -102,7 +105,7 @@ class Addons extends Page implements Tables\Contracts\HasTable
             );
     }
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema
@@ -113,15 +116,9 @@ class Addons extends Page implements Tables\Contracts\HasTable
 
     public function getModulesRecords(): Collection
     {
-        $modulesStatuses = [];
-
-        foreach (Module::all() as $module) {
-            $modulesStatuses[] = [
-                'name'    => $module->getName(),
-                'enabled' => $module->isEnabled(),
-            ];
-        }
-
-        return collect($modulesStatuses);
+        return app(AddonRegistry::class)->all()->map(fn ($addon): array => [
+            'name'    => $addon->getName(),
+            'enabled' => $addon->isEnabled(),
+        ])->values();
     }
 }

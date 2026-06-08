@@ -2,10 +2,10 @@
 
 namespace App\Support;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Model;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Nwidart\Modules\Facades\Module;
 use Pdp\Rules;
 
 /**
@@ -76,8 +76,8 @@ class Utils
      */
     public static function installerEnabled()
     {
-        /** @var ?\Nwidart\Modules\Module $installer */
-        $installer = Module::find('installer');
+        $installer = app(AddonRegistry::class)->find('installer');
+
         if (!$installer) {
             return false;
         }

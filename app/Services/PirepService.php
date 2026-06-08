@@ -43,12 +43,9 @@ use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Schema;
-use Nwidart\Modules\Facades\Module;
 
 class PirepService extends Service
 {
@@ -231,6 +228,7 @@ class PirepService extends Service
      */
     public function update(string $pirep_id, array $attrs, array $fields = [], array $fares = []): Pirep
     {
+        /** @var Pirep $pirep */
         $pirep = Pirep::findOrFail($pirep_id);
         $pirep->update($attrs);
         $pirep->refresh();
@@ -712,68 +710,9 @@ class PirepService extends Service
 
         $pirep->loadMissing('aircraft', 'flight', 'user');
         $aircraft = $pirep->aircraft;
-        $flight = $pirep->flight;
         $user = $pirep->user;
 
         event(new PirepDiverted($pirep));
-
-        /** @var ?\Nwidart\Modules\Module $has_vmsacars */
-        $has_vmsacars = Module::find('VMSAcars');
-
-        $has_vmsacars_config = Schema::hasTable('vmsacars_config');
-
-        if ($has_vmsacars && $has_vmsacars_config && $flight) {
-            /** @var ?object $query */
-            $query = DB::table('vmsacars_config')->find('disable_free_flights');
-            $free_flights_disabled = $query?->value;
-            // Log::debug('vmsAcars | Disable Free Flights Setting: '.$free_flights_disabled.', considered as '.get_truth_state($free_flights_disabled));
-
-            if (get_truth_state($free_flights_disabled)) {
-                $repositionAttributes = [
-                    'airline_id'     => $flight->airline_id,
-                    'flight_number'  => $flight->flight_number,
-                    'callsign'       => $flight->callsign,
-                    'route_code'     => PirepStatus::DIVERTED,
-                    'dpt_airport_id' => $diversion_airport->id,
-                    'arr_airport_id' => $pirep->arr_airport_id,
-                    'user_id'        => $user->id,
-                ];
-
-                $lockKey = implode(':', [
-                    'diversion-flight',
-                    $flight->airline_id,
-                    $flight->flight_number,
-                    $diversion_airport->id,
-                    $pirep->arr_airport_id,
-                    $user->id,
-                ]);
-
-                /** @var Flight $repositionFlight */
-                $repositionFlight = Cache::lock($lockKey, 10)->block(5, function () use ($aircraft, $diversion_airport, $flight, $pirep, $repositionAttributes) {
-                    $repositionFlight = Flight::query()->firstOrCreate(
-                        $repositionAttributes,
-                        [
-                            'distance'    => $this->airportSvc->calculateDistance($diversion_airport->id, $pirep->arr_airport_id),
-                            'flight_time' => 1,
-                            'flight_type' => $flight->flight_type,
-                            'notes'       => 'DIVERTED FLIGHT RE-POSITIONING TO DESTINATION',
-                            'visible'     => true,
-                            'active'      => true,
-                        ]
-                    );
-
-                    $repositionFlight->subfleets()->syncWithoutDetaching([$aircraft->subfleet_id]);
-
-                    return $repositionFlight;
-                });
-
-                if ($repositionFlight->wasRecentlyCreated) {
-                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' created');
-                } else {
-                    Log::info('Diversion repositioning flight '.$repositionFlight->id.' from '.$diversion_airport->id.' to '.$pirep->arr_airport_id.' reused');
-                }
-            }
-        }
 
         if (setting('notifications.discord_pirep_diverted', false)) {
             Notification::send([$pirep], new PirepDiverted($pirep));
