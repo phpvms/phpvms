@@ -9,7 +9,6 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Nwidart\Modules\Facades\Module;
 
 /*
  * array_key_first only exists in PHP 7.3+
