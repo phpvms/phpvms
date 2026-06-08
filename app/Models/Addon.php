@@ -68,6 +68,11 @@ class Addon extends Model
         'installed_at' => 'nullable|date',
     ];
 
+    /**
+     * Create an addon from a manifest
+     *
+     * @param AddonManifest $m
+     */
     public static function fromBootCache(AddonBootCache $runtime): Addon
     {
         $addon = new Addon();
@@ -82,6 +87,9 @@ class Addon extends Model
         return $addon;
     }
 
+    /**
+     * Create an addon from a manifest
+     */
     public static function fromManifest(AddonManifest $m): Addon
     {
         $addon = new Addon();
