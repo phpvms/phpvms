@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Stateless and Octane-safe: no mutable instance properties.
  */
-class AddonRuntimeService
+class AddonDiscoveryService
 {
     public function __construct(
         private readonly ManifestParser $parser,
@@ -54,7 +54,7 @@ class AddonRuntimeService
         // Scenario 1: fresh install, all found addons are enabled
         if (!installed()) {
             foreach ($manifests as $m) {
-                $rows[] = $this->buildRow($m, true);
+                $rows[] = $this->buildBootCacheRow($m, true);
             }
 
             $this->bootCache->write($rows);
@@ -62,45 +62,20 @@ class AddonRuntimeService
             return;
         }
 
-        // Scenario 2/3: installed, all addons are enabled or disabled
+        /**
+         * Scenario 2:
+         *   This is an existing install
+         *   Find any new addons that have popped up, set them to disabled
+         *   Upsert them into the DB
+         */
 
-        // Build a lookup of all DB rows keyed by registry_id and path.
-        $dbByRegistryId = [];
-        $dbByPath = [];
-
-        foreach (Addon::query()->get() as $addon) {
-            if ($addon->registry_id !== null) {
-                $dbByRegistryId[$addon->registry_id] = (bool) $addon->enabled;
-            } else {
-                $dbByPath[$addon->path] = (bool) $addon->enabled;
-            }
+        // This should be disabled by default, and only run the new
+        // addon discovery when you go to the admin panel for addons
+        if (!config('addons.scan_for_new_on_boot')) {
+            return;
         }
 
-        /** @var AddonManifest $m */
-        foreach ($manifests as $m) {
-            // The addon does have  a registry_id - so it's a legacy addon
-            if ($m->registryId !== null) {
-                // If the addon is already in the DB, use its enabled flag.
-                if (array_key_exists($m->registryId, $dbByRegistryId)) {
-                    $enabled = $dbByRegistryId[$m->registryId];
-                }
-                // Otherwise, it's a new addon, so it's disabled by default
-                else {
-                    $this->upsert($m);
-                    $enabled = false;
-                }
-            } elseif (array_key_exists($m->path, $dbByPath)) {
-                // If the addon is already in the DB (search by the path), use its enabled flag.
-                $enabled = $dbByPath[$m->path];
-            } else {
-                $this->upsert($m);
-                $enabled = false;
-            }
-
-            $rows[] = $this->buildRow($m, $enabled);
-        }
-
-        $this->bootCache->write($rows);
+        $this->discoverNewAddons();
     }
 
     /**
@@ -145,31 +120,28 @@ class AddonRuntimeService
      */
     public function discoverNewAddons(): Collection
     {
-        // Build a lookup of all DB rows keyed by registry_id and path.
-        $dbByPath = [];
-        $dbByRegistryId = [];
         $newAddons = collect();
 
-        /** @var Addon $addon Get all addons from the database */
-        foreach (Addon::query()->get() as $addon) {
-            if ($addon->registry_id !== null) {
-                $dbByRegistryId[$addon->registry_id] = (bool) $addon->enabled;
-            } else {
-                $dbByPath[$addon->path] = (bool) $addon->enabled;
-            }
+        $manifests = $this->scanLocation(config('addons.paths.base'));
+        if ($manifests === []) {
+            return $newAddons;
         }
 
-        foreach ($this->scanLocation(config('addons.paths.base')) as $manifest) {
-            // The addon does have  a registry_id - so it's a legacy addon
-            if ($manifest->registryId !== null) {
-                // Found a new addon, upsert it
-                if (!array_key_exists($manifest->registryId, $dbByRegistryId)) {
-                    $newAddons->push($this->upsert($manifest));
-                }
-            } elseif (!array_key_exists($manifest->path, $dbByPath)) {
-                // If the addon is not already in the DB, upsert it
-                $newAddons->push($this->upsert($manifest));
+        /** @var Collection<Addon> $installedAddons */
+        $installedAddons = Addon::query()->get();
+
+        /** @var AddonManifest $m */
+        foreach ($manifests as $m) {
+            // If the addon is already in the DB, don't do anything with it
+            $installed = $installedAddons->first(fn (Addon $addon, int $key): bool => ($addon->registry_id === $m->registryId)
+                || ($addon->name === $m->name)
+                || ($addon->namespace === $m->namespace));
+
+            if ($installed) {
+                continue;
             }
+
+            $newAddons->push($this->upsert($m, isNew: true));
         }
 
         return $newAddons;
@@ -178,7 +150,7 @@ class AddonRuntimeService
     /**
      * Enumerate immediate subdirectories of $dir and parse each manifest.
      *
-     * Returns an empty array when the directory does not exist; storage/app/addons
+     * Returns an empty array when the directory does not exist; modules
      * may be absent on a fresh install (LOAD-01).
      *
      * Path-traversal guard (T-04-03): resolved realpath must stay within the
@@ -205,7 +177,7 @@ class AddonRuntimeService
 
             // T-04-03: skip if the resolved path escapes the base directory.
             if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered (T-04-03)", $subDir));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered", $subDir));
 
                 continue;
             }
@@ -213,7 +185,7 @@ class AddonRuntimeService
             $manifest = $this->parser->parse($resolved);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid (D-15)", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $resolved));
 
                 continue;
             }
@@ -227,7 +199,7 @@ class AddonRuntimeService
     /**
      * Build an AddonCacheEntry from a manifest and an explicit enabled flag.
      */
-    private function buildRow(AddonManifest $m, bool $enabled): AddonBootCache
+    private function buildBootCacheRow(AddonManifest $m, bool $enabled): AddonBootCache
     {
         return new AddonBootCache(
             name: $m->name,
@@ -256,16 +228,11 @@ class AddonRuntimeService
      * Uses firstOrNew + save so enabled is set only on row creation; an existing
      * operator-disabled row keeps enabled=false across re-prime (D-12).
      */
-    private function upsert(AddonManifest $m): Addon
+    private function upsert(AddonManifest $m, bool $isNew): Addon
     {
-        if ($m->registryId !== null) {
-            $addon = Addon::query()->firstOrNew(['registry_id' => $m->registryId]);
-        } else {
-            $addon = Addon::query()->firstOrNew(['path' => $m->path]);
-        }
+        $addon = Addon::fromManifest($m);
 
-        $isNew = !$addon->exists;
-
+        $addon->name = $m->name;
         $addon->namespace = $m->namespace;
         $addon->type = $m->type;
         $addon->version = $m->version;

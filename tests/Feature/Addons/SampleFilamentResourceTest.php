@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Addons\Filament\FilamentPanelExtender;
-use App\Addons\Models\BootCache;
+use App\Addons\Support\BootCache;
 use Filament\PanelRegistry;
 use Modules\Sample\Filament\Resources\SampleResource;
 
@@ -19,15 +19,15 @@ it('phpvms:addons-prime records the Sample Filament Resources path in the boot c
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
 
     $cached = app(BootCache::class)->read();
-    $sample = collect($cached)->first(fn (array $row): bool => ($row['name'] ?? null) === 'Sample');
+    $sample = collect($cached)->first(fn ($row): bool => $row->name === 'Sample');
 
     expect($sample)->not->toBeNull('Sample row must exist in cache after prime')
-        ->and($sample['filament'])->toBeArray()
-        ->and($sample['filament']['admin'] ?? null)->toBeArray()
-        ->and($sample['filament']['admin']['Resources'] ?? null)->not->toBeNull(
+        ->and($sample->filament)->toBeArray()
+        ->and($sample->filament['admin'] ?? null)->toBeArray()
+        ->and($sample->filament['admin']['Resources'] ?? null)->not->toBeNull(
             'Sample admin Resources path must be probed and recorded'
         )
-        ->and($sample['filament']['admin']['Resources'])->toEndWith('modules/Sample/Filament/Resources');
+        ->and($sample->filament['admin']['Resources'])->toEndWith('modules/Sample/Filament/Resources');
 });
 
 it('FilamentPanelExtender::apply() registers SampleResource on the admin panel (criterion #2)', function (): void {

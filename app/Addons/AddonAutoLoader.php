@@ -6,6 +6,7 @@ namespace App\Addons;
 
 use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\AutoloadGuard;
+use App\Addons\Support\BootCache;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Foundation\Application;
@@ -28,10 +29,10 @@ use RuntimeException;
  *   3. Assert classmap-authoritative guard ONCE, BEFORE any addPsr4() call.
  *   4. For each row: register PSR-4 then register service providers.
  */
-class AddonLoader
+class AddonAutoLoader
 {
     public function __construct(
-        private readonly AddonRegistry $registry,
+        private readonly BootCache $registry,
         private readonly AutoloadGuard $guard,
     ) {}
 

@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Services\ModuleService;
@@ -10,7 +11,7 @@ use App\Services\ModuleService;
 beforeEach(function (): void {
     // Fresh boot cache + DB rows for each test.
     app(BootCache::class)->delete();
-    app(AddonRuntimeService::class)->run();
+    app(AddonDiscoveryService::class)->run();
 });
 
 afterEach(function (): void {
@@ -32,7 +33,7 @@ it('updateModule(Sample, false) does not throw and disables the addon', function
 
     // Boot cache must exclude Sample.
     $cached = app(BootCache::class)->read();
-    expect(array_column($cached, 'name'))->not->toContain('Sample');
+    expect(array_map(fn (AddonBootCache $r): string => $r->name, $cached))->not->toContain('Sample');
 });
 
 it('updateModule(Sample, true) does not throw and re-enables the addon', function (): void {
@@ -48,7 +49,7 @@ it('updateModule(Sample, true) does not throw and re-enables the addon', functio
 
     // Boot cache must include Sample again.
     $cached = app(BootCache::class)->read();
-    expect(array_column($cached, 'name'))->toContain('Sample');
+    expect(array_map(fn (AddonBootCache $r): string => $r->name, $cached))->toContain('Sample');
 });
 
 it('deleteModule() does not throw and removes the addon DB row', function (): void {
@@ -69,7 +70,7 @@ it('deleteModule() does not throw and removes the addon DB row', function (): vo
         'providers' => [],
     ]));
 
-    app(AddonRuntimeService::class)->run();
+    app(AddonDiscoveryService::class)->run();
 
     $throwaway = Addon::query()->where('path', $tmpDir)->firstOrFail();
     $throwawayId = $throwaway->id;
@@ -87,7 +88,7 @@ it('deleteModule() does not throw and removes the addon DB row', function (): vo
 
     // Boot cache no longer lists it.
     $cached = app(BootCache::class)->read();
-    expect(array_column($cached, 'path'))->not->toContain($tmpDir);
+    expect(array_map(fn (AddonBootCache $r): string => $r->path, $cached))->not->toContain($tmpDir);
 
     // Cleanup temp dir.
     @rmdir($tmpDir);

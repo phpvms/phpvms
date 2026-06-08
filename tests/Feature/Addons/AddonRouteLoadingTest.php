@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonLoader;
+use App\Addons\AddonAutoLoader;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ it('Sample module web route is registered after addon loader runs', function ():
     // providers from the primed cache. Since the app is already booted,
     // $app->register() boots each provider immediately, triggering
     // SampleServiceProvider::boot() → registerRoutes() → loadRoutesFrom().
-    app(AddonLoader::class)->register(app());
+    app(AddonAutoLoader::class)->register(app());
 
     // Step 3: refresh the router's name-lookup index so hasNamedRoute() sees
     // routes added after initial boot.

@@ -2,34 +2,46 @@
 
 declare(strict_types=1);
 
-use App\Addons\AddonRegistry;
 use App\Addons\Filament\FilamentPanelExtender;
-use App\Addons\Models\BootCache;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Build a FilamentPanelExtender with a stubbed registry that returns $rows.
+ * Build a FilamentPanelExtender backed by a real (no-cache) AddonRuntime.
  *
- * @param array<int, array<string, mixed>> $rows
+ * These tests call discoveriesFor() directly, so no cache reading happens.
  */
-function makeFilamentPanelExtender(array $rows = []): FilamentPanelExtender
+function makeFilamentPanelExtender(): FilamentPanelExtender
 {
-    $cache = new class($rows) extends BootCache
-    {
-        /** @param array<int, array<string, mixed>> $rows */
-        public function __construct(private readonly array $rows) {}
+    return new FilamentPanelExtender(new BootCache());
+}
 
-        /** @return array<int, array<string, mixed>> */
-        public function read(): array
-        {
-            return $this->rows;
-        }
-    };
-
-    return new FilamentPanelExtender(new AddonRegistry($cache));
+/**
+ * Build an AddonBootCache from a minimal array, filling in required fields.
+ *
+ * @param array<string, mixed> $data
+ */
+function makeEntry(array $data): AddonBootCache
+{
+    return AddonBootCache::fromArray(array_merge([
+        'name'          => 'Test',
+        'alias'         => null,
+        'type'          => 'module',
+        'registry_id'   => null,
+        'version'       => null,
+        'namespace'     => '',
+        'providers'     => [],
+        'path'          => '/tmp/test',
+        'autoload_path' => '/tmp/test',
+        'layout'        => 'app',
+        'description'   => null,
+        'enabled'       => true,
+        'filament'      => [],
+    ], $data));
 }
 
 // ---------------------------------------------------------------------------
@@ -39,7 +51,7 @@ function makeFilamentPanelExtender(array $rows = []): FilamentPanelExtender
 it('produces three admin entries for a row with all admin components', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    $row = [
+    $entry = makeEntry([
         'namespace' => 'Modules\\Acme',
         'filament'  => [
             'admin' => [
@@ -48,9 +60,9 @@ it('produces three admin entries for a row with all admin components', function 
                 'Widgets'   => '/var/app/modules/Acme/Filament/Widgets',
             ],
         ],
-    ];
+    ]);
 
-    $result = $extender->discoveriesFor($row);
+    $result = $extender->discoveriesFor($entry);
 
     expect($result)->toHaveKey('admin')
         ->and($result)->not->toHaveKey('system')
@@ -80,16 +92,16 @@ it('produces three admin entries for a row with all admin components', function 
 it('produces one system entry for a row with only system Resources', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    $row = [
+    $entry = makeEntry([
         'namespace' => 'Modules\\Acme',
         'filament'  => [
             'system' => [
                 'Resources' => '/var/app/modules/Acme/Filament/System/Resources',
             ],
         ],
-    ];
+    ]);
 
-    $result = $extender->discoveriesFor($row);
+    $result = $extender->discoveriesFor($entry);
 
     expect($result)->not->toHaveKey('admin')
         ->and($result)->toHaveKey('system')
@@ -104,27 +116,27 @@ it('produces one system entry for a row with only system Resources', function ()
 it('returns an empty array when filament key is empty', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    $row = [
+    $entry = makeEntry([
         'namespace' => 'Modules\\Acme',
         'filament'  => [],
-    ];
+    ]);
 
-    expect($extender->discoveriesFor($row))->toBe([]);
+    expect($extender->discoveriesFor($entry))->toBe([]);
 });
 
 it('strips trailing backslash from namespace before building for: string', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    $row = [
+    $entry = makeEntry([
         'namespace' => 'Modules\\Acme\\',   // trailing backslash
         'filament'  => [
             'admin' => [
                 'Resources' => '/abs/path/Resources',
             ],
         ],
-    ];
+    ]);
 
-    $result = $extender->discoveriesFor($row);
+    $result = $extender->discoveriesFor($entry);
 
     expect($result['admin'][0]['for'])->toBe('Modules\\Acme\\Filament\\Resources');
 });
@@ -132,29 +144,29 @@ it('strips trailing backslash from namespace before building for: string', funct
 it('returns an empty array when namespace is absent and filament data is present', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    // Row has filament data for admin Resources but no namespace key.
-    $row = [
+    // namespace key missing — fromArray defaults to '' which triggers the empty guard.
+    $entry = makeEntry([
         'filament' => [
             'admin' => [
                 'Resources' => '/abs/path/Resources',
             ],
         ],
-    ];
+    ]);
 
-    expect($extender->discoveriesFor($row))->toBe([]);
+    expect($extender->discoveriesFor($entry))->toBe([]);
 });
 
 it('returns an empty array when namespace is empty string and filament data is present', function (): void {
     $extender = makeFilamentPanelExtender();
 
-    $row = [
+    $entry = makeEntry([
         'namespace' => '',
         'filament'  => [
             'admin' => [
                 'Resources' => '/abs/path/Resources',
             ],
         ],
-    ];
+    ]);
 
-    expect($extender->discoveriesFor($row))->toBe([]);
+    expect($extender->discoveriesFor($entry))->toBe([]);
 });

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Addons\Models\BootCache;
-use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Facades\Log;
@@ -23,9 +24,9 @@ afterEach(function (): void {
     }
 });
 
-function makeService(): AddonRuntimeService
+function makeService(): AddonDiscoveryService
 {
-    return new AddonRuntimeService(new ManifestParser(), new BootCache());
+    return new AddonDiscoveryService(new ManifestParser(), new BootCache());
 }
 
 it('run() registers all three bundled modules from base_path(modules)', function (): void {
@@ -67,18 +68,18 @@ it('run() excludes disabled addons from the boot cache (D-13)', function (): voi
     $svc->run();
 
     $cached = (new BootCache())->read();
-    $namespaces = array_column($cached, 'namespace');
+    $namespaces = array_map(fn (AddonBootCache $r): string => $r->namespace, $cached);
     expect($namespaces)->not->toContain('Modules\\Awards');
 });
 
 it('run() writes enabled-only rows to the boot cache and the cache exists (STATE-02)', function (): void {
     makeService()->run();
 
-    $cache = new BootCache();
-    expect($cache->exists())->toBeTrue();
+    $runtime = new BootCache();
+    expect($runtime->exists())->toBeTrue();
 
-    foreach ($cache->read() as $row) {
-        expect($row['enabled'])->toBeTrue();
+    foreach ($runtime->read() as $row) {
+        expect($row->enabled)->toBeTrue();
     }
 });
 
@@ -129,8 +130,8 @@ it('primeIfNeeded() returns true and primes when boot cache is absent (D-10)', f
 });
 
 it('primeIfNeeded() re-primes when cache has a stale schema (D2-09)', function (): void {
-    $cache = new BootCache();
-    $path = $cache->path();
+    $runtime = new BootCache();
+    $path = $runtime->path();
 
     // Write a Phase-1 bare-list file.
     $bareList = [['registry_id' => null, 'namespace' => 'Modules\\Old', 'enabled' => true]];
@@ -140,11 +141,11 @@ it('primeIfNeeded() re-primes when cache has a stale schema (D2-09)', function (
     $result = $svc->primeIfNeeded();
 
     expect($result)->toBeTrue()
-        ->and($cache->isFresh())->toBeTrue();
+        ->and($runtime->isFresh())->toBeTrue();
 });
 
-it('run() handles absent storage/app/addons directory without throwing', function (): void {
-    // The storage/app/addons dir may not exist on a fresh install; must not error.
+it('run() handles absent modules directory without throwing', function (): void {
+    // The modules dir may not exist on a fresh install; must not error.
     expect(fn () => makeService()->run())->not->toThrow(Throwable::class);
 });
 
@@ -155,17 +156,11 @@ it('run() produces enriched cache rows for the Sample module', function (): void
     $sample = collect($cached)->firstWhere('namespace', 'Modules\\Sample');
 
     expect($sample)->not->toBeNull()
-        ->and($sample)->toHaveKey('providers')
-        ->and($sample['providers'])->toBeArray()
-        ->and($sample['providers'])->toContain(SampleServiceProvider::class)
-        ->and($sample)->toHaveKey('autoload_path')
-        ->and($sample['autoload_path'])->toBe(realpath(base_path('modules/Sample')))
-        ->and($sample)->toHaveKey('layout')
-        ->and($sample['layout'])->toBe('root')
-        ->and($sample)->toHaveKey('name')
-        ->and($sample['name'])->toBe('Sample')
-        ->and($sample)->toHaveKey('description')
-        ->and($sample['description'])->toBeNull()
-        ->and($sample)->toHaveKey('filament')
-        ->and($sample['filament'])->toBeArray();
+        ->and($sample->providers)->toBeArray()
+        ->and($sample->providers)->toContain(SampleServiceProvider::class)
+        ->and($sample->autoloadPath)->toBe(realpath(base_path('modules/Sample')))
+        ->and($sample->layout)->toBe('root')
+        ->and($sample->name)->toBe('Sample')
+        ->and($sample->description)->toBeNull()
+        ->and($sample->filament)->toBeArray();
 });

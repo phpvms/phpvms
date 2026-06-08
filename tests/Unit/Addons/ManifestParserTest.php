@@ -1,6 +1,6 @@
 <?php
 
-use App\Addons\Support\ManifestData;
+use App\Addons\Models\AddonManifest;
 use App\Addons\Support\ManifestParser;
 use Modules\Awards\Providers\AwardServiceProvider;
 
@@ -8,7 +8,7 @@ it('parses Awards module (legacy nwidart, no phpVMS keys, no composer.json)', fu
     $parser = new ManifestParser();
     $result = $parser->parse(base_path('modules/Awards'));
 
-    expect($result)->toBeInstanceOf(ManifestData::class)
+    expect($result)->toBeInstanceOf(AddonManifest::class)
         ->and($result->name)->toBe('Awards')
         ->and($result->type)->toBe('module')
         ->and($result->registryId)->toBeNull()
@@ -22,7 +22,7 @@ it('parses Sample module (composer.json psr-4 dot key, no version)', function ()
     $parser = new ManifestParser();
     $result = $parser->parse(base_path('modules/Sample'));
 
-    expect($result)->toBeInstanceOf(ManifestData::class)
+    expect($result)->toBeInstanceOf(AddonManifest::class)
         ->and($result->namespace)->toBe('Modules\\Sample')
         ->and($result->version)->toBeNull();
 });
@@ -31,7 +31,7 @@ it('parses VMSAcars module (composer.json psr-4 empty string key, version from c
     $parser = new ManifestParser();
     $result = $parser->parse(base_path('modules/VMSAcars'));
 
-    expect($result)->toBeInstanceOf(ManifestData::class)
+    expect($result)->toBeInstanceOf(AddonManifest::class)
         ->and($result->namespace)->toBe('Modules\\VMSAcars')
         ->and($result->version)->toBe('1.1.0');
 });
@@ -52,7 +52,7 @@ it('parses phpVMS keys: type, compat, registry_id, version', function (): void {
         $parser = new ManifestParser();
         $result = $parser->parse($tmpDir);
 
-        expect($result)->toBeInstanceOf(ManifestData::class)
+        expect($result)->toBeInstanceOf(AddonManifest::class)
             ->and($result->type)->toBe('theme')
             ->and($result->compat)->toBe('^7.0')
             ->and($result->registryId)->toBe('acme/widget')
@@ -106,7 +106,7 @@ it('normalises blank registry_id to null (D-03)', function (): void {
         $parser = new ManifestParser();
         $result = $parser->parse($tmpDir);
 
-        expect($result)->toBeInstanceOf(ManifestData::class)
+        expect($result)->toBeInstanceOf(AddonManifest::class)
             ->and($result->registryId)->toBeNull();
     } finally {
         unlink($tmpDir.'/module.json');

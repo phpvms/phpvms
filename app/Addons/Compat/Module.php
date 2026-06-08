@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Compat;
 
 use App\Addons\Models\AddonManifest;
-use App\Addons\Services\AddonRuntimeService;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\ManifestParser;
 use App\Models\Addon;
 use Illuminate\Support\Str;
@@ -92,7 +92,7 @@ class Module
         $this->addon->enabled = $active;
         $this->addon->save();
 
-        app(AddonRuntimeService::class)->run();
+        app(AddonDiscoveryService::class)->run();
     }
 
     /**
@@ -112,7 +112,7 @@ class Module
     {
         $this->addon->delete();
 
-        app(AddonRuntimeService::class)->run();
+        app(AddonDiscoveryService::class)->run();
     }
 
     /**

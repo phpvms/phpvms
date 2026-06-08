@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Addons\Filament;
 
-use App\Addons\AddonRegistry;
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 use Filament\PanelRegistry;
 
 /**
@@ -36,7 +36,7 @@ class FilamentPanelExtender
     ];
 
     public function __construct(
-        private readonly AddonRegistry $registry,
+        private readonly BootCache $registry,
     ) {}
 
     /**

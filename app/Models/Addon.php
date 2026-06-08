@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Models\AddonManifest;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -77,6 +78,20 @@ class Addon extends Model
         $addon->namespace = $runtime->namespace;
         $addon->path = $runtime->path;
         $addon->enabled = $runtime->enabled;
+
+        return $addon;
+    }
+
+    public static function fromManifest(AddonManifest $m): Addon
+    {
+        $addon = new Addon();
+        $addon->name = $m->name;
+        $addon->registry_id = $m->registryId;
+        $addon->type = $m->type;
+        $addon->version = $m->version;
+        $addon->namespace = $m->namespace;
+        $addon->path = $m->path;
+        $addon->enabled = $m->enabled;
 
         return $addon;
     }
