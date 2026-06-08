@@ -14,6 +14,7 @@ use Override;
 
 /**
  * @property int         $id
+ * @property string|null $name
  * @property string|null $registry_id
  * @property string      $type
  * @property string|null $version
@@ -120,5 +121,37 @@ class Addon extends Model
     public function isLegacy(): bool
     {
         return blank($this->registry_id);
+    }
+
+    /**
+     * Return the addon name, falling back to the directory basename for bundled addons with no name
+     */
+    public function getName(): string
+    {
+        return $this->name ?? basename($this->path);
+    }
+
+    /**
+     * Return the absolute filesystem path to the addon root
+     */
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    /**
+     * Return the absolute filesystem path to a file or directory within the addon root
+     */
+    public function getExtraPath(string $path): string
+    {
+        return $this->getPath().'/'.$path;
+    }
+
+    /**
+     * Whether the addon is currently enabled
+     */
+    public function isEnabled(): bool
+    {
+        return (bool) $this->enabled;
     }
 }
