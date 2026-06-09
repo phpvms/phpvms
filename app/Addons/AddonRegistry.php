@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Addons;
 
+use App\Addons\Models\AddonManifest;
 use App\Addons\Services\AddonDiscoveryService;
+use App\Addons\Sources\AddonSource;
 use App\Addons\Support\AddonAssetLinker;
-use App\Addons\Support\BootCache;
+use App\Addons\Support\AddonValidator;
+use App\Addons\Support\OctaneReloader;
+use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 
 /**
  * Lifecycle façade for addons. Owns reads (find/all/enabled), enable/disable,
@@ -21,8 +26,9 @@ use Illuminate\Support\Collection;
 class AddonRegistry
 {
     public function __construct(
-        private readonly BootCache $bootCache,
         private readonly AddonAssetLinker $assetLinker,
+        private readonly OctaneReloader $octane,
+        private readonly AddonValidator $validator,
     ) {}
 
     /**
@@ -64,16 +70,6 @@ class AddonRegistry
     }
 
     /**
-     * Whether the addon's code is actually loaded this worker — i.e. present in
-     * the enabled set of the boot cache, which is what the autoloader reads.
-     */
-    public function isLoaded(string $name): bool
-    {
-        return $this->bootCache->enabled()
-            ->contains(fn ($entry): bool => ($entry->name ?? basename($entry->path)) === $name);
-    }
-
-    /**
      * Enable an addon: flip the DB flag and regenerate the boot cache.
      * No-op when the addon is unknown.
      */
@@ -108,6 +104,7 @@ class AddonRegistry
         $addon->delete();
 
         app(AddonDiscoveryService::class)->rebuildCache();
+        $this->octane->reload();
     }
 
     /**
@@ -118,6 +115,106 @@ class AddonRegistry
         foreach ($this->enabled() as $addon) {
             $this->assetLinker->link($addon->getName(), $addon->getPath());
         }
+    }
+
+    /**
+     * Install an addon from a source (zip/url): fetch → validate → place →
+     * register → link assets → reload workers. Does NOT run migrations.
+     *
+     * @throws AddonInstallException
+     */
+    public function install(AddonSource $source): Addon
+    {
+        $staging = config('addons.paths.base').'/_staging';
+        File::ensureDirectoryExists($staging);
+
+        $extracted = $source->fetch($staging);
+
+        try {
+            $manifest = $this->validator->validate($extracted);
+            $dest = config('addons.paths.base').'/'.$manifest->name;
+
+            if (File::exists($dest)) {
+                throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
+            }
+
+            if (!File::moveDirectory($extracted, $dest)) {
+                throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
+            }
+        } finally {
+            File::deleteDirectory($staging);
+        }
+
+        $addon = $this->register($manifest, $dest);
+
+        $this->assetLinker->link($addon->getName(), $addon->getPath());
+        $this->octane->reload();
+
+        return $addon;
+    }
+
+    /**
+     * Update an installed addon's files from a new source, preserving its enabled
+     * flag. Does NOT run migrations.
+     *
+     * @throws AddonInstallException
+     */
+    public function update(string $name, AddonSource $source): Addon
+    {
+        $existing = $this->find($name);
+
+        if (!$existing instanceof Addon) {
+            throw new AddonInstallException(sprintf('Addon not installed: %s', $name));
+        }
+
+        $wasEnabled = $existing->isEnabled();
+
+        $staging = config('addons.paths.base').'/_staging';
+        File::ensureDirectoryExists($staging);
+
+        $extracted = $source->fetch($staging);
+
+        try {
+            $manifest = $this->validator->validate($extracted);
+            $dest = config('addons.paths.base').'/'.$manifest->name;
+
+            File::deleteDirectory($dest);
+
+            if (!File::moveDirectory($extracted, $dest)) {
+                throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
+            }
+        } finally {
+            File::deleteDirectory($staging);
+        }
+
+        $existing->version = $manifest->version;
+        $existing->namespace = $manifest->namespace;
+        $existing->path = $dest;
+        $existing->enabled = $wasEnabled;
+        $existing->save();
+
+        app(AddonDiscoveryService::class)->rebuildCache();
+
+        $this->assetLinker->link($existing->getName(), $existing->getPath());
+        $this->octane->reload();
+
+        return $existing->refresh();
+    }
+
+    /**
+     * Persist the addon row (enabled) and regenerate the boot cache.
+     */
+    private function register(AddonManifest $manifest, string $path): Addon
+    {
+        $addon = Addon::fromManifest($manifest);
+        $addon->path = $path;
+        $addon->enabled = true;
+        $addon->installed_at = now();
+        $addon->save();
+
+        app(AddonDiscoveryService::class)->rebuildCache();
+
+        return $addon;
     }
 
     /**
@@ -135,5 +232,6 @@ class AddonRegistry
         $addon->save();
 
         app(AddonDiscoveryService::class)->rebuildCache();
+        $this->octane->reload();
     }
 }

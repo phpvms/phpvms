@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Addons\Models\AddonBootCache;
 use App\Addons\Models\AddonManifest;
 use App\Contracts\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,25 +80,6 @@ class Addon extends Model
 
     /**
      * Create an addon from a manifest
-     *
-     * @param AddonManifest $m
-     */
-    public static function fromBootCache(AddonBootCache $runtime): Addon
-    {
-        $addon = new Addon();
-        $addon->name = $runtime->name;
-        $addon->registry_id = $runtime->registryId;
-        $addon->type = $runtime->type;
-        $addon->version = $runtime->version;
-        $addon->namespace = $runtime->namespace;
-        $addon->path = $runtime->path;
-        $addon->enabled = $runtime->enabled;
-
-        return $addon;
-    }
-
-    /**
-     * Create an addon from a manifest
      */
     public static function fromManifest(AddonManifest $m): Addon
     {
@@ -110,7 +90,6 @@ class Addon extends Model
         $addon->version = $m->version;
         $addon->namespace = $m->namespace;
         $addon->path = $m->path;
-        $addon->enabled = $m->enabled;
 
         return $addon;
     }
