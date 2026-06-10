@@ -55,7 +55,7 @@ it('updateModule(Sample, true) does not throw and re-enables the addon', functio
 it('deleteModule() does not throw and removes the addon DB row', function (): void {
     // Use a fixed name (not uniqid) so Module::find(name) can match it.
     $addonName = 'ThrowawayServiceDel';
-    $tmpDir = storage_path('app/addons/'.$addonName);
+    $tmpDir = config('addons.paths.base').'/'.$addonName;
 
     if (is_dir($tmpDir)) {
         // Clean up any leftover from a previous interrupted test run.

@@ -26,14 +26,17 @@ class OctaneReloader
     private readonly Closure $runner;
 
     /**
-     * @param (Closure(): bool)|null                  $underOctane Defaults to env-based detection.
+     * @param (Closure(): bool)|null                  $underOctane Defaults to runtime detection.
      * @param (Closure(array<int,string>): void)|null $runner      Defaults to a real Process run.
      */
     public function __construct(?Closure $underOctane = null, ?Closure $runner = null)
     {
-        $this->underOctane = $underOctane ?? static fn (): bool => config('octane.enabled');
+        // Octane sets $_SERVER['LARAVEL_OCTANE'] inside its worker processes; it
+        // is absent under php-fpm/CLI. This is far more reliable than the
+        // octane.enabled config flag (which defaults to true everywhere).
+        $this->underOctane = $underOctane ?? static fn (): bool => ($_SERVER['LARAVEL_OCTANE'] ?? false) !== false;
         $this->runner = $runner ?? static function (array $command): void {
-            (new Process($command, base_path()))->setTimeout(60)->run();
+            new Process($command, base_path())->setTimeout(60)->run();
         };
     }
 
@@ -59,7 +62,7 @@ class OctaneReloader
      */
     private function command(): array
     {
-        $php = (new PhpExecutableFinder())->find(false) ?: 'php';
+        $php = new PhpExecutableFinder()->find(false) ?: 'php';
         $php = str_replace('-fpm', '', $php);
 
         return [$php, base_path('artisan'), 'octane:reload'];

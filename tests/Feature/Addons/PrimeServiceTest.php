@@ -67,7 +67,7 @@ it('run() excludes disabled addons from the boot cache (D-13)', function (): voi
 
     $svc->run();
 
-    $cached = (new BootCache())->read();
+    $cached = new BootCache()->read();
     $namespaces = array_map(fn (AddonBootCache $r): string => $r->namespace, $cached);
     expect($namespaces)->not->toContain('Modules\\Awards');
 });
@@ -84,7 +84,7 @@ it('run() writes enabled-only rows to the boot cache and the cache exists (STATE
 });
 
 it('run() skips a malformed module.json and logs a warning without throwing (D-15)', function (): void {
-    $badDir = storage_path('app/addons/BadAddon');
+    $badDir = config('addons.paths.base').'/BadAddon';
     @mkdir($badDir, 0755, true);
     file_put_contents($badDir.'/module.json', '{not valid json}');
 
@@ -103,8 +103,6 @@ it('run() skips a malformed module.json and logs a warning without throwing (D-1
     } finally {
         @unlink($badDir.'/module.json');
         @rmdir($badDir);
-        // Only remove the addons dir if it was empty before (no other content).
-        @rmdir(storage_path('app/addons'));
     }
 });
 
@@ -125,7 +123,7 @@ it('primeIfNeeded() returns true and primes when boot cache is absent (D-10)', f
     $result = $svc->primeIfNeeded();
 
     expect($result)->toBeTrue()
-        ->and((new BootCache())->exists())->toBeTrue()
+        ->and(new BootCache()->exists())->toBeTrue()
         ->and(Addon::count())->toBeGreaterThan(0);
 });
 
@@ -152,7 +150,7 @@ it('run() handles absent modules directory without throwing', function (): void 
 it('run() produces enriched cache rows for the Sample module', function (): void {
     makeService()->run();
 
-    $cached = (new BootCache())->read();
+    $cached = new BootCache()->read();
     $sample = collect($cached)->firstWhere('namespace', 'Modules\\Sample');
 
     expect($sample)->not->toBeNull()

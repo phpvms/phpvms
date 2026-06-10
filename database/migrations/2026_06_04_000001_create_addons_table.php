@@ -21,7 +21,7 @@ return new class() extends Migration
             $table->string('registry_id')->nullable();
             $table->string('type')->default('module');
             $table->string('version')->nullable();
-            $table->string('namespace');
+            $table->string('namespace')->unique();
             $table->string('path');
             $table->boolean('enabled')->default(true);
             $table->timestamp('installed_at')->nullable();
@@ -32,6 +32,13 @@ return new class() extends Migration
         // Uses DB::table()->insert() (not the Addon model) so the migration stays standalone.
         if (DB::table('addons')->count() === 0) {
             $modulesPath = base_path('modules');
+
+            // modules/ may be absent on fresh CI/containers — File::directories()
+            // would throw on a missing directory.
+            if (!File::isDirectory($modulesPath)) {
+                return;
+            }
+
             $now = now();
 
             foreach (File::directories($modulesPath) as $directory) {
@@ -96,5 +103,13 @@ return new class() extends Migration
     public function down(): void
     {
         Schema::dropIfExists('addons');
+
+        // Remove the boot cache so a rollback doesn't leave stale addon state
+        // pointing at rows that no longer exist.
+        $cache = base_path('bootstrap/cache/addons.php');
+
+        if (File::exists($cache)) {
+            File::delete($cache);
+        }
     }
 };

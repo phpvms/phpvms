@@ -31,7 +31,6 @@ class ManifestParser
         }
 
         $contents = file_get_contents($manifestPath);
-        /** @var array<string, mixed> $data */
         $data = json_decode((string) $contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
@@ -172,6 +171,17 @@ class ManifestParser
             }
 
             $autoloadPath = $addonPath.'/'.$normalised;
+
+            // Reject psr-4 values that escape the addon directory (e.g.
+            // "../../app"), which would point the PSR-4 loader at core code.
+            $realBase = realpath($addonPath);
+            $realAutoload = realpath($autoloadPath);
+
+            if ($realBase !== false && $realAutoload !== false
+                && !str_starts_with($realAutoload.DIRECTORY_SEPARATOR, $realBase.DIRECTORY_SEPARATOR)) {
+                return [$addonPath, 'root'];
+            }
+
             $layout = (strtolower($normalised) === 'app' || str_starts_with(strtolower($normalised), 'app/'))
                 ? 'app'
                 : 'root';

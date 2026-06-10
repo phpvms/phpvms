@@ -22,7 +22,7 @@ class Database
     /**
      * @throws Exception
      */
-    public static function seed_from_yaml_file($yaml_file, bool $ignore_errors = false): array
+    public static function seed_from_yaml_file(string $yaml_file, bool $ignore_errors = false): array
     {
         $yml = file_get_contents($yaml_file);
         $yml = Yaml::parse($yml);

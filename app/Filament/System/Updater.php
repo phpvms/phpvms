@@ -14,6 +14,7 @@ use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Override;
 
 class Updater extends Page
 {
@@ -25,7 +26,7 @@ class Updater extends Page
 
     public string $updateOutput = '';
 
-    #[\Override]
+    #[Override]
     public function content(FilamentSchema $schema): FilamentSchema
     {
         return $schema->components([
@@ -48,19 +49,7 @@ class Updater extends Page
         // That's because canAccess() is called whenever a component of the panel is called (for navigation)
         // Or we can't connect to the db when loading the installer
 
-        // Custom permission check (to support both v7 and v8 db)
-        // v7
-        if (Schema::hasTable('role_user')) {
-            $result = DB::table('role_user')
-                ->where('user_id', Auth::id())
-                ->where('roles.name', 'LIKE', '%admin%')
-                ->join('roles', 'role_user.role_id', '=', 'roles.id')
-                ->count();
-
-            abort_if($result === 0, 403);
-        } else { // v8
-            abort_if(!Auth::user()?->can('access_admin'), 403);
-        }
+        $this->authorizeUpdate();
 
         if (!app(InstallerService::class)->isUpgradePending()) {
             Notification::make()
@@ -73,11 +62,35 @@ class Updater extends Page
     }
 
     /**
+     * Admin permission check (supports both v7 and v8 schemas).
+     *
+     * Lives outside mount() so public Livewire actions can re-assert it — mount()
+     * only runs on initial page load, not on subsequent wire calls.
+     */
+    private function authorizeUpdate(): void
+    {
+        // v7
+        if (Schema::hasTable('role_user')) {
+            $result = DB::table('role_user')
+                ->where('user_id', Auth::id())
+                ->where('roles.name', 'LIKE', '%admin%')
+                ->join('roles', 'role_user.role_id', '=', 'roles.id')
+                ->count();
+
+            abort_if($result === 0, 403);
+        } else { // v8
+            abort_if(!Auth::user()?->can('access_admin'), 403);
+        }
+    }
+
+    /**
      * Runs migrations, seeds, data migrations, and cache rebuild — streaming output.
      * Idempotent within a single Livewire lifecycle via $updateStarted.
      */
     public function runUpdate(): void
     {
+        $this->authorizeUpdate();
+
         if ($this->updateStarted) {
             return;
         }
@@ -117,7 +130,7 @@ class Updater extends Page
         $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 10000)');
     }
 
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         return __('installer.update_phpvms');

@@ -10,6 +10,8 @@ use App\Addons\Support\BootCache;
 use App\Exceptions\AutoloadModeException;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider as IlluminateServiceProvider;
 use RuntimeException;
 
 /**
@@ -73,7 +75,7 @@ class AddonAutoLoader
     public function classLoader(): ClassLoader
     {
         foreach (spl_autoload_functions() as $entry) {
-            if (is_array($entry) && isset($entry[0]) && $entry[0] instanceof ClassLoader) {
+            if (is_array($entry) && $entry[0] instanceof ClassLoader) {
                 return $entry[0];
             }
         }
@@ -102,6 +104,10 @@ class AddonAutoLoader
     /**
      * Register all service providers declared by a single addon entry.
      *
+     * Each declared class is validated to be a genuine ServiceProvider before
+     * registration — a manifest is addon-controlled input, so a crafted
+     * `providers` entry must never be able to instantiate an arbitrary class.
+     *
      * Laravel deduplicates already-registered providers by class, so calling
      * this method multiple times for the same entry is idempotent and Octane-safe.
      */
@@ -109,6 +115,16 @@ class AddonAutoLoader
     {
         foreach ($entry->providers as $providerClass) {
             if ($providerClass === '') {
+                continue;
+            }
+
+            if (!is_a($providerClass, IlluminateServiceProvider::class, true)) {
+                Log::warning(sprintf(
+                    'AddonAutoLoader: skipping provider "%s" for addon "%s" — not a ServiceProvider subclass.',
+                    $providerClass,
+                    $entry->namespace,
+                ));
+
                 continue;
             }
 

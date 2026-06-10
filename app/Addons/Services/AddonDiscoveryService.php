@@ -12,10 +12,13 @@ use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 /**
- * Reconciliation core: scans both addon locations, upserts each discovered
- * addon into the addons table, and regenerates the enabled-only boot cache.
+ * Reconciliation core: scans the configured addon location, upserts each
+ * discovered addon into the addons table, and regenerates the enabled-only
+ * boot cache.
  *
  * Design invariants (D-09 through D-15):
  *  - Idempotent: running multiple times produces the same DB state (D-14).
@@ -34,48 +37,61 @@ class AddonDiscoveryService
     ) {}
 
     /**
-     * Scan all addon locations and write the boot cache for a fresh install,
-     * and they're all marked as enabled
+     * Reconcile addon state and (re)write the boot cache.
      *
-     * If not a fresh install, upsert any newly found addons into the database,
-     * and set enabled = false, and also write the boot cache
+     * Two modes, gated on isInstalled():
      *
-     * TODO: Should any new addons only be upserted and not written into the cache?
-     *    I think at some point, we shouldn't write disabled addons in the cache
-     *    For now, we'll just write them all to make testing easier
+     *  - v8 addon schema present: the DB is the source of truth. Optionally
+     *    discover newly dropped-in addons (inserted disabled, D-12) when
+     *    scan_for_new_on_boot is enabled, then reproject the enabled-only boot
+     *    cache from the DB. This is the self-heal path — a deleted or
+     *    stale-schema cache is rebuilt on the next boot.
+     *
+     *  - v8 addon schema absent (fresh install / v7 upgrade pre-migrate): the DB
+     *    cannot be the source of truth, so the cache is bootstrapped directly from
+     *    disk with every discovered addon enabled, allowing bundled modules to
+     *    load before the installer runs.
      */
     public function run(): void
     {
+        if ($this->isInstalled()) {
+            if (config('addons.scan_for_new_on_boot')) {
+                $this->discoverNewAddons();
+            }
+
+            $this->rebuildCache();
+
+            return;
+        }
 
         $manifests = $this->scanLocation(config('addons.paths.base'));
         /** @var list<AddonBootCache> $rows */
         $rows = [];
 
-        // Scenario 1: fresh install, all found addons are enabled
-        if (!installed()) {
-            foreach ($manifests as $m) {
-                $rows[] = $this->buildBootCacheRow($m, true);
-            }
-
-            $this->bootCache->write($rows);
-
-            return;
+        foreach ($manifests as $m) {
+            $rows[] = $this->buildBootCacheRow($m, true);
         }
 
-        /**
-         * Scenario 2:
-         *   This is an existing install
-         *   Find any new addons that have popped up, set them to disabled
-         *   Upsert them into the DB
-         */
+        $this->bootCache->write($rows);
+    }
 
-        // This should be disabled by default, and only run the new
-        // addon discovery when you go to the admin panel for addons
-        if (!config('addons.scan_for_new_on_boot')) {
-            return;
+    /**
+     * Whether the v8 addon-engine schema is present.
+     *
+     * Probes for the `registry_id` column — new in v8 — rather than mere table
+     * existence. A v7 install has no addons table (and no registry_id), and run()
+     * executes during web-request boot (AddonServiceProvider::boot), so an
+     * unguarded query/upsert before `migrate` would fatal every request.
+     * Returning false routes run() to the DB-free disk bootstrap, which self-heals
+     * once migrated. A connection failure is swallowed and reported as not-installed.
+     */
+    private function isInstalled(): bool
+    {
+        try {
+            return Schema::hasColumn('addons', 'registry_id');
+        } catch (Throwable) {
+            return false;
         }
-
-        $this->discoverNewAddons();
     }
 
     /**
@@ -132,8 +148,10 @@ class AddonDiscoveryService
 
         /** @var AddonManifest $m */
         foreach ($manifests as $m) {
-            // If the addon is already in the DB, don't do anything with it
-            $installed = $installedAddons->first(fn (Addon $addon, int $key): bool => ($addon->registry_id === $m->registryId)
+            // If the addon is already in the DB, don't do anything with it.
+            // Guard registry_id (nullable for unmanaged addons) so two
+            // null-registry rows don't collide via null === null.
+            $installed = $installedAddons->first(fn (Addon $addon): bool => ($m->registryId !== null && $addon->registry_id === $m->registryId)
                 || ($addon->name === $m->name)
                 || ($addon->namespace === $m->namespace));
 
@@ -141,7 +159,7 @@ class AddonDiscoveryService
                 continue;
             }
 
-            $newAddons->push($this->upsert($m, isNew: true));
+            $newAddons->push($this->upsert($m));
         }
 
         return $newAddons;
@@ -166,7 +184,7 @@ class AddonDiscoveryService
         $cacheRows = [];
 
         foreach ($manifests as $m) {
-            $addon = $installed->first(fn (Addon $a): bool => ($a->registry_id === $m->registryId && $m->registryId !== null)
+            $addon = $installed->first(fn (Addon $a): bool => ($m->registryId !== null && $a->registry_id === $m->registryId)
                 || $a->name === $m->name
                 || $a->namespace === $m->namespace);
 
@@ -252,16 +270,22 @@ class AddonDiscoveryService
     /**
      * Upsert one addon row into the DB, preserving the operator's enabled flag (D-12).
      *
-     * Match key:
+     * Match key (stable identity):
      *  - registry_id when managed (non-null registryId).
-     *  - path when bundled (null registryId).
+     *  - namespace when bundled (null registryId).
      *
-     * Uses firstOrNew + save so enabled is set only on row creation; an existing
-     * operator-disabled row keeps enabled=false across re-prime (D-12).
+     * Resolves the existing row by its match key before writing, so re-priming
+     * (or a retried/interrupted scan) updates in place instead of inserting a
+     * duplicate. The enabled flag + installed_at are written only when the row
+     * is genuinely new, so an operator-disabled row keeps enabled=false (D-12).
      */
-    private function upsert(AddonManifest $m, bool $isNew): Addon
+    private function upsert(AddonManifest $m): Addon
     {
-        $addon = Addon::fromManifest($m);
+        $match = $m->registryId !== null
+            ? ['registry_id' => $m->registryId]
+            : ['namespace' => $m->namespace];
+
+        $addon = Addon::firstOrNew($match);
 
         $addon->name = $m->name;
         $addon->namespace = $m->namespace;
@@ -270,7 +294,7 @@ class AddonDiscoveryService
         $addon->registry_id = $m->registryId;
         $addon->path = $m->path;
 
-        if ($isNew) {
+        if (!$addon->exists) {
             $addon->enabled = false;
             $addon->installed_at = now();
         }

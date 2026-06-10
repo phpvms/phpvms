@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use Illuminate\Support\Facades\File;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Manages per-addon public asset symlinks: {addon}/public → public/ext/{name}.
@@ -23,7 +25,7 @@ class AddonAssetLinker
      */
     public static function fromConfig(): self
     {
-        return new self((string) config('addons.paths.assets', config('addons.paths.assets')));
+        return new self((string) config('addons.paths.assets', public_path('ext')));
     }
 
     /**
@@ -44,7 +46,9 @@ class AddonAssetLinker
 
         $this->unlink($name);
 
-        symlink($source, $target);
+        if (!symlink($source, $target)) {
+            throw new RuntimeException('Failed to create addon asset symlink: '.$target);
+        }
     }
 
     /**
@@ -54,8 +58,14 @@ class AddonAssetLinker
     {
         $target = $this->target($name);
 
-        if (is_link($target) || file_exists($target)) {
-            @unlink($target);
+        if (is_link($target) || is_file($target)) {
+            if (!unlink($target)) {
+                throw new RuntimeException('Failed to remove addon asset link: '.$target);
+            }
+        } elseif (is_dir($target)) {
+            if (!File::deleteDirectory($target)) {
+                throw new RuntimeException('Failed to remove addon asset directory: '.$target);
+            }
         }
     }
 
@@ -64,6 +74,22 @@ class AddonAssetLinker
      */
     private function target(string $name): string
     {
-        return $this->assetsBase.'/'.$name;
+        return $this->assetsBase.'/'.$this->normalizeName($name);
+    }
+
+    /**
+     * Reduce an addon name to a single safe path segment, rejecting any value
+     * that could escape the assets base (path traversal / separators).
+     */
+    private function normalizeName(string $name): string
+    {
+        $normalized = str_replace('\\', '/', $name);
+        $safe = basename($normalized);
+
+        if (in_array($safe, ['', '.', '..'], true) || $safe !== $normalized) {
+            throw new InvalidArgumentException('Invalid addon name for asset link target.');
+        }
+
+        return $safe;
     }
 }

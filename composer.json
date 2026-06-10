@@ -19,7 +19,7 @@
     }
   ],
   "require": {
-    "php": ">=8.3",
+    "php": ">=8.4.1",
     "ext-json": "*",
     "ext-mbstring": "*",
     "ext-simplexml": "*",
@@ -51,7 +51,6 @@
     "igaster/laravel-theme": "dev-master",
     "intervention/image": "~2.4",
     "jmikola/geojson": "^1.2.0",
-    "joshbrw/laravel-module-installer": "~2.0.1",
     "laracasts/flash": "^3.2.6",
     "laravel/helpers": "^v1.8.3",
     "jeremykendall/php-domain-parser": "~6.3",
@@ -107,7 +106,7 @@
     "rector/rector": "^2.4.2",
     "driftingly/rector-laravel": "^2.3",
     "laravel/pail": "^1.2.6",
-    "pestphp/pest": "*",
+    "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-type-coverage": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.1",
     "pestphp/pest-plugin-livewire": "^4.0",
@@ -144,10 +143,7 @@
         "type:phpvms-module"
       ]
     },
-    "module-dir": "modules",
-    "symfony": {
-      "require": "^7.4"
-    }
+    "module-dir": "modules"
   },
   "scripts": {
     "post-autoload-dump": [
@@ -211,7 +207,6 @@
     "classmap-authoritative": false,
     "allow-plugins": {
       "composer/installers": true,
-      "joshbrw/laravel-module-installer": true,
       "oomphinc/composer-installers-extender": true,
       "symfony/flex": true,
       "php-http/discovery": true,
