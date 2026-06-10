@@ -107,7 +107,7 @@ class Addon extends Model
      */
     public function getStudlyName(): string
     {
-        return Str::studly($this->name);
+        return Str::studly($this->getName());
     }
 
     /**

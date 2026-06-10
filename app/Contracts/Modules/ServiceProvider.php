@@ -7,6 +7,7 @@ namespace App\Contracts\Modules;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Override;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionNamedType;
@@ -44,7 +45,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      *
      * Runs in register() so config values are available before boot.
      */
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->registerConfig();
@@ -52,6 +53,9 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     /**
      * Auto-wire addon resources.
+     *
+     * NOTE: subclasses that override boot() must call parent::boot() to keep
+     * routes/views/translations/commands/listeners auto-wiring.
      */
     public function boot(): void
     {
@@ -78,7 +82,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * Deferred providers:
      * https://laravel.com/docs/7.x/providers#deferred-providers
      */
-    #[\Override]
+    #[Override]
     public function provides(): array
     {
         return [];
@@ -94,7 +98,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     protected function addonBasePath(): string
     {
-        return dirname((new ReflectionClass(static::class))->getFileName(), 3);
+        return dirname(new ReflectionClass(static::class)->getFileName(), 3);
     }
 
     /**
@@ -103,15 +107,14 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * Default: everything before `\Providers\` in the provider's FQCN.
      * e.g. `Modules\Acme\Providers\AcmeServiceProvider` → `Modules\Acme`.
      *
-     * Override when using a non-standard namespace layout.
+     * Returns null when the namespace can't be inferred (provider not under a
+     * `\Providers\` namespace); callers then skip command/listener discovery
+     * rather than crashing boot. Override for non-standard namespace layouts.
      */
-    protected function addonRootNamespace(): string
+    protected function addonRootNamespace(): ?string
     {
         if (!str_contains(static::class, '\\Providers\\')) {
-            throw new \LogicException(sprintf(
-                'Addon provider %s must live under a \\Providers\\ namespace, or override addonRootNamespace().',
-                static::class
-            ));
+            return null;
         }
 
         return Str::beforeLast(static::class, '\\Providers\\');
@@ -231,6 +234,11 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
         }
 
         $rootNamespace = $this->addonRootNamespace();
+
+        if ($rootNamespace === null) {
+            return;
+        }
+
         $commands = [];
 
         foreach (glob($commandsDir.'/*.php') ?: [] as $file) {
@@ -263,6 +271,10 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
         }
 
         $rootNamespace = $this->addonRootNamespace();
+
+        if ($rootNamespace === null) {
+            return;
+        }
 
         foreach (glob($listenersDir.'/*.php') ?: [] as $file) {
             $stem = basename($file, '.php');

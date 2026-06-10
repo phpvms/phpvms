@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class MigrationService extends Service
 {
+    public function __construct(
+        private readonly AddonRegistry $addonRegistry,
+    ) {}
+
     protected function getMigrator(): Migrator
     {
         $m = app('migrator');
@@ -41,8 +45,18 @@ class MigrationService extends Service
             'core' => App::databasePath().'/'.$dir,
         ];
 
-        $modules = app(AddonRegistry::class)->enabled();
+        $modules = $this->addonRegistry->enabled();
         foreach ($modules as $module) {
+            if (!is_dir($module->getPath())) {
+                Log::warning(sprintf(
+                    'Addon "%s" is enabled but its path does not exist on disk: %s',
+                    $module->getName(),
+                    $module->getPath(),
+                ));
+
+                continue;
+            }
+
             $module_path = $module->getPath().'/Database/'.$dir;
             if (file_exists($module_path)) {
                 $paths[$module->getName()] = $module_path;

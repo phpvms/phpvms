@@ -15,6 +15,7 @@ use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Lifecycle façade for addons. Owns reads (find/all/enabled), enable/disable,
@@ -125,14 +126,14 @@ class AddonRegistry
      */
     public function install(AddonSource $source): Addon
     {
-        $staging = config('addons.paths.base').'/_staging';
+        $staging = $this->stagingPath();
         File::ensureDirectoryExists($staging);
 
         $extracted = $source->fetch($staging);
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$manifest->name;
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
 
             if (File::exists($dest)) {
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
@@ -169,14 +170,14 @@ class AddonRegistry
 
         $wasEnabled = $existing->isEnabled();
 
-        $staging = config('addons.paths.base').'/_staging';
+        $staging = $this->stagingPath();
         File::ensureDirectoryExists($staging);
 
         $extracted = $source->fetch($staging);
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$manifest->name;
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
 
             File::deleteDirectory($dest);
 
@@ -199,6 +200,37 @@ class AddonRegistry
         $this->octane->reload();
 
         return $existing->refresh();
+    }
+
+    /**
+     * Staging directory for install/update extraction.
+     *
+     * Kept outside the scanned addons base so half-extracted archives are never
+     * picked up by the discovery scanner.
+     */
+    private function stagingPath(): string
+    {
+        return (string) config('addons.paths.staging', storage_path('app/addon-staging'));
+    }
+
+    /**
+     * Derive a filesystem-safe directory name from an addon's manifest name.
+     *
+     * Strips everything that is not an ASCII letter and forces StudlyCase, so a
+     * crafted manifest name (e.g. "../../app") can never escape the addons base
+     * directory when used as a path segment.
+     *
+     * @throws AddonInstallException when no letters remain after sanitisation
+     */
+    private function safeName(string $name): string
+    {
+        $safe = Str::studly((string) preg_replace('/[^A-Za-z]+/', ' ', $name));
+
+        if ($safe === '') {
+            throw new AddonInstallException(sprintf('Invalid addon name: %s', $name));
+        }
+
+        return $safe;
     }
 
     /**

@@ -134,7 +134,7 @@ class BootCache
         $wrapper = [
             'schema'       => self::SCHEMA,
             'generated_at' => gmdate('c'),
-            'addons'       => array_values(array_map(fn (AddonBootCache $e): array => $e->toArray(), $addons)),
+            'addons'       => array_map(fn (AddonBootCache $e): array => $e->toArray(), $addons),
         ];
 
         $content = '<?php'.PHP_EOL.'return '.var_export($wrapper, true).';'.PHP_EOL;
@@ -145,7 +145,13 @@ class BootCache
 
         if (!rename($tmp, $this->path())) {
             @unlink($tmp);
-            throw new RuntimeException('AddonRuntime: failed to atomically rename cache file.');
+            throw new RuntimeException('BootCache: failed to atomically rename cache file.');
+        }
+
+        // The cache is loaded via require(); under OPcache long-running workers
+        // (e.g. Octane) would otherwise keep serving the pre-rename bytecode.
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($this->path(), true);
         }
     }
 

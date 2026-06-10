@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Addons\Services\AddonDiscoveryService;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Throwable;
 
@@ -43,6 +44,7 @@ class AddonsPrime extends Command
             }
         } catch (Throwable $throwable) {
             $this->components->error('Addon prime failed: '.$throwable->getMessage());
+            Log::error('Addon prime failed', ['exception' => $throwable]);
 
             return self::FAILURE;
         }

@@ -1,6 +1,5 @@
 <?php
 
-use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
 use App\Services\KvpService;
 use App\Services\SettingService;
@@ -159,7 +158,7 @@ if (!function_exists('setting')) {
             } else {
                 $value = $settingService->retrieve($key);
             }
-        } catch (SettingNotFound|Throwable) {
+        } catch (Throwable) {
             return $default;
         }
 
@@ -381,10 +380,10 @@ if (!function_exists('check_module')) {
      */
     function check_module($module_name): bool
     {
-        /** @var Addon $phpvms_module */
+        /** @var Addon|null $phpvms_module */
         $phpvms_module = Addon::where('name', $module_name)->first();
 
-        return !empty($phpvms_module) && $phpvms_module->enabled;
+        return $phpvms_module !== null && $phpvms_module->enabled;
     }
 }
 

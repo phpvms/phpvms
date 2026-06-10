@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
@@ -27,7 +28,16 @@ class FlightController extends Controller
         private readonly FlightSearchQuery $flightSearchQuery,
         private readonly FlightService $flightSvc,
         private readonly GeoService $geoSvc,
+        private readonly AddonRegistry $addonRegistry,
     ) {}
+
+    /**
+     * Return whether the vmsACARS addon is installed and enabled.
+     */
+    private function acarsEnabled(): bool
+    {
+        return (bool) $this->addonRegistry->find('VMSAcars')?->isEnabled();
+    }
 
     public function index(SearchFlightsRequest $request): View
     {
@@ -145,7 +155,7 @@ class FlightController extends Controller
             'subfleet_id'   => $request->input('subfleet_id'),
             'simbrief'      => !empty(setting('simbrief.api_key')),
             'simbrief_bids' => setting('simbrief.only_bids'),
-            'acars_plugin'  => true,
+            'acars_plugin'  => $this->acarsEnabled(),
             'icao_codes'    => $icao_codes,
             'type_ratings'  => $type_ratings,
         ]);
@@ -181,7 +191,7 @@ class FlightController extends Controller
             'subfleets'     => $this->subfleetSelectBoxList(true),
             'simbrief'      => !empty(setting('simbrief.api_key')),
             'simbrief_bids' => setting('simbrief.only_bids'),
-            'acars_plugin'  => true,
+            'acars_plugin'  => $this->acarsEnabled(),
         ]);
     }
 
@@ -224,7 +234,7 @@ class FlightController extends Controller
             'flight'       => $flight,
             'map_features' => $map_features,
             'bid'          => $bid,
-            'acars_plugin' => true,
+            'acars_plugin' => $this->acarsEnabled(),
         ]);
     }
 
