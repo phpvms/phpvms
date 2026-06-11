@@ -239,7 +239,7 @@ test('frontend flight list hides restricted flights and keeps open flights', fun
     $response->assertOk();
 
     $flights = collect($response->viewData('flights')->items());
-    $flightIds = $flights->pluck('id')->map(fn ($id): int => (int) $id)->all();
+    $flightIds = $flights->pluck('id')->all();
 
     expect($flightIds)
         ->toContain($allowedFlight->id)

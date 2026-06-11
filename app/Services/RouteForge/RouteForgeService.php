@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
  *        c. Persist all flight rows in a single `Flight::insert($attrs)` —
  *           the query-builder call bypasses Eloquent model events, so no
  *           per-flight LogsActivity entries are emitted (replaces the prior
- *           `Flight::withoutEvents(...)` wrapper) and the HashIdTrait
+ *           `Flight::withoutEvents(...)` wrapper) and the HasNanoIds
  *           creating-hook stays suppressed (we generate ids explicitly above).
  *        d. Persist `flight_subfleet` pivot rows in one bulk insert.
  *        e. When fareMultiplier is set, persist `flight_fare` pivot rows in
@@ -183,7 +183,7 @@ final readonly class RouteForgeService
 
             /** @var array<string, mixed> $attrs */
             $attrs = $flight->getAttributes();
-            $attrs['id'] = Flight::createNewHashId();
+            $attrs['id'] = Str::nanoid();
             $attrs['bundle_id'] = $bundle->id;
             $attrs['created_at'] = $now;
             $attrs['updated_at'] = $now;

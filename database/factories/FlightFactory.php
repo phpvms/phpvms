@@ -12,6 +12,7 @@ use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\FlightBundle;
 use DateTime;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<Flight>
@@ -49,7 +50,7 @@ class FlightFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'            => fake()->unique()->numberBetween(10, 10000000),
+            'id'            => Str::nanoid(),
             'airline_id'    => fn () => Airline::factory()->create()->id,
             'flight_number' => fake()->unique()->numberBetween(10, 1000000),
             'route_code'    => fake()->randomElement(['', fake()->text(5)]),

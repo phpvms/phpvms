@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Models\File;
 use Exception;
-use Hashids\HashidsException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -20,8 +19,6 @@ class FileService extends Service
      *
      * @param UploadedFile $file
      * @param string       $folder
-     *
-     * @throws HashidsException
      */
     public function saveFile($file, $folder, array $attrs): File
     {
@@ -34,7 +31,7 @@ class FileService extends Service
             'disk'           => config('filesystems.public_files'),
         ], $attrs);
 
-        $id = File::createNewHashId();
+        $id = Str::nanoid();
         $path_info = pathinfo($file->getClientOriginalName());
 
         // Create the file, add the ID to the front of the file to account

@@ -3,8 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use App\Traits\HashIdTrait;
-use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -46,15 +45,12 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-#[WithoutIncrementing]
 class File extends Model
 {
     use HasFactory;
-    use HashIdTrait;
+    use HasNanoIds;
 
     public $table = 'files';
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'id',

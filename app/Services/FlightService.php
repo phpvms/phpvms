@@ -130,7 +130,7 @@ class FlightService extends Service
      * Return flight IDs a user may see when aircraft restrictions are active.
      * Includes flights with at least one allowed subfleet and true open flights.
      *
-     * @return list<int>
+     * @return list<string>
      */
     public function getAccessibleFlightIds(User $user): array
     {
@@ -141,14 +141,12 @@ class FlightService extends Service
                 $query->whereIn('subfleets.id', $userSubfleets);
             })
             ->pluck('id')
-            ->map(static fn ($flightId): int => (int) $flightId)
             ->all();
 
         $openFlights = Flight::query()
             ->whereNull('user_id')
             ->doesntHave('subfleets')
             ->pluck('id')
-            ->map(static fn ($flightId): int => (int) $flightId)
             ->all();
 
         return array_values(array_unique(array_merge($userFlights, $openFlights)));

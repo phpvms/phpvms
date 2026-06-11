@@ -14,6 +14,7 @@ use App\Models\Flight;
 use App\Models\Pirep;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<Pirep>
@@ -41,7 +42,7 @@ class PirepFactory extends Factory
         $flight = Flight::factory()->create(['airline_id' => $airline->id]);
 
         return [
-            'id'                  => fake()->unique()->numberBetween(10, 10000000),
+            'id'                  => Str::nanoid(),
             'airline_id'          => fn () => $airline->id,
             'user_id'             => fn () => User::factory()->create()->id,
             'aircraft_id'         => fn () => Aircraft::factory()->create()->id,
