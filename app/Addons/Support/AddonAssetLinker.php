@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Manages per-addon public asset symlinks: {addon}/public → public/ext/{name}.
+ * Manages per-addon public asset symlinks: {addon}/public → public/ext/{lower-name}.
  *
  * Links are created at install/enable and rebuilt by `addons:relink` after a
  * deploy or container restart (ephemeral filesystems drop the symlinks).
@@ -74,14 +75,17 @@ class AddonAssetLinker
      */
     private function target(string $name): string
     {
-        return $this->assetsBase.'/'.$this->normalizeName($name);
+        return $this->assetsBase.'/'.self::segment($name);
     }
 
     /**
-     * Reduce an addon name to a single safe path segment, rejecting any value
-     * that could escape the assets base (path traversal / separators).
+     * Reduce an addon name to a single safe, lower-cased path segment, rejecting
+     * any value that could escape the assets base (path traversal / separators).
+     *
+     * Shared with addon_vite() so the symlink target and the rendered asset URLs
+     * always resolve to the same directory.
      */
-    private function normalizeName(string $name): string
+    public static function segment(string $name): string
     {
         $normalized = str_replace('\\', '/', $name);
         $safe = basename($normalized);
@@ -90,6 +94,18 @@ class AddonAssetLinker
             throw new InvalidArgumentException('Invalid addon name for asset link target.');
         }
 
-        return $safe;
+        return Str::lower($safe);
+    }
+
+    /**
+     * Web path of the addon assets base relative to public/ (e.g. 'ext'),
+     * derived from the same config the symlinks are built against.
+     */
+    public static function webBase(): string
+    {
+        $absolute = (string) config('addons.paths.assets', public_path('ext'));
+        $relative = trim(Str::after($absolute, public_path()), '/\\');
+
+        return $relative !== '' ? $relative : 'ext';
     }
 }

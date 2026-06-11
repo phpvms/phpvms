@@ -20,10 +20,10 @@ afterEach(function (): void {
     File::deleteDirectory($this->base);
 });
 
-it('link() symlinks {addon}/public to public/ext/{name}', function (): void {
+it('link() symlinks {addon}/public to public/ext/{lower-name}', function (): void {
     $this->linker->link('Demo', $this->addonDir);
 
-    $link = $this->publicExt.'/Demo';
+    $link = $this->publicExt.'/demo';
     expect(is_link($link))->toBeTrue()
         ->and(realpath($link))->toBe(realpath($this->addonDir.'/public'));
 });
@@ -33,19 +33,27 @@ it('link() is a no-op when the addon has no public dir', function (): void {
 
     $this->linker->link('Demo', $this->addonDir);
 
-    expect(file_exists($this->publicExt.'/Demo'))->toBeFalse();
+    expect(file_exists($this->publicExt.'/demo'))->toBeFalse();
 });
 
 it('link() is idempotent', function (): void {
     $this->linker->link('Demo', $this->addonDir);
     $this->linker->link('Demo', $this->addonDir);
 
-    expect(is_link($this->publicExt.'/Demo'))->toBeTrue();
+    expect(is_link($this->publicExt.'/demo'))->toBeTrue();
 });
 
 it('unlink() removes the symlink', function (): void {
     $this->linker->link('Demo', $this->addonDir);
     $this->linker->unlink('Demo');
 
-    expect(file_exists($this->publicExt.'/Demo'))->toBeFalse();
+    expect(file_exists($this->publicExt.'/demo'))->toBeFalse();
+});
+
+it('segment() lower-cases the name and rejects path traversal', function (): void {
+    expect(AddonAssetLinker::segment('VMSAcars'))->toBe('vmsacars')
+        ->and(AddonAssetLinker::segment('Demo'))->toBe('demo');
+
+    expect(fn (): string => AddonAssetLinker::segment('../escape'))
+        ->toThrow(InvalidArgumentException::class);
 });
