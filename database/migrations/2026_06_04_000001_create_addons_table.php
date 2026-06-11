@@ -83,6 +83,7 @@ return new class() extends Migration
                 // T-01-03: path is sourced only from File::directories() output — never from manifest.
                 // T-01-02: bound parameters via query-builder insert() — no string concatenation.
                 DB::table('addons')->insert([
+                    'name'         => $manifest['name'] ?? basename((string) $directory),
                     'registry_id'  => null,
                     'type'         => $manifest['type'] ?? 'module',
                     'version'      => $version,

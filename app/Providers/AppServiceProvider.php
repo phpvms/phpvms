@@ -189,6 +189,11 @@ class AppServiceProvider extends ServiceProvider
             $app['config']['view.paths']
         ));
 
+        // Module nav links accumulate across each addon provider's boot() via
+        // addAdminLink()/addFrontendLink(); the reader (ModuleLinksPlugin,
+        // nav views) must see the same instance, so it has to be a singleton.
+        $this->app->singleton(ModuleService::class);
+
         // RouteForge lint catalog: tag every concrete rule class so adding a
         // rule means appending one entry here, not editing LintRunner. The
         // bind below materializes the tagged generator into the runner's

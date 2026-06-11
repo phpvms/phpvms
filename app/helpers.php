@@ -1,10 +1,12 @@
 <?php
 
+use App\Addons\Support\AddonAssetLinker;
 use App\Models\Addon;
 use App\Services\KvpService;
 use App\Services\SettingService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -240,6 +242,30 @@ if (!function_exists('public_mix')) {
     function public_mix($path, array $parameters = []): string
     {
         return public_asset($path, $parameters);
+    }
+}
+
+/*
+ * Render Vite tags for an addon's own pre-built assets.
+ *
+ * Called from inside an addon view with the addon's own name. Resolves the
+ * addon's manifest under public/{webBase}/{lower-name}/build, exposed via the
+ * AddonAssetLinker symlink. Assets are shipped pre-built; nothing compiles at
+ * request time. Uses a dedicated Vite instance so the host app's own @vite is
+ * never affected.
+ */
+if (!function_exists('addon_vite')) {
+    /**
+     * @param string|list<string> $entrypoints Manifest entry keys (e.g. 'resources/js/app.js')
+     */
+    function addon_vite(string $addon, array|string $entrypoints): Vite
+    {
+        $base = AddonAssetLinker::webBase().'/'.AddonAssetLinker::segment($addon);
+
+        return new Vite()
+            ->useHotFile(public_path($base.'/hot'))
+            ->useBuildDirectory($base.'/build')
+            ->withEntryPoints((array) $entrypoints);
     }
 }
 

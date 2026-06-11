@@ -10,8 +10,9 @@ return [
     'max_download_bytes' => 100 * 1024 * 1024,
 
     'paths' => [
-        'base'    => base_path('modules'),
-        'assets'  => public_path('ext'),
-        'staging' => storage_path('app/addon-staging'),
+        'base'       => base_path('modules'),
+        'assets'     => public_path('ext'),
+        'staging'    => storage_path('app/addon-staging'),
+        'boot_cache' => base_path('bootstrap/cache/addons.php'),
     ],
 ];

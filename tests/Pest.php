@@ -21,6 +21,18 @@ pest()
     ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->beforeEach(function (): void {
+        // Never let addon lifecycle tests write the real bootstrap/cache/addons.php.
+        // A unique path per test keeps both parallel runs and sequential tests
+        // isolated (a shared path would leak boot-cache state between tests).
+        config(['addons.paths.boot_cache' => sys_get_temp_dir().'/phpvms-addons-boot-'.uniqid('', true).'.php']);
+
         $this->seed(SettingsSeeder::class);
+    })
+    ->afterEach(function (): void {
+        $path = config('addons.paths.boot_cache');
+
+        if (is_string($path) && str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
+            @unlink($path);
+        }
     })
     ->in('Unit', 'Feature', 'Arch', '../resources/views');

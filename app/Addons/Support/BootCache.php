@@ -54,10 +54,13 @@ class BootCache
 
     /**
      * Absolute path to the boot cache file.
+     *
+     * Config-driven so tests can redirect writes to a temp path instead of
+     * clobbering the real bootstrap/cache/addons.php.
      */
     public function path(): string
     {
-        return base_path('bootstrap/cache/addons.php');
+        return (string) config('addons.paths.boot_cache', base_path('bootstrap/cache/addons.php'));
     }
 
     /**
