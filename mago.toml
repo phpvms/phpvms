@@ -14,7 +14,8 @@ excludes = []
 literal-separator = true
 
 [formatter]
-preset = "pint"
+preset = "laravel"
+excludes = ["modules/"]
 preserve-breaking-member-access-chain = true
 preserve-breaking-member-access-chain-first-method-on-same-line = true
 preserve-breaking-argument-list = true
