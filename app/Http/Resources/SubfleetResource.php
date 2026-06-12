@@ -8,13 +8,14 @@ use App\Contracts\Resource;
 use App\Models\Subfleet;
 use App\Services\FareService;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Subfleet
  */
 class SubfleetResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

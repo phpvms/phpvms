@@ -10,6 +10,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
+use Override;
 
 class PirepStats extends BaseWidget
 {
@@ -22,7 +23,7 @@ class PirepStats extends BaseWidget
         return ListPireps::class;
     }
 
-    #[\Override]
+    #[Override]
     protected function getStats(): array
     {
         $pirepData = Trend::model(Pirep::class)

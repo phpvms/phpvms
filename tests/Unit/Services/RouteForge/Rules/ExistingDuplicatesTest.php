@@ -40,7 +40,7 @@ it('fires L5 ERROR when a row matches a same-bundle enabled non-owner flight', f
         'owner_type'    => null,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row([
             'airline_id'    => $airline->id,
             'flight_number' => 100,
@@ -69,7 +69,7 @@ it('does NOT fire L5 when the matching existing flight is disabled', function ()
         'owner_type'    => null,
     ]);
 
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundle, airline: $airline)))->toBe([]);
 });
@@ -87,7 +87,7 @@ it('ignores owner-typed flights (charter / personal namespace)', function (): vo
         'owner_id'      => 1,
     ]);
 
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundle, airline: $airline)))->toBe([]);
 });
@@ -106,7 +106,7 @@ it('short-circuits L5 when the lint context bundle has no id (new-bundle path)',
         'enabled'       => true,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], airline: $airline));
 
@@ -129,7 +129,7 @@ it('fires L12 WARNING when a row matches airline+flight in another bundle', func
         'owner_type'    => null,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundleB, airline: $airline));
 
@@ -154,7 +154,7 @@ it('does NOT fire L12 when the only match is in the same bundle (L5 territory)',
         'enabled'       => true,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundle, airline: $airline));
 
@@ -174,7 +174,7 @@ it('does NOT fire L12 when the cross-bundle match is disabled', function (): voi
         'enabled'       => false,
     ]);
 
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundleB, airline: $airline)))->toBe([]);
 });
@@ -193,7 +193,7 @@ it('does NOT fire L12 when the cross-bundle match is owner-typed', function (): 
         'owner_id'      => 1,
     ]);
 
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $bundleB, airline: $airline)))->toBe([]);
 });
@@ -221,7 +221,7 @@ it('emits one L12 issue per matching bundle when airline+flight exists in multip
         'enabled'       => true,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], bundle: $batchBundle, airline: $airline));
 
@@ -244,7 +244,7 @@ it('fires L12 against every existing match when the batch creates a new bundle',
     ]);
 
     // RF::ctx() default uses an unsaved bundle (id null) — new-bundle path.
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
     ], airline: $airline));
 
@@ -256,7 +256,7 @@ it('fires L12 against every existing match when the batch creates a new bundle',
 // ─── Cross-cutting ────────────────────────────────────────────────────────
 
 it('returns no issues for an empty row list', function (): void {
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [])))->toBe([]);
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [])))->toBe([]);
 });
 
 it('returns no issues when no submitted row matches any existing flight', function (): void {
@@ -270,7 +270,7 @@ it('returns no issues when no submitted row matches any existing flight', functi
         'enabled'       => true,
     ]);
 
-    expect((new ExistingDuplicates())->check(RF::ctx(rows: [
+    expect(new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 100]),
         RF::row(['airline_id' => $airline->id, 'flight_number' => 101]),
     ], bundle: $bundle, airline: $airline)))->toBe([]);
@@ -286,7 +286,7 @@ it('queries the flights table exactly once (one bulk query covers L5 + L12)', fu
     }
 
     DB::enableQueryLog();
-    (new ExistingDuplicates())->check(RF::ctx(rows: $rows, bundle: $bundle, airline: $airline));
+    new ExistingDuplicates()->check(RF::ctx(rows: $rows, bundle: $bundle, airline: $airline));
     $queries = DB::getQueryLog();
     DB::disableQueryLog();
 
@@ -319,7 +319,7 @@ it('emits BOTH L5 and L12 in one pass when a row hits same-bundle AND another ro
         'enabled'       => true,
     ]);
 
-    $issues = (new ExistingDuplicates())->check(RF::ctx(rows: [
+    $issues = new ExistingDuplicates()->check(RF::ctx(rows: [
         RF::row(['airline_id' => $airline->id, 'flight_number' => 200, 'route_code' => null, 'route_leg' => null]),
         RF::row(['airline_id' => $airline->id, 'flight_number' => 300]),
     ], bundle: $batchBundle, airline: $airline));

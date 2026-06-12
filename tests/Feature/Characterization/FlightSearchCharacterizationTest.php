@@ -35,7 +35,7 @@ function flightSearchRun(array $params, bool $only_active = true): Collection
     $request->setContainer(app())->setRedirector(app('redirect'));
     $request->validateResolved();
 
-    return (new FlightSearchQuery())->build($request, $only_active)->get();
+    return new FlightSearchQuery()->build($request, $only_active)->get();
 }
 
 test('filter by airline id only', function (): void {

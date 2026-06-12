@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
 use Closure;
+use Override;
 
 /**
  * Validates query string for the Flight list/search endpoints:
@@ -71,7 +72,7 @@ class SearchFlightsRequest extends FormRequest
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $merge = [];
@@ -88,7 +89,7 @@ class SearchFlightsRequest extends FormRequest
         }
     }
 
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [
@@ -130,7 +131,7 @@ class SearchFlightsRequest extends FormRequest
     /**
      * @return array<string, string>
      */
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return [

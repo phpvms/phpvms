@@ -32,7 +32,7 @@ it('extracts a zip into the staging dir and returns the addon root', function ()
         'composer.json' => '{}',
     ]);
 
-    $root = (new ZipSource($zipPath))->fetch($this->staging);
+    $root = new ZipSource($zipPath)->fetch($this->staging);
 
     expect(File::exists($root.'/module.json'))->toBeTrue();
 });
@@ -44,7 +44,7 @@ it('unwraps a single top-level directory', function (): void {
         'Demo/composer.json' => '{}',
     ]);
 
-    $root = (new ZipSource($zipPath))->fetch($this->staging);
+    $root = new ZipSource($zipPath)->fetch($this->staging);
 
     expect(File::exists($root.'/module.json'))->toBeTrue();
 });
@@ -53,9 +53,9 @@ it('rejects a zip-slip entry', function (): void {
     $zipPath = $this->work.'/evil.zip';
     makeZip($zipPath, ['../../escape.txt' => 'pwned']);
 
-    (new ZipSource($zipPath))->fetch($this->staging);
+    new ZipSource($zipPath)->fetch($this->staging);
 })->throws(AddonInstallException::class);
 
 it('rejects a missing zip file', function (): void {
-    (new ZipSource($this->work.'/nope.zip'))->fetch($this->staging);
+    new ZipSource($this->work.'/nope.zip')->fetch($this->staging);
 })->throws(AddonInstallException::class);

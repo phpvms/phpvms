@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Models\News;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin News
@@ -18,7 +19,7 @@ class NewsResource extends Resource
      *
      * @return array
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

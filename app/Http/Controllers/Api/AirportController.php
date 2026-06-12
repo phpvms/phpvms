@@ -26,7 +26,7 @@ class AirportController extends Controller
      */
     public function index(SearchAirportsRequest $request): AnonymousResourceCollection
     {
-        $airports = (new AirportSearchQueryV1($request))
+        $airports = new AirportSearchQueryV1($request)
             ->build()
             ->paginate($this->perPage($request))
             ->appends($request->except(['page', 'user']));
@@ -82,7 +82,7 @@ class AirportController extends Controller
      */
     public function search(SearchAirportsRequest $request): AnonymousResourceCollection
     {
-        $airports = (new AirportSearchQueryV1($request))
+        $airports = new AirportSearchQueryV1($request)
             ->build()
             ->paginate($this->perPage($request), ['id', 'iata', 'icao', 'name', 'hub'])
             ->appends($request->except(['page', 'user']));

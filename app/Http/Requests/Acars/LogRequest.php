@@ -7,10 +7,11 @@ namespace App\Http\Requests\Acars;
 use App\Contracts\FormRequest;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 class LogRequest extends FormRequest
 {
-    #[\Override]
+    #[Override]
     public function authorize(): bool
     {
         $pirep = Pirep::findOrFail($this->route('pirep_id'), ['user_id']);
@@ -18,7 +19,7 @@ class LogRequest extends FormRequest
         return $pirep->user_id === Auth::id();
     }
 
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [

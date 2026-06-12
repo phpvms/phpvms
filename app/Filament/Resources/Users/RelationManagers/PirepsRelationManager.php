@@ -9,12 +9,13 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class PirepsRelationManager extends RelationManager
 {
     protected static string $relationship = 'pireps';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -28,13 +29,13 @@ class PirepsRelationManager extends RelationManager
         return PirepsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return trans_choice('common.pirep', 1);
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.pirep', 2);

@@ -7,6 +7,7 @@ use App\Enums\NavigationGroup;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
@@ -79,8 +80,17 @@ class Addons extends Page implements HasTable
                     ->color('danger')
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->requiresConfirmation()
-                    ->action(function (array $record): void {
-                        app(AddonRegistry::class)->delete($record['name']);
+                    ->schema([
+                        Checkbox::make('remove_tables')
+                            ->label(__('filament.addon_remove_tables'))
+                            ->helperText(__('filament.addon_remove_tables_help'))
+                            ->default(false),
+                    ])
+                    ->action(function (array $record, array $data): void {
+                        app(AddonRegistry::class)->delete(
+                            $record['name'],
+                            (bool) ($data['remove_tables'] ?? false),
+                        );
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
             ])

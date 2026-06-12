@@ -23,7 +23,7 @@ function l7Subfleet(bool $withFares): Subfleet
 it('fires when every selected subfleet has zero fares', function (): void {
     $subfleets = new Collection([l7Subfleet(false), l7Subfleet(false)]);
 
-    $issues = (new L7SubfleetsHaveNoFares())->check(RF::ctx(
+    $issues = new L7SubfleetsHaveNoFares()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
     ));
@@ -38,14 +38,14 @@ it('fires when every selected subfleet has zero fares', function (): void {
 it('does not fire when at least one selected subfleet has fares', function (): void {
     $subfleets = new Collection([l7Subfleet(false), l7Subfleet(true)]);
 
-    expect((new L7SubfleetsHaveNoFares())->check(RF::ctx(
+    expect(new L7SubfleetsHaveNoFares()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
     )))->toBe([]);
 });
 
 it('does not fire when no subfleets are selected (L3 covers that case)', function (): void {
-    expect((new L7SubfleetsHaveNoFares())->check(RF::ctx(
+    expect(new L7SubfleetsHaveNoFares()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: new Collection(),
     )))->toBe([]);

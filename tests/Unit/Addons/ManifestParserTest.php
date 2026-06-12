@@ -15,7 +15,8 @@ it('parses Awards module (legacy nwidart, no phpVMS keys, no composer.json)', fu
         ->and($result->compat)->toBeNull()
         ->and($result->version)->toBeNull()
         ->and($result->namespace)->toBe('Modules\\Awards')
-        ->and($result->providers)->toContain(AwardServiceProvider::class);
+        ->and($result->providers)->toContain(AwardServiceProvider::class)
+        ->and($result->tables)->toBe([]);
 });
 
 it('parses Sample module (composer.json psr-4 dot key, no version)', function (): void {
@@ -24,7 +25,8 @@ it('parses Sample module (composer.json psr-4 dot key, no version)', function ()
 
     expect($result)->toBeInstanceOf(AddonManifest::class)
         ->and($result->namespace)->toBe('Modules\\Sample')
-        ->and($result->version)->toBeNull();
+        ->and($result->version)->toBeNull()
+        ->and($result->tables)->toBe(['sample_items']);
 });
 
 it('parses VMSAcars module (composer.json psr-4 empty string key, version from composer)', function (): void {
@@ -34,6 +36,42 @@ it('parses VMSAcars module (composer.json psr-4 empty string key, version from c
     expect($result)->toBeInstanceOf(AddonManifest::class)
         ->and($result->namespace)->toBe('Modules\\VMSAcars')
         ->and($result->version)->toBe('1.1.0');
+});
+
+it('parses the database.tables contract for VMSAcars', function (): void {
+    $parser = new ManifestParser();
+    $result = $parser->parse(base_path('modules/VMSAcars'));
+
+    expect($result->tables)->toBe(['vmsacars_rules', 'vmsacars_config']);
+});
+
+it('defaults tables to an empty list when database.tables is absent', function (): void {
+    $parser = new ManifestParser();
+    $result = $parser->parse(base_path('modules/Awards'));
+
+    expect($result->tables)->toBe([]);
+});
+
+it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'TablesWidget',
+        'providers' => [],
+        'database'  => [
+            'tables' => ['  things  ', '', 'things', 42, 'more_things'],
+        ],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($tmpDir);
+
+        expect($result->tables)->toBe(['things', 'more_things']);
+    } finally {
+        unlink($tmpDir.'/module.json');
+        rmdir($tmpDir);
+    }
 });
 
 it('parses phpVMS keys: type, compat, registry_id, version', function (): void {

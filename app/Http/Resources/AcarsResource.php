@@ -7,6 +7,7 @@ use App\Models\Acars;
 use App\Support\Units\Distance;
 use App\Support\Units\Fuel;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Acars
@@ -18,7 +19,7 @@ class AcarsResource extends Resource
      *
      * @return array
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

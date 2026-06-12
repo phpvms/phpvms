@@ -5,12 +5,13 @@ namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Support\Units\Mass;
 use Filament\Resources\Pages\CreateRecord;
+use Override;
 
 class CreateAircraft extends CreateRecord
 {
     protected static string $resource = AircraftResource::class;
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['dow'] = (filled($data['dow']) && $data['dow'] > 0) ? Mass::make((float) $data['dow'], setting('units.weight')) : null;

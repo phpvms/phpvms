@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Traits\HasSlug;
+use Database\Factories\FlightFieldValueFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,17 +24,17 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read Flight|null $flight
  *
- * @method static \Database\Factories\FlightFieldValueFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereFlightId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightFieldValue whereValue($value)
+ * @method static FlightFieldValueFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|FlightFieldValue newModelQuery()
+ * @method static Builder<static>|FlightFieldValue newQuery()
+ * @method static Builder<static>|FlightFieldValue query()
+ * @method static Builder<static>|FlightFieldValue whereCreatedAt($value)
+ * @method static Builder<static>|FlightFieldValue whereFlightId($value)
+ * @method static Builder<static>|FlightFieldValue whereId($value)
+ * @method static Builder<static>|FlightFieldValue whereName($value)
+ * @method static Builder<static>|FlightFieldValue whereSlug($value)
+ * @method static Builder<static>|FlightFieldValue whereUpdatedAt($value)
+ * @method static Builder<static>|FlightFieldValue whereValue($value)
  *
  * @mixin \Eloquent
  */

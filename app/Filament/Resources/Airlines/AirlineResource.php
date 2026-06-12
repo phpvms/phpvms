@@ -10,38 +10,41 @@ use App\Filament\Resources\Airlines\Pages\ListAirlines;
 use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Filament\Resources\Airlines\Tables\AirlinesTable;
 use App\Models\Airline;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
+use UnitEnum;
 
 class AirlineResource extends Resource
 {
     protected static ?string $model = Airline::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AirlineForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return AirlinesTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -50,7 +53,7 @@ class AirlineResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -58,7 +61,7 @@ class AirlineResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -68,7 +71,7 @@ class AirlineResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('common.airline');

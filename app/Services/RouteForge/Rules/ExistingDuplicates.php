@@ -112,9 +112,11 @@ final class ExistingDuplicates implements LintRule
             if ($row->airlineId === null) {
                 continue;
             }
+
             if ($row->flightNumber === null) {
                 continue;
             }
+
             // L5 — same-bundle full 5-tuple match (ERROR). Only fires when
             // the batch bundle is already persisted; an unsaved bundle has
             // no existing flights by definition.

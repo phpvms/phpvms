@@ -14,6 +14,7 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Hash;
+use Override;
 
 class EditUser extends EditRecord
 {
@@ -23,7 +24,7 @@ class EditUser extends EditRecord
 
     protected static string $resource = UserResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -35,7 +36,7 @@ class EditUser extends EditRecord
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         if ($this->record instanceof User) {
@@ -47,7 +48,7 @@ class EditUser extends EditRecord
         return $data;
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (isset($data['password'])) {

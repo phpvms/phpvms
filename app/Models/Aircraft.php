@@ -12,6 +12,8 @@ use App\Support\SubfleetAccessPolicy;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
 use Carbon\Carbon;
+use Database\Factories\AircraftFactory;
+use Deprecated;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -76,38 +79,38 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property-read Subfleet|null $subfleet
  * @property-read Airline|null $airline
  *
- * @method static \Database\Factories\AircraftFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereAirportId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereDow($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFin($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFlightTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereFuelOnboard($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereHexCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereHubId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereIata($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereIcao($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereLandingTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereMlw($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereMtow($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereRegistration($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSelcal($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSimbriefType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereState($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereSubfleetId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft whereZfw($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Aircraft withoutTrashed()
+ * @method static AircraftFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Aircraft newModelQuery()
+ * @method static Builder<static>|Aircraft newQuery()
+ * @method static Builder<static>|Aircraft onlyTrashed()
+ * @method static Builder<static>|Aircraft query()
+ * @method static Builder<static>|Aircraft sortable($defaultParameters = null)
+ * @method static Builder<static>|Aircraft whereAirportId($value)
+ * @method static Builder<static>|Aircraft whereCreatedAt($value)
+ * @method static Builder<static>|Aircraft whereDeletedAt($value)
+ * @method static Builder<static>|Aircraft whereDow($value)
+ * @method static Builder<static>|Aircraft whereFin($value)
+ * @method static Builder<static>|Aircraft whereFlightTime($value)
+ * @method static Builder<static>|Aircraft whereFuelOnboard($value)
+ * @method static Builder<static>|Aircraft whereHexCode($value)
+ * @method static Builder<static>|Aircraft whereHubId($value)
+ * @method static Builder<static>|Aircraft whereIata($value)
+ * @method static Builder<static>|Aircraft whereIcao($value)
+ * @method static Builder<static>|Aircraft whereId($value)
+ * @method static Builder<static>|Aircraft whereLandingTime($value)
+ * @method static Builder<static>|Aircraft whereMlw($value)
+ * @method static Builder<static>|Aircraft whereMtow($value)
+ * @method static Builder<static>|Aircraft whereName($value)
+ * @method static Builder<static>|Aircraft whereRegistration($value)
+ * @method static Builder<static>|Aircraft whereSelcal($value)
+ * @method static Builder<static>|Aircraft whereSimbriefType($value)
+ * @method static Builder<static>|Aircraft whereState($value)
+ * @method static Builder<static>|Aircraft whereStatus($value)
+ * @method static Builder<static>|Aircraft whereSubfleetId($value)
+ * @method static Builder<static>|Aircraft whereUpdatedAt($value)
+ * @method static Builder<static>|Aircraft whereZfw($value)
+ * @method static Builder<static>|Aircraft withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Aircraft withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -252,9 +255,8 @@ class Aircraft extends Model
 
     /**
      * Use home()
-     *
-     * @deprecated
      */
+    #[Deprecated]
     public function hub(): BelongsTo
     {
         return $this->home();
@@ -283,7 +285,7 @@ class Aircraft extends Model
     #[Scope]
     protected function allowedFor(Builder $query, User $user, ?Flight $flight = null): Builder
     {
-        return (new SubfleetAccessPolicy($user, $flight))->applyToAircraft($query);
+        return new SubfleetAccessPolicy($user, $flight)->applyToAircraft($query);
     }
 
     public function sbaircraft(): HasOne
@@ -299,7 +301,7 @@ class Aircraft extends Model
     /**
      * The attributes that should be casted to native types.
      */
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

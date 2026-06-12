@@ -8,6 +8,7 @@ use App\Http\Resources\AirportResource;
 use App\Models\Airport;
 use App\Support\Geo;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Admin RouteForge variant of AirportResource.
@@ -41,7 +42,7 @@ use Illuminate\Http\Request;
  */
 final class RouteForgeAirportResource extends AirportResource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         $res = parent::toArray($request);

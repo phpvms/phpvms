@@ -6,6 +6,7 @@ use App\Enums\NavigationGroup;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
+use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -29,6 +30,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
+use Override;
+use UnitEnum;
 
 /**
  * @property-read Schema $form
@@ -38,11 +41,11 @@ class Settings extends Page
     use HasPageShield;
     use InteractsWithFormActions;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
 
     protected static ?int $navigationSort = 6;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
 
     public ?array $data = [];
 
@@ -54,7 +57,7 @@ class Settings extends Page
         $this->previousUrl = url()->previous();
     }
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema->components([
@@ -269,13 +272,13 @@ class Settings extends Page
         return $curr;
     }
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return trans_choice('common.setting', 2);
     }
 
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         return trans_choice('common.setting', 2);

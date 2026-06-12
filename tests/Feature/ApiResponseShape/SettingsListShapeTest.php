@@ -22,7 +22,7 @@ test('SettingResource exposes the documented JSON shape', function (): void {
 
     $model = Setting::find(Setting::formatKey('general.name'));
 
-    $payload = (new SettingResource($model))->toArray(request());
+    $payload = new SettingResource($model)->toArray(request());
 
     expect(array_keys($payload))->toEqualCanonicalizing([
         'id', 'type', 'name', 'value', 'group', 'order', 'description',

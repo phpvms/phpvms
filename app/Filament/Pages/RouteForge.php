@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Override;
+use UnitEnum;
 
 /**
  * RouteForge admin tool — thin Filament page wrapper around a Preact SPA.
@@ -24,11 +27,11 @@ use Filament\Support\Icons\Heroicon;
  */
 class RouteForge extends Page
 {
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected string $view = 'filament.pages.route-forge';
 
@@ -39,7 +42,7 @@ class RouteForge extends Page
      */
     public string $bootUrl = '';
 
-    #[\Override]
+    #[Override]
     public static function canAccess(): bool
     {
         // Reuses the existing flight-create permission rather than introducing
@@ -48,19 +51,19 @@ class RouteForge extends Page
         return auth()->user()?->can('create:flight') ?? false;
     }
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('filament.routeforge.navigation_label');
     }
 
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         return __('filament.routeforge.page_title');
     }
 
-    #[\Override]
+    #[Override]
     public function getSubheading(): ?string
     {
         return __('filament.routeforge.page_subtitle');

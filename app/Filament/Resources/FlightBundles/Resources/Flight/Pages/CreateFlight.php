@@ -5,12 +5,13 @@ namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use Carbon\Carbon;
 use Filament\Resources\Pages\CreateRecord;
+use Override;
 
 class CreateFlight extends CreateRecord
 {
     protected static string $resource = FlightResource::class;
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $flt_time = Carbon::parse($data['flight_time']);

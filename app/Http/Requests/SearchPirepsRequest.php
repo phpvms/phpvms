@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
+use Override;
 
 /**
  * Validates query string for the PIREP list endpoints:
@@ -55,7 +56,7 @@ class SearchPirepsRequest extends FormRequest
      * @sortablelink in blade) onto our canonical ?orderBy=&sortedBy= params
      * before validation runs. Either pair works; explicit orderBy wins.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $merge = [];
@@ -72,7 +73,7 @@ class SearchPirepsRequest extends FormRequest
         }
     }
 
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [

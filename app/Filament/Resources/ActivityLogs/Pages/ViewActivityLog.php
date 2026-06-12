@@ -11,19 +11,21 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Override;
 use Spatie\Activitylog\Models\Activity;
 
-class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
+class ViewActivityLog extends ViewRecord implements HasTable
 {
-    use Tables\Concerns\InteractsWithTable {
+    use InteractsWithTable {
         makeTable as makeBaseTable;
     }
 
     protected static string $resource = ActivityLogResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -31,7 +33,7 @@ class ViewActivityLog extends ViewRecord implements Tables\Contracts\HasTable
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema

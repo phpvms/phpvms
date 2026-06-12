@@ -11,6 +11,7 @@ use App\Filament\Resources\FlightBundles\Resources\Flight\RelationManagers\Subfl
 use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Tables\FlightsTable;
 use App\Models\Flight;
+use BackedEnum;
 use Filament\Resources\ParentResourceRegistration;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,16 +21,17 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
 
 class FlightResource extends Resource
 {
     protected static ?string $model = Flight::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static ?string $parentResource = FlightBundleResource::class;
 
-    #[\Override]
+    #[Override]
     public static function getParentResourceRegistration(): ?ParentResourceRegistration
     {
         return parent::getParentResourceRegistration()?->inverseRelationship('bundle');
@@ -39,19 +41,19 @@ class FlightResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'ident';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return FlightForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return FlightsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -61,7 +63,7 @@ class FlightResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -70,7 +72,7 @@ class FlightResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
@@ -79,7 +81,7 @@ class FlightResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['flight_number', 'route_code'];
@@ -88,7 +90,7 @@ class FlightResource extends Resource
     /**
      * @param Flight $record
      */
-    #[\Override]
+    #[Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->airline->icao.$record->flight_number;
@@ -97,7 +99,7 @@ class FlightResource extends Resource
     /**
      * @param Flight $record
      */
-    #[\Override]
+    #[Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -106,7 +108,7 @@ class FlightResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.flight', 1);

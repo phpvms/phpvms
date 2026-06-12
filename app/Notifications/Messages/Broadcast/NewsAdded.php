@@ -26,7 +26,7 @@ class NewsAdded extends Notification implements ShouldQueue
     public function toDiscordChannel($news): ?DiscordMessage
     {
         $dm = new DiscordMessage();
-        $markdown = (new HtmlConverter(['header_style' => 'atx']))->convert($news->body);
+        $markdown = new HtmlConverter(['header_style' => 'atx'])->convert($news->body);
 
         return $dm->webhook(setting('notifications.discord_public_webhook_url'))
             ->success()

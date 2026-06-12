@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -17,15 +19,15 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, SimBriefAirframe> $sbairframes
  * @property-read int|null $sbairframes_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereDetails($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereIcao($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefAircraft whereUpdatedAt($value)
+ * @method static Builder<static>|SimBriefAircraft newModelQuery()
+ * @method static Builder<static>|SimBriefAircraft newQuery()
+ * @method static Builder<static>|SimBriefAircraft query()
+ * @method static Builder<static>|SimBriefAircraft whereCreatedAt($value)
+ * @method static Builder<static>|SimBriefAircraft whereDetails($value)
+ * @method static Builder<static>|SimBriefAircraft whereIcao($value)
+ * @method static Builder<static>|SimBriefAircraft whereId($value)
+ * @method static Builder<static>|SimBriefAircraft whereName($value)
+ * @method static Builder<static>|SimBriefAircraft whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -52,7 +54,7 @@ class SimBriefAircraft extends Model
         return $this->hasMany(SimBriefAirframe::class, 'icao', 'icao');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

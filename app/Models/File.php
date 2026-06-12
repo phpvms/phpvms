@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Database\Factories\FileFactory;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Builder;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Override;
 
 /**
  * @property string      $id
@@ -27,21 +31,21 @@ use Illuminate\Support\Str;
  * @property-read bool $is_external_file
  * @property-read mixed $url
  *
- * @method static \Database\Factories\FileFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDisk($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDownloadCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereRefModelType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
+ * @method static FileFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|File newModelQuery()
+ * @method static Builder<static>|File newQuery()
+ * @method static Builder<static>|File query()
+ * @method static Builder<static>|File whereCreatedAt($value)
+ * @method static Builder<static>|File whereDescription($value)
+ * @method static Builder<static>|File whereDisk($value)
+ * @method static Builder<static>|File whereDownloadCount($value)
+ * @method static Builder<static>|File whereId($value)
+ * @method static Builder<static>|File whereName($value)
+ * @method static Builder<static>|File wherePath($value)
+ * @method static Builder<static>|File wherePublic($value)
+ * @method static Builder<static>|File whereRefModelId($value)
+ * @method static Builder<static>|File whereRefModelType($value)
+ * @method static Builder<static>|File whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -134,7 +138,7 @@ class File extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

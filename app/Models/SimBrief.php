@@ -5,14 +5,17 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Observers\SimBriefObserver;
 use App\Support\Dto\SimBriefOfp\SimBriefOfp;
+use Database\Factories\SimBriefFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Override;
 
 /**
  * @property string      $id
@@ -32,19 +35,19 @@ use Illuminate\Support\Facades\Storage;
  * @property-read Pirep|null $pirep
  * @property-read User|null $user
  *
- * @method static \Database\Factories\SimBriefFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereAircraftId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereFareData($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereFlightId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereOfpJsonPath($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief wherePirepId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBrief whereUserId($value)
+ * @method static SimBriefFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|SimBrief newModelQuery()
+ * @method static Builder<static>|SimBrief newQuery()
+ * @method static Builder<static>|SimBrief query()
+ * @method static Builder<static>|SimBrief whereAircraftId($value)
+ * @method static Builder<static>|SimBrief whereCreatedAt($value)
+ * @method static Builder<static>|SimBrief whereFareData($value)
+ * @method static Builder<static>|SimBrief whereFlightId($value)
+ * @method static Builder<static>|SimBrief whereId($value)
+ * @method static Builder<static>|SimBrief whereOfpJsonPath($value)
+ * @method static Builder<static>|SimBrief wherePirepId($value)
+ * @method static Builder<static>|SimBrief whereUpdatedAt($value)
+ * @method static Builder<static>|SimBrief whereUserId($value)
  *
  * @mixin \Eloquent
  */
@@ -143,7 +146,7 @@ class SimBrief extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

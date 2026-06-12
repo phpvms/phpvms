@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\RouteForge;
 
 use Illuminate\Validation\Rule;
+use Override;
 
 /**
  * JSON body validation for /admin/route-forge/api/commit.
@@ -22,7 +23,7 @@ use Illuminate\Validation\Rule;
  */
 final class CommitRequest extends BaseRouteForgeBatchRequest
 {
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return array_merge(parent::rules(), [
@@ -37,7 +38,7 @@ final class CommitRequest extends BaseRouteForgeBatchRequest
      *
      * @return array<string, string>
      */
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return array_merge(parent::messages(), [

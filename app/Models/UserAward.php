@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Events\AwardAwarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
@@ -22,15 +23,15 @@ use Kyslik\ColumnSortable\Sortable;
  * @property-read int|null $notifications_count
  * @property-read User|null $user
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward whereAwardId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserAward whereUserId($value)
+ * @method static Builder<static>|UserAward newModelQuery()
+ * @method static Builder<static>|UserAward newQuery()
+ * @method static Builder<static>|UserAward query()
+ * @method static Builder<static>|UserAward sortable($defaultParameters = null)
+ * @method static Builder<static>|UserAward whereAwardId($value)
+ * @method static Builder<static>|UserAward whereCreatedAt($value)
+ * @method static Builder<static>|UserAward whereId($value)
+ * @method static Builder<static>|UserAward whereUpdatedAt($value)
+ * @method static Builder<static>|UserAward whereUserId($value)
  *
  * @mixin \Eloquent
  */

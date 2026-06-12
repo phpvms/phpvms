@@ -25,7 +25,7 @@ it('fires when selected aircraft are below half the row count', function (): voi
     $subfleets = new Collection([l1Subfleet(9)]);
     $rows = array_fill(0, 20, RF::row());
 
-    $issues = (new L1AircraftCapacity())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets));
+    $issues = new L1AircraftCapacity()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets));
 
     expect($issues)->toHaveCount(1)
         ->and($issues[0]->ruleId)->toBe('L1')
@@ -42,14 +42,14 @@ it('does not fire when selected aircraft meet the half-ratio threshold', functio
     $subfleets = new Collection([l1Subfleet(10)]);
     $rows = array_fill(0, 20, RF::row());
 
-    expect((new L1AircraftCapacity())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
+    expect(new L1AircraftCapacity()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
         ->toBe([]);
 });
 
 it('does not fire when no rows are present', function (): void {
     $subfleets = new Collection([l1Subfleet(0)]);
 
-    expect((new L1AircraftCapacity())->check(RF::ctx(rows: [], selectedSubfleets: $subfleets)))
+    expect(new L1AircraftCapacity()->check(RF::ctx(rows: [], selectedSubfleets: $subfleets)))
         ->toBe([]);
 });
 
@@ -58,6 +58,6 @@ it('sums aircraft across multiple selected subfleets', function (): void {
     $subfleets = new Collection([l1Subfleet(3), l1Subfleet(4)]);
     $rows = array_fill(0, 11, RF::row());
 
-    expect((new L1AircraftCapacity())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
+    expect(new L1AircraftCapacity()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
         ->toBe([]);
 });

@@ -24,7 +24,7 @@ test('UserSearchQuery returns all users when no params given', function (): void
     User::factory()->count(3)->create(['state' => UserState::ACTIVE]);
 
     $request = userSearchRequest([]);
-    $query = (new UserSearchQuery())->build($request);
+    $query = new UserSearchQuery()->build($request);
 
     expect($query->count())->toBe(3);
 });
@@ -37,7 +37,7 @@ test('UserSearchQuery filters by free-text search across name and email', functi
     User::factory()->create(['name' => 'Bob',       'email' => 'john@xyz', 'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['search' => 'John']);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->sort()->values()->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->sort()->values()->all();
 
     expect($names)->toBe(['Bob', 'John Doe']); // John Doe by name, Bob by email
 });
@@ -49,7 +49,7 @@ test('UserSearchQuery filters by field-specific search', function (): void {
     User::factory()->create(['name' => 'Bob Smith', 'email' => 'john@x.com',  'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['search' => 'name:John']);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['John Doe']);
 });
@@ -63,7 +63,7 @@ test('UserSearchQuery joins multi-pair field-specific search with OR', function 
 
     // Either name LIKE %John% OR email LIKE %foo% — first two should match.
     $request = userSearchRequest(['search' => 'name:John;email:foo']);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->sort()->values()->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->sort()->values()->all();
 
     expect($names)->toBe(['John Doe', 'Other']);
 });
@@ -77,7 +77,7 @@ test('UserSearchQuery falls back to free-text when colon search has no allowlist
     User::factory()->create(['name' => 'unrelated',    'email' => 'c@d.com',  'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['search' => '8:30']);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['foo 8:30 bar']);
 });
@@ -90,7 +90,7 @@ test('UserSearchQuery applies pilots.hide_inactive setting', function (): void {
     User::factory()->create(['name' => 'r', 'state' => UserState::REJECTED]);
 
     $request = userSearchRequest([]);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->sort()->values()->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->sort()->values()->all();
 
     expect($names)->toBe(['a']);
 });
@@ -102,7 +102,7 @@ test('UserSearchQuery filters by explicit state param', function (): void {
     User::factory()->create(['name' => 'p', 'state' => UserState::PENDING]);
 
     $request = userSearchRequest(['state' => UserState::PENDING]);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['p']);
 });
@@ -116,7 +116,7 @@ test('UserSearchQuery filters by airline_id', function (): void {
     User::factory()->create(['name' => 'b', 'airline_id' => $other->id,   'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['airline_id' => $airline->id]);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['a']);
 });
@@ -129,7 +129,7 @@ test('UserSearchQuery applies orderBy + sortedBy', function (): void {
     User::factory()->create(['name' => 'Bob',     'state' => UserState::ACTIVE]);
 
     $request = userSearchRequest(['orderBy' => 'name', 'sortedBy' => 'asc']);
-    $names = (new UserSearchQuery())->build($request)->pluck('name')->all();
+    $names = new UserSearchQuery()->build($request)->pluck('name')->all();
 
     expect($names)->toBe(['Alice', 'Bob', 'Charlie']);
 });
@@ -139,7 +139,7 @@ test('UserSearchQuery returns a Builder, not a collection', function (): void {
     User::factory()->create(['state' => UserState::ACTIVE]);
 
     $request = userSearchRequest([]);
-    $result = (new UserSearchQuery())->build($request);
+    $result = new UserSearchQuery()->build($request);
 
     expect($result)->toBeInstanceOf(Builder::class);
 });
@@ -149,7 +149,7 @@ test('UserSearchQuery includes default eager loads (airline, current_airport, fi
     User::factory()->create(['state' => UserState::ACTIVE]);
 
     $request = userSearchRequest([]);
-    $user = (new UserSearchQuery())->build($request)->first();
+    $user = new UserSearchQuery()->build($request)->first();
 
     // Awards count should be loaded
     expect($user->getAttribute('awards_count'))->not->toBeNull();

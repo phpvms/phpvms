@@ -15,12 +15,13 @@ use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Override;
 
 class FieldValuesRelationManager extends RelationManager
 {
     protected static string $relationship = 'field_values';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         /** @var Pirep $pirep */
@@ -88,13 +89,13 @@ class FieldValuesRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.field_value', 1);
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.field_value', 2);

@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Models\Rank;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Rank
@@ -19,7 +20,7 @@ class RankResource extends Resource
      * @param  Request $request
      * @return array
      */
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

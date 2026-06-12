@@ -34,7 +34,7 @@ trait MailChannel
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage())
+        return new MailMessage()
             ->from(config('mail.from.address', 'no-reply@phpvms.net'), config('mail.from.name'))
             ->subject($this->mailSubject)
             ->markdown($this->mailTemplate, $this->mailTemplateArgs);

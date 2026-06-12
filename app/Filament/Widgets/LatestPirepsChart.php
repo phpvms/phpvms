@@ -7,6 +7,7 @@ use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
+use Override;
 
 class LatestPirepsChart extends ChartWidget
 {
@@ -18,7 +19,7 @@ class LatestPirepsChart extends ChartWidget
 
     public ?string $filter = 'week';
 
-    #[\Override]
+    #[Override]
     protected function getData(): array
     {
         $start_date = match ($this->filter) {
@@ -66,7 +67,7 @@ class LatestPirepsChart extends ChartWidget
         return 'line';
     }
 
-    #[\Override]
+    #[Override]
     public function getHeading(): string
     {
         return __('filament.pireps_field');

@@ -19,6 +19,7 @@ use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -136,4 +137,4 @@ Route::middleware(['web', 'auth', 'permission:create:flight'])
             ->name('commit');
     });
 
-Route::get('/update', fn (): Redirector|\Illuminate\Http\RedirectResponse => redirect('/system/update'));
+Route::get('/update', fn (): Redirector|RedirectResponse => redirect('/system/update'));

@@ -8,12 +8,13 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Override;
 
 class EditFlight extends EditRecord
 {
     protected static string $resource = FlightResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -23,7 +24,7 @@ class EditFlight extends EditRecord
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['distance'] = $data['distance']->toUnit('nmi');
@@ -37,7 +38,7 @@ class EditFlight extends EditRecord
         return $data;
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $flt_time = Carbon::parse($data['flight_time']);

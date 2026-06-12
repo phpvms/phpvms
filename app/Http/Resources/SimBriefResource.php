@@ -7,13 +7,15 @@ use App\Models\Fare;
 use App\Models\SimBrief;
 use Exception;
 use Illuminate\Http\Resources\MissingValue;
+use Override;
+use stdClass;
 
 /**
  * @mixin SimBrief
  */
 class SimBriefResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         $data = [
@@ -39,7 +41,7 @@ class SimBriefResource extends Resource
         }
 
         if (!($this->whenLoaded('aircraft') instanceof MissingValue)) {
-            /** @var \stdClass $resource */
+            /** @var stdClass $resource */
             $resource = (object) $this->aircraft->subfleet;
             $resource->aircraft = $this->aircraft->withoutRelations();
             $resource->fares = $fares;

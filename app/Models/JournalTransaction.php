@@ -11,9 +11,11 @@ use App\Contracts\Model;
 use App\Observers\JournalTransactionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string      $id
@@ -31,22 +33,22 @@ use Illuminate\Support\Carbon;
  * @property Carbon      $post_date
  * @property-read Journal|null $journal
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereCredit($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereCurrency($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereDebit($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereJournalId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereMemo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction wherePostDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModelId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereRefModelType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTags($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereTransactionGroup($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|JournalTransaction whereUpdatedAt($value)
+ * @method static Builder<static>|JournalTransaction newModelQuery()
+ * @method static Builder<static>|JournalTransaction newQuery()
+ * @method static Builder<static>|JournalTransaction query()
+ * @method static Builder<static>|JournalTransaction whereCreatedAt($value)
+ * @method static Builder<static>|JournalTransaction whereCredit($value)
+ * @method static Builder<static>|JournalTransaction whereCurrency($value)
+ * @method static Builder<static>|JournalTransaction whereDebit($value)
+ * @method static Builder<static>|JournalTransaction whereId($value)
+ * @method static Builder<static>|JournalTransaction whereJournalId($value)
+ * @method static Builder<static>|JournalTransaction whereMemo($value)
+ * @method static Builder<static>|JournalTransaction wherePostDate($value)
+ * @method static Builder<static>|JournalTransaction whereRefModelId($value)
+ * @method static Builder<static>|JournalTransaction whereRefModelType($value)
+ * @method static Builder<static>|JournalTransaction whereTags($value)
+ * @method static Builder<static>|JournalTransaction whereTransactionGroup($value)
+ * @method static Builder<static>|JournalTransaction whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -84,7 +86,7 @@ class JournalTransaction extends Model
         $this->currency = $currency;
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

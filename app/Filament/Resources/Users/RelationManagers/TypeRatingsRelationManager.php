@@ -9,12 +9,13 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class TypeRatingsRelationManager extends RelationManager
 {
     protected static string $relationship = 'typeratings';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -31,13 +32,13 @@ class TypeRatingsRelationManager extends RelationManager
         return TyperatingsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return __('common.typerating');
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('common.typerating'))

@@ -13,13 +13,16 @@ use App\Enums\JournalType;
 use App\Observers\JournalObserver;
 use App\Support\Money;
 use Carbon\Carbon;
+use Database\Factories\JournalFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use InvalidArgumentException;
+use Override;
 use UnexpectedValueException;
 
 /**
@@ -39,19 +42,19 @@ use UnexpectedValueException;
  * @property-read Collection<int, JournalTransaction> $transactions
  * @property-read int|null $transactions_count
  *
- * @method static \Database\Factories\JournalFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereBalance($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereCurrency($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereLedgerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereMorphedId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereMorphedType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Journal whereUpdatedAt($value)
+ * @method static JournalFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Journal newModelQuery()
+ * @method static Builder<static>|Journal newQuery()
+ * @method static Builder<static>|Journal query()
+ * @method static Builder<static>|Journal whereBalance($value)
+ * @method static Builder<static>|Journal whereCreatedAt($value)
+ * @method static Builder<static>|Journal whereCurrency($value)
+ * @method static Builder<static>|Journal whereId($value)
+ * @method static Builder<static>|Journal whereLedgerId($value)
+ * @method static Builder<static>|Journal whereMorphedId($value)
+ * @method static Builder<static>|Journal whereMorphedType($value)
+ * @method static Builder<static>|Journal whereType($value)
+ * @method static Builder<static>|Journal whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -71,7 +74,7 @@ class Journal extends Model
         'morphed_id',
     ];
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

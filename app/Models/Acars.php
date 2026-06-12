@@ -7,13 +7,17 @@ use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\NavaidType;
+use App\Traits\HashIdTrait;
+use Database\Factories\AcarsFactory;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string          $id
@@ -44,44 +48,45 @@ use Illuminate\Support\Carbon;
  * @property float           $altitude
  * @property-read Pirep|null $pirep
  *
- * @method static \Database\Factories\AcarsFactory factory($count = null, $state = [])
- * @method static Builder<static>|Acars            flightPath()
- * @method static Builder<static>|Acars            forPirep(string $pirepId)
- * @method static Builder<static>|Acars            newModelQuery()
- * @method static Builder<static>|Acars            newQuery()
- * @method static Builder<static>|Acars            ofType(\App\Enums\AcarsType|int $type)
- * @method static Builder<static>|Acars            orderedByCreatedAt(string $direction = 'asc')
- * @method static Builder<static>|Acars            orderedByOrder(string $direction = 'asc')
- * @method static Builder<static>|Acars            orderedBySimTime(string $direction = 'asc')
- * @method static Builder<static>|Acars            query()
- * @method static Builder<static>|Acars            whereAltitudeAgl($value)
- * @method static Builder<static>|Acars            whereAltitudeMsl($value)
- * @method static Builder<static>|Acars            whereAutopilot($value)
- * @method static Builder<static>|Acars            whereCreatedAt($value)
- * @method static Builder<static>|Acars            whereDistance($value)
- * @method static Builder<static>|Acars            whereFuel($value)
- * @method static Builder<static>|Acars            whereFuelFlow($value)
- * @method static Builder<static>|Acars            whereGs($value)
- * @method static Builder<static>|Acars            whereHeading($value)
- * @method static Builder<static>|Acars            whereIas($value)
- * @method static Builder<static>|Acars            whereId($value)
- * @method static Builder<static>|Acars            whereLat($value)
- * @method static Builder<static>|Acars            whereLog($value)
- * @method static Builder<static>|Acars            whereLon($value)
- * @method static Builder<static>|Acars            whereName($value)
- * @method static Builder<static>|Acars            whereNavType($value)
- * @method static Builder<static>|Acars            whereOrder($value)
- * @method static Builder<static>|Acars            wherePirepId($value)
- * @method static Builder<static>|Acars            whereSimTime($value)
- * @method static Builder<static>|Acars            whereSource($value)
- * @method static Builder<static>|Acars            whereStatus($value)
- * @method static Builder<static>|Acars            whereTransponder($value)
- * @method static Builder<static>|Acars            whereType($value)
- * @method static Builder<static>|Acars            whereUpdatedAt($value)
- * @method static Builder<static>|Acars            whereVs($value)
+ * @method static AcarsFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Acars flightPath()
+ * @method static Builder<static>|Acars forPirep(string $pirepId)
+ * @method static Builder<static>|Acars newModelQuery()
+ * @method static Builder<static>|Acars newQuery()
+ * @method static Builder<static>|Acars ofType(AcarsType|int $type)
+ * @method static Builder<static>|Acars orderedByCreatedAt(string $direction = 'asc')
+ * @method static Builder<static>|Acars orderedByOrder(string $direction = 'asc')
+ * @method static Builder<static>|Acars orderedBySimTime(string $direction = 'asc')
+ * @method static Builder<static>|Acars query()
+ * @method static Builder<static>|Acars whereAltitudeAgl($value)
+ * @method static Builder<static>|Acars whereAltitudeMsl($value)
+ * @method static Builder<static>|Acars whereAutopilot($value)
+ * @method static Builder<static>|Acars whereCreatedAt($value)
+ * @method static Builder<static>|Acars whereDistance($value)
+ * @method static Builder<static>|Acars whereFuel($value)
+ * @method static Builder<static>|Acars whereFuelFlow($value)
+ * @method static Builder<static>|Acars whereGs($value)
+ * @method static Builder<static>|Acars whereHeading($value)
+ * @method static Builder<static>|Acars whereIas($value)
+ * @method static Builder<static>|Acars whereId($value)
+ * @method static Builder<static>|Acars whereLat($value)
+ * @method static Builder<static>|Acars whereLog($value)
+ * @method static Builder<static>|Acars whereLon($value)
+ * @method static Builder<static>|Acars whereName($value)
+ * @method static Builder<static>|Acars whereNavType($value)
+ * @method static Builder<static>|Acars whereOrder($value)
+ * @method static Builder<static>|Acars wherePirepId($value)
+ * @method static Builder<static>|Acars whereSimTime($value)
+ * @method static Builder<static>|Acars whereSource($value)
+ * @method static Builder<static>|Acars whereStatus($value)
+ * @method static Builder<static>|Acars whereTransponder($value)
+ * @method static Builder<static>|Acars whereType($value)
+ * @method static Builder<static>|Acars whereUpdatedAt($value)
+ * @method static Builder<static>|Acars whereVs($value)
  *
  * @mixin \Eloquent
  */
+#[WithoutIncrementing]
 class Acars extends Model
 {
     use HasFactory;
@@ -119,7 +124,7 @@ class Acars extends Model
 
     protected $appends = ['altitude'];
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

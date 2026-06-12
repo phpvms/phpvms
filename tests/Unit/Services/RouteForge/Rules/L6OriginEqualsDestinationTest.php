@@ -7,7 +7,7 @@ use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
 it('emits an error for any row where origin equals destination', function (): void {
-    $issues = (new L6OriginEqualsDestination())->check(RF::ctx(rows: [
+    $issues = new L6OriginEqualsDestination()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => 'KLAX']),
         RF::row(['dpt_airport_id' => 'KJFK', 'arr_airport_id' => 'KJFK']),
         RF::row(['dpt_airport_id' => 'KORD', 'arr_airport_id' => 'KDFW']),
@@ -24,7 +24,7 @@ it('emits an error for any row where origin equals destination', function (): vo
 });
 
 it('skips rows with null dpt or arr airport id', function (): void {
-    $issues = (new L6OriginEqualsDestination())->check(RF::ctx(rows: [
+    $issues = new L6OriginEqualsDestination()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => null, 'arr_airport_id' => null]),
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => null]),
         RF::row(['dpt_airport_id' => null, 'arr_airport_id' => 'KLAX']),
@@ -34,7 +34,7 @@ it('skips rows with null dpt or arr airport id', function (): void {
 });
 
 it('does not fire when origin and destination differ', function (): void {
-    $issues = (new L6OriginEqualsDestination())->check(RF::ctx(rows: [
+    $issues = new L6OriginEqualsDestination()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => 'KLAX']),
         RF::row(['dpt_airport_id' => 'KJFK', 'arr_airport_id' => 'KBOS']),
     ]));

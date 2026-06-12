@@ -4,10 +4,11 @@ namespace App\Support\Resources;
 
 use Illuminate\Http\Resources\Json\PaginatedResourceResponse;
 use Illuminate\Support\Arr;
+use Override;
 
 class CustomPaginatedResourceResponse extends PaginatedResourceResponse
 {
-    #[\Override]
+    #[Override]
     protected function paginationLinks($paginated)
     {
         return [
@@ -18,7 +19,7 @@ class CustomPaginatedResourceResponse extends PaginatedResourceResponse
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function meta($paginated)
     {
         $arr = Arr::except($paginated, [

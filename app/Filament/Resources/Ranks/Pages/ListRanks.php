@@ -8,12 +8,13 @@ use App\Filament\Resources\Ranks\RankResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ListRanks extends ListRecords
 {
     protected static string $resource = RankResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

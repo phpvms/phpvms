@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Requests\Acars;
 
 use App\Contracts\FormRequest;
+use Override;
 
 class FieldsRequest extends FormRequest
 {
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [

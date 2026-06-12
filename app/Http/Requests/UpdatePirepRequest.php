@@ -6,13 +6,14 @@ use App\Contracts\FormRequest;
 use App\Models\Pirep;
 use App\Models\PirepField;
 use Illuminate\Support\Facades\Log;
+use Override;
 
 class UpdatePirepRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      */
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         // Don't run validations if it's just being saved

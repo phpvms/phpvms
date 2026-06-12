@@ -6,13 +6,14 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Setting;
+use Override;
 
 /**
  * @mixin Setting
  */
 class SettingResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

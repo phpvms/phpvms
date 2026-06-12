@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Enums\JournalType;
 use App\Traits\FilesTrait;
 use App\Traits\JournalTrait;
+use Database\Factories\AirlineFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -52,29 +54,29 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static Builder<static>|Airline            active()
- * @method static Builder<static>|Airline            byIcao(string $icao)
- * @method static \Database\Factories\AirlineFactory factory($count = null, $state = [])
- * @method static Builder<static>|Airline            newModelQuery()
- * @method static Builder<static>|Airline            newQuery()
- * @method static Builder<static>|Airline            onlyTrashed()
- * @method static Builder<static>|Airline            query()
- * @method static Builder<static>|Airline            sortable($defaultParameters = null)
- * @method static Builder<static>|Airline            whereActive($value)
- * @method static Builder<static>|Airline            whereCallsign($value)
- * @method static Builder<static>|Airline            whereCountry($value)
- * @method static Builder<static>|Airline            whereCreatedAt($value)
- * @method static Builder<static>|Airline            whereDeletedAt($value)
- * @method static Builder<static>|Airline            whereIata($value)
- * @method static Builder<static>|Airline            whereIcao($value)
- * @method static Builder<static>|Airline            whereId($value)
- * @method static Builder<static>|Airline            whereLogo($value)
- * @method static Builder<static>|Airline            whereName($value)
- * @method static Builder<static>|Airline            whereTotalFlights($value)
- * @method static Builder<static>|Airline            whereTotalTime($value)
- * @method static Builder<static>|Airline            whereUpdatedAt($value)
- * @method static Builder<static>|Airline            withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|Airline            withoutTrashed()
+ * @method static Builder<static>|Airline active()
+ * @method static Builder<static>|Airline byIcao(string $icao)
+ * @method static AirlineFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Airline newModelQuery()
+ * @method static Builder<static>|Airline newQuery()
+ * @method static Builder<static>|Airline onlyTrashed()
+ * @method static Builder<static>|Airline query()
+ * @method static Builder<static>|Airline sortable($defaultParameters = null)
+ * @method static Builder<static>|Airline whereActive($value)
+ * @method static Builder<static>|Airline whereCallsign($value)
+ * @method static Builder<static>|Airline whereCountry($value)
+ * @method static Builder<static>|Airline whereCreatedAt($value)
+ * @method static Builder<static>|Airline whereDeletedAt($value)
+ * @method static Builder<static>|Airline whereIata($value)
+ * @method static Builder<static>|Airline whereIcao($value)
+ * @method static Builder<static>|Airline whereId($value)
+ * @method static Builder<static>|Airline whereLogo($value)
+ * @method static Builder<static>|Airline whereName($value)
+ * @method static Builder<static>|Airline whereTotalFlights($value)
+ * @method static Builder<static>|Airline whereTotalTime($value)
+ * @method static Builder<static>|Airline whereUpdatedAt($value)
+ * @method static Builder<static>|Airline withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Airline withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -197,7 +199,7 @@ class Airline extends Model
     /**
      * The attributes that should be casted to native types.
      */
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

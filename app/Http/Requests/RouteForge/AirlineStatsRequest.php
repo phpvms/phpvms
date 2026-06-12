@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\RouteForge;
 
 use App\Contracts\FormRequest;
+use Override;
 
 /**
  * Query-string validation for /admin/route-forge/api/airline-stats.
@@ -14,7 +15,7 @@ use App\Contracts\FormRequest;
  */
 final class AirlineStatsRequest extends FormRequest
 {
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [

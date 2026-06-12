@@ -28,7 +28,7 @@ it('downloads a zip and extracts it', function (): void {
         'example.test/*' => Http::response(File::get($zipPath), 200),
     ]);
 
-    $root = (new UrlSource('https://example.test/demo.zip'))->fetch($this->staging);
+    $root = new UrlSource('https://example.test/demo.zip')->fetch($this->staging);
 
     expect(File::exists($root.'/module.json'))->toBeTrue();
 });
@@ -36,5 +36,5 @@ it('downloads a zip and extracts it', function (): void {
 it('throws when the download fails', function (): void {
     Http::fake(['example.test/*' => Http::response('', 404)]);
 
-    (new UrlSource('https://example.test/missing.zip'))->fetch($this->staging);
+    new UrlSource('https://example.test/missing.zip')->fetch($this->staging);
 })->throws(AddonInstallException::class);

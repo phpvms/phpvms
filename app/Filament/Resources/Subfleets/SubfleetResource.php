@@ -15,6 +15,7 @@ use App\Filament\Resources\Subfleets\RelationManagers\TyperatingsRelationManager
 use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\Tables\SubfleetsTable;
 use App\Models\Subfleet;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -23,30 +24,32 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
+use UnitEnum;
 
 class SubfleetResource extends Resource
 {
     protected static ?string $model = Subfleet::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return SubfleetForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return SubfleetsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -59,7 +62,7 @@ class SubfleetResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -69,7 +72,7 @@ class SubfleetResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -78,7 +81,7 @@ class SubfleetResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'type'];
@@ -87,19 +90,19 @@ class SubfleetResource extends Resource
     /**
      * @param Subfleet $record
      */
-    #[\Override]
+    #[Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->type.' - '.$record->name;
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('common.subfleet');
     }
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('common.fleet');

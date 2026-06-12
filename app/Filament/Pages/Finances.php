@@ -6,6 +6,7 @@ use App\Enums\NavigationGroup;
 use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
 use App\Models\Airline;
+use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -18,19 +19,21 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Override;
+use UnitEnum;
 
 class Finances extends Page
 {
     use HasFiltersForm;
     use HasPageShield;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('common.finances');
@@ -85,7 +88,7 @@ class Finances extends Page
             ->schema($this->getWidgetsSchemaComponents($this->getWidgets()));
     }
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema

@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -19,17 +21,17 @@ use Illuminate\Support\Carbon;
  * @property-read bool $is_expired
  * @property-read User|null $user
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereExpiresAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereProvider($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereRefreshToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserOAuthToken whereUserId($value)
+ * @method static Builder<static>|UserOAuthToken newModelQuery()
+ * @method static Builder<static>|UserOAuthToken newQuery()
+ * @method static Builder<static>|UserOAuthToken query()
+ * @method static Builder<static>|UserOAuthToken whereCreatedAt($value)
+ * @method static Builder<static>|UserOAuthToken whereExpiresAt($value)
+ * @method static Builder<static>|UserOAuthToken whereId($value)
+ * @method static Builder<static>|UserOAuthToken whereProvider($value)
+ * @method static Builder<static>|UserOAuthToken whereRefreshToken($value)
+ * @method static Builder<static>|UserOAuthToken whereToken($value)
+ * @method static Builder<static>|UserOAuthToken whereUpdatedAt($value)
+ * @method static Builder<static>|UserOAuthToken whereUserId($value)
  *
  * @mixin \Eloquent
  */
@@ -65,7 +67,7 @@ class UserOAuthToken extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

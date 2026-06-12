@@ -11,7 +11,7 @@ test('flight resource serializes dpt_time as legacy Hi string alongside structur
         'arrival_time'   => '14:15:00',
     ]);
 
-    $resource = (new FlightResource($flight))->toArray(request());
+    $resource = new FlightResource($flight)->toArray(request());
 
     // Legacy `Hi` keys for backward-compat API consumers.
     expect($resource)
@@ -31,7 +31,7 @@ test('flight resource serializes null time columns as null', function (): void {
         'arrival_time'   => null,
     ]);
 
-    $resource = (new FlightResource($flight))->toArray(request());
+    $resource = new FlightResource($flight)->toArray(request());
 
     expect($resource)
         ->toHaveKey('dpt_time', null)

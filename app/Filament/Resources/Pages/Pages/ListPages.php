@@ -8,12 +8,13 @@ use App\Filament\Resources\Pages\PageResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ListPages extends ListRecords
 {
     protected static string $resource = PageResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

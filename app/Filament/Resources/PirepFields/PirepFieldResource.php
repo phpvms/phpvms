@@ -11,6 +11,7 @@ use App\Models\PirepField;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 
 class PirepFieldResource extends Resource
 {
@@ -20,19 +21,19 @@ class PirepFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return PirepFieldForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return PirepFieldsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -40,7 +41,7 @@ class PirepFieldResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.pirep_field', 1);

@@ -67,6 +67,9 @@ class ManifestParser
         // --- description: null when absent or blank ---
         $description = $this->resolveDescription($data['description'] ?? null);
 
+        // --- database.tables: addon-owned tables for uninstall (D-16) ---
+        $tables = $this->resolveTables($data);
+
         return new AddonManifest(
             schema_version: $schema_version,
             name: (string) $name,
@@ -82,7 +85,44 @@ class ManifestParser
             autoloadPath: $autoloadPath,
             layout: $layout,
             description: $description,
+            tables: $tables,
         );
+    }
+
+    /**
+     * Resolve the addon-owned database tables from module.json `database.tables`.
+     *
+     * Returns a de-duplicated list of non-blank table names, or an empty list
+     * when the key is absent or malformed (D-16). Drives table removal on
+     * uninstall; an empty list means the addon declares no contract and the
+     * caller falls back to rolling back its migrations.
+     *
+     * @param  array<string, mixed> $data Decoded module.json data.
+     * @return list<string>
+     */
+    private function resolveTables(array $data): array
+    {
+        $tables = $data['database']['tables'] ?? null;
+
+        if (!is_array($tables)) {
+            return [];
+        }
+
+        $resolved = [];
+
+        foreach ($tables as $table) {
+            if (!is_string($table)) {
+                continue;
+            }
+
+            $trimmed = trim($table);
+
+            if ($trimmed !== '' && !in_array($trimmed, $resolved, true)) {
+                $resolved[] = $trimmed;
+            }
+        }
+
+        return $resolved;
     }
 
     /**

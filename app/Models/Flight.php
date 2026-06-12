@@ -8,6 +8,7 @@ use App\Enums\FlightType;
 use App\Support\Days;
 use BackedEnum;
 use Database\Factories\FlightFactory;
+use Deprecated;
 use App\Traits\HasNanoIds;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
@@ -590,14 +591,12 @@ class Flight extends Model
     /*
      * Query scopes
      */
-
     /**
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
-     *
-     * @deprecated use visible()
      */
     #[Scope]
+    #[Deprecated(message: 'use visible()')]
     protected function active(Builder $query): Builder
     {
         return $query->where('visible', true);

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Enums\ExpenseType;
 use App\Enums\FlightType;
+use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * @property int                              $id
@@ -31,28 +33,28 @@ use Illuminate\Support\Collection;
  * @property-read Airline|null $airline
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $ref_model
  *
- * @method static Builder<static>|Expense            active()
- * @method static \Database\Factories\ExpenseFactory factory($count = null, $state = [])
- * @method static Builder<static>|Expense            forAirline(int $airlineId)
- * @method static Builder<static>|Expense            forGlobalAirline()
- * @method static Builder<static>|Expense            forRefModel(string $type, ?mixed $id = null)
- * @method static Builder<static>|Expense            newModelQuery()
- * @method static Builder<static>|Expense            newQuery()
- * @method static Builder<static>|Expense            ofType(\App\Enums\ExpenseType $type)
- * @method static Builder<static>|Expense            query()
- * @method static Builder<static>|Expense            whereActive($value)
- * @method static Builder<static>|Expense            whereAirlineId($value)
- * @method static Builder<static>|Expense            whereAmount($value)
- * @method static Builder<static>|Expense            whereChargeToUser($value)
- * @method static Builder<static>|Expense            whereCreatedAt($value)
- * @method static Builder<static>|Expense            whereFlightType($value)
- * @method static Builder<static>|Expense            whereId($value)
- * @method static Builder<static>|Expense            whereMultiplier($value)
- * @method static Builder<static>|Expense            whereName($value)
- * @method static Builder<static>|Expense            whereRefModelId($value)
- * @method static Builder<static>|Expense            whereRefModelType($value)
- * @method static Builder<static>|Expense            whereType($value)
- * @method static Builder<static>|Expense            whereUpdatedAt($value)
+ * @method static Builder<static>|Expense active()
+ * @method static ExpenseFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Expense forAirline(int $airlineId)
+ * @method static Builder<static>|Expense forGlobalAirline()
+ * @method static Builder<static>|Expense forRefModel(string $type, ?mixed $id = null)
+ * @method static Builder<static>|Expense newModelQuery()
+ * @method static Builder<static>|Expense newQuery()
+ * @method static Builder<static>|Expense ofType(ExpenseType $type)
+ * @method static Builder<static>|Expense query()
+ * @method static Builder<static>|Expense whereActive($value)
+ * @method static Builder<static>|Expense whereAirlineId($value)
+ * @method static Builder<static>|Expense whereAmount($value)
+ * @method static Builder<static>|Expense whereChargeToUser($value)
+ * @method static Builder<static>|Expense whereCreatedAt($value)
+ * @method static Builder<static>|Expense whereFlightType($value)
+ * @method static Builder<static>|Expense whereId($value)
+ * @method static Builder<static>|Expense whereMultiplier($value)
+ * @method static Builder<static>|Expense whereName($value)
+ * @method static Builder<static>|Expense whereRefModelId($value)
+ * @method static Builder<static>|Expense whereRefModelType($value)
+ * @method static Builder<static>|Expense whereType($value)
+ * @method static Builder<static>|Expense whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -88,7 +90,7 @@ class Expense extends Model
         return $this->morphTo('ref_model', 'ref_model_type', 'ref_model_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

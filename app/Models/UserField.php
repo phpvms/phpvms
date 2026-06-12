@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Override;
 
 /**
  * @property int         $id
@@ -20,19 +22,19 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read mixed $slug
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereInternal($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField wherePrivate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereRequired($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereShowOnRegistration($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserField whereUpdatedAt($value)
+ * @method static Builder<static>|UserField newModelQuery()
+ * @method static Builder<static>|UserField newQuery()
+ * @method static Builder<static>|UserField query()
+ * @method static Builder<static>|UserField whereActive($value)
+ * @method static Builder<static>|UserField whereCreatedAt($value)
+ * @method static Builder<static>|UserField whereDescription($value)
+ * @method static Builder<static>|UserField whereId($value)
+ * @method static Builder<static>|UserField whereInternal($value)
+ * @method static Builder<static>|UserField whereName($value)
+ * @method static Builder<static>|UserField wherePrivate($value)
+ * @method static Builder<static>|UserField whereRequired($value)
+ * @method static Builder<static>|UserField whereShowOnRegistration($value)
+ * @method static Builder<static>|UserField whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -65,7 +67,7 @@ class UserField extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [
