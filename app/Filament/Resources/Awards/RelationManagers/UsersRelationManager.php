@@ -11,12 +11,13 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Override;
 
 class UsersRelationManager extends RelationManager
 {
     protected static string $relationship = 'users';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -58,13 +59,13 @@ class UsersRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return trans_choice('common.user', 1);
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(EloquentModel $ownerRecord, string $pageClass): string
     {
         return trans_choice('common.user', 2);

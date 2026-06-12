@@ -6,9 +6,11 @@ use App\Contracts\Model;
 use App\Enums\PirepFieldSource;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -23,15 +25,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField wherePirepSource($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereRequired($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepField whereSlug($value)
+ * @method static Builder<static>|PirepField newModelQuery()
+ * @method static Builder<static>|PirepField newQuery()
+ * @method static Builder<static>|PirepField query()
+ * @method static Builder<static>|PirepField whereDescription($value)
+ * @method static Builder<static>|PirepField whereId($value)
+ * @method static Builder<static>|PirepField whereName($value)
+ * @method static Builder<static>|PirepField wherePirepSource($value)
+ * @method static Builder<static>|PirepField whereRequired($value)
+ * @method static Builder<static>|PirepField whereSlug($value)
  *
  * @mixin \Eloquent
  */
@@ -77,7 +79,7 @@ class PirepField extends Model
             ->dontSubmitEmptyLogs();
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

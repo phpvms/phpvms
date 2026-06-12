@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -19,17 +21,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read string $link
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereExpiresAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUsageCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Invite whereUsageLimit($value)
+ * @method static Builder<static>|Invite newModelQuery()
+ * @method static Builder<static>|Invite newQuery()
+ * @method static Builder<static>|Invite query()
+ * @method static Builder<static>|Invite whereCreatedAt($value)
+ * @method static Builder<static>|Invite whereEmail($value)
+ * @method static Builder<static>|Invite whereExpiresAt($value)
+ * @method static Builder<static>|Invite whereId($value)
+ * @method static Builder<static>|Invite whereToken($value)
+ * @method static Builder<static>|Invite whereUpdatedAt($value)
+ * @method static Builder<static>|Invite whereUsageCount($value)
+ * @method static Builder<static>|Invite whereUsageLimit($value)
  *
  * @mixin \Eloquent
  */
@@ -60,7 +62,7 @@ class Invite extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

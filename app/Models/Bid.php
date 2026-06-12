@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Database\Factories\BidFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -18,16 +21,16 @@ use Illuminate\Support\Carbon;
  * @property-read Flight|null $flight
  * @property-read User|null $user
  *
- * @method static \Database\Factories\BidFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereAircraftId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereFlightId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Bid whereUserId($value)
+ * @method static BidFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Bid newModelQuery()
+ * @method static Builder<static>|Bid newQuery()
+ * @method static Builder<static>|Bid query()
+ * @method static Builder<static>|Bid whereAircraftId($value)
+ * @method static Builder<static>|Bid whereCreatedAt($value)
+ * @method static Builder<static>|Bid whereFlightId($value)
+ * @method static Builder<static>|Bid whereId($value)
+ * @method static Builder<static>|Bid whereUpdatedAt($value)
+ * @method static Builder<static>|Bid whereUserId($value)
  *
  * @mixin \Eloquent
  */
@@ -61,7 +64,7 @@ class Bid extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

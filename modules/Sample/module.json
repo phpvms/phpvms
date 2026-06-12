@@ -1,6 +1,9 @@
 {
+    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "schema_version": 1,
     "name": "Sample",
     "alias": "sample",
+    "type": "module",
     "description": "",
     "keywords": [],
     "active": 1,
@@ -11,5 +14,10 @@
     ],
     "aliases": {},
     "files": [],
-    "requires": []
+    "requires": [],
+    "database": {
+        "tables": [
+            "sample_items"
+        ]
+    }
 }

@@ -119,7 +119,7 @@ it('does not mutate the underlying Airport model attribute bag', function (): vo
     $row = makeAirport('KOAK', 37.7, -122.5);
     $before = array_keys($row->getAttributes());
 
-    (new RouteForgeAirportResource($row))->toArray(rfReq(origin: $origin, maxRangeNm: 500));
+    new RouteForgeAirportResource($row)->toArray(rfReq(origin: $origin, maxRangeNm: 500));
 
     $after = array_keys($row->getAttributes());
 

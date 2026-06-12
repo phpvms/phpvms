@@ -20,6 +20,8 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Override;
+use Throwable;
 
 /**
  * @property Pirep $record
@@ -63,7 +65,7 @@ class ViewPirep extends ViewRecord
      */
     protected string $view = 'filament.pireps.pages.view-pirep';
 
-    #[\Override]
+    #[Override]
     public function getHeading(): string
     {
         $record = $this->record;
@@ -77,7 +79,7 @@ class ViewPirep extends ViewRecord
         return implode(' ', $parts);
     }
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         // No default infolist — the custom blade renders the detail layout.
@@ -129,13 +131,13 @@ class ViewPirep extends ViewRecord
      * to hydrate a form schema from the model attributes. Pirep has custom
      * value-object casts (Fuel, Distance) which break NumberStateCast.
      */
-    #[\Override]
+    #[Override]
     protected function fillForm(): void
     {
         // no-op
     }
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -148,7 +150,7 @@ class ViewPirep extends ViewRecord
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -191,7 +193,7 @@ class ViewPirep extends ViewRecord
         try {
             $features = app(GeoService::class)->pirepGeoJson($this->record);
             $this->mapFeatures = json_decode((string) json_encode($features), true) ?? [];
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             Log::warning('PIREP map build failed', [
                 'pirep_id' => $this->record->id,
                 'error'    => $throwable->getMessage(),
@@ -204,7 +206,7 @@ class ViewPirep extends ViewRecord
         try {
             $this->performance = app(PerformanceChartService::class)
                 ->buildDatasets($this->record);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             Log::warning('PIREP performance chart build failed', [
                 'pirep_id' => $this->record->id,
                 'error'    => $throwable->getMessage(),

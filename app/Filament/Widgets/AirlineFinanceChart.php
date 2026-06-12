@@ -14,6 +14,7 @@ use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 class AirlineFinanceChart extends ChartWidget
 {
@@ -24,7 +25,7 @@ class AirlineFinanceChart extends ChartWidget
 
     protected ?string $pollingInterval = null;
 
-    #[\Override]
+    #[Override]
     protected function getData(): array
     {
         $filters = $this->pageFilters ?? [
@@ -83,7 +84,7 @@ class AirlineFinanceChart extends ChartWidget
         return 'bar';
     }
 
-    #[\Override]
+    #[Override]
     public static function canView(): bool
     {
         // Display if the page is finance or a /livewire-{hash}/update request from finance

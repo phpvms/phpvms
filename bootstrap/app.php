@@ -77,22 +77,22 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
 
                 if ($exception instanceof ModelNotFoundException || $exception instanceof NotFoundHttpException) {
-                    return (new AssetNotFound($exception))->getResponse();
+                    return new AssetNotFound($exception)->getResponse();
                 }
 
                 if ($exception instanceof SymfonyHttpException) {
-                    return (new SymfonyException($exception))->getResponse();
+                    return new SymfonyException($exception)->getResponse();
                 }
 
                 if ($exception instanceof IlluminateValidationException) {
-                    return (new ValidationException($exception))->getResponse();
+                    return new ValidationException($exception)->getResponse();
                 }
 
-                return (new GenericExceptionAbstract($exception))->getResponse();
+                return new GenericExceptionAbstract($exception)->getResponse();
             }
 
             // Handle Web Errors (Theme & Auth)
-            (new SetActiveTheme())->setTheme($request);
+            new SetActiveTheme()->setTheme($request);
 
             if ($exception instanceof AbstractHttpException && $exception->getStatusCode() === 403) {
                 return redirect()->guest('login');
@@ -109,7 +109,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             if ($request->expectsJson() || $request->is('api/*')) {
-                return (new Unauthenticated())->getResponse();
+                return new Unauthenticated()->getResponse();
             }
 
             return $response;

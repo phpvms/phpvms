@@ -1,0 +1,133 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://phpvms.net/schemas/addon.schema.json",
+    "title": "phpVMS Addon Manifest",
+    "description": "Schema for a phpVMS addon/module manifest (module.json).",
+    "type": "object",
+    "required": [
+        "schema_version",
+        "type",
+        "description"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Path or URL to this JSON schema, used by editors for validation."
+        },
+        "schema_version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Version of the manifest schema this file targets."
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name of the addon. When omitted, phpVMS falls back to the addon directory basename."
+        },
+        "alias": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "Short machine alias, used for view namespaces and asset paths."
+        },
+        "type": {
+            "type": "string",
+            "enum": [
+                "module",
+                "theme"
+            ],
+            "description": "Addon type. 'module' adds functionality; 'theme' provides a frontend theme."
+        },
+        "version": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "Addon version. May also be derived from composer.json when absent here."
+        },
+        "compat": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "phpVMS version constraint the addon is compatible with (e.g. \"^8.0\")."
+        },
+        "registry_id": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "Canonical registry identity for managed addons (e.g. \"vendor/package\"). Null or absent for bundled addons."
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of the addon."
+        },
+        "providers": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            },
+            "description": "Fully-qualified Laravel service-provider class names to register when the addon is enabled."
+        },
+        "database": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Database ownership contract for the addon.",
+            "properties": {
+                "tables": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Tables the addon owns. These are dropped on uninstall when 'remove tables' is selected. Declare only tables the addon creates - never core or shared tables."
+                }
+            }
+        },
+        "keywords": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used by phpVMS."
+        },
+        "active": {
+            "type": "integer",
+            "enum": [
+                0,
+                1
+            ],
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used - enabled state is tracked in the addons table."
+        },
+        "order": {
+            "type": "integer",
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used by phpVMS."
+        },
+        "aliases": {
+            "type": "object",
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used by phpVMS."
+        },
+        "files": {
+            "type": "array",
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used by phpVMS."
+        },
+        "requires": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "deprecated": true,
+            "description": "Legacy nwidart field. Not used by phpVMS."
+        }
+    }
+}

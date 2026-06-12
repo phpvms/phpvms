@@ -7,10 +7,11 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Enums\NavaidType;
 use Illuminate\Http\Request;
+use Override;
 
 class NavdataResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

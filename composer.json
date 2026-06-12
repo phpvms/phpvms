@@ -181,11 +181,11 @@
     "test:arch": "pest --filter=arch",
     "test:type-coverage": "pest --type-coverage",
     "test:unit": "pest --parallel --coverage",
+    "tests": "composer run test",
     "test": [
       "@test:lint",
       "@test:refactor",
       "@test:types",
-      "@test:type-coverage",
       "@test:unit"
     ],
     "setup": [

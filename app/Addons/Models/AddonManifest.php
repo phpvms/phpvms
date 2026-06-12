@@ -40,6 +40,10 @@ final readonly class AddonManifest
      * @param string               $layout         Addon layout: always lowercase 'root' or 'app'.
      * @param string|null          $description    Human-readable description from module.json;
      *                                             null when absent or blank.
+     * @param list<string>         $tables         Database tables owned by the addon, declared
+     *                                             under module.json `database.tables`. Used to
+     *                                             drop the addon's tables on uninstall; empty when
+     *                                             undeclared (D-16).
      *
      * @mago-ignore lint:excessive-parameter-list
      */
@@ -58,5 +62,6 @@ final readonly class AddonManifest
         public string $autoloadPath,
         public string $layout,
         public ?string $description,
+        public array $tables = [],
     ) {}
 }

@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Fare;
+use Override;
 
 /**
  * @mixin Fare
@@ -14,7 +15,7 @@ use App\Models\Fare;
  */
 class FareResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

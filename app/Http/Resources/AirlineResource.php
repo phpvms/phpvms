@@ -6,13 +6,14 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Airline;
+use Override;
 
 /**
  * @mixin Airline
  */
 class AirlineResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

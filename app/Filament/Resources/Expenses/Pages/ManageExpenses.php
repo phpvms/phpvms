@@ -13,12 +13,13 @@ use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ManageExpenses extends ManageRecords
 {
     protected static string $resource = ExpenseResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

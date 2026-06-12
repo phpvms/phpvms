@@ -15,6 +15,7 @@ use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 class AirlineFinanceTable extends TableWidget
 {
@@ -31,7 +32,7 @@ class AirlineFinanceTable extends TableWidget
         return $record->transaction_group;
     }
 
-    #[\Override]
+    #[Override]
     public function table(Table $table): Table
     {
         $filters = $this->pageFilters ?? [
@@ -88,7 +89,7 @@ class AirlineFinanceTable extends TableWidget
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function canView(): bool
     {
         // Display if the page is finance or a /livewire-{hash}/update request from finance

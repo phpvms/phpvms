@@ -4,10 +4,11 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use Illuminate\Http\Request;
+use Override;
 
 class AirportDistanceResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

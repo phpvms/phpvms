@@ -7,13 +7,14 @@ namespace App\Http\Requests;
 use App\Contracts\FormRequest;
 use App\Models\Pirep;
 use App\Models\PirepField;
+use Override;
 
 class CreatePirepRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      */
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         // Don't run validations if it's just being saved

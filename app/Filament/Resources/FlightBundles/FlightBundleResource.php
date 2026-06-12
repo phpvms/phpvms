@@ -10,6 +10,7 @@ use App\Filament\Resources\FlightBundles\RelationManagers\FlightsRelationManager
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Filament\Resources\FlightBundles\Tables\FlightBundlesTable;
 use App\Models\FlightBundle;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -18,32 +19,34 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
+use UnitEnum;
 
 class FlightBundleResource extends Resource
 {
     protected static ?string $model = FlightBundle::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static ?string $slug = 'flights';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return FlightBundleForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return FlightBundlesTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -51,7 +54,7 @@ class FlightBundleResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -61,7 +64,7 @@ class FlightBundleResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -74,7 +77,7 @@ class FlightBundleResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['name'];
@@ -83,19 +86,19 @@ class FlightBundleResource extends Resource
     /**
      * @param FlightBundle $record
      */
-    #[\Override]
+    #[Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name;
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('filament.bundles.label');
     }
 
-    #[\Override]
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('filament.flights.navigation_label');

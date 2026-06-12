@@ -6,8 +6,9 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
+use Stringable;
 
-class Time implements \Stringable, Arrayable
+class Time implements Arrayable, Stringable
 {
     /**
      * @var float|int

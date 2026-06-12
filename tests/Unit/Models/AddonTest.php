@@ -6,7 +6,7 @@ use App\Models\Addon;
 use Illuminate\Support\Carbon;
 
 it('returns addons as the table name', function (): void {
-    expect((new Addon())->getTable())->toBe('addons');
+    expect(new Addon()->getTable())->toBe('addons');
 });
 
 it('casts enabled to boolean', function (): void {
@@ -40,7 +40,7 @@ it('accepts null for installed_at', function (): void {
 });
 
 it('is fillable for all non-pk columns', function (): void {
-    $fillable = (new Addon())->getFillable();
+    $fillable = new Addon()->getFillable();
 
     expect($fillable)->toContain('registry_id')
         ->toContain('type')

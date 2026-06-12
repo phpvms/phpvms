@@ -10,6 +10,7 @@ use App\Filament\Resources\Pireps\Widgets\PirepStats;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Schema;
+use Override;
 
 class ListPireps extends ListRecords
 {
@@ -25,14 +26,14 @@ class ListPireps extends ListRecords
      */
     protected string $view = 'filament.pireps.pages.list-pireps';
 
-    #[\Override]
+    #[Override]
     public function content(Schema $schema): Schema
     {
         // No EmbeddedTable. The custom blade renders filters + cards directly.
         return $schema->components([]);
     }
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -40,7 +41,7 @@ class ListPireps extends ListRecords
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

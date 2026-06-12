@@ -9,12 +9,13 @@ use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Number;
+use Override;
 
 class SubfleetExporter extends Exporter
 {
     protected static ?string $model = Subfleet::class;
 
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query): Builder
     {
         return $query->with(['fares', 'ranks']);

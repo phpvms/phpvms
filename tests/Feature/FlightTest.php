@@ -418,7 +418,7 @@ test('day of week active', function (): void {
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetVisibleFlights())->handle($event);
+    new SetVisibleFlights()->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');
@@ -470,7 +470,7 @@ test('start end date', function (): void {
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetVisibleFlights())->handle($event);
+    new SetVisibleFlights()->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');
@@ -509,7 +509,7 @@ test('start end date day of week', function (): void {
 
     // Run the event that will enable/disable flights
     $event = new CronNightly();
-    (new SetVisibleFlights())->handle($event);
+    new SetVisibleFlights()->handle($event);
 
     $res = $this->get('/api/flights');
     $body = $res->json('data');

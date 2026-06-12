@@ -25,7 +25,7 @@ it('fires per row when every selected subfleet falls short of the distance', fun
         RF::row(['distance_nm' => 5000]),
     ];
 
-    $issues = (new L2RangeMismatch())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets));
+    $issues = new L2RangeMismatch()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets));
 
     expect($issues)->toHaveCount(2)
         ->and(array_map(static fn (LintIssue $i): int => $i->rowIndex, $issues))->toBe([0, 2])
@@ -45,7 +45,7 @@ it('short-circuits to zero issues when any selected subfleet is unrestricted (NU
         RF::row(['distance_nm' => 9999]),
     ];
 
-    expect((new L2RangeMismatch())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
+    expect(new L2RangeMismatch()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
         ->toBe([]);
 });
 
@@ -53,11 +53,11 @@ it('does not fire when distance is within the largest subfleet range', function 
     $subfleets = new Collection([l2Subfleet(2000), l2Subfleet(4000)]);
     $rows = [RF::row(['distance_nm' => 3500])];
 
-    expect((new L2RangeMismatch())->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
+    expect(new L2RangeMismatch()->check(RF::ctx(rows: $rows, selectedSubfleets: $subfleets)))
         ->toBe([]);
 });
 
 it('returns no issues when no subfleets are selected (L3 covers that case)', function (): void {
-    expect((new L2RangeMismatch())->check(RF::ctx(rows: [RF::row()], selectedSubfleets: new Collection())))
+    expect(new L2RangeMismatch()->check(RF::ctx(rows: [RF::row()], selectedSubfleets: new Collection())))
         ->toBe([]);
 });

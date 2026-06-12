@@ -10,6 +10,7 @@ use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Number;
+use Override;
 
 /**
  * @property Aircraft $record
@@ -84,7 +85,7 @@ class AircraftImporter extends Importer
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function resolveRecord(): Aircraft
     {
         return Aircraft::withTrashed()->firstOrNew([

@@ -7,13 +7,14 @@ namespace App\Services\LegacyImporter;
 use App\Models\User;
 use App\Services\AircraftService;
 use App\Services\UserService;
+use Override;
 
 class FinalizeImporter extends BaseImporter
 {
     /**
      * Returns a default manifest just so this step gets run
      */
-    #[\Override]
+    #[Override]
     public function getManifest(): array
     {
         return [

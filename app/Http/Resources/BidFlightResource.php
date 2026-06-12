@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Http\Resources\SimBriefResource as SimbriefResource;
 use App\Models\Flight;
 use Illuminate\Http\Request;
+use Override;
 use PhpUnitsOfMeasure\Exception\NonNumericValue;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
 
@@ -19,7 +20,7 @@ class BidFlightResource extends FlightResource
      * @throws NonNumericValue
      * @throws NonStringUnitName
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         $res = parent::toArray($request);

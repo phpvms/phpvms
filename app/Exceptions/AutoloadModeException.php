@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use RuntimeException;
+
 /**
  * Thrown at loader boot when Composer's autoloader is in classmap-authoritative
  * mode (LOAD-08, D-16, T-03-04).
@@ -13,7 +15,7 @@ namespace App\Exceptions;
  * found. This exception halts boot loudly rather than letting the system
  * silently mis-behave.
  */
-class AutoloadModeException extends \RuntimeException
+class AutoloadModeException extends RuntimeException
 {
     public function __construct()
     {

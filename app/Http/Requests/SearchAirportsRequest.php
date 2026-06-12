@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Contracts\FormRequest;
 use Closure;
+use Override;
 
 /**
  * Validates query string for /api/airports and /api/airports/search.
@@ -50,7 +51,7 @@ class SearchAirportsRequest extends FormRequest
 
     public const array SORT_DIRECTIONS = ['asc', 'desc'];
 
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         $maxLimit = (int) config('phpvms.pagination.max', 100);

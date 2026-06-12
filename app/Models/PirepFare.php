@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Enums\FareType;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
 
 /**
  * @property int           $id
@@ -22,20 +24,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Fare|null $fare
  * @property-read Pirep|null $pirep
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCapacity($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCost($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereFareId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare wherePirepId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare wherePrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFare whereType($value)
+ * @method static Builder<static>|PirepFare newModelQuery()
+ * @method static Builder<static>|PirepFare newQuery()
+ * @method static Builder<static>|PirepFare query()
+ * @method static Builder<static>|PirepFare whereCapacity($value)
+ * @method static Builder<static>|PirepFare whereCode($value)
+ * @method static Builder<static>|PirepFare whereCost($value)
+ * @method static Builder<static>|PirepFare whereCount($value)
+ * @method static Builder<static>|PirepFare whereDeletedAt($value)
+ * @method static Builder<static>|PirepFare whereFareId($value)
+ * @method static Builder<static>|PirepFare whereId($value)
+ * @method static Builder<static>|PirepFare whereName($value)
+ * @method static Builder<static>|PirepFare wherePirepId($value)
+ * @method static Builder<static>|PirepFare wherePrice($value)
+ * @method static Builder<static>|PirepFare whereType($value)
  *
  * @mixin \Eloquent
  */
@@ -73,7 +75,7 @@ class PirepFare extends Model
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

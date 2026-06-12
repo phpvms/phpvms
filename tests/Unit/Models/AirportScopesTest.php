@@ -46,14 +46,14 @@ test('Airport scopes compose with each other', function (): void {
 test('Airport::resolveRouteBinding upcases the incoming ICAO', function (): void {
     Airport::factory()->create(['id' => 'KJFK', 'icao' => 'KJFK']);
 
-    $resolved = (new Airport())->resolveRouteBinding('kjfk');
+    $resolved = new Airport()->resolveRouteBinding('kjfk');
 
     expect($resolved)->not->toBeNull()
         ->and($resolved->id)->toBe('KJFK');
 });
 
 test('Airport::resolveRouteBinding returns null for unknown ICAO', function (): void {
-    $resolved = (new Airport())->resolveRouteBinding('XXXX');
+    $resolved = new Airport()->resolveRouteBinding('XXXX');
 
     expect($resolved)->toBeNull();
 });

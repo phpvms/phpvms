@@ -7,6 +7,7 @@ namespace App\Http\Resources\RouteForge;
 use App\Contracts\Resource;
 use App\Services\RouteForge\LintReport;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Wire shape returned by /admin/route-forge/api/lint AND by
@@ -18,7 +19,7 @@ use Illuminate\Http\Request;
  */
 final class LintReportResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var LintReport $report */

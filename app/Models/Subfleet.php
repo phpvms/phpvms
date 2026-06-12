@@ -10,6 +10,8 @@ use App\Observers\SubfleetObserver;
 use App\Support\SubfleetAccessPolicy;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
+use Database\Factories\SubfleetFactory;
+use Deprecated;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -67,30 +70,30 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Typerating> $typeratings
  * @property-read int|null $typeratings_count
  *
- * @method static \Database\Factories\SubfleetFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereAirlineId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCargoCapacity($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCostBlockHour($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCostDelayMinute($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereFuelCapacity($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereFuelType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereGrossWeight($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereGroundHandlingMultiplier($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereHubId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereSimbriefType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Subfleet withoutTrashed()
+ * @method static SubfleetFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Subfleet newModelQuery()
+ * @method static Builder<static>|Subfleet newQuery()
+ * @method static Builder<static>|Subfleet onlyTrashed()
+ * @method static Builder<static>|Subfleet query()
+ * @method static Builder<static>|Subfleet sortable($defaultParameters = null)
+ * @method static Builder<static>|Subfleet whereAirlineId($value)
+ * @method static Builder<static>|Subfleet whereCargoCapacity($value)
+ * @method static Builder<static>|Subfleet whereCostBlockHour($value)
+ * @method static Builder<static>|Subfleet whereCostDelayMinute($value)
+ * @method static Builder<static>|Subfleet whereCreatedAt($value)
+ * @method static Builder<static>|Subfleet whereDeletedAt($value)
+ * @method static Builder<static>|Subfleet whereFuelCapacity($value)
+ * @method static Builder<static>|Subfleet whereFuelType($value)
+ * @method static Builder<static>|Subfleet whereGrossWeight($value)
+ * @method static Builder<static>|Subfleet whereGroundHandlingMultiplier($value)
+ * @method static Builder<static>|Subfleet whereHubId($value)
+ * @method static Builder<static>|Subfleet whereId($value)
+ * @method static Builder<static>|Subfleet whereName($value)
+ * @method static Builder<static>|Subfleet whereSimbriefType($value)
+ * @method static Builder<static>|Subfleet whereType($value)
+ * @method static Builder<static>|Subfleet whereUpdatedAt($value)
+ * @method static Builder<static>|Subfleet withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Subfleet withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -168,9 +171,7 @@ class Subfleet extends Model
         return $this->belongsTo(Airport::class, 'hub_id');
     }
 
-    /**
-     * @deprecated use home()
-     */
+    #[Deprecated(message: 'use home()')]
     public function hub(): BelongsTo
     {
         return $this->home();
@@ -213,13 +214,13 @@ class Subfleet extends Model
     #[Scope]
     protected function allowedFor(Builder $query, User $user): Builder
     {
-        return (new SubfleetAccessPolicy($user))->applyToSubfleets($query);
+        return new SubfleetAccessPolicy($user)->applyToSubfleets($query);
     }
 
     /**
      * The attributes that should be cast to native types.
      */
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -7,6 +7,7 @@ namespace App\Http\Resources\RouteForge;
 use App\Contracts\Resource;
 use App\Models\FlightBundle;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Wire shape returned by /admin/route-forge/api/bundles.
@@ -33,7 +34,7 @@ final class RouteForgeBundleResource extends Resource
     /**
      * @return array<string, mixed>
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var FlightBundle $bundle */

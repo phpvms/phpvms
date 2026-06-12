@@ -15,6 +15,7 @@ use Filament\Actions\ImportAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Override;
 
 class FlightsRelationManager extends RelationManager
 {
@@ -53,7 +54,7 @@ class FlightsRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return trans_choice('common.flight', 1);

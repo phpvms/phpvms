@@ -8,12 +8,13 @@ use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ListFlightBundles extends ListRecords
 {
     protected static string $resource = FlightBundleResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Services\VersionService;
 use Filament\Widgets\Widget;
+use Override;
 
 class VersionWidget extends Widget
 {
@@ -25,7 +26,7 @@ class VersionWidget extends Widget
         $this->version_full = $versionSvc->getCurrentVersion(true);
     }
 
-    #[\Override]
+    #[Override]
     protected function getViewData(): array
     {
         return [

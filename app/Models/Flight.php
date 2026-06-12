@@ -9,6 +9,7 @@ use App\Support\Days;
 use App\Traits\HashIdTrait;
 use BackedEnum;
 use Database\Factories\FlightFactory;
+use Deprecated;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -592,14 +593,12 @@ class Flight extends Model
     /*
      * Query scopes
      */
-
     /**
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
-     *
-     * @deprecated use visible()
      */
     #[Scope]
+    #[Deprecated(message: 'use visible()')]
     protected function active(Builder $query): Builder
     {
         return $query->where('visible', true);

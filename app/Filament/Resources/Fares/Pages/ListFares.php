@@ -13,12 +13,13 @@ use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ListFares extends ListRecords
 {
     protected static string $resource = FareResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

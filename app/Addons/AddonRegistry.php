@@ -9,10 +9,13 @@ use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Sources\AddonSource;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonValidator;
+use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
 use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
+use App\Services\Installer\MigrationService;
+use App\Services\Installer\SeederService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -91,13 +94,22 @@ class AddonRegistry
     /**
      * Delete an addon's DB row and regenerate the boot cache.
      * Does NOT remove files on disk. No-op when the addon is unknown.
+     *
+     * When $removeTables is true, the addon's schema migrations are rolled back
+     * (dropping its tables) and its seed markers are cleared before the row is
+     * removed, so a later reinstall starts from a clean schema and re-seeds.
      */
-    public function delete(string $name): void
+    public function delete(string $name, bool $removeTables = false): void
     {
         $addon = $this->find($name);
 
         if (!$addon instanceof Addon) {
             return;
+        }
+
+        if ($removeTables) {
+            $this->removeAddonTables($addon);
+            app(SeederService::class)->clearAddonSeedMarkers($addon);
         }
 
         $this->assetLinker->unlink($addon->getName());
@@ -106,6 +118,46 @@ class AddonRegistry
 
         app(AddonDiscoveryService::class)->rebuildCache();
         $this->octane->reload();
+    }
+
+    /**
+     * Remove an addon's database tables on uninstall.
+     *
+     * Prefers the addon's declared `database.tables` contract from module.json:
+     * those tables are dropped explicitly and the addon's migration records are
+     * purged, so removal does not depend on the migrations having correct down()
+     * methods. When no contract is declared, falls back to rolling back the
+     * addon's migrations (running their down() methods).
+     */
+    private function removeAddonTables(Addon $addon): void
+    {
+        $migrationSvc = app(MigrationService::class);
+        $tables = $this->declaredTables($addon);
+
+        if ($tables !== []) {
+            $migrationSvc->dropAddonTables($tables);
+            $migrationSvc->purgeAddonMigrationRecords($addon);
+
+            return;
+        }
+
+        $migrationSvc->rollbackAddonMigrations($addon);
+    }
+
+    /**
+     * Resolve the tables an addon declares it owns via module.json.
+     *
+     * @return list<string>
+     */
+    private function declaredTables(Addon $addon): array
+    {
+        $manifest = app(ManifestParser::class)->parse($addon->getPath());
+
+        if (!$manifest instanceof AddonManifest) {
+            return [];
+        }
+
+        return $manifest->tables;
     }
 
     /**

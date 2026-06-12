@@ -10,6 +10,7 @@ use App\Models\Airport;
 use App\Models\Expense;
 use App\Models\Subfleet;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 /**
  * Import expenses
@@ -32,7 +33,7 @@ class ExpenseExporter extends ImportExport
     public function export(Model $row): array
     {
         if (!$row instanceof Expense) {
-            throw new \InvalidArgumentException('Expected Expense Model');
+            throw new InvalidArgumentException('Expected Expense Model');
         }
 
         $ret = [];

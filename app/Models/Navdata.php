@@ -6,10 +6,13 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\NavaidType;
+use Database\Factories\NavdataFactory;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Override;
 
 /**
  * @property string     $id
@@ -19,16 +22,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float|null $lon
  * @property float|null $freq
  *
- * @method static \Database\Factories\NavdataFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereFreq($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereLat($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereLon($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Navdata whereType($value)
+ * @method static NavdataFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Navdata newModelQuery()
+ * @method static Builder<static>|Navdata newQuery()
+ * @method static Builder<static>|Navdata query()
+ * @method static Builder<static>|Navdata whereFreq($value)
+ * @method static Builder<static>|Navdata whereId($value)
+ * @method static Builder<static>|Navdata whereLat($value)
+ * @method static Builder<static>|Navdata whereLon($value)
+ * @method static Builder<static>|Navdata whereName($value)
+ * @method static Builder<static>|Navdata whereType($value)
  *
  * @mixin \Eloquent
  */
@@ -61,7 +64,7 @@ class Navdata extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

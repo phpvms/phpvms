@@ -6,13 +6,14 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Award;
+use Override;
 
 /**
  * @mixin Award
  */
 class AwardResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

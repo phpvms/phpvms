@@ -97,7 +97,7 @@ final class RouteForgeController extends Controller
             'translations' => $this->buildTranslationsPayload(),
         ];
 
-        return (new RouteForgeBootResource($envelope))->response();
+        return new RouteForgeBootResource($envelope)->response();
     }
 
     /**
@@ -244,7 +244,7 @@ final class RouteForgeController extends Controller
      */
     public function previewAirports(PreviewAirportsRequest $request): JsonResponse
     {
-        $query = (new AirportSearchQueryV1($request))->build();
+        $query = new AirportSearchQueryV1($request)->build();
         $limit = (int) $request->input('limit', 50);
 
         /** @var LengthAwarePaginator<int, Airport> $paginated */
@@ -301,7 +301,7 @@ final class RouteForgeController extends Controller
     {
         $airline = Airline::query()->findOrFail((int) $request->validated('airline_id'));
 
-        return (new AirlineStatsResource($stats->buildFor($airline)))->response();
+        return new AirlineStatsResource($stats->buildFor($airline))->response();
     }
 
     /**
@@ -321,7 +321,7 @@ final class RouteForgeController extends Controller
         );
         $report = $runner->run($ctx);
 
-        return (new LintReportResource($report))->response();
+        return new LintReportResource($report)->response();
     }
 
     /**
@@ -350,12 +350,12 @@ final class RouteForgeController extends Controller
         try {
             $result = $service->commit($input);
         } catch (LintFailedException $lintFailedException) {
-            return (new LintReportResource($lintFailedException->report))
+            return new LintReportResource($lintFailedException->report)
                 ->response()
                 ->setStatusCode(422);
         }
 
-        return (new CommitResponseResource($result))
+        return new CommitResponseResource($result)
             ->response()
             ->setStatusCode(201);
     }

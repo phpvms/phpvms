@@ -20,6 +20,7 @@ use Filament\Actions\Imports\Models\Import;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
+use Override;
 
 /**
  * @property Flight $record
@@ -181,7 +182,7 @@ class FlightImporter extends Importer
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function resolveRecord(): Flight
     {
         return Flight::withTrashed()->firstOrNew([
@@ -347,7 +348,7 @@ class FlightImporter extends Importer
      * Filament import-options form: lets the admin pick a target bundle for rows
      * whose `bundle_id` column is empty. Defaults to the seeded "Default" bundle.
      */
-    #[\Override]
+    #[Override]
     public static function getOptionsFormComponents(): array
     {
         return [

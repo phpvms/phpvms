@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\RouteForge;
 
 use App\Http\Requests\SearchAirportsRequest;
+use Override;
 
 /**
  * Query-string validation for /admin/route-forge/api/preview-airports.
@@ -24,7 +25,7 @@ use App\Http\Requests\SearchAirportsRequest;
  */
 final class PreviewAirportsRequest extends SearchAirportsRequest
 {
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return array_merge(parent::rules(), [
@@ -50,7 +51,7 @@ final class PreviewAirportsRequest extends SearchAirportsRequest
      *
      * @return array<string, string>
      */
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return [
@@ -67,7 +68,7 @@ final class PreviewAirportsRequest extends SearchAirportsRequest
      * Normalize `near` to uppercase ICAO so the `exists` rule and downstream
      * Airport lookup work regardless of how the client cased the input.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         if ($this->filled('near')) {

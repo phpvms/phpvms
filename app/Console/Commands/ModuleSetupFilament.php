@@ -38,7 +38,7 @@ class ModuleSetupFilament extends Command implements PromptsForMissingInputContr
         $moduleName = $this->argument('module');
 
         $addon = $this->addonRegistry->find($moduleName);
-        if (!$addon) {
+        if (!$addon instanceof Addon) {
             $this->components->error(sprintf("Module [%s] not found. Are you sure it's installed and enabled?", $moduleName));
 
             return self::FAILURE;

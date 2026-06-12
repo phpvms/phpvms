@@ -19,6 +19,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
 
 class AircraftResource extends Resource
 {
@@ -30,19 +31,19 @@ class AircraftResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'registration';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AircraftForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return AircraftTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -51,7 +52,7 @@ class AircraftResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -60,7 +61,7 @@ class AircraftResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
@@ -69,7 +70,7 @@ class AircraftResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'registration', 'icao'];
@@ -78,7 +79,7 @@ class AircraftResource extends Resource
     /**
      * @param Aircraft $record
      */
-    #[\Override]
+    #[Override]
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
     {
         return $record->name.' - '.$record->registration;

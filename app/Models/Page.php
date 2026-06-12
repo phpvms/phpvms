@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -84,7 +85,7 @@ class Page extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

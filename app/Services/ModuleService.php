@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Service;
+use Deprecated;
 
 class ModuleService extends Service
 {
@@ -65,9 +66,8 @@ class ModuleService extends Service
 
     /**
      * Update module with the status passed by user.
-     *
-     * @deprecated Delegate to AddonRegistry::enable()/disable() directly.
      */
+    #[Deprecated(message: 'Delegate to AddonRegistry::enable()/disable() directly.')]
     public function updateModule(string $name, bool $enabled): void
     {
         if ($enabled) {
@@ -79,9 +79,8 @@ class ModuleService extends Service
 
     /**
      * Delete Module from the Storage & Database.
-     *
-     * @deprecated Delegate to AddonRegistry::delete() directly.
      */
+    #[Deprecated(message: 'Delegate to AddonRegistry::delete() directly.')]
     public function deleteModule(string $name): void
     {
         app(AddonRegistry::class)->delete($name);

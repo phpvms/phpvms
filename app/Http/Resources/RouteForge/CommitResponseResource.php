@@ -7,6 +7,7 @@ namespace App\Http\Resources\RouteForge;
 use App\Contracts\Resource;
 use App\Services\RouteForge\CommitResult;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Wire shape returned by /admin/route-forge/api/commit on success.
@@ -17,7 +18,7 @@ use Illuminate\Http\Request;
  */
 final class CommitResponseResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var CommitResult $result */

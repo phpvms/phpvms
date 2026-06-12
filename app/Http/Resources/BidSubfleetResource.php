@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Models\Aircraft;
 use App\Models\Fare;
 use App\Models\Subfleet;
+use Override;
 
 /**
  * @mixin Subfleet
@@ -16,7 +17,7 @@ use App\Models\Subfleet;
  */
 class BidSubfleetResource extends SubfleetResource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request): array
     {
         return [

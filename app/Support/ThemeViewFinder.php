@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
+use Override;
 
 class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
 {
@@ -16,7 +17,7 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
      *
      * @return string
      */
-    #[\Override]
+    #[Override]
     protected function findNamespacedView($name): string
     {
         // Extract the $view and the $namespace parts
@@ -28,7 +29,7 @@ class ThemeViewFinder extends \Igaster\LaravelTheme\themeViewFinder
         return $this->findInPaths($view, $paths);
     }
 
-    #[\Override]
+    #[Override]
     public function addThemeNamespacePaths($namespace)
     {
         // This rule will remap all paths starting with $key to $value.

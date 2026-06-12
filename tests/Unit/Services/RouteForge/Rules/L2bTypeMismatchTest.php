@@ -27,7 +27,7 @@ it('fires per row when every selected subfleet restricts to other flight types',
         l2bSubfleet([FlightType::SCHED_PAX]),
     ]);
 
-    $issues = (new L2bTypeMismatch())->check(RF::ctx(
+    $issues = new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row(), RF::row(['flight_number' => 101]), RF::row(['flight_number' => 102])],
         selectedSubfleets: $subfleets,
         flightType: FlightType::CHARTER_CARGO_MAIL,
@@ -46,7 +46,7 @@ it('does not fire when at least one selected subfleet has NULL route_types (unre
         l2bSubfleet(null), // unrestricted
     ]);
 
-    expect((new L2bTypeMismatch())->check(RF::ctx(
+    expect(new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row(), RF::row(['flight_number' => 101])],
         selectedSubfleets: $subfleets,
         flightType: FlightType::CHARTER_CARGO_MAIL,
@@ -58,7 +58,7 @@ it('does not fire when the batch flight_type is contained in any selected subfle
         l2bSubfleet([FlightType::SCHED_PAX, FlightType::CHARTER_CARGO_MAIL]),
     ]);
 
-    expect((new L2bTypeMismatch())->check(RF::ctx(
+    expect(new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
         flightType: FlightType::CHARTER_CARGO_MAIL,
@@ -68,7 +68,7 @@ it('does not fire when the batch flight_type is contained in any selected subfle
 it('does not fire when no flight_type is set', function (): void {
     $subfleets = new Collection([l2bSubfleet([FlightType::SCHED_PAX])]);
 
-    expect((new L2bTypeMismatch())->check(RF::ctx(
+    expect(new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
         flightType: null,
@@ -76,7 +76,7 @@ it('does not fire when no flight_type is set', function (): void {
 });
 
 it('does not fire when no subfleets are selected (L3 covers that case)', function (): void {
-    expect((new L2bTypeMismatch())->check(RF::ctx(
+    expect(new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: new Collection(),
         flightType: FlightType::CHARTER_CARGO_MAIL,

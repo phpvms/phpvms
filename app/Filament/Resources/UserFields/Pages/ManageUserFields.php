@@ -8,12 +8,13 @@ use App\Filament\Resources\UserFields\UserFieldResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ManageUserFields extends ManageRecords
 {
     protected static string $resource = UserFieldResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

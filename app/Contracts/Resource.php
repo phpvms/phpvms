@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\AbstractPaginator;
+use Override;
 
 /**
  * Base class for a resource/response
@@ -37,15 +38,15 @@ class Resource extends JsonResource
      * @param  Request      $request
      * @return JsonResponse
      */
-    #[\Override]
+    #[Override]
     public function toResponse($request)
     {
         return $this->resource instanceof AbstractPaginator
-                    ? (new CustomPaginatedResourceResponse($this))->toResponse($request)
+                    ? new CustomPaginatedResourceResponse($this)->toResponse($request)
                     : parent::toResponse($request);
     }
 
-    #[\Override]
+    #[Override]
     public static function collection($resource)
     {
         return tap(new CustomAnonymousResourceCollection($resource, static::class), function ($collection): void {
