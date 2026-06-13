@@ -39,7 +39,7 @@
     "@preact/preset-vite": "^2.10.5",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^25.9.1",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "happy-dom": "^20.9.0",
     "laravel-vite-plugin": "^3.0.0",
     "oxfmt": "^0.41.0",
