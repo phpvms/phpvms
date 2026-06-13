@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Contracts\Model;
 use App\Enums\PirepFieldSource;
 use App\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Override;
 
 /**
  * @property int              $id
@@ -22,17 +24,17 @@ use Illuminate\Support\Str;
  * @property-read Pirep|null $pirep
  * @property-read bool $read_only
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue wherePirepId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereSource($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepFieldValue whereValue($value)
+ * @method static Builder<static>|PirepFieldValue newModelQuery()
+ * @method static Builder<static>|PirepFieldValue newQuery()
+ * @method static Builder<static>|PirepFieldValue query()
+ * @method static Builder<static>|PirepFieldValue whereCreatedAt($value)
+ * @method static Builder<static>|PirepFieldValue whereId($value)
+ * @method static Builder<static>|PirepFieldValue whereName($value)
+ * @method static Builder<static>|PirepFieldValue wherePirepId($value)
+ * @method static Builder<static>|PirepFieldValue whereSlug($value)
+ * @method static Builder<static>|PirepFieldValue whereSource($value)
+ * @method static Builder<static>|PirepFieldValue whereUpdatedAt($value)
+ * @method static Builder<static>|PirepFieldValue whereValue($value)
  *
  * @mixin \Eloquent
  */
@@ -85,7 +87,7 @@ class PirepFieldValue extends Model
         return $this->belongsTo(Pirep::class, 'pirep_id');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

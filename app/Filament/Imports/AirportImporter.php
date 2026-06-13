@@ -9,6 +9,7 @@ use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;
 use League\ISO3166\ISO3166;
+use Override;
 
 /**
  * @property Airport $record
@@ -37,7 +38,7 @@ class AirportImporter extends Importer
                 ->fillRecordUsing(function (Airport $record, string $state): void {
                     $record->country = strtolower($state);
                 })
-                ->rules([Rule::in(array_column((new ISO3166())->all(), 'alpha2'))]),
+                ->rules([Rule::in(array_column(new ISO3166()->all(), 'alpha2'))]),
             ImportColumn::make('timezone'),
             ImportColumn::make('hub')
                 ->requiredMapping()
@@ -68,7 +69,7 @@ class AirportImporter extends Importer
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function resolveRecord(): Airport
     {
         return Airport::withTrashed()->firstOrNew([

@@ -6,12 +6,13 @@ use Akaunting\Money\Currency;
 use Akaunting\Money\Money as MoneyBase;
 use InvalidArgumentException;
 use OutOfBoundsException;
+use Stringable;
 use UnexpectedValueException;
 
 /**
  * Compositional wrapper to MoneyPHP with some helpers
  */
-class Money implements \Stringable
+class Money implements Stringable
 {
     public MoneyBase $money;
 

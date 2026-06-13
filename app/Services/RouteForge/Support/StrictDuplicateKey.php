@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\RouteForge\Support;
 
 use App\Models\Flight;
+use Stringable;
 
 /**
  * Strict flight-duplicate key value object.
@@ -33,7 +34,7 @@ use App\Models\Flight;
  * Co-owned with the `routeforge-lint-cleanup` change; whichever change ships
  * first lays down this class, the other consumes it.
  */
-final readonly class StrictDuplicateKey implements \Stringable
+final readonly class StrictDuplicateKey implements Stringable
 {
     public function __construct(
         public int $bundleId,

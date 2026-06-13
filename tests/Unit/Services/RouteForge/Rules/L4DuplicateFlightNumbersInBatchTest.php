@@ -8,7 +8,7 @@ use App\Services\RouteForge\Rules\L4DuplicateFlightNumbersInBatch;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
 it('fires an error for intra-batch dup on the strict 4-tuple key', function (): void {
-    $issues = (new L4DuplicateFlightNumbersInBatch())->check(RF::ctx(rows: [
+    $issues = new L4DuplicateFlightNumbersInBatch()->check(RF::ctx(rows: [
         RF::row(['flight_number' => 100]),
         RF::row(['flight_number' => 101]),
         RF::row(['flight_number' => 102]),
@@ -30,7 +30,7 @@ it('fires an error for intra-batch dup on the strict 4-tuple key', function (): 
 it('emits one issue per collision beyond the first for N-way ties', function (): void {
     // Three rows share flight_number 100; rule emits an issue for rows 1 + 2
     // (each marks the collision back to first-seen row 0).
-    $issues = (new L4DuplicateFlightNumbersInBatch())->check(RF::ctx(rows: [
+    $issues = new L4DuplicateFlightNumbersInBatch()->check(RF::ctx(rows: [
         RF::row(['flight_number' => 100]),
         RF::row(['flight_number' => 100]),
         RF::row(['flight_number' => 100]),
@@ -45,7 +45,7 @@ it('emits one issue per collision beyond the first for N-way ties', function ():
 it('treats null / empty / 0 route_code and route_leg as the same canonical absent value', function (): void {
     // L4 normalization collapses null / "" / 0 / "0" to a single sentinel so
     // the strict key matches FlightService duplicate semantics.
-    $issues = (new L4DuplicateFlightNumbersInBatch())->check(RF::ctx(rows: [
+    $issues = new L4DuplicateFlightNumbersInBatch()->check(RF::ctx(rows: [
         RF::row(['flight_number' => 100, 'route_code' => null, 'route_leg' => null]),
         RF::row(['flight_number' => 100, 'route_code' => '', 'route_leg' => 0]),
     ]));
@@ -55,7 +55,7 @@ it('treats null / empty / 0 route_code and route_leg as the same canonical absen
 });
 
 it('does NOT fire when route_code or route_leg distinguishes the rows', function (): void {
-    $issues = (new L4DuplicateFlightNumbersInBatch())->check(RF::ctx(rows: [
+    $issues = new L4DuplicateFlightNumbersInBatch()->check(RF::ctx(rows: [
         RF::row(['flight_number' => 100, 'route_code' => 'A', 'route_leg' => null]),
         RF::row(['flight_number' => 100, 'route_code' => 'B', 'route_leg' => null]),
         RF::row(['flight_number' => 100, 'route_code' => 'A', 'route_leg' => 2]),
@@ -65,7 +65,7 @@ it('does NOT fire when route_code or route_leg distinguishes the rows', function
 });
 
 it('does not fire when all flight numbers in the batch are unique', function (): void {
-    $issues = (new L4DuplicateFlightNumbersInBatch())->check(RF::ctx(rows: [
+    $issues = new L4DuplicateFlightNumbersInBatch()->check(RF::ctx(rows: [
         RF::row(['flight_number' => 100]),
         RF::row(['flight_number' => 101]),
         RF::row(['flight_number' => 102]),

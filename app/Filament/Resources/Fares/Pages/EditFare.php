@@ -9,12 +9,13 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Override;
 
 class EditFare extends EditRecord
 {
     protected static string $resource = FareResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

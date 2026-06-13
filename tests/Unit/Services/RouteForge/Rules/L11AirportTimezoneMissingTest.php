@@ -7,7 +7,7 @@ use App\Services\RouteForge\Rules\L11AirportTimezoneMissing;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
 it('fires per row when destination timezone is null', function (): void {
-    $issues = (new L11AirportTimezoneMissing())->check(RF::ctx(rows: [
+    $issues = new L11AirportTimezoneMissing()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => 'KLAX', 'dpt_timezone' => 'America/Los_Angeles', 'arr_timezone' => null]),
         RF::row(['dpt_airport_id' => 'KJFK', 'arr_airport_id' => 'KBOS', 'dpt_timezone' => 'America/New_York', 'arr_timezone' => 'America/New_York']),
     ]));
@@ -20,7 +20,7 @@ it('fires per row when destination timezone is null', function (): void {
 });
 
 it('fires per row when origin timezone is null', function (): void {
-    $issues = (new L11AirportTimezoneMissing())->check(RF::ctx(rows: [
+    $issues = new L11AirportTimezoneMissing()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => 'KLAX', 'dpt_timezone' => null, 'arr_timezone' => 'America/Los_Angeles']),
     ]));
 
@@ -29,7 +29,7 @@ it('fires per row when origin timezone is null', function (): void {
 });
 
 it('lists both airports when both timezones are null', function (): void {
-    $issues = (new L11AirportTimezoneMissing())->check(RF::ctx(rows: [
+    $issues = new L11AirportTimezoneMissing()->check(RF::ctx(rows: [
         RF::row(['dpt_airport_id' => 'KSFO', 'arr_airport_id' => 'KLAX', 'dpt_timezone' => null, 'arr_timezone' => null]),
     ]));
 
@@ -38,7 +38,7 @@ it('lists both airports when both timezones are null', function (): void {
 });
 
 it('does not fire when both timezones are populated', function (): void {
-    expect((new L11AirportTimezoneMissing())->check(RF::ctx(rows: [
+    expect(new L11AirportTimezoneMissing()->check(RF::ctx(rows: [
         RF::row(['dpt_timezone' => 'America/Los_Angeles', 'arr_timezone' => 'America/New_York']),
         RF::row(['dpt_timezone' => 'Europe/London', 'arr_timezone' => 'Asia/Tokyo']),
     ])))->toBe([]);

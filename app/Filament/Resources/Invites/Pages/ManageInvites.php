@@ -10,12 +10,13 @@ use Filament\Resources\Pages\ManageRecords;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use Override;
 
 class ManageInvites extends ManageRecords
 {
     protected static string $resource = InviteResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

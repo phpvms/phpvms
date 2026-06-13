@@ -34,7 +34,7 @@ class CarbonCast implements CastsAttributes
         }
 
         if (is_string($value)) {
-            return (new Carbon($value))->toDateTimeString();
+            return new Carbon($value)->toDateTimeString();
         }
 
         return $value;

@@ -7,13 +7,14 @@ use App\Models\Aircraft;
 use App\Support\Units\Fuel;
 use App\Support\Units\Mass;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Aircraft
  */
 class AircraftResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

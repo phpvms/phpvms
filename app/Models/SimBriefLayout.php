@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property string      $id
@@ -14,14 +16,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout whereNameLong($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SimBriefLayout whereUpdatedAt($value)
+ * @method static Builder<static>|SimBriefLayout newModelQuery()
+ * @method static Builder<static>|SimBriefLayout newQuery()
+ * @method static Builder<static>|SimBriefLayout query()
+ * @method static Builder<static>|SimBriefLayout whereCreatedAt($value)
+ * @method static Builder<static>|SimBriefLayout whereId($value)
+ * @method static Builder<static>|SimBriefLayout whereName($value)
+ * @method static Builder<static>|SimBriefLayout whereNameLong($value)
+ * @method static Builder<static>|SimBriefLayout whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -41,7 +43,7 @@ class SimBriefLayout extends Model
         'name_long' => 'required|string',
     ];
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

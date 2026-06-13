@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Models\Airline;
 use App\Models\File;
@@ -11,8 +12,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Laracasts\Flash\Flash;
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
-use Nwidart\Modules\Facades\Module;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -67,16 +66,13 @@ class DownloadController extends Controller
         }
 
         // See if they inserted a link to the ACARS download
-        try {
-            Module::findOrFail('VMSAcars');
+        if (app(AddonRegistry::class)->find('VMSAcars')) {
             $downloadUrl = DB::table('vmsacars_config')->where(['id' => 'download_url'])->first();
             if (!empty($downloadUrl) && !empty($downloadUrl->value)) {
                 $regrouped_files['ACARS'] = collect([
                     new File(['id' => 'vmsacars', 'name' => 'ACARS Client', 'disk' => null, 'path' => $downloadUrl->value]),
                 ]);
             }
-        } catch (ModuleNotFoundException) {
-            // noop, don't insert the ACARS download
         }
 
         ksort($regrouped_files, SORT_STRING);
@@ -93,8 +89,7 @@ class DownloadController extends Controller
     {
         // See if they're trying to download the ACARS client
         if ($id === 'vmsacars' && Auth::check()) {
-            try {
-                Module::find('VMSAcars');
+            if (app(AddonRegistry::class)->find('VMSAcars')) {
                 $downloadUrl = DB::table('vmsacars_config')
                     ->where(['id' => 'download_url'])
                     ->first();
@@ -102,7 +97,6 @@ class DownloadController extends Controller
                 if (!empty($downloadUrl) && !empty($downloadUrl->value)) {
                     return redirect()->to($downloadUrl->value);
                 }
-            } catch (ModuleNotFoundException) {
             }
 
             return redirect()->back();

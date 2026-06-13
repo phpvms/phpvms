@@ -6,12 +6,13 @@ namespace App\Filament\Resources\FlightBundles\Pages;
 
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use Filament\Resources\Pages\CreateRecord;
+use Override;
 
 class CreateFlightBundle extends CreateRecord
 {
     protected static string $resource = FlightBundleResource::class;
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = auth()->id();

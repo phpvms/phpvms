@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 function validateSearchFlights(array $data): array
 {
-    $rules = (new SearchFlightsRequest())->rules();
+    $rules = new SearchFlightsRequest()->rules();
     $validator = Validator::make($data, $rules);
 
     return $validator->errors()->toArray();

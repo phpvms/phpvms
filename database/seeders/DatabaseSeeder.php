@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Services\Installer\MigrationService;
+use App\Services\Installer\SeederService;
 use Exception;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function __construct(
-        private readonly MigrationService $migrationSvc
+        private readonly MigrationService $migrationSvc,
+        private readonly SeederService $seederSvc,
     ) {}
 
     /**
@@ -33,6 +35,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call($seeders);
+
+        $this->seederSvc->seedAddons();
 
         if ($this->migrationSvc->dataMigrationsAvailable()) {
             $this->migrationSvc->runAllDataMigrations();

@@ -17,7 +17,7 @@ use App\Services\RouteForge\AirlineStatsService;
 it('returns existing_active_flights_count = 0 for an airline with no flights', function (): void {
     $airline = Airline::factory()->create();
 
-    $stats = (new AirlineStatsService())->buildFor($airline);
+    $stats = new AirlineStatsService()->buildFor($airline);
 
     expect($stats['existing_active_flights_count'])->toBe(0)
         ->and($stats['hub_airports'])->toBe([])
@@ -49,7 +49,7 @@ it('counts only enabled, non-owner flights toward existing_active_flights_count'
         'owner_id'   => 1,
     ]);
 
-    $stats = (new AirlineStatsService())->buildFor($airline);
+    $stats = new AirlineStatsService()->buildFor($airline);
 
     expect($stats['existing_active_flights_count'])->toBe(3);
 });
@@ -64,7 +64,7 @@ it('returns distinct hub_id values from the airline subfleets', function (): voi
     Subfleet::factory()->create(['airline_id' => $airline->id, 'hub_id' => $klax->id]);
     Subfleet::factory()->create(['airline_id' => $airline->id, 'hub_id' => null]);      // no hub set
 
-    $stats = (new AirlineStatsService())->buildFor($airline);
+    $stats = new AirlineStatsService()->buildFor($airline);
 
     expect($stats['hub_airports'])->toHaveCount(2)
         ->and($stats['hub_airports'])->toContain('KSFO')
@@ -76,13 +76,13 @@ it('always returns null for home_airport (v1 has no airline-level home)', functi
     $ksfo = Airport::factory()->create(['id' => 'KSFO', 'icao' => 'KSFO']);
     Subfleet::factory()->create(['airline_id' => $airline->id, 'hub_id' => $ksfo->id]);
 
-    $stats = (new AirlineStatsService())->buildFor($airline);
+    $stats = new AirlineStatsService()->buildFor($airline);
 
     expect($stats['home_airport'])->toBeNull();
 });
 
 it('returns the documented array shape with the three expected keys', function (): void {
-    $stats = (new AirlineStatsService())->buildFor(Airline::factory()->create());
+    $stats = new AirlineStatsService()->buildFor(Airline::factory()->create());
 
     expect(array_keys($stats))->toBe([
         'existing_active_flights_count',

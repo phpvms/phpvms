@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\FareType;
+use Database\Factories\FareFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -35,25 +38,25 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Subfleet> $subfleets
  * @property-read int|null $subfleets_count
  *
- * @method static \Database\Factories\FareFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereCapacity($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereCost($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereNotes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare wherePrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Fare withoutTrashed()
+ * @method static FareFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Fare newModelQuery()
+ * @method static Builder<static>|Fare newQuery()
+ * @method static Builder<static>|Fare onlyTrashed()
+ * @method static Builder<static>|Fare query()
+ * @method static Builder<static>|Fare whereActive($value)
+ * @method static Builder<static>|Fare whereCapacity($value)
+ * @method static Builder<static>|Fare whereCode($value)
+ * @method static Builder<static>|Fare whereCost($value)
+ * @method static Builder<static>|Fare whereCreatedAt($value)
+ * @method static Builder<static>|Fare whereDeletedAt($value)
+ * @method static Builder<static>|Fare whereId($value)
+ * @method static Builder<static>|Fare whereName($value)
+ * @method static Builder<static>|Fare whereNotes($value)
+ * @method static Builder<static>|Fare wherePrice($value)
+ * @method static Builder<static>|Fare whereType($value)
+ * @method static Builder<static>|Fare whereUpdatedAt($value)
+ * @method static Builder<static>|Fare withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Fare withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -104,7 +107,7 @@ class Fare extends Model
         return $this->belongsToMany(Flight::class, 'flight_fare')->withPivot('price', 'cost', 'capacity');
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

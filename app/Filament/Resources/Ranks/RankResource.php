@@ -10,38 +10,41 @@ use App\Filament\Resources\Ranks\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\Ranks\Schemas\RankForm;
 use App\Filament\Resources\Ranks\Tables\RanksTable;
 use App\Models\Rank;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Override;
+use UnitEnum;
 
 class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 4;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingUp;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingUp;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return RankForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return RanksTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -49,7 +52,7 @@ class RankResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -59,7 +62,7 @@ class RankResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -68,7 +71,7 @@ class RankResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('common.rank');

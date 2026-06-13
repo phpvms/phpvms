@@ -7,6 +7,7 @@ namespace App\Services\ImportExport;
 use App\Contracts\ImportExport;
 use App\Models\Airport;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 /**
  * The flight importer can be imported or export. Operates on rows
@@ -29,7 +30,7 @@ class AirportExporter extends ImportExport
     public function export(Model $row): array
     {
         if (!$row instanceof Airport) {
-            throw new \InvalidArgumentException('Expected Airport Model');
+            throw new InvalidArgumentException('Expected Airport Model');
         }
 
         $ret = [];

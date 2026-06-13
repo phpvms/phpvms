@@ -7,6 +7,7 @@ namespace App\Http\Requests;
 use App\Contracts\FormRequest;
 use App\Enums\UserState;
 use Illuminate\Validation\Rule;
+use Override;
 
 /**
  * Validates query string for the public /users (pilots list) page.
@@ -52,7 +53,7 @@ class SearchUsersRequest extends FormRequest
 
     public const array SORT_DIRECTIONS = ['asc', 'desc'];
 
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         return [

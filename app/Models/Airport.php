@@ -6,6 +6,7 @@ use App\Contracts\Model;
 use App\Observers\AirportObserver;
 use App\Traits\ExpensableTrait;
 use App\Traits\FilesTrait;
+use Database\Factories\AirportFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -63,35 +65,35 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static Builder<static>|Airport            active()
- * @method static Builder<static>|Airport            byHub()
- * @method static \Database\Factories\AirportFactory factory($count = null, $state = [])
- * @method static Builder<static>|Airport            newModelQuery()
- * @method static Builder<static>|Airport            newQuery()
- * @method static Builder<static>|Airport            onlyTrashed()
- * @method static Builder<static>|Airport            orderByIcao()
- * @method static Builder<static>|Airport            query()
- * @method static Builder<static>|Airport            sortable($defaultParameters = null)
- * @method static Builder<static>|Airport            whereCountry($value)
- * @method static Builder<static>|Airport            whereDeletedAt($value)
- * @method static Builder<static>|Airport            whereElevation($value)
- * @method static Builder<static>|Airport            whereFuel100llCost($value)
- * @method static Builder<static>|Airport            whereFuelJetaCost($value)
- * @method static Builder<static>|Airport            whereFuelMogasCost($value)
- * @method static Builder<static>|Airport            whereGroundHandlingCost($value)
- * @method static Builder<static>|Airport            whereHub($value)
- * @method static Builder<static>|Airport            whereIata($value)
- * @method static Builder<static>|Airport            whereIcao($value)
- * @method static Builder<static>|Airport            whereId($value)
- * @method static Builder<static>|Airport            whereLat($value)
- * @method static Builder<static>|Airport            whereLocation($value)
- * @method static Builder<static>|Airport            whereLon($value)
- * @method static Builder<static>|Airport            whereName($value)
- * @method static Builder<static>|Airport            whereNotes($value)
- * @method static Builder<static>|Airport            whereRegion($value)
- * @method static Builder<static>|Airport            whereTimezone($value)
- * @method static Builder<static>|Airport            withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|Airport            withoutTrashed()
+ * @method static Builder<static>|Airport active()
+ * @method static Builder<static>|Airport byHub()
+ * @method static AirportFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Airport newModelQuery()
+ * @method static Builder<static>|Airport newQuery()
+ * @method static Builder<static>|Airport onlyTrashed()
+ * @method static Builder<static>|Airport orderByIcao()
+ * @method static Builder<static>|Airport query()
+ * @method static Builder<static>|Airport sortable($defaultParameters = null)
+ * @method static Builder<static>|Airport whereCountry($value)
+ * @method static Builder<static>|Airport whereDeletedAt($value)
+ * @method static Builder<static>|Airport whereElevation($value)
+ * @method static Builder<static>|Airport whereFuel100llCost($value)
+ * @method static Builder<static>|Airport whereFuelJetaCost($value)
+ * @method static Builder<static>|Airport whereFuelMogasCost($value)
+ * @method static Builder<static>|Airport whereGroundHandlingCost($value)
+ * @method static Builder<static>|Airport whereHub($value)
+ * @method static Builder<static>|Airport whereIata($value)
+ * @method static Builder<static>|Airport whereIcao($value)
+ * @method static Builder<static>|Airport whereId($value)
+ * @method static Builder<static>|Airport whereLat($value)
+ * @method static Builder<static>|Airport whereLocation($value)
+ * @method static Builder<static>|Airport whereLon($value)
+ * @method static Builder<static>|Airport whereName($value)
+ * @method static Builder<static>|Airport whereNotes($value)
+ * @method static Builder<static>|Airport whereRegion($value)
+ * @method static Builder<static>|Airport whereTimezone($value)
+ * @method static Builder<static>|Airport withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Airport withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -282,13 +284,13 @@ class Airport extends Model
      * the table stores ICAO uppercased. Override the default Eloquent
      * route binding so case-insensitive lookups resolve correctly.
      */
-    #[\Override]
+    #[Override]
     public function resolveRouteBinding($value, $field = null): ?\Illuminate\Database\Eloquent\Model
     {
         return $this->resolveRouteBindingQuery($this, strtoupper((string) $value), $field)->first();
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

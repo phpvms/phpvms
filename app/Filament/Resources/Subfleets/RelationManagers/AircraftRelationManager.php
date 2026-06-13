@@ -15,6 +15,7 @@ use Filament\Actions\ImportAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Override;
 
 class AircraftRelationManager extends RelationManager
 {
@@ -51,7 +52,7 @@ class AircraftRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return __('common.aircraft');

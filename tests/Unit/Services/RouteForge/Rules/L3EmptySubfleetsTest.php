@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
 it('fires once batch-wide when no subfleets are selected', function (): void {
-    $issues = (new L3EmptySubfleets())->check(RF::ctx(
+    $issues = new L3EmptySubfleets()->check(RF::ctx(
         rows: [RF::row(), RF::row(['flight_number' => 101])],
         selectedSubfleets: new Collection(),
     ));
@@ -23,7 +23,7 @@ it('fires once batch-wide when no subfleets are selected', function (): void {
 it('does not fire when at least one subfleet is selected', function (): void {
     $subfleets = new Collection([Subfleet::factory()->make(['id' => 1])]);
 
-    expect((new L3EmptySubfleets())->check(RF::ctx(
+    expect(new L3EmptySubfleets()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
     )))->toBe([]);

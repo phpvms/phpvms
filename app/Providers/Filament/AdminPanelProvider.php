@@ -24,6 +24,7 @@ use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -111,7 +112,7 @@ class AdminPanelProvider extends PanelProvider
                 activity()->enableLogging();
             })
             ->brandName('phpvms')
-            ->brandLogo(fn (): Factory|\Illuminate\Contracts\View\View => view('filament.shared.brand'))
+            ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
             ->font('Geist')
             ->favicon(asset('assets/img/favicon.png'))

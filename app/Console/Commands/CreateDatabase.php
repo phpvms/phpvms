@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PDOException;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Throwable;
 
 use function Laravel\Prompts\confirm;
 
@@ -27,7 +28,7 @@ class CreateDatabase extends Command
     /**
      * Execute the console command.
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handle(): int
     {
@@ -61,7 +62,7 @@ class CreateDatabase extends Command
     /**
      * Create the MySQL or MariaDB database safely.
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     protected function createMysqlOrMariaDb(string $connection): int
     {
@@ -139,7 +140,7 @@ class CreateDatabase extends Command
     /**
      * Create the PostgreSQL database.
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     protected function createPostgres(string $connection): int
     {

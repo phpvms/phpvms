@@ -10,36 +10,39 @@ use App\Filament\Resources\Typeratings\RelationManagers\SubfleetsRelationManager
 use App\Filament\Resources\Typeratings\Schemas\TyperatingForm;
 use App\Filament\Resources\Typeratings\Tables\TyperatingsTable;
 use App\Models\Typerating;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Override;
+use UnitEnum;
 
 class TyperatingResource extends Resource
 {
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
 
     protected static ?string $model = Typerating::class;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return TyperatingForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return TyperatingsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [
@@ -47,7 +50,7 @@ class TyperatingResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -57,7 +60,7 @@ class TyperatingResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('common.typerating');

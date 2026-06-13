@@ -6,10 +6,11 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use Illuminate\Http\Request;
+use Override;
 
 class JournalTransactionResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         return parent::toArray($request);

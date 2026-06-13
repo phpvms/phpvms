@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use Nwidart\Modules\Activators\FileActivator;
-use Nwidart\Modules\Providers\ConsoleServiceProvider;
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -213,10 +210,10 @@ return [
     | application. You can add your own commands to merge section.
     |
     */
-    'commands' => ConsoleServiceProvider::defaultCommands()
+    /*'commands' => ConsoleServiceProvider::defaultCommands()
         ->merge([
             // New commands go here
-        ])->toArray(),
+        ])->toArray(),*/
 
     /*
     |--------------------------------------------------------------------------
@@ -275,12 +272,12 @@ return [
     | required parameter is 'class'.
     | The file activator will store the activation status in storage/installed_modules
     */
-    'activators' => [
+    /*'activators' => [
         'file' => [
             'class'         => FileActivator::class,
             'statuses-file' => base_path('modules_statuses.json'),
         ],
-    ],
+    ],*/
 
     'activator' => 'file',
 ];

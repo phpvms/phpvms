@@ -6,12 +6,13 @@ use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Filament\Resources\Pages\CreateRecord;
+use Override;
 
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
 
-    #[\Override]
+    #[Override]
     protected function handleRecordCreation(array $data): User
     {
         if (isset($data['transfer_time'])) {

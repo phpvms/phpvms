@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Override;
 
 class PirepFieldCollectionResource extends ResourceCollection
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         $res = [];

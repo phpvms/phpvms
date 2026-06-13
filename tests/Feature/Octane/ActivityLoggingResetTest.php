@@ -23,7 +23,7 @@ test('disable middleware turns activity logging off at request start', function 
 
     expect(app(ActivityLogStatus::class)->disabled())->toBeFalse();
 
-    (new DisableActivityLoggingByDefault())->handle(Request::create('/'), fn (): Response => new Response());
+    new DisableActivityLoggingByDefault()->handle(Request::create('/'), fn (): Response => new Response());
 
     expect(app(ActivityLogStatus::class)->disabled())->toBeTrue();
 });

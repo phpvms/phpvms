@@ -6,32 +6,34 @@ use App\Filament\Resources\Invites\Pages\ManageInvites;
 use App\Filament\Resources\Invites\Schemas\InviteForm;
 use App\Filament\Resources\Invites\Tables\InvitesTable;
 use App\Models\Invite;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Override;
 
 class InviteResource extends Resource
 {
     protected static ?string $model = Invite::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
     protected static bool $shouldRegisterNavigation = false;
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return InviteForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return InvitesTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -39,13 +41,13 @@ class InviteResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function canAccess(): bool
     {
         return setting('general.invite_only_registrations', false);
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('common.invite');

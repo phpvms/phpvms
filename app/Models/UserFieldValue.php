@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -18,15 +20,15 @@ use Illuminate\Support\Carbon;
  * @property-read mixed $name
  * @property-read User|null $user
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUserFieldId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserFieldValue whereValue($value)
+ * @method static Builder<static>|UserFieldValue newModelQuery()
+ * @method static Builder<static>|UserFieldValue newQuery()
+ * @method static Builder<static>|UserFieldValue query()
+ * @method static Builder<static>|UserFieldValue whereCreatedAt($value)
+ * @method static Builder<static>|UserFieldValue whereId($value)
+ * @method static Builder<static>|UserFieldValue whereUpdatedAt($value)
+ * @method static Builder<static>|UserFieldValue whereUserFieldId($value)
+ * @method static Builder<static>|UserFieldValue whereUserId($value)
+ * @method static Builder<static>|UserFieldValue whereValue($value)
  *
  * @mixin \Eloquent
  */
@@ -42,7 +44,7 @@ class UserFieldValue extends Model
 
     public static array $rules = [];
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -100,6 +100,8 @@ return [
     'config'                             => 'Config',
     'operations'                         => 'Operations',
     'addons'                             => 'Add-Ons',
+    'addon_remove_tables'                => 'Also remove database tables',
+    'addon_remove_tables_help'           => "Drops the add-on's tables and data. This cannot be undone.",
     'developers'                         => 'Developers',
     'today'                              => 'Today',
     'this_week'                          => 'This week',

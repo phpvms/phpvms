@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
@@ -27,18 +28,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereImageUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Typerating whereUpdatedAt($value)
+ * @method static Builder<static>|Typerating newModelQuery()
+ * @method static Builder<static>|Typerating newQuery()
+ * @method static Builder<static>|Typerating query()
+ * @method static Builder<static>|Typerating sortable($defaultParameters = null)
+ * @method static Builder<static>|Typerating whereActive($value)
+ * @method static Builder<static>|Typerating whereCreatedAt($value)
+ * @method static Builder<static>|Typerating whereDescription($value)
+ * @method static Builder<static>|Typerating whereId($value)
+ * @method static Builder<static>|Typerating whereImageUrl($value)
+ * @method static Builder<static>|Typerating whereName($value)
+ * @method static Builder<static>|Typerating whereType($value)
+ * @method static Builder<static>|Typerating whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */

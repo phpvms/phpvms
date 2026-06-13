@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Database\Factories\AwardFactory;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,24 +32,24 @@ use Kyslik\ColumnSortable\Sortable;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static \Database\Factories\AwardFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award sortable($defaultParameters = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereImageUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelParams($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereRefModelType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Award withoutTrashed()
+ * @method static AwardFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Award newModelQuery()
+ * @method static Builder<static>|Award newQuery()
+ * @method static Builder<static>|Award onlyTrashed()
+ * @method static Builder<static>|Award query()
+ * @method static Builder<static>|Award sortable($defaultParameters = null)
+ * @method static Builder<static>|Award whereActive($value)
+ * @method static Builder<static>|Award whereCreatedAt($value)
+ * @method static Builder<static>|Award whereDeletedAt($value)
+ * @method static Builder<static>|Award whereDescription($value)
+ * @method static Builder<static>|Award whereId($value)
+ * @method static Builder<static>|Award whereImageUrl($value)
+ * @method static Builder<static>|Award whereName($value)
+ * @method static Builder<static>|Award whereRefModelParams($value)
+ * @method static Builder<static>|Award whereRefModelType($value)
+ * @method static Builder<static>|Award whereUpdatedAt($value)
+ * @method static Builder<static>|Award withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Award withoutTrashed()
  *
  * @mixin \Eloquent
  */

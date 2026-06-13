@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Database\Factories\EventFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int         $id
@@ -19,19 +22,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
- * @method static \Database\Factories\EventFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereEndDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereStartDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Event whereUpdatedAt($value)
+ * @method static EventFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Event newModelQuery()
+ * @method static Builder<static>|Event newQuery()
+ * @method static Builder<static>|Event query()
+ * @method static Builder<static>|Event whereActive($value)
+ * @method static Builder<static>|Event whereCreatedAt($value)
+ * @method static Builder<static>|Event whereDescription($value)
+ * @method static Builder<static>|Event whereEndDate($value)
+ * @method static Builder<static>|Event whereId($value)
+ * @method static Builder<static>|Event whereName($value)
+ * @method static Builder<static>|Event whereStartDate($value)
+ * @method static Builder<static>|Event whereType($value)
+ * @method static Builder<static>|Event whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
@@ -63,7 +66,7 @@ class Event extends Model
     // Attributes may be defined later if necessary
 
     // Relationships may be defined later if necessary
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

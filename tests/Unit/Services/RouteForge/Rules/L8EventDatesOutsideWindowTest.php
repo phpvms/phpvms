@@ -29,7 +29,7 @@ function l8Bundle(?string $start, ?string $end): FlightBundle
 }
 
 it('fires when bundle window is fully before the event window', function (): void {
-    $issues = (new L8EventDatesOutsideWindow())->check(RF::ctx(
+    $issues = new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-06-01', '2026-06-30'),
         event: l8Event('2026-07-01', '2026-07-31'),
@@ -42,7 +42,7 @@ it('fires when bundle window is fully before the event window', function (): voi
 });
 
 it('fires when bundle window is fully after the event window', function (): void {
-    $issues = (new L8EventDatesOutsideWindow())->check(RF::ctx(
+    $issues = new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-08-01', '2026-08-31'),
         event: l8Event('2026-07-01', '2026-07-31'),
@@ -52,7 +52,7 @@ it('fires when bundle window is fully after the event window', function (): void
 });
 
 it('does not fire when bundle and event windows overlap', function (): void {
-    $issues = (new L8EventDatesOutsideWindow())->check(RF::ctx(
+    $issues = new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-07-15', '2026-08-15'),
         event: l8Event('2026-07-01', '2026-07-31'),
@@ -62,7 +62,7 @@ it('does not fire when bundle and event windows overlap', function (): void {
 });
 
 it('treats missing bundle start_date as -infinity', function (): void {
-    $issues = (new L8EventDatesOutsideWindow())->check(RF::ctx(
+    $issues = new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle(null, '2026-07-15'), // ends mid-event, no start
         event: l8Event('2026-07-01', '2026-07-31'),
@@ -72,7 +72,7 @@ it('treats missing bundle start_date as -infinity', function (): void {
 });
 
 it('treats missing bundle end_date as +infinity', function (): void {
-    $issues = (new L8EventDatesOutsideWindow())->check(RF::ctx(
+    $issues = new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-07-15', null), // starts mid-event, no end
         event: l8Event('2026-07-01', '2026-07-31'),
@@ -82,7 +82,7 @@ it('treats missing bundle end_date as +infinity', function (): void {
 });
 
 it('does not fire when no event is selected', function (): void {
-    expect((new L8EventDatesOutsideWindow())->check(RF::ctx(
+    expect(new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-08-01', '2026-08-31'),
         event: null,
@@ -90,7 +90,7 @@ it('does not fire when no event is selected', function (): void {
 });
 
 it('does not fire when bundle has no dates at all', function (): void {
-    expect((new L8EventDatesOutsideWindow())->check(RF::ctx(
+    expect(new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle(null, null),
         event: l8Event('2026-07-01', '2026-07-31'),

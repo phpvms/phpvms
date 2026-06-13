@@ -23,13 +23,14 @@ use App\Models\Subfleet;
 use App\Models\User;
 use App\Models\UserAward;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 class ClearDatabase extends BaseImporter
 {
     /**
      * Returns a default manifest just so this step gets run
      */
-    #[\Override]
+    #[Override]
     public function getManifest(): array
     {
         return [

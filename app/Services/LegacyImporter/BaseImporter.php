@@ -11,6 +11,7 @@ use App\Utils\ImporterDB;
 use Carbon\Carbon;
 use Carbon\Month;
 use Carbon\WeekDay;
+use DateTimeInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -115,7 +116,7 @@ abstract class BaseImporter
     /**
      * @return Carbon
      */
-    protected function parseDate(\DateTimeInterface|WeekDay|Month|string|int|float|null $date)
+    protected function parseDate(DateTimeInterface|WeekDay|Month|string|int|float|null $date)
     {
         return Carbon::parse($date);
     }

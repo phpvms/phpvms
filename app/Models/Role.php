@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,19 +28,19 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
- * @method static Builder<static>|Role                               byName(string $name)
- * @method static \Database\Factories\RoleFactory                    factory($count = null, $state = [])
- * @method static Builder<static>|Role                               newModelQuery()
- * @method static Builder<static>|Role                               newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Role permission($permissions, bool $without = false)
- * @method static Builder<static>|Role                               query()
- * @method static Builder<static>|Role                               whereCreatedAt($value)
- * @method static Builder<static>|Role                               whereDisableActivityChecks($value)
- * @method static Builder<static>|Role                               whereGuardName($value)
- * @method static Builder<static>|Role                               whereId($value)
- * @method static Builder<static>|Role                               whereName($value)
- * @method static Builder<static>|Role                               whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Role withoutPermission($permissions)
+ * @method static Builder<static>|Role byName(string $name)
+ * @method static RoleFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Role newModelQuery()
+ * @method static Builder<static>|Role newQuery()
+ * @method static Builder<static>|Role permission($permissions, bool $without = false)
+ * @method static Builder<static>|Role query()
+ * @method static Builder<static>|Role whereCreatedAt($value)
+ * @method static Builder<static>|Role whereDisableActivityChecks($value)
+ * @method static Builder<static>|Role whereGuardName($value)
+ * @method static Builder<static>|Role whereId($value)
+ * @method static Builder<static>|Role whereName($value)
+ * @method static Builder<static>|Role whereUpdatedAt($value)
+ * @method static Builder<static>|Role withoutPermission($permissions)
  *
  * @mixin \Eloquent
  */

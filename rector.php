@@ -41,4 +41,5 @@ return RectorConfig::configure()
         AppendsPropertyToAppendsAttributeRector::class,
         TouchesPropertyToTouchesAttributeRector::class,
         HiddenPropertyToHiddenAttributeRector::class,
-    ]);
+    ])
+    ->withImportNames(true, true);

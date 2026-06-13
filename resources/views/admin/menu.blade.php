@@ -95,7 +95,7 @@
       @endcan
 
       @can('view:modules')
-        <li><a href="{!! \App\Filament\Resources\Modules\ModuleResource::getUrl() !!}"><i class="pe-7s-box2"></i>addons/modules</a>
+        <li><a href="{{ \App\Filament\Pages\Addons::getUrl() }}"><i class="pe-7s-box2"></i>addons/modules</a>
         </li>
       @endcan
 

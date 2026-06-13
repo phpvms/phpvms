@@ -8,6 +8,7 @@ use App\Contracts\Resource;
 use App\Enums\FlightType;
 use App\Models\Subfleet;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Wire shape returned by /admin/route-forge/api/subfleets for a single
@@ -25,7 +26,7 @@ use Illuminate\Http\Request;
  */
 final class RouteForgeSubfleetResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var Subfleet $subfleet */

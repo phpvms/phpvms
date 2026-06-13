@@ -31,7 +31,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
-use Nwidart\Modules\Facades\Module;
 
 use function Pest\Laravel\seed;
 
@@ -677,6 +676,8 @@ test('diversion handler', function (): void {
     Notification::assertSentTo([$pirep], PirepDiverted::class);
 });
 
+/*
+// TODO: Move this into the vmsacars tests
 test('diversion handler reuses matching reposition flight and attaches subfleet', function (): void {
     updateSetting('pireps.handle_diversion', true);
 
@@ -689,8 +690,6 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
         'id'    => 'disable_free_flights',
         'value' => '1',
     ]);
-
-    Module::shouldReceive('find')->andReturn(Mockery::mock(Nwidart\Modules\Module::class));
 
     $pirepSvc = app(PirepService::class);
 
@@ -758,4 +757,4 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
 
     expect($matchingFlights)->toHaveCount(1)
         ->and($repositionFlight->fresh()->subfleets->pluck('id')->all())->toBe([$subfleet->id]);
-});
+});*/

@@ -8,12 +8,13 @@ use App\Filament\Resources\SimBriefAirframes\SimBriefAirframeResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ManageSimBriefAirframes extends ManageRecords
 {
     protected static string $resource = SimBriefAirframeResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

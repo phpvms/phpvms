@@ -9,12 +9,13 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Override;
 
 class EditAward extends EditRecord
 {
     protected static string $resource = AwardResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [
@@ -24,7 +25,7 @@ class EditAward extends EditRecord
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
         if (array_key_exists('image_url', $data) && str_starts_with((string) $data['image_url'], 'awards/')) {
@@ -35,7 +36,7 @@ class EditAward extends EditRecord
         return $data;
     }
 
-    #[\Override]
+    #[Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (!empty($data['image_file'])) {

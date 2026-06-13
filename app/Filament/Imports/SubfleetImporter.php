@@ -12,6 +12,7 @@ use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Number;
+use Override;
 
 /**
  * @property Subfleet $record
@@ -80,7 +81,7 @@ class SubfleetImporter extends Importer
         }
     }
 
-    #[\Override]
+    #[Override]
     public function resolveRecord(): Subfleet
     {
         return Subfleet::withTrashed()->firstOrNew([

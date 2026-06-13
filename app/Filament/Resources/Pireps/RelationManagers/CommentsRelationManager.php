@@ -13,12 +13,13 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class CommentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'comments';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -69,13 +70,13 @@ class CommentsRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return trans_choice( 'pireps.comment', 1);
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return trans_choice('pireps.comment', 2);

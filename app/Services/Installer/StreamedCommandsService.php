@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace App\Services\Installer;
 
 use App\Contracts\Service;
+use Closure;
+use RuntimeException;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
 class StreamedCommandsService extends Service
 {
     /**
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    public function streamArtisanCommand(array $command, \Closure $streamCallback): void
+    public function streamArtisanCommand(array $command, Closure $streamCallback): void
     {
         if (!function_exists('proc_open')) {
-            throw new \RuntimeException("You can't use artisan streamed commands without proc_open");
+            throw new RuntimeException("You can't use artisan streamed commands without proc_open");
         }
 
         $finder = new PhpExecutableFinder();

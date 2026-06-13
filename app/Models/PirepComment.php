@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -16,15 +17,15 @@ use Illuminate\Support\Carbon;
  * @property-read Pirep|null $pirep
  * @property-read User|null $user
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment whereComment($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment wherePirepId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PirepComment whereUserId($value)
+ * @method static Builder<static>|PirepComment newModelQuery()
+ * @method static Builder<static>|PirepComment newQuery()
+ * @method static Builder<static>|PirepComment query()
+ * @method static Builder<static>|PirepComment whereComment($value)
+ * @method static Builder<static>|PirepComment whereCreatedAt($value)
+ * @method static Builder<static>|PirepComment whereId($value)
+ * @method static Builder<static>|PirepComment wherePirepId($value)
+ * @method static Builder<static>|PirepComment whereUpdatedAt($value)
+ * @method static Builder<static>|PirepComment whereUserId($value)
  *
  * @mixin \Eloquent
  */

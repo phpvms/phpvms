@@ -11,6 +11,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
@@ -29,14 +30,14 @@ use UnexpectedValueException;
  * @property-read Collection<int, Journal> $journals
  * @property-read int|null $journals_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ledger whereUpdatedAt($value)
+ * @method static Builder<static>|Ledger newModelQuery()
+ * @method static Builder<static>|Ledger newQuery()
+ * @method static Builder<static>|Ledger query()
+ * @method static Builder<static>|Ledger whereCreatedAt($value)
+ * @method static Builder<static>|Ledger whereId($value)
+ * @method static Builder<static>|Ledger whereName($value)
+ * @method static Builder<static>|Ledger whereType($value)
+ * @method static Builder<static>|Ledger whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */

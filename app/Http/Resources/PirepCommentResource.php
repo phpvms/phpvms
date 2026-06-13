@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Models\PirepComment;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin PirepComment
@@ -19,7 +20,7 @@ class PirepCommentResource extends Resource
      * @param  Request $request
      * @return array
      */
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         if (!$this->user) {

@@ -4,11 +4,12 @@ namespace App\Contracts;
 
 use ArrayAccess;
 use Exception;
+use Stringable;
 
 /**
  * Abstract unit wrapper
  */
-abstract class Unit implements \Stringable, ArrayAccess
+abstract class Unit implements ArrayAccess, Stringable
 {
     /**
      * The localized unit the user wants it displayed in

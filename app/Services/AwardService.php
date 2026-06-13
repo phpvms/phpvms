@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Award;
 use App\Contracts\Service;
 use App\Support\ClassLoader;
-use Nwidart\Modules\Facades\Module;
 
 class AwardService extends Service
 {
+    public function __construct(
+        private readonly AddonRegistry $addonRegistry,
+    ) {}
+
     /**
      * Find any of the award classes
      *
@@ -26,8 +30,15 @@ class AwardService extends Service
         //        $awards = array_merge($awards, $classes);
 
         // Look throughout all the other modules, in the module/{MODULE}/Awards directory
-        foreach (Module::all() as $module) {
+        foreach ($this->addonRegistry->all() as $module) {
             $path = $module->getExtraPath('Awards');
+
+            // Path comes from the DB row; the directory may be absent if the
+            // addon's files were removed. Skip rather than scanning a ghost path.
+            if (!is_dir($path)) {
+                continue;
+            }
+
             $classes = ClassLoader::getClassesInPath($path);
 
             foreach ($classes as $class) {

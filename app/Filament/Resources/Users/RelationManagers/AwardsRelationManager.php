@@ -13,12 +13,13 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class AwardsRelationManager extends RelationManager
 {
     protected static string $relationship = 'awards';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -60,13 +61,13 @@ class AwardsRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return __('common.award');
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('common.award'))

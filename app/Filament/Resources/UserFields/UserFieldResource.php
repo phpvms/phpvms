@@ -11,6 +11,7 @@ use App\Models\UserField;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 
 class UserFieldResource extends Resource
 {
@@ -20,19 +21,19 @@ class UserFieldResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return UserFieldForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return UserFieldsTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -40,7 +41,7 @@ class UserFieldResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return trans_choice('common.user_field', 1);

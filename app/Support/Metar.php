@@ -376,7 +376,7 @@ class Metar implements ArrayAccess
      */
     public static function parse(string $metar, bool $taf = false)
     {
-        return (new static($metar, $taf))->parse_all();
+        return new static($metar, $taf)->parse_all();
     }
 
     /**

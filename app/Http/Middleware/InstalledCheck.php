@@ -10,6 +10,7 @@ use App\Contracts\Middleware;
 use App\Filament\System\Installer;
 use App\Models\User;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -36,7 +37,7 @@ class InstalledCheck implements Middleware
             if (!Schema::hasTable('users') || User::count() === 0) {
                 return redirect('/system/install');
             }
-        } catch (\Exception) {
+        } catch (Exception) {
             return redirect('/system/install');
         }
 

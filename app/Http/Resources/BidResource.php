@@ -7,13 +7,14 @@ namespace App\Http\Resources;
 use App\Contracts\Resource;
 use App\Models\Bid;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Bid
  */
 class BidResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

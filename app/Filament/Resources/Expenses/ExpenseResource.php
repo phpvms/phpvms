@@ -7,36 +7,39 @@ use App\Filament\Resources\Expenses\Pages\ManageExpenses;
 use App\Filament\Resources\Expenses\Schemas\ExpenseForm;
 use App\Filament\Resources\Expenses\Tables\ExpensesTable;
 use App\Models\Expense;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Override;
+use UnitEnum;
 
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return ExpenseForm::configure($schema);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return ExpensesTable::configure($table);
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -44,7 +47,7 @@ class ExpenseResource extends Resource
         ];
     }
 
-    #[\Override]
+    #[Override]
     public static function getModelLabel(): string
     {
         return __('expenses.expense');

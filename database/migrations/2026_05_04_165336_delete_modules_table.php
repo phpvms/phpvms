@@ -1,21 +1,16 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Nwidart\Modules\Facades\Module;
 
 return new class() extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('modules')) {
-            $modules = DB::table('modules')->get();
-            foreach ($modules as $module) {
-                Module::find($module->name)?->setActive((bool) $module->enabled);
-            }
-        }
-
+        // The legacy nwidart `modules` table only stored runtime active state for
+        // a package that no longer exists. The new addon system seeds itself from
+        // the filesystem (see create_addons_table), so there is nothing to carry
+        // over — just drop the legacy table.
         Schema::dropIfExists('modules');
     }
 };

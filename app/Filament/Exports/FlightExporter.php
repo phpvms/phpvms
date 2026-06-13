@@ -10,12 +10,13 @@ use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Number;
+use Override;
 
 class FlightExporter extends Exporter
 {
     protected static ?string $model = Flight::class;
 
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query): Builder
     {
         return $query->with(['fares', 'subfleets.fares', 'subfleets.ranks']);

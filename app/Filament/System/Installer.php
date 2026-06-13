@@ -13,6 +13,7 @@ use App\Services\UserService;
 use App\Support\Countries;
 use App\Support\Utils;
 use Database\Seeders\DatabaseSeeder;
+use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -37,6 +38,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
+use Override;
+use Throwable;
 
 /**
  * @property-read FilamentSchema $form
@@ -79,7 +82,7 @@ class Installer extends Page
         if ($this->requirementsMet()) {
             try {
                 $this->shouldAutoMigrate = app(InstallerService::class)->isUpgradePending();
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $this->shouldAutoMigrate = true;
             }
         }
@@ -113,7 +116,7 @@ class Installer extends Page
             && $data['db']['passed'];
     }
 
-    #[\Override]
+    #[Override]
     public function content(FilamentSchema $schema): FilamentSchema
     {
         return $schema->components([
@@ -189,7 +192,7 @@ class Installer extends Page
                 'passed' => true,
                 'msg'    => __('installer.db_connection_ok'),
             ];
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             Log::error('Error while trying to connect to the database', [$exception]);
             $db = [
                 'passed' => false,
@@ -215,13 +218,7 @@ class Installer extends Page
      */
     private function allPassed(array $arr): bool
     {
-        foreach ($arr as $item) {
-            if ($item['passed'] === false) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($arr, fn ($item): bool => $item['passed'] !== false);
     }
 
     /**
@@ -448,7 +445,7 @@ class Installer extends Page
                         if (app(InstallerService::class)->isUpgradePending()) {
                             $this->runMigrations();
                         }
-                    } catch (\Throwable $throwable) {
+                    } catch (Throwable $throwable) {
                         Log::error('Auto-migration trigger from requirements step failed', [$throwable]);
                     }
                 });
@@ -551,7 +548,7 @@ class Installer extends Page
                 ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getHeader(): ?View
     {
         return view('filament.system.hero', [
@@ -561,7 +558,7 @@ class Installer extends Page
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         return __('installer.title');

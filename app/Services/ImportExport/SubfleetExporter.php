@@ -8,6 +8,7 @@ use App\Contracts\ImportExport;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 /**
  * The flight importer can be imported or export. Operates on rows
@@ -30,7 +31,7 @@ class SubfleetExporter extends ImportExport
     public function export(Model $row): array
     {
         if (!$row instanceof Subfleet) {
-            throw new \InvalidArgumentException('Expected Subfleet Model');
+            throw new InvalidArgumentException('Expected Subfleet Model');
         }
 
         $ret = [];

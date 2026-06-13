@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 function validateSearchUsers(array $data): array
 {
-    $rules = (new SearchUsersRequest())->rules();
+    $rules = new SearchUsersRequest()->rules();
     $validator = Validator::make($data, $rules);
 
     return $validator->errors()->toArray();

@@ -8,6 +8,7 @@ use App\Models\Pirep;
 use App\Support\Units\Distance;
 use App\Support\Units\Fuel;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * @mixin Pirep
@@ -19,7 +20,7 @@ class PirepResource extends Resource
      *
      * @return array
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request)
     {
         $res = parent::toArray($request);

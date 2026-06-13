@@ -6,13 +6,14 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\Bid;
+use Override;
 
 /**
  * @mixin Bid
  */
 class UserBidResource extends Resource
 {
-    #[\Override]
+    #[Override]
     public function toArray($request)
     {
         return [

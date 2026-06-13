@@ -12,6 +12,7 @@ use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
+use Override;
 
 class ExpenseImporter extends Importer
 {
@@ -92,7 +93,7 @@ class ExpenseImporter extends Importer
         $this->data['ref_model_id'] = $obj->id;
     }
 
-    #[\Override]
+    #[Override]
     public function resolveRecord(): Expense
     {
         return Expense::firstOrNew([

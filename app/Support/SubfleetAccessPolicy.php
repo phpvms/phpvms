@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\Flight;
 use App\Models\User;
+use DB;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class SubfleetAccessPolicy
@@ -36,7 +37,7 @@ final readonly class SubfleetAccessPolicy
     {
         if ($this->rankRestricted) {
             $query->whereExists(function ($sub): void {
-                $sub->select(\DB::raw(1))
+                $sub->select(DB::raw(1))
                     ->from('subfleet_rank')
                     ->whereColumn('subfleet_rank.subfleet_id', 'subfleets.id')
                     ->where('subfleet_rank.rank_id', $this->user->rank_id);
@@ -45,7 +46,7 @@ final readonly class SubfleetAccessPolicy
 
         if ($this->typeRatingRestricted) {
             $query->whereExists(function ($sub): void {
-                $sub->select(\DB::raw(1))
+                $sub->select(DB::raw(1))
                     ->from('typerating_subfleet')
                     ->join(
                         'typerating_user',
@@ -74,7 +75,7 @@ final readonly class SubfleetAccessPolicy
 
         if ($this->blockBookedAircraft) {
             $query->whereNotExists(function ($sub): void {
-                $sub->select(\DB::raw(1))
+                $sub->select(DB::raw(1))
                     ->from('bids')
                     ->whereColumn('bids.aircraft_id', 'aircraft.id')
                     ->where('bids.user_id', '!=', $this->user->id);

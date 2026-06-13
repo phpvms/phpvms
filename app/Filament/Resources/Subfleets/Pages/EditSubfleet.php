@@ -10,12 +10,13 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Override;
 
 class EditSubfleet extends EditRecord
 {
     protected static string $resource = SubfleetResource::class;
 
-    #[\Override]
+    #[Override]
     protected function getHeaderActions(): array
     {
         return [

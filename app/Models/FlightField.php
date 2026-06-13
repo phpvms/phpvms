@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Traits\HasSlug;
+use Database\Factories\FlightFieldFactory;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
+use Override;
 
 /**
  * Class FlightField
@@ -16,13 +19,13 @@ use Illuminate\Support\Str;
  * @property string      $name
  * @property string|null $slug
  *
- * @method static \Database\Factories\FlightFieldFactory                    factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FlightField whereSlug($value)
+ * @method static FlightFieldFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|FlightField newModelQuery()
+ * @method static Builder<static>|FlightField newQuery()
+ * @method static Builder<static>|FlightField query()
+ * @method static Builder<static>|FlightField whereId($value)
+ * @method static Builder<static>|FlightField whereName($value)
+ * @method static Builder<static>|FlightField whereSlug($value)
  *
  * @mixin \Eloquent
  */
@@ -57,7 +60,7 @@ class FlightField extends Model
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

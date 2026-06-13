@@ -7,6 +7,7 @@ use App\Enums\UserState;
 use App\Observers\UserObserver;
 use App\Traits\JournalTrait;
 use BezhanSalleh\FilamentShield\Support\Utils;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
@@ -27,6 +28,7 @@ use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -106,61 +108,61 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $typeratings_count
  * @property mixed $tz
  *
- * @method static Builder<static>|User            active()
- * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static Builder<static>|User            forAirline(int $airlineId)
- * @method static Builder<static>|User            inState(int $state)
- * @method static Builder<static>|User            newModelQuery()
- * @method static Builder<static>|User            newQuery()
- * @method static Builder<static>|User            notRejected()
- * @method static Builder<static>|User            onlyTrashed()
- * @method static Builder<static>|User            pending()
- * @method static Builder<static>|User            permission($permissions, bool $without = false)
- * @method static Builder<static>|User            query()
- * @method static Builder<static>|User            role($roles, ?string $guard = null, bool $without = false)
- * @method static Builder<static>|User            sortable($defaultParameters = null)
- * @method static Builder<static>|User            team($teams, bool $without = false)
- * @method static Builder<static>|User            whereActive($value)
- * @method static Builder<static>|User            whereAirlineId($value)
- * @method static Builder<static>|User            whereApiKey($value)
- * @method static Builder<static>|User            whereAvatar($value)
- * @method static Builder<static>|User            whereCallsign($value)
- * @method static Builder<static>|User            whereCountry($value)
- * @method static Builder<static>|User            whereCreatedAt($value)
- * @method static Builder<static>|User            whereCurrAirportId($value)
- * @method static Builder<static>|User            whereDeletedAt($value)
- * @method static Builder<static>|User            whereDiscordId($value)
- * @method static Builder<static>|User            whereDiscordPrivateChannelId($value)
- * @method static Builder<static>|User            whereEmail($value)
- * @method static Builder<static>|User            whereEmailVerifiedAt($value)
- * @method static Builder<static>|User            whereFlightTime($value)
- * @method static Builder<static>|User            whereFlights($value)
- * @method static Builder<static>|User            whereHomeAirportId($value)
- * @method static Builder<static>|User            whereId($value)
- * @method static Builder<static>|User            whereIvaoId($value)
- * @method static Builder<static>|User            whereLastIp($value)
- * @method static Builder<static>|User            whereLastPirepId($value)
- * @method static Builder<static>|User            whereLastloginAt($value)
- * @method static Builder<static>|User            whereName($value)
- * @method static Builder<static>|User            whereNotes($value)
- * @method static Builder<static>|User            whereOptIn($value)
- * @method static Builder<static>|User            wherePassword($value)
- * @method static Builder<static>|User            wherePilotId($value)
- * @method static Builder<static>|User            whereRankId($value)
- * @method static Builder<static>|User            whereRememberToken($value)
- * @method static Builder<static>|User            whereSimbriefUsername($value)
- * @method static Builder<static>|User            whereState($value)
- * @method static Builder<static>|User            whereStatus($value)
- * @method static Builder<static>|User            whereTimezone($value)
- * @method static Builder<static>|User            whereTocAccepted($value)
- * @method static Builder<static>|User            whereTransferTime($value)
- * @method static Builder<static>|User            whereUpdatedAt($value)
- * @method static Builder<static>|User            whereVatsimId($value)
- * @method static Builder<static>|User            withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|User            withoutPermission($permissions)
- * @method static Builder<static>|User            withoutRole($roles, ?string $guard = null)
- * @method static Builder<static>|User            withoutTeam($teams)
- * @method static Builder<static>|User            withoutTrashed()
+ * @method static Builder<static>|User active()
+ * @method static UserFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|User forAirline(int $airlineId)
+ * @method static Builder<static>|User inState(int $state)
+ * @method static Builder<static>|User newModelQuery()
+ * @method static Builder<static>|User newQuery()
+ * @method static Builder<static>|User notRejected()
+ * @method static Builder<static>|User onlyTrashed()
+ * @method static Builder<static>|User pending()
+ * @method static Builder<static>|User permission($permissions, bool $without = false)
+ * @method static Builder<static>|User query()
+ * @method static Builder<static>|User role($roles, ?string $guard = null, bool $without = false)
+ * @method static Builder<static>|User sortable($defaultParameters = null)
+ * @method static Builder<static>|User team($teams, bool $without = false)
+ * @method static Builder<static>|User whereActive($value)
+ * @method static Builder<static>|User whereAirlineId($value)
+ * @method static Builder<static>|User whereApiKey($value)
+ * @method static Builder<static>|User whereAvatar($value)
+ * @method static Builder<static>|User whereCallsign($value)
+ * @method static Builder<static>|User whereCountry($value)
+ * @method static Builder<static>|User whereCreatedAt($value)
+ * @method static Builder<static>|User whereCurrAirportId($value)
+ * @method static Builder<static>|User whereDeletedAt($value)
+ * @method static Builder<static>|User whereDiscordId($value)
+ * @method static Builder<static>|User whereDiscordPrivateChannelId($value)
+ * @method static Builder<static>|User whereEmail($value)
+ * @method static Builder<static>|User whereEmailVerifiedAt($value)
+ * @method static Builder<static>|User whereFlightTime($value)
+ * @method static Builder<static>|User whereFlights($value)
+ * @method static Builder<static>|User whereHomeAirportId($value)
+ * @method static Builder<static>|User whereId($value)
+ * @method static Builder<static>|User whereIvaoId($value)
+ * @method static Builder<static>|User whereLastIp($value)
+ * @method static Builder<static>|User whereLastPirepId($value)
+ * @method static Builder<static>|User whereLastloginAt($value)
+ * @method static Builder<static>|User whereName($value)
+ * @method static Builder<static>|User whereNotes($value)
+ * @method static Builder<static>|User whereOptIn($value)
+ * @method static Builder<static>|User wherePassword($value)
+ * @method static Builder<static>|User wherePilotId($value)
+ * @method static Builder<static>|User whereRankId($value)
+ * @method static Builder<static>|User whereRememberToken($value)
+ * @method static Builder<static>|User whereSimbriefUsername($value)
+ * @method static Builder<static>|User whereState($value)
+ * @method static Builder<static>|User whereStatus($value)
+ * @method static Builder<static>|User whereTimezone($value)
+ * @method static Builder<static>|User whereTocAccepted($value)
+ * @method static Builder<static>|User whereTransferTime($value)
+ * @method static Builder<static>|User whereUpdatedAt($value)
+ * @method static Builder<static>|User whereVatsimId($value)
+ * @method static Builder<static>|User withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|User withoutPermission($permissions)
+ * @method static Builder<static>|User withoutRole($roles, ?string $guard = null)
+ * @method static Builder<static>|User withoutTeam($teams)
+ * @method static Builder<static>|User withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -552,7 +554,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $q->where('state', '!=', UserState::REJECTED);
     }
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

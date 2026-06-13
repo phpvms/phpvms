@@ -19,12 +19,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Override;
 
 class FilesRelationManager extends RelationManager
 {
     protected static string $relationship = 'files';
 
-    #[\Override]
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -124,13 +125,13 @@ class FilesRelationManager extends RelationManager
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected static function getModelLabel(): string
     {
         return __('common.file');
     }
 
-    #[\Override]
+    #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return str(__('common.file'))

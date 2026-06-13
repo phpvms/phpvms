@@ -6,6 +6,7 @@ namespace App\Http\Resources\RouteForge;
 
 use App\Contracts\Resource;
 use Illuminate\Http\Request;
+use Override;
 
 /**
  * Wire shape returned by /admin/route-forge/api/boot.
@@ -34,7 +35,7 @@ final class RouteForgeBootResource extends Resource
     /**
      * @return array<string, mixed>
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var array<string, mixed> $envelope */

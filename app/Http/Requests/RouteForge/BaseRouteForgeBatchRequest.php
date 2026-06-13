@@ -8,6 +8,7 @@ use App\Contracts\FormRequest;
 use App\Enums\FlightType;
 use App\Models\FlightBundle;
 use Illuminate\Validation\Rule;
+use Override;
 
 /**
  * Shared rule + normalization base for LintRequest and CommitRequest.
@@ -43,7 +44,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
     /**
      * Subclasses MAY override to layer additional rules onto the base set.
      */
-    #[\Override]
+    #[Override]
     public function rules(): array
     {
         $maxRows = (int) config('phpvms.routeforge.mesh_max_count', 100);
@@ -121,7 +122,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
      *
      * @return array<string, string>
      */
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return [
@@ -174,7 +175,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
      * `CommitInputFactory::resolveExistingBundle`; lint falls through to
      * request-body bundle data).
      */
-    #[\Override]
+    #[Override]
     protected function passedValidation(): void
     {
         $existingId = $this->input('bundle.existing_bundle_id');
@@ -205,7 +206,7 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
      * `dptAirportId` / `arrAirportId` mutators so `exists` + Rule::in
      * checks succeed regardless of casing on the wire.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $merge = [];

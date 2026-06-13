@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
 use App\Models\Airline;
@@ -24,7 +25,6 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
-use Nwidart\Modules\Facades\Module;
 
 class ProfileController extends Controller
 {
@@ -41,14 +41,12 @@ class ProfileController extends Controller
     private function acarsEnabled(): bool
     {
         // Is the ACARS module enabled?
-        $acars_enabled = false;
-        /** @var ?\Nwidart\Modules\Module $acars */
-        $acars = Module::find('VMSAcars');
+        $acars = app(AddonRegistry::class)->find('VMSAcars');
         if ($acars) {
             return $acars->isEnabled();
         }
 
-        return $acars_enabled;
+        return false;
     }
 
     /**

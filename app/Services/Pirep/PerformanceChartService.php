@@ -6,6 +6,7 @@ use App\Enums\AcarsType;
 use App\Enums\PirepStatus;
 use App\Models\Acars;
 use App\Models\Pirep;
+use DateTimeInterface;
 use Illuminate\Support\Collection;
 
 class PerformanceChartService
@@ -628,6 +629,6 @@ class PerformanceChartService
     {
         $createdAt = $sample->created_at;
 
-        return $createdAt instanceof \DateTimeInterface ? $createdAt->getTimestamp() : 0;
+        return $createdAt instanceof DateTimeInterface ? $createdAt->getTimestamp() : 0;
     }
 }

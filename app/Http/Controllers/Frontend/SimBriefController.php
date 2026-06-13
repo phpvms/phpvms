@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Addons\AddonRegistry;
 use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
 use App\Enums\AirframeSource;
@@ -14,10 +15,8 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\SimBriefLayout;
-use App\Models\Subfleet;
 use App\Models\User;
 use App\Services\FareService;
-use App\Services\ModuleService;
 use App\Services\SimBriefService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -30,9 +29,17 @@ class SimBriefController
 {
     public function __construct(
         private readonly FareService $fareSvc,
-        private readonly ModuleService $moduleSvc,
         private readonly SimBriefService $simBriefSvc,
+        private readonly AddonRegistry $addonRegistry,
     ) {}
+
+    /**
+     * Return whether the vmsACARS addon is installed and enabled.
+     */
+    private function acarsEnabled(): bool
+    {
+        return (bool) $this->addonRegistry->find('VMSAcars')?->isEnabled();
+    }
 
     /**
      * Show the main OFP form
@@ -322,7 +329,7 @@ class SimBriefController
             'transponder'  => $transponder,
             'bid'          => $bid,
             'flight'       => $simbrief->flight,
-            'acars_plugin' => $this->moduleSvc->isModuleActive('VMSAcars'),
+            'acars_plugin' => $this->acarsEnabled(),
         ]);
     }
 
