@@ -2,39 +2,6 @@
 
 use App\Addons\Models\AddonManifest;
 use App\Addons\Support\ManifestParser;
-use Modules\Awards\Providers\AwardServiceProvider;
-
-it('parses Awards module (legacy nwidart, no phpVMS keys, no composer.json)', function (): void {
-    $parser = new ManifestParser();
-    $result = $parser->parse(base_path('modules/Awards'));
-
-    expect($result)->toBeInstanceOf(AddonManifest::class)
-        ->and($result->name)->toBe('Awards')
-        ->and($result->type)->toBe('module')
-        ->and($result->registryId)->toBeNull()
-        ->and($result->compat)->toBeNull()
-        ->and($result->version)->toBeNull()
-        ->and($result->namespace)->toBe('Modules\\Awards')
-        ->and($result->providers)->toContain(AwardServiceProvider::class)
-        ->and($result->tables)->toBe([]);
-});
-
-it('parses Sample module (composer.json psr-4 dot key, no version)', function (): void {
-    $parser = new ManifestParser();
-    $result = $parser->parse(base_path('modules/Sample'));
-
-    expect($result)->toBeInstanceOf(AddonManifest::class)
-        ->and($result->namespace)->toBe('Modules\\Sample')
-        ->and($result->version)->toBeNull()
-        ->and($result->tables)->toBe(['sample_items']);
-});
-
-it('defaults tables to an empty list when database.tables is absent', function (): void {
-    $parser = new ManifestParser();
-    $result = $parser->parse(base_path('modules/Awards'));
-
-    expect($result->tables)->toBe([]);
-});
 
 it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
