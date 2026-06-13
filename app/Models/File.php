@@ -3,10 +3,9 @@
 namespace App\Models;
 
 use App\Contracts\Model;
-use Database\Factories\FileFactory;
-use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
-use Illuminate\Database\Eloquent\Builder;
 use App\Traits\HasNanoIds;
+use Database\Factories\FileFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
