@@ -9,7 +9,6 @@ use App\Support\Days;
 use App\Traits\HasNanoIds;
 use BackedEnum;
 use Database\Factories\FlightFactory;
-use Deprecated;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -596,7 +595,6 @@ class Flight extends Model
      * `Flight::visible()`. Kept indefinitely for module compatibility.
      */
     #[Scope]
-    #[Deprecated(message: 'use visible()')]
     protected function active(Builder $query): Builder
     {
         return $query->where('visible', true);
