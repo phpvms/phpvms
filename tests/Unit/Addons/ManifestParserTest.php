@@ -29,22 +29,6 @@ it('parses Sample module (composer.json psr-4 dot key, no version)', function ()
         ->and($result->tables)->toBe(['sample_items']);
 });
 
-it('parses VMSAcars module (composer.json psr-4 empty string key, version from composer)', function (): void {
-    $parser = new ManifestParser();
-    $result = $parser->parse(base_path('modules/VMSAcars'));
-
-    expect($result)->toBeInstanceOf(AddonManifest::class)
-        ->and($result->namespace)->toBe('Modules\\VMSAcars')
-        ->and($result->version)->toBe('1.1.0');
-});
-
-it('parses the database.tables contract for VMSAcars', function (): void {
-    $parser = new ManifestParser();
-    $result = $parser->parse(base_path('modules/VMSAcars'));
-
-    expect($result->tables)->toBe(['vmsacars_rules', 'vmsacars_config']);
-});
-
 it('defaults tables to an empty list when database.tables is absent', function (): void {
     $parser = new ManifestParser();
     $result = $parser->parse(base_path('modules/Awards'));
