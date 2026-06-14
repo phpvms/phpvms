@@ -11,10 +11,12 @@ use App\Enums\PirepStatus;
 use App\Enums\UserState;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\ModuleService;
+use App\Services\PermissionRegistry;
 use App\Services\RouteForge\Contracts\LintRule;
 use App\Services\RouteForge\LintRunner;
 use App\Services\RouteForge\Rules\ExistingDuplicates;
@@ -105,7 +107,7 @@ class AppServiceProvider extends ServiceProvider
          * Str::nanoid() generates an ID via the hidehalo/nanoid client using
          * the project's alphabet/length; Str::isNanoid() validates one.
          */
-        Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => (new NanoidClient($length))->formattedId(BaseModel::ID_ALPHABET, $length));
+        Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => new NanoidClient($length)->formattedId(BaseModel::ID_ALPHABET, $length));
 
         Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
 
@@ -114,6 +116,11 @@ class AppServiceProvider extends ServiceProvider
         /**
          * Gates (i.e. Authentication) definition
          */
+        // Super-admins bypass every permission/policy check. Replaces the
+        // removed filament-shield super_admin gate. Return null (not false) so
+        // non-super-admins fall through to the normal checks.
+        Gate::before(static fn (?User $user): ?bool => $user?->hasRole(Role::superAdminName()) ? true : null);
+
         Gate::define('access_admin', static fn (?User $user): Response => $user?->hasAdminAccess()
             ? Response::allow()
             : Response::deny('You do not have permission to access this page.'));
@@ -205,6 +212,10 @@ class AppServiceProvider extends ServiceProvider
         // addAdminLink()/addFrontendLink(); the reader (ModuleLinksPlugin,
         // nav views) must see the same instance, so it has to be a singleton.
         $this->app->singleton(ModuleService::class);
+
+        // Permission registry: modules register custom permissions into the
+        // same instance during boot(), so it must be a singleton.
+        $this->app->singleton(PermissionRegistry::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a
         // rule means appending one entry here, not editing LintRunner. The

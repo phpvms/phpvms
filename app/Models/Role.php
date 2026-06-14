@@ -56,6 +56,16 @@ class Role extends SpatieRole
         'disable_activity_checks',
     ];
 
+    /**
+     * The name of the role that bypasses every permission check.
+     *
+     * Replaces the removed filament-shield `Utils::getSuperAdminName()`.
+     */
+    public static function superAdminName(): string
+    {
+        return config('roles.super_admin', 'super_admin');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
