@@ -6,7 +6,7 @@ namespace App\Policies\Filament;
 
 use App\Policies\BasePolicy;
 
-class UserPolicy extends BasePolicy
+class FlightBundlePolicy extends BasePolicy
 {
-    protected string $subject = 'user';
+    protected string $subject = 'flight-bundle';
 }
