@@ -149,7 +149,7 @@ final class RouteForgeController extends Controller
         return [
             'id'         => $user->id,
             'name'       => $user->name ?? null,
-            'can_commit' => $user->can('create:flight'),
+            'can_commit' => $user->can('edit:flight'),
         ];
     }
 

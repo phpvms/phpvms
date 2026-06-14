@@ -2,12 +2,13 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\Ability;
 use App\Enums\NavigationGroup;
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
 use BackedEnum;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -38,10 +39,21 @@ use UnitEnum;
  */
 class Settings extends Page
 {
-    use HasPageShield;
+    use AuthorizesAccess;
     use InteractsWithFormActions;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+
+    /**
+     * Settings exposes an `edit` ability gating the save action, on top of the
+     * default `view` ability that gates page access.
+     *
+     * @return array<int, Ability>
+     */
+    public static function getPermissionAbilities(): array
+    {
+        return [Ability::View, Ability::Edit];
+    }
 
     protected static ?int $navigationSort = 6;
 
@@ -95,7 +107,7 @@ class Settings extends Page
 
     public function save(): void
     {
-        abort_unless(static::canAccess(), 403);
+        abort_unless(static::canEdit(), 403);
 
         try {
             $data = $this->form->getState();

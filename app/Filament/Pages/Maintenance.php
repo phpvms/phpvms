@@ -3,13 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Services\CronService;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\SeederService;
 use App\Services\KvpService;
 use App\Services\VersionService;
 use BackedEnum;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -34,7 +34,7 @@ class Maintenance extends Page
 {
     public array $cron = [];
 
-    use HasPageShield;
+    use AuthorizesAccess;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
 

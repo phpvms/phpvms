@@ -45,10 +45,10 @@ class RouteForge extends Page
     #[Override]
     public static function canAccess(): bool
     {
-        // Reuses the existing flight-create permission rather than introducing
+        // Reuses the existing flight-edit permission rather than introducing
         // dedicated routeforge.* permissions. RouteForge bulk-creates flights,
-        // so the same gate that protects single-flight creation applies here.
-        return auth()->user()?->can('create:flight') ?? false;
+        // so the same gate that protects flight creation/editing applies here.
+        return auth()->user()?->can('edit:flight') ?? false;
     }
 
     #[Override]

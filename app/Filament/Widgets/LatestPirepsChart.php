@@ -3,7 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Pirep;
-use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
@@ -11,8 +10,6 @@ use Override;
 
 class LatestPirepsChart extends ChartWidget
 {
-    use HasWidgetShield;
-
     protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;

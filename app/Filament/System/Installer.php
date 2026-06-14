@@ -3,6 +3,7 @@
 namespace App\Filament\System;
 
 use App\Filament\Infolists\Components\StreamEntry;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\AirlineService;
 use App\Services\Installer\InstallerService;
@@ -293,7 +294,7 @@ class Installer extends Page
             'email_verified_at' => now(),
         ];
 
-        $user = app(UserService::class)->createUser($attrs, ['super_admin']);
+        $user = app(UserService::class)->createUser($attrs, [Role::superAdminName()]);
 
         Log::info('First User Created: ', $user->toArray());
 
