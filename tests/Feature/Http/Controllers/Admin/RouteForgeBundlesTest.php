@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Models\FlightBundle;
 use App\Models\User;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 });
 
 it('rejects unauthenticated bundles requests', function (): void {

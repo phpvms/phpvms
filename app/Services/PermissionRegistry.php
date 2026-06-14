@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
  *                            Filament components, plus that module's resources/pages
  *
  * Every group carries a scope (core, or a module name) so the roles matrix can
- * present them under tabs. Consumed by the permissions:sync command and the
+ * present them under tabs. Consumed by the permission:sync command and the
  * roles permission matrix.
  */
 class PermissionRegistry
@@ -309,9 +309,11 @@ class PermissionRegistry
                 if (!is_string($class)) {
                     continue;
                 }
+
                 if (!method_exists($class, 'permissionDefinitions')) {
                     continue;
                 }
+
                 /** @var class-string<ProvidesPermissions> $class */
                 $key = $class::getPermissionKey();
 

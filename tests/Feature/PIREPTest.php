@@ -26,7 +26,7 @@ use App\Services\BidService;
 use App\Services\PirepService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -234,7 +234,7 @@ test('get user pireps', function (): void {
 });
 
 test('pirep notifications', function (): void {
-    seed(ShieldSeeder::class);
+    seed(RolesPermissionsSeeder::class);
 
     $pirepSvc = app(PirepService::class);
 

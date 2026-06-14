@@ -6,11 +6,11 @@ use App\Filament\Resources\FlightBundles\Pages\CreateFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\ListFlightBundles;
 use App\Models\FlightBundle;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 it('renders the list page happy path', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -22,7 +22,7 @@ it('renders the list page happy path', function (): void {
 });
 
 it('creates a new bundle and persists created_by', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -43,7 +43,7 @@ it('creates a new bundle and persists created_by', function (): void {
 });
 
 it('renders the edit page happy path', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -54,7 +54,7 @@ it('renders the edit page happy path', function (): void {
 });
 
 it('shows delete action for the seeded Default bundle', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -68,7 +68,7 @@ it('shows delete action for the seeded Default bundle', function (): void {
 });
 
 it('enabled toggle is editable on the seeded Default bundle edit page', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 

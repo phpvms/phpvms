@@ -7,12 +7,12 @@ use App\Models\Airline;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use App\Models\User;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 });
 
 it('runs zero data-loading Eloquent queries at page mount', function (): void {

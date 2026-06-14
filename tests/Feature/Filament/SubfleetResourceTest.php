@@ -5,13 +5,13 @@ declare(strict_types=1);
 use App\Enums\FlightType;
 use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Models\Subfleet;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 it('renders the operational capability section with new fields', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $subfleet = Subfleet::factory()->create();
@@ -25,7 +25,7 @@ it('renders the operational capability section with new fields', function (): vo
 });
 
 it('persists capability values through the cast', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $subfleet = Subfleet::factory()->create();
@@ -54,7 +54,7 @@ it('persists capability values through the cast', function (): void {
 });
 
 it('persists empty route_types selection as empty collection', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $subfleet = Subfleet::factory()->create([

@@ -7,7 +7,7 @@ use App\Models\Invite;
 use App\Models\User;
 use App\Notifications\Messages\AdminUserRegistered;
 use App\Services\UserService;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -20,7 +20,7 @@ beforeEach(function (): void {
 });
 
 test('registration', function (): void {
-    seed(ShieldSeeder::class);
+    seed(RolesPermissionsSeeder::class);
     Notification::fake();
 
     $admin = createAdminUser(['name' => 'testRegistration Admin']);
