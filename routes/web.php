@@ -104,7 +104,7 @@ Auth::routes(['verify' => true]);
  *
  * Session-authenticated **RPC** endpoints — NOT a public REST API. They live
  * in routes/web.php (not routes/api.php) so the cookie session and CSRF
- * protection apply, are gated by `permission:create:flight`, and have no
+ * protection apply, are gated by `permission:edit:flight`, and have no
  * public consumers or versioned contract guarantee outside this codebase.
  *
  * The `/boot` endpoint is the SPA's bootstrap entry point — replaces the
@@ -120,7 +120,7 @@ Auth::routes(['verify' => true]);
  * already-started server queries finish, so the throttle is the only
  * server-side backstop.
  */
-Route::middleware(['web', 'auth', 'permission:create:flight'])
+Route::middleware(['web', 'auth', 'permission:edit:flight'])
     ->prefix('admin/route-forge/api')
     ->name('admin.routeforge.api.')
     ->group(function (): void {

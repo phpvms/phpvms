@@ -7,6 +7,7 @@ namespace App\Policies;
 use App\Enums\Ability;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
+use LogicException;
 
 /**
  * Shared base policy that maps every Filament policy method onto one of the
@@ -90,6 +91,10 @@ abstract class BasePolicy
      */
     protected function allows(AuthUser $user, string $method): bool
     {
+        if ($this->subject === '') {
+            throw new LogicException(static::class.' must declare a non-empty $subject.');
+        }
+
         $ability = Ability::policyMethodMap()[$method] ?? null;
 
         if ($ability === null) {

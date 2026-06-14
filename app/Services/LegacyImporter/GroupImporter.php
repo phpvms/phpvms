@@ -10,6 +10,7 @@ use App\Services\RoleService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Imports the groups into the permissions feature(s)
@@ -83,6 +84,11 @@ class GroupImporter extends BaseImporter
             // Legacy "administrator" role is now "admin", just map that 1:1
             if (strtolower((string) $row->name) === 'administrators') {
                 $role = Role::where('name', Role::superAdminName())->first();
+
+                if (!$role instanceof Role) {
+                    throw new RuntimeException('Super-admin role is missing; seed roles before importing legacy groups.');
+                }
+
                 $this->idMapper->addMapping('group', $row->groupid, $role->id);
 
                 continue;

@@ -39,8 +39,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Backend HTTP entry points for the RouteForge admin tool.
  *
- * Every endpoint is gated by `permission:create:flight` at the route layer
- * (see routes/web.php). The Filament page itself reuses the same Shield
+ * Every endpoint is gated by `permission:edit:flight` at the route layer
+ * (see routes/web.php). The Filament page itself reuses the same
  * permission (App\Filament\Pages\RouteForge::canAccess), so anyone who can
  * reach the UI can hit these endpoints.
  *

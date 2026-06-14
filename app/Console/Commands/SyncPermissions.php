@@ -38,7 +38,9 @@ class SyncPermissions extends Command
         $pruned = 0;
 
         if ($this->option('prune')) {
-            $stale = Permission::whereNotIn('name', $registered)->get();
+            $stale = Permission::where('guard_name', $guard)
+                ->whereNotIn('name', $registered)
+                ->get();
 
             foreach ($stale as $permission) {
                 $permission->delete();

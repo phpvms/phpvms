@@ -66,7 +66,7 @@ it('does NOT render the legacy window.routeforgeConfig envelope', function (): v
         ->assertDontSeeHtml('window.routeforgeConfig');
 });
 
-it('blocks users without the create:flight permission', function (): void {
+it('blocks users without the edit:flight permission', function (): void {
     $this->actingAs(User::factory()->create());
 
     expect(RouteForge::canAccess())->toBeFalse();

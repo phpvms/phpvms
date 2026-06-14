@@ -306,10 +306,6 @@ class PermissionRegistry
 
         foreach (Filament::getPanels() as $panel) {
             foreach ($panel->getPages() as $class) {
-                if (!is_string($class)) {
-                    continue;
-                }
-
                 if (!method_exists($class, 'permissionDefinitions')) {
                     continue;
                 }

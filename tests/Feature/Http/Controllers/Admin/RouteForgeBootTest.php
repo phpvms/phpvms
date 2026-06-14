@@ -16,7 +16,7 @@ it('rejects unauthenticated boot requests', function (): void {
         ->assertStatus(401);
 });
 
-it('rejects authenticated users without the create:flight permission', function (): void {
+it('rejects authenticated users without the edit:flight permission', function (): void {
     $this->actingAs(User::factory()->create());
 
     $this->getJson('/admin/route-forge/api/boot')
