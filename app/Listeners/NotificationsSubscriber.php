@@ -14,6 +14,7 @@ use App\Events\PirepRejected;
 use App\Events\PirepStatusChange;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Messages;
 use App\Notifications\Messages\AdminUserRegistered;
@@ -39,7 +40,7 @@ class NotificationsSubscriber
     protected function notifyAdmins(\App\Contracts\Notification $notification): void
     {
         $admin_users = User::whereHas('roles', function ($query): void {
-            $query->where('name', 'super_admin');
+            $query->where('name', Role::superAdminName());
         })->get();
 
         foreach ($admin_users as $user) {

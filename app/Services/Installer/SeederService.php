@@ -11,6 +11,7 @@ use App\Models\Kvp;
 use Carbon\Carbon;
 use Database\Seeders\BaseDataSeeder;
 use Database\Seeders\SettingsSeeder;
+use Illuminate\Support\Facades\Artisan;
 
 class SeederService extends Service
 {
@@ -26,6 +27,10 @@ class SeederService extends Service
     {
         app(BaseDataSeeder::class)->run();
         app(SettingsSeeder::class)->run();
+
+        // Persist any new resource/page/custom permissions discovered in the
+        // registry (replaces the removed filament-shield generate/seed step).
+        Artisan::call('permission:sync');
 
         $this->seedAddons();
     }
