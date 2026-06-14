@@ -169,7 +169,7 @@
     ],
     "bump:minor": [
       "composer update && composer bump",
-      "bum x npm-check-updates -u -t minor && npm install"
+      "bun x npm-check-updates -u -t minor && bun install"
     ],
     "lint": "pint --parallel",
     "pint": "pint --parallel",
@@ -193,13 +193,13 @@
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
       "@php artisan key:generate",
       "@php artisan migrate --force",
-      "npm install --ignore-scripts",
-      "npm run build",
+      "bun install --ignore-scripts",
+      "bun run build",
       "@php artisan filament:assets"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+      "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite --kill-others"
     ]
   },
   "config": {
