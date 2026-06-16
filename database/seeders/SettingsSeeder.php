@@ -786,6 +786,26 @@ class SettingsSeeder extends Seeder
             'description' => 'Send out a discord notification when a pirep is filed',
         ],
 
+        // Fares
+        [
+            'key'         => 'fares.auto_price',
+            'name'        => 'Automatic fare pricing',
+            'group'       => 'fares',
+            'value'       => 'false',
+            'type'        => 'boolean',
+            'options'     => 'true,false',
+            'description' => 'Compute PIREP fare prices from distance, seat category and airline type instead of using the configured fare/subfleet/flight prices',
+        ],
+        [
+            'key'         => 'fares.low_cost_multiplier',
+            'name'        => 'Low-cost airline multiplier',
+            'group'       => 'fares',
+            'value'       => '0.8',
+            'type'        => 'float',
+            'options'     => '',
+            'description' => 'Multiplier applied to the automatic fare price when the PIREP airline is flagged as low cost',
+        ],
+
         // Cron
         [
             'key'         => 'cron.random_id',
