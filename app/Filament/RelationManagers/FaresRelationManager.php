@@ -43,9 +43,13 @@ class FaresRelationManager extends RelationManager
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['capacity' => $state]);
                     }),
+                // The static price is only meaningful when auto pricing is off
+                // (auto pricing computes the price), so hide it by default when
+                // auto pricing is on — the inverse of the override columns below.
                 TextInputColumn::make('pivot.price')
                     ->label(__('common.price'))
                     ->placeholder(__('common.inherited'))
+                    ->toggleable(isToggledHiddenByDefault: (bool) setting('fares.auto_price', false))
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['price' => $state]);
                     }),
@@ -54,6 +58,30 @@ class FaresRelationManager extends RelationManager
                     ->placeholder(__('common.inherited'))
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['cost' => $state]);
+                    }),
+                // Auto-price override columns. Toggleable and hidden by default
+                // unless auto pricing is enabled, to keep the table uncluttered
+                // when these values aren't in use.
+                TextInputColumn::make('pivot.base_price')
+                    ->label(__('filament.fare_base_price'))
+                    ->placeholder(__('common.inherited'))
+                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->updateStateUsing(function (Fare $record, string $state): void {
+                        $record->pivot->update(['base_price' => $state]);
+                    }),
+                TextInputColumn::make('pivot.per_nm')
+                    ->label(__('filament.fare_per_nm'))
+                    ->placeholder(__('common.inherited'))
+                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->updateStateUsing(function (Fare $record, string $state): void {
+                        $record->pivot->update(['per_nm' => $state]);
+                    }),
+                TextInputColumn::make('pivot.multiplier')
+                    ->label(__('filament.fare_multiplier'))
+                    ->placeholder(__('common.inherited'))
+                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->updateStateUsing(function (Fare $record, string $state): void {
+                        $record->pivot->update(['multiplier' => $state]);
                     }),
             ])
             ->filters([
