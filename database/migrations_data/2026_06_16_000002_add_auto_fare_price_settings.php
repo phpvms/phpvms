@@ -40,15 +40,23 @@ return new class() extends Migration
             return;
         }
 
+        // Track a per-group position so offset/order match SettingsSeeder's
+        // per-group incrementing (defaults of 0/99 would otherwise push these
+        // to the end of the group rather than their seeded position).
+        $groupPositions = [];
+
         foreach ($this->settings as $setting) {
+            $group = $setting['group'];
+            $position = $groupPositions[$group] ?? 0;
+            $groupPositions[$group] = $position + 1;
+
             $id = Setting::formatKey($setting['key']);
 
             if (Setting::where('id', $id)->exists()) {
                 continue;
             }
 
-            // id is not auto-derived from the key on create (the accessor is
-            // read-only and the model does not auto-increment), so set it
+            // id, offset and order are not fillable / auto-derived, so set them
             // explicitly the same way SettingsSeeder does.
             $model = new Setting([
                 'key'         => $setting['key'],
@@ -61,6 +69,8 @@ return new class() extends Migration
             ]);
             $model->id = $id;
             $model->default = $setting['value'];
+            $model->offset = $position;
+            $model->order = $position;
             $model->save();
         }
     }
