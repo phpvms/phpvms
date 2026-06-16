@@ -65,21 +65,21 @@ class FaresRelationManager extends RelationManager
                 TextInputColumn::make('pivot.base_price')
                     ->label(__('filament.fare_base_price'))
                     ->placeholder(__('common.inherited'))
-                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->toggleable(isToggledHiddenByDefault: !(bool) setting('fares.auto_price', false))
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['base_price' => $state]);
                     }),
                 TextInputColumn::make('pivot.per_nm')
                     ->label(__('filament.fare_per_nm'))
                     ->placeholder(__('common.inherited'))
-                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->toggleable(isToggledHiddenByDefault: !(bool) setting('fares.auto_price', false))
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['per_nm' => $state]);
                     }),
                 TextInputColumn::make('pivot.multiplier')
                     ->label(__('filament.fare_multiplier'))
                     ->placeholder(__('common.inherited'))
-                    ->toggleable(isToggledHiddenByDefault: !setting('fares.auto_price', false))
+                    ->toggleable(isToggledHiddenByDefault: !(bool) setting('fares.auto_price', false))
                     ->updateStateUsing(function (Fare $record, string $state): void {
                         $record->pivot->update(['multiplier' => $state]);
                     }),
