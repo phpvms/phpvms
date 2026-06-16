@@ -22,6 +22,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string        $code
  * @property string        $name
  * @property float|null    $price
+ * @property float|null    $base_price
+ * @property float|null    $per_nm
+ * @property float|null    $multiplier
  * @property float|null    $cost
  * @property int|null      $capacity
  * @property FareType|null $type
@@ -74,6 +77,9 @@ class Fare extends Model
         'name',
         'type',
         'price',
+        'base_price',
+        'per_nm',
+        'multiplier',
         'cost',
         'capacity',
         'notes',
@@ -99,7 +105,7 @@ class Fare extends Model
      */
     public function subfleets(): BelongsToMany
     {
-        return $this->belongsToMany(Subfleet::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity');
+        return $this->belongsToMany(Subfleet::class, 'subfleet_fare')->withPivot('price', 'cost', 'capacity', 'base_price', 'per_nm', 'multiplier');
     }
 
     public function flights(): BelongsToMany
@@ -111,11 +117,14 @@ class Fare extends Model
     protected function casts(): array
     {
         return [
-            'price'    => 'float',
-            'cost'     => 'float',
-            'capacity' => 'integer',
-            'type'     => FareType::class,
-            'active'   => 'boolean',
+            'price'      => 'float',
+            'base_price' => 'float',
+            'per_nm'     => 'float',
+            'multiplier' => 'float',
+            'cost'       => 'float',
+            'capacity'   => 'integer',
+            'type'       => FareType::class,
+            'active'     => 'boolean',
         ];
     }
 }
