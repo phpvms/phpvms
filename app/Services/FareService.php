@@ -11,6 +11,7 @@ use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\Subfleet;
 use App\Support\Math;
+use App\Support\Units\Distance;
 use Exception;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
@@ -19,6 +20,8 @@ use InvalidArgumentException;
 
 class FareService extends Service
 {
+    public function __construct(private readonly GeoService $geoSvc) {}
+
     /**
      * Save the list of fares, reconcile the proper pricing and save it to the PIREP.
      * Get the fares that have been filled out for the PIREP, and then get the fares for
@@ -49,8 +52,10 @@ class FareService extends Service
         // Read the original fare and get this information from it
         $pirep->loadMissing('flight.fares', 'aircraft.subfleet.fares');
 
+        $auto_price = (bool) setting('fares.auto_price', false);
+
         $all_fares = $this->getAllFares($pirep->flight, $pirep->aircraft->subfleet);
-        $all_fares->map(function ($fare, $_) use ($fares, $pirep): void {
+        $all_fares->map(function (Fare $fare, $_) use ($fares, $pirep, $auto_price): void {
             /**
              * See if there's match with the provided fares, so we can copy the information over
              *
@@ -82,7 +87,11 @@ class FareService extends Service
                 $pirep_fare->count = min($pirep_fare->count, $pirep_fare->capacity);
             }
 
-            if (empty($pirep_fare->price)) {
+            // When auto pricing is enabled, the computed price is the source of
+            // truth and always replaces the reconciled/configured price.
+            if ($auto_price) {
+                $pirep_fare->price = $this->getAutoPrice($pirep, $fare);
+            } elseif (empty($pirep_fare->price)) {
                 $pirep_fare->price = $fare->price;
             }
 
@@ -241,10 +250,78 @@ class FareService extends Service
             }
         }
 
+        // Auto-price inputs are absolute values only (no percentage overrides).
+        // The `?? null` guards pivots that don't carry these columns (e.g. the
+        // flight_fare pivot), which then leaves the fare's own value in place.
+        if (filled($pivot->base_price ?? null)) {
+            $fare->base_price = (float) $pivot->base_price;
+        }
+
+        if (filled($pivot->per_nm ?? null)) {
+            $fare->per_nm = (float) $pivot->per_nm;
+        }
+
+        if (filled($pivot->multiplier ?? null)) {
+            $fare->multiplier = (float) $pivot->multiplier;
+        }
+
         // $fare->notes = '';
         $fare->active = true;
 
         return $fare;
+    }
+
+    /**
+     * Compute the automatic price for a fare on a given PIREP:
+     *
+     *      price = (base_price + distance_nm × per_nm) × multiplier × low_cost_factor
+     *
+     * The fare passed in should already be reconciled (subfleet overrides
+     * applied via getFareWithPivot), so its base_price/per_nm/multiplier
+     * reflect any per-subfleet overrides. The result is clamped to >= 0.
+     */
+    public function getAutoPrice(Pirep $pirep, Fare $fare): float
+    {
+        $distance = $this->resolveDistanceNm($pirep);
+
+        $base = (float) ($fare->base_price ?? 0);
+        $per_nm = (float) ($fare->per_nm ?? 0);
+        $multiplier = (float) ($fare->multiplier ?? 1);
+
+        $low_cost_factor = 1.0;
+        if ($pirep->airline?->low_cost) {
+            $low_cost_factor = (float) setting('fares.low_cost_multiplier', 1);
+        }
+
+        $price = ($base + $distance * $per_nm) * $multiplier * $low_cost_factor;
+
+        return round(max(0, $price), 2);
+    }
+
+    /**
+     * Resolve the distance (in nautical miles) used for auto pricing: the
+     * great-circle distance between the PIREP's departure and arrival
+     * airports, falling back to the PIREP's recorded distance when the
+     * airports lack usable coordinates. Works for free flights too, since it
+     * never depends on a scheduled Flight record.
+     */
+    private function resolveDistanceNm(Pirep $pirep): float
+    {
+        $pirep->loadMissing('dpt_airport', 'arr_airport');
+
+        if ($pirep->dpt_airport && $pirep->arr_airport) {
+            $nm = $this->geoSvc->airportDistance($pirep->dpt_airport, $pirep->arr_airport);
+            if ($nm !== null) {
+                return $nm;
+            }
+        }
+
+        $distance = $pirep->distance;
+        if ($distance instanceof Distance) {
+            return (float) ($distance->toUnit('nmi') ?? 0);
+        }
+
+        return (float) ($distance ?? 0);
     }
 
     /**
