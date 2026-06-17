@@ -94,7 +94,7 @@ abstract class PanelProvider extends FilamentPanelProvider
                 NavigationItem::make()
                     ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
                     ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->url(fn (): string => route('frontend.home')),
+                    ->url(fn (): string => route('frontend.dashboard.index')),
             ])
             ->pages([
                 Dashboard::class,
