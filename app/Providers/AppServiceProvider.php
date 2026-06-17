@@ -105,7 +105,7 @@ class AppServiceProvider extends ServiceProvider
          * Str::nanoid() generates an ID via the hidehalo/nanoid client using
          * the project's alphabet/length; Str::isNanoid() validates one.
          */
-        Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => (new NanoidClient($length))->formattedId(BaseModel::ID_ALPHABET, $length));
+        Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => new NanoidClient($length)->formattedId(BaseModel::ID_ALPHABET, $length));
 
         Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
 
@@ -160,7 +160,6 @@ class AppServiceProvider extends ServiceProvider
         /**
          * Data automatically injected in views
          */
-        View::share('moduleSvc', app(ModuleService::class));
         View::composer('admin.sidebar', VersionComposer::class);
 
         /** @noinspection LaravelUnknownViewInspection */
@@ -201,9 +200,8 @@ class AppServiceProvider extends ServiceProvider
             $app['config']['view.paths']
         ));
 
-        // Module nav links accumulate across each addon provider's boot() via
-        // addAdminLink()/addFrontendLink(); the reader (ModuleLinksPlugin,
-        // nav views) must see the same instance, so it has to be a singleton.
+        // ModuleService exposes deprecated enable/disable/delete delegators to
+        // AddonRegistry; bound as a singleton for a stable instance.
         $this->app->singleton(ModuleService::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a

@@ -26,7 +26,7 @@ class BootCache
      * Cache schema version. Increment when the on-disk shape changes
      * so stale-schema files are treated as absent (D2-09).
      */
-    public const int SCHEMA = 2;
+    public const int SCHEMA = 3;
 
     /**
      * Return enabled addons from the boot cache (DB-free hot path, D-10).

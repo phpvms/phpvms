@@ -32,16 +32,6 @@
                     </a>
                 </li>
 
-                {{-- Show the module links that don't require being logged in --}}
-                @foreach ($moduleSvc->getFrontendLinks($logged_in = false) as &$link)
-                    <li class="nav-item d-flex align-items-center">
-                        <a class="nav-link  d-flex gap-1" href="{{ url($link['url']) }}">
-                            <i class="{{ $link['icon'] }}"></i>
-                            {{ $link['title'] }}
-                        </a>
-                    </li>
-                @endforeach
-
                 @foreach ($page_links as $page)
                     <li class="nav-item d-flex align-items-center">
                         <a class="nav-link  d-flex gap-1" href="{{ $page->url }}"
@@ -79,15 +69,6 @@
                         </a>
                     </li>
 
-                    {{-- Show the module links for being logged in --}}
-                    @foreach ($moduleSvc->getFrontendLinks($logged_in = true) as &$link)
-                        <li class="nav-item d-flex align-items-center">
-                            <a class="nav-link d-flex gap-1" href="{{ url($link['url']) }}">
-                                <i class="{{ $link['icon'] }}"></i>
-                                {{ $link['title'] }}
-                            </a>
-                        </li>
-                    @endforeach
                     <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
           <div class="d-none d-lg-flex h-100 mx-lg-2 text-body-secondary"></div>
         </li>

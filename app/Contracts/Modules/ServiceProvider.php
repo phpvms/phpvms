@@ -67,18 +67,6 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     /**
-     * This is required to register the links in either the public or admin toolbar
-     * For example, adding a frontend link:
-     *
-     * $this->moduleSvc->addFrontendLink('Sample', '/sample', '', $logged_in=true);
-     *
-     * Or an admin link:
-     *
-     * $this->moduleSvc->addAdminLink('Sample', '/admin/sample');
-     */
-    public function registerLinks(): void {}
-
-    /**
      * Deferred providers:
      * https://laravel.com/docs/7.x/providers#deferred-providers
      */
