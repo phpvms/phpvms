@@ -163,29 +163,32 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     private function registerRoutes(): void
     {
-        $root = $this->addonBasePath();
+        // Register routes at the end of the boot process so that they can override core's routes.
+        $this->app->booted(function (): void {
+            $root = $this->addonBasePath();
 
-        $webRoutes = $root.'/routes/web.php';
+            $webRoutes = $root.'/routes/web.php';
 
-        if (file_exists($webRoutes)) {
-            $this->loadRoutesFrom($webRoutes);
-        }
-
-        $apiRoutes = $root.'/routes/api.php';
-
-        if (file_exists($apiRoutes)) {
-            $this->loadRoutesFrom($apiRoutes);
-        }
-
-        // Only load console routes in the console context — a bare require on
-        // every HTTP worker boot would execute side-effecting closure code.
-        if ($this->app->runningInConsole()) {
-            $consoleRoutes = $root.'/routes/console.php';
-
-            if (file_exists($consoleRoutes)) {
-                require $consoleRoutes;
+            if (file_exists($webRoutes)) {
+                $this->loadRoutesFrom($webRoutes);
             }
-        }
+
+            $apiRoutes = $root.'/routes/api.php';
+
+            if (file_exists($apiRoutes)) {
+                $this->loadRoutesFrom($apiRoutes);
+            }
+
+            // Only load console routes in the console context — a bare require on
+            // every HTTP worker boot would execute side-effecting closure code.
+            if ($this->app->runningInConsole()) {
+                $consoleRoutes = $root.'/routes/console.php';
+
+                if (file_exists($consoleRoutes)) {
+                    require $consoleRoutes;
+                }
+            }
+        });
     }
 
     /**
