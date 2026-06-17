@@ -112,7 +112,7 @@ class ManifestParser
             return [];
         }
 
-        $realBase = realpath($addonPath);
+        $base = $this->normalizePath($addonPath);
         $resolved = [];
 
         foreach ($files as $file) {
@@ -128,11 +128,7 @@ class ManifestParser
 
             $absolute = $addonPath.'/'.ltrim($trimmed, '/');
 
-            // Reject paths that escape the addon directory.
-            $realFile = realpath($absolute);
-
-            if ($realBase !== false && $realFile !== false
-                && !str_starts_with($realFile, $realBase.DIRECTORY_SEPARATOR)) {
+            if (!$this->isWithin($base, $absolute)) {
                 continue;
             }
 
@@ -142,6 +138,53 @@ class ManifestParser
         }
 
         return $resolved;
+    }
+
+    /**
+     * Lexically normalise a path, resolving "." and ".." segments without
+     * touching the filesystem.
+     *
+     * Unlike realpath(), this works on paths whose target does not yet exist,
+     * so a "../" traversal can never slip through the boundary check just
+     * because the file it points at is currently missing. Both "/" and "\"
+     * separators are accepted; the result always uses "/".
+     */
+    private function normalizePath(string $path): string
+    {
+        $isAbsolute = str_starts_with($path, '/') || str_starts_with($path, '\\');
+        $segments = preg_split('#[\\\\/]+#', $path) ?: [];
+        $out = [];
+
+        foreach ($segments as $segment) {
+            if ($segment === '') {
+                continue;
+            }
+
+            if ($segment === '.') {
+                continue;
+            }
+
+            if ($segment === '..') {
+                array_pop($out);
+
+                continue;
+            }
+
+            $out[] = $segment;
+        }
+
+        return ($isAbsolute ? '/' : '').implode('/', $out);
+    }
+
+    /**
+     * Whether $candidate resolves to a location inside the already-normalised
+     * $base directory. Comparison is lexical (see normalizePath).
+     */
+    private function isWithin(string $base, string $candidate): bool
+    {
+        $normalized = $this->normalizePath($candidate);
+
+        return $normalized === $base || str_starts_with($normalized.'/', $base.'/');
     }
 
     /**
@@ -269,11 +312,8 @@ class ManifestParser
 
             // Reject psr-4 values that escape the addon directory (e.g.
             // "../../app"), which would point the PSR-4 loader at core code.
-            $realBase = realpath($addonPath);
-            $realAutoload = realpath($autoloadPath);
-
-            if ($realBase !== false && $realAutoload !== false
-                && !str_starts_with($realAutoload.DIRECTORY_SEPARATOR, $realBase.DIRECTORY_SEPARATOR)) {
+            // Lexical check so a non-existent path can't slip through.
+            if (!$this->isWithin($this->normalizePath($addonPath), $autoloadPath)) {
                 return [$addonPath, 'root'];
             }
 

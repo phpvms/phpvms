@@ -175,6 +175,34 @@ it('rejects autoload.files entries that escape the addon directory', function ()
     }
 });
 
+it('rejects escaping autoload.files entries even when the target does not exist', function (): void {
+    $base = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    $addonDir = $base.'/addon';
+    mkdir($addonDir, 0755, true);
+
+    file_put_contents($addonDir.'/module.json', json_encode([
+        'name'      => 'GhostEscaper',
+        'providers' => [],
+    ]));
+    file_put_contents($addonDir.'/composer.json', json_encode([
+        'autoload' => [
+            'files' => ['../../etc/does-not-exist.php', './nested/../../escape.php'],
+        ],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($addonDir);
+
+        expect($result->files)->toBe([]);
+    } finally {
+        unlink($addonDir.'/composer.json');
+        unlink($addonDir.'/module.json');
+        rmdir($addonDir);
+        rmdir($base);
+    }
+});
+
 it('normalises blank registry_id to null (D-03)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
