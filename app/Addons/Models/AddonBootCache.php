@@ -26,6 +26,9 @@ final readonly class AddonBootCache
      * @param string|null                          $description  Human-readable description; null when absent.
      * @param bool                                 $enabled      Whether the addon is active.
      * @param array<string, array<string, string>> $filament     Panel → component → directory map.
+     * @param list<string>                         $files        Absolute paths declared under
+     *                                                           composer.json `autoload.files`,
+     *                                                           required once per boot cycle.
      */
     public function __construct(
         public string $name,
@@ -41,6 +44,7 @@ final readonly class AddonBootCache
         public ?string $description,
         public bool $enabled,
         public array $filament,
+        public array $files = [],
     ) {}
 
     /**
@@ -64,6 +68,7 @@ final readonly class AddonBootCache
             description: isset($data['description']) ? (string) $data['description'] : null,
             enabled: (bool) ($data['enabled'] ?? false),
             filament: (array) ($data['filament'] ?? []),
+            files: array_values(array_filter((array) ($data['files'] ?? []), is_string(...))),
         );
     }
 
@@ -88,6 +93,7 @@ final readonly class AddonBootCache
             'description'   => $this->description,
             'enabled'       => $this->enabled,
             'filament'      => $this->filament,
+            'files'         => $this->files,
         ];
     }
 }

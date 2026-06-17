@@ -264,6 +264,7 @@ class AddonDiscoveryService
             description: $m->description,
             enabled: $enabled,
             filament: $this->probeFilament($m),
+            files: $m->files,
         );
     }
 

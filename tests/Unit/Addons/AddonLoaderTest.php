@@ -21,7 +21,7 @@ use Illuminate\Support\ServiceProvider;
  * @param  list<string>         $providers
  * @return array<string, mixed>
  */
-function addonRow(string $namespace, string $autoloadPath, array $providers = []): array
+function addonRow(string $namespace, string $autoloadPath, array $providers = [], array $files = []): array
 {
     return [
         'registry_id'   => 'test/sample',
@@ -37,6 +37,7 @@ function addonRow(string $namespace, string $autoloadPath, array $providers = []
         'name'          => 'Sample',
         'alias'         => 'sample',
         'description'   => '',
+        'files'         => $files,
     ];
 }
 
@@ -192,6 +193,51 @@ it('register() registers all providers when a row declares two service providers
     expect($loaded)
         ->toHaveKey(AddonLoaderTestProviderAlpha::class)
         ->and($loaded)->toHaveKey(AddonLoaderTestProviderBeta::class);
+});
+
+it('register() requires declared autoload.files so module helpers become callable', function (): void {
+    $autoloadPath = app_path('Addons');
+    $namespace = 'Modules\\FilesAddon';
+
+    // A unique global function name so this test is order-independent.
+    $fn = 'addon_loader_helper_'.uniqid();
+    $helperFile = sys_get_temp_dir().'/addon_loader_helper_'.uniqid().'.php';
+    file_put_contents($helperFile, "<?php\nif (!function_exists('{$fn}')) { function {$fn}(): string { return 'ok'; } }\n");
+
+    $injectedLoader = new ClassLoader();
+    $addonLoader = loaderWithRows([addonRow($namespace, $autoloadPath, [], [$helperFile])]);
+
+    expect(function_exists($fn))->toBeFalse();
+
+    try {
+        $addonLoader->register(app(), $injectedLoader);
+
+        expect(function_exists($fn))->toBeTrue()
+            ->and($fn())->toBe('ok');
+
+        // Idempotent: a second register() in the same process must not fatal
+        // on a redeclared function.
+        $addonLoader->register(app(), $injectedLoader);
+
+        expect(function_exists($fn))->toBeTrue();
+    } finally {
+        unlink($helperFile);
+    }
+});
+
+it('register() skips autoload.files paths that do not exist', function (): void {
+    $autoloadPath = app_path('Addons');
+    $namespace = 'Modules\\MissingFiles';
+
+    $injectedLoader = new ClassLoader();
+    $addonLoader = loaderWithRows([
+        addonRow($namespace, $autoloadPath, [], [sys_get_temp_dir().'/definitely_missing_'.uniqid().'.php']),
+    ]);
+
+    // Must not throw despite the stale path.
+    $addonLoader->register(app(), $injectedLoader);
+
+    expect($injectedLoader->getPrefixesPsr4())->toHaveKey('Modules\\MissingFiles\\');
 });
 
 // ---------------------------------------------------------------------------

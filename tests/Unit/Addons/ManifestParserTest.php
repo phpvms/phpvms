@@ -82,6 +82,99 @@ it('returns null when no module.json exists', function (): void {
     }
 });
 
+it('resolves composer autoload.files into absolute paths under the addon dir', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    mkdir($tmpDir.'/src', 0755, true);
+    file_put_contents($tmpDir.'/helpers.php', "<?php\n");
+    file_put_contents($tmpDir.'/src/fns.php', "<?php\n");
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'FilesWidget',
+        'providers' => [],
+    ]));
+    file_put_contents($tmpDir.'/composer.json', json_encode([
+        'autoload' => [
+            'files' => ['helpers.php', '/src/fns.php', '', 42],
+        ],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($tmpDir);
+
+        expect($result->files)->toBe([
+            $tmpDir.'/helpers.php',
+            $tmpDir.'/src/fns.php',
+        ]);
+    } finally {
+        unlink($tmpDir.'/composer.json');
+        unlink($tmpDir.'/module.json');
+        unlink($tmpDir.'/src/fns.php');
+        unlink($tmpDir.'/helpers.php');
+        rmdir($tmpDir.'/src');
+        rmdir($tmpDir);
+    }
+});
+
+it('returns an empty files list when autoload.files is absent or malformed', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'NoFiles',
+        'providers' => [],
+    ]));
+    file_put_contents($tmpDir.'/composer.json', json_encode([
+        'autoload' => [
+            'psr-4' => ['Modules\\NoFiles\\' => '.'],
+            'files' => 'not-an-array',
+        ],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($tmpDir);
+
+        expect($result->files)->toBe([]);
+    } finally {
+        unlink($tmpDir.'/composer.json');
+        unlink($tmpDir.'/module.json');
+        rmdir($tmpDir);
+    }
+});
+
+it('rejects autoload.files entries that escape the addon directory', function (): void {
+    $base = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    $addonDir = $base.'/addon';
+    mkdir($addonDir, 0755, true);
+
+    // A real file that lives OUTSIDE the addon directory — the path traversal
+    // must not be able to point the file loader at it.
+    file_put_contents($base.'/secret.php', "<?php\n");
+
+    file_put_contents($addonDir.'/module.json', json_encode([
+        'name'      => 'Escaper',
+        'providers' => [],
+    ]));
+    file_put_contents($addonDir.'/composer.json', json_encode([
+        'autoload' => [
+            'files' => ['../secret.php'],
+        ],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($addonDir);
+
+        expect($result->files)->toBe([]);
+    } finally {
+        unlink($addonDir.'/composer.json');
+        unlink($addonDir.'/module.json');
+        unlink($base.'/secret.php');
+        rmdir($addonDir);
+        rmdir($base);
+    }
+});
+
 it('normalises blank registry_id to null (D-03)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);

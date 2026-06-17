@@ -70,6 +70,9 @@ class ManifestParser
         // --- database.tables: addon-owned tables for uninstall (D-16) ---
         $tables = $this->resolveTables($data);
 
+        // --- autoload.files: module global helper files loaded at runtime ---
+        $files = $this->resolveFiles($addonPath, $composerData);
+
         return new AddonManifest(
             schema_version: $schema_version,
             name: (string) $name,
@@ -86,7 +89,59 @@ class ManifestParser
             layout: $layout,
             description: $description,
             tables: $tables,
+            files: $files,
         );
+    }
+
+    /**
+     * Resolve the addon's composer.json `autoload.files` into absolute paths.
+     *
+     * Each non-blank string entry is joined onto the addon directory. Entries
+     * that escape the addon directory (e.g. "../../app/helpers.php") are
+     * rejected so an addon manifest can never point the loader at core code.
+     * Returns an empty list when the key is absent or malformed.
+     *
+     * @param  array<string, mixed> $composerData Pre-decoded composer.json data.
+     * @return list<string>
+     */
+    private function resolveFiles(string $addonPath, array $composerData): array
+    {
+        $files = $composerData['autoload']['files'] ?? null;
+
+        if (!is_array($files)) {
+            return [];
+        }
+
+        $realBase = realpath($addonPath);
+        $resolved = [];
+
+        foreach ($files as $file) {
+            if (!is_string($file)) {
+                continue;
+            }
+
+            $trimmed = trim($file);
+
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $absolute = $addonPath.'/'.ltrim($trimmed, '/');
+
+            // Reject paths that escape the addon directory.
+            $realFile = realpath($absolute);
+
+            if ($realBase !== false && $realFile !== false
+                && !str_starts_with($realFile, $realBase.DIRECTORY_SEPARATOR)) {
+                continue;
+            }
+
+            if (!in_array($absolute, $resolved, true)) {
+                $resolved[] = $absolute;
+            }
+        }
+
+        return $resolved;
     }
 
     /**
