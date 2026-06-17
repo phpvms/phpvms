@@ -42,7 +42,7 @@ it('does not register the Sample resource on the main admin panel', function ():
 });
 
 it('admits a user holding the per-module access permission', function (): void {
-    Permission::create(['name' => 'access:sample', 'guard_name' => 'web']);
+    Permission::firstOrCreate(['name' => 'access:sample', 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     $user->givePermissionTo('access:sample');
@@ -51,7 +51,7 @@ it('admits a user holding the per-module access permission', function (): void {
 });
 
 it('admits a user via the legacy view:modules fallback', function (): void {
-    Permission::create(['name' => 'view:modules', 'guard_name' => 'web']);
+    Permission::firstOrCreate(['name' => 'view:modules', 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     $user->givePermissionTo('view:modules');
@@ -60,7 +60,7 @@ it('admits a user via the legacy view:modules fallback', function (): void {
 });
 
 it('admits a super admin', function (): void {
-    $role = Role::create(['name' => Utils::getSuperAdminName(), 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => Utils::getSuperAdminName(), 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     $user->assignRole($role);

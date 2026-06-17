@@ -200,8 +200,6 @@ class AppServiceProvider extends ServiceProvider
             $app['config']['view.paths']
         ));
 
-        // ModuleService exposes deprecated enable/disable/delete delegators to
-        // AddonRegistry; bound as a singleton for a stable instance.
         $this->app->singleton(ModuleService::class);
 
         // RouteForge lint catalog: tag every concrete rule class so adding a

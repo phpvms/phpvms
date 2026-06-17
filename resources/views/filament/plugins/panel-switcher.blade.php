@@ -27,7 +27,7 @@
             @foreach ($panels as $panel)
                 @php($isCurrent = $panel->getId() === $current->getId())
                 <x-filament::dropdown.list.item
-                    :href="url($panel->getPath())"
+                    :href="$panel->getUrl() ?? url($panel->getPath())"
                     tag="a"
                     :icon="$isCurrent ? 'heroicon-m-check' : 'heroicon-o-puzzle-piece'"
                     :color="$isCurrent ? 'primary' : 'gray'"

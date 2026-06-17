@@ -82,6 +82,7 @@ abstract class PanelProvider extends FilamentPanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->login()
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('14.5rem')
             ->navigationGroups([
@@ -90,11 +91,10 @@ abstract class PanelProvider extends FilamentPanelProvider
                 NavigationGroup::Developers->name,
             ])
             ->navigationItems([
-                // Labels should be in a closure to allow for translation
                 NavigationItem::make()
                     ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
                     ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->url('/'),
+                    ->url(fn (): string => route('frontend.home')),
             ])
             ->pages([
                 Dashboard::class,
