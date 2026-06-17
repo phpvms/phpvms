@@ -40,6 +40,29 @@ class FareForm
                             ->helperText(__('filament.fare_price_hint'))
                             ->numeric(),
 
+                        TextInput::make('base_price')
+                            ->label(__('filament.fare_base_price'))
+                            ->helperText(__('filament.fare_base_price_hint'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->default(0),
+
+                        TextInput::make('per_nm')
+                            ->label(__('filament.fare_per_nm'))
+                            ->helperText(__('filament.fare_per_nm_hint'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(0.0001)
+                            ->default(0),
+
+                        TextInput::make('multiplier')
+                            ->label(__('filament.fare_multiplier'))
+                            ->helperText(__('filament.fare_multiplier_hint'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(0.0001)
+                            ->default(1),
+
                         TextInput::make('cost')
                             ->label(__('common.cost'))
                             ->helperText(__('filament.fare_cost_hint'))

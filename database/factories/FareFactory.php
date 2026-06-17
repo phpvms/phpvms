@@ -30,12 +30,15 @@ class FareFactory extends Factory
     public function definition(): array
     {
         return [
-            'code'     => fake()->unique()->text(50),
-            'name'     => fake()->text(50),
-            'price'    => fake()->randomFloat(2, 100, 1000),
-            'cost'     => fn (array $fare): float => round($fare['price'] / 2),
-            'capacity' => fake()->randomFloat(0, 20, 500),
-            'type'     => FareType::PASSENGER,
+            'code'       => fake()->unique()->text(50),
+            'name'       => fake()->text(50),
+            'price'      => fake()->randomFloat(2, 100, 1000),
+            'base_price' => 10,
+            'per_nm'     => 0.11,
+            'multiplier' => 1,
+            'cost'       => fn (array $fare): float => round($fare['price'] / 2),
+            'capacity'   => fake()->randomFloat(0, 20, 500),
+            'type'       => FareType::PASSENGER,
         ];
     }
 }

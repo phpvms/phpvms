@@ -20,14 +20,17 @@ class FareImporter extends ImportExport
      * Should match the database fields, for the most part
      */
     public static array $columns = [
-        'code'     => 'required',
-        'name'     => 'required',
-        'type'     => 'required',
-        'price'    => 'nullable|numeric',
-        'cost'     => 'nullable|numeric',
-        'capacity' => 'nullable|integer',
-        'notes'    => 'nullable',
-        'active'   => 'nullable|boolean',
+        'code'       => 'required',
+        'name'       => 'required',
+        'type'       => 'required',
+        'price'      => 'nullable|numeric',
+        'base_price' => 'nullable|numeric',
+        'per_nm'     => 'nullable|numeric',
+        'multiplier' => 'nullable|numeric',
+        'cost'       => 'nullable|numeric',
+        'capacity'   => 'nullable|integer',
+        'notes'      => 'nullable',
+        'active'     => 'nullable|boolean',
     ];
 
     /**
