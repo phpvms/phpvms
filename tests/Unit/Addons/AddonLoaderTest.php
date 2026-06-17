@@ -19,6 +19,7 @@ use Illuminate\Support\ServiceProvider;
  * Build a minimal boot-cache row array for a given namespace / autoload path.
  *
  * @param  list<string>         $providers
+ * @param  list<string>         $files
  * @return array<string, mixed>
  */
 function addonRow(string $namespace, string $autoloadPath, array $providers = [], array $files = []): array

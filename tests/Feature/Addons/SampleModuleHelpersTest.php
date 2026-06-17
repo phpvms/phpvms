@@ -32,7 +32,7 @@ it('records the Sample module helpers.php in the boot cache files list', functio
         ->firstWhere(fn ($entry): bool => $entry->namespace === 'Modules\\Sample');
 
     $endsWithHelper = collect($sample?->files ?? [])
-        ->contains(fn (string $path): bool => str_ends_with($path, 'modules/Sample/helpers.php'));
+        ->contains(fn (string $path): bool => str_ends_with(str_replace('\\', '/', $path), 'modules/Sample/helpers.php'));
 
     expect($sample)->not->toBeNull()
         ->and($endsWithHelper)->toBeTrue('Sample boot-cache row must record helpers.php in files');
