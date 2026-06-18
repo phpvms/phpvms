@@ -497,11 +497,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         }
 
         // Each module panel is gated by its own `access:<module>` permission,
-        // falling back to the generic `view:modules` for unscoped panels.
+        // with the generic `view:modules` as a fallback for any module panel.
         $moduleKey = app(PermissionRegistry::class)->moduleKeyForPanel($panel);
 
-        if ($moduleKey !== null) {
-            return $this->can('access:'.$moduleKey);
+        if ($moduleKey !== null && $this->can('access:'.$moduleKey)) {
+            return true;
         }
 
         return $this->can('view:modules');
