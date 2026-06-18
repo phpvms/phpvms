@@ -18,7 +18,6 @@ it('round-trips the files list through toArray()/fromArray()', function (): void
         layout: 'root',
         description: null,
         enabled: true,
-        filament: [],
         files: ['/modules/Sample/helpers.php'],
     );
 
