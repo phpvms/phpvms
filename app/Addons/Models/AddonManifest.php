@@ -69,4 +69,14 @@ final readonly class AddonManifest
         public array $tables = [],
         public array $files = [],
     ) {}
+
+    public function slug(): string
+    {
+        return trim(strtolower(str_replace('/', '-', $this->registryId)));
+    }
+
+    public function dirName(): string
+    {
+        return $this->slug();
+    }
 }

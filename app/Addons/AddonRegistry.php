@@ -279,7 +279,7 @@ class AddonRegistry
     private function safeName(AddonManifest $manifest): string
     {
         if ($manifest->registryId !== null) {
-            $safe = strtolower((string) preg_replace('/[^A-Za-z0-9\-]+/', '-', str_replace('/', '-', $manifest->registryId)));
+            $safe = strtolower((string) preg_replace('/[^A-Za-z0-9\-]+/', '-', $manifest->slug()));
             $safe = trim($safe, '-');
 
             if ($safe !== '') {

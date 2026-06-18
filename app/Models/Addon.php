@@ -127,6 +127,15 @@ class Addon extends Model
         return $this->name ?? basename($this->path);
     }
 
+    public function getSlug(): string
+    {
+        if (!blank($this->registry_id)) {
+            return str_replace('/', '-', $this->registry_id);
+        }
+
+        return strtolower((string) $this->name);
+    }
+
     /**
      * Return the absolute filesystem path to the addon root
      */
