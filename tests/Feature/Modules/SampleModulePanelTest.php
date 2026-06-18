@@ -7,7 +7,6 @@ use App\Addons\Support\BootCache;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Modules\Sample\Filament\Resources\SampleResource;
@@ -60,7 +59,7 @@ it('admits a user via the legacy view:modules fallback', function (): void {
 });
 
 it('admits a super admin', function (): void {
-    $role = Role::firstOrCreate(['name' => Utils::getSuperAdminName(), 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => Role::superAdminName(), 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     $user->assignRole($role);
