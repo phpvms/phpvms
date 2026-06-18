@@ -29,7 +29,10 @@ use RuntimeException;
  *   1. Resolve enabled addon rows from the boot cache (DB-free hot path).
  *   2. Capture Composer's ClassLoader from the autoload stack.
  *   3. Assert classmap-authoritative guard ONCE, BEFORE any addPsr4() call.
- *   4. For each row: register PSR-4 then register service providers.
+ *   4. For each row: register PSR-4, require autoload.files, then register
+ *      service providers. Files load after PSR-4 so a module helpers.php may
+ *      reference the addon's own classes; they load before providers so a
+ *      provider can rely on those global helpers.
  */
 class AddonAutoLoader
 {
@@ -61,6 +64,7 @@ class AddonAutoLoader
 
         foreach ($rows as $entry) {
             $this->registerPsr4($loader, $entry);
+            $this->loadAutoloadFiles($entry);
             $this->registerProviders($app, $entry);
         }
     }
@@ -99,6 +103,31 @@ class AddonAutoLoader
 
         // Composer tolerates non-existent paths; stale-path rows simply load nothing.
         $loader->addPsr4($prefix, $entry->autoloadPath);
+    }
+
+    /**
+     * Require each composer `autoload.files` entry declared by the addon.
+     *
+     * Mirrors the root project's `app/helpers.php` autoload for modules: global
+     * functions defined in a module's helpers file become available at runtime.
+     *
+     * Uses require_once guarded by is_file() so repeated registration in the
+     * same process (Octane worker reuse) cannot "cannot redeclare function" —
+     * and stale paths are skipped, consistent with registerPsr4().
+     */
+    private function loadAutoloadFiles(AddonBootCache $entry): void
+    {
+        foreach ($entry->files as $file) {
+            if ($file === '') {
+                continue;
+            }
+
+            if (!is_file($file)) {
+                continue;
+            }
+
+            require_once $file;
+        }
     }
 
     /**

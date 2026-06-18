@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use App\Addons\Models\AddonManifest;
+use App\Support\Filesystem;
 
 /**
  * Lenient parser for addon module.json + composer.json manifests.
@@ -70,6 +71,9 @@ class ManifestParser
         // --- database.tables: addon-owned tables for uninstall (D-16) ---
         $tables = $this->resolveTables($data);
 
+        // --- autoload.files: module global helper files loaded at runtime ---
+        $files = $this->resolveFiles($addonPath, $composerData);
+
         return new AddonManifest(
             schema_version: $schema_version,
             name: (string) $name,
@@ -86,7 +90,54 @@ class ManifestParser
             layout: $layout,
             description: $description,
             tables: $tables,
+            files: $files,
         );
+    }
+
+    /**
+     * Resolve the addon's composer.json `autoload.files` into absolute paths.
+     *
+     * Each non-blank string entry is joined onto the addon directory. Entries
+     * that escape the addon directory (e.g. "../../app/helpers.php") are
+     * rejected so an addon manifest can never point the loader at core code.
+     * Returns an empty list when the key is absent or malformed.
+     *
+     * @param  array<string, mixed> $composerData Pre-decoded composer.json data.
+     * @return list<string>
+     */
+    private function resolveFiles(string $addonPath, array $composerData): array
+    {
+        $files = $composerData['autoload']['files'] ?? null;
+
+        if (!is_array($files)) {
+            return [];
+        }
+
+        $resolved = [];
+
+        foreach ($files as $file) {
+            if (!is_string($file)) {
+                continue;
+            }
+
+            $trimmed = trim($file);
+
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $absolute = $addonPath.'/'.ltrim($trimmed, '/');
+
+            if (!Filesystem::isWithin($addonPath, $absolute)) {
+                continue;
+            }
+
+            if (!in_array($absolute, $resolved, true)) {
+                $resolved[] = $absolute;
+            }
+        }
+
+        return $resolved;
     }
 
     /**
@@ -214,11 +265,8 @@ class ManifestParser
 
             // Reject psr-4 values that escape the addon directory (e.g.
             // "../../app"), which would point the PSR-4 loader at core code.
-            $realBase = realpath($addonPath);
-            $realAutoload = realpath($autoloadPath);
-
-            if ($realBase !== false && $realAutoload !== false
-                && !str_starts_with($realAutoload.DIRECTORY_SEPARATOR, $realBase.DIRECTORY_SEPARATOR)) {
+            // Lexical check so a non-existent path can't slip through.
+            if (!Filesystem::isWithin($addonPath, $autoloadPath)) {
                 return [$addonPath, 'root'];
             }
 

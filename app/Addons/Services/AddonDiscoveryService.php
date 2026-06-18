@@ -263,6 +263,7 @@ class AddonDiscoveryService
             layout: $m->layout,
             description: $m->description,
             enabled: $enabled,
+            files: $m->files,
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Sources;
 
 use App\Exceptions\AddonInstallException;
+use App\Support\Filesystem;
 use Illuminate\Support\Facades\File;
 use Throwable;
 use ZipArchive;
@@ -66,7 +67,7 @@ class ZipSource implements AddonSource
             foreach (File::allFiles($dest) as $file) {
                 $real = realpath($file->getPathname());
 
-                if ($real === false || !str_starts_with($real, $realDest.DIRECTORY_SEPARATOR)) {
+                if ($real === false || !Filesystem::isWithin($realDest, $real)) {
                     File::deleteDirectory($dest);
 
                     throw new AddonInstallException(sprintf('Zip entry escaped staging directory: %s', $file->getPathname()));

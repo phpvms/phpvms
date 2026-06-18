@@ -492,6 +492,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         if ($this->hasRole(Utils::getSuperAdminName())) {
             return true;
         }
+
         if ($this->can('access:'.$panel->getId())) {
             return true;
         }

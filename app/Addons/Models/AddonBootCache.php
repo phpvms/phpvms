@@ -25,6 +25,8 @@ final readonly class AddonBootCache
      * @param string       $layout       Layout hint: 'root' or 'app'.
      * @param string|null  $description  Human-readable description; null when absent.
      * @param bool         $enabled      Whether the addon is active.
+     * @param list<string> $files        Absolute paths declared under composer.json
+     *                                   `autoload.files`, required once per boot cycle.
      */
     public function __construct(
         public string $name,
@@ -39,6 +41,7 @@ final readonly class AddonBootCache
         public string $layout,
         public ?string $description,
         public bool $enabled,
+        public array $files = [],
     ) {}
 
     /**
@@ -61,6 +64,7 @@ final readonly class AddonBootCache
             layout: (string) ($data['layout'] ?? 'app'),
             description: isset($data['description']) ? (string) $data['description'] : null,
             enabled: (bool) ($data['enabled'] ?? false),
+            files: array_values(array_filter((array) ($data['files'] ?? []), is_string(...))),
         );
     }
 
@@ -84,6 +88,7 @@ final readonly class AddonBootCache
             'layout'        => $this->layout,
             'description'   => $this->description,
             'enabled'       => $this->enabled,
+            'files'         => $this->files,
         ];
     }
 }

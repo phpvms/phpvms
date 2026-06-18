@@ -44,6 +44,10 @@ final readonly class AddonManifest
      *                                             under module.json `database.tables`. Used to
      *                                             drop the addon's tables on uninstall; empty when
      *                                             undeclared (D-16).
+     * @param list<string>         $files          Absolute filesystem paths declared under
+     *                                             composer.json `autoload.files`. Loaded once per
+     *                                             boot cycle so module global helpers are available;
+     *                                             empty when undeclared.
      *
      * @mago-ignore lint:excessive-parameter-list
      */
@@ -63,5 +67,6 @@ final readonly class AddonManifest
         public string $layout,
         public ?string $description,
         public array $tables = [],
+        public array $files = [],
     ) {}
 }

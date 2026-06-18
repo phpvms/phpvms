@@ -17,6 +17,9 @@
     "autoload": {
         "psr-4": {
             "Modules\\Sample\\": "."
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     }
 }
