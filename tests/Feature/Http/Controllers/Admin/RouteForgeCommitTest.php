@@ -6,11 +6,11 @@ use App\Models\Airline;
 use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Tests\Support\RouteForgeTestHelpers as RF;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 });
 

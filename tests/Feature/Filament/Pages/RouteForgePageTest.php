@@ -7,12 +7,12 @@ use App\Models\Airline;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use App\Models\User;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 });
 
 it('runs zero data-loading Eloquent queries at page mount', function (): void {
@@ -66,7 +66,7 @@ it('does NOT render the legacy window.routeforgeConfig envelope', function (): v
         ->assertDontSeeHtml('window.routeforgeConfig');
 });
 
-it('blocks users without the create:flight permission', function (): void {
+it('blocks users without the edit:flight permission', function (): void {
     $this->actingAs(User::factory()->create());
 
     expect(RouteForge::canAccess())->toBeFalse();

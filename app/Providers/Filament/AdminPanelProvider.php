@@ -8,7 +8,6 @@ use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
 use App\Filament\Plugins\SidebarCollapseTogglePlugin;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -88,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url('/'),
 
                 NavigationItem::make()
-                    ->visible(fn (): bool => auth()->user()->can('view-logs'))
+                    ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
                     ->group(EnumsNavigationGroup::Developers)
                     ->sort(3)
                     ->icon(Heroicon::OutlinedDocumentText)
@@ -96,10 +95,6 @@ class AdminPanelProvider extends PanelProvider
                     ->url(config('log-viewer.route_path')),
             ])
             ->plugins([
-                FilamentShieldPlugin::make()
-                    ->navigationGroup(EnumsNavigationGroup::Config)
-                    ->navigationSort(1),
-
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
                 PanelSwitcherPlugin::make(),

@@ -6,7 +6,6 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Finances;
 use App\Models\Airline;
 use App\Models\JournalTransaction;
-use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -18,7 +17,6 @@ use Override;
 
 class AirlineFinanceChart extends ChartWidget
 {
-    use HasWidgetShield;
     use InteractsWithPageFilters;
 
     protected ?string $heading = 'Finance';

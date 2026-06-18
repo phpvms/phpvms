@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Airport;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 });
 

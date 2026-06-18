@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            ShieldSeeder::class,
+            RolesPermissionsSeeder::class,
             SettingsSeeder::class,
             BaseDataSeeder::class,
         ];

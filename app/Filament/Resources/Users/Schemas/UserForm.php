@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use App\Enums\UserState;
 use App\Models\Airport;
+use App\Models\Role;
 use App\Support\Timezonelist;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -119,7 +120,7 @@ class UserForm
 
                         Select::make('roles')
                             ->label(trans_choice('common.role', 2))
-                            ->visible(Auth::user()?->hasRole('super_admin') ?? false)
+                            ->visible(Auth::user()?->hasRole(Role::superAdminName()) ?? false)
                             ->relationship('roles', 'name')
                             ->searchable()
                             ->preload()

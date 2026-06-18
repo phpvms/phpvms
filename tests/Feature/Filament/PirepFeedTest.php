@@ -2,7 +2,7 @@
 
 use App\Enums\PirepState;
 use App\Models\Pirep;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 
 /**
  * Smoke test: feed-style PIREP admin list renders.
@@ -11,7 +11,7 @@ use Database\Seeders\ShieldSeeder;
  * end-to-end against the real list page route.
  */
 test('admin pirep list renders feed-style rows', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);

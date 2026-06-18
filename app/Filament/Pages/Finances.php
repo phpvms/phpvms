@@ -3,11 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
 use App\Models\Airline;
 use BackedEnum;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -24,8 +24,8 @@ use UnitEnum;
 
 class Finances extends Page
 {
+    use AuthorizesAccess;
     use HasFiltersForm;
-    use HasPageShield;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
 

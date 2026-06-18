@@ -6,11 +6,11 @@ use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Pages\EditFlight;
 use App\Models\Flight;
 use App\Models\FlightBundle;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 it('hides flight date pickers when bundle has dates and renders message', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -42,7 +42,7 @@ it('hides flight date pickers when bundle has dates and renders message', functi
 });
 
 it('shows flight date pickers when bundle has no dates', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
@@ -64,7 +64,7 @@ it('shows flight date pickers when bundle has no dates', function (): void {
 });
 
 it('escapes HTML in bundle name within bundle-owned-dates placeholder', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 

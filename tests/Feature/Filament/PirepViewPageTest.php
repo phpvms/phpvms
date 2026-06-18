@@ -3,10 +3,10 @@
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 
 test('admin view-pirep page renders detail layout', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
@@ -21,7 +21,7 @@ test('admin view-pirep page renders detail layout', function (): void {
 });
 
 test('admin pirep list links each card to view-pirep page', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);

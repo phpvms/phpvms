@@ -10,11 +10,11 @@ use App\Models\Airline;
 use App\Models\Fare;
 use App\Models\Subfleet;
 use App\Services\FareService;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 it('shows and persists the auto-price fields on the fare form', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     createAdminUser();
     $fare = Fare::factory()->create();
@@ -38,7 +38,7 @@ it('shows and persists the auto-price fields on the fare form', function (): voi
 });
 
 it('shows and persists the low-cost flag on the airline form', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     createAdminUser();
     // Valid icao/iata/country so the form passes its own validation on save.
@@ -62,7 +62,7 @@ it('shows and persists the low-cost flag on the airline form', function (): void
 });
 
 it('hides the auto-price override columns by default when auto pricing is disabled', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
     updateSetting('fares.auto_price', false);
 
     createAdminUser();
@@ -82,7 +82,7 @@ it('hides the auto-price override columns by default when auto pricing is disabl
 });
 
 it('shows the auto-price override columns by default when auto pricing is enabled', function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
     updateSetting('fares.auto_price', true);
 
     createAdminUser();

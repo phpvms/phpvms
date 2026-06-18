@@ -4,8 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Addons\AddonRegistry;
 use App\Enums\NavigationGroup;
+use App\Filament\Concerns\AuthorizesAccess;
 use BackedEnum;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Pages\Page;
@@ -24,7 +24,7 @@ use UnitEnum;
 
 class Addons extends Page implements HasTable
 {
-    use HasPageShield;
+    use AuthorizesAccess;
     use InteractsWithTable;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
@@ -32,6 +32,16 @@ class Addons extends Page implements HasTable
     protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
+
+    /**
+     * The addons area's permission is historically named `modules` (see the v7
+     * import migration, User::canAccessPanel, and ModuleLinksPlugin), so pin the
+     * key rather than deriving `addons` from the class name.
+     */
+    public static function getPermissionKey(): string
+    {
+        return 'modules';
+    }
 
     #[Override]
     public static function getNavigationLabel(): string

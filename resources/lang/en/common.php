@@ -136,6 +136,7 @@ return [
     'user_field'            => 'User Field|User Fields',
     'pirep_field'           => 'PIREP Field|PIREPs Fields',
     'role'                  => 'Role|Roles',
+    'permission'            => 'Permission|Permissions',
     'registered_on'         => 'Registered On',
     'finances'              => 'Finances',
     'revenue'               => 'Revenue',

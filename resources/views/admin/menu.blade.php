@@ -9,24 +9,24 @@
 
   <div class="collapse" id="operations_menu" aria-expanded="true">
     <ul class="nav">
-      @can('view-any:pirep')
+      @can('view:pirep')
         <li><a href="{{ \App\Filament\Resources\Pireps\PirepResource::getUrl() }}"><i class="pe-7s-cloud-upload"></i>pireps
             <span data-toggle="tooltip" title="3 New" class="badge bg-light-blue pull-right">3</span>
           </a>
         </li>
       @endcan
 
-      @can('view-any:flight')
+      @can('view:flight')
         <li><a href="{{ \App\Filament\Resources\FlightBundles\FlightBundleResource::getUrl() }}"><i class="pe-7s-vector"></i>flights</a>
         </li>
       @endcan
 
-      @can('view-any:subfleet')
+      @can('view:subfleet')
         <li><a href="{{ \App\Filament\Resources\Subfleets\SubfleetResource::getUrl() }}"><i class="pe-7s-plane"></i>fleet</a>
         </li>
       @endcan
 
-      @can('view-any:fare')
+      @can('view:fare')
         <li><a href="{{ \App\Filament\Resources\Fares\FareResource::getUrl() }}"><i class="pe-7s-graph2"></i>fares</a></li>
       @endcan
 
@@ -34,7 +34,7 @@
         <li><a href="{{ \App\Filament\Pages\Finances::getUrl() }}"><i class="pe-7s-display1"></i>finances</a></li>
       @endcan
 
-      @can('view-any:user')
+      @can('view:user')
         <li><a href="{{ \App\Filament\Resources\Users\UserResource::getUrl() }}"><i class="pe-7s-users"></i>users</a>
         </li>
       @endcan
@@ -49,47 +49,47 @@
 
   <div class="collapse" id="config_menu" aria-expanded="true">
     <ul class="nav">
-      @can('view-any:airline')
+      @can('view:airline')
         <li><a href="{{ \App\Filament\Resources\Airlines\AirlineResource::getUrl() }}"><i class="pe-7s-paper-plane"></i>airlines</a>
         </li>
       @endcan
 
-      @can('view-any:sim-brief-airframe')
+      @can('view:sim-brief-airframe')
         <li><a href="{{ \App\Filament\Resources\SimBriefAirframes\SimBriefAirframeResource::getUrl() }}"><i class="pe-7s-plane"></i>sb airframes</a></li>
       @endcan
 
-      @can('view-any:airport')
+      @can('view:airport')
         <li><a href="{{ \App\Filament\Resources\Airports\AirportResource::getUrl() }}"><i
               class="pe-7s-map-marker"></i>airports</a></li>
       @endcan
 
-      @can('view-any:expense')
+      @can('view:expense')
         <li><a href="{{ \App\Filament\Resources\Expenses\ExpenseResource::getUrl() }}"><i class="pe-7s-cash"></i>expenses</a>
         </li>
       @endcan
 
-      @can('view-any:rank')
+      @can('view:rank')
         <li><a href="{{ \App\Filament\Resources\Ranks\RankResource::getUrl() }}"><i class="pe-7s-graph1"></i>ranks</a>
         </li>
       @endcan
 
-      @can('view-any:typerating')
+      @can('view:typerating')
         <li><a href="{{ \App\Filament\Resources\Typeratings\TyperatingResource::getUrl() }}"><i class="pe-7s-plane"></i>type
             ratings</a>
         </li>
       @endcan
 
-      @can('view-any:award')
+      @can('view:award')
         <li><a href="{!! \App\Filament\Resources\Awards\AwardResource::getUrl() !!}"><i class="pe-7s-diamond"></i>awards</a>
         </li>
       @endcan
 
-      @can('view-any:role')
-        <li><a href="{{ \BezhanSalleh\FilamentShield\Resources\Roles\RoleResource::getUrl() }}"><i
+      @can('view:role')
+        <li><a href="{{ \App\Filament\Resources\Roles\RoleResource::getUrl() }}"><i
               class="pe-7s-network"></i>roles</a></li>
       @endcan
 
-      @can('view-any:page')
+      @can('view:page')
         <li><a href="{{ \App\Filament\Resources\Pages\PageResource::getUrl() }}"><i class="pe-7s-note"></i>pages/links</a>
         </li>
       @endcan
@@ -103,7 +103,7 @@
         <li><a href="{{ \App\Filament\Pages\Maintenance::getUrl() }}"><i class="pe-7s-tools"></i>maintenance</a></li>
       @endcan
 
-      @can('view-any:activity')
+      @can('view:activity')
         <li><a href="{{ \App\Filament\Resources\ActivityLogs\ActivityLogResource::getUrl() }}"><i class="pe-7s-news-paper"></i>activities</a></li>
       @endcan
 

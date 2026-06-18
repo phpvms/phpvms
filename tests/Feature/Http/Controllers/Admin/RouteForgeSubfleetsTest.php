@@ -7,10 +7,10 @@ use App\Enums\FlightType;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Subfleet;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 });
 

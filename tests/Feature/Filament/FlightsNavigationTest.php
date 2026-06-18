@@ -13,11 +13,11 @@ use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\FlightBundle;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     createAdminUser();
 });

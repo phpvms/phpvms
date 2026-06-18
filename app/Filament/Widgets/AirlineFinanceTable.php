@@ -6,7 +6,6 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Finances;
 use App\Models\Airline;
 use App\Models\JournalTransaction;
-use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -19,7 +18,6 @@ use Override;
 
 class AirlineFinanceTable extends TableWidget
 {
-    use HasWidgetShield;
     use InteractsWithPageFilters;
 
     protected static ?string $pollingInterval = null;

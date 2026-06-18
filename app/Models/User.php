@@ -5,8 +5,8 @@ namespace App\Models;
 use App\Enums\JournalType;
 use App\Enums\UserState;
 use App\Observers\UserObserver;
+use App\Services\PermissionRegistry;
 use App\Traits\JournalTrait;
-use BezhanSalleh\FilamentShield\Support\Utils;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -33,7 +33,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -489,11 +488,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         // For module panels: the panel id equals the module key, so access is
         // gated by the per-module `access:{module-key}` permission (registered
         // via PermissionRegistry), with the legacy `view:modules` as fallback.
-        if ($this->hasRole(Utils::getSuperAdminName())) {
+        if ($this->hasRole(Role::superAdminName())) {
             return true;
         }
 
         if ($this->can('access:'.$panel->getId())) {
+            return true;
+        }
+
+        // Each module panel is gated by its own `access:<module>` permission,
+        // with the generic `view:modules` as a fallback for any module panel.
+        $moduleKey = app(PermissionRegistry::class)->moduleKeyForPanel($panel);
+
+        if ($moduleKey !== null && $this->can('access:'.$moduleKey)) {
             return true;
         }
 
@@ -502,7 +509,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function hasAdminAccess(): bool
     {
-        if ($this->hasRole(Utils::getSuperAdminName().'|admin')) {
+        if ($this->hasRole(Role::superAdminName().'|admin')) {
             return true;
         }
 

@@ -8,13 +8,13 @@ use App\Jobs\RecomputeBundleVisibility;
 use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
-use Database\Seeders\ShieldSeeder;
+use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->seed(ShieldSeeder::class);
+    $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
 
