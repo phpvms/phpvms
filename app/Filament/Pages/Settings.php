@@ -203,7 +203,7 @@ class Settings extends Page
                                 ->integer();
                         }
 
-                        if ($setting->type === 'number') {
+                        if ($setting->type === 'number' || $setting->type === 'float') {
                             return TextInput::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)

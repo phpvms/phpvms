@@ -2,9 +2,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun x --bun vite",
+    "dev": "vite",
     "dev:components": "bun bin/build.js --dev",
-    "build": "bun x --bun vite build && bun bin/build.js",
+    "build": "vite build && bun bin/build.js",
     "build:components": "bun bin/build.js",
     "clean": "rm -rf public/build resources/js/dist",
     "lint": "oxlint",
@@ -12,7 +12,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
-    "test": "bun x --bun vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
@@ -47,7 +47,7 @@
     "sass": "^1.54.5",
     "tailwindcss": "^4.1.11",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10",
+    "vite": "^8.0.16",
     "vitest": "^4.1.7"
   }
 }

@@ -13,19 +13,18 @@ namespace App\Addons\Models;
 final readonly class AddonBootCache
 {
     /**
-     * @param string                               $name         Human-readable module name.
-     * @param string|null                          $alias        Short machine alias; null when absent.
-     * @param string                               $type         Addon type ('module', 'theme', etc.).
-     * @param string|null                          $registryId   Registry canonical identity; null for bundled addons.
-     * @param string|null                          $version      Version string; null when absent.
-     * @param string                               $namespace    PSR-4 root namespace.
-     * @param list<string>                         $providers    Service-provider class names.
-     * @param string                               $path         Absolute path to the addon directory.
-     * @param string                               $autoloadPath Absolute path the PSR-4 namespace resolves to.
-     * @param string                               $layout       Layout hint: 'root' or 'app'.
-     * @param string|null                          $description  Human-readable description; null when absent.
-     * @param bool                                 $enabled      Whether the addon is active.
-     * @param array<string, array<string, string>> $filament     Panel → component → directory map.
+     * @param string       $name         Human-readable module name.
+     * @param string|null  $alias        Short machine alias; null when absent.
+     * @param string       $type         Addon type ('module', 'theme', etc.).
+     * @param string|null  $registryId   Registry canonical identity; null for bundled addons.
+     * @param string|null  $version      Version string; null when absent.
+     * @param string       $namespace    PSR-4 root namespace.
+     * @param list<string> $providers    Service-provider class names.
+     * @param string       $path         Absolute path to the addon directory.
+     * @param string       $autoloadPath Absolute path the PSR-4 namespace resolves to.
+     * @param string       $layout       Layout hint: 'root' or 'app'.
+     * @param string|null  $description  Human-readable description; null when absent.
+     * @param bool         $enabled      Whether the addon is active.
      */
     public function __construct(
         public string $name,
@@ -40,7 +39,6 @@ final readonly class AddonBootCache
         public string $layout,
         public ?string $description,
         public bool $enabled,
-        public array $filament,
     ) {}
 
     /**
@@ -63,7 +61,6 @@ final readonly class AddonBootCache
             layout: (string) ($data['layout'] ?? 'app'),
             description: isset($data['description']) ? (string) $data['description'] : null,
             enabled: (bool) ($data['enabled'] ?? false),
-            filament: (array) ($data['filament'] ?? []),
         );
     }
 
@@ -87,7 +84,6 @@ final readonly class AddonBootCache
             'layout'        => $this->layout,
             'description'   => $this->description,
             'enabled'       => $this->enabled,
-            'filament'      => $this->filament,
         ];
     }
 }

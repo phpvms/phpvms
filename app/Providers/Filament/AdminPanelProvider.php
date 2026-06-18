@@ -6,7 +6,7 @@ use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
-use App\Filament\Plugins\ModuleLinksPlugin;
+use App\Filament\Plugins\PanelSwitcherPlugin;
 use App\Filament\Plugins\SidebarCollapseTogglePlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -76,7 +76,6 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name,
                 EnumsNavigationGroup::Config->name,
-                EnumsNavigationGroup::AddOns->name,
                 EnumsNavigationGroup::Developers->name,
             ])
             ->navigationItems([
@@ -98,7 +97,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-                ModuleLinksPlugin::make(),
+                PanelSwitcherPlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
                 SidebarCollapseTogglePlugin::make(),

@@ -167,7 +167,6 @@ class AppServiceProvider extends ServiceProvider
         /**
          * Data automatically injected in views
          */
-        View::share('moduleSvc', app(ModuleService::class));
         View::composer('admin.sidebar', VersionComposer::class);
 
         /** @noinspection LaravelUnknownViewInspection */
@@ -208,9 +207,6 @@ class AppServiceProvider extends ServiceProvider
             $app['config']['view.paths']
         ));
 
-        // Module nav links accumulate across each addon provider's boot() via
-        // addAdminLink()/addFrontendLink(); the reader (ModuleLinksPlugin,
-        // nav views) must see the same instance, so it has to be a singleton.
         $this->app->singleton(ModuleService::class);
 
         // Permission registry: modules register custom permissions into the

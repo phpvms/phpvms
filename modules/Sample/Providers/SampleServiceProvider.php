@@ -2,27 +2,25 @@
 
 namespace Modules\Sample\Providers;
 
-use App\Services\ModuleService;
+use Config;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use Route;
 
 class SampleServiceProvider extends ServiceProvider
 {
-    protected $moduleSvc;
-
     /**
      * Boot the application events.
+     *
+     * The module's admin UI lives in its own Filament panel — see
+     * SampleAdminPanelProvider. There is no admin/frontend "link" registration.
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->moduleSvc = app(ModuleService::class);
-
         $this->registerRoutes();
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-
-        $this->registerLinks();
 
         $this->loadMigrationsFrom(__DIR__.'/../Database/migrations');
     }
@@ -30,21 +28,10 @@ class SampleServiceProvider extends ServiceProvider
     /**
      * Register the service provider.
      */
-    public function register()
+    #[Override]
+    public function register(): void
     {
         //
-    }
-
-    /**
-     * Add module links here
-     */
-    public function registerLinks()
-    {
-        // Show this link if logged in
-        // $this->moduleSvc->addFrontendLink('Sample', '/sample', '', $logged_in=true);
-
-        // Admin links:
-        $this->moduleSvc->addAdminLink('Sample', '/admin/sample', 'pe-7s-note');
     }
 
     /**
@@ -61,21 +48,8 @@ class SampleServiceProvider extends ServiceProvider
             // If you want a RESTful module, change this to 'api'
             'middleware' => ['web'],
             'namespace'  => 'Modules\Sample\Http\Controllers',
-        ], function () {
+        ], function (): void {
             $this->loadRoutesFrom(__DIR__.'/../Http/Routes/web.php');
-        });
-
-        /*
-         * Routes for the admin
-         */
-        Route::group([
-            'as'     => 'sample.',
-            'prefix' => 'admin/sample',
-            // If you want a RESTful module, change this to 'api'
-            'middleware' => ['web', 'role:admin'],
-            'namespace'  => 'Modules\Sample\Http\Controllers\Admin',
-        ], function () {
-            $this->loadRoutesFrom(__DIR__.'/../Http/Routes/admin.php');
         });
 
         /*
@@ -87,7 +61,7 @@ class SampleServiceProvider extends ServiceProvider
             // If you want a RESTful module, change this to 'api'
             'middleware' => ['api'],
             'namespace'  => 'Modules\Sample\Http\Controllers\Api',
-        ], function () {
+        ], function (): void {
             $this->loadRoutesFrom(__DIR__.'/../Http/Routes/api.php');
         });
     }
@@ -109,7 +83,7 @@ class SampleServiceProvider extends ServiceProvider
     /**
      * Register views.
      */
-    public function registerViews()
+    public function registerViews(): void
     {
         $viewPath = resource_path('views/modules/sample');
         $sourcePath = __DIR__.'/../Resources/views';
@@ -119,10 +93,8 @@ class SampleServiceProvider extends ServiceProvider
         ], 'views');
 
         $paths = array_map(
-            function ($path) {
-                return $path.'/modules/sample';
-            },
-            \Config::get('view.paths')
+            fn (string $path): string => $path.'/modules/sample',
+            Config::get('view.paths')
         );
 
         $paths[] = $sourcePath;
@@ -132,7 +104,7 @@ class SampleServiceProvider extends ServiceProvider
     /**
      * Register translations.
      */
-    public function registerTranslations()
+    public function registerTranslations(): void
     {
         $langPath = resource_path('lang/modules/sample');
 
@@ -146,6 +118,7 @@ class SampleServiceProvider extends ServiceProvider
     /**
      * Get the services provided by the provider.
      */
+    #[Override]
     public function provides(): array
     {
         return [];

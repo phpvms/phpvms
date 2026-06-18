@@ -182,7 +182,10 @@ class Subfleet extends Model
         return $this->belongsToMany(Fare::class, 'subfleet_fare')->withPivot(
             'price',
             'cost',
-            'capacity'
+            'capacity',
+            'base_price',
+            'per_nm',
+            'multiplier'
         );
     }
 

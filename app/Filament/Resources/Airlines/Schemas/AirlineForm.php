@@ -55,6 +55,15 @@ class AirlineForm
                             ->onIcon(Heroicon::CheckCircle)
                             ->offColor('danger')
                             ->offIcon(Heroicon::XCircle),
+
+                        Toggle::make('low_cost')
+                            ->label(__('filament.airline_low_cost'))
+                            ->helperText(__('filament.airline_low_cost_hint'))
+                            ->inline()
+                            ->onColor('success')
+                            ->onIcon(Heroicon::CheckCircle)
+                            ->offColor('danger')
+                            ->offIcon(Heroicon::XCircle),
                     ])
                     ->columnSpanFull()
                     ->columns(3),

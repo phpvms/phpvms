@@ -114,19 +114,3 @@
   </div>
 </li>
 
-<li>
-  <a data-toggle="collapse" href="#addons_menu" class="menu addons_menu" aria-expanded="true">
-    <h5>addons&nbsp;<b class="pe-7s-angle-right"></b></h5>
-  </a>
-
-  <div class="collapse" id="addons_menu" aria-expanded="true">
-    <ul class="nav">
-      @can('view:modules')
-        @foreach($moduleSvc->getAdminLinks() as &$link)
-          <li><a href="{{ url($link['url']) }}"><i class="{{ $link['icon'] }}"></i>{{ $link['title'] }}</a></li>
-        @endforeach
-      @endcan
-    </ul>
-  </div>
-</li>
-

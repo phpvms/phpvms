@@ -6,7 +6,6 @@ namespace App\Providers;
 
 use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
-use App\Addons\Filament\FilamentPanelExtender;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AutoloadGuard;
@@ -25,8 +24,10 @@ use Override;
  *     Skipped in console (D-17) to avoid blocking migrate/install/tests.
  *  3. Runs the AddonLoader in all contexts so artisan sees addon
  *     commands and migrations (D2-11). No-ops on empty cache.
- *  4. Hooks FilamentPanelExtender into beforeResolving('filament', ...)
- *     so addon Filament discovery is applied before panels resolve (D2-07).
+ *
+ * Modules own their Filament UI via their own panel (see
+ * App\Contracts\Modules\PanelProvider); the engine no longer injects module
+ * Filament components into the core admin/system panels.
  *
  * boot() auto-primes the boot cache when absent/stale (D2-09). This is the
  * only step that queries the database, so it is deferred out of register()
@@ -37,7 +38,7 @@ use Override;
 class AddonServiceProvider extends ServiceProvider
 {
     /**
-     * Bind engine services and run loader + Filament hook.
+     * Bind engine services and run the addon loader.
      *
      * All singletons are Octane-safe: no mutable instance properties.
      */
@@ -52,7 +53,6 @@ class AddonServiceProvider extends ServiceProvider
 
         // ── Phase 2 singletons ──────────────────────────────────────────────
         $this->app->singleton(AddonAutoLoader::class);
-        $this->app->singleton(FilamentPanelExtender::class);
         $this->app->singleton(AddonAssetLinker::class, fn (): AddonAssetLinker => AddonAssetLinker::fromConfig());
         $this->app->singleton(AddonRegistry::class);
 
@@ -72,12 +72,6 @@ class AddonServiceProvider extends ServiceProvider
         // The loader contains its own guard call (re-checks the resolved ClassLoader);
         // both guards are intentional — see provider-level comment above (LOAD-08).
         $this->app->make(AddonAutoLoader::class)->register($this->app);
-
-        // ── Filament hook (D2-07) ────────────────────────────────────────────
-        // Apply addon Filament discovery paths before panels resolve.
-        $this->app->beforeResolving('filament', function (): void {
-            $this->app->make(FilamentPanelExtender::class)->apply();
-        });
     }
 
     /**

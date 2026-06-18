@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sample\Filament\Resources;
 
-use App\Enums\NavigationGroup;
+use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -13,18 +13,17 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Modules\Sample\Filament\Resources\SampleResource\Pages\ListSampleItems;
 use Modules\Sample\Models\SampleTable;
+use Override;
 
 class SampleResource extends Resource
 {
     protected static ?string $model = SampleTable::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedBeaker;
-
-    protected static string|\UnitEnum|null $navigationGroup = NavigationGroup::AddOns;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBeaker;
 
     protected static ?string $navigationLabel = 'Sample Items';
 
-    #[\Override]
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -35,7 +34,7 @@ class SampleResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function table(Table $table): Table
     {
         return $table
@@ -46,13 +45,13 @@ class SampleResource extends Resource
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function getRelations(): array
     {
         return [];
     }
 
-    #[\Override]
+    #[Override]
     public static function getPages(): array
     {
         return [

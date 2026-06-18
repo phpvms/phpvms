@@ -32,6 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $country
  * @property string|null $logo
  * @property bool        $active
+ * @property bool        $low_cost
  * @property int|null    $total_flights
  * @property int|null    $total_time
  * @property Carbon|null $created_at
@@ -113,6 +114,7 @@ class Airline extends Model
         'total_flights',
         'total_time',
         'active',
+        'low_cost',
     ];
 
     public $sortable = [
@@ -206,6 +208,7 @@ class Airline extends Model
             'total_flights' => 'int',
             'total_time'    => 'int',
             'active'        => 'boolean',
+            'low_cost'      => 'boolean',
         ];
     }
 

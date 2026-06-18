@@ -74,11 +74,13 @@ jobs:
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
 
+      - uses: oven-sh/setup-bun@v2
+
       - name: Install NPM dependencies
-        run: npm install
+        run: bun install --ignore-scripts
 
       - name: Compile assets
-        run: npm run build
+        run: bun run build
 
       - name: Publish Filament assets
         run: php artisan filament:assets
