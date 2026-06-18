@@ -18,7 +18,6 @@ use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 /**
  * Lifecycle façade for addons. Owns reads (find/all/enabled), enable/disable,
@@ -288,7 +287,8 @@ class AddonRegistry
             }
         }
 
-        $safe = Str::studly((string) preg_replace('/[^A-Za-z]+/', ' ', $manifest->name));
+        $safe = strtolower((string) preg_replace('/[^A-Za-z0-9]+/', '-', $manifest->name));
+        $safe = trim($safe, '-');
 
         if ($safe === '') {
             throw new AddonInstallException(sprintf('Invalid addon name: %s', $manifest->name));
