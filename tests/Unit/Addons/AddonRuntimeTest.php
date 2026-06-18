@@ -30,7 +30,6 @@ function makeAddonBootCache(array $overrides = []): AddonBootCache
         'layout'        => 'app',
         'description'   => null,
         'enabled'       => true,
-        'filament'      => [],
     ], $overrides));
 }
 

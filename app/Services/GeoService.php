@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Enums\AcarsType;
 use App\Models\Acars;
+use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
@@ -20,6 +21,7 @@ use League\Geotools\Distance\Distance;
 use League\Geotools\Exception\InvalidArgumentException;
 use League\Geotools\Geotools;
 use League\Geotools\Vertex\Vertex;
+use Throwable;
 
 class GeoService extends Service
 {
@@ -48,6 +50,34 @@ class GeoService extends Service
         $min = $distance->min();
 
         return $all_coords[$distance->search($min, true)];
+    }
+
+    /**
+     * Great-circle distance between two airports, in nautical miles. Returns
+     * null when either airport is missing usable coordinates or the distance
+     * cannot be computed, so callers can fall back to a stored distance.
+     */
+    public function airportDistance(Airport $from, Airport $to): ?float
+    {
+        if (blank($from->lat) || blank($from->lon) || blank($to->lat) || blank($to->lon)) {
+            return null;
+        }
+
+        try {
+            $geotools = new Geotools();
+            /** @var Distance $dist */
+            $dist = $geotools->distance()
+                ->setFrom(new Coordinate([(float) $from->lat, (float) $from->lon]))
+                ->setTo(new Coordinate([(float) $to->lat, (float) $to->lon]));
+            $meters = $dist->greatCircle();
+        } catch (Throwable $throwable) {
+            Log::warning('Auto fare price: unable to compute great-circle distance: '.$throwable->getMessage());
+
+            return null;
+        }
+
+        // greatCircle() returns meters; 1 nautical mile = 1852 meters exactly.
+        return $meters / 1852.0;
     }
 
     /**

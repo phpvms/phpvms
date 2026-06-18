@@ -57,17 +57,14 @@ function registerFixturePsr4(): void
  * each time. Laravel deduplicates by class, so calling this is idempotent
  * within a single app instance.
  *
- * Calls refreshNameLookups() after registration because routes added via
- * loadRoutesFrom() after the framework boot phase are not automatically
- * indexed into the route name lookup table.
+ * The provider loads its routes from a deferred booted() callback and refreshes
+ * the name/action lookups itself, so addon routes are resolvable here without
+ * the test having to rebuild the lookup tables.
  */
 function registerFixtureAddon(): void
 {
     registerFixturePsr4();
     app()->register(AcmeServiceProvider::class);
-
-    // Routes added post-boot are not auto-indexed; refresh the name lookup.
-    Route::getRoutes()->refreshNameLookups();
 
     // Commands registered via $this->commands() use Artisan::starting() callbacks,
     // which only fire when the Artisan Console Application is first created. During

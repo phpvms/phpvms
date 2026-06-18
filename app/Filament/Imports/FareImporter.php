@@ -28,6 +28,15 @@ class FareImporter extends Importer
             ImportColumn::make('price')
                 ->numeric()
                 ->rules(['nullable', 'integer']),
+            ImportColumn::make('base_price')
+                ->numeric()
+                ->rules(['nullable', 'numeric']),
+            ImportColumn::make('per_nm')
+                ->numeric()
+                ->rules(['nullable', 'numeric']),
+            ImportColumn::make('multiplier')
+                ->numeric()
+                ->rules(['nullable', 'numeric']),
             ImportColumn::make('cost')
                 ->numeric()
                 ->rules(['nullable', 'integer']),

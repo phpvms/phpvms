@@ -24,10 +24,21 @@ class AirlineFactory extends Factory
 
                 return $hashids->encode($mt);
             },
-            'iata'    => fn (array $apt) => $apt['icao'],
-            'name'    => fake()->company(),
-            'country' => fake()->countryCode(),
-            'active'  => 1,
+            'iata'     => fn (array $apt) => $apt['icao'],
+            'name'     => fake()->company(),
+            'country'  => fake()->countryCode(),
+            'active'   => 1,
+            'low_cost' => false,
         ];
+    }
+
+    /**
+     * Flag the airline as a low-cost carrier.
+     */
+    public function lowCost(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'low_cost' => true,
+        ]);
     }
 }

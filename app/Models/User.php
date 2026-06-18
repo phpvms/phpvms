@@ -486,8 +486,14 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             return $this->hasAdminAccess();
         }
 
-        // For modules panels
+        // For module panels: the panel id equals the module key, so access is
+        // gated by the per-module `access:{module-key}` permission (registered
+        // via PermissionRegistry), with the legacy `view:modules` as fallback.
         if ($this->hasRole(Utils::getSuperAdminName())) {
+            return true;
+        }
+
+        if ($this->can('access:'.$panel->getId())) {
             return true;
         }
 

@@ -263,7 +263,6 @@ class AddonDiscoveryService
             layout: $m->layout,
             description: $m->description,
             enabled: $enabled,
-            filament: $this->probeFilament($m),
             files: $m->files,
         );
     }
@@ -303,59 +302,5 @@ class AddonDiscoveryService
         $addon->save();
 
         return $addon;
-    }
-
-    /**
-     * Probe convention-based Filament directories for a given addon.
-     *
-     * Filament base dir is derived from the already-computed autoloadPath:
-     *  - 'root' layout: autoloadPath = addon dir  → {autoloadPath}/Filament
-     *  - 'app'  layout: autoloadPath = addon/app   → {autoloadPath}/Filament
-     *
-     * Probes for Resources, Pages, Widgets under both 'admin' and 'system' panels.
-     * Only includes subdirs that actually exist on disk.
-     *
-     * @return array<string, array<string, string>> panel => component => absolute path
-     */
-    private function probeFilament(AddonManifest $m): array
-    {
-        $filamentBase = $m->autoloadPath.'/Filament';
-
-        $subdirs = ['Resources', 'Pages', 'Widgets'];
-        $result = [];
-
-        // Admin panel: {filamentBase}/{subdir}
-        $adminPaths = [];
-
-        foreach ($subdirs as $sub) {
-            $absPath = $filamentBase.'/'.$sub;
-
-            if (is_dir($absPath)) {
-                $real = realpath($absPath);
-                $adminPaths[$sub] = $real !== false ? $real : $absPath;
-            }
-        }
-
-        if ($adminPaths !== []) {
-            $result['admin'] = $adminPaths;
-        }
-
-        // System panel: {filamentBase}/System/{subdir}
-        $systemPaths = [];
-
-        foreach ($subdirs as $sub) {
-            $absPath = $filamentBase.'/System/'.$sub;
-
-            if (is_dir($absPath)) {
-                $real = realpath($absPath);
-                $systemPaths[$sub] = $real !== false ? $real : $absPath;
-            }
-        }
-
-        if ($systemPaths !== []) {
-            $result['system'] = $systemPaths;
-        }
-
-        return $result;
     }
 }
