@@ -33,7 +33,6 @@ function addonRow(string $namespace, string $autoloadPath, array $providers = []
         'providers'     => $providers,
         'autoload_path' => $autoloadPath,
         'layout'        => 'app',
-        'filament'      => [],
         'name'          => 'Sample',
         'alias'         => 'sample',
         'description'   => '',
