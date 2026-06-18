@@ -64,7 +64,7 @@ class AddonAutoLoader
 
         foreach ($rows as $entry) {
             $this->registerPsr4($loader, $entry);
-            $this->registerFiles($entry);
+            $this->loadAutoloadFiles($entry);
             $this->registerProviders($app, $entry);
         }
     }
@@ -115,15 +115,17 @@ class AddonAutoLoader
      * same process (Octane worker reuse) cannot "cannot redeclare function" —
      * and stale paths are skipped, consistent with registerPsr4().
      */
-    private function registerFiles(AddonBootCache $entry): void
+    private function loadAutoloadFiles(AddonBootCache $entry): void
     {
         foreach ($entry->files as $file) {
             if ($file === '') {
                 continue;
             }
+
             if (!is_file($file)) {
                 continue;
             }
+
             require_once $file;
         }
     }
