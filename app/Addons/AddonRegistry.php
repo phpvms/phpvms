@@ -185,7 +185,7 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
 
             if (File::exists($dest)) {
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
@@ -229,7 +229,7 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
 
             File::deleteDirectory($dest);
 
@@ -266,20 +266,32 @@ class AddonRegistry
     }
 
     /**
-     * Derive a filesystem-safe directory name from an addon's manifest name.
+     * Derive a filesystem-safe directory name from an addon manifest.
      *
-     * Strips everything that is not an ASCII letter and forces StudlyCase, so a
-     * crafted manifest name (e.g. "../../app") can never escape the addons base
-     * directory when used as a path segment.
+     * When a registry_id is present (managed addons), converts it to a
+     * lowercase slug: slashes become hyphens, non-alphanumeric/hyphen chars
+     * are stripped. A registry_id of "phpvms/vmsacars" produces "phpvms-vmsacars".
      *
-     * @throws AddonInstallException when no letters remain after sanitisation
+     * Falls back to StudlyCase from the manifest name for unmanaged addons, so
+     * a crafted name (e.g. "../../app") can never escape the addons base directory.
+     *
+     * @throws AddonInstallException when no safe characters remain after sanitisation
      */
-    private function safeName(string $name): string
+    private function safeName(AddonManifest $manifest): string
     {
-        $safe = Str::studly((string) preg_replace('/[^A-Za-z]+/', ' ', $name));
+        if ($manifest->registryId !== null) {
+            $safe = strtolower((string) preg_replace('/[^A-Za-z0-9\-]+/', '-', str_replace('/', '-', $manifest->registryId)));
+            $safe = trim($safe, '-');
+
+            if ($safe !== '') {
+                return $safe;
+            }
+        }
+
+        $safe = Str::studly((string) preg_replace('/[^A-Za-z]+/', ' ', $manifest->name));
 
         if ($safe === '') {
-            throw new AddonInstallException(sprintf('Invalid addon name: %s', $name));
+            throw new AddonInstallException(sprintf('Invalid addon name: %s', $manifest->name));
         }
 
         return $safe;
