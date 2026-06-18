@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons\Support;
 
 use App\Addons\Models\AddonManifest;
+use App\Support\Filesystem;
 
 /**
  * Lenient parser for addon module.json + composer.json manifests.
@@ -112,7 +113,6 @@ class ManifestParser
             return [];
         }
 
-        $base = $this->normalizePath($addonPath);
         $resolved = [];
 
         foreach ($files as $file) {
@@ -128,7 +128,7 @@ class ManifestParser
 
             $absolute = $addonPath.'/'.ltrim($trimmed, '/');
 
-            if (!$this->isWithin($base, $absolute)) {
+            if (!Filesystem::isWithin($addonPath, $absolute)) {
                 continue;
             }
 
@@ -138,53 +138,6 @@ class ManifestParser
         }
 
         return $resolved;
-    }
-
-    /**
-     * Lexically normalise a path, resolving "." and ".." segments without
-     * touching the filesystem.
-     *
-     * Unlike realpath(), this works on paths whose target does not yet exist,
-     * so a "../" traversal can never slip through the boundary check just
-     * because the file it points at is currently missing. Both "/" and "\"
-     * separators are accepted; the result always uses "/".
-     */
-    private function normalizePath(string $path): string
-    {
-        $isAbsolute = str_starts_with($path, '/') || str_starts_with($path, '\\');
-        $segments = preg_split('#[\\\\/]+#', $path) ?: [];
-        $out = [];
-
-        foreach ($segments as $segment) {
-            if ($segment === '') {
-                continue;
-            }
-
-            if ($segment === '.') {
-                continue;
-            }
-
-            if ($segment === '..') {
-                array_pop($out);
-
-                continue;
-            }
-
-            $out[] = $segment;
-        }
-
-        return ($isAbsolute ? '/' : '').implode('/', $out);
-    }
-
-    /**
-     * Whether $candidate resolves to a location inside the already-normalised
-     * $base directory. Comparison is lexical (see normalizePath).
-     */
-    private function isWithin(string $base, string $candidate): bool
-    {
-        $normalized = $this->normalizePath($candidate);
-
-        return $normalized === $base || str_starts_with($normalized.'/', $base.'/');
     }
 
     /**
@@ -313,7 +266,7 @@ class ManifestParser
             // Reject psr-4 values that escape the addon directory (e.g.
             // "../../app"), which would point the PSR-4 loader at core code.
             // Lexical check so a non-existent path can't slip through.
-            if (!$this->isWithin($this->normalizePath($addonPath), $autoloadPath)) {
+            if (!Filesystem::isWithin($addonPath, $autoloadPath)) {
                 return [$addonPath, 'root'];
             }
 
