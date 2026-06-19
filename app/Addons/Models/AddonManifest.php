@@ -70,9 +70,17 @@ final readonly class AddonManifest
         public array $files = [],
     ) {}
 
+    /**
+     * Permission- and filesystem-safe key for the addon.
+     *
+     * Managed addons key off the slugified registry_id (`acme/my-addon` =>
+     * `acme-my-addon`); registry-less addons fall back to `local-{name}`.
+     */
     public function slug(): string
     {
-        return trim(strtolower(str_replace('/', '-', $this->registryId)));
+        return $this->registryId !== null
+            ? keyed_str(strtolower($this->registryId))
+            : 'local-'.strtolower($this->name);
     }
 
     public function dirName(): string

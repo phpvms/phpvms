@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 use App\Models\User;
 use App\Services\PermissionRegistry;
 use Modules\VMSAcars\Models\Rule;
