@@ -268,27 +268,25 @@ class AddonRegistry
      * Derive a filesystem-safe directory name from an addon manifest.
      *
      * When a registry_id is present (managed addons), converts it to a
-     * lowercase slug: slashes become hyphens, non-alphanumeric/hyphen chars
-     * are stripped. A registry_id of "phpvms/vmsacars" produces "phpvms-vmsacars".
+     * lowercase slug via keyed_str(): slashes become hyphens, non-alphanumeric
+     * chars are stripped. A registry_id of "phpvms/vmsacars" produces "phpvms-vmsacars".
      *
-     * Falls back to StudlyCase from the manifest name for unmanaged addons, so
-     * a crafted name (e.g. "../../app") can never escape the addons base directory.
+     * Falls back to keyed_str() on the manifest name for unmanaged addons,
+     * ensuring the same sanitisation guarantee in both paths.
      *
      * @throws AddonInstallException when no safe characters remain after sanitisation
      */
     private function safeName(AddonManifest $manifest): string
     {
         if ($manifest->registryId !== null) {
-            $safe = strtolower((string) preg_replace('/[^A-Za-z0-9\-]+/', '-', $manifest->slug()));
-            $safe = trim($safe, '-');
+            $safe = keyed_str(strtolower($manifest->registryId));
 
             if ($safe !== '') {
                 return $safe;
             }
         }
 
-        $safe = strtolower((string) preg_replace('/[^A-Za-z0-9]+/', '-', $manifest->name));
-        $safe = trim($safe, '-');
+        $safe = keyed_str(strtolower($manifest->name));
 
         if ($safe === '') {
             throw new AddonInstallException(sprintf('Invalid addon name: %s', $manifest->name));
