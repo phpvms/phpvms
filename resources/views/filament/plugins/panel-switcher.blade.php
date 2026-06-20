@@ -4,9 +4,21 @@
      * @var \Filament\Panel   $current
      */
     $panelLabel = static function (\Filament\Panel $panel): string {
-        return $panel->getId() === 'admin'
-            ? __('common.administration')
-            : \Illuminate\Support\Str::headline($panel->getId());
+        if ($panel->getId() === 'admin') {
+            return __('common.administration');
+        }
+
+        // Prefer the module's namespace display name (e.g. `Modules\VACentral`
+        // => "VACentral") so casing matches the addon, not the lowercase panel
+        // id; fall back to a humanised id for panels without module components.
+        $class = collect([...$panel->getPages(), ...$panel->getResources(), ...$panel->getWidgets()])
+            ->first(fn ($c): bool => is_string($c) && str_starts_with($c, 'Modules\\'));
+
+        $name = is_string($class)
+            ? app(\App\Services\PermissionRegistry::class)->moduleOf($class)
+            : null;
+
+        return $name ?? \Illuminate\Support\Str::headline($panel->getId());
     };
 @endphp
 
