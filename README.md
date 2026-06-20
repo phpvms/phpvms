@@ -10,7 +10,7 @@ A full distribution, with all the composer dependencies, is available at this [G
 
 ### Requirements
 
-- PHP 8.3+, extensions:
+- PHP 8.4+, extensions:
   - cURL
   - JSON
   - fileinfo
@@ -60,6 +60,25 @@ mise install
 ```
 
 If you install the `mise` shell script integration, the correct PHP version will automatically be selected for you.~~~~
+
+### Running the dev server
+
+Once dependencies are installed (`composer install` and `bun install`) and your `.env` is configured, the quickest way to get everything running is the `dev` Artisan command:
+
+```shellscript
+php artisan dev
+```
+
+This starts all the development processes you need in a single terminal, running concurrently:
+
+- `server` — the PHP development server (`php artisan serve`), serving the app at `http://localhost:8000`
+- `queue` — a queue worker (`php artisan queue:listen`) so queued jobs are processed
+- `logs` — live log tailing via [Pail](https://github.com/laravel/pail) (`php artisan pail`)
+- `vite` — the Vite dev server (`bun run dev`) for hot-reloading JS/CSS assets
+
+Press `Ctrl+C` to stop all of them at once.
+
+> The equivalent `composer dev` script is also available and does the same thing.
 
 A full development environment can be brought up using Docker and [Laravel Sail](https://laravel.com/docs/10.x/sail), without having to install composer/npm locally
 
