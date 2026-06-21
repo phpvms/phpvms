@@ -7,6 +7,7 @@ use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use PhpvmsAddonFixture\Events\AcmeFixtureEvent;
 use PhpvmsAddonFixture\Listeners\AcmeListener;
 use PhpvmsAddonFixture\Providers\AcmeServiceProvider;
@@ -102,6 +103,19 @@ it('registers the web route so Route::has("acme.fixture") is true', function ():
 
 it('returns "ok" from the acme-fixture route', function (): void {
     $this->get('/acme-fixture')->assertSuccessful()->assertSeeText('ok');
+});
+
+it('registers the addon database/migrations directory with the migrator', function (): void {
+    $registered = collect(app('migrator')->paths())
+        ->contains(fn (string $path): bool => str_ends_with($path, 'acme'.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations'));
+
+    expect($registered)->toBeTrue();
+});
+
+it('runs the addon migration on artisan migrate so the table exists', function (): void {
+    Artisan::call('migrate', ['--force' => true]);
+
+    expect(Schema::hasTable('acme_fixture_items'))->toBeTrue();
 });
 
 it('registers the console command so Artisan::all() contains "acme:ping"', function (): void {
