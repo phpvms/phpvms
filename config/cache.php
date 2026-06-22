@@ -149,6 +149,10 @@ return [
             'key'  => 'settings.', // append setting key
             'time' => 60 * 60 * 24, // Cache for 1 day
         ],
+        'ADDON_SETTINGS' => [
+            'key'  => 'addon_settings.', // append "{addon_id}.{key}"
+            'time' => 60 * 60 * 24, // Cache for 1 day
+        ],
         'MODULES' => [
             'key'  => 'modules',
             'time' => 60 * 60 * 24, // Cache for 1 day

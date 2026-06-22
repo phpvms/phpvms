@@ -2,13 +2,80 @@
 
 namespace Modules\Sample\Providers;
 
+use App\Contracts\Addons\HasSettings;
 use Config;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use Route;
 
-class SampleServiceProvider extends ServiceProvider
+class SampleServiceProvider extends ServiceProvider implements HasSettings
 {
+    /**
+     * Declare the module's settings.
+     *
+     * These are synced into the `addon_settings` table on boot and editable
+     * from the Settings page inside the Sample panel. Read a value anywhere
+     * with `addon_setting('sample', '<key>')` — see sample_setting() in
+     * this module's helpers.php for a usage example.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function settings(): array
+    {
+        return [
+            [
+                'key'         => 'greeting',
+                'name'        => 'Greeting',
+                'default'     => 'Hello from the Sample module!',
+                'group'       => 'general',
+                'type'        => 'text',
+                'options'     => '',
+                'description' => 'Text returned by sample_module_greeting()',
+                'order'       => 0,
+            ],
+            [
+                'key'         => 'enabled',
+                'name'        => 'Feature Enabled',
+                'default'     => 'true',
+                'group'       => 'general',
+                'type'        => 'boolean',
+                'options'     => 'true,false',
+                'description' => 'Toggle the sample feature on or off',
+                'order'       => 1,
+            ],
+            [
+                'key'         => 'max_items',
+                'name'        => 'Max Items',
+                'default'     => '10',
+                'group'       => 'limits',
+                'type'        => 'int',
+                'options'     => '',
+                'description' => 'Maximum number of sample items to show',
+                'order'       => 0,
+            ],
+            [
+                'key'         => 'threshold',
+                'name'        => 'Threshold',
+                'default'     => '0.5',
+                'group'       => 'limits',
+                'type'        => 'float',
+                'options'     => '',
+                'description' => 'A floating-point threshold value',
+                'order'       => 1,
+            ],
+            [
+                'key'         => 'mode',
+                'name'        => 'Mode',
+                'default'     => 'auto',
+                'group'       => 'limits',
+                'type'        => 'select',
+                'options'     => 'auto,manual,off',
+                'description' => 'Operating mode for the sample feature',
+                'order'       => 2,
+            ],
+        ];
+    }
+
     /**
      * Boot the application events.
      *
