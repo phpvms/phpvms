@@ -1,6 +1,7 @@
 <?php
 
 use App\Addons\Support\AddonAssetLinker;
+use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
 use App\Services\AddonSettingService;
 use App\Services\KvpService;
@@ -204,7 +205,7 @@ if (!function_exists('addon_setting')) {
 
         try {
             return $service->retrieve($addon, $key);
-        } catch (Throwable) {
+        } catch (SettingNotFound) {
             return $default;
         }
     }

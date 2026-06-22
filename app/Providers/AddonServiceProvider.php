@@ -12,6 +12,7 @@ use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Services\AddonSettingSyncService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -108,8 +109,12 @@ class AddonServiceProvider extends ServiceProvider
             }
 
             $this->app->make(AddonSettingSyncService::class)->sync();
-        } catch (Throwable) {
-            // Never let settings sync halt boot — it self-heals next boot.
+        } catch (Throwable $throwable) {
+            // Never let settings sync halt boot — it self-heals next boot —
+            // but surface the failure so persistent drift is observable.
+            Log::warning('Addon settings sync failed during boot; continuing startup.', [
+                'exception' => $throwable,
+            ]);
         }
     }
 }

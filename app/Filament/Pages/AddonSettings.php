@@ -86,7 +86,10 @@ class AddonSettings extends Page
             return false;
         }
 
-        return AddonSetting::query()->where('addon_id', $addon->id)->exists();
+        return AddonSetting::query()
+            ->where('addon_id', $addon->id)
+            ->where('type', '!=', 'hidden')
+            ->exists();
     }
 
     #[Override]

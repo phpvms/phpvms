@@ -51,31 +51,26 @@ class AddonSettingSyncService extends Service
      */
     private function syncEntry(AddonBootCache $entry): void
     {
-        $schema = $this->collectSchema($entry);
-
-        if ($schema === []) {
-            return;
-        }
-
         $addonId = $this->resolveAddonId($entry);
 
         if ($addonId === null) {
             return;
         }
 
-        $rows = [];
-        $declaredKeys = [];
+        // Key by normalized key so duplicate declarations (multiple providers,
+        // or repeated entries) collapse to one row — last declaration wins —
+        // which keeps the (addon_id, key) upsert from failing on duplicates.
+        $rowsByKey = [];
 
-        foreach ($schema as $order => $setting) {
+        foreach ($this->collectSchema($entry) as $order => $setting) {
             if (!isset($setting['key'])) {
                 continue;
             }
 
             $key = AddonSetting::formatKey((string) $setting['key']);
-            $declaredKeys[] = $key;
             $default = $this->stringify($setting['default'] ?? '');
 
-            $rows[] = [
+            $rowsByKey[$key] = [
                 'addon_id'    => $addonId,
                 'alias'       => $entry->alias,
                 'key'         => $key,
@@ -90,18 +85,18 @@ class AddonSettingSyncService extends Service
             ];
         }
 
-        if ($rows === []) {
-            return;
+        if ($rowsByKey !== []) {
+            // Preserve existing `value`; reconcile everything else (mirrors SettingsSeeder).
+            AddonSetting::upsert(
+                array_values($rowsByKey),
+                uniqueBy: ['addon_id', 'key'],
+                update: ['alias', 'name', 'default', 'group', 'order', 'type', 'options', 'description'],
+            );
         }
 
-        // Preserve existing `value`; reconcile everything else (mirrors SettingsSeeder).
-        AddonSetting::upsert(
-            $rows,
-            uniqueBy: ['addon_id', 'key'],
-            update: ['alias', 'name', 'default', 'group', 'order', 'type', 'options', 'description'],
-        );
-
-        $this->logOrphans($addonId, $declaredKeys);
+        // Always run, even when the addon now declares nothing, so keys it
+        // previously persisted are reported as orphans (kept, not deleted).
+        $this->logOrphans($addonId, array_keys($rowsByKey));
     }
 
     /**

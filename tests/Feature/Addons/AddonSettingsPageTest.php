@@ -39,6 +39,8 @@ it('resolves the owning addon from the panel id', function (): void {
 });
 
 it('grants page access within the addon panel but not on the core panel', function (): void {
+    $this->actingAs(User::factory()->create());
+
     Filament::setCurrentPanel(sampleSettingsPanel());
     expect(AddonSettings::canAccess())->toBeTrue();
 

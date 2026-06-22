@@ -38,11 +38,8 @@ if (!function_exists('sample_setting')) {
      * Usage example:
      *     sample_setting('max_items', 10);   // typed int
      *     sample_setting('enabled', true);   // typed bool
-     *
-     * @param  mixed $default
-     * @return mixed
      */
-    function sample_setting(string $key, $default = null)
+    function sample_setting(string $key, mixed $default = null): mixed
     {
         return addon_setting('sample', $key, $default);
     }
