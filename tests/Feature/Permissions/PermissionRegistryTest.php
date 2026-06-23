@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 use App\Models\User;
 use App\Services\PermissionRegistry;
 use Modules\VMSAcars\Models\Rule;
@@ -71,6 +73,32 @@ it('attributes app classes to the core scope and module classes to their module'
     expect($registry->moduleOf('Modules\\Awards\\Filament\\Pages\\Foo'))->toBe('Awards');
 
     expect($registry->moduleKey('VMSAcars'))->toBe('vmsacars');
+});
+
+it('uses registry_id slug as module key when the boot cache has a registry_id', function (): void {
+    $fakeEntry = new AddonBootCache(
+        name: 'Acme',
+        alias: 'acme',
+        type: 'module',
+        registryId: 'acme/my-addon',
+        version: null,
+        namespace: 'Modules\\Acme',
+        providers: [],
+        path: '/modules/Acme',
+        autoloadPath: '/modules/Acme/app',
+        layout: 'app',
+        description: null,
+        enabled: true,
+    );
+
+    $fakeCache = mock(BootCache::class);
+    $fakeCache->allows('all')->andReturns(collect([$fakeEntry]));
+    app()->instance(BootCache::class, $fakeCache);
+
+    // Re-resolve so the new BootCache instance is injected.
+    app()->forgetInstance(PermissionRegistry::class);
+
+    expect(app(PermissionRegistry::class)->moduleKey('Acme'))->toBe('acme-my-addon');
 });
 
 it('scopes core permission groups to the core scope', function (): void {
