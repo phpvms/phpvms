@@ -507,9 +507,10 @@ test('prefile clears stale acars data when reusing a duplicate pirep', function 
     $response->assertStatus(200);
     $pirep_id = $response->json()['data']['id'];
 
-    // Give it a track and a log entry.
+    // Give it a track and a log entry, plus a planned route that must survive.
     Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::FLIGHT_PATH]);
     Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::LOG]);
+    Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::ROUTE]);
 
     $stale = fn (): int => Acars::where('pirep_id', $pirep_id)
         ->whereIn('type', [AcarsType::FLIGHT_PATH, AcarsType::LOG])
@@ -522,8 +523,9 @@ test('prefile clears stale acars data when reusing a duplicate pirep', function 
     $response->assertStatus(200);
     expect($response->json()['data']['id'])->toEqual($pirep_id);
 
-    // ...with its stale track and logs cleared.
+    // ...with its stale track and logs cleared, but the planned route intact.
     expect($stale())->toBe(0);
+    expect(Acars::where('pirep_id', $pirep_id)->where('type', AcarsType::ROUTE)->count())->toBe(1);
 });
 
 test('cancel via api', function (): void {
