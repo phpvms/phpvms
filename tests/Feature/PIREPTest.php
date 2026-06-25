@@ -493,6 +493,41 @@ test('duplicate pireps', function (): void {
     expect($dupe_pirep)->toBeFalse();
 });
 
+test('prefile clears stale acars data when reusing a duplicate pirep', function (): void {
+    // An un-closed leg reused as a duplicate must not bleed its old track/logs
+    // into the restarted flight.
+    $pirep = createPirep();
+    apiAs($pirep->user);
+
+    $payload = $pirep->toArray();
+    $payload = transformData($payload);
+
+    // First leg: prefiled, never filed or cancelled.
+    $response = $this->post('/api/pireps/prefile', $payload);
+    $response->assertStatus(200);
+    $pirep_id = $response->json()['data']['id'];
+
+    // Give it a track and a log entry, plus a planned route that must survive.
+    Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::FLIGHT_PATH]);
+    Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::LOG]);
+    Acars::factory()->create(['pirep_id' => $pirep_id, 'type' => AcarsType::ROUTE]);
+
+    $stale = fn (): int => Acars::where('pirep_id', $pirep_id)
+        ->whereIn('type', [AcarsType::FLIGHT_PATH, AcarsType::LOG])
+        ->count();
+
+    expect($stale())->toBe(2);
+
+    // Restart the same flight: prefile reuses the in-progress PIREP...
+    $response = $this->post('/api/pireps/prefile', $payload);
+    $response->assertStatus(200);
+    expect($response->json()['data']['id'])->toEqual($pirep_id);
+
+    // ...with its stale track and logs cleared, but the planned route intact.
+    expect($stale())->toBe(0);
+    expect(Acars::where('pirep_id', $pirep_id)->where('type', AcarsType::ROUTE)->count())->toBe(1);
+});
+
 test('cancel via api', function (): void {
     $pirep = createPirep();
 

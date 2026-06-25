@@ -153,6 +153,12 @@ class PirepService extends Service
             if ($pirep->cancelled) {
                 throw new \App\Exceptions\PirepCancelled($pirep);
             }
+
+            // Clear the reused leg's old track and logs so a restarted flight
+            // doesn't inherit a stale flight path or fused log.
+            Acars::where('pirep_id', $pirep->id)
+                ->whereIn('type', [AcarsType::FLIGHT_PATH, AcarsType::LOG])
+                ->delete();
         }
 
         $pirep->status = PirepStatus::INITIATED;
