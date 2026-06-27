@@ -21,12 +21,14 @@ export default defineConfig({
       refresh: [...refreshPaths, "app/Filament/**", "modules/**/**"],
     }),
   ],
-  // server: {
-  //   hmr: {
-  //     host: "localhost",
-  //   },
-  //   watch: {
-  //     usePolling: true,
-  //   },
-  // },
+  server: {
+    watch: {
+      // Don't follow symlinks into addon modules — they can contain vendor
+      // directories that reference back to this app's own storage/ directory,
+      // causing every request (session/debugbar writes) to trigger a full reload.
+      followSymlinks: false,
+      // Belt-and-suspenders: also exclude known heavy directories under modules.
+      ignored: ["**/modules/**/vendor/**", "**/modules/**/node_modules/**", "**/storage/**"],
+    },
+  },
 });

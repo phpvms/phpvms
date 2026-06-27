@@ -9,8 +9,6 @@
   ],
   "license": "BSD-3-Clause",
   "type": "project",
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "homepage": "https://www.phpvms.net",
   "repositories": [
     {
@@ -56,7 +54,7 @@
     "jeremykendall/php-domain-parser": "~6.3",
     "league/commonmark": "^2.8.2",
     "league/csv": "^9.14.0",
-    "league/geotools": "^2.0",
+    "league/geotools": "2.x-dev",
     "league/iso3166": "~4.2.0",
     "markrogoyski/math-php": "~2.5.0",
     "myclabs/deep-copy": "^1.12.0",

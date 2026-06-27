@@ -30,7 +30,6 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +76,7 @@ class Installer extends Page
 
                 return;
             }
-        } catch (QueryException) {
+        } catch (Throwable) {
         }
 
         if ($this->requirementsMet()) {

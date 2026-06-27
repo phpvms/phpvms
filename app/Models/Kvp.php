@@ -27,6 +27,8 @@ class Kvp extends Model
 {
     public $table = 'kvp';
 
+    protected $primaryKey = 'key';
+
     protected $keyType = 'string';
 
     public $fillable = [

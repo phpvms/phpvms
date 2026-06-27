@@ -225,16 +225,30 @@ class AddonDiscoveryService
             $resolved = realpath($subDir);
 
             // T-04-03: skip if the resolved path escapes the base directory.
-            if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
+            // Operator-placed symlinks are an explicit choice and are exempt from
+            // the containment check; only reject paths that don't resolve at all.
+            if ($resolved === false) {
                 Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered", $subDir));
 
                 continue;
             }
 
-            $manifest = $this->parser->parse($resolved);
+            if (!is_link($subDir) && !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered", $subDir));
+
+                continue;
+            }
+
+            // For symlinks, use the symlink path as the canonical addon path so
+            // that the stored path stays stable and portable (e.g. the symlink
+            // lives inside the mounted modules directory in Docker). The resolved
+            // path is only needed for the traversal guard above.
+            $parsePath = is_link($subDir) ? $subDir : $resolved;
+
+            $manifest = $this->parser->parse($parsePath);
 
             if (!$manifest instanceof AddonManifest) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $resolved));
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — module.json is missing or invalid", $parsePath));
 
                 continue;
             }

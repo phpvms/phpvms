@@ -126,6 +126,8 @@ class Updater extends Page
 
         $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
 
+        app(InstallerService::class)->invalidateUpgradeCache();
+
         $panelUrl = Filament::getDefaultPanel()->getUrl();
         $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 10000)');
     }

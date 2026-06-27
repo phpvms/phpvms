@@ -26,9 +26,21 @@ class InstalledCheck implements Middleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // If we're in the installer, skip this
-        // Also skip if this is a livewire update (might be called from the system)
+        // If we're in the installer, skip the installed check.
+        // But if the DB isn't set up yet, invalidate any stale auth session so that
+        // AuthenticateSession (which runs after this middleware) doesn't query
+        // non-existent tables.
         if ($request->is('system*') || request()->is('livewire-*/update')) {
+            try {
+                if (!Schema::hasTable('users')) {
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                }
+            } catch (Exception) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
             return $next($request);
         }
 

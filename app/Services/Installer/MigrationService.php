@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class MigrationService extends Service
 {
@@ -47,10 +48,35 @@ class MigrationService extends Service
             'core' => App::databasePath().'/'.$dir,
         ];
 
-        $modules = $this->addonRegistry->enabled();
+        try {
+            $modules = $this->addonRegistry->enabled();
+        } catch (Throwable) {
+            // addons table absent on fresh install — scan the modules directory directly
+            // so bundled module migrations run before the addons table exists.
+            $modulesBase = base_path('modules');
+
+            if (is_dir($modulesBase)) {
+                foreach (scandir($modulesBase) as $entry) {
+                    if ($entry === '.') {
+                        continue;
+                    }
+                    if ($entry === '..') {
+                        continue;
+                    }
+                    $moduleMigrationsPath = $modulesBase.'/'.$entry.'/Database/'.$dir;
+
+                    if (is_dir($moduleMigrationsPath)) {
+                        $paths[$entry] = $moduleMigrationsPath;
+                    }
+                }
+            }
+
+            return $paths;
+        }
+
         foreach ($modules as $module) {
             if (!is_dir($module->getPath())) {
-                Log::warning(sprintf(
+                Log::debug(sprintf(
                     'Addon "%s" is enabled but its path does not exist on disk: %s',
                     $module->getName(),
                     $module->getPath(),
