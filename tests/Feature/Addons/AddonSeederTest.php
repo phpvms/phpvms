@@ -13,7 +13,7 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->addonPath = sys_get_temp_dir().'/phpvms-addon-seed-'.uniqid('', true);
-    $seedDir = $this->addonPath.'/Database/seeds';
+    $seedDir = $this->addonPath.'/database/seeders';
     File::ensureDirectoryExists($seedDir);
 
     // Fixture seeder uses a deliberately non-PSR-4 namespace to prove the

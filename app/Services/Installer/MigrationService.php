@@ -39,7 +39,7 @@ class MigrationService extends Service
 
     /**
      * Find all of the possible paths that migrations exist.
-     * Include looking in all of the modules Database/migrations directories
+     * Include looking in all of the modules database/migrations directories
      */
     public function getMigrationPaths(string $dir = 'migrations'): array
     {
@@ -59,7 +59,7 @@ class MigrationService extends Service
                 continue;
             }
 
-            $module_path = $module->getPath().'/Database/'.$dir;
+            $module_path = $module->getPath().'/database/'.$dir;
             if (file_exists($module_path)) {
                 $paths[$module->getName()] = $module_path;
             }
@@ -131,7 +131,7 @@ class MigrationService extends Service
      */
     public function rollbackAddonMigrations(Addon $addon): void
     {
-        $path = $addon->getPath().'/Database/migrations';
+        $path = $addon->getPath().'/database/migrations';
 
         if (!is_dir($path)) {
             return;
@@ -178,12 +178,12 @@ class MigrationService extends Service
      * running their down() methods.
      *
      * Matches records by the migration filenames present in the addon's
-     * `Database/migrations` directory, so a later reinstall re-runs them against
+     * `database/migrations` directory, so a later reinstall re-runs them against
      * the freshly dropped tables. No-op when the addon ships no migrations.
      */
     public function purgeAddonMigrationRecords(Addon $addon): void
     {
-        $path = $addon->getPath().'/Database/migrations';
+        $path = $addon->getPath().'/database/migrations';
 
         if (!is_dir($path)) {
             return;

@@ -89,7 +89,7 @@ class SampleServiceProvider extends ServiceProvider implements HasSettings
         $this->registerConfig();
         $this->registerViews();
 
-        $this->loadMigrationsFrom(__DIR__.'/../Database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 
     /**

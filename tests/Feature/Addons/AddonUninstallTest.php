@@ -16,7 +16,7 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->addonPath = sys_get_temp_dir().'/phpvms-addon-uninstall-'.uniqid('', true);
-    $migrationDir = $this->addonPath.'/Database/migrations';
+    $migrationDir = $this->addonPath.'/database/migrations';
     File::ensureDirectoryExists($migrationDir);
 
     File::put($migrationDir.'/2099_01_01_000000_create_fixture_addon_things_table.php', <<<'PHP'
