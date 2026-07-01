@@ -17,19 +17,24 @@
                     <div class="col-sm-4">
                       <label for="type">Type</label>
                       <input type="text" class="form-control" value="{{ $aircraft->icao }}" maxlength="4" disabled>
-                      @if(filled($aircraft->simbrief_type))
-                        <input type="hidden" name="type" value="{{ $aircraft->simbrief_type }}">
-                      @elseif(filled($aircraft->subfleet->simbrief_type))
-                        <input type="hidden" name="type" value="{{ $aircraft->subfleet->simbrief_type }}">
-                      @else
-                        <input type="hidden" name="type" value="{{ $aircraft->icao }}">
-                      @endif
+                      <input type="hidden" id="actype" name="type" value="{{ $actype }}">
                     </div>
                     <div class="col-sm-4">
                       <label for="reg">Registration</label>
                       <input type="text" class="form-control" value="{{ $aircraft->registration }}" maxlength="6" disabled>
                       <input type="hidden" name="reg" value="{{ $aircraft->registration }}">
                     </div>
+                    @if($sbairframes)
+                      <div class="col-sm-4">
+                        <label for="sbairframe">SimBrief Airframes</label>
+                        <select name="airframes" id="sbairframe" class="form-select" onchange="CheckAirframe()">
+                          <option value="">Select an airframe if required...</option>
+                          @foreach($sbairframes as $af)
+                            <option value="{{ $af->airframe_id }}">{{ $af->name }}</option>
+                          @endforeach
+                        </select>
+                      </div>
+                    @endif
                   </div>
                     @if(empty($pax_load_sheet) && empty($cargo_load_sheet) && empty($tpayload) && empty($tpaxload))
                     <div class="alert alert-warning mt-4 text-center" role="alert">
@@ -135,7 +140,7 @@
               </div>
 
               {{-- Prepare Form Fields For SimBrief --}}
-                <input type="hidden" name="acdata" value="{'paxwgt':{{ round($pax_weight) }}, 'bagwgt': {{ round($bag_weight) }}}">
+                <input type="hidden" name="acdata" id="acdata" value="{{ $acdata }}">
                 @if($tpaxfig)
                   <input type="hidden" name="pax" value="{{ $tpaxfig }}">
                 @elseif(!$tpaxfig && $tcargoload)
@@ -382,6 +387,34 @@
 @endsection
 @section('scripts')
 <script src="{{public_asset('/assets/global/js/simbrief.apiv1.js')}}"></script>
+@if($sbairframes)
+<script type="text/javascript">
+  // ******
+  // Change Aircraft Type According to Airframe selection
+  // And remove pax and baggage weights from acdata
+  function CheckAirframe() {
+    let weight = Boolean({{ setting('simbrief.use_standard_weights', false) }})
+    let actype = String("{{ $actype }}");
+    let acdata = String("{{ $acdata }}");
+    acOrig = JSON.parse(acdata.replace(/&quot;/g,'"'));
+    acJson = JSON.parse(acdata.replace(/&quot;/g,'"'));
+    let airframe = document.getElementById("sbairframe").value;
+    if (airframe != "") {
+      document.getElementById("actype").value = airframe
+      if (!weight) {
+        delete acJson.paxwgt
+        delete acJson.bagwgt
+        document.getElementById("acdata").value = JSON.stringify(acJson)
+      }
+    } else {
+      document.getElementById("actype").value = actype
+      if (!weight) {
+        document.getElementById("acdata").value = JSON.stringify(acOrig)
+      }
+    }
+  }
+</script>
+@endif
 <script type="text/javascript">
   // ******
   // Disable Submitting a fixed flight level for Stepclimb option to work
