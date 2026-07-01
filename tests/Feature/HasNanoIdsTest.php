@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Contracts\Model;
 use App\Models\File;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
 
 /*
@@ -57,15 +56,34 @@ it('reports a non-incrementing string key', function (): void {
         ->and($file->getIncrementing())->toBeFalse();
 });
 
-it('rejects an invalid nano id during route-model binding', function (): void {
-    (new File())->resolveRouteBinding('not a valid id!');
-})->throws(ModelNotFoundException::class);
+it('returns null for an unknown id during route-model binding', function (): void {
+    // Route binding no longer rejects keys purely on Nano ID format — the
+    // database decides existence. An id that matches no row resolves to null
+    // (a 404 over HTTP), it does not throw.
+    expect(new File()->resolveRouteBinding('not a valid id!'))->toBeNull();
+});
 
 it('resolves a valid nano id during route-model binding', function (): void {
     $file = File::factory()->create();
 
-    $resolved = (new File())->resolveRouteBinding($file->id);
+    $resolved = new File()->resolveRouteBinding($file->id);
 
     expect($resolved)->not->toBeNull()
         ->and($resolved->id)->toBe($file->id);
+});
+
+it('resolves a legacy non-format primary key during route-model binding', function (): void {
+    // Regression guard: tables still hold pre-migration keys (v7 UUIDs, older
+    // Nano IDs with a different alphabet/length) that fail Str::isNanoid().
+    // These are valid rows and must still resolve — the strict format gate used
+    // to 404 every one of them (e.g. admin PIREP view/edit links).
+    $legacyId = 'fc4b672f-7a5d-4a2b-a0ee-0e4b74a3c143';
+    $file = File::factory()->create(['id' => $legacyId]);
+
+    expect(Str::isNanoid($legacyId))->toBeFalse();
+
+    $resolved = new File()->resolveRouteBinding($file->id);
+
+    expect($resolved)->not->toBeNull()
+        ->and($resolved->id)->toBe($legacyId);
 });
