@@ -67,6 +67,8 @@ it('attributes app classes to the core scope and module classes to their module'
     $registry = app(PermissionRegistry::class);
 
     expect($registry->moduleOf(User::class))->toBeNull();
+    // Plain class strings — moduleOf() only inspects the namespace, so no real
+    // addon needs to be installed.
     expect($registry->moduleOf(Rule::class))->toBe('VMSAcars');
     expect($registry->moduleOf('Modules\\Awards\\Filament\\Pages\\Foo'))->toBe('Awards');
 

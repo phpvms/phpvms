@@ -60,8 +60,12 @@ services:
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: "0"
       PHP_OPCACHE_MAX_ACCELERATED_FILES: "20000"
       PHP_OPCACHE_INTERNED_STRINGS_BUFFER: "16"
-      PHP_OPCACHE_JIT: "tracing"
-      PHP_OPCACHE_JIT_BUFFER_SIZE: "64M"
+      # JIT disabled: serversideup/php:*-frankenphp uses PHP ZTS (Zend Thread Safety),
+      # which is required for FrankenPHP worker concurrency. OPcache JIT tracing mode
+      # is not stable on ZTS builds and causes workers to segfault before reaching
+      # frankenphp_handle_request(). The image defaults JIT to "off" for this reason.
+      PHP_OPCACHE_JIT: "off"
+      PHP_OPCACHE_JIT_BUFFER_SIZE: "0"
 
       # For Caddy, no need to change
       XDG_DATA_HOME: "/var/www/html/storage"

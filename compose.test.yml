@@ -8,7 +8,7 @@ services:
       MYSQL_DATABASE: testing
       MYSQL_ROOT_PASSWORD: password
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql-test-data:/var/lib/mysql
       - ./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "--password=password"]
@@ -25,7 +25,7 @@ services:
       POSTGRES_USER: phpvms
       POSTGRES_PASSWORD: password
     volumes:
-      - pgsql-data:/var/lib/postgresql
+      - pgsql-test-data:/var/lib/postgresql
       - ./vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql:ro
       - ./resources/docker/pgsql/01-test-user.sql:/docker-entrypoint-initdb.d/01-test_user.sql:ro
     healthcheck:
@@ -35,5 +35,5 @@ services:
       start_period: 10s
 
 volumes:
-  mysql-data:
-  pgsql-data:
+  mysql-test-data:
+  pgsql-test-data:
