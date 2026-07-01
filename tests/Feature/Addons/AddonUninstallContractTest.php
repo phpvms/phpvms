@@ -16,7 +16,7 @@ beforeEach(function (): void {
     Addon::query()->delete();
 
     $this->addonPath = sys_get_temp_dir().'/phpvms-addon-contract-'.uniqid('', true);
-    $migrationDir = $this->addonPath.'/Database/migrations';
+    $migrationDir = $this->addonPath.'/database/migrations';
     File::ensureDirectoryExists($migrationDir);
 
     // Declared contract: the addon owns fixture_contract_things.
