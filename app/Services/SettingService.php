@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
-use Illuminate\Support\Carbon;
+use App\Services\Concerns\CastsSettingValue;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class SettingService extends Service
 {
+    use CastsSettingValue;
+
     /**
      * Retrieve a typed setting value.
      *
@@ -41,13 +43,7 @@ class SettingService extends Service
             throw new SettingNotFound($key.' not found');
         }
 
-        return match ($setting->type) {
-            'bool', 'boolean'          => in_array($setting->value, ['true', '1', 1], true),
-            'date'                     => Carbon::parse($setting->value),
-            'int', 'integer', 'number' => (int) $setting->value,
-            'float'                    => (float) $setting->value,
-            default                    => $setting->value,
-        };
+        return $this->castSettingValue($setting->type, $setting->value);
     }
 
     /**

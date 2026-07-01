@@ -11,8 +11,12 @@ use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
+use App\Services\AddonSettingSyncService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use Throwable;
 
 /**
  * Wires the addon engine into application boot.
@@ -85,6 +89,32 @@ class AddonServiceProvider extends ServiceProvider
     {
         if (!$this->app->runningInConsole()) {
             $this->app->make(AddonDiscoveryService::class)->primeIfNeeded();
+            $this->syncAddonSettings();
+        }
+    }
+
+    /**
+     * Sync enabled addons' declared settings into the addon_settings table.
+     *
+     * Runs once per worker boot (not per request), alongside the cache prime.
+     * Guarded by a table-existence check so it no-ops before the addon-settings
+     * migration has run (fresh install / pre-migrate boot), and swallows any
+     * error so settings sync can never break application boot.
+     */
+    private function syncAddonSettings(): void
+    {
+        try {
+            if (!Schema::hasTable('addon_settings')) {
+                return;
+            }
+
+            $this->app->make(AddonSettingSyncService::class)->sync();
+        } catch (Throwable $throwable) {
+            // Never let settings sync halt boot — it self-heals next boot —
+            // but surface the failure so persistent drift is observable.
+            Log::warning('Addon settings sync failed during boot; continuing startup.', [
+                'exception' => $throwable,
+            ]);
         }
     }
 }
