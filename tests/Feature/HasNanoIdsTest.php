@@ -73,11 +73,13 @@ it('resolves a valid nano id during route-model binding', function (): void {
 });
 
 it('resolves a legacy non-format primary key during route-model binding', function (): void {
-    // Regression guard: tables still hold pre-migration keys (v7 UUIDs, older
-    // Nano IDs with a different alphabet/length) that fail Str::isNanoid().
-    // These are valid rows and must still resolve — the strict format gate used
-    // to 404 every one of them (e.g. admin PIREP view/edit links).
-    $legacyId = 'fc4b672f-7a5d-4a2b-a0ee-0e4b74a3c143';
+    // Regression guard: tables still hold pre-migration keys — older Nano IDs
+    // generated with a different (mixed-case) alphabet that fail today's
+    // lowercase-only Str::isNanoid(). These are valid rows and must still
+    // resolve; the strict format gate used to 404 every one of them (e.g. admin
+    // PIREP view/edit links). Uppercase keeps this out of the current alphabet
+    // while still fitting the 16-char id column.
+    $legacyId = 'ABCDEF0123456789';
     $file = File::factory()->create(['id' => $legacyId]);
 
     expect(Str::isNanoid($legacyId))->toBeFalse();
