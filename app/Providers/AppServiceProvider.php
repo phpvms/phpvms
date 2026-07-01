@@ -15,6 +15,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;
+use App\Services\AddonSettingService;
 use App\Services\ModuleService;
 use App\Services\PermissionRegistry;
 use App\Services\RouteForge\Contracts\LintRule;
@@ -208,6 +209,10 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ModuleService::class);
+
+        // Per-addon settings read/write. Stateless/Octane-safe; bound as a
+        // singleton so the `addon_setting()` helper reuses one instance.
+        $this->app->singleton(AddonSettingService::class);
 
         // Permission registry: modules register custom permissions into the
         // same instance during boot(), so it must be a singleton.

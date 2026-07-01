@@ -1,7 +1,9 @@
 <?php
 
 use App\Addons\Support\AddonAssetLinker;
+use App\Exceptions\SettingNotFound;
 use App\Models\Addon;
+use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
 use Carbon\Carbon;
@@ -179,6 +181,54 @@ if (!function_exists('setting_save')) {
         $settingService->save($key, $value);
 
         return $value;
+    }
+}
+
+/*
+ * Shortcut for retrieving an addon's setting value
+ */
+if (!function_exists('addon_setting')) {
+    /**
+     * Read a setting belonging to an addon.
+     *
+     * The addon is addressed by its manifest `alias` or `registry_id`.
+     *
+     * @param  string     $addon   Addon alias or registry_id
+     * @param  string     $key     Setting key
+     * @param  mixed      $default Returned when the addon/key cannot be resolved
+     * @return mixed|null
+     */
+    function addon_setting(string $addon, string $key, $default = null)
+    {
+        /** @var AddonSettingService $service */
+        $service = app(AddonSettingService::class);
+
+        try {
+            return $service->retrieve($addon, $key);
+        } catch (SettingNotFound) {
+            return $default;
+        }
+    }
+}
+
+/*
+ * Shortcut for persisting an addon's setting value
+ */
+if (!function_exists('addon_setting_save')) {
+    /**
+     * Persist a setting belonging to an addon, invalidating its cached value.
+     *
+     * @param  string     $addon Addon alias or registry_id
+     * @param  string     $key   Setting key
+     * @param  mixed      $value Value to store
+     * @return mixed|null The stored value, or null when the addon/key is unknown
+     */
+    function addon_setting_save(string $addon, string $key, $value): mixed
+    {
+        /** @var AddonSettingService $service */
+        $service = app(AddonSettingService::class);
+
+        return $service->save($addon, $key, $value);
     }
 }
 

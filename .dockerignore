@@ -17,6 +17,8 @@ secrets.yml
 secrets.yaml
 
 # Laravel/PHP
+# FrankenPHP binary (platform-specific — never copy into Linux image)
+frankenphp
 .phpunit.cache
 bootstrap/cache/*
 !bootstrap/cache/.gitignore

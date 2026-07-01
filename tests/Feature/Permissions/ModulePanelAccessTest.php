@@ -6,14 +6,28 @@ use App\Models\Permission;
 use App\Models\User;
 use App\Services\PermissionRegistry;
 use Filament\Panel;
-use Modules\VMSAcars\Filament\Pages\Rules;
+
+/*
+|--------------------------------------------------------------------------
+| Module panel access gating
+|--------------------------------------------------------------------------
+|
+| PermissionRegistry derives a panel's module-access key from the *namespace*
+| of its registered components (Modules\<Name>\...), so these tests use a fake
+| module-namespaced class string. Nothing here depends on a real addon being
+| installed — the class only needs to live under the Modules\ tree.
+|
+*/
+
+// Fake module page — never instantiated; only its namespace is inspected.
+const FAKE_MODULE_PAGE = 'Modules\\FakeModule\\Filament\\Pages\\FakePage';
 
 it("derives the module key from a panel's module-namespaced components", function (): void {
     $panel = Panel::make()
-        ->id('vmsacars::admin')
-        ->pages([Rules::class]);
+        ->id('fakemodule::admin')
+        ->pages([FAKE_MODULE_PAGE]);
 
-    expect(app(PermissionRegistry::class)->moduleKeyForPanel($panel))->toBe('vmsacars');
+    expect(app(PermissionRegistry::class)->moduleKeyForPanel($panel))->toBe('fakemodule');
 });
 
 it('returns null for a core panel', function (): void {
@@ -24,14 +38,14 @@ it('returns null for a core panel', function (): void {
 
 it('gates a module panel on its access permission', function (): void {
     $panel = Panel::make()
-        ->id('vmsacars::admin')
-        ->pages([Rules::class]);
+        ->id('fakemodule::admin')
+        ->pages([FAKE_MODULE_PAGE]);
 
-    Permission::firstOrCreate(['name' => 'access:vmsacars', 'guard_name' => 'web']);
+    Permission::firstOrCreate(['name' => 'access:fakemodule', 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     expect($user->canAccessPanel($panel))->toBeFalse();
 
-    $user->givePermissionTo('access:vmsacars');
+    $user->givePermissionTo('access:fakemodule');
     expect($user->fresh()->canAccessPanel($panel))->toBeTrue();
 });
