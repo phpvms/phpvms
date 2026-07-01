@@ -114,3 +114,5 @@ modules_statuses.json
 
 **/caddy
 frankenphp
+
+frankenphp-worker.php
