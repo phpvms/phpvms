@@ -1,0 +1,13 @@
+{
+    "name": "phpvms/sample-vue-widget",
+    "type": "phpvms-module",
+    "description": "Reference third-party phpVMS addon shipping a pre-built Vue (ESM) skylight dashboard widget plus its own data endpoint.",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\SampleVueWidget\\": "."
+        }
+    }
+}

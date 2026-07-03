@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
+use App\Http\Presenters\BidsPresenter;
+use App\Http\Presenters\FlightsPresenter;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
 use App\Models\Airline;
@@ -20,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Inertia\Response as InertiaResponse;
 use Laracasts\Flash\Flash;
 
 class FlightController extends Controller
@@ -39,7 +42,7 @@ class FlightController extends Controller
         return (bool) $this->addonRegistry->find('VMSAcars')?->isEnabled();
     }
 
-    public function index(SearchFlightsRequest $request): View
+    public function index(SearchFlightsRequest $request): View|InertiaResponse
     {
         return $this->search($request);
     }
@@ -47,7 +50,7 @@ class FlightController extends Controller
     /**
      * Build the flight search using FlightSearchQuery.
      */
-    public function search(SearchFlightsRequest $request): View
+    public function search(SearchFlightsRequest $request): View|InertiaResponse
     {
         // FlightSearchQuery::build() already applies active+visible via
         // model scopes when $onlyActive=true (the default). $where here is
@@ -129,7 +132,7 @@ class FlightController extends Controller
             ->paginate(paginate_limit($request->integer('limit') ?: null));
 
         $saved_flights = [];
-        $bids = Bid::where('user_id', Auth::id())->get();
+        $bids = Bid::with('flight')->where('user_id', Auth::id())->get();
         foreach ($bids as $bid) {
             if (!$bid->flight) {
                 $bid->delete();
@@ -140,7 +143,7 @@ class FlightController extends Controller
             $saved_flights[$bid->flight_id] = $bid->id;
         }
 
-        return view('flights.index', [
+        $viewData = [
             'user'          => $user,
             'airlines'      => Airline::selectList(addBlank: true),
             'airports'      => [],
@@ -158,17 +161,24 @@ class FlightController extends Controller
             'acars_plugin'  => $this->acarsEnabled(),
             'icao_codes'    => $icao_codes,
             'type_ratings'  => $type_ratings,
-        ]);
+        ];
+
+        return response()->themed('Flights', 'flights.index', FlightsPresenter::from($viewData));
     }
 
     /**
      * Find the user's bids and display them
      */
-    public function bids(Request $request): View
+    public function bids(Request $request): View|InertiaResponse
     {
-        $user = User::with(['bids', 'bids.flight'])->findOrFail(Auth::id());
+        // Eager-load bids + their flights + each flight's airline (the app
+        // enforces preventLazyLoading, so neither the Blade bids table — which
+        // reads $flight->airline — nor the presenter may touch an unloaded
+        // relation). Loading bids.flight.airline here covers both paths.
+        $user = User::with(['bids', 'bids.flight', 'bids.flight.airline'])->findOrFail(Auth::id());
 
         $flights = collect();
+        $valid_bids = collect();
         $saved_flights = [];
         foreach ($user->bids as $bid) {
             // Remove any invalid bids (flight doesn't exist or something)
@@ -179,10 +189,11 @@ class FlightController extends Controller
             }
 
             $flights->add($bid->flight);
+            $valid_bids->add($bid);
             $saved_flights[$bid->flight_id] = $bid->id;
         }
 
-        return view('flights.bids', [
+        $viewData = [
             'user'          => $user,
             'airlines'      => Airline::selectList(addBlank: true),
             'airports'      => [],
@@ -192,7 +203,12 @@ class FlightController extends Controller
             'simbrief'      => !empty(setting('simbrief.api_key')),
             'simbrief_bids' => setting('simbrief.only_bids'),
             'acars_plugin'  => $this->acarsEnabled(),
-        ]);
+            // SPA-only: the validated Bid models the Inertia projection reads.
+            // Additive — the Blade themes ignore this and keep their keys intact.
+            'bids'          => $valid_bids,
+        ];
+
+        return response()->themed('Flights/Bids', 'flights.bids', BidsPresenter::from($viewData));
     }
 
     /**

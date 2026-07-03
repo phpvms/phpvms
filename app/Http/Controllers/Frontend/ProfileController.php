@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
+use App\Http\Presenters\ProfilePresenter;
 use App\Models\Airline;
 use App\Models\User;
 use App\Models\UserField;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use Inertia\Response as InertiaResponse;
 use Intervention\Image\Facades\Image;
 use Laracasts\Flash\Flash;
 
@@ -53,12 +55,12 @@ class ProfileController extends Controller
      * Redirect to show() since only a single page gets shown and the template controls
      * the other items that are/aren't shown
      */
-    public function index(): View
+    public function index(): View|InertiaResponse|RedirectResponse
     {
         return $this->show(Auth::user()->id);
     }
 
-    public function show(int $id): RedirectResponse|View
+    public function show(int $id): RedirectResponse|View|InertiaResponse
     {
         $with = [
             'airline',
@@ -81,11 +83,11 @@ class ProfileController extends Controller
 
         $userFields = $this->userSvc->getUserFields($user, true);
 
-        return view('profile.index', [
-            'user'       => $user,
-            'userFields' => $userFields,
-            'acars'      => $this->acarsEnabled(),
-        ]);
+        return response()->themed(
+            'Profile',
+            'profile.index',
+            ProfilePresenter::from($user, $userFields, $this->acarsEnabled()),
+        );
     }
 
     /**

@@ -1,0 +1,44 @@
+{
+  "name": "@phpvms/skylight",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/build-addons.mjs",
+    "build:addons": "node scripts/build-addons.mjs",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@inertiajs/vue3": "^2.0.0",
+    "@vueuse/core": "^14.3.0",
+    "lucide-vue-next": "^1.0.0",
+    "maplibre-gl": "^5.6.0",
+    "topojson-client": "^3.1.0",
+    "vue": "^3.5.17",
+    "vue-draggable-plus": "^0.6.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/topojson-client": "^3.1.5",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/test-utils": "^2.4.11",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jsdom": "^25.0.1",
+    "playwright": "^1.61.1",
+    "reka-ui": "^2.10.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-css-injected-by-js": "^5.0.1",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^2.2.0"
+  }
+}

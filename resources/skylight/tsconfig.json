@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["./apps/spa/*"]
+    }
+  },
+  "include": ["apps/**/*.ts", "apps/**/*.vue", "packages/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

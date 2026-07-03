@@ -1,0 +1,130 @@
+/**
+ * Skylight canonical runtime token layer — the `--pv-*` reskin knob.
+ *
+ * Design = "Workspace" (Linear/Superhuman master-detail): Inter UI, IBM Plex
+ * Mono for codes, a single confident brand-blue accent + functional status
+ * colors, hairline density, rounded cards, light default + full dark deck.
+ * Replaces the earlier EFIS look; the EFIS display font (Space Grotesk) is kept
+ * defined below so it remains available.
+ *
+ * Override a `--pv-*` at :root to reskin shadcn + Tailwind utilities + the shell
+ * together with NO rebuild.
+ */
+
+:root {
+  /* ── Neutral ink ramp (Workspace) ─────────────────────────────── */
+  --pv-ink-50:  #f7f8fa;
+  --pv-ink-100: #eef0f4;
+  --pv-ink-150: #e6e8ef;
+  --pv-ink-200: #dcdfe8;
+  --pv-ink-300: #c3c8d4;
+  --pv-ink-400: #9aa1b2;
+  --pv-ink-500: #6b7280;
+  --pv-ink-600: #4b5262;
+  --pv-ink-700: #353a47;
+  --pv-ink-800: #22262f;
+  --pv-ink-850: #181b22;
+  --pv-ink-900: #12141a;
+  --pv-ink-950: #0d0e12;
+
+  /* ── Semantic surface/text (light) ────────────────────────────── */
+  --pv-bg:           var(--pv-ink-50);    /* app background */
+  --pv-panel:        #ffffff;             /* card / panel surface */
+  --pv-panel-inset:  var(--pv-ink-50);    /* inset fields, table head */
+  --pv-hover:        var(--pv-ink-100);   /* row / item hover */
+  --pv-line:         var(--pv-ink-150);   /* hairline borders */
+  --pv-line-strong:  var(--pv-ink-200);
+  --pv-ink:          var(--pv-ink-800);   /* primary text */
+  --pv-ink-dim:      var(--pv-ink-500);   /* secondary / label text */
+  --pv-ink-faint:    var(--pv-ink-400);   /* tertiary */
+  --pv-track:        var(--pv-ink-100);   /* progress track */
+
+  /* ── Accent + status ──────────────────────────────────────────── */
+  --pv-accent:       #067ec1;   /* phpVMS brand blue (single confident accent) */
+  --pv-accent-soft:  #e6f2fb;   /* accent tint (chips, active nav) */
+  --pv-cyan:         #0E86A0;   /* secondary — station / info */
+  --pv-green:        #16a34a;   /* ok / success */
+  --pv-amber:        #d97706;   /* warn / pending */
+  --pv-red:          #dc2626;   /* bad / locked */
+
+  /* Nav Display globe (dark basemap, altitude-colored tracks) */
+  --pv-globe-sea:    #0d0e12;
+  --pv-globe-land:   #14171e;
+  --pv-globe-coast:  #262a34;
+
+  /* Elevation — Workspace is border-led; shadows are minimal. */
+  --pv-shadow-panel: none;
+  --pv-shadow-chrome: none;
+
+  /* ── Legacy semantic aliases (shadcn bridge in app.css) ───────── */
+  --pv-color-page:          var(--pv-bg);
+  --pv-color-surface:       var(--pv-panel);
+  --pv-color-surface-alt:   var(--pv-panel-inset);
+  --pv-color-surface-raised: var(--pv-panel);
+  --pv-color-border:        var(--pv-line);
+  --pv-color-text:          var(--pv-ink);
+  --pv-color-text-muted:    var(--pv-ink-dim);
+  --pv-color-primary:       var(--pv-accent);
+  --pv-color-primary-text:  #ffffff;
+  --pv-color-info:          var(--pv-cyan);
+  --pv-color-success:       var(--pv-green);
+  --pv-color-warning:       var(--pv-amber);
+  --pv-color-error:         var(--pv-red);
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --pv-font-body:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --pv-font-mono:    'IBM Plex Mono', ui-monospace, 'Cascadia Code', monospace;
+  --pv-font-display: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif; /* kept (legacy EFIS) */
+  --pv-font-family-base: var(--pv-font-body);
+  --pv-font-family-mono: var(--pv-font-mono);
+
+  /* Global type-scale multiplier — bumps every calc(Npx * scale) size at once. */
+  --pv-type-scale: 1;
+
+  /* ── Radii (Workspace: rounder cards) ─────────────────────────── */
+  --pv-radius-sm:   6px;
+  --pv-radius-md:   8px;
+  --pv-radius-lg:   10px;
+  --pv-radius-xl:   12px;
+  --pv-radius-full: 9999px;
+
+  /* ── Layout shell ─────────────────────────────────────────────── */
+  --pv-nav-width:     240px;
+  --pv-header-height: 56px;
+  --pv-aside-width:   240px;
+  --pv-container-width: 1360px;
+
+  /* ── Slot diagnostic (fail-visible) ───────────────────────────── */
+  --pv-slot-error-bg:      #FDECEF;
+  --pv-slot-error-border:  #F5C2CE;
+  --pv-slot-error-text:    #8A1733;
+}
+
+/* ── Dark deck ──────────────────────────────────────────────────── */
+.dark {
+  --pv-bg:           var(--pv-ink-950);
+  --pv-panel:        var(--pv-ink-900);
+  --pv-panel-inset:  var(--pv-ink-850);
+  --pv-hover:        var(--pv-ink-850);
+  --pv-line:         var(--pv-ink-800);
+  --pv-line-strong:  var(--pv-ink-700);
+  --pv-ink:          var(--pv-ink-100);
+  --pv-ink-dim:      var(--pv-ink-400);
+  --pv-ink-faint:    var(--pv-ink-500);
+  --pv-track:        var(--pv-ink-800);
+
+  --pv-accent:       #339fdc;   /* brand blue, brightened for dark */
+  --pv-accent-soft:  rgba(51, 159, 220, 0.12);
+  --pv-cyan:         #35D6E7;
+  --pv-green:        #22c55e;
+  --pv-amber:        #f59e0b;
+  --pv-red:          #f87171;
+
+  --pv-globe-sea:    #0d0e12;
+  --pv-globe-land:   #14171e;
+  --pv-globe-coast:  #262a34;
+
+  --pv-slot-error-bg:      #2A0E16;
+  --pv-slot-error-border:  #5C2030;
+  --pv-slot-error-text:    #FF8FA8;
+}

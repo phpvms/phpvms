@@ -1,0 +1,20 @@
+{
+    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "schema_version": 1,
+    "name": "SampleVueWidget",
+    "alias": "sample-vue-widget",
+    "type": "module",
+    "description": "Reference third-party addon that ships a pre-built Vue (ESM) dashboard widget for the skylight SPA and owns its own data endpoint.",
+    "keywords": ["skylight", "widget", "vue", "example"],
+    "active": 0,
+    "order": 0,
+    "providers": [
+        "Modules\\SampleVueWidget\\Providers\\SampleVueWidgetServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

@@ -41,6 +41,8 @@ use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Response as ResponseFacade;
+use Inertia\Inertia;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
 use Illuminate\Pagination\Paginator;
@@ -111,6 +113,34 @@ class AppServiceProvider extends ServiceProvider
         Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => new NanoidClient($length)->formattedId(BaseModel::ID_ALPHABET, $length));
 
         Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
+
+        /**
+         * Dual-projection render switch (Decision D2 in skylight-dashboard-slice/design.md).
+         *
+         * Usage in a controller:
+         *   return response()->themed('Dashboard', 'dashboard.index', $presenter);
+         *
+         * - When the active theme is kind = "spa": returns an Inertia response
+         *   using $presenter->toInertiaArray() as the props payload.
+         * - Otherwise (kind = "blade" or absent): returns a Blade view with
+         *   $presenter->toBladeArray() as the template data.
+         *
+         * The two projections share one data-gathering path (the presenter) but
+         * are NOT required to be byte-identical: toBladeArray() returns the
+         * legacy model-rich shape; toInertiaArray() returns a flat JSON-
+         * serializable DTO. See spec: spa-theme-render-switch/spec.md.
+         *
+         * @param string $inertiaPage  Inertia component name (e.g. 'Dashboard')
+         * @param string $bladeView    Blade view name (e.g. 'dashboard.index')
+         * @param object $presenter    Object with toInertiaArray() and toBladeArray()
+         */
+        ResponseFacade::macro('themed', function (string $inertiaPage, string $bladeView, object $presenter) {
+            if (theme_kind() === 'spa') {
+                return Inertia::render($inertiaPage, $presenter->toInertiaArray());
+            }
+
+            return view($bladeView, $presenter->toBladeArray());
+        });
 
         Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
 

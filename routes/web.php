@@ -18,18 +18,30 @@ use App\Http\Controllers\Frontend\PirepController;
 use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
+use App\Http\Controllers\Frontend\WeatherController;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\HandleInertiaRequests;
 
 Route::group([
     'prefix'     => '',
     'as'         => 'frontend.',
-    'middleware' => (config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth']),
+    'middleware' => array_merge(
+        config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth'],
+        [HandleInertiaRequests::class]
+    ),
 ], function (): void {
     Route::resource('dashboard', DashboardController::class);
+
+    // Weather JSON endpoint for the <weather-widget> custom element (Task Group 5).
+    // Session-authenticated (same 'auth' middleware as dashboard), returns JSON only.
+    // Throttled to guard against accidental METAR storms from fast-refreshing clients.
+    Route::get('api/weather/{icao}', [WeatherController::class, 'show'])
+        ->name('weather.show')
+        ->middleware('throttle:30,1');
 
     Route::get('airports/{id}', [AirportController::class, 'show'])->name('airports.show');
 
@@ -63,8 +75,9 @@ Route::group([
 });
 
 Route::group([
-    'prefix' => '',
-    'as'     => 'frontend.',
+    'prefix'     => '',
+    'as'         => 'frontend.',
+    'middleware' => [HandleInertiaRequests::class],
 ], function (): void {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('r/{id}', [PirepController::class, 'show'])->name('pirep.show.public');

@@ -521,3 +521,47 @@ if (!function_exists('paginate_limit')) {
         return min(max($value, 1), $max);
     }
 }
+
+/*
+ * Theme kind helpers — read kind/framework/manifest from the active theme's
+ * theme.json without touching the igaster/laravel-theme internals.
+ *
+ * The igaster Theme::loadSettings() already stores every non-reserved key
+ * (i.e. every key that is NOT name/extends/views-path/asset-path) into
+ * $theme->settings, so kind/framework/manifest are reachable via getSetting().
+ *
+ * All three helpers are per-request safe and Octane-safe: they read from the
+ * Theme singleton that SetActiveTheme resets on every request.
+ */
+if (!function_exists('theme_setting')) {
+    /**
+     * Read a key from the active theme's theme.json metadata.
+     *
+     * @param  string $key     Key name (e.g. 'kind', 'framework', 'manifest')
+     * @param  mixed  $default Value when key is absent or no theme is active
+     * @return mixed
+     */
+    function theme_setting(string $key, mixed $default = null): mixed
+    {
+        $theme = \Igaster\LaravelTheme\Facades\Theme::current();
+
+        if ($theme === null) {
+            return $default;
+        }
+
+        return $theme->getSetting($key, $default);
+    }
+}
+
+if (!function_exists('theme_kind')) {
+    /**
+     * Return the active theme's render kind ('blade' or 'spa').
+     *
+     * Defaults to 'blade' when the key is absent, preserving full backward
+     * compatibility with existing themes that omit it.
+     */
+    function theme_kind(): string
+    {
+        return theme_setting('kind', 'blade');
+    }
+}
