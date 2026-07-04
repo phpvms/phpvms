@@ -1,9 +1,21 @@
 declare namespace App {
 namespace Http {
 namespace Data {
+export type AircraftRefData = {
+id: number,
+registration: string | null,
+name: string | null,
+};
 export type AirlineRefData = {
 icao: string,
 name: string,
+};
+export type AirportPointData = {
+id: string,
+icao: string,
+name: string | null,
+lat: number | null,
+lon: number | null,
 };
 export type AirportRefData = {
 icao: string,
@@ -14,6 +26,10 @@ name: string,
 description: string | null,
 image: string | null,
 };
+export type BalanceData = {
+amount: number,
+formatted: string,
+};
 export type BidData = {
 id: number,
 flightId: string,
@@ -22,6 +38,18 @@ aircraftId: number | null,
 export type BidRowData = {
 bid: App.Http.Data.BidData,
 flight: App.Http.Data.FlightData | null,
+};
+export type DashboardData = {
+id: number,
+name: string,
+flights: number,
+flightTimeMinutes: string,
+onLeave: boolean,
+balance: App.Http.Data.BalanceData | null,
+currentAirport: string | null,
+lastPirep: App.Http.Data.LastPirepData | null,
+rank: App.Http.Data.RankProgressData | null,
+route: App.Http.Data.RouteData,
 };
 export type FlightData = {
 id: string,
@@ -42,6 +70,25 @@ blockTime: string | null,
 type: string | null,
 airline: App.Http.Data.AirlineRefData | null,
 bidId: number | null,
+};
+export type LastPirepData = {
+id: string,
+ident: string,
+flight_number: string | null,
+airline_id: number | null,
+state: App.Http.Data.PirepStateData,
+flight_time: number | null,
+submitted_at: string | null,
+created_at: string | null,
+dpt_airport: App.Http.Data.AirportPointData | null,
+arr_airport: App.Http.Data.AirportPointData | null,
+aircraft: App.Http.Data.AircraftRefData | null,
+comments: App.Http.Data.PirepCommentData[],
+};
+export type PirepCommentData = {
+id: number,
+comment: string | null,
+created_at: string | null,
 };
 export type PirepData = {
 id: string,
@@ -105,6 +152,11 @@ export type PirepLogData = {
 time: string | null,
 message: string,
 };
+export type PirepStateData = {
+value: number,
+label: string,
+color: string,
+};
 export type ProfileData = {
 id: number,
 name: string,
@@ -124,6 +176,21 @@ acars: boolean,
 };
 export type RankData = {
 name: string,
+};
+export type RankProgressData = {
+from: string,
+to: string | null,
+pct: number,
+};
+export type RouteData = {
+from: App.Http.Data.RoutePointData | null,
+to: App.Http.Data.RoutePointData | null,
+};
+export type RoutePointData = {
+icao: string,
+name: string | null,
+lat: number,
+lon: number,
 };
 export type StateBadgeData = {
 label: string,

@@ -140,25 +140,26 @@ class AppServiceProvider extends ServiceProvider
             string $inertiaPage,
             string $bladeView,
             ?object $presenter = null,
-            array|Arrayable $bladeData = [],
+            Closure|array|Arrayable $bladeData = [],
             Closure|array|Arrayable|null $spa = null,
         ) {
-            // Legacy presenter path (Dashboard/Flights/Profile): one object exposing
-            // BOTH projections. Kept for controllers not yet migrated.
+            // Legacy presenter path (one object exposing BOTH projections). Kept
+            // for controllers not yet migrated.
             if ($presenter !== null && method_exists($presenter, 'toInertiaArray')) {
                 return theme_kind() === 'spa'
                     ? Inertia::render($inertiaPage, $presenter->toInertiaArray())
                     : view($bladeView, $presenter->toBladeArray());
             }
 
-            // Direct path (no presenter): the controller supplies the Blade model
-            // data as-is and the SPA props (an array or a Closure built only when
-            // the SPA theme is active, so the DTO cost is skipped on the Blade path).
+            // Direct path (no presenter): the controller supplies the Blade data and
+            // the SPA props, each an array/Arrayable or a Closure. Only the ACTIVE
+            // theme's payload is realised, so a Closure defers the other's cost
+            // (e.g. the SPA DTO isn't built on the Blade path, and vice-versa).
             if (theme_kind() === 'spa') {
                 return Inertia::render($inertiaPage, $spa instanceof Closure ? $spa() : ($spa ?? []));
             }
 
-            return view($bladeView, $bladeData);
+            return view($bladeView, $bladeData instanceof Closure ? $bladeData() : $bladeData);
         });
 
         Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
