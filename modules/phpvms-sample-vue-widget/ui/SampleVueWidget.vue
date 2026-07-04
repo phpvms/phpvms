@@ -6,7 +6,7 @@
  * the addon widget preset (see ./vite.config.ts) into a pre-built ESM module at
  * `public/widgets/sample.js`, with `vue` EXTERNALIZED. At runtime the SPA does
  * `import('/ext/samplevuewidget/widgets/sample.js')` and renders this file's
- * DEFAULT export (see resources/skylight/apps/spa/components/widgets/resolve.ts).
+ * DEFAULT export (see resources/js/apps/frontend-ui/apps/spa/components/widgets/resolve.ts).
  *
  * DELIBERATELY STANDALONE:
  *  - It imports ONLY from 'vue'. That bare specifier is resolved by the SPA
@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<{ label?: string }>(), {
  *
  * The canonical type is GENERATED from the PHP DTO by
  * `php artisan typescript:transform` into the host SPA at
- *   resources/skylight/apps/spa/types/generated.d.ts
+ *   resources/js/apps/frontend-ui/apps/spa/types/generated.d.ts
  * as the ambient global `Modules.SampleVueWidget.Http.Data.SamplePingData`.
  *
  * A first-party (bundled) widget would consume it directly, e.g.:

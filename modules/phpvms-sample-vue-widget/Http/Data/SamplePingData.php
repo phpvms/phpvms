@@ -15,7 +15,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * The public typed properties ARE the response shape. The #[TypeScript] attribute
  * opts this class into `php artisan typescript:transform`, which GENERATES the
  * matching TypeScript type into
- * resources/skylight/apps/spa/types/generated.d.ts — the Vue widget imports that
+ * resources/js/apps/frontend-ui/apps/spa/types/generated.d.ts — the Vue widget imports that
  * generated `SamplePingData` type instead of hand-mirroring the shape, keeping
  * the client and server contracts in lock-step.
  */

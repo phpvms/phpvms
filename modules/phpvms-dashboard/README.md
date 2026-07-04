@@ -17,7 +17,7 @@ runtime by URL, with **zero** access to the core front-end build required.
 **Tier 2 — Vue widget.** The addon ships a **pre-built ESM module** that the SPA
 `import()`s at runtime by URL. The module's default export is the Vue component;
 the SPA renders it inside a widget frame
-(`resources/skylight/apps/spa/components/widgets/resolve.ts`).
+(`resources/js/apps/frontend-ui/apps/spa/components/widgets/resolve.ts`).
 
 The widget is built as a **Vue library in ESM format with `vue` EXTERNALIZED**,
 so the host and every addon widget run on **one** shared Vue instance via the
@@ -86,7 +86,7 @@ it as a normal `icao` prop with no host imports.
 ## How to build the widget
 
 The build is standalone Vite; it does not need the app running. From the theme
-workspace (`resources/skylight/`):
+workspace (`resources/js/apps/frontend-ui/`):
 
 ```bash
 # Build the core theme AND discover every addon widget config:

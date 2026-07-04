@@ -183,7 +183,7 @@
     "types": "@php artisan typescript:transform",
     "test:types-drift": [
       "@php artisan typescript:transform",
-      "git diff --exit-code resources/skylight/apps/spa/types/generated.d.ts"
+      "git diff --exit-code resources/js/apps/frontend-ui/apps/spa/types/generated.d.ts"
     ],
     "test:arch": "pest --filter=arch",
     "test:type-coverage": "pest --type-coverage",

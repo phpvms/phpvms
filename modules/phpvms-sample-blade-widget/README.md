@@ -13,7 +13,7 @@ think in Blade + PHP, start here.
 
 **Tier 1 — Blade widget.** The widget's UI is a server-rendered Blade fragment.
 The SPA's generic host shell
-(`resources/skylight/apps/spa/components/widgets/BladeWidget.vue`) fetches your
+(`resources/js/apps/frontend-ui/apps/spa/components/widgets/BladeWidget.vue`) fetches your
 endpoint over a credentialed request, injects the returned HTML into the
 dashboard, and progressively enhances any `<form>` inside it. Your addon's logic
 runs entirely on the server; only rendered HTML reaches the browser.
