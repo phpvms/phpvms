@@ -8,67 +8,114 @@
  * useDashboardLayout; this is only the menu of available widgets.
  */
 
-export type WidgetZone = 'grid' | 'sidebar'
+export type WidgetZone = "grid" | "sidebar";
 
 export interface WidgetDef {
   /** Unique widget id (also the instance id — one per type for now). */
-  id: string
+  id: string;
   /**
    * Widget kind. `vue` (default) resolves to a bundled/async Vue component;
    * `blade` renders a server-rendered host shell (BladeWidget).
    */
-  kind?: 'vue' | 'blade'
+  kind?: "vue" | "blade";
   /** Resolver key → Vue component (in components/widgets). Used by `vue` kind. */
-  component?: string
+  component?: string;
   /** Runtime ESM URL for a `vue`-kind widget (e.g. /ext/foo/widget.js). */
-  module?: string
+  module?: string;
   /** Props passed to the resolved `vue`-kind component. */
-  props?: Record<string, unknown>
+  props?: Record<string, unknown>;
   /** Server endpoint for a `blade`-kind widget (fetched HTML). */
-  endpoint?: string
+  endpoint?: string;
   /** Blade render mode: `island` (default, injected HTML) or `iframe`. */
-  mode?: 'island' | 'iframe'
+  mode?: "island" | "iframe";
   /** Human label shown in the Add-widget menu + frame header. */
-  title: string
+  title: string;
   /**
    * Menu/header icon. Either a lucide icon name (kebab- or PascalCase, e.g.
    * `cloud-sun`) or raw inline SVG path markup (legacy, must start with `<`).
    * Rendered via PvIcon, which handles both forms.
    */
-  icon: string
+  icon: string;
   /** Default zone when first added. */
-  defaultZone: WidgetZone
+  defaultZone: WidgetZone;
   /** Column span in the grid zone (1 or 2). Sidebar ignores this. */
-  span?: 1 | 2
+  span?: 1 | 2;
   /** Whether the pilot may remove it (default true). */
-  removable?: boolean
+  removable?: boolean;
   /** Shown in the default layout on first load. */
-  defaultOn?: boolean
+  defaultOn?: boolean;
 }
 
 const CATALOG: WidgetDef[] = [
-  { id: 'route',      component: 'RouteWidget',      title: 'Nav display',   icon: 'radar', defaultZone: 'grid', span: 2, defaultOn: true },
-  { id: 'kpi-hours',  component: 'HoursWidget',      title: 'Total hours',   icon: 'clock', defaultZone: 'grid', span: 1, defaultOn: true },
-  { id: 'kpi-flights',component: 'FlightsKpiWidget', title: 'Flights',       icon: 'plane', defaultZone: 'grid', span: 1, defaultOn: true },
-  { id: 'kpi-balance',component: 'BalanceWidget',    title: 'Balance',       icon: 'wallet', defaultZone: 'grid', span: 1, defaultOn: true },
-  { id: 'rank',       component: 'RankWidget',       title: 'Rank progress', icon: 'trending-up', defaultZone: 'grid', span: 1, defaultOn: true },
-  { id: 'last-flight',component: 'LastFlightWidget', title: 'Last flight',   icon: 'plane-landing', defaultZone: 'sidebar', defaultOn: true },
+  {
+    id: "route",
+    component: "RouteWidget",
+    title: "Nav display",
+    icon: "radar",
+    defaultZone: "grid",
+    span: 2,
+    defaultOn: true,
+  },
+  {
+    id: "kpi-hours",
+    component: "HoursWidget",
+    title: "Total hours",
+    icon: "clock",
+    defaultZone: "grid",
+    span: 1,
+    defaultOn: true,
+  },
+  {
+    id: "kpi-flights",
+    component: "FlightsKpiWidget",
+    title: "Flights",
+    icon: "plane",
+    defaultZone: "grid",
+    span: 1,
+    defaultOn: true,
+  },
+  {
+    id: "kpi-balance",
+    component: "BalanceWidget",
+    title: "Balance",
+    icon: "wallet",
+    defaultZone: "grid",
+    span: 1,
+    defaultOn: true,
+  },
+  {
+    id: "rank",
+    component: "RankWidget",
+    title: "Rank progress",
+    icon: "trending-up",
+    defaultZone: "grid",
+    span: 1,
+    defaultOn: true,
+  },
+  {
+    id: "last-flight",
+    component: "LastFlightWidget",
+    title: "Last flight",
+    icon: "plane-landing",
+    defaultZone: "sidebar",
+    defaultOn: true,
+  },
   // NOTE: the `weather` (METAR) widget is no longer bundled first-party. It now
   // ships from the first-party addon `phpvms/phpvms-dashboard` as a pre-built
   // ESM widget that owns its own endpoint and receives the live station via a
-  // `props: { icao: '@currentAirport' }` ref. See modules/PhpvmsDashboard/.
-]
+  // `props: { icao: '@currentAirport' }` ref. See modules/phpvms-dashboard/.
+];
 
 /**
  * Server-provided widgets, merged in from `page.props.skylight.widgets` at app
  * init. Kept separate from the first-party CATALOG so getCatalog() can control
  * ordering (first-party first) and dedupe (server wins on id collision).
  */
-let serverWidgets: WidgetDef[] = []
+let serverWidgets: WidgetDef[] = [];
 
 /** Register an additional widget (addon extension point). Idempotent by id. */
 export function registerWidget(def: WidgetDef): void {
-  if (!CATALOG.some((w) => w.id === def.id)) CATALOG.push(def)
+  if (!CATALOG.some((w) => w.id === def.id)) CATALOG.push(def);
 }
 
 /**
@@ -78,14 +125,14 @@ export function registerWidget(def: WidgetDef): void {
  */
 export function mergeServerWidgets(defs: WidgetDef[] | undefined | null): void {
   if (!defs || !defs.length) {
-    serverWidgets = []
-    return
+    serverWidgets = [];
+    return;
   }
-  const byId = new Map<string, WidgetDef>()
+  const byId = new Map<string, WidgetDef>();
   for (const def of defs) {
-    if (def && typeof def.id === 'string') byId.set(def.id, def)
+    if (def && typeof def.id === "string") byId.set(def.id, def);
   }
-  serverWidgets = [...byId.values()]
+  serverWidgets = [...byId.values()];
 }
 
 /**
@@ -93,13 +140,13 @@ export function mergeServerWidgets(defs: WidgetDef[] | undefined | null): void {
  * deduped by id (a server entry wins if it shares an id with a first-party one).
  */
 export function getCatalog(): WidgetDef[] {
-  if (!serverWidgets.length) return CATALOG
-  const serverIds = new Set(serverWidgets.map((w) => w.id))
-  const base = CATALOG.filter((w) => !serverIds.has(w.id))
-  return [...base, ...serverWidgets]
+  if (!serverWidgets.length) return CATALOG;
+  const serverIds = new Set(serverWidgets.map((w) => w.id));
+  const base = CATALOG.filter((w) => !serverIds.has(w.id));
+  return [...base, ...serverWidgets];
 }
 
 /** Look up a def by id in the merged catalog. */
 export function widgetById(id: string): WidgetDef | undefined {
-  return getCatalog().find((w) => w.id === id)
+  return getCatalog().find((w) => w.id === id);
 }

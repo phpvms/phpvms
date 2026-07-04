@@ -40,7 +40,7 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
             // whole and the large app/Support/Dto/SimBriefOfp tree. Add the
             // specific dirs that hold opt-in DTOs instead.
             ->transformDirectories(
-                base_path('modules/SampleVueWidget/Http/Data'),
+                base_path('modules/phpvms-sample-vue-widget/Http/Data'),
                 app_path('Support/Dto/PhpvmsApi'),
                 // Frontend page DTOs (the SPA projection returned by controllers).
                 // Holds only #[TypeScript] Data classes (no enums), so scanning it

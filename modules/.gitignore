@@ -10,8 +10,8 @@
 !/Vacentral
 !/ModulesManager
 !/Sample
-!/SampleBladeWidget
-!/SampleVueWidget
-!/SampleVueSlot
-!/PhpvmsDashboard
+!/phpvms-dashboard
+!/phpvms-sample-blade-widget
+!/phpvms-sample-vue-widget
+!/phpvms-sample-vue-slot
 
