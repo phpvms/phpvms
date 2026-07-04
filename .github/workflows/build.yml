@@ -70,6 +70,12 @@ jobs:
           cp .github/scripts/env.test .env
           .github/scripts/version.sh
 
+      # Regenerate the SPA types from the PHP DTOs and fail if the committed
+      # generated.d.ts is out of date (someone changed a #[TypeScript] DTO
+      # without running `composer types`).
+      - name: Check generated TypeScript types are up to date
+        run: composer test:types-drift
+
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=2G
 

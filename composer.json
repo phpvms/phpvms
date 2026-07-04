@@ -180,6 +180,11 @@
     "test:lint": "pint --test --parallel",
     "test:refactor": "rector --dry-run",
     "test:types": "phpstan analyse",
+    "types": "@php artisan typescript:transform",
+    "test:types-drift": [
+      "@php artisan typescript:transform",
+      "git diff --exit-code resources/skylight/apps/spa/types/generated.d.ts"
+    ],
     "test:arch": "pest --filter=arch",
     "test:type-coverage": "pest --type-coverage",
     "test:unit": "pest --parallel --coverage",
@@ -188,6 +193,7 @@
       "@test:lint",
       "@test:refactor",
       "@test:types",
+      "@test:types-drift",
       "@test:unit"
     ],
     "setup": [
