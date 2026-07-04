@@ -8,13 +8,13 @@ import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync, unlinkSy
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// The build SOURCE lives at resources/js/apps/frontend-ui/, but the runtime
+// The build SOURCE lives at resources/js/apps/fe/, but the runtime
 // theme identity stays "skylight" (views/layouts/skylight, public/build/skylight,
 // the Skylight facade) — the source dir and the theme name are decoupled.
 const WORKSPACE_ROOT = __dirname;
 const THEME_NAME = "skylight";
 const DIST_DIR = resolve(WORKSPACE_ROOT, "dist");
-// Walk up to the repo root: frontend-ui -> apps -> js -> resources -> repo.
+// Walk up to the repo root: fe -> apps -> js -> resources -> repo.
 const REPO_ROOT = resolve(WORKSPACE_ROOT, "..", "..", "..", "..");
 // Laravel theme layout dir (published dist + manifest land here).
 const LAYOUTS_DIR = resolve(REPO_ROOT, "resources", "views", "layouts", THEME_NAME);

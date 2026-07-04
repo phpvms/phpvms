@@ -19,7 +19,7 @@ use Route;
  *
  * This is a "Tier 1 — Blade widget". The heavy lifting (hosting the HTML,
  * fetching it credentialed, intercepting form submits) is done by the SPA's
- * generic host shell, resources/js/apps/frontend-ui/apps/spa/components/widgets/BladeWidget.vue.
+ * generic host shell, resources/js/apps/fe/apps/spa/components/widgets/BladeWidget.vue.
  * You just register a widget definition and return a layout-less fragment.
  *
  * DISABLE-SAFETY (read this before worrying about "what if it's off?")

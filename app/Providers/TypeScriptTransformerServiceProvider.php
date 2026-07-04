@@ -48,7 +48,7 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
                 app_path('Http/Data'),
             )
             // Final file: outputDirectory + writer path.
-            ->outputDirectory(resource_path('js/apps/frontend-ui/apps/spa/types'))
+            ->outputDirectory(resource_path('js/apps/fe/apps/spa/types'))
             ->writer(new GlobalNamespaceWriter('generated.d.ts'))
             // No manifest json cluttering the SPA types dir.
             ->withoutManifest();

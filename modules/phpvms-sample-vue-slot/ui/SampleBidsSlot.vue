@@ -10,7 +10,7 @@
  * exposes, and it renders wherever that page draws its matching `<PvSlot>`.
  *
  * This particular component fills the per-row slot `bids.row.actions` on the
- * "My Bids" page (resources/js/apps/frontend-ui/apps/spa/pages/Flights/Bids.vue). That page
+ * "My Bids" page (resources/js/apps/fe/apps/spa/pages/Flights/Bids.vue). That page
  * renders, once per bid row:
  *
  *     <PvSlot name="bids.row.actions" :context="{ bid: row.bid, flight: row.flight }" />

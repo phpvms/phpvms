@@ -1,11 +1,11 @@
 {
   "//": "IDE-only (Volar) config so `import ... from 'vue'` resolves when editing this addon's widgets. The addon ships no node_modules — it's built by the core theme with Vue externalized — so we point the `vue` type resolution at the theme workspace. Not used by any build.",
-  "extends": "../../../resources/js/apps/frontend-ui/tsconfig.json",
+  "extends": "../../../resources/js/apps/fe/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "vue": ["../../../resources/js/apps/frontend-ui/node_modules/vue"],
-      "vue/*": ["../../../resources/js/apps/frontend-ui/node_modules/vue/*"]
+      "vue": ["../../../resources/js/apps/fe/node_modules/vue"],
+      "vue/*": ["../../../resources/js/apps/fe/node_modules/vue/*"]
     }
   },
   "include": ["./**/*.ts", "./**/*.vue"]

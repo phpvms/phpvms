@@ -25,7 +25,7 @@ import type { UserConfig } from "vite";
  *     import { resolve } from 'node:path'
  *     import { fileURLToPath } from 'node:url'
  *     import { defineAddonWidgetConfig } from
- *       '../../../resources/js/apps/frontend-ui/addon-build/widget-preset'
+ *       '../../../resources/js/apps/fe/addon-build/widget-preset'
  *
  *     const addonDir = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
  *     export default defineAddonWidgetConfig({
@@ -34,7 +34,7 @@ import type { UserConfig } from "vite";
  *     })
  *
  * The core theme build discovers and runs every such config (see
- * resources/js/apps/frontend-ui/scripts/build-addons.mjs). Third-party addons (e.g. the
+ * resources/js/apps/fe/scripts/build-addons.mjs). Third-party addons (e.g. the
  * external ACARS plugin) simply copy this pattern and build in their own repo.
  *
  * ── Standalone tooling ────────────────────────────────────────────────────────

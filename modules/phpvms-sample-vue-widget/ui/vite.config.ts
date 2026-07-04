@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 // Import the SHARED addon widget preset by relative path. The preset imports
 // nothing skylight-internal (only vite + @vitejs/plugin-vue), so a real
 // third-party addon would vendor/copy this pattern into its own repo.
-import { defineAddonWidgetConfig } from '../../../resources/js/apps/frontend-ui/addon-build/widget-preset'
+import { defineAddonWidgetConfig } from '../../../resources/js/apps/fe/addon-build/widget-preset'
 
 // Module root = the dir that contains `public/`. This file lives in
 // modules/phpvms-sample-vue-widget/ui/, so the module root is one level up.
@@ -12,7 +12,7 @@ const addonDir = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 
 /**
  * DISCOVERY CONVENTION:
- * The core theme build (`pnpm build` in resources/js/apps/frontend-ui, via
+ * The core theme build (`pnpm build` in resources/js/apps/fe, via
  * scripts/build-addons.mjs) globs for modules/<Name>/ui/vite.config.ts
  * and runs `vite build` on each. `pnpm build:addons` runs only that step.
  *

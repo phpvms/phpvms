@@ -22,7 +22,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
-// resources/js/apps/frontend-ui/scripts/ -> resources/js/apps/frontend-ui/
+// resources/js/apps/fe/scripts/ -> resources/js/apps/fe/
 const WORKSPACE_ROOT = resolve(SCRIPT_DIR, '..')
 // workspace -> apps -> js -> resources -> repo root -> modules/
 const MODULES_DIR = resolve(WORKSPACE_ROOT, '..', '..', '..', '..', 'modules')
