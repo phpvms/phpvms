@@ -27,5 +27,10 @@ export default defineAddonWidgetConfig({
   addonDir,
   entries: {
     weather: resolve(addonDir, 'ui/WeatherWidget.vue'),
+    hours: resolve(addonDir, 'ui/HoursWidget.vue'),
+    flights: resolve(addonDir, 'ui/FlightsWidget.vue'),
+    balance: resolve(addonDir, 'ui/BalanceWidget.vue'),
+    rank: resolve(addonDir, 'ui/RankWidget.vue'),
+    lastflight: resolve(addonDir, 'ui/LastFlightWidget.vue'),
   },
 })

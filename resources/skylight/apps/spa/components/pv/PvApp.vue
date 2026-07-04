@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { defineAsyncComponent, defineComponent, h, type Component } from 'vue'
-import { usePage } from '@inertiajs/vue3'
-import PvLayout from './PvLayout.vue'
-import NavRail from '@/components/chrome/NavRail.vue'
-import TopBar from '@/components/chrome/TopBar.vue'
-import FlashToasts from '@/components/chrome/FlashToasts.vue'
-import { registry, type SlotEntry, type ComponentResolver } from '@/lib/registry'
-import { widgetComponents } from '@/components/widgets'
-import { dashboardWidgets } from '@/components/widgets/dashboard'
-import { mergeServerWidgets, type WidgetDef } from '@/lib/widgets/catalog'
-import { providePvContext } from '@/composables/usePvSlot'
+import { defineAsyncComponent, defineComponent, h, type Component } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import PvLayout from "./PvLayout.vue";
+import NavRail from "@/components/chrome/NavRail.vue";
+import TopBar from "@/components/chrome/TopBar.vue";
+import FlashToasts from "@/components/chrome/FlashToasts.vue";
+import { registry, type SlotEntry, type ComponentResolver } from "@/lib/registry";
+import { widgetComponents } from "@/components/widgets";
+import { dashboardWidgets } from "@/components/widgets/dashboard";
+import { mergeServerWidgets, type WidgetDef } from "@/lib/widgets/catalog";
+import { providePvContext } from "@/composables/usePvSlot";
 
 /**
  * Small inline fail-visible box for a slot module that fails/404s to import.
@@ -18,28 +18,28 @@ import { providePvContext } from '@/composables/usePvSlot'
  */
 function slotErrorComponent(name: string): Component {
   return defineComponent({
-    name: 'SlotResolveError',
+    name: "SlotResolveError",
     setup() {
       return () =>
         h(
-          'div',
+          "div",
           {
-            role: 'alert',
-            'data-pv-slot-failed': name,
+            role: "alert",
+            "data-pv-slot-failed": name,
             style: {
-              background: 'var(--pv-slot-error-bg)',
-              border: '1px solid var(--pv-slot-error-border)',
-              borderRadius: 'var(--pv-radius-sm)',
-              color: 'var(--pv-slot-error-text)',
-              fontFamily: 'var(--pv-font-mono)',
-              fontSize: '12px',
-              padding: '6px 8px',
+              background: "var(--pv-slot-error-bg)",
+              border: "1px solid var(--pv-slot-error-border)",
+              borderRadius: "var(--pv-radius-sm)",
+              color: "var(--pv-slot-error-text)",
+              fontFamily: "var(--pv-font-mono)",
+              fontSize: "12px",
+              padding: "6px 8px",
             },
           },
-          [h('strong', 'Extension failed to load: '), h('code', name)],
-        )
+          [h("strong", "Extension failed to load: "), h("code", name)],
+        );
     },
-  })
+  });
 }
 
 /**
@@ -55,26 +55,24 @@ function slotErrorComponent(name: string): Component {
  *
  * Pages opt in with `Page.layout = PvApp`.
  */
-const page = usePage()
+const page = usePage();
 
-const skylight = page.props.skylight as
-  | { widgets?: WidgetDef[]; slots?: SlotEntry[] }
-  | undefined
+const skylight = page.props.skylight as { widgets?: WidgetDef[]; slots?: SlotEntry[] } | undefined;
 
 // Merge server widgets into the catalog before any page/composable reads it.
-mergeServerWidgets(skylight?.widgets ?? [])
+mergeServerWidgets(skylight?.widgets ?? []);
 
 // Merge server slot entries into the first-party registry.
-const serverSlots: SlotEntry[] = skylight?.slots ?? []
-const mergedRegistry: SlotEntry[] = [...registry, ...serverSlots]
+const serverSlots: SlotEntry[] = skylight?.slots ?? [];
+const mergedRegistry: SlotEntry[] = [...registry, ...serverSlots];
 
 // Merge resolver: bundled widget components + async components for any server
 // slot entry that ships a runtime ESM `module` URL.
-const asyncSlotComponents: ComponentResolver = {}
+const asyncSlotComponents: ComponentResolver = {};
 for (const entry of serverSlots) {
   if (entry.module) {
-    const url = entry.module
-    const name = entry.component
+    const url = entry.module;
+    const name = entry.component;
     asyncSlotComponents[name] = defineAsyncComponent({
       loader: () => import(/* @vite-ignore */ url),
       errorComponent: slotErrorComponent(name),
@@ -82,23 +80,22 @@ for (const entry of serverSlots) {
       onError(_error, _retry, fail) {
         // A disabled/404 slot module will never resolve — fail fast so the
         // errorComponent renders the visible box instead of a blank slot.
-        fail()
+        fail();
       },
-    })
+    });
   }
 }
-// Merge order: bundled widget components (WeatherWidget) + the full bundled
-// dashboard widget map (so a slot entry can resolve ANY bundled component by
-// name) + async addon modules. Async entries win last so a server module
-// overrides a same-named bundled component intentionally.
+// Merge order: bundled slot components (currently none) + the bundled dashboard
+// widget map (just RouteWidget now) + async addon modules. Async entries win
+// last so a server module overrides a same-named bundled component intentionally.
 const mergedResolver: ComponentResolver = {
   ...widgetComponents,
   ...dashboardWidgets,
   ...asyncSlotComponents,
-}
+};
 
 // Provide the LIVE reactive DTO so @-ref resolution in slots survives navigation.
-providePvContext(mergedRegistry, mergedResolver, page.props as Record<string, unknown>)
+providePvContext(mergedRegistry, mergedResolver, page.props as Record<string, unknown>);
 </script>
 
 <template>

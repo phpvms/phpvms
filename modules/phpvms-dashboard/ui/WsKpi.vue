@@ -1,5 +1,9 @@
 <script setup lang="ts">
-/** Big KPI readout used inside KPI widgets: value + optional unit + sub-line. */
+/**
+ * Big KPI readout: value + optional unit + sub-line. Vendored into this addon
+ * (an ESM widget can't import skylight-internal components); mirrors the core
+ * WsKpi presentation. Imports only `vue`.
+ */
 withDefaults(defineProps<{ value: string | number; unit?: string; sub?: string }>(), {
   unit: '',
   sub: '',
@@ -22,18 +26,18 @@ withDefaults(defineProps<{ value: string | number; unit?: string; sub?: string }
 .val {
   font-size: 24px;
   font-weight: 600;
-  color: var(--pv-ink);
+  color: var(--pv-ink, #22262f);
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
 .unit {
   font-size: 13px;
   font-weight: 400;
-  color: var(--pv-ink-faint);
+  color: var(--pv-ink-faint, #9aa1b2);
   margin-left: 2px;
 }
 .sub {
   font-size: 12px;
-  color: var(--pv-ink-dim);
+  color: var(--pv-ink-dim, #6b7280);
 }
 </style>

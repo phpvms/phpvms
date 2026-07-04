@@ -49,7 +49,7 @@ class PhpvmsDashboardServiceProvider extends ServiceProvider
      * Bootstrap the addon (runs only when enabled — see class docblock).
      *
      *   1. Register the addon's own weather data route.
-     *   2. Register the pre-built Vue weather widget with the skylight hub.
+     *   2. Register the bundled dashboard widgets with the skylight hub.
      */
     public function boot(): void
     {
@@ -83,24 +83,90 @@ class PhpvmsDashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Contribute the pre-built Vue weather widget to the skylight dashboard
-     * catalog.
+     * Contribute the bundled dashboard widgets to the skylight catalog, all as
+     * pre-built ESM modules served from /ext/phpvmsdashboard/widgets/*.js.
      *
-     *   id          Stable widget id — 'weather', matching the previous
-     *               first-party entry so existing layouts keep resolving.
-     *   kind        'vue' → a Vue component.
-     *   module      URL of the pre-built ESM module. AddonAssetLinker symlinks
-     *               public/ → public/ext/<strtolower(module NAME)>, i.e.
-     *               "PhpvmsDashboard" → "phpvmsdashboard" (NOT the hyphenated
-     *               alias). Emitted by the widget preset to
-     *               modules/phpvms-dashboard/public/widgets/weather.js.
-     *   props       `icao => '@currentAirport'` — a page-DTO ref resolved by the
-     *               Dashboard before binding, delivering the live station to the
-     *               widget without it importing inertia.
+     * These used to live in the core SPA (lib/widgets/catalog.ts + a resolver
+     * map + a WsKpi presentation component). They now ride the same addon path
+     * as third-party widgets — proving core-authored widgets are not special.
+     *
+     * Each `id`, `title`, `icon`, `defaultZone`, `span` and `defaultOn` matches
+     * the previous first-party catalog entry, so existing saved layouts keep
+     * resolving unchanged. The KPI/rank/last-flight widgets take NO endpoint:
+     * their data arrives as `@`-ref props (DashboardData keys) resolved by the
+     * Dashboard before binding — the same mechanism that feeds weather its
+     * station, so none of them import inertia/usePage(). Registration order sets
+     * the default-layout order within each zone (route stays a core widget and
+     * renders first in the grid).
+     *
+     * AddonAssetLinker symlinks public/ → public/ext/<strtolower(module NAME)>,
+     * i.e. "PhpvmsDashboard" → "phpvmsdashboard" (NOT the hyphenated alias); the
+     * bundles are emitted by the widget preset to modules/phpvms-dashboard/public/widgets/.
      */
     protected function registerSkylightWidget(): void
     {
-        Skylight::widgets()->register([
+        $widgets = Skylight::widgets();
+
+        $widgets->register([
+            'id'          => 'kpi-hours',
+            'kind'        => 'vue',
+            'module'      => '/ext/phpvmsdashboard/widgets/hours.js',
+            'title'       => 'Total hours',
+            'icon'        => 'clock',
+            'defaultZone' => 'grid',
+            'span'        => 1,
+            'defaultOn'   => true,
+            'props'       => ['value' => '@flightTimeMinutes'],
+        ]);
+
+        $widgets->register([
+            'id'          => 'kpi-flights',
+            'kind'        => 'vue',
+            'module'      => '/ext/phpvmsdashboard/widgets/flights.js',
+            'title'       => 'Flights',
+            'icon'        => 'plane',
+            'defaultZone' => 'grid',
+            'span'        => 1,
+            'defaultOn'   => true,
+            'props'       => ['value' => '@flights'],
+        ]);
+
+        $widgets->register([
+            'id'          => 'kpi-balance',
+            'kind'        => 'vue',
+            'module'      => '/ext/phpvmsdashboard/widgets/balance.js',
+            'title'       => 'Balance',
+            'icon'        => 'wallet',
+            'defaultZone' => 'grid',
+            'span'        => 1,
+            'defaultOn'   => true,
+            'props'       => ['balance' => '@balance'],
+        ]);
+
+        $widgets->register([
+            'id'          => 'rank',
+            'kind'        => 'vue',
+            'module'      => '/ext/phpvmsdashboard/widgets/rank.js',
+            'title'       => 'Rank progress',
+            'icon'        => 'trending-up',
+            'defaultZone' => 'grid',
+            'span'        => 1,
+            'defaultOn'   => true,
+            'props'       => ['rank' => '@rank'],
+        ]);
+
+        $widgets->register([
+            'id'          => 'last-flight',
+            'kind'        => 'vue',
+            'module'      => '/ext/phpvmsdashboard/widgets/lastflight.js',
+            'title'       => 'Last flight',
+            'icon'        => 'plane-landing',
+            'defaultZone' => 'sidebar',
+            'defaultOn'   => true,
+            'props'       => ['pirep' => '@lastPirep'],
+        ]);
+
+        $widgets->register([
             'id'          => 'weather',
             'kind'        => 'vue',
             'module'      => '/ext/phpvmsdashboard/widgets/weather.js',

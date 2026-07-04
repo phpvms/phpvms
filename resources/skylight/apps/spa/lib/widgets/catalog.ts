@@ -56,54 +56,12 @@ const CATALOG: WidgetDef[] = [
     span: 2,
     defaultOn: true,
   },
-  {
-    id: "kpi-hours",
-    component: "HoursWidget",
-    title: "Total hours",
-    icon: "clock",
-    defaultZone: "grid",
-    span: 1,
-    defaultOn: true,
-  },
-  {
-    id: "kpi-flights",
-    component: "FlightsKpiWidget",
-    title: "Flights",
-    icon: "plane",
-    defaultZone: "grid",
-    span: 1,
-    defaultOn: true,
-  },
-  {
-    id: "kpi-balance",
-    component: "BalanceWidget",
-    title: "Balance",
-    icon: "wallet",
-    defaultZone: "grid",
-    span: 1,
-    defaultOn: true,
-  },
-  {
-    id: "rank",
-    component: "RankWidget",
-    title: "Rank progress",
-    icon: "trending-up",
-    defaultZone: "grid",
-    span: 1,
-    defaultOn: true,
-  },
-  {
-    id: "last-flight",
-    component: "LastFlightWidget",
-    title: "Last flight",
-    icon: "plane-landing",
-    defaultZone: "sidebar",
-    defaultOn: true,
-  },
-  // NOTE: the `weather` (METAR) widget is no longer bundled first-party. It now
-  // ships from the first-party addon `phpvms/phpvms-dashboard` as a pre-built
-  // ESM widget that owns its own endpoint and receives the live station via a
-  // `props: { icao: '@currentAirport' }` ref. See modules/phpvms-dashboard/.
+  // NOTE: the KPI (hours/flights/balance), rank, last-flight and weather widgets
+  // are no longer bundled first-party. They now ship from the first-party addon
+  // `phpvms/phpvms-dashboard` as pre-built ESM widgets fed by `@`-ref props over
+  // the DashboardData DTO (no core resolver, no endpoint). See modules/phpvms-dashboard/.
+  // Only `route` (RouteWidget) stays bundled — it imports @/composables/useGlobe
+  // + @/lib/geo, which are core-internal and can't ride the ESM addon path.
 ];
 
 /**
