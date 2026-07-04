@@ -1,6 +1,18 @@
 declare namespace App {
 namespace Http {
 namespace Data {
+export type ActivityEventData = {
+id: string,
+type: string,
+title: string,
+subtitle: string | null,
+timestamp: string,
+icon: string,
+};
+export type ActivityFeedData = {
+flyingNow: number,
+events: App.Http.Data.ActivityEventData[],
+};
 export type AircraftRefData = {
 id: number,
 registration: string | null,

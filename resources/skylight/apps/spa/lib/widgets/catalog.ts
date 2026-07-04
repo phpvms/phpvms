@@ -56,6 +56,15 @@ const CATALOG: WidgetDef[] = [
     span: 2,
     defaultOn: true,
   },
+  {
+    id: "activity",
+    component: "PvActivityFeed",
+    title: "Activity",
+    icon: "activity",
+    defaultZone: "grid",
+    span: 2,
+    defaultOn: true,
+  },
   // NOTE: the KPI (hours/flights/balance), rank, last-flight and weather widgets
   // are no longer bundled first-party. They now ship from the first-party addon
   // `phpvms/phpvms-dashboard` as pre-built ESM widgets fed by `@`-ref props over

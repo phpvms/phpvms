@@ -9,6 +9,7 @@ use App\Http\Controllers\Frontend\AirportController;
 use App\Http\Controllers\Frontend\CreditsController;
 use App\Http\Controllers\Frontend\DashboardController;
 use App\Http\Controllers\Frontend\DownloadController;
+use App\Http\Controllers\Frontend\FeedController;
 use App\Http\Controllers\Frontend\FlightController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\LanguageController;
@@ -19,12 +20,12 @@ use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
 use App\Http\Controllers\Frontend\WeatherController;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\HandleInertiaRequests;
 
 Route::group([
     'prefix'     => '',
@@ -42,6 +43,9 @@ Route::group([
     Route::get('api/weather/{icao}', [WeatherController::class, 'show'])
         ->name('weather.show')
         ->middleware('throttle:30,1');
+
+    // VA-wide activity feed JSON endpoint for the PvActivityFeed dashboard widget.
+    Route::get('api/activity', [FeedController::class, 'index'])->name('activity');
 
     Route::get('airports/{id}', [AirportController::class, 'show'])->name('airports.show');
 
