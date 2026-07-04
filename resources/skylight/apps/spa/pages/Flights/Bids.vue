@@ -1,41 +1,22 @@
 <script setup lang="ts">
-import PvApp from '@/components/pv/PvApp.vue'
-import PvSlot from '@/components/pv/PvSlot.vue'
+import PvApp from "@/components/pv/PvApp.vue";
+import PvSlot from "@/components/pv/PvSlot.vue";
 
 /**
- * My Bids page. Reads the flat BidsPresenter DTO: one row per validated bid,
- * each carrying a small `bid` object and its `flight` summary. Rendered as a
- * semantic table (Workspace look). Each row exposes a per-instance extension
- * outlet `bids.row.actions` whose `context` is `{ bid, flight }` — the host for
- * the external ACARS plugin, which injects a Vue component into the row.
+ * My Bids page. Reads BidRowData[] (one row per validated bid: a `bid` object +
+ * its `flight` summary). The row types are GENERATED from the PHP DTOs by
+ * `php artisan typescript:transform` (App.Http.Data.* — an ambient global, no
+ * import), so client and server shapes stay in lock-step. Rendered as a semantic
+ * table (Workspace look). Each row exposes a per-instance extension outlet
+ * `bids.row.actions` whose `context` is `{ bid, flight }` — the host for the
+ * external ACARS plugin, which injects a Vue component into the row.
  */
-defineOptions({ layout: PvApp })
-
-interface FlightSummary {
-  id: string
-  callsign: string
-  dpt: string | null
-  arr: string | null
-  distanceNm: number | null
-  blockTime: string | null
-  type: string | null
-}
-
-interface BidSummary {
-  id: string
-  flightId: string
-  aircraftId: number | null
-}
-
-interface BidRow {
-  bid: BidSummary
-  flight: FlightSummary | null
-}
+defineOptions({ layout: PvApp });
 
 defineProps<{
-  bids: BidRow[]
-  acarsPlugin: boolean
-}>()
+  bids: App.Http.Data.BidRowData[];
+  acarsPlugin: boolean;
+}>();
 </script>
 
 <template>
@@ -57,12 +38,14 @@ defineProps<{
         </thead>
         <tbody>
           <tr v-for="row in bids" :key="row.bid.id">
-            <td class="callsign">{{ row.flight?.callsign ?? '—' }}</td>
-            <td>{{ row.flight?.dpt ?? '—' }}</td>
-            <td>{{ row.flight?.arr ?? '—' }}</td>
-            <td class="num">{{ row.flight?.distanceNm != null ? `${row.flight.distanceNm}NM` : '—' }}</td>
-            <td class="num">{{ row.flight?.blockTime ?? '—' }}</td>
-            <td class="type">{{ row.flight?.type ?? '—' }}</td>
+            <td class="callsign">{{ row.flight?.callsign ?? "—" }}</td>
+            <td>{{ row.flight?.dpt ?? "—" }}</td>
+            <td>{{ row.flight?.arr ?? "—" }}</td>
+            <td class="num">
+              {{ row.flight?.distanceNm != null ? `${row.flight.distanceNm}NM` : "—" }}
+            </td>
+            <td class="num">{{ row.flight?.blockTime ?? "—" }}</td>
+            <td class="type">{{ row.flight?.type ?? "—" }}</td>
             <td class="actions">
               <PvSlot name="bids.row.actions" :context="{ bid: row.bid, flight: row.flight }" />
             </td>

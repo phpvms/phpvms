@@ -35,14 +35,14 @@ use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Closure;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Response as ResponseFacade;
-use Inertia\Inertia;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
 use Illuminate\Pagination\Paginator;
@@ -53,10 +53,12 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Response as ResponseFacade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Laracasts\Flash\Flash;
 use Override;
 use PhpUnitsOfMeasure\Exception\NonStringUnitName;
@@ -130,16 +132,33 @@ class AppServiceProvider extends ServiceProvider
          * legacy model-rich shape; toInertiaArray() returns a flat JSON-
          * serializable DTO. See spec: spa-theme-render-switch/spec.md.
          *
-         * @param string $inertiaPage  Inertia component name (e.g. 'Dashboard')
-         * @param string $bladeView    Blade view name (e.g. 'dashboard.index')
-         * @param object $presenter    Object with toInertiaArray() and toBladeArray()
+         * @param string $inertiaPage Inertia component name (e.g. 'Dashboard')
+         * @param string $bladeView   Blade view name (e.g. 'dashboard.index')
+         * @param object $presenter   Object with toInertiaArray() and toBladeArray()
          */
-        ResponseFacade::macro('themed', function (string $inertiaPage, string $bladeView, object $presenter) {
-            if (theme_kind() === 'spa') {
-                return Inertia::render($inertiaPage, $presenter->toInertiaArray());
+        ResponseFacade::macro('themed', function (
+            string $inertiaPage,
+            string $bladeView,
+            ?object $presenter = null,
+            array|Arrayable $bladeData = [],
+            Closure|array|Arrayable|null $spa = null,
+        ) {
+            // Legacy presenter path (Dashboard/Flights/Profile): one object exposing
+            // BOTH projections. Kept for controllers not yet migrated.
+            if ($presenter !== null && method_exists($presenter, 'toInertiaArray')) {
+                return theme_kind() === 'spa'
+                    ? Inertia::render($inertiaPage, $presenter->toInertiaArray())
+                    : view($bladeView, $presenter->toBladeArray());
             }
 
-            return view($bladeView, $presenter->toBladeArray());
+            // Direct path (no presenter): the controller supplies the Blade model
+            // data as-is and the SPA props (an array or a Closure built only when
+            // the SPA theme is active, so the DTO cost is skipped on the Blade path).
+            if (theme_kind() === 'spa') {
+                return Inertia::render($inertiaPage, $spa instanceof Closure ? $spa() : ($spa ?? []));
+            }
+
+            return view($bladeView, $bladeData);
         });
 
         Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));

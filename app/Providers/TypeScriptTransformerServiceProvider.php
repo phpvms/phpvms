@@ -42,6 +42,10 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
             ->transformDirectories(
                 base_path('modules/SampleVueWidget/Http/Data'),
                 app_path('Support/Dto/PhpvmsApi'),
+                // Frontend page DTOs (the SPA projection returned by controllers).
+                // Holds only #[TypeScript] Data classes (no enums), so scanning it
+                // is safe w.r.t. the EnumTransformer caveat above.
+                app_path('Http/Data'),
             )
             // Final file: outputDirectory + writer path.
             ->outputDirectory(resource_path('skylight/apps/spa/types'))

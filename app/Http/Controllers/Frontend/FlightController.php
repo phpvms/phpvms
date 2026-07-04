@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
-use App\Http\Presenters\BidsPresenter;
+use App\Http\Data\BidRowData;
 use App\Http\Presenters\FlightsPresenter;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
@@ -203,12 +203,21 @@ class FlightController extends Controller
             'simbrief'      => !empty(setting('simbrief.api_key')),
             'simbrief_bids' => setting('simbrief.only_bids'),
             'acars_plugin'  => $this->acarsEnabled(),
-            // SPA-only: the validated Bid models the Inertia projection reads.
-            // Additive — the Blade themes ignore this and keep their keys intact.
-            'bids'          => $valid_bids,
         ];
 
-        return response()->themed('Flights/Bids', 'flights.bids', BidsPresenter::from($viewData));
+        // Dual output from ONE data-gathering path (no presenter): Blade gets the
+        // model-rich $viewData verbatim (relations/value-objects/queries intact);
+        // the SPA gets flat, typed BidRowData DTOs — built lazily (only on the SPA
+        // theme) from the same eager-loaded Bid models, so no N+1.
+        return response()->themed(
+            'Flights/Bids',
+            'flights.bids',
+            bladeData: $viewData,
+            spa: fn (): array => [
+                'bids'        => $valid_bids->map(fn (Bid $bid): BidRowData => BidRowData::fromModel($bid))->values()->all(),
+                'acarsPlugin' => $viewData['acars_plugin'],
+            ],
+        );
     }
 
     /**
