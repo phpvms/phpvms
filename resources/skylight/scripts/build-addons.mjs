@@ -6,7 +6,7 @@
  * sequentially. First-party addons ship their widget source in this repo and
  * expose a build config at:
  *
- *     modules/<Name>/skylight/vite.config.{ts,mjs,js}
+ *     modules/<Name>/ui/vite.config.{ts,mjs,js}
  *
  * …which imports the widget preset (resources/<theme>/addon-build/widget-preset.ts)
  * and outputs a pre-built ESM widget into the addon's public/ dir. Third-party
@@ -32,7 +32,7 @@ const VITE_BIN = resolve(WORKSPACE_ROOT, 'node_modules', '.bin', 'vite')
 const CONFIG_NAMES = ['vite.config.ts', 'vite.config.mjs', 'vite.config.js']
 
 /**
- * Discover addon widget configs: modules/<Name>/skylight/vite.config.{ts,mjs,js}.
+ * Discover addon widget configs: modules/<Name>/ui/vite.config.{ts,mjs,js}.
  * Tolerates a missing modules/ dir and zero matches without erroring.
  */
 function discoverConfigs() {
@@ -40,10 +40,10 @@ function discoverConfigs() {
 
   const configs = []
   for (const entry of readdirSync(MODULES_DIR)) {
-    const skylightDir = resolve(MODULES_DIR, entry, 'skylight')
-    if (!existsSync(skylightDir) || !statSync(skylightDir).isDirectory()) continue
+    const uiDir = resolve(MODULES_DIR, entry, 'ui')
+    if (!existsSync(uiDir) || !statSync(uiDir).isDirectory()) continue
     for (const name of CONFIG_NAMES) {
-      const candidate = resolve(skylightDir, name)
+      const candidate = resolve(uiDir, name)
       if (existsSync(candidate)) {
         configs.push(candidate)
         break // one config per addon

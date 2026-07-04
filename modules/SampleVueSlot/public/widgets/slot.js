@@ -1,5 +1,5 @@
-(function(){"use strict";try{if(typeof document<"u"){var e=document.createElement("style");e.appendChild(document.createTextNode(".sbs[data-v-155a7223]:hover{border-color:var(--pv-accent, #4f8cff);color:var(--pv-accent, #4f8cff)}.sbs-ident[data-v-155a7223]{opacity:.85}")),document.head.appendChild(e)}}catch(c){console.error("vite-plugin-css-injected-by-js",c)}})();
-import { defineComponent as i, computed as p, ref as d, openBlock as u, createElementBlock as f, normalizeStyle as v, createElementVNode as l, toDisplayString as r } from "vue";
+(function(){"use strict";try{if(typeof document<"u"){var e=document.createElement("style");e.appendChild(document.createTextNode(".sbs[data-v-76ac3e5b]:hover{border-color:var(--pv-accent, #4f8cff);color:var(--pv-accent, #4f8cff)}.sbs-ident[data-v-76ac3e5b]{opacity:.85}")),document.head.appendChild(e)}}catch(c){console.error("vite-plugin-css-injected-by-js",c)}})();
+import { defineComponent as i, computed as p, ref as d, openBlock as u, createElementBlock as f, normalizeStyle as v, createElementVNode as c, toDisplayString as r } from "vue";
 const m = ["data-connected", "title"], _ = { "aria-hidden": "true" }, g = {
   class: "sbs-ident",
   style: { fontFamily: "var(--pv-font-mono, ui-monospace, monospace)" }
@@ -17,7 +17,7 @@ const m = ["data-connected", "title"], _ = { "aria-hidden": "true" }, g = {
     function s() {
       e.value = !e.value;
     }
-    return (a, c) => (u(), f("button", {
+    return (a, l) => (u(), f("button", {
       type: "button",
       class: "sbs",
       "data-connected": e.value ? "true" : "false",
@@ -39,17 +39,17 @@ const m = ["data-connected", "title"], _ = { "aria-hidden": "true" }, g = {
       }),
       onClick: s
     }, [
-      l("span", _, r(e.value ? "◉" : "◯"), 1),
-      c[0] || (c[0] = l("span", null, "ACARS", -1)),
-      l("span", g, r(t.value), 1)
+      c("span", _, r(e.value ? "◉" : "◯"), 1),
+      l[0] || (l[0] = c("span", null, "ACARS", -1)),
+      c("span", g, r(t.value), 1)
     ], 12, m));
   }
-}), x = (n, o) => {
+}), b = (n, o) => {
   const t = n.__vccOpts || n;
   for (const [e, s] of o)
     t[e] = s;
   return t;
-}, h = /* @__PURE__ */ x(S, [["__scopeId", "data-v-155a7223"]]);
+}, h = /* @__PURE__ */ b(S, [["__scopeId", "data-v-76ac3e5b"]]);
 export {
   h as default
 };

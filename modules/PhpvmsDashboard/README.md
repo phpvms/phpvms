@@ -30,7 +30,7 @@ full shared-Vue / import-map explanation — this addon follows the same model.
 
 ### 1. The widget UI + its endpoint
 
-The addon owns **both** its UI (`skylight/WeatherWidget.vue`) and the API it
+The addon owns **both** its UI (`ui/WeatherWidget.vue`) and the API it
 talks to (`Http/Controllers/WeatherController.php`). The widget fetches this
 addon's **own** endpoint:
 
@@ -74,8 +74,8 @@ it as a normal `icao` prop with no host imports.
 
 | File | Role |
 | --- | --- |
-| `skylight/WeatherWidget.vue` | The widget UI. Imports only from `vue`. Takes an `icao` prop, fetches this addon's endpoint; loading / success / fail-visible error; `.wx` root + `--pv-*` tokens. |
-| `skylight/vite.config.ts` | Build config. Imports the shared widget preset; outputs `public/widgets/weather.js`. |
+| `ui/WeatherWidget.vue` | The widget UI. Imports only from `vue`. Takes an `icao` prop, fetches this addon's endpoint; loading / success / fail-visible error; `.wx` root + `--pv-*` tokens. |
+| `ui/vite.config.ts` | Build config. Imports the shared widget preset; outputs `public/widgets/weather.js`. |
 | `Http/Data/WeatherData.php` | `spatie/laravel-data` `Data` = the endpoint's typed success JSON shape. |
 | `Http/Controllers/WeatherController.php` | `show(icao)` — delegates to core `AirportService`, mirrors the core weather JSON. |
 | `Providers/PhpvmsDashboardServiceProvider.php` | `boot()` registers the route **and** the widget. The entire integration surface. |
@@ -97,7 +97,7 @@ pnpm build:addons
 ```
 
 Discovery is automatic: `scripts/build-addons.mjs` globs for
-`modules/*/skylight/vite.config.{ts,mjs,js}` and runs `vite build` on each. This
+`modules/*/ui/vite.config.{ts,mjs,js}` and runs `vite build` on each. This
 addon's `weather` entry points at `WeatherWidget.vue` and writes:
 
 ```

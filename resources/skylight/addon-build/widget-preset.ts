@@ -1,7 +1,7 @@
-import vue from '@vitejs/plugin-vue'
-import cssInjectedByJs from 'vite-plugin-css-injected-by-js'
-import { resolve } from 'node:path'
-import type { UserConfig } from 'vite'
+import vue from "@vitejs/plugin-vue";
+import cssInjectedByJs from "vite-plugin-css-injected-by-js";
+import { resolve } from "node:path";
+import type { UserConfig } from "vite";
 
 /**
  * Reusable Vite preset for building phpVMS addon Vue widgets/slot components.
@@ -17,11 +17,11 @@ import type { UserConfig } from 'vite'
  * ── Convention for in-repo addon widgets ──────────────────────────────────────
  * A first-party addon (source shipped in this repo) exposes its widget build at:
  *
- *     modules/<Name>/skylight/vite.config.ts   (or .mjs / .js)
+ *     modules/<Name>/ui/vite.config.ts   (or .mjs / .js)
  *
  * …that imports this preset and points `addonDir` at the MODULE ROOT, e.g.:
  *
- *     // modules/Acme/skylight/vite.config.ts
+ *     // modules/Acme/ui/vite.config.ts
  *     import { resolve } from 'node:path'
  *     import { fileURLToPath } from 'node:url'
  *     import { defineAddonWidgetConfig } from
@@ -44,12 +44,12 @@ import type { UserConfig } from 'vite'
 
 export interface AddonWidgetOptions {
   /** Absolute path to the addon/module root (the dir containing `public/`). */
-  addonDir: string
+  addonDir: string;
   /**
    * Library entry points: `{ '<output-name>': '<absolute-entry-path>' }`.
    * Each key becomes `<addonDir>/public/widgets/<output-name>.js`.
    */
-  entries: Record<string, string>
+  entries: Record<string, string>;
 }
 
 /**
@@ -57,8 +57,8 @@ export interface AddonWidgetOptions {
  * externalized, un-hashed output into the addon's public/widgets/).
  */
 export function defineAddonWidgetConfig(opts: AddonWidgetOptions): UserConfig {
-  const { addonDir, entries } = opts
-  const outDir = resolve(addonDir, 'public', 'widgets')
+  const { addonDir, entries } = opts;
+  const outDir = resolve(addonDir, "public", "widgets");
 
   return {
     // `vue()` compiles SFCs; `cssInjectedByJs()` inlines the widget's compiled
@@ -77,7 +77,7 @@ export function defineAddonWidgetConfig(opts: AddonWidgetOptions): UserConfig {
       emptyOutDir: false,
       lib: {
         entry: entries,
-        formats: ['es'],
+        formats: ["es"],
       },
       rollupOptions: {
         // `vue` is externalized so the widget resolves the bare "vue" specifier
@@ -87,14 +87,14 @@ export function defineAddonWidgetConfig(opts: AddonWidgetOptions): UserConfig {
         // NOTE: when the shared design-system package ships, add '@skylight/ui'
         // here (and to the shell import-map) so widgets share it too:
         //   external: ['vue', '@skylight/ui'],
-        external: ['vue'],
+        external: ["vue"],
         output: {
           // Stable, un-hashed URLs so blade/import references stay constant.
-          entryFileNames: '[name].js',
-          chunkFileNames: '[name].js',
-          assetFileNames: '[name][extname]',
+          entryFileNames: "[name].js",
+          chunkFileNames: "[name].js",
+          assetFileNames: "[name][extname]",
         },
       },
     },
-  }
+  };
 }

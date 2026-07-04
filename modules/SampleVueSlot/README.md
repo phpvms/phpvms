@@ -42,7 +42,7 @@ per-row extension point:
 
 This addon registers a Vue component for that slot. The SPA then renders our
 component **once per bid row**, inside each row's actions cell. Our component
-(`skylight/SampleBidsSlot.vue`) draws a compact `◯ ACARS <ident>` badge/button
+(`ui/SampleBidsSlot.vue`) draws a compact `◯ ACARS <ident>` badge/button
 that toggles to `◉ ACARS <ident>` on click — a stand-in for the ACARS plugin's
 real "connect / fly this bid" control.
 
@@ -88,7 +88,7 @@ Because of PvApp's resolver step, a slot entry needs **both** a unique
 
 The component is built with the shared addon preset
 (`resources/skylight/addon-build/widget-preset.ts`) via
-`skylight/vite.config.ts`. The build produces a **pre-built ESM module** in Vue
+`ui/vite.config.ts`. The build produces a **pre-built ESM module** in Vue
 library mode with **`vue` externalized**:
 
 - The output contains a bare `import { ... } from "vue"` — it does **not** bundle
@@ -118,7 +118,7 @@ Output path: `modules/SampleVueSlot/public/widgets/slot.js`, served at
 
 ```bash
 # Just this addon:
-pnpm exec vite build -c ../../modules/SampleVueSlot/skylight/vite.config.ts
+pnpm exec vite build -c ../../modules/SampleVueSlot/ui/vite.config.ts
 
 # Or all in-repo addons at once:
 pnpm build:addons
@@ -159,7 +159,7 @@ modules/SampleVueSlot/
 ├── module.json                   # active:0, provider listed
 ├── Providers/
 │   └── SampleVueSlotServiceProvider.php   # boot() → Skylight::slots()->register(...)
-├── skylight/
+├── ui/
 │   ├── SampleBidsSlot.vue         # the per-row Vue control (imports only 'vue')
 │   └── vite.config.ts             # preset build → public/widgets/slot.js
 └── public/

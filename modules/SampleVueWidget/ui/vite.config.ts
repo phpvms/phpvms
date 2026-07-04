@@ -7,13 +7,13 @@ import { fileURLToPath } from 'node:url'
 import { defineAddonWidgetConfig } from '../../../resources/skylight/addon-build/widget-preset'
 
 // Module root = the dir that contains `public/`. This file lives in
-// modules/SampleVueWidget/skylight/, so the module root is one level up.
+// modules/SampleVueWidget/ui/, so the module root is one level up.
 const addonDir = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 
 /**
  * DISCOVERY CONVENTION:
  * The core theme build (`pnpm build` in resources/skylight, via
- * scripts/build-addons.mjs) globs for modules/<Name>/skylight/vite.config.ts
+ * scripts/build-addons.mjs) globs for modules/<Name>/ui/vite.config.ts
  * and runs `vite build` on each. `pnpm build:addons` runs only that step.
  *
  * OUTPUT: `entries` keys become filenames under <addonDir>/public/widgets/.
@@ -26,6 +26,6 @@ const addonDir = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 export default defineAddonWidgetConfig({
   addonDir,
   entries: {
-    sample: resolve(addonDir, 'skylight/SampleVueWidget.vue'),
+    sample: resolve(addonDir, 'ui/SampleVueWidget.vue'),
   },
 })

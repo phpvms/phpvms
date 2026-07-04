@@ -50,8 +50,8 @@ import-map.
 
 | File | Role |
 | --- | --- |
-| `skylight/SampleVueWidget.vue` | The widget UI. Imports only from `vue`. Fetches this addon's endpoint; shows loading / success / fail-visible error. Styled with the host's `--pv-*` tokens. |
-| `skylight/vite.config.ts` | Build config. Imports the shared widget preset and outputs `public/widgets/sample.js`. |
+| `ui/SampleVueWidget.vue` | The widget UI. Imports only from `vue`. Fetches this addon's endpoint; shows loading / success / fail-visible error. Styled with the host's `--pv-*` tokens. |
+| `ui/vite.config.ts` | Build config. Imports the shared widget preset and outputs `public/widgets/sample.js`. |
 | `Http/Data/SamplePingData.php` | `spatie/laravel-data` `Data` object = the endpoint's typed JSON shape. |
 | `Http/Controllers/SamplePingController.php` | `show(): SamplePingData` — the addon's own data endpoint. |
 | `Providers/SampleVueWidgetServiceProvider.php` | `boot()` registers the route **and** the widget. The entire integration surface. |
@@ -77,7 +77,7 @@ pnpm build:addons
 ```
 
 Discovery is automatic: `scripts/build-addons.mjs` globs for
-`modules/*/skylight/vite.config.{ts,mjs,js}` and runs `vite build` on each. This
+`modules/*/ui/vite.config.{ts,mjs,js}` and runs `vite build` on each. This
 addon's config points its `sample` entry at `SampleVueWidget.vue` and writes:
 
 ```
@@ -88,7 +88,7 @@ To build just this one addon directly:
 
 ```bash
 # from resources/skylight/
-pnpm exec vite build -c ../../modules/SampleVueWidget/skylight/vite.config.ts
+pnpm exec vite build -c ../../modules/SampleVueWidget/ui/vite.config.ts
 ```
 
 Verify it externalized Vue (should print a line like `import { ... } from "vue"`):
@@ -180,7 +180,7 @@ A **first-party (bundled)** widget would consume it directly
 **standalone** (built by its own vite preset, outside the SPA tsconfig scope,
 importing nothing host-internal), so it keeps a hand-written `PingSuccess`
 mirror of the generated shape instead — see the comment in
-`skylight/SampleVueWidget.vue`.
+`ui/SampleVueWidget.vue`.
 
 > Note on package versions: `spatie/typescript-transformer` v3 is a rewrite that
 > is configured through the service provider above (a fluent factory), **not** a
