@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Http\Data\BidRowData;
-use App\Http\Presenters\FlightsPresenter;
+use App\Http\Data\FlightListItemData;
 use App\Http\Requests\SearchFlightsRequest;
 use App\Models\Aircraft;
 use App\Models\Airline;
@@ -163,7 +163,28 @@ class FlightController extends Controller
             'type_ratings'  => $type_ratings,
         ];
 
-        return response()->themed('Flights', 'flights.index', FlightsPresenter::from($viewData));
+        return response()->themed(
+            'Flights',
+            'flights.index',
+            bladeData: $viewData,
+            spa: fn (): array => [
+                'flights' => collect($flights->items())
+                    ->map(fn (Flight $f): FlightListItemData => FlightListItemData::fromModel($f, $saved_flights))
+                    ->values()
+                    ->all(),
+                'page' => [
+                    'current' => $flights->currentPage(),
+                    'last'    => $flights->lastPage(),
+                    'total'   => $flights->total(),
+                ],
+                'filters' => [
+                    'depIcao'      => $viewData['dep_icao'],
+                    'arrIcao'      => $viewData['arr_icao'],
+                    'flightNumber' => $viewData['flight_number'],
+                    'flightType'   => $viewData['flight_type'],
+                ],
+            ],
+        );
     }
 
     /**

@@ -1,60 +1,57 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router, Link } from '@inertiajs/vue3'
-import PvApp from '@/components/pv/PvApp.vue'
-import FmsEntry from '@/components/flight/FmsEntry.vue'
-import FlightStrip from '@/components/flight/FlightStrip.vue'
+import { computed } from "vue";
+import { router, Link } from "@inertiajs/vue3";
+import PvApp from "@/components/pv/PvApp.vue";
+import FmsEntry from "@/components/flight/FmsEntry.vue";
+import FlightStrip from "@/components/flight/FlightStrip.vue";
 
 /**
  * Flights schedule page. Reads the flat FlightsPresenter DTO: a page of flights,
  * pagination meta, and the active filters. Filtering + paging are real Inertia
  * visits (server re-runs the search), so this page stays a thin projection.
  */
-defineOptions({ layout: PvApp })
-
-interface Flight {
-  id: string
-  callsign: string
-  dpt: string | null
-  arr: string | null
-  distanceNm: number | null
-  blockTime: string | null
-  type: string | null
-  airline: { icao: string; name: string } | null
-  bidId: string | number | null
-}
+defineOptions({ layout: PvApp });
 
 const props = defineProps<{
-  flights: Flight[]
-  page: { current: number; last: number; total: number }
-  filters: { depIcao: string | null; arrIcao: string | null; flightNumber: string | null; flightType: string | null }
-}>()
+  flights: App.Http.Data.FlightListItemData[];
+  page: { current: number; last: number; total: number };
+  filters: {
+    depIcao: string | null;
+    arrIcao: string | null;
+    flightNumber: string | null;
+    flightType: string | null;
+  };
+}>();
 
 function search(q: { from: string; to: string }) {
-  router.get('/flights', {
-    dep_icao: q.from || undefined,
-    arr_icao: q.to || undefined,
-  }, { preserveState: false, preserveScroll: true })
+  router.get(
+    "/flights",
+    {
+      dep_icao: q.from || undefined,
+      arr_icao: q.to || undefined,
+    },
+    { preserveState: false, preserveScroll: true },
+  );
 }
 
-function fieldsFor(f: Flight) {
+function fieldsFor(f: App.Http.Data.FlightListItemData) {
   return [
-    { label: 'Dist', value: f.distanceNm != null ? `${f.distanceNm}NM` : '—' },
-    { label: 'Block', value: f.blockTime ?? '—' },
-    { label: 'Type', value: f.type ?? '—' },
-  ]
+    { label: "Dist", value: f.distanceNm != null ? `${f.distanceNm}NM` : "—" },
+    { label: "Block", value: f.blockTime ?? "—" },
+    { label: "Type", value: f.type ?? "—" },
+  ];
 }
 
 function pageHref(n: number): string {
-  const p = new URLSearchParams()
-  if (props.filters.depIcao) p.set('dep_icao', props.filters.depIcao)
-  if (props.filters.arrIcao) p.set('arr_icao', props.filters.arrIcao)
-  p.set('page', String(n))
-  return `/flights?${p.toString()}`
+  const p = new URLSearchParams();
+  if (props.filters.depIcao) p.set("dep_icao", props.filters.depIcao);
+  if (props.filters.arrIcao) p.set("arr_icao", props.filters.arrIcao);
+  p.set("page", String(n));
+  return `/flights?${p.toString()}`;
 }
 
-const hasPrev = computed(() => props.page.current > 1)
-const hasNext = computed(() => props.page.current < props.page.last)
+const hasPrev = computed(() => props.page.current > 1);
+const hasNext = computed(() => props.page.current < props.page.last);
 </script>
 
 <template>
@@ -75,7 +72,7 @@ const hasNext = computed(() => props.page.current < props.page.last)
       >
         <template #trailing>
           <span class="badge" :class="f.bidId ? 'on' : 'avail'">
-            {{ f.bidId ? 'ON BID' : 'AVAIL' }}
+            {{ f.bidId ? "ON BID" : "AVAIL" }}
           </span>
         </template>
       </FlightStrip>
@@ -85,10 +82,16 @@ const hasNext = computed(() => props.page.current < props.page.last)
 
     <!-- Pagination -->
     <div v-if="page.last > 1" class="pager">
-      <Link v-if="hasPrev" :href="pageHref(page.current - 1)" class="pg" preserve-scroll>◂ PREV</Link>
+      <Link v-if="hasPrev" :href="pageHref(page.current - 1)" class="pg" preserve-scroll
+        >◂ PREV</Link
+      >
       <span v-else class="pg disabled">◂ PREV</span>
-      <span class="pg-info">PAGE {{ page.current }} / {{ page.last }} · {{ page.total }} TOTAL</span>
-      <Link v-if="hasNext" :href="pageHref(page.current + 1)" class="pg" preserve-scroll>NEXT ▸</Link>
+      <span class="pg-info"
+        >PAGE {{ page.current }} / {{ page.last }} · {{ page.total }} TOTAL</span
+      >
+      <Link v-if="hasNext" :href="pageHref(page.current + 1)" class="pg" preserve-scroll
+        >NEXT ▸</Link
+      >
       <span v-else class="pg disabled">NEXT ▸</span>
     </div>
   </section>
@@ -147,8 +150,13 @@ const hasNext = computed(() => props.page.current < props.page.last)
   border-radius: var(--pv-radius-sm);
   padding: 6px 12px;
 }
-.pg:hover { border-color: var(--pv-accent); }
-.pg.disabled { color: var(--pv-ink-dim); opacity: 0.5; }
+.pg:hover {
+  border-color: var(--pv-accent);
+}
+.pg.disabled {
+  color: var(--pv-ink-dim);
+  opacity: 0.5;
+}
 .pg-info {
   font-family: var(--pv-font-mono);
   font-size: calc(9px * var(--pv-type-scale));

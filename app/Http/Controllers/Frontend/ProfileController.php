@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Addons\AddonRegistry;
 use App\Contracts\Controller;
 use App\Events\ProfileUpdated;
-use App\Http\Presenters\ProfilePresenter;
+use App\Http\Data\ProfileData;
 use App\Models\Airline;
 use App\Models\User;
 use App\Models\UserField;
@@ -86,7 +86,12 @@ class ProfileController extends Controller
         return response()->themed(
             'Profile',
             'profile.index',
-            ProfilePresenter::from($user, $userFields, $this->acarsEnabled()),
+            bladeData: [
+                'user'       => $user,
+                'userFields' => $userFields,
+                'acars'      => $this->acarsEnabled(),
+            ],
+            spa: fn (): ProfileData => ProfileData::fromModel($user, $userFields, $this->acarsEnabled()),
         );
     }
 

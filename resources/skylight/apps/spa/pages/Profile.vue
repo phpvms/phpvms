@@ -1,40 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import PvApp from '@/components/pv/PvApp.vue'
-import StatTile from '@/components/stats/StatTile.vue'
+import { computed, ref } from "vue";
+import PvApp from "@/components/pv/PvApp.vue";
+import StatTile from "@/components/stats/StatTile.vue";
 
 /**
  * Profile page — the pilot's record card, Glass-Cockpit styled. Reads the flat
  * ProfilePresenter DTO only. Persistent PvApp layout (nav + header chrome).
  */
-defineOptions({ layout: PvApp })
+defineOptions({ layout: PvApp });
 
-interface Airport { icao: string; name: string }
-const props = defineProps<{
-  id: string
-  name: string
-  avatar: string | null
-  airline: { name: string; icao: string } | null
-  rank: { name: string } | null
-  homeAirport: Airport | null
-  currentAirport: Airport | null
-  flights: number
-  flightTimeMinutes: string
-  memberSince: string | null
-  state: { label: string; color: string }
-  awards: { name: string; description: string | null; image: string | null }[]
-  typeRatings: { name: string; type: string }[]
-  fields: { name: string; value: string | null }[]
-  acars: boolean
-}>()
+const props = defineProps<App.Http.Data.ProfileData>();
 
-const imgFailed = ref(false)
+const imgFailed = ref(false);
 const memberYear = computed(() =>
-  props.memberSince ? new Date(props.memberSince).getUTCFullYear().toString() : '—',
-)
+  props.memberSince ? new Date(props.memberSince).getUTCFullYear().toString() : "—",
+);
 const initials = computed(() =>
-  props.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase(),
-)
+  props.name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase(),
+);
 </script>
 
 <template>
@@ -100,14 +88,16 @@ const initials = computed(() =>
     <div class="fields">
       <div v-for="f in fields" :key="f.name" class="field">
         <span class="field-k">{{ f.name }}</span>
-        <span class="field-v">{{ f.value || '—' }}</span>
+        <span class="field-v">{{ f.value || "—" }}</span>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.mt { margin-top: 20px; }
+.mt {
+  margin-top: 20px;
+}
 
 .idcard {
   display: flex;
@@ -131,7 +121,11 @@ const initials = computed(() =>
   align-items: center;
   justify-content: center;
 }
-.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .initials {
   font-family: var(--pv-font-display);
   font-weight: 700;
@@ -162,7 +156,10 @@ const initials = computed(() =>
   border-radius: var(--pv-radius-sm);
   padding: 3px 8px;
 }
-.pill.mag { color: var(--pv-accent); border-color: color-mix(in srgb, var(--pv-accent) 40%, var(--pv-line)); }
+.pill.mag {
+  color: var(--pv-accent);
+  border-color: color-mix(in srgb, var(--pv-accent) 40%, var(--pv-line));
+}
 .since {
   font-family: var(--pv-font-mono);
   font-size: calc(8px * var(--pv-type-scale));
@@ -175,7 +172,11 @@ const initials = computed(() =>
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 12px;
 }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .chip {
   font-family: var(--pv-font-mono);
   font-size: calc(11px * var(--pv-type-scale));
@@ -185,7 +186,10 @@ const initials = computed(() =>
   padding: 6px 10px;
   background: var(--pv-panel);
 }
-.chip b { color: var(--pv-cyan); margin-right: 6px; }
+.chip b {
+  color: var(--pv-cyan);
+  margin-right: 6px;
+}
 
 .awards {
   display: grid;
@@ -202,8 +206,17 @@ const initials = computed(() =>
   padding: 12px 14px;
   box-shadow: var(--pv-shadow-panel);
 }
-.award-img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
-.award-body { display: flex; flex-direction: column; gap: 2px; }
+.award-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.award-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 .award-name {
   font-family: var(--pv-font-display);
   font-weight: 600;
@@ -215,7 +228,11 @@ const initials = computed(() =>
   color: var(--pv-ink-dim);
 }
 
-.fields { display: flex; flex-direction: column; gap: 6px; }
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .field {
   display: flex;
   gap: 16px;

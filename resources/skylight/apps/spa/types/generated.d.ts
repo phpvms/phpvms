@@ -1,6 +1,19 @@
 declare namespace App {
 namespace Http {
 namespace Data {
+export type AirlineRefData = {
+icao: string,
+name: string,
+};
+export type AirportRefData = {
+icao: string,
+name: string,
+};
+export type AwardData = {
+name: string,
+description: string | null,
+image: string | null,
+};
 export type BidData = {
 id: number,
 flightId: string,
@@ -18,6 +31,17 @@ arr: string | null,
 distanceNm: number | null,
 blockTime: string | null,
 type: string | null,
+};
+export type FlightListItemData = {
+id: string,
+callsign: string,
+dpt: string | null,
+arr: string | null,
+distanceNm: number | null,
+blockTime: string | null,
+type: string | null,
+airline: App.Http.Data.AirlineRefData | null,
+bidId: number | null,
 };
 export type PirepData = {
 id: string,
@@ -80,6 +104,38 @@ submittedAt: string | null,
 export type PirepLogData = {
 time: string | null,
 message: string,
+};
+export type ProfileData = {
+id: number,
+name: string,
+avatar: string | null,
+airline: App.Http.Data.AirlineRefData | null,
+rank: App.Http.Data.RankData | null,
+homeAirport: App.Http.Data.AirportRefData | null,
+currentAirport: App.Http.Data.AirportRefData | null,
+flights: number,
+flightTimeMinutes: string,
+memberSince: string | null,
+state: App.Http.Data.StateBadgeData,
+awards: App.Http.Data.AwardData[],
+typeRatings: App.Http.Data.TypeRatingData[],
+fields: App.Http.Data.UserFieldData[],
+acars: boolean,
+};
+export type RankData = {
+name: string,
+};
+export type StateBadgeData = {
+label: string,
+color: string,
+};
+export type TypeRatingData = {
+name: string,
+type: string,
+};
+export type UserFieldData = {
+name: string,
+value: string | null,
 };
 }
 }
