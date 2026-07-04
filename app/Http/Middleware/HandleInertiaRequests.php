@@ -5,7 +5,9 @@ namespace App\Http\Middleware;
 use App\Models\User;
 use App\Support\Skylight\Facades\Skylight;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Inertia\Middleware;
+use Override;
 
 /**
  * Inertia request handler for the SPA (skylight) theme.
@@ -32,6 +34,7 @@ class HandleInertiaRequests extends Middleware
      * Asset version — busts the client cache when the skylight build changes so
      * Inertia forces a hard reload on a stale bundle.
      */
+    #[Override]
     public function version(Request $request): ?string
     {
         $manifest = public_path('build/skylight/manifest.json');
@@ -44,6 +47,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
+    #[Override]
     public function share(Request $request): array
     {
         /** @var User|null $user */
@@ -53,6 +57,17 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
 
             'appName' => config('app.name'),
+
+            // i18n for the SPA — laravel-vue-i18n consumes this. The current
+            // locale (resolved by SetActiveLanguage) plus a flat "group.key" =>
+            // value map of the SPA-relevant translation groups, read from the
+            // SAME resources/lang/*.php files Blade uses (single source of
+            // truth). trans() already falls back to the fallback locale for
+            // missing keys, so the map is fully resolved for the active locale.
+            'i18n' => [
+                'locale'   => app()->getLocale(),
+                'messages' => $this->spaMessages(),
+            ],
 
             // The skylight extension surface (widget catalog + page slots),
             // accumulated from every ENABLED addon's provider. Serialized here
@@ -76,5 +91,42 @@ class HandleInertiaRequests extends Middleware
                 'error'   => fn () => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Translation groups the SPA needs, curated so the shared payload stays
+     * small (no installer/filament/email strings the SPA never renders). Add a
+     * group here as the SPA grows into it.
+     */
+    private const array SPA_LANG_GROUPS = [
+        'common', 'dashboard', 'flights', 'pireps', 'profile',
+        'widgets', 'activities', 'errors', 'validation', 'auth', 'skylight',
+    ];
+
+    /**
+     * Build the flat "group.key" => value message map laravel-vue-i18n expects,
+     * for the active locale only.
+     *
+     * @return array<string, string>
+     */
+    private function spaMessages(): array
+    {
+        $messages = [];
+
+        foreach (self::SPA_LANG_GROUPS as $group) {
+            $lines = trans($group);
+
+            if (!is_array($lines)) {
+                continue; // group file missing → skip
+            }
+
+            foreach (Arr::dot($lines) as $key => $value) {
+                if (is_string($value)) {
+                    $messages[$group.'.'.$key] = $value;
+                }
+            }
+        }
+
+        return $messages;
     }
 }

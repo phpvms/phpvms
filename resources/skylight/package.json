@@ -16,6 +16,7 @@
   "dependencies": {
     "@inertiajs/vue3": "^2.0.0",
     "@vueuse/core": "^14.3.0",
+    "laravel-vue-i18n": "^2.8.0",
     "lucide-vue-next": "^1.0.0",
     "maplibre-gl": "^5.6.0",
     "topojson-client": "^3.1.0",

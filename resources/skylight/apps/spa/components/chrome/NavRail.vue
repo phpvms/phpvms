@@ -10,6 +10,7 @@ import PvIcon from "@/components/pv/PvIcon.vue";
  * the Inertia client never receives a Blade response.
  */
 interface Dest {
+  /** i18n key resolved with $t in the template. */
   label: string;
   href: string;
   spa: boolean;
@@ -18,12 +19,12 @@ interface Dest {
 }
 
 const dests: Dest[] = [
-  { label: "Dashboard", href: "/dashboard", spa: true, icon: "layout-dashboard" },
-  { label: "Flights", href: "/flights", spa: true, icon: "plane" },
-  { label: "My Bids", href: "/flights/bids", spa: true, icon: "check-check" },
-  { label: "Live Map", href: "/livemap", spa: false, icon: "map" },
-  { label: "Logbook", href: "/pireps", spa: true, icon: "notebook-text" },
-  { label: "Profile", href: "/profile", spa: true, icon: "user" },
+  { label: "common.dashboard", href: "/dashboard", spa: true, icon: "layout-dashboard" },
+  { label: "skylight.nav_flights", href: "/flights", spa: true, icon: "plane" },
+  { label: "skylight.nav_bids", href: "/flights/bids", spa: true, icon: "check-check" },
+  { label: "common.live_map", href: "/livemap", spa: false, icon: "map" },
+  { label: "skylight.nav_logbook", href: "/pireps", spa: true, icon: "notebook-text" },
+  { label: "common.profile", href: "/profile", spa: true, icon: "user" },
 ];
 
 interface SharedAuth {
@@ -68,13 +69,13 @@ function isActive(href: string) {
       <img class="logo" :src="'/assets/img/logo_blue.svg'" alt="" aria-hidden="true" />
       <div class="brandtext">
         <div class="bn">{{ appName }}</div>
-        <div class="bs">Fleet Ops</div>
+        <div class="bs">{{ $t("skylight.brand_tagline") }}</div>
       </div>
     </div>
 
     <!-- nav -->
     <nav class="nav">
-      <div class="micro sect">Workspace</div>
+      <div class="micro sect">{{ $t("skylight.nav_section") }}</div>
       <component
         :is="d.spa ? Link : 'a'"
         v-for="d in dests"
@@ -85,7 +86,7 @@ function isActive(href: string) {
         :aria-current="isActive(d.href) ? 'page' : undefined"
       >
         <PvIcon :name="d.icon" :size="17" class="i" />
-        <span class="lbl">{{ d.label }}</span>
+        <span class="lbl">{{ $t(d.label) }}</span>
       </component>
     </nav>
 
@@ -101,8 +102,8 @@ function isActive(href: string) {
         <span v-else>{{ initials }}</span>
       </div>
       <div class="mt">
-        <div class="mn">{{ user?.name ?? "Pilot" }}</div>
-        <div class="micro ms">On duty</div>
+        <div class="mn">{{ user?.name ?? $t("skylight.role_pilot") }}</div>
+        <div class="micro ms">{{ $t("skylight.on_duty") }}</div>
       </div>
       <span class="dot" />
     </div>
