@@ -9,14 +9,19 @@ import StatTile from "@/components/stats/StatTile.vue";
  */
 defineOptions({ layout: PvApp });
 
-const props = defineProps<App.Http.Data.ProfileData>();
+// NOTE: the DTO is passed NESTED under a single `profile` prop (not spread as
+// top-level props). @vue/compiler-sfc can't expand an ambient namespace DTO used
+// as the WHOLE props shape at build time (`defineProps<App.Http.Data.ProfileData>()`
+// breaks the production build), but it resolves fine as a single prop's type —
+// the same pattern the other DTO pages use (e.g. Pireps/Show `{ pirep: … }`).
+const props = defineProps<{ profile: App.Http.Data.ProfileData }>();
 
 const imgFailed = ref(false);
 const memberYear = computed(() =>
-  props.memberSince ? new Date(props.memberSince).getUTCFullYear().toString() : "—",
+  props.profile.memberSince ? new Date(props.profile.memberSince).getUTCFullYear().toString() : "—",
 );
 const initials = computed(() =>
-  props.name
+  props.profile.name
     .split(" ")
     .map((p) => p[0])
     .slice(0, 2)
@@ -32,15 +37,22 @@ const initials = computed(() =>
 
     <div class="idcard">
       <div class="avatar">
-        <img v-if="avatar && !imgFailed" :src="avatar" :alt="name" @error="imgFailed = true" />
+        <img
+          v-if="profile.avatar && !imgFailed"
+          :src="profile.avatar"
+          :alt="profile.name"
+          @error="imgFailed = true"
+        />
         <span v-else class="initials">{{ initials }}</span>
       </div>
       <div class="who">
-        <h1 class="name">{{ name }}</h1>
+        <h1 class="name">{{ profile.name }}</h1>
         <div class="meta">
-          <span v-if="airline" class="pill">{{ airline.icao }} · {{ airline.name }}</span>
-          <span v-if="rank" class="pill mag">{{ rank.name }}</span>
-          <span class="pill">{{ state.label }}</span>
+          <span v-if="profile.airline" class="pill"
+            >{{ profile.airline.icao }} · {{ profile.airline.name }}</span
+          >
+          <span v-if="profile.rank" class="pill mag">{{ profile.rank.name }}</span>
+          <span class="pill">{{ profile.state.label }}</span>
           <span class="since">MEMBER SINCE {{ memberYear }}</span>
         </div>
       </div>
@@ -51,28 +63,34 @@ const initials = computed(() =>
   <section aria-label="Statistics" class="mt">
     <p class="pv-eyebrow">RECORD</p>
     <div class="stat-grid">
-      <StatTile label="Total Hours" :value="flightTimeMinutes" mono accent="cyan" />
-      <StatTile label="Flights" :value="flights" accent="green" />
-      <StatTile label="Home" :value="homeAirport?.icao ?? '—'" mono small accent="mag" />
-      <StatTile label="Current" :value="currentAirport?.icao ?? '—'" mono small accent="amber" />
+      <StatTile label="Total Hours" :value="profile.flightTimeMinutes" mono accent="cyan" />
+      <StatTile label="Flights" :value="profile.flights" accent="green" />
+      <StatTile label="Home" :value="profile.homeAirport?.icao ?? '—'" mono small accent="mag" />
+      <StatTile
+        label="Current"
+        :value="profile.currentAirport?.icao ?? '—'"
+        mono
+        small
+        accent="amber"
+      />
     </div>
   </section>
 
   <!-- ── TYPE RATINGS ────────────────────────────────────────── -->
-  <section v-if="typeRatings.length" aria-label="Type ratings" class="mt">
+  <section v-if="profile.typeRatings.length" aria-label="Type ratings" class="mt">
     <p class="pv-eyebrow">TYPE RATINGS</p>
     <div class="chips">
-      <span v-for="t in typeRatings" :key="t.type" class="chip">
+      <span v-for="t in profile.typeRatings" :key="t.type" class="chip">
         <b>{{ t.type }}</b> {{ t.name }}
       </span>
     </div>
   </section>
 
   <!-- ── AWARDS ──────────────────────────────────────────────── -->
-  <section v-if="awards.length" aria-label="Awards" class="mt">
+  <section v-if="profile.awards.length" aria-label="Awards" class="mt">
     <p class="pv-eyebrow">AWARDS</p>
     <div class="awards">
-      <div v-for="a in awards" :key="a.name" class="award">
+      <div v-for="a in profile.awards" :key="a.name" class="award">
         <img v-if="a.image" :src="a.image" :alt="a.name" class="award-img" />
         <div class="award-body">
           <span class="award-name">{{ a.name }}</span>
@@ -83,10 +101,10 @@ const initials = computed(() =>
   </section>
 
   <!-- ── CUSTOM FIELDS ───────────────────────────────────────── -->
-  <section v-if="fields.length" aria-label="Fields" class="mt">
+  <section v-if="profile.fields.length" aria-label="Fields" class="mt">
     <p class="pv-eyebrow">DETAILS</p>
     <div class="fields">
-      <div v-for="f in fields" :key="f.name" class="field">
+      <div v-for="f in profile.fields" :key="f.name" class="field">
         <span class="field-k">{{ f.name }}</span>
         <span class="field-v">{{ f.value || "—" }}</span>
       </div>

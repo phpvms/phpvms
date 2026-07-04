@@ -91,7 +91,7 @@ class ProfileController extends Controller
                 'userFields' => $userFields,
                 'acars'      => $this->acarsEnabled(),
             ],
-            spa: fn (): ProfileData => ProfileData::fromModel($user, $userFields, $this->acarsEnabled()),
+            spa: fn (): array => ['profile' => ProfileData::fromModel($user, $userFields, $this->acarsEnabled())],
         );
     }
 
