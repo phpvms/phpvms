@@ -1,6 +1,6 @@
 /**
  * Simple localStorage wrapper.
- * Mirrors resources/js/storage.js.
+ * Mirrors resources/js/apps/seven/storage.js.
  */
 
 export default class Storage {

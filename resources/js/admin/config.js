@@ -1,6 +1,6 @@
 /**
  * Reads bootstrap config (csrf, api key, base url) from meta tags.
- * Mirrors resources/js/config.js so the admin bundle stays self-contained.
+ * Mirrors resources/js/apps/seven/config.js so the admin bundle stays self-contained.
  */
 
 const base_url = document.head.querySelector('meta[name="base-url"]');

@@ -1,6 +1,6 @@
 /**
  * Axios-based request helper for the admin bundle.
- * Mirrors resources/js/request.js.
+ * Mirrors resources/js/apps/seven/request.js.
  */
 
 import axios from "axios";
