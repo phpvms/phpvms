@@ -33,7 +33,22 @@ const props = withDefaults(defineProps<{ label?: string }>(), {
   label: 'Sample Vue widget',
 })
 
-/** Shape returned by this addon's own endpoint (SamplePingData → JSON). */
+/**
+ * Shape returned by this addon's own endpoint (SamplePingData → JSON).
+ *
+ * The canonical type is GENERATED from the PHP DTO by
+ * `php artisan typescript:transform` into the host SPA at
+ *   resources/skylight/apps/spa/types/generated.d.ts
+ * as the ambient global `Modules.SampleVueWidget.Http.Data.SamplePingData`.
+ *
+ * A first-party (bundled) widget would consume it directly, e.g.:
+ *   type PingSuccess = Modules.SampleVueWidget.Http.Data.SamplePingData
+ * But this widget is DELIBERATELY STANDALONE — it is built by its own vite
+ * preset with `vue` externalized, lives outside the SPA tsconfig's scope, and
+ * imports nothing host-internal so it can be lifted into any third-party repo.
+ * So it keeps this hand-written mirror of the generated shape rather than
+ * reaching into the host's generated types.
+ */
 interface PingSuccess {
   addon: string
   message: string

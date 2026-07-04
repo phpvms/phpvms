@@ -7,6 +7,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\SystemPanelProvider;
 use App\Providers\SkylightServiceProvider;
+use App\Providers\TypeScriptTransformerServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 
 return [
@@ -22,6 +23,9 @@ return [
     AddonServiceProvider::class,
     AdminPanelProvider::class,
     SystemPanelProvider::class,
+
+    // Generates TypeScript types from PHP DTOs for the skylight SPA.
+    TypeScriptTransformerServiceProvider::class,
 
     /**
      * Package Service Providers

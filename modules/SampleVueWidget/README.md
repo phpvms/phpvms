@@ -148,9 +148,43 @@ property of *where* we register (`boot()`), not of any flag. See
 
 ---
 
-## Generating the TypeScript type from the Data object (optional)
+## Generating the TypeScript type from the Data object
 
-`SamplePingData`'s public properties are the response contract. The widget
-mirrors them by hand in a `PingSuccess` interface, but you can instead **generate**
-the matching TS type with `spatie/typescript-transformer`
-(`php artisan typescript:transform`) to keep client and server in lock-step.
+`SamplePingData`'s public properties are the response contract, and this repo
+wires `spatie/laravel-typescript-transformer` so that contract **generates** its
+matching TypeScript type — keeping client and server in lock-step.
+
+`Http/Data/SamplePingData.php` carries a
+`#[\Spatie\TypeScriptTransformer\Attributes\TypeScript]` attribute, which opts it
+into the transformer (configured in
+`app/Providers/TypeScriptTransformerServiceProvider.php`). Regenerate with:
+
+```bash
+php artisan typescript:transform
+```
+
+That writes the host SPA file
+`resources/skylight/apps/spa/types/generated.d.ts`, exposing the ambient global
+type `Modules.SampleVueWidget.Http.Data.SamplePingData`:
+
+```ts
+declare namespace Modules {
+  namespace SampleVueWidget { namespace Http { namespace Data {
+    export type SamplePingData = { addon: string; message: string; time: string };
+  } } }
+}
+```
+
+A **first-party (bundled)** widget would consume it directly
+(`type Ping = Modules.SampleVueWidget.Http.Data.SamplePingData`). This widget is
+**standalone** (built by its own vite preset, outside the SPA tsconfig scope,
+importing nothing host-internal), so it keeps a hand-written `PingSuccess`
+mirror of the generated shape instead — see the comment in
+`skylight/SampleVueWidget.vue`.
+
+> Note on package versions: `spatie/typescript-transformer` v3 is a rewrite that
+> is configured through the service provider above (a fluent factory), **not** a
+> `config/typescript-transformer.php` file. The `laravel-data ↔ transformer`
+> bridge still targets the v2 API and is not registered; the generic
+> `AttributedClassTransformer` reflects a plain `Data` DTO's public properties
+> and produces the correct shape.
