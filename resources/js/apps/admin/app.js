@@ -3,7 +3,7 @@
  *
  * Built by Vite and injected into every admin page via the
  * PanelsRenderHook::HEAD_END render hook in AdminPanelProvider, which uses
- * `@vite('resources/js/admin/app.js')` so manifest resolution only happens
+ * `@vite('resources/js/apps/admin/app.js')` so manifest resolution only happens
  * at HTTP render time (never during console boot — see provider for full
  * rationale).
  *

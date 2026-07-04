@@ -12,8 +12,8 @@ export default defineConfig({
     laravel({
       input: [
         "resources/css/filament/admin/theme.css",
-        "resources/js/admin/app.js",
-        "resources/js/admin/routeforge/main.tsx",
+        "resources/js/apps/admin/app.js",
+        "resources/js/apps/admin/routeforge/main.tsx",
         // "resources/js/apps/seven/app.js",
         // "public/assets/global/js/jquery.js",
         // "public/assets/global/js/simbrief.apiv1.js",

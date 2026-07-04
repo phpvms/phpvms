@@ -51,7 +51,7 @@ test('haversineNm exposes the canonical Earth radius constant', function (): voi
  *
  * `tests/fixtures/routeforge/geo-haversine.json` defines a set of
  * (lat/lon, lat/lon) → expected_nm cases. The companion vitest spec
- * (`resources/js/admin/routeforge/lib/geo.test.ts`) loads the same JSON
+ * (`resources/js/apps/admin/routeforge/lib/geo.test.ts`) loads the same JSON
  * and asserts the TS implementation matches `expected_nm` to within
  * `tolerance_nm`. Both implementations passing means PHP `Geo` and TS
  * `geo.ts` agree at floating-point precision — drift in either

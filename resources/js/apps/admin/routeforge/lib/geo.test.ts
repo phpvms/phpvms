@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // Static JSON import (tsconfig.resolveJsonModule + Vite's built-in JSON
 // loader). Both PHP (`tests/Unit/Support/GeoTest.php`) and TS load the same
 // file; see the fixture's `_doc` field for the parity contract.
-import fixture from "../../../../../tests/fixtures/routeforge/geo-haversine.json";
+import fixture from "../../../../../../tests/fixtures/routeforge/geo-haversine.json";
 
 import { haversineNm } from "./geo";
 
