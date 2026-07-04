@@ -81,7 +81,7 @@ const dragOpts = { animation: 160, handle: ".handle", ghostClass: "ws-ghost", gr
       <div class="line1">
         <h1 class="name">{{ name }}</h1>
         <span v-if="rank" class="rankchip">{{ rank.from }}</span>
-        <span v-if="onLeave" class="leavechip">{{ $t("skylight.on_leave") }}</span>
+        <span v-if="onLeave" class="leavechip">{{ $t("ui.on_leave") }}</span>
       </div>
       <div class="line2">
         <span v-if="station" class="loc">
@@ -109,11 +109,11 @@ const dragOpts = { animation: 160, handle: ".handle", ghostClass: "ws-ghost", gr
           <svg viewBox="0 0 24 24" class="i" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          {{ $t("skylight.add_widget") }}
+          {{ $t("ui.add_widget") }}
         </button>
         <div v-if="addOpen" class="menu">
           <div v-if="!availableToAdd.length" class="menu-empty">
-            {{ $t("skylight.all_widgets_placed") }}
+            {{ $t("ui.all_widgets_placed") }}
           </div>
           <button
             v-for="w in availableToAdd"
@@ -128,10 +128,10 @@ const dragOpts = { animation: 160, handle: ".handle", ghostClass: "ws-ghost", gr
         </div>
       </div>
       <button v-if="editing" type="button" class="btn ghost" @click="resetLayout">
-        {{ $t("skylight.reset") }}
+        {{ $t("ui.reset") }}
       </button>
       <button type="button" class="btn" :class="{ primary: editing }" @click="toggleEdit">
-        {{ editing ? $t("skylight.done") : $t("skylight.customize") }}
+        {{ editing ? $t("ui.done") : $t("ui.customize") }}
       </button>
     </div>
   </div>

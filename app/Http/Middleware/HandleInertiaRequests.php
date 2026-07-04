@@ -100,7 +100,7 @@ class HandleInertiaRequests extends Middleware
      */
     private const array SPA_LANG_GROUPS = [
         'common', 'dashboard', 'flights', 'pireps', 'profile',
-        'widgets', 'activities', 'errors', 'validation', 'auth', 'skylight',
+        'widgets', 'activities', 'errors', 'validation', 'auth', 'ui',
     ];
 
     /**

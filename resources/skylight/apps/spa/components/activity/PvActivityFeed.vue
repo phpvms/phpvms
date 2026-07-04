@@ -61,11 +61,11 @@ function timeAgo(iso: string): string {
     <header class="head">
       <span class="pulse" aria-hidden="true"><span class="pdot" /></span>
       <span class="count tnum">{{ flyingNow }}</span>
-      <span class="lbl">{{ $tChoice("skylight.flying_now", flyingNow) }}</span>
+      <span class="lbl">{{ $tChoice("ui.flying_now", flyingNow) }}</span>
     </header>
 
-    <p v-if="state.status === 'loading'" class="muted">{{ $t("skylight.loading_activity") }}</p>
-    <p v-else-if="state.status === 'error'" class="err">{{ $t("skylight.activity_error") }}</p>
+    <p v-if="state.status === 'loading'" class="muted">{{ $t("ui.loading_activity") }}</p>
+    <p v-else-if="state.status === 'error'" class="err">{{ $t("ui.activity_error") }}</p>
     <ol v-else-if="events.length" class="timeline">
       <li v-for="e in events" :key="e.id" class="row">
         <span class="rail">
@@ -80,7 +80,7 @@ function timeAgo(iso: string): string {
         <time class="when">{{ timeAgo(e.timestamp) }}</time>
       </li>
     </ol>
-    <p v-else class="muted">{{ $t("skylight.no_activity") }}</p>
+    <p v-else class="muted">{{ $t("ui.no_activity") }}</p>
   </div>
 </template>
 

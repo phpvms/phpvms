@@ -32,24 +32,19 @@ const { isDark, toggleDark } = useTheme();
 
 <template>
   <!-- command / search -->
-  <button class="search" type="button" :aria-label="$t('skylight.search')">
+  <button class="search" type="button" :aria-label="$t('ui.search')">
     <svg viewBox="0 0 24 24" class="i" fill="none" stroke="currentColor" stroke-width="1.8">
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.3-4.3" />
     </svg>
-    <span class="ph">{{ $t("skylight.search_placeholder") }}</span>
+    <span class="ph">{{ $t("ui.search_placeholder") }}</span>
     <span class="kbd"><span>⌘</span><span>K</span></span>
   </button>
 
   <div class="right">
     <ZuluClock :station="station" />
 
-    <button
-      class="icobtn"
-      type="button"
-      :aria-label="$t('skylight.toggle_theme')"
-      @click="toggleDark()"
-    >
+    <button class="icobtn" type="button" :aria-label="$t('ui.toggle_theme')" @click="toggleDark()">
       <svg
         v-if="!isDark"
         viewBox="0 0 24 24"
@@ -75,7 +70,7 @@ const { isDark, toggleDark } = useTheme();
       </svg>
     </button>
 
-    <button class="icobtn notif" type="button" :aria-label="$t('skylight.notifications')">
+    <button class="icobtn notif" type="button" :aria-label="$t('ui.notifications')">
       <svg viewBox="0 0 24 24" class="i" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" />
       </svg>
@@ -89,7 +84,7 @@ const { isDark, toggleDark } = useTheme();
         <img v-if="user?.avatar" :src="user.avatar" :alt="user?.name" />
         <span v-else>{{ initials }}</span>
       </div>
-      <span class="mn">{{ user?.name ?? $t("skylight.role_pilot") }}</span>
+      <span class="mn">{{ user?.name ?? $t("ui.role_pilot") }}</span>
     </div>
   </div>
 </template>

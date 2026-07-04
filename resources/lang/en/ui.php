@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 /*
- * SPA-only (skylight theme) copy. Strings the Vue SPA renders that don't already
- * exist in a shared group. Consumed by laravel-vue-i18n via the Inertia-shared
- * message map (see HandleInertiaRequests::spaMessages). Reuse existing groups
- * (common, flights, ...) where a key already exists; add SPA-specific copy here.
+ * SPA UI copy — strings the Vue frontend renders that don't already exist in a
+ * shared group. Theme-agnostic group name (`ui`), not tied to any one theme.
+ * Consumed by laravel-vue-i18n via the Inertia-shared message map (see
+ * HandleInertiaRequests::spaMessages). Reuse existing groups (common, flights,
+ * ...) where a key already exists; add SPA-specific copy here.
  */
 
 return [

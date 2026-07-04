@@ -20,10 +20,10 @@ interface Dest {
 
 const dests: Dest[] = [
   { label: "common.dashboard", href: "/dashboard", spa: true, icon: "layout-dashboard" },
-  { label: "skylight.nav_flights", href: "/flights", spa: true, icon: "plane" },
-  { label: "skylight.nav_bids", href: "/flights/bids", spa: true, icon: "check-check" },
+  { label: "ui.nav_flights", href: "/flights", spa: true, icon: "plane" },
+  { label: "ui.nav_bids", href: "/flights/bids", spa: true, icon: "check-check" },
   { label: "common.live_map", href: "/livemap", spa: false, icon: "map" },
-  { label: "skylight.nav_logbook", href: "/pireps", spa: true, icon: "notebook-text" },
+  { label: "ui.nav_logbook", href: "/pireps", spa: true, icon: "notebook-text" },
   { label: "common.profile", href: "/profile", spa: true, icon: "user" },
 ];
 
@@ -69,13 +69,13 @@ function isActive(href: string) {
       <img class="logo" :src="'/assets/img/logo_blue.svg'" alt="" aria-hidden="true" />
       <div class="brandtext">
         <div class="bn">{{ appName }}</div>
-        <div class="bs">{{ $t("skylight.brand_tagline") }}</div>
+        <div class="bs">{{ $t("ui.brand_tagline") }}</div>
       </div>
     </div>
 
     <!-- nav -->
     <nav class="nav">
-      <div class="micro sect">{{ $t("skylight.nav_section") }}</div>
+      <div class="micro sect">{{ $t("ui.nav_section") }}</div>
       <component
         :is="d.spa ? Link : 'a'"
         v-for="d in dests"
@@ -102,8 +102,8 @@ function isActive(href: string) {
         <span v-else>{{ initials }}</span>
       </div>
       <div class="mt">
-        <div class="mn">{{ user?.name ?? $t("skylight.role_pilot") }}</div>
-        <div class="micro ms">{{ $t("skylight.on_duty") }}</div>
+        <div class="mn">{{ user?.name ?? $t("ui.role_pilot") }}</div>
+        <div class="micro ms">{{ $t("ui.on_duty") }}</div>
       </div>
       <span class="dot" />
     </div>
