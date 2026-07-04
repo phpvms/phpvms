@@ -47,22 +47,26 @@ jobs:
       - name: Install Composer dependencies (no scripts)
         run: composer install --dev --no-interaction --no-scripts --verbose
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install NPM dependencies
-        run: bun install
+        run: pnpm install --frozen-lockfile
 
       - name: Run Pint
         run: vendor/bin/pint --test --parallel
 
       - name: Lint Check (oxlint)
-        run: bun run lint
+        run: pnpm run lint
 
       - name: Format Check (oxfmt)
-        run: bun run fmt:check
+        run: pnpm run fmt:check
 
       - name: Compile assets
-        run: bun run build
+        run: pnpm run build
 
       - name: Run Composer post-autoload scripts
         run: |
@@ -160,22 +164,26 @@ jobs:
 
       # Bootstrap order (see comment in original build job for rationale):
       #   1. composer install --no-scripts
-      #   2. bun install + build (produces Vite manifest + dist)
+      #   2. pnpm install --frozen-lockfile + build (produces Vite manifest + dist)
       #   3. composer dump-autoload + .env + version
       - name: Install Composer dependencies (no scripts)
         run: |
           php --version
           composer install --dev --no-interaction --no-scripts --verbose
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install NPM dependencies
         run: |
-          bun install
-          bun run fmt config/version.yml
+          pnpm install --frozen-lockfile
+          pnpm run fmt config/version.yml
 
       - name: Compile assets
-        run: bun run build
+        run: pnpm run build
 
       - name: Run Composer post-autoload scripts
         run: |
@@ -254,7 +262,11 @@ jobs:
         if: ${{ env.ACT }}
         run: curl -fsSL https://deb.nodesource.com/setup_22.x | bash && apt install -y nodejs
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -282,10 +294,10 @@ jobs:
           sudo chmod +x ./.github/scripts/*
 
       - name: Install NPM dependencies
-        run: bun install
+        run: pnpm install --frozen-lockfile
 
       - name: Compile assets
-        run: bun run build
+        run: pnpm run build
 
       - name: Run Composer post-autoload scripts
         run: composer dump-autoload

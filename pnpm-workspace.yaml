@@ -1,0 +1,9 @@
+# Root pnpm config. The SPA (resources/js/apps/fe) is its OWN pnpm workspace and
+# is deliberately NOT listed here — it stays isolated with its own deps. This
+# file only holds root-level pnpm settings.
+#
+# Allow these deps to run install scripts: esbuild builds bin/build.js's Alpine
+# component bundles; @parcel/watcher speeds up vite's dev file watching.
+allowBuilds:
+  "@parcel/watcher": true
+  esbuild: true

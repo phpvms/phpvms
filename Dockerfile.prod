@@ -8,7 +8,11 @@ LABEL org.opencontainers.image.description="The official phpvms image"
 
 USER root
 
-COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
+# Node + pnpm (via corepack) for the asset build step below.
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && corepack enable \
+    && corepack prepare pnpm@11.9.0 --activate
 
 RUN install-php-extensions intl bcmath
 
@@ -22,11 +26,11 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader
 
-# `bun run build` compiles the Vite bundle + the esbuild AlpineComponent files
+# `pnpm run build` compiles the Vite bundle + the esbuild AlpineComponent files
 # into resources/js/dist. `filament:assets` then publishes those registered
 # AlpineComponents into public/js/app/components so the x-load lazy loader can
 # fetch them at runtime — without it those component modules 404.
-RUN bun install && bun run build \
+RUN pnpm install --frozen-lockfile && pnpm run build \
     && php artisan filament:assets
 
 # -----------------------------------------------------------------------------
@@ -53,7 +57,6 @@ RUN apt-get update; \
         mariadb-client
 
 COPY --chmod=755 ./resources/docker/run-dump-autoload.sh /etc/entrypoint.d/20-run-dump-autoload.sh
-COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 
 # Deal with permissions
 RUN usermod -ou $WWWUSER www-data \
