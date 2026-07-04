@@ -8,10 +8,12 @@ beforeEach(() => mergeServerWidgets([])); // reset module state between tests
 describe("catalog server merge", () => {
   it("with no server widgets, returns only first-party CATALOG", () => {
     const ids = getCatalog().map((w) => w.id);
+    // Only `route` (Nav display) and `activity` (VA feed) stay bundled first-party;
+    // the KPI/rank/last-flight/weather widgets now ship from the phpvms-dashboard
+    // addon (server-merged), so they're absent from the base CATALOG.
     expect(ids).toContain("route");
-    // 'weather' is no longer first-party — it now ships from the phpvms-dashboard
-    // addon. Assert another first-party id instead.
-    expect(ids).toContain("last-flight");
+    expect(ids).toContain("activity");
+    expect(ids).not.toContain("last-flight");
     // A couple of first-party ids, none of them server-provided.
     expect(getCatalog().every((w) => w.kind !== "blade")).toBe(true);
   });
