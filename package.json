@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "vite",
     "dev:components": "node bin/build.js --dev",
-    "build": "vite build && node bin/build.js",
+    "build": "pnpm run build:admin && pnpm run build:fe",
+    "build:admin": "vite build && node bin/build.js",
+    "build:fe": "pnpm --filter @phpvms/skylight run build",
     "build:components": "node bin/build.js",
     "clean": "rm -rf public/build resources/js/dist",
     "lint": "oxlint",
