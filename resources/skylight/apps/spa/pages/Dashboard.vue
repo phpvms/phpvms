@@ -9,6 +9,7 @@ import WidgetFrame from '@/components/pv/WidgetFrame.vue'
 import { useDashboardLayout } from '@/composables/useDashboardLayout'
 import { widgetById } from '@/lib/widgets/catalog'
 import { resolveWidget } from '@/components/widgets/resolve'
+import { resolveValue } from '@/lib/registry'
 
 /**
  * Dashboard — a configurable, draggable widget board. Widgets come from the
@@ -39,8 +40,18 @@ const resolve = (id: string) => {
   const d = widgetById(id)
   if (!d) return null
   const r = resolveWidget(d)
-  resolveCache.set(id, r)
-  return r
+  // Resolve any `@`-prefixed prop refs against the live page DTO props, exactly
+  // like PvSlot does for slot entries. This lets a serializable (e.g. addon,
+  // ESM) widget declare `props: { icao: '@currentAirport' }` and receive the
+  // live host value without importing inertia/usePage itself. Static props pass
+  // through untouched.
+  const props: Record<string, unknown> = {}
+  for (const [key, raw] of Object.entries(r.props)) {
+    props[key] = resolveValue(raw, page.props as Record<string, unknown>)
+  }
+  const resolved = { ...r, props }
+  resolveCache.set(id, resolved)
+  return resolved
 }
 const spanStyle = (id: string) => ({ gridColumn: `span ${def(id)?.span ?? 1} / span ${def(id)?.span ?? 1}` })
 

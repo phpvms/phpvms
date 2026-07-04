@@ -5,7 +5,6 @@ import FlightsKpiWidget from './FlightsKpiWidget.vue'
 import BalanceWidget from './BalanceWidget.vue'
 import RankWidget from './RankWidget.vue'
 import LastFlightWidget from './LastFlightWidget.vue'
-import WxWidget from './WxWidget.vue'
 
 /**
  * Resolver map: catalog `component` NAME → Vue component. Kept out of the
@@ -19,5 +18,4 @@ export const dashboardWidgets: Record<string, Component> = {
   BalanceWidget,
   RankWidget,
   LastFlightWidget,
-  WxWidget,
 }

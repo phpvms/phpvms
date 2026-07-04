@@ -15,6 +15,7 @@ vi.mock('@/components/widgets/dashboard', async () => {
 })
 
 import { resolveWidget, widgetErrorComponent } from '@/components/widgets/resolve'
+import { resolveValue } from '@/lib/registry'
 import { dashboardWidgets } from '@/components/widgets/dashboard'
 import BladeWidget from '@/components/widgets/BladeWidget.vue'
 import type { WidgetDef } from '@/lib/widgets/catalog'
@@ -64,5 +65,50 @@ describe('resolveWidget', () => {
   it('widgetErrorComponent falls back to id when no title', () => {
     const w = mount(widgetErrorComponent({ ...base, id: 'only-id', title: '' }))
     expect(w.text()).toContain('only-id')
+  })
+})
+
+/**
+ * Widget PROPS `@`-ref resolution. A serializable widget def (e.g. an addon ESM
+ * widget that must not import inertia) declares `props: { icao: '@currentAirport' }`;
+ * Dashboard.vue resolves those refs against the live page DTO props before
+ * binding — reusing the same resolveValue() the slot registry uses. This test
+ * covers that composition: resolveWidget(def) → resolveValue over its props.
+ */
+describe('widget prop @-ref resolution', () => {
+  function resolveProps(def: WidgetDef, pageProps: Record<string, unknown>) {
+    const { props } = resolveWidget(def)
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(props)) out[k] = resolveValue(v, pageProps)
+    return out
+  }
+
+  it('resolves a @-prefixed prop against page props (live station)', () => {
+    const def: WidgetDef = {
+      ...base,
+      id: 'weather',
+      module: '/ext/phpvmsdashboard/widgets/weather.js',
+      props: { icao: '@currentAirport' },
+    }
+    expect(resolveProps(def, { currentAirport: 'KJFK' })).toEqual({ icao: 'KJFK' })
+  })
+
+  it('passes static (non-@) props through untouched and mixes with refs', () => {
+    const def: WidgetDef = {
+      ...base,
+      id: 'h',
+      component: 'HoursWidget',
+      props: { icao: '@currentAirport', label: 'Weather', count: 3 },
+    }
+    expect(resolveProps(def, { currentAirport: 'EGLL' })).toEqual({
+      icao: 'EGLL',
+      label: 'Weather',
+      count: 3,
+    })
+  })
+
+  it('yields undefined for a @-ref missing from page props', () => {
+    const def: WidgetDef = { ...base, id: 'm', module: '/ext/x.js', props: { icao: '@currentAirport' } }
+    expect(resolveProps(def, {})).toEqual({ icao: undefined })
   })
 })

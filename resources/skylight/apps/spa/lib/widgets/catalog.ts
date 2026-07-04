@@ -53,7 +53,10 @@ const CATALOG: WidgetDef[] = [
   { id: 'kpi-balance',component: 'BalanceWidget',    title: 'Balance',       icon: 'wallet', defaultZone: 'grid', span: 1, defaultOn: true },
   { id: 'rank',       component: 'RankWidget',       title: 'Rank progress', icon: 'trending-up', defaultZone: 'grid', span: 1, defaultOn: true },
   { id: 'last-flight',component: 'LastFlightWidget', title: 'Last flight',   icon: 'plane-landing', defaultZone: 'sidebar', defaultOn: true },
-  { id: 'weather',    component: 'WxWidget',         title: 'Weather (METAR)', icon: 'cloud-sun', defaultZone: 'sidebar', defaultOn: true },
+  // NOTE: the `weather` (METAR) widget is no longer bundled first-party. It now
+  // ships from the first-party addon `phpvms/phpvms-dashboard` as a pre-built
+  // ESM widget that owns its own endpoint and receives the live station via a
+  // `props: { icao: '@currentAirport' }` ref. See modules/PhpvmsDashboard/.
 ]
 
 /**

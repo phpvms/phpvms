@@ -14,7 +14,9 @@ describe('catalog server merge', () => {
   it('with no server widgets, returns only first-party CATALOG', () => {
     const ids = getCatalog().map((w) => w.id)
     expect(ids).toContain('route')
-    expect(ids).toContain('weather')
+    // 'weather' is no longer first-party — it now ships from the phpvms-dashboard
+    // addon. Assert another first-party id instead.
+    expect(ids).toContain('last-flight')
     // A couple of first-party ids, none of them server-provided.
     expect(getCatalog().every((w) => w.kind !== 'blade')).toBe(true)
   })
@@ -39,12 +41,12 @@ describe('catalog server merge', () => {
   })
 
   it('server entry wins over a first-party entry with the same id', () => {
-    const override: WidgetDef = { ...base, id: 'weather', title: 'Server Weather' }
+    const override: WidgetDef = { ...base, id: 'route', title: 'Server Route' }
     mergeServerWidgets([override])
-    const matches = getCatalog().filter((w) => w.id === 'weather')
+    const matches = getCatalog().filter((w) => w.id === 'route')
     expect(matches).toHaveLength(1)
-    expect(matches[0].title).toBe('Server Weather')
-    expect(widgetById('weather')?.title).toBe('Server Weather')
+    expect(matches[0].title).toBe('Server Route')
+    expect(widgetById('route')?.title).toBe('Server Route')
   })
 
   it('guards undefined / empty input', () => {
