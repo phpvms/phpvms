@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Addons\Models\AddonBootCache;
+use App\Addons\Support\BootCache;
 use App\Contracts\Filament\ProvidesPermissions;
 use App\Enums\Ability;
 use Filament\Facades\Filament;
@@ -34,6 +36,8 @@ class PermissionRegistry
      * @var array<string, array{group: string, label: string}>
      */
     protected array $custom = [];
+
+    public function __construct(private readonly BootCache $bootCache) {}
 
     /**
      * Register a custom permission (e.g. from a module service provider).
@@ -234,10 +238,22 @@ class PermissionRegistry
     }
 
     /**
-     * The permission-safe key for a module (e.g. `VMSAcars` => `vmsacars`).
+     * The permission-safe key for a module.
+     *
+     * Managed modules (those with a registry_id in the boot cache) key off the
+     * slugified registry_id, e.g. `acme/my-addon` => `acme-my-addon`. Every other
+     * module falls back to its lower-cased display name, e.g. `VMSAcars` => `vmsacars`.
      */
     public function moduleKey(string $module): string
     {
+        $entry = $this->bootCache->all()->first(
+            fn (AddonBootCache $entry): bool => $entry->name === $module
+        );
+
+        if ($entry !== null && $entry->registryId !== null) {
+            return keyed_str(strtolower($entry->registryId));
+        }
+
         return Str::lower($module);
     }
 

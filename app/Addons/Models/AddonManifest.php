@@ -69,4 +69,5 @@ final readonly class AddonManifest
         public array $tables = [],
         public array $files = [],
     ) {}
+
 }

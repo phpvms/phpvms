@@ -18,7 +18,6 @@ use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 /**
  * Lifecycle façade for addons. Owns reads (find/all/enabled), enable/disable,
@@ -185,7 +184,7 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
 
             if (File::exists($dest)) {
                 throw new AddonInstallException(sprintf('Addon already installed: %s', $manifest->name));
@@ -229,7 +228,7 @@ class AddonRegistry
 
         try {
             $manifest = $this->validator->validate($extracted);
-            $dest = config('addons.paths.base').'/'.$this->safeName($manifest->name);
+            $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
 
             File::deleteDirectory($dest);
 
@@ -266,20 +265,31 @@ class AddonRegistry
     }
 
     /**
-     * Derive a filesystem-safe directory name from an addon's manifest name.
+     * Derive a filesystem-safe directory name from an addon manifest.
      *
-     * Strips everything that is not an ASCII letter and forces StudlyCase, so a
-     * crafted manifest name (e.g. "../../app") can never escape the addons base
-     * directory when used as a path segment.
+     * When a registry_id is present (managed addons), converts it to a
+     * lowercase slug via keyed_str(): slashes become hyphens, non-alphanumeric
+     * chars are stripped. A registry_id of "phpvms/vmsacars" produces "phpvms-vmsacars".
      *
-     * @throws AddonInstallException when no letters remain after sanitisation
+     * Falls back to keyed_str() on the manifest name for unmanaged addons,
+     * ensuring the same sanitisation guarantee in both paths.
+     *
+     * @throws AddonInstallException when no safe characters remain after sanitisation
      */
-    private function safeName(string $name): string
+    private function safeName(AddonManifest $manifest): string
     {
-        $safe = Str::studly((string) preg_replace('/[^A-Za-z]+/', ' ', $name));
+        if ($manifest->registryId !== null) {
+            $safe = keyed_str(strtolower($manifest->registryId));
+
+            if ($safe !== '') {
+                return $safe;
+            }
+        }
+
+        $safe = keyed_str(strtolower($manifest->name));
 
         if ($safe === '') {
-            throw new AddonInstallException(sprintf('Invalid addon name: %s', $name));
+            throw new AddonInstallException(sprintf('Invalid addon name: %s', $manifest->name));
         }
 
         return $safe;

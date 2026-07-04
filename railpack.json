@@ -1,5 +1,10 @@
 {
   "$schema": "https://schema.railpack.com",
+  "steps": {
+    "build": {
+      "commands": ["...", "php artisan filament:assets"]
+    }
+  },
   "deploy": {
     "startCommand": "php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${FORWARD_HTTP_PORT:-8080}"
   }

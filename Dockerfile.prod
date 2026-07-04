@@ -22,7 +22,12 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader
 
-RUN bun install && bun run build
+# `bun run build` compiles the Vite bundle + the esbuild AlpineComponent files
+# into resources/js/dist. `filament:assets` then publishes those registered
+# AlpineComponents into public/js/app/components so the x-load lazy loader can
+# fetch them at runtime — without it those component modules 404.
+RUN bun install && bun run build \
+    && php artisan filament:assets
 
 # -----------------------------------------------------------------------------
 #

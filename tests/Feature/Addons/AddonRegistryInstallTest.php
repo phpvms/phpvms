@@ -32,7 +32,7 @@ it('install() places the addon and registers a DB row', function (): void {
 
     expect($addon)->toBeInstanceOf(Addon::class)
         ->and($addon->getName())->toBe('Demo')
-        ->and(File::isDirectory($this->modules.'/Demo'))->toBeTrue()
+        ->and(File::isDirectory($this->modules.'/demo'))->toBeTrue()
         ->and(Addon::query()->where('name', 'Demo')->exists())->toBeTrue();
 });
 

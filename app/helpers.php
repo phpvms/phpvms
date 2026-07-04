@@ -436,6 +436,24 @@ if (!function_exists('_fmt')) {
     }
 }
 
+if (!function_exists('keyed_str')) {
+    /**
+     * Normalise a string into a key-safe token.
+     *
+     * Replaces any run of non-alphanumeric characters (spaces, `\ / : ,` etc.)
+     * with the delimiter and trims leading/trailing delimiters. Case is
+     * preserved; lower-case at the call site if required.
+     *
+     * e.g. `keyed_str('phpvms/vms-acars')` => `phpvms-vms-acars`
+     */
+    function keyed_str(string $source, string $delimiter = '-'): string
+    {
+        $replaced = preg_replace('/[^\p{L}\p{N}]+/u', $delimiter, $source);
+
+        return trim((string) $replaced, $delimiter);
+    }
+}
+
 if (!function_exists('docs_link')) {
     /**
      * Return a link to the docs
