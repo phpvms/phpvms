@@ -69,8 +69,8 @@ const CATALOG: WidgetDef[] = [
   // are no longer bundled first-party. They now ship from the first-party addon
   // `phpvms/phpvms-dashboard` as pre-built ESM widgets fed by `@`-ref props over
   // the DashboardData DTO (no core resolver, no endpoint). See modules/phpvms-dashboard/.
-  // Only `route` (RouteWidget) stays bundled — it imports @/composables/useGlobe
-  // + @/lib/geo, which are core-internal and can't ride the ESM addon path.
+  // Only `route` (RouteWidget) stays bundled — it imports @/widgets/nav-display/useGlobe
+  // + @/shared/lib/geo, which are core-internal and can't ride the ESM addon path.
 ];
 
 /**
