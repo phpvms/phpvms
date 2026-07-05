@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
-import BladeWidget from "@/components/widgets/BladeWidget.vue";
+import BladeWidget from "@/widgets/dashboard/BladeWidget.vue";
 
 function htmlResponse(html: string, ok = true, status = 200): Partial<Response> {
   return { ok, status, text: async () => html };

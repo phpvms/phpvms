@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getCatalog, widgetById, mergeServerWidgets, type WidgetDef } from "@/lib/widgets/catalog";
+import {
+  getCatalog,
+  widgetById,
+  mergeServerWidgets,
+  type WidgetDef,
+} from "@/widgets/dashboard/catalog";
 
 const base = { title: "X", icon: "", defaultZone: "grid" as const };
 

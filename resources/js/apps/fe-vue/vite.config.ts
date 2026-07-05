@@ -171,7 +171,7 @@ export default defineConfig(({ command }) => ({
     manifest: true,
     rollupOptions: {
       input: {
-        spa: resolve(WORKSPACE_ROOT, "src/main.ts"),
+        spa: resolve(WORKSPACE_ROOT, "src/app/main.ts"),
       },
       // Externalize Vue: the host's (and its bundled deps') bare `import 'vue'`
       // statements are left as-is in the output instead of bundling a second copy.

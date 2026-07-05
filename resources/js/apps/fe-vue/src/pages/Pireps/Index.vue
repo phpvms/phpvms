@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from "@inertiajs/vue3";
-import PvApp from "@/components/pv/PvApp.vue";
+import PvApp from "@/app/PvApp.vue";
 
 /**
  * Logbook — the pilot's PIREP list. Card-per-PIREP, modeled on the admin

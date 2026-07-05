@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PvApp from "@/components/pv/PvApp.vue";
-import PvSlot from "@/components/pv/PvSlot.vue";
+import PvApp from "@/app/PvApp.vue";
+import PvSlot from "@/shared/ui/PvSlot.vue";
 
 /**
  * My Bids page. Reads BidRowData[] (one row per validated bid: a `bid` object +

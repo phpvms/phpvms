@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import PvApp from "@/components/pv/PvApp.vue";
-import StatTile from "@/components/stats/StatTile.vue";
+import PvApp from "@/app/PvApp.vue";
+import StatTile from "@/shared/ui/stats/StatTile.vue";
 
 /**
  * Profile page — the pilot's record card, Glass-Cockpit styled. Reads the flat

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
-import PvApp from "@/components/pv/PvApp.vue";
+import PvApp from "@/app/PvApp.vue";
 
 /**
  * PIREP detail — modeled on the admin ViewPirep (hero + stat strip + main

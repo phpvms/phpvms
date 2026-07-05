@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { router, Link } from "@inertiajs/vue3";
-import PvApp from "@/components/pv/PvApp.vue";
-import FmsEntry from "@/components/flight/FmsEntry.vue";
-import FlightStrip from "@/components/flight/FlightStrip.vue";
+import PvApp from "@/app/PvApp.vue";
+import FmsEntry from "@/widgets/flight/FmsEntry.vue";
+import FlightStrip from "@/widgets/flight/FlightStrip.vue";
 
 /**
  * Flights schedule page. Reads the flat FlightsPresenter DTO: a page of flights,

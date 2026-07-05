@@ -5,7 +5,7 @@ import { mount } from "@vue/test-utils";
 // (some pull in maplibre-gl, which can't init in jsdom). Async factory imports
 // vue internally, avoiding the hoisting trap. resolveWidget imports the SAME
 // mocked module, so identity comparisons below still hold.
-vi.mock("@/components/widgets/dashboard", async () => {
+vi.mock("@/widgets/dashboard/dashboard", async () => {
   const { defineComponent, h } = await import("vue");
   const Bundled = defineComponent({
     name: "Bundled",
@@ -14,11 +14,11 @@ vi.mock("@/components/widgets/dashboard", async () => {
   return { dashboardWidgets: { HoursWidget: Bundled } };
 });
 
-import { resolveWidget, widgetErrorComponent } from "@/components/widgets/resolve";
-import { resolveValue } from "@/lib/registry";
-import { dashboardWidgets } from "@/components/widgets/dashboard";
-import BladeWidget from "@/components/widgets/BladeWidget.vue";
-import type { WidgetDef } from "@/lib/widgets/catalog";
+import { resolveWidget, widgetErrorComponent } from "@/widgets/dashboard/resolve";
+import { resolveValue } from "@/shared/lib/registry";
+import { dashboardWidgets } from "@/widgets/dashboard/dashboard";
+import BladeWidget from "@/widgets/dashboard/BladeWidget.vue";
+import type { WidgetDef } from "@/widgets/dashboard/catalog";
 
 const base = { title: "X", icon: "", defaultZone: "grid" as const };
 

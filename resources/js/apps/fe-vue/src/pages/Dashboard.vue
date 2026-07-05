@@ -3,13 +3,13 @@ import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { VueDraggable } from "vue-draggable-plus";
 import { onClickOutside } from "@vueuse/core";
-import PvApp from "@/components/pv/PvApp.vue";
-import PvIcon from "@/components/pv/PvIcon.vue";
-import WidgetFrame from "@/components/pv/WidgetFrame.vue";
-import { useDashboardLayout } from "@/composables/useDashboardLayout";
-import { widgetById } from "@/lib/widgets/catalog";
-import { resolveWidget } from "@/components/widgets/resolve";
-import { resolveValue } from "@/lib/registry";
+import PvApp from "@/app/PvApp.vue";
+import PvIcon from "@/shared/ui/PvIcon.vue";
+import WidgetFrame from "@/widgets/dashboard/WidgetFrame.vue";
+import { useDashboardLayout } from "@/widgets/dashboard/useDashboardLayout";
+import { widgetById } from "@/widgets/dashboard/catalog";
+import { resolveWidget } from "@/widgets/dashboard/resolve";
+import { resolveValue } from "@/shared/lib/registry";
 
 /**
  * Dashboard — a configurable, draggable widget board. Widgets come from the
