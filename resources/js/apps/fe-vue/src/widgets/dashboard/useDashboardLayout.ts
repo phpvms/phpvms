@@ -1,11 +1,6 @@
 import { computed, ref, type Ref } from "vue";
 import { useStorage } from "@vueuse/core";
-import {
-  getCatalog,
-  widgetById,
-  type WidgetDef,
-  type WidgetZone,
-} from "@/widgets/dashboard/catalog";
+import { getCatalog, widgetById, type WidgetDef, type WidgetZone } from "./catalog";
 
 /**
  * Per-user dashboard LAYOUT (what is placed + where) on top of the widget

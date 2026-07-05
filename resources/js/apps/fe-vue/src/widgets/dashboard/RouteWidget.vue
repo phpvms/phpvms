@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { useGlobe } from "@/widgets/nav-display/useGlobe";
+import { useGlobe } from "@/shared/lib/useGlobe";
 import { bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
 
 interface Airport {

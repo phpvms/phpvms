@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Link, router } from "@inertiajs/vue3";
-import PvApp from "@/app/PvApp.vue";
 
 /**
  * Logbook — the pilot's PIREP list. Card-per-PIREP, modeled on the admin
@@ -8,7 +7,6 @@ import PvApp from "@/app/PvApp.vue";
  * PirepListItemData, GENERATED from the PHP DTO (App.Http.Data.* ambient global).
  * Each card links to the SPA detail page.
  */
-defineOptions({ layout: PvApp });
 
 const props = defineProps<{
   pireps: App.Http.Data.PirepListItemData[];
@@ -239,7 +237,7 @@ function goto(page: number): void {
 .pager button {
   font-size: 12px;
   padding: 5px 12px;
-  border-radius: var(--pv-radius-sm, 6px);
+  border-radius: var(--pv-radius-sm);
   border: 1px solid var(--pv-line);
   background: var(--pv-panel);
   color: var(--pv-ink);

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { router, Link } from "@inertiajs/vue3";
-import PvApp from "@/app/PvApp.vue";
 import FmsEntry from "@/widgets/flight/FmsEntry.vue";
 import FlightStrip from "@/widgets/flight/FlightStrip.vue";
 
@@ -10,7 +9,6 @@ import FlightStrip from "@/widgets/flight/FlightStrip.vue";
  * pagination meta, and the active filters. Filtering + paging are real Inertia
  * visits (server re-runs the search), so this page stays a thin projection.
  */
-defineOptions({ layout: PvApp });
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];

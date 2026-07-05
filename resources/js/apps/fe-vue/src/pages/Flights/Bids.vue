@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PvApp from "@/app/PvApp.vue";
 import PvSlot from "@/shared/ui/PvSlot.vue";
 
 /**
@@ -11,7 +10,6 @@ import PvSlot from "@/shared/ui/PvSlot.vue";
  * `bids.row.actions` whose `context` is `{ bid, flight }` — the host for the
  * external ACARS plugin, which injects a Vue component into the row.
  */
-defineOptions({ layout: PvApp });
 
 defineProps<{
   bids: App.Http.Data.BidRowData[];

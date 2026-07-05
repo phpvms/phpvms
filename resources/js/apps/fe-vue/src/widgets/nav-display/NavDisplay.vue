@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useGlobe } from "@/widgets/nav-display/useGlobe";
+import { useGlobe } from "@/shared/lib/useGlobe";
 import { bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
 
 /**
@@ -8,6 +8,10 @@ import { bearing, distanceNm, type LngLat } from "@/shared/lib/geo";
  * framed like an EFIS ND (mono header + bottom readout). Colors are driven by
  * `--pv-globe-*` / `--pv-accent` tokens. Falls back to origin-only when no
  * destination is known.
+ *
+ * @unused Not yet wired to a page slot. The dashboard RouteWidget embeds the
+ * globe via @/shared/lib/useGlobe directly. Retained as a reusable standalone
+ * component for future page or addon use.
  */
 const props = defineProps<{
   from: LngLat;

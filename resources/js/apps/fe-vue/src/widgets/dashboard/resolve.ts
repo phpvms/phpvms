@@ -1,5 +1,5 @@
 import { defineAsyncComponent, defineComponent, h, type Component } from "vue";
-import type { WidgetDef } from "@/widgets/dashboard/catalog";
+import type { WidgetDef } from "./catalog";
 import { dashboardWidgets } from "./dashboard";
 import BladeWidget from "./BladeWidget.vue";
 

@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import PvApp from "@/app/PvApp.vue";
 import StatTile from "@/shared/ui/stats/StatTile.vue";
 
 /**
  * Profile page — the pilot's record card, Workspace styled. Reads the flat
  * ProfilePresenter DTO only. Persistent PvApp layout (nav + header chrome).
  */
-defineOptions({ layout: PvApp });
 
 // NOTE: the DTO is passed NESTED under a single `profile` prop (not spread as
 // top-level props). @vue/compiler-sfc can't expand an ambient namespace DTO used

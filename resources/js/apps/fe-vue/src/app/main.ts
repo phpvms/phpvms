@@ -2,6 +2,7 @@
 import { createApp, type DefineComponent } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { i18nVue } from "laravel-vue-i18n";
+import PvApp from "./PvApp.vue";
 
 // Tailwind v4 + canonical --pv-* tokens + shadcn bridge (imports lib/tokens.css).
 import "./app.css";
@@ -11,9 +12,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 /**
  * Theme entry point. Bootstraps the Inertia + Vue app.
  *
- * Pages resolve from apps/spa/pages/<Name>.vue — dropping a .vue file registers
+ * Pages resolve from src/pages/<Name>.vue — dropping a .vue file registers
  * a page, no registry edits. The app chrome (nav rail + header) lives in PvApp,
- * used as each page's persistent Inertia layout.
+ * set here as the default Inertia layout so pages don't import the app layer
+ * (which would be a layer-inversion under FSD).
  */
 const pages = import.meta.glob<{ default: DefineComponent }>("../pages/**/*.vue");
 
@@ -23,10 +25,13 @@ createInertiaApp({
     if (!importer) {
       throw new Error(
         `[skylight] Inertia page not found: ${name}. ` +
-          `Add apps/spa/pages/${name}.vue to register it.`,
+          `Add src/pages/${name}.vue to register it.`,
       );
     }
-    return (await importer()).default;
+    const component = (await importer()).default;
+    // App layer owns the default layout — pages must not import PvApp directly.
+    (component as Record<string, unknown>).layout ??= PvApp;
+    return component;
   },
   setup({ el, App, props, plugin }) {
     // laravel-vue-i18n, fed from the Inertia-shared `i18n` prop (the server reads

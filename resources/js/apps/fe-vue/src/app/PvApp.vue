@@ -4,10 +4,10 @@ import { usePage } from "@inertiajs/vue3";
 import PvLayout from "./PvLayout.vue";
 import NavRail from "@/widgets/chrome/NavRail.vue";
 import TopBar from "@/widgets/chrome/TopBar.vue";
-import FlashToasts from "@/app/FlashToasts.vue";
+import FlashToasts from "./FlashToasts.vue";
 import { registry, type SlotEntry, type ComponentResolver } from "@/shared/lib/registry";
-import { widgetComponents } from "@/widgets/dashboard";
-import { dashboardWidgets } from "@/widgets/dashboard/dashboard";
+import { widgetComponents, dashboardWidgets } from "@/widgets/dashboard";
+import PvActivityFeed from "@/widgets/activity/PvActivityFeed.vue";
 import { mergeServerWidgets, type WidgetDef } from "@/widgets/dashboard/catalog";
 import { providePvContext } from "@/shared/lib/usePvSlot";
 
@@ -86,11 +86,14 @@ for (const entry of serverSlots) {
   }
 }
 // Merge order: bundled slot components (currently none) + the bundled dashboard
-// widget map (just RouteWidget now) + async addon modules. Async entries win
-// last so a server module overrides a same-named bundled component intentionally.
+// widget map (RouteWidget) + activity feed (registered here — not in the dashboard
+// slice — so the dashboard slice doesn't cross-import a sibling widget slice) +
+// async addon modules. Async entries win last so a server module overrides a
+// same-named bundled component intentionally.
 const mergedResolver: ComponentResolver = {
   ...widgetComponents,
   ...dashboardWidgets,
+  PvActivityFeed,
   ...asyncSlotComponents,
 };
 

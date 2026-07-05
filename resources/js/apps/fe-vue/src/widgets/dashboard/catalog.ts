@@ -3,7 +3,7 @@
  *
  * First-party widgets register here; addons call `registerWidget()`. This module
  * has ZERO Vue imports so the catalog stays serializable — the actual Vue
- * component is resolved by NAME via a resolver map (components/widgets), exactly
+ * component is resolved by NAME via a resolver map (src/widgets/dashboard), exactly
  * like the slot registry. The per-user LAYOUT (what IS placed + where) lives in
  * useDashboardLayout; this is only the menu of available widgets.
  */
@@ -18,7 +18,7 @@ export interface WidgetDef {
    * `blade` renders a server-rendered host shell (BladeWidget).
    */
   kind?: "vue" | "blade";
-  /** Resolver key → Vue component (in components/widgets). Used by `vue` kind. */
+  /** Resolver key → Vue component (in src/widgets/dashboard). Used by `vue` kind. */
   component?: string;
   /** Runtime ESM URL for a `vue`-kind widget (e.g. /ext/foo/widget.js). */
   module?: string;
@@ -69,7 +69,7 @@ const CATALOG: WidgetDef[] = [
   // are no longer bundled first-party. They now ship from the first-party addon
   // `phpvms/phpvms-dashboard` as pre-built ESM widgets fed by `@`-ref props over
   // the DashboardData DTO (no core resolver, no endpoint). See modules/phpvms-dashboard/.
-  // Only `route` (RouteWidget) stays bundled — it imports @/widgets/nav-display/useGlobe
+  // Only `route` (RouteWidget) stays bundled — it imports @/shared/lib/useGlobe
   // + @/shared/lib/geo, which are core-internal and can't ride the ESM addon path.
 ];
 

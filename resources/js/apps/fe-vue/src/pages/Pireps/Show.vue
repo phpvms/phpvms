@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
-import PvApp from "@/app/PvApp.vue";
 
 /**
  * PIREP detail — modeled on the admin ViewPirep (hero + stat strip + main
@@ -10,7 +9,6 @@ import PvApp from "@/app/PvApp.vue";
  * finances ledger). v1 covers header, stats, route, notes, custom fields, fares,
  * and the ACARS log.
  */
-defineOptions({ layout: PvApp });
 
 const props = defineProps<{ pirep: App.Http.Data.PirepData }>();
 

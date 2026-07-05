@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useZulu } from "@/widgets/chrome/useZulu";
+import { useZulu } from "./useZulu";
 
 /** Station ident (cyan) + live Zulu time (ink), with an analog clock glyph. */
 withDefaults(defineProps<{ station?: string | null }>(), { station: null });

@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { VueDraggable } from "vue-draggable-plus";
 import { onClickOutside } from "@vueuse/core";
-import PvApp from "@/app/PvApp.vue";
 import PvIcon from "@/shared/ui/PvIcon.vue";
 import WidgetFrame from "@/widgets/dashboard/WidgetFrame.vue";
 import { useDashboardLayout } from "@/widgets/dashboard/useDashboardLayout";
@@ -15,9 +14,8 @@ import { resolveValue } from "@/shared/lib/registry";
  * Dashboard — a configurable, draggable widget board. Widgets come from the
  * catalog; the pilot's layout (which widgets, which zone, what order) is
  * persisted and edited in place: toggle Customize → drag between zones, add via
- * the menu, remove per card. See useDashboardLayout + lib/widgets/catalog.
+ * the menu, remove per card. See useDashboardLayout + src/widgets/dashboard/catalog.
  */
-defineOptions({ layout: PvApp });
 
 const page = usePage();
 const name = computed(() => (page.props.name as string) ?? "Pilot");
