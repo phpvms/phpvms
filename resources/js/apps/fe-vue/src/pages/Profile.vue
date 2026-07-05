@@ -4,7 +4,7 @@ import PvApp from "@/app/PvApp.vue";
 import StatTile from "@/shared/ui/stats/StatTile.vue";
 
 /**
- * Profile page — the pilot's record card, Glass-Cockpit styled. Reads the flat
+ * Profile page — the pilot's record card, Workspace styled. Reads the flat
  * ProfilePresenter DTO only. Persistent PvApp layout (nav + header chrome).
  */
 defineOptions({ layout: PvApp });
@@ -53,7 +53,7 @@ const initials = computed(() =>
           >
           <span v-if="profile.rank" class="pill mag">{{ profile.rank.name }}</span>
           <span class="pill">{{ profile.state.label }}</span>
-          <span class="since">MEMBER SINCE {{ memberYear }}</span>
+          <span class="since">Member since {{ memberYear }}</span>
         </div>
       </div>
     </div>
@@ -117,24 +117,24 @@ const initials = computed(() =>
   margin-top: 20px;
 }
 
+/* ── Identity card ──────────────────────────────────────────── */
 .idcard {
   display: flex;
   align-items: center;
   gap: 20px;
   background: var(--pv-panel);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
+  border-radius: var(--pv-radius-xl);
   padding: 20px 24px;
-  box-shadow: var(--pv-shadow-panel);
 }
 .avatar {
   width: 72px;
   height: 72px;
-  border-radius: var(--pv-radius-md);
+  border-radius: var(--pv-radius-lg);
   overflow: hidden;
   flex-shrink: 0;
   border: 1px solid var(--pv-line);
-  background: var(--pv-panel-inset);
+  background: color-mix(in srgb, var(--pv-accent) 14%, var(--pv-panel));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,17 +145,14 @@ const initials = computed(() =>
   object-fit: cover;
 }
 .initials {
-  font-family: var(--pv-font-display);
   font-weight: 700;
-  font-size: calc(24px * var(--pv-type-scale));
-  color: var(--pv-ink-dim);
+  font-size: 20px;
+  color: var(--pv-accent);
 }
 .name {
-  font-family: var(--pv-font-display);
-  font-weight: 700;
-  font-size: calc(26px * var(--pv-type-scale));
+  font-size: 18px;
+  font-weight: 600;
   color: var(--pv-ink);
-  letter-spacing: -0.01em;
 }
 .meta {
   display: flex;
@@ -164,51 +161,55 @@ const initials = computed(() =>
   flex-wrap: wrap;
   margin-top: 8px;
 }
+/* Base pill: neutral info chip (airline, state) */
 .pill {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--pv-ink-dim);
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-sm);
-  padding: 3px 8px;
+  background: var(--pv-panel-inset);
+  border-radius: var(--pv-radius-full);
+  padding: 2px 8px;
 }
+/* Accent pill: rank chip — matches Dashboard .rankchip */
 .pill.mag {
+  font-weight: 600;
   color: var(--pv-accent);
-  border-color: color-mix(in srgb, var(--pv-accent) 40%, var(--pv-line));
+  background: var(--pv-accent-soft);
 }
 .since {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8px * var(--pv-type-scale));
-  letter-spacing: 0.14em;
+  font-size: 11px;
   color: var(--pv-ink-dim);
 }
 
+/* ── Stats ─────────────────────────────────────────────────── */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 12px;
 }
+
+/* ── Type ratings ──────────────────────────────────────────── */
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 .chip {
-  font-family: var(--pv-font-mono);
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-sm);
+  border-radius: var(--pv-radius-md);
   padding: 6px 10px;
-  background: var(--pv-panel);
+  background: var(--pv-panel-inset);
 }
+/* Code stays mono — type rating identifiers are genuine codes (e.g. B738) */
 .chip b {
+  font-family: var(--pv-font-mono);
   color: var(--pv-cyan);
   margin-right: 6px;
 }
 
+/* ── Awards ────────────────────────────────────────────────── */
 .awards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -220,9 +221,8 @@ const initials = computed(() =>
   gap: 12px;
   background: var(--pv-panel);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
+  border-radius: var(--pv-radius-xl);
   padding: 12px 14px;
-  box-shadow: var(--pv-shadow-panel);
 }
 .award-img {
   width: 40px;
@@ -236,16 +236,16 @@ const initials = computed(() =>
   gap: 2px;
 }
 .award-name {
-  font-family: var(--pv-font-display);
   font-weight: 600;
-  font-size: calc(13px * var(--pv-type-scale));
+  font-size: 13px;
   color: var(--pv-ink);
 }
 .award-desc {
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 11px;
   color: var(--pv-ink-dim);
 }
 
+/* ── Custom fields ─────────────────────────────────────────── */
 .fields {
   display: flex;
   flex-direction: column;
@@ -258,19 +258,16 @@ const initials = computed(() =>
   border: 1px solid var(--pv-line);
   border-radius: var(--pv-radius-md);
   padding: 10px 14px;
-  box-shadow: var(--pv-shadow-panel);
 }
 .field-k {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--pv-ink-dim);
   min-width: 160px;
 }
 .field-v {
-  font-family: var(--pv-font-mono);
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
   color: var(--pv-ink);
+  font-variant-numeric: tabular-nums;
 }
 </style>
