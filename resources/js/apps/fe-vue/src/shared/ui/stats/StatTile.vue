@@ -2,9 +2,10 @@
 import { computed } from "vue";
 
 /**
- * A single EFIS readout tile: mono uppercase label over a large value. `mono`
- * renders the value in the data face (times/codes); `small` shrinks it.
+ * Workspace stat tile: small Inter label over a large value. `mono` renders the
+ * value in the data face (times/codes); `small` shrinks it.
  * `accent` tints the value + a top rule (mag/cyan/green/amber); default = ink.
+ * `mag` maps to the brand-blue accent (`--pv-accent`).
  */
 type Accent = "ink" | "mag" | "cyan" | "green" | "amber";
 const props = withDefaults(
@@ -18,9 +19,11 @@ const props = withDefaults(
   { mono: false, small: false, accent: "ink" },
 );
 
-const accentVar = computed(() =>
-  props.accent === "ink" ? "var(--pv-ink)" : `var(--pv-${props.accent})`,
-);
+const accentVar = computed(() => {
+  if (props.accent === "ink") return "var(--pv-ink)";
+  if (props.accent === "mag") return "var(--pv-accent)";
+  return `var(--pv-${props.accent})`;
+});
 </script>
 
 <template>
@@ -35,15 +38,14 @@ const accentVar = computed(() =>
   position: relative;
   background: var(--pv-panel);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
+  border-radius: var(--pv-radius-lg);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  box-shadow: var(--pv-shadow-panel);
   overflow: hidden;
 }
-/* Colored top rule for accented tiles. */
+/* Colored top rule for accented tiles — decorative; label+value convey meaning. */
 .tile.accented::before {
   content: "";
   position: absolute;
@@ -54,26 +56,24 @@ const accentVar = computed(() =>
   background: var(--tile-accent);
 }
 .label {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8px * var(--pv-type-scale));
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--pv-ink-dim);
 }
 .value {
-  font-family: var(--pv-font-display);
-  font-size: calc(28px * var(--pv-type-scale));
+  font-size: 28px;
   font-weight: 700;
   color: var(--tile-accent, var(--pv-ink));
   line-height: 1;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 .value.mono {
   font-family: var(--pv-font-mono);
-  font-size: calc(22px * var(--pv-type-scale));
+  font-size: 22px;
   font-weight: 500;
 }
 .value.small {
-  font-size: calc(20px * var(--pv-type-scale));
+  font-size: 20px;
 }
 </style>

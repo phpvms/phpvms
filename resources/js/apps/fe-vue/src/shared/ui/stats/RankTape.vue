@@ -39,9 +39,8 @@ const clamped = computed(() => Math.max(0, Math.min(100, Math.round(props.pct)))
 .rank {
   background: var(--pv-panel);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-md);
+  border-radius: var(--pv-radius-lg);
   padding: 14px 16px;
-  box-shadow: var(--pv-shadow-panel);
 }
 .head {
   display: flex;
@@ -50,32 +49,27 @@ const clamped = computed(() => Math.max(0, Math.min(100, Math.round(props.pct)))
   margin-bottom: 10px;
 }
 .title {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8px * var(--pv-type-scale));
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--pv-ink-dim);
 }
 .pct {
   font-family: var(--pv-font-mono);
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 11px;
   color: var(--pv-green);
+  font-variant-numeric: tabular-nums;
 }
 .from {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
+  font-size: 12px;
+  font-weight: 500;
   color: var(--pv-ink-dim);
   margin-bottom: 2px;
-  text-transform: uppercase;
 }
 .to {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 13px;
+  font-weight: 600;
   color: var(--pv-ink);
-  font-weight: 500;
-  letter-spacing: 0.04em;
   margin-bottom: 10px;
-  text-transform: uppercase;
 }
 .track {
   height: 3px;
