@@ -142,7 +142,7 @@ function submit() {
 .chip.on {
   border-color: var(--pv-accent);
   color: var(--pv-accent);
-  background: color-mix(in srgb, var(--pv-accent) 10%, transparent);
+  background: var(--pv-accent-soft);
 }
 .chip:focus-visible {
   outline: 2px solid var(--pv-accent);

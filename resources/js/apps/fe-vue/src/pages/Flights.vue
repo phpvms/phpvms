@@ -112,13 +112,13 @@ const hasNext = computed(() => props.page.current < props.page.last);
 }
 .badge {
   font-size: 11px;
-  font-weight: 500;
-  padding: 3px 8px;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: var(--pv-radius-full);
 }
 .badge.on {
   color: var(--pv-green);
-  background: color-mix(in srgb, var(--pv-green) 8%, transparent);
+  background: color-mix(in srgb, var(--pv-green) 12%, transparent);
 }
 .badge.avail {
   color: var(--pv-ink-dim);

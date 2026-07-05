@@ -192,7 +192,7 @@ function goto(page: number): void {
 .badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: var(--pv-radius-full);
   white-space: nowrap;
 }
@@ -254,5 +254,6 @@ function goto(page: number): void {
 .pg {
   font-size: 12px;
   color: var(--pv-ink-dim);
+  font-variant-numeric: tabular-nums;
 }
 </style>

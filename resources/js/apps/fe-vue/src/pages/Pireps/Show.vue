@@ -308,7 +308,7 @@ function fmtDate(iso: string | null): string {
   text-align: left;
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--pv-ink-faint);
+  color: var(--pv-ink-dim);
   padding: 4px 6px;
   border-bottom: 1px solid var(--pv-line);
 }
@@ -353,7 +353,7 @@ function fmtDate(iso: string | null): string {
 .badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: var(--pv-radius-full);
   white-space: nowrap;
 }

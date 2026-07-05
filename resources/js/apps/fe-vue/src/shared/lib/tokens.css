@@ -82,6 +82,13 @@
   --pv-type-scale: 1;
 
   /* ── Radii (Workspace: rounder cards) ─────────────────────────── */
+  /* Tier guide — keep same-role elements on the same radius:
+   *   xl  (12px) → hero / identity cards: .pilot, .idcard, .award
+   *   lg  (10px) → stat tiles / progress tapes: StatTile, RankTape
+   *   md  ( 8px) → dense row cards, table wraps, panels, FmsEntry: FlightStrip, tablewrap, pirep cards/panels
+   *   sm  ( 6px) → inline elements: buttons, input fields, menu items, chips-inside-panels
+   *   full        → status pills / badges (fully-rounded)
+   */
   --pv-radius-sm: 6px;
   --pv-radius-md: 8px;
   --pv-radius-lg: 10px;
