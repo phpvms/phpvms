@@ -158,8 +158,7 @@ function fmtDate(iso: string | null): string {
 
 <style scoped>
 .back {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink-dim);
   text-decoration: none;
 }
@@ -178,16 +177,16 @@ function fmtDate(iso: string | null): string {
   font-family: var(--pv-font-mono);
   font-weight: 600;
   color: var(--pv-accent);
-  font-size: calc(20px * var(--pv-type-scale));
+  font-size: 20px;
   margin: 0;
 }
 .sub {
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
   color: var(--pv-ink);
   margin-top: 2px;
 }
 .sub2 {
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 11px;
   color: var(--pv-ink-dim);
   margin-top: 2px;
 }
@@ -213,10 +212,10 @@ function fmtDate(iso: string | null): string {
 .icao {
   font-family: var(--pv-font-mono);
   font-weight: 600;
-  font-size: calc(15px * var(--pv-type-scale));
+  font-size: 15px;
 }
 .apname {
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 11px;
   color: var(--pv-ink-dim);
 }
 .arrow {
@@ -241,14 +240,12 @@ function fmtDate(iso: string | null): string {
   background: var(--pv-panel);
 }
 .cell .k {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8.5px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
+  font-size: 10px;
   text-transform: uppercase;
   color: var(--pv-ink-faint);
 }
 .cell .v {
-  font-size: calc(13px * var(--pv-type-scale));
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -280,7 +277,7 @@ function fmtDate(iso: string | null): string {
   align-content: start;
 }
 .notes {
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
   color: var(--pv-ink);
   white-space: pre-wrap;
   margin: 6px 0 0;
@@ -291,7 +288,7 @@ function fmtDate(iso: string | null): string {
   grid-template-columns: auto 1fr;
   gap: 6px 14px;
   margin: 8px 0 0;
-  font-size: calc(11.5px * var(--pv-type-scale));
+  font-size: 12px;
 }
 .kv dt {
   color: var(--pv-ink-faint);
@@ -307,13 +304,11 @@ function fmtDate(iso: string | null): string {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
-  font-size: calc(11.5px * var(--pv-type-scale));
+  font-size: 12px;
 }
 .tbl th {
   text-align: left;
-  font-family: var(--pv-font-mono);
-  font-size: calc(8.5px * var(--pv-type-scale));
-  letter-spacing: 0.1em;
+  font-size: 11px;
   text-transform: uppercase;
   color: var(--pv-ink-faint);
   padding: 4px 6px;
@@ -347,7 +342,7 @@ function fmtDate(iso: string | null): string {
   display: flex;
   gap: 10px;
   font-family: var(--pv-font-mono);
-  font-size: calc(10.5px * var(--pv-type-scale));
+  font-size: 11px;
 }
 .lt {
   color: var(--pv-ink-faint);
@@ -358,18 +353,14 @@ function fmtDate(iso: string | null): string {
 }
 
 .badge {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9.5px * var(--pv-type-scale));
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   padding: 3px 8px;
-  border-radius: var(--pv-radius-sm, 6px);
-  border: 1px solid currentColor;
+  border-radius: var(--pv-radius-full);
   white-space: nowrap;
 }
 .badge.big {
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 13px;
   padding: 5px 12px;
 }
 .badge[data-c="success"] {
@@ -377,12 +368,12 @@ function fmtDate(iso: string | null): string {
   background: color-mix(in srgb, var(--pv-green, #16a34a) 12%, transparent);
 }
 .badge[data-c="warning"] {
-  color: #d97706;
-  background: color-mix(in srgb, #d97706 12%, transparent);
+  color: var(--pv-amber);
+  background: color-mix(in srgb, var(--pv-amber) 12%, transparent);
 }
 .badge[data-c="danger"] {
-  color: #dc2626;
-  background: color-mix(in srgb, #dc2626 12%, transparent);
+  color: var(--pv-red);
+  background: color-mix(in srgb, var(--pv-red) 12%, transparent);
 }
 .badge[data-c="info"] {
   color: var(--pv-accent);

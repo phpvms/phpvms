@@ -54,7 +54,7 @@ defineProps<{
       </table>
     </div>
 
-    <div v-else class="empty">NO BIDS YET · RESERVE A FLIGHT TO GET STARTED</div>
+    <div v-else class="empty">No bids yet — reserve a flight to get started</div>
   </section>
 </template>
 
@@ -68,7 +68,7 @@ defineProps<{
 .bids {
   width: 100%;
   border-collapse: collapse;
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
   color: var(--pv-ink);
 }
 .bids thead th {
@@ -77,9 +77,7 @@ defineProps<{
   z-index: 1;
   background: var(--pv-panel);
   border-bottom: 1px solid var(--pv-line);
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.14em;
+  font-size: 11px;
   text-transform: uppercase;
   color: var(--pv-ink-dim);
   font-weight: 500;
@@ -114,9 +112,7 @@ defineProps<{
   width: 1%;
 }
 .empty {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
-  letter-spacing: 0.16em;
+  font-size: 13px;
   color: var(--pv-ink-dim);
   border: 1px dashed var(--pv-line);
   border-radius: var(--pv-radius-md);

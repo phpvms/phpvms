@@ -76,7 +76,7 @@ function goto(page: number): void {
       </Link>
     </div>
 
-    <div v-else class="empty">NO PIREPS YET · FLY A FLIGHT TO FILL YOUR LOGBOOK</div>
+    <div v-else class="empty">No PIREPs yet — fly a flight to fill your logbook</div>
 
     <div v-if="pagination.lastPage > 1" class="pager">
       <button :disabled="pagination.currentPage <= 1" @click="goto(pagination.currentPage - 1)">
@@ -100,10 +100,9 @@ function goto(page: number): void {
   justify-content: space-between;
 }
 .count {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink-faint);
-  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
 }
 
 .cards {
@@ -135,7 +134,7 @@ function goto(page: number): void {
   font-family: var(--pv-font-mono);
   font-weight: 600;
   color: var(--pv-accent);
-  font-size: calc(13px * var(--pv-type-scale));
+  font-size: 13px;
 }
 
 .route {
@@ -155,10 +154,10 @@ function goto(page: number): void {
 .icao {
   font-family: var(--pv-font-mono);
   font-weight: 500;
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
 }
 .apname {
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 11px;
   color: var(--pv-ink-dim);
   white-space: nowrap;
   overflow: hidden;
@@ -183,26 +182,20 @@ function goto(page: number): void {
   gap: 2px;
 }
 .stat .k {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8.5px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
+  font-size: 10px;
   text-transform: uppercase;
   color: var(--pv-ink-faint);
 }
 .stat .v {
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
 .badge {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9.5px * var(--pv-type-scale));
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   padding: 3px 8px;
-  border-radius: var(--pv-radius-sm, 6px);
-  border: 1px solid currentColor;
+  border-radius: var(--pv-radius-full);
   white-space: nowrap;
 }
 .badge[data-c="success"] {
@@ -210,12 +203,12 @@ function goto(page: number): void {
   background: color-mix(in srgb, var(--pv-green, #16a34a) 12%, transparent);
 }
 .badge[data-c="warning"] {
-  color: #d97706;
-  background: color-mix(in srgb, #d97706 12%, transparent);
+  color: var(--pv-amber);
+  background: color-mix(in srgb, var(--pv-amber) 12%, transparent);
 }
 .badge[data-c="danger"] {
-  color: #dc2626;
-  background: color-mix(in srgb, #dc2626 12%, transparent);
+  color: var(--pv-red);
+  background: color-mix(in srgb, var(--pv-red) 12%, transparent);
 }
 .badge[data-c="info"] {
   color: var(--pv-accent);
@@ -227,9 +220,7 @@ function goto(page: number): void {
 }
 
 .empty {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
-  letter-spacing: 0.16em;
+  font-size: 13px;
   color: var(--pv-ink-dim);
   border: 1px dashed var(--pv-line);
   border-radius: var(--pv-radius-md);
@@ -246,7 +237,7 @@ function goto(page: number): void {
   margin-top: 14px;
 }
 .pager button {
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 12px;
   padding: 5px 12px;
   border-radius: var(--pv-radius-sm, 6px);
   border: 1px solid var(--pv-line);
@@ -263,8 +254,7 @@ function goto(page: number): void {
   color: var(--pv-accent);
 }
 .pg {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink-dim);
 }
 </style>

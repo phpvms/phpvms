@@ -57,7 +57,6 @@ withDefaults(
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  box-shadow: var(--pv-shadow-panel);
   transition:
     border-color 0.15s,
     background 0.15s;
@@ -108,25 +107,21 @@ withDefaults(
   justify-content: center;
 }
 .fl {
-  font-family: var(--pv-font-mono);
-  font-size: calc(8px * var(--pv-type-scale));
-  letter-spacing: 0.15em;
+  font-size: 10px;
   text-transform: uppercase;
   color: var(--pv-ink-dim);
 }
 .val {
   font-family: var(--pv-font-mono);
-  font-size: calc(13px * var(--pv-type-scale));
+  font-size: 13px;
   font-weight: 500;
   color: var(--pv-ink);
-  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 .val.callsign {
-  font-family: var(--pv-font-display);
-  font-size: calc(15px * var(--pv-type-scale));
+  font-family: var(--pv-font-mono);
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.02em;
 }
 .val.route {
   display: flex;
@@ -135,6 +130,6 @@ withDefaults(
 }
 .val.route .arrow {
   color: var(--pv-ink-dim);
-  font-size: calc(10px * var(--pv-type-scale));
+  font-size: 10px;
 }
 </style>

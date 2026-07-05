@@ -35,12 +35,12 @@ const emit = defineEmits<{ bid: [FlightRow] }>();
           :aria-label="`Bid on ${f.callsign}`"
           @click="emit('bid', f)"
         >
-          BID
+          Bid
         </button>
       </template>
     </FlightStrip>
 
-    <div v-if="!flights.length" class="empty">AWAITING QUERY · NO FLIGHTS</div>
+    <div v-if="!flights.length" class="empty">No flights — enter a route to search</div>
   </div>
 </template>
 
@@ -51,9 +51,7 @@ const emit = defineEmits<{ bid: [FlightRow] }>();
   gap: 6px;
 }
 .empty {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
-  letter-spacing: 0.16em;
+  font-size: 13px;
   color: var(--pv-ink-dim);
   border: 1px dashed var(--pv-line);
   border-radius: var(--pv-radius-md);
@@ -61,24 +59,21 @@ const emit = defineEmits<{ bid: [FlightRow] }>();
   text-align: center;
 }
 .bid {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
+  font-size: 12px;
   font-weight: 500;
   padding: 3px 8px;
-  border-radius: var(--pv-radius-sm);
-  text-transform: uppercase;
-  border: 1px solid var(--pv-amber);
-  color: var(--pv-amber);
-  background: color-mix(in srgb, var(--pv-amber) 8%, transparent);
+  border-radius: var(--pv-radius-md);
+  border: 1px solid var(--pv-accent);
+  color: var(--pv-accent);
+  background: var(--pv-accent-soft);
   cursor: pointer;
   transition: background 0.15s;
 }
 .bid:hover {
-  background: color-mix(in srgb, var(--pv-amber) 18%, transparent);
+  background: color-mix(in srgb, var(--pv-accent) 18%, transparent);
 }
 .bid:focus-visible {
-  outline: 2px solid var(--pv-cyan);
+  outline: 2px solid var(--pv-accent);
   outline-offset: 2px;
 }
 </style>

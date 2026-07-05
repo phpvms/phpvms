@@ -11,8 +11,8 @@ const emit = defineEmits<{ search: [{ from: string; to: string; filter: string }
 
 const from = ref((props.from ?? "").toUpperCase());
 const to = ref("");
-const filter = ref("AIRLINE");
-const filters = ["AIRLINE", "TYPE", "MAX DIST"];
+const filter = ref("Airline");
+const filters = ["Airline", "Type", "Max Dist"];
 
 watch(from, (v) => {
   from.value = v.toUpperCase();
@@ -77,7 +77,6 @@ function submit() {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: var(--pv-shadow-panel);
 }
 .grp {
   display: flex;
@@ -85,15 +84,13 @@ function submit() {
   gap: 10px;
 }
 .lbl {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.16em;
+  font-size: 11px;
   text-transform: uppercase;
   color: var(--pv-ink-dim);
 }
 .in {
   font-family: var(--pv-font-mono);
-  font-size: calc(13px * var(--pv-type-scale));
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.08em;
   color: var(--pv-cyan);
@@ -116,7 +113,7 @@ function submit() {
   color: var(--pv-ink-dim);
 }
 .fms-arrow {
-  font-size: calc(14px * var(--pv-type-scale));
+  font-size: 14px;
   color: var(--pv-ink-dim);
   font-family: var(--pv-font-mono);
 }
@@ -127,13 +124,10 @@ function submit() {
   margin-left: auto;
 }
 .chip {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 11px;
   color: var(--pv-ink-dim);
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-sm);
+  border-radius: var(--pv-radius-full);
   padding: 5px 10px;
   cursor: pointer;
   background: transparent;
@@ -142,16 +136,16 @@ function submit() {
     color 0.15s;
 }
 .chip:hover {
-  border-color: var(--pv-cyan);
-  color: var(--pv-cyan);
+  border-color: var(--pv-accent);
+  color: var(--pv-accent);
 }
 .chip.on {
-  border-color: var(--pv-cyan);
-  color: var(--pv-cyan);
-  background: color-mix(in srgb, var(--pv-cyan) 8%, transparent);
+  border-color: var(--pv-accent);
+  color: var(--pv-accent);
+  background: color-mix(in srgb, var(--pv-accent) 10%, transparent);
 }
 .chip:focus-visible {
-  outline: 2px solid var(--pv-cyan);
+  outline: 2px solid var(--pv-accent);
   outline-offset: 2px;
 }
 </style>

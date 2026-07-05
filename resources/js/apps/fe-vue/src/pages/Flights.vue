@@ -72,27 +72,27 @@ const hasNext = computed(() => props.page.current < props.page.last);
       >
         <template #trailing>
           <span class="badge" :class="f.bidId ? 'on' : 'avail'">
-            {{ f.bidId ? "ON BID" : "AVAIL" }}
+            {{ f.bidId ? "On Bid" : "Available" }}
           </span>
         </template>
       </FlightStrip>
 
-      <div v-if="!flights.length" class="empty">NO FLIGHTS MATCH · ADJUST FILTER</div>
+      <div v-if="!flights.length" class="empty">No flights match your filters</div>
     </div>
 
     <!-- Pagination -->
     <div v-if="page.last > 1" class="pager">
       <Link v-if="hasPrev" :href="pageHref(page.current - 1)" class="pg" preserve-scroll
-        >◂ PREV</Link
+        >← Prev</Link
       >
-      <span v-else class="pg disabled">◂ PREV</span>
+      <span v-else class="pg disabled">← Prev</span>
       <span class="pg-info"
-        >PAGE {{ page.current }} / {{ page.last }} · {{ page.total }} TOTAL</span
+        >Page {{ page.current }} of {{ page.last }} · {{ page.total }} flights</span
       >
       <Link v-if="hasNext" :href="pageHref(page.current + 1)" class="pg" preserve-scroll
-        >NEXT ▸</Link
+        >Next →</Link
       >
-      <span v-else class="pg disabled">NEXT ▸</span>
+      <span v-else class="pg disabled">Next →</span>
     </div>
   </section>
 </template>
@@ -105,9 +105,7 @@ const hasNext = computed(() => props.page.current < props.page.last);
   margin-top: 10px;
 }
 .empty {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
-  letter-spacing: 0.16em;
+  font-size: 13px;
   color: var(--pv-ink-dim);
   border: 1px dashed var(--pv-line);
   border-radius: var(--pv-radius-md);
@@ -115,23 +113,18 @@ const hasNext = computed(() => props.page.current < props.page.last);
   text-align: center;
 }
 .badge {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
+  font-size: 11px;
   font-weight: 500;
   padding: 3px 8px;
-  border-radius: var(--pv-radius-sm);
-  text-transform: uppercase;
-  border: 1px solid;
+  border-radius: var(--pv-radius-full);
 }
 .badge.on {
   color: var(--pv-green);
-  border-color: var(--pv-green);
   background: color-mix(in srgb, var(--pv-green) 8%, transparent);
 }
 .badge.avail {
   color: var(--pv-ink-dim);
-  border-color: var(--pv-line);
+  background: var(--pv-panel-inset);
 }
 .pager {
   display: flex;
@@ -141,9 +134,7 @@ const hasNext = computed(() => props.page.current < props.page.last);
   margin-top: 16px;
 }
 .pg {
-  font-family: var(--pv-font-mono);
-  font-size: calc(10px * var(--pv-type-scale));
-  letter-spacing: 0.12em;
+  font-size: 12px;
   color: var(--pv-accent);
   text-decoration: none;
   border: 1px solid var(--pv-line);
@@ -158,9 +149,8 @@ const hasNext = computed(() => props.page.current < props.page.last);
   opacity: 0.5;
 }
 .pg-info {
-  font-family: var(--pv-font-mono);
-  font-size: calc(9px * var(--pv-type-scale));
-  letter-spacing: 0.14em;
+  font-size: 12px;
   color: var(--pv-ink-dim);
+  font-variant-numeric: tabular-nums;
 }
 </style>
