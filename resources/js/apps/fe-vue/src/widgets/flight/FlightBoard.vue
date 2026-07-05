@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/**
+ * FlightBoard — a scrollable list of FlightStrip rows with a Bid action button.
+ *
+ * @unused Not currently rendered by any page (Flights.vue uses FlightStrip
+ * directly). Retained as a future composite widget for an inline-bidding panel.
+ */
 import FlightStrip, { type StripField } from "./FlightStrip.vue";
 
 /** One row in the board. */

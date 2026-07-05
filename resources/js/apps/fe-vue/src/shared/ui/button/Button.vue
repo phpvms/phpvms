@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * shadcn-vue button — deliberate future-facing component. Not yet used by
+ * first-party pages. Kept for design-system consistency once shadcn-vue
+ * adoption widens.
+ */
 import type { PrimitiveProps } from "reka-ui";
 import type { HTMLAttributes } from "vue";
 import type { ButtonVariants } from ".";

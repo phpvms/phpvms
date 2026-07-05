@@ -2,6 +2,9 @@
 /**
  * A tiny great-circle sparkline (origin dot → arc → destination ring), drawn in
  * blue. Decorative EFIS accent for a flight strip's route.
+ *
+ * @unused Not yet imported by FlightStrip or any page. Retained as a future
+ * decorative enhancement for the bids/flights tables.
  */
 withDefaults(defineProps<{ width?: number; height?: number }>(), { width: 60, height: 32 });
 </script>

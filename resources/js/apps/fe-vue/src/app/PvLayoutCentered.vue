@@ -2,9 +2,12 @@
 import { useSlots, computed } from "vue";
 
 /**
- * The DEFAULT PvApp layout: a top header, a centered `.pv-container` main
- * column, and an optional footer — no side rails. Container width is backed by
+ * Alternate layout: a top header, a centered `.pv-container` main column, and
+ * an optional footer — no side rails. Container width is backed by
  * `--pv-container-width` (editable in app.css and runtime-overridable).
+ *
+ * @unused Not yet assigned to any page. Retained for future auth/error/public
+ * pages that need a centered shell without the full Workspace nav chrome.
  */
 const slots = useSlots();
 const hasHeader = computed(() => !!slots.header);

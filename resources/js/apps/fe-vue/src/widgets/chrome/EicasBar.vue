@@ -4,8 +4,11 @@ import ZuluClock from "./ZuluClock.vue";
 
 /**
  * Header status strip (EICAS band): a time-of-day greeting on the left; the live
- * Zulu clock + pilot avatar on the right. Fills PvLayout's `header` region. The
- * avatar mirrors the Filament admin's header avatar affordance.
+ * Zulu clock + pilot avatar on the right.
+ *
+ * @retired Superseded by NavRail (left side-rail) + TopBar (top chrome strip).
+ * No longer rendered in PvLayout. Kept for reference only — do NOT re-add to
+ * the layout without replacing TopBar.
  */
 const props = defineProps<{ name: string; station?: string | null; avatar?: string | null }>();
 

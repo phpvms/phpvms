@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * shadcn-vue badge — deliberate future-facing component. Not yet used by
+ * first-party pages (which use inline badge CSS). Kept for design-system
+ * consistency once shadcn-vue adoption widens.
+ */
 import type { HTMLAttributes } from "vue";
 import type { BadgeVariants } from ".";
 import { cn } from "@/shared/lib/utils";

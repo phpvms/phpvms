@@ -4,6 +4,10 @@ import { computed } from "vue";
 /**
  * Rank-progress tape: current rank, next rank, and a green fill bar showing
  * percent toward the next rank. When `next` is null the pilot is at top rank.
+ *
+ * @unused Not currently imported by any page. Retained for future use when the
+ * rank-progress KPI returns to the bundled dashboard (currently served by the
+ * phpvms/phpvms-dashboard addon).
  */
 const props = withDefaults(defineProps<{ from: string; to?: string | null; pct?: number }>(), {
   to: null,

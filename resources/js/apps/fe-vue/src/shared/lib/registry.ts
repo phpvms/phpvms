@@ -28,7 +28,7 @@ export interface SlotEntry {
 /**
  * A resolver maps a component NAME to a value (a Vue component). Typed as
  * `unknown` here so this module never imports Vue — the concrete map lives in
- * `apps/spa/components/widgets` and is provided at the app root.
+ * `src/widgets/dashboard` and is provided at the app root.
  */
 export type ComponentResolver = Record<string, unknown>;
 
