@@ -70,7 +70,7 @@ describe("shared single Vue (built artifacts)", () => {
       const src = readFileSync(resolve(BUILD_DIR, f), "utf8");
       // Vue's reactivity runtime marker — present only if Vue was bundled in.
       expect(src, `${f} appears to bundle Vue`).not.toContain("__v_isRef");
-      if (/from["'"]vue["'"]/.test(src)) sawExternalImport = true;
+      if (/from["']vue["']/.test(src)) sawExternalImport = true;
     }
     expect(sawExternalImport, "expected at least one shipped chunk to import external vue").toBe(
       true,

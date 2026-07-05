@@ -7,8 +7,8 @@ import TopBar from "@/widgets/chrome/TopBar.vue";
 import FlashToasts from "./FlashToasts.vue";
 import { registry, type SlotEntry, type ComponentResolver } from "@/shared/lib/registry";
 import { widgetComponents, dashboardWidgets } from "@/widgets/dashboard";
-import PvActivityFeed from "@/widgets/activity/PvActivityFeed.vue";
 import { mergeServerWidgets, type WidgetDef } from "@/widgets/dashboard/catalog";
+import { registerAppWidgets } from "./register-widgets";
 import { providePvContext } from "@/shared/lib/usePvSlot";
 
 /**
@@ -53,9 +53,15 @@ function slotErrorComponent(name: string): Component {
  * and slot registry BEFORE any child page reads them. Always guarded — the prop
  * is absent on pages without the middleware.
  *
- * Pages opt in with `Page.layout = PvApp`.
+ * Set as the DEFAULT Inertia layout in main.ts — pages don't import it (that
+ * would invert the FSD layer order). A page opts OUT with `layout: null`.
  */
 const page = usePage();
+
+// App-layer widget wiring: register cross-slice dashboard widgets (activity)
+// into the dashboard resolver before any page resolves a widget. Keeps the
+// dashboard slice free of sibling-slice imports (FSD boundary).
+registerAppWidgets();
 
 const skylight = page.props.skylight as { widgets?: WidgetDef[]; slots?: SlotEntry[] } | undefined;
 
@@ -86,14 +92,12 @@ for (const entry of serverSlots) {
   }
 }
 // Merge order: bundled slot components (currently none) + the bundled dashboard
-// widget map (RouteWidget) + activity feed (registered here — not in the dashboard
-// slice — so the dashboard slice doesn't cross-import a sibling widget slice) +
-// async addon modules. Async entries win last so a server module overrides a
-// same-named bundled component intentionally.
+// widget map (RouteWidget + the app-registered activity feed, see
+// registerAppWidgets above) + async addon modules. Async entries win last so a
+// server module can intentionally override a same-named bundled component.
 const mergedResolver: ComponentResolver = {
   ...widgetComponents,
   ...dashboardWidgets,
-  PvActivityFeed,
   ...asyncSlotComponents,
 };
 

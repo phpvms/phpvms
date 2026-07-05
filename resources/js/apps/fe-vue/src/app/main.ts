@@ -30,7 +30,11 @@ createInertiaApp({
     }
     const component = (await importer()).default;
     // App layer owns the default layout — pages must not import PvApp directly.
-    (component as Record<string, unknown>).layout ??= PvApp;
+    // Fill the default ONLY when the page declared none; a page opts OUT of the
+    // app chrome (renders bare) with an explicit `layout: null` — so guard on
+    // `undefined`, not nullish (`??=` would overwrite an intentional null).
+    const c = component as Record<string, unknown>;
+    if (c.layout === undefined) c.layout = PvApp;
     return component;
   },
   setup({ el, App, props, plugin }) {

@@ -1,13 +1,18 @@
 import type { ComponentResolver } from "@/shared/lib/registry";
 
 /**
- * Public-API barrel for the dashboard widget slice.
- * All external importers (PvApp, pages) must use this index — never the
- * sub-modules directly. Within the slice, use relative imports.
+ * Public-API barrel for the dashboard widget slice — exposes the composed
+ * resolver maps (`dashboardWidgets`, `widgetComponents`). Other slice modules
+ * with a distinct concern (`catalog`, `resolve`, `useDashboardLayout`,
+ * `WidgetFrame`) are imported by their concrete path where needed; only the
+ * resolver maps route through this index. Within the slice, use relative imports.
  */
 
 /** Bundled widget component resolver — RouteWidget + other first-party widgets. */
 export { dashboardWidgets } from "./dashboard";
+
+/** App-layer hook to inject cross-slice widget components into the resolver. */
+export { registerDashboardWidget } from "./dashboard";
 
 /**
  * Concrete slot component resolver: maps registry `component` NAMES to Vue

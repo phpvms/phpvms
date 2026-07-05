@@ -16,3 +16,13 @@ import RouteWidget from "./RouteWidget.vue";
 export const dashboardWidgets: Record<string, Component> = {
   RouteWidget,
 };
+
+/**
+ * App-layer registration hook. Lets the APP layer (PvApp) inject cross-slice
+ * widget components (e.g. `PvActivityFeed` from the activity slice) into the
+ * dashboard resolver WITHOUT the dashboard slice importing a sibling widget
+ * slice — keeping the FSD layer boundary intact. Idempotent by name.
+ */
+export function registerDashboardWidget(name: string, component: Component): void {
+  dashboardWidgets[name] = component;
+}

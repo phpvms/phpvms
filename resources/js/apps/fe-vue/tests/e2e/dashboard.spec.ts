@@ -32,6 +32,10 @@ test.describe("skylight dashboard (Workspace SPA theme)", () => {
     await expect(page.getByText("Total hours")).toBeVisible();
     await expect(page.locator(".wx")).toBeVisible(); // weather widget
 
+    // No default widget resolved to the fail-visible error box (guards the
+    // catalog↔resolver mapping — e.g. the app-registered activity feed).
+    await expect(page.locator("[data-pv-widget-failed]")).toHaveCount(0);
+
     // Customize mode: reveals the Add-widget menu + frame edit affordances.
     await page.getByRole("button", { name: "Customize" }).click();
     await expect(page.getByRole("button", { name: "Add widget" })).toBeVisible();
