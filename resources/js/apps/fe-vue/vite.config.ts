@@ -8,7 +8,7 @@ import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync, unlinkSy
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// The build SOURCE lives at resources/js/apps/fe/, but the runtime
+// The build SOURCE lives at resources/js/apps/fe-vue/, but the runtime
 // theme identity stays "skylight" (views/layouts/skylight, public/build/skylight,
 // the Skylight facade) — the source dir and the theme name are decoupled.
 const WORKSPACE_ROOT = __dirname;
@@ -149,7 +149,7 @@ export default defineConfig(({ command }) => ({
 
   resolve: {
     alias: {
-      "@": resolve(WORKSPACE_ROOT, "apps/spa"),
+      "@": resolve(WORKSPACE_ROOT, "src"),
     },
   },
 
@@ -171,7 +171,7 @@ export default defineConfig(({ command }) => ({
     manifest: true,
     rollupOptions: {
       input: {
-        spa: resolve(WORKSPACE_ROOT, "apps/spa/main.ts"),
+        spa: resolve(WORKSPACE_ROOT, "src/main.ts"),
       },
       // Externalize Vue: the host's (and its bundled deps') bare `import 'vue'`
       // statements are left as-is in the output instead of bundling a second copy.

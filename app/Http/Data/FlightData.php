@@ -14,7 +14,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  *
  * The public typed properties ARE the SPA contract: `#[TypeScript]` opts this
  * class into `php artisan typescript:transform`, which generates the matching
- * type into resources/js/apps/fe/apps/spa/types/generated.d.ts. The SPA reads that
+ * type into resources/js/apps/fe-vue/src/types/generated.d.ts. The SPA reads that
  * generated type instead of hand-mirroring the shape.
  *
  * This is the SPA projection ONLY. The legacy Blade path keeps receiving the

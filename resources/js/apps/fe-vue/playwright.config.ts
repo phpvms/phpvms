@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  * vitest (jsdom) can't cover.
  */
 export default defineConfig({
-  testDir: "./packages/tests/e2e",
+  testDir: "./tests/e2e",
   timeout: 30_000,
   fullyParallel: false,
   reporter: [["list"]],

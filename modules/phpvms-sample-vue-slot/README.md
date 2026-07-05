@@ -32,7 +32,7 @@ differs.
 
 ## What this addon injects
 
-The My Bids page (`resources/js/apps/fe/apps/spa/pages/Flights/Bids.vue`) exposes a
+The My Bids page (`resources/js/apps/fe-vue/src/pages/Flights/Bids.vue`) exposes a
 per-row extension point:
 
 ```vue
@@ -76,8 +76,8 @@ props, so a `@bid` ref works even though `bid` is not a page-level prop.
 
 Relevant source (read-only):
 - `app/Support/Skylight/SlotRegistry.php` — the `register()` contract.
-- `resources/js/apps/fe/apps/spa/components/pv/PvSlot.vue` — resolves `@`-refs against `{ ...pageProps, ...context }`.
-- `resources/js/apps/fe/apps/spa/components/pv/PvApp.vue` — for each server slot entry with a `module`, registers `resolver[component] = defineAsyncComponent(() => import(module))`.
+- `resources/js/apps/fe-vue/src/components/pv/PvSlot.vue` — resolves `@`-refs against `{ ...pageProps, ...context }`.
+- `resources/js/apps/fe-vue/src/components/pv/PvApp.vue` — for each server slot entry with a `module`, registers `resolver[component] = defineAsyncComponent(() => import(module))`.
 
 Because of PvApp's resolver step, a slot entry needs **both** a unique
 `component` name (the resolver key) **and** a `module` URL (what to import).
@@ -87,7 +87,7 @@ Because of PvApp's resolver step, a slot entry needs **both** a unique
 ## The ESM / import-map / shared-Vue build
 
 The component is built with the shared addon preset
-(`resources/js/apps/fe/addon-build/widget-preset.ts`) via
+(`resources/js/apps/fe-vue/addon-build/widget-preset.ts`) via
 `ui/vite.config.ts`. The build produces a **pre-built ESM module** in Vue
 library mode with **`vue` externalized**:
 
@@ -114,7 +114,7 @@ Output path: `modules/phpvms-sample-vue-slot/public/widgets/slot.js`, served at
 
 ## Build, relink, enable
 
-**Build the slot module** (from `resources/js/apps/fe/`):
+**Build the slot module** (from `resources/js/apps/fe-vue/`):
 
 ```bash
 # Just this addon:

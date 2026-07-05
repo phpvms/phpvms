@@ -15,9 +15,9 @@
     "noFallthroughCasesInSwitch": true,
     "jsx": "preserve",
     "paths": {
-      "@/*": ["./apps/spa/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["apps/**/*.ts", "apps/**/*.vue", "packages/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

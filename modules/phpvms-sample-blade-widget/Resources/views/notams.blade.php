@@ -2,14 +2,14 @@
     Station NOTAMs — a LAYOUT-LESS Blade fragment for the skylight dashboard.
 
     IMPORTANT: there is no @extends and no <html>/<body> here. The skylight host
-    shell (resources/js/apps/fe/apps/spa/components/widgets/BladeWidget.vue, island
+    shell (resources/js/apps/fe-vue/src/components/widgets/BladeWidget.vue, island
     mode) fetches this endpoint and injects the returned HTML straight into an
     element already on the dashboard. If you wrap this in a full layout it will
     render a page-inside-a-widget. Return markup only.
 
     STYLING: use the theme's `--pv-*` CSS custom properties (they inherit from the
     dashboard) with INLINE `style="…"` — NOT Tailwind utility classes. Tailwind v4
-    only scans `resources/js/apps/fe/`, so utility classes used here are NOT in the
+    only scans `resources/js/apps/fe-vue/`, so utility classes used here are NOT in the
     built CSS and would silently do nothing. Inline styles + `--pv-*` tokens keep
     the fragment self-contained and native to skylight in light and dark themes
     without shipping any CSS of its own. (If you really need Tailwind utilities in

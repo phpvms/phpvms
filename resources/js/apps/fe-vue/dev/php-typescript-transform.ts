@@ -5,7 +5,7 @@ import type { Plugin } from "vite";
 
 /**
  * Dev-only Vite plugin: regenerate the spatie/typescript-transformer output
- * (`resources/<theme>/apps/spa/types/generated.d.ts`) whenever a PHP DTO changes,
+ * (`resources/<theme>/src/types/generated.d.ts`) whenever a PHP DTO changes,
  * so the SPA's generated types stay in sync while the dev server is running.
  *
  * `composer dev` runs vite in the same process group as `php artisan serve`, so

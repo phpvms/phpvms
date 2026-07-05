@@ -15,7 +15,7 @@ addon repo — without any access to phpVMS's core front-end build — start her
 **Tier 2 — third-party Vue widget.** Your addon ships a **pre-built ESM module**
 that the SPA `import()`s at runtime by URL. The module's default export is the
 Vue component; the SPA renders it inside a widget frame
-(`resources/js/apps/fe/apps/spa/components/widgets/resolve.ts`).
+(`resources/js/apps/fe-vue/src/components/widgets/resolve.ts`).
 
 Compare with **Tier 1 — Blade widget** (`modules/phpvms-sample-blade-widget`): a
 server-rendered fragment, no build step. Reach for Tier 1 when your logic is
@@ -66,7 +66,7 @@ the addon and *neither* runs — proof lives in the widget's own comments.
 
 The build is standalone Vite; it does not need the app running.
 
-From the theme workspace (`resources/js/apps/fe/`):
+From the theme workspace (`resources/js/apps/fe-vue/`):
 
 ```bash
 # Build the core theme AND discover every addon widget config:
@@ -87,7 +87,7 @@ modules/phpvms-sample-vue-widget/public/widgets/sample.js
 To build just this one addon directly:
 
 ```bash
-# from resources/js/apps/fe/
+# from resources/js/apps/fe-vue/
 pnpm exec vite build -c ../../modules/phpvms-sample-vue-widget/ui/vite.config.ts
 ```
 
@@ -164,7 +164,7 @@ php artisan typescript:transform
 ```
 
 That writes the host SPA file
-`resources/js/apps/fe/apps/spa/types/generated.d.ts`, exposing the ambient global
+`resources/js/apps/fe-vue/src/types/generated.d.ts`, exposing the ambient global
 type `Modules.SampleVueWidget.Http.Data.SamplePingData`:
 
 ```ts
