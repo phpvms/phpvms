@@ -199,8 +199,8 @@ function goto(page: number): void {
   white-space: nowrap;
 }
 .badge[data-c="success"] {
-  color: var(--pv-green, #16a34a);
-  background: color-mix(in srgb, var(--pv-green, #16a34a) 12%, transparent);
+  color: var(--pv-green);
+  background: color-mix(in srgb, var(--pv-green) 12%, transparent);
 }
 .badge[data-c="warning"] {
   color: var(--pv-amber);
