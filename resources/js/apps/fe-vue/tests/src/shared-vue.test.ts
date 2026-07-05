@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname, basename } from "node:path";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
@@ -18,19 +18,18 @@ import { fileURLToPath } from "node:url";
  *   2. NO built app chunk bundles its own Vue (each emits a bare `from"vue"`
  *      import instead, and none contains Vue's reactivity internals).
  *
- * Requires `pnpm build` to have run first; skips cleanly otherwise so the unit
- * suite stays green without a build step.
+ * Requires `pnpm build` to have run first; fails with a clear message otherwise
+ * so the missing-build problem is immediately visible (no silent skips).
  */
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// packages/tests/src -> packages/tests -> packages -> <theme workspace root>
-const WORKSPACE_ROOT = resolve(__dirname, "..", "..", "..");
-const THEME_NAME = basename(WORKSPACE_ROOT);
-const BUILD_DIR = resolve(WORKSPACE_ROOT, "..", "..", "public", "build", THEME_NAME);
+// tests/src → tests → fe-vue (WORKSPACE_ROOT)
+const WORKSPACE_ROOT = resolve(__dirname, "..", "..");
+const THEME_NAME = "skylight";
+// fe-vue → apps → js → resources → repo root
+const REPO_ROOT = resolve(WORKSPACE_ROOT, "..", "..", "..", "..");
+const BUILD_DIR = resolve(REPO_ROOT, "public", "build", THEME_NAME);
 const VENDOR_VUE = resolve(BUILD_DIR, "vendor", "vue.js");
 const MANIFEST = resolve(BUILD_DIR, "manifest.json");
-
-const built = existsSync(VENDOR_VUE) && existsSync(MANIFEST);
-const d = built ? describe : describe.skip;
 
 /** Every .js chunk the current manifest actually ships (ignores stale hashes). */
 function shippedChunks(): string[] {
@@ -45,14 +44,25 @@ function shippedChunks(): string[] {
   return [...files];
 }
 
-d("shared single Vue (built artifacts)", () => {
+describe("shared single Vue (built artifacts)", () => {
   it("publishes one ESM Vue at vendor/vue.js exporting createApp", () => {
+    expect(existsSync(BUILD_DIR), `Build dir not found: ${BUILD_DIR} — run pnpm build first`).toBe(
+      true,
+    );
+    expect(
+      existsSync(VENDOR_VUE),
+      `vendor/vue.js missing at ${VENDOR_VUE} — run pnpm build first`,
+    ).toBe(true);
     const src = readFileSync(VENDOR_VUE, "utf8");
     expect(src).toMatch(/vue v3\./);
     expect(src).toMatch(/createApp/);
   });
 
   it("no shipped chunk bundles its own Vue (all use the externalized import)", () => {
+    expect(
+      existsSync(MANIFEST),
+      `manifest.json missing at ${MANIFEST} — run pnpm build first`,
+    ).toBe(true);
     const chunks = shippedChunks();
     expect(chunks.length).toBeGreaterThan(0);
     let sawExternalImport = false;
@@ -60,7 +70,7 @@ d("shared single Vue (built artifacts)", () => {
       const src = readFileSync(resolve(BUILD_DIR, f), "utf8");
       // Vue's reactivity runtime marker — present only if Vue was bundled in.
       expect(src, `${f} appears to bundle Vue`).not.toContain("__v_isRef");
-      if (/from["']vue["']/.test(src)) sawExternalImport = true;
+      if (/from["'"]vue["'"]/.test(src)) sawExternalImport = true;
     }
     expect(sawExternalImport, "expected at least one shipped chunk to import external vue").toBe(
       true,
