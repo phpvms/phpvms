@@ -24,7 +24,7 @@ const { zulu } = useZulu();
   align-items: center;
   gap: 8px;
   font-family: var(--pv-font-mono);
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink-dim);
 }
 .glyph {

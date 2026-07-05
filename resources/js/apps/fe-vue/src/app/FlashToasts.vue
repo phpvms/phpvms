@@ -72,9 +72,7 @@ watch(
   border: 1px solid var(--pv-line);
   border-left-width: 3px;
   border-radius: var(--pv-radius-md);
-  box-shadow: var(--pv-shadow-panel);
-  font-family: var(--pv-font-mono);
-  font-size: calc(12px * var(--pv-type-scale));
+  font-size: 12px;
   color: var(--pv-ink);
 }
 .toast.success {
@@ -84,7 +82,7 @@ watch(
   border-left-color: var(--pv-color-error);
 }
 .tag {
-  font-size: calc(8px * var(--pv-type-scale));
+  font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 2px 6px;
@@ -106,7 +104,7 @@ watch(
   border: none;
   color: var(--pv-ink-dim);
   cursor: pointer;
-  font-size: calc(11px * var(--pv-type-scale));
+  font-size: 11px;
 }
 .x:hover {
   color: var(--pv-ink);
