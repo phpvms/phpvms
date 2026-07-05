@@ -44,6 +44,12 @@ trait JournalTrait
 
             $journal->refresh();
 
+            // The `!$this->journal` guard above lazy-loaded the relation and cached
+            // it as null. Saving through the relation does not update that cache, so
+            // without this the model keeps returning null for ->journal until it is
+            // reloaded from the database. Reflect the freshly-created journal here.
+            $this->setRelation('journal', $journal);
+
             return $journal;
         }
 
