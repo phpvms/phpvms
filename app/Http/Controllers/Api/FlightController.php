@@ -10,6 +10,7 @@ use App\Http\Requests\SearchFlightsRequest;
 use App\Http\Resources\FlightResource;
 use App\Http\Resources\NavdataResource;
 use App\Models\Aircraft;
+use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;
@@ -40,7 +41,7 @@ class FlightController extends Controller
         return $this->search($request);
     }
 
-    public function get(string $id): FlightResource
+    public function get(string $id, Request $request): FlightResource
     {
         /** @var User $user */
         $user = Auth::user();
@@ -55,10 +56,14 @@ class FlightController extends Controller
             ])
             ->findOrFail($id);
 
-        $flight->setRelation(
-            'subfleets',
-            $flight->accessibleSubfleetsFor($user, ['aircraft', 'fares']),
-        );
+        if ($this->hasBidToken($request)) {
+            $this->loadBidSubfleets($flight, $user->id);
+        } else {
+            $flight->setRelation(
+                'subfleets',
+                $flight->accessibleSubfleetsFor($user, ['aircraft', 'fares']),
+            );
+        }
 
         $flight = $this->fareSvc->getReconciledFaresForFlight($flight);
 
@@ -70,7 +75,9 @@ class FlightController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $query = $this->flightSearchQuery->build($request)
+        $onlyActive = !$request->filled('flight_id');
+
+        $query = $this->flightSearchQuery->build($request, $onlyActive)
             ->whereHas('airline', function ($q): void {
                 $q->where('active', true);
             });
@@ -103,9 +110,11 @@ class FlightController extends Controller
             $relations = explode(',', (string) $request->input('with', ''));
         }
 
+        $withBid = in_array('bid', $relations, true);
+
         $query->with($with);
 
-        if (in_array('subfleets', $relations, true)) {
+        if (!$withBid && in_array('subfleets', $relations, true)) {
             $query->withAccessibleSubfleets($user);
         }
 
@@ -113,10 +122,49 @@ class FlightController extends Controller
         $flights = $query->paginate($perPage);
 
         foreach ($flights as $flight) {
+            if ($withBid) {
+                $this->loadBidSubfleets($flight, $user->id);
+            }
+
             $this->fareSvc->getReconciledFaresForFlight($flight);
         }
 
         return FlightResource::collection($flights);
+    }
+
+    /**
+     * Check whether the request carries the controlled `bid` token in `?with=`.
+     */
+    private function hasBidToken(Request $request): bool
+    {
+        if (!$request->has('with')) {
+            return false;
+        }
+
+        $tokens = array_map(trim(...), explode(',', (string) $request->input('with', '')));
+
+        return in_array('bid', $tokens, true);
+    }
+
+    /**
+     * Resolve the authenticated user's bid(s) on the given flight, load
+     * `bid.aircraft.subfleet.fares`, and set the flight's `subfleets` relation
+     * to exactly those subfleet(s).  No fleet expansion is performed.
+     * A pilot with no bid gets an empty `subfleets` collection.
+     */
+    private function loadBidSubfleets(Flight $flight, int $userId): void
+    {
+        $bids = Bid::where('flight_id', $flight->id)
+            ->where('user_id', $userId)
+            ->with('aircraft.subfleet.fares')
+            ->get();
+
+        $subfleets = $bids->pluck('aircraft.subfleet')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $flight->setRelation('subfleets', $subfleets);
     }
 
     /**
