@@ -138,6 +138,37 @@ test('get with bid token skips accessible fleet expansion (behavioral proof)', f
         ->and($subfleets[0]['id'])->toBe($subfleet1->id);
 });
 
+test('get with bid returns all bid subfleets with eager aircraft and no lazy load', function (): void {
+    // Two bids (two aircraft in two subfleets) on one flight. With >= 2 hydrated
+    // subfleets, preventLazyLoading (on outside production) would throw if the
+    // subfleet's aircraft were not eager-loaded when SubfleetResource reads it.
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+
+    $user = User::factory()->create();
+    apiAs($user);
+
+    $subfleetA = Subfleet::factory()->create();
+    $aircraftA = Aircraft::factory()->create(['subfleet_id' => $subfleetA->id]);
+    $subfleetB = Subfleet::factory()->create();
+    $aircraftB = Aircraft::factory()->create(['subfleet_id' => $subfleetB->id]);
+
+    $flight = Flight::factory()->create(['airline_id' => $user->airline_id]);
+
+    Bid::create(['user_id' => $user->id, 'flight_id' => $flight->id, 'aircraft_id' => $aircraftA->id]);
+    Bid::create(['user_id' => $user->id, 'flight_id' => $flight->id, 'aircraft_id' => $aircraftB->id]);
+
+    $res = $this->get('/api/flights/'.$flight->id.'?with=bid');
+    $res->assertStatus(200);
+
+    $subfleets = collect($res->json()['data']['subfleets']);
+    expect($subfleets)->toHaveCount(2)
+        ->and($subfleets->pluck('id')->all())->toContain($subfleetA->id, $subfleetB->id)
+        // aircraft is eager-loaded and serialized (not lazy-loaded)
+        ->and($subfleets->firstWhere('id', $subfleetA->id)['aircraft'])->toHaveCount(1)
+        ->and($subfleets->firstWhere('id', $subfleetB->id)['aircraft'])->toHaveCount(1);
+});
+
 // ---------------------------------------------------------------------------
 // search() with=bid
 // ---------------------------------------------------------------------------

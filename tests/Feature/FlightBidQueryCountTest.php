@@ -102,6 +102,35 @@ test('search by id with bid query count is independent of total subfleet count',
     expect($largeCount)->toBe($smallCount);
 });
 
+test('browse search with bid resolves all bids in a single batched query', function (): void {
+    updateSetting('pireps.restrict_aircraft_to_rank', false);
+    updateSetting('pireps.restrict_aircraft_to_typerating', false);
+    updateSetting('pilots.restrict_to_company', false);
+    updateSetting('pilots.only_flights_from_current', false);
+
+    $user = User::factory()->create();
+    apiAs($user);
+
+    // Several flights the pilot has a bid on — the bid lookup must not be an
+    // N+1 across the returned page.
+    for ($i = 0; $i < 5; $i++) {
+        $subfleet = Subfleet::factory()->create();
+        $aircraft = Aircraft::factory()->create(['subfleet_id' => $subfleet->id]);
+        $flight = Flight::factory()->create(['airline_id' => $user->airline_id]);
+        Bid::create(['user_id' => $user->id, 'flight_id' => $flight->id, 'aircraft_id' => $aircraft->id]);
+    }
+
+    DB::connection()->enableQueryLog();
+    freshRequestState();
+    $this->get('/api/flights/search?with=bid')->assertStatus(200);
+    $bidQueries = collect(DB::connection()->getQueryLog())
+        ->filter(fn (array $q): bool => str_contains((string) $q['query'], 'from "bids"'))
+        ->count();
+    DB::connection()->disableQueryLog();
+
+    expect($bidQueries)->toBe(1);
+});
+
 test('bid subfleet fare payload matches the legacy get output for that subfleet', function (): void {
     updateSetting('pireps.restrict_aircraft_to_rank', false);
     updateSetting('pireps.restrict_aircraft_to_typerating', false);
