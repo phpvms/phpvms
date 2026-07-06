@@ -42,6 +42,16 @@ class FlightController extends Controller
         return $this->search($request);
     }
 
+    /**
+     * Return a single flight.
+     *
+     * When the request carries the controlled `with=bid` token, the flight's
+     * `subfleets` is set to just the authenticated pilot's bid aircraft
+     * subfleet(s) with reconciled fares, skipping the accessible-fleet
+     * expansion (the ~234-subfleet source of the slow bid briefing). No bid →
+     * empty subfleets. `bid` is a server-controlled token, never a relation
+     * path passed to Eloquent `->with()`. Without it, behaviour is unchanged.
+     */
     public function get(string $id, Request $request): FlightResource
     {
         /** @var User $user */
