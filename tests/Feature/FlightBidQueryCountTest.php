@@ -123,8 +123,10 @@ test('browse search with bid resolves all bids in a single batched query', funct
     DB::connection()->enableQueryLog();
     freshRequestState();
     $this->get('/api/flights/search?with=bid')->assertStatus(200);
+    // Normalize identifier quoting (postgres/sqlite use ", mysql uses `) so the
+    // match is dialect-agnostic across the CI matrix.
     $bidQueries = collect(DB::connection()->getQueryLog())
-        ->filter(fn (array $q): bool => str_contains((string) $q['query'], 'from "bids"'))
+        ->filter(fn (array $q): bool => str_contains(str_replace(['`', '"'], '', (string) $q['query']), 'from bids'))
         ->count();
     DB::connection()->disableQueryLog();
 
