@@ -52,6 +52,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -75,6 +76,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // The SettingService memo is request-scoped via config/octane.php 'flush',
+        // but a long-running queue worker is not flushed per job. Reset the memo
+        // before each job so a worker observes settings changed by other
+        // processes — otherwise a stale memoized value could be written back into
+        // the shared cache on the next Cache::remember() miss.
+        Queue::before(static fn () => app(SettingService::class)->clearMemo());
 
         Model::preventLazyLoading(!$this->app->isProduction());
 

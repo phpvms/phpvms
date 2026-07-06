@@ -107,9 +107,9 @@ class SettingService extends Service
     }
 
     /**
-     * Clear all memoized values. Called by AppServiceProvider's DB listener
-     * when any write to the settings table occurs (covering paths that bypass
-     * store(), such as YamlDatabaseService raw DB writes).
+     * Clear all memoized values. Called at request/job boundaries that the
+     * Octane 'flush' does not cover (AppServiceProvider's Queue::before hook)
+     * and after raw settings writes that bypass store() (YamlDatabaseService).
      */
     public function clearMemo(): void
     {
