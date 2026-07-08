@@ -526,6 +526,11 @@ class Flight extends Model
         return $this->hasMany(FlightFieldValue::class, 'flight_id', 'id');
     }
 
+    public function bids(): HasMany
+    {
+        return $this->hasMany(Bid::class, 'flight_id');
+    }
+
     public function simbrief(): BelongsTo
     {
         return $this->belongsTo(SimBrief::class, 'id', 'flight_id');

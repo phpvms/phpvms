@@ -10,6 +10,7 @@ use App\Http\Requests\SearchFlightsRequest;
 use App\Http\Resources\FlightResource;
 use App\Http\Resources\NavdataResource;
 use App\Models\Aircraft;
+use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\User;
@@ -18,6 +19,7 @@ use App\Services\FareService;
 use App\Services\FlightService;
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -40,7 +42,17 @@ class FlightController extends Controller
         return $this->search($request);
     }
 
-    public function get(string $id): FlightResource
+    /**
+     * Return a single flight.
+     *
+     * When the request carries the controlled `with=bid` token, the flight's
+     * `subfleets` is set to just the authenticated pilot's bid aircraft
+     * subfleet(s) with reconciled fares, skipping the accessible-fleet
+     * expansion (the ~234-subfleet source of the slow bid briefing). No bid →
+     * empty subfleets. `bid` is a server-controlled token, never a relation
+     * path passed to Eloquent `->with()`. Without it, behaviour is unchanged.
+     */
+    public function get(string $id, Request $request): FlightResource
     {
         /** @var User $user */
         $user = Auth::user();
@@ -55,10 +67,14 @@ class FlightController extends Controller
             ])
             ->findOrFail($id);
 
-        $flight->setRelation(
-            'subfleets',
-            $flight->accessibleSubfleetsFor($user, ['aircraft', 'fares']),
-        );
+        if ($this->hasBidToken($request)) {
+            $this->decorateBidSubfleets([$flight], $user->id);
+        } else {
+            $flight->setRelation(
+                'subfleets',
+                $flight->accessibleSubfleetsFor($user, ['aircraft', 'fares']),
+            );
+        }
 
         $flight = $this->fareSvc->getReconciledFaresForFlight($flight);
 
@@ -70,7 +86,9 @@ class FlightController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $query = $this->flightSearchQuery->build($request)
+        $onlyActive = !$request->filled('flight_id');
+
+        $query = $this->flightSearchQuery->build($request, $onlyActive)
             ->whereHas('airline', function ($q): void {
                 $q->where('active', true);
             });
@@ -100,23 +118,78 @@ class FlightController extends Controller
 
         $relations = ['subfleets'];
         if ($request->has('with')) {
-            $relations = explode(',', (string) $request->input('with', ''));
+            $relations = array_map(trim(...), explode(',', (string) $request->input('with', '')));
         }
+
+        $withBid = in_array('bid', $relations, true);
 
         $query->with($with);
 
-        if (in_array('subfleets', $relations, true)) {
+        if (!$withBid && in_array('subfleets', $relations, true)) {
             $query->withAccessibleSubfleets($user);
         }
 
         $perPage = paginate_limit($request->integer('limit') ?: null);
         $flights = $query->paginate($perPage);
 
+        if ($withBid) {
+            $this->decorateBidSubfleets($flights->getCollection(), $user->id);
+        }
+
         foreach ($flights as $flight) {
             $this->fareSvc->getReconciledFaresForFlight($flight);
         }
 
         return FlightResource::collection($flights);
+    }
+
+    /**
+     * Check whether the request carries the controlled `bid` token in `?with=`.
+     */
+    private function hasBidToken(Request $request): bool
+    {
+        if (!$request->has('with')) {
+            return false;
+        }
+
+        $tokens = array_map(trim(...), explode(',', (string) $request->input('with', '')));
+
+        return in_array('bid', $tokens, true);
+    }
+
+    /**
+     * Set each flight's `subfleets` relation to exactly the authenticated
+     * user's bid subfleet(s) on that flight, resolved in a single batched
+     * query. Loads `bid.aircraft.subfleet` with its aircraft + fares — the
+     * same eager set the legacy accessible-fleet path loads, so serialization
+     * (SubfleetResource reads `->aircraft`) does not lazy-load. No fleet
+     * expansion is performed; a flight with no bid gets an empty collection.
+     *
+     * @param iterable<Flight> $flights
+     */
+    private function decorateBidSubfleets(iterable $flights, int $userId): void
+    {
+        $flights = collect($flights);
+
+        if ($flights->isEmpty()) {
+            return;
+        }
+
+        $bidsByFlight = Bid::whereIn('flight_id', $flights->pluck('id'))
+            ->where('user_id', $userId)
+            ->with('aircraft.subfleet.aircraft', 'aircraft.subfleet.fares')
+            ->get()
+            ->groupBy('flight_id');
+
+        foreach ($flights as $flight) {
+            $subfleets = ($bidsByFlight->get($flight->id) ?? collect())
+                ->pluck('aircraft.subfleet')
+                ->filter()
+                ->unique('id')
+                ->values();
+
+            $flight->setRelation('subfleets', new EloquentCollection($subfleets->all()));
+        }
     }
 
     /**

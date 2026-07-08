@@ -32,6 +32,7 @@ use App\Services\RouteForge\Rules\L6OriginEqualsDestination;
 use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
+use App\Services\SettingService;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -51,6 +52,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -74,6 +76,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // The SettingService memo is request-scoped via config/octane.php 'flush',
+        // but a long-running queue worker is not flushed per job. Reset the memo
+        // before each job so a worker observes settings changed by other
+        // processes — otherwise a stale memoized value could be written back into
+        // the shared cache on the next Cache::remember() miss.
+        Queue::before(static fn () => app(SettingService::class)->clearMemo());
 
         Model::preventLazyLoading(!$this->app->isProduction());
 
@@ -209,6 +218,12 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ModuleService::class);
+
+        // Core settings read/write. Bound as a singleton so the per-request
+        // Tier-1 memo ($memo array) is shared across all setting() calls within
+        // one request. Registered in config/octane.php 'flush' so Octane
+        // discards the instance (empty memo) before each new request.
+        $this->app->singleton(SettingService::class);
 
         // Per-addon settings read/write. Stateless/Octane-safe; bound as a
         // singleton so the `addon_setting()` helper reuses one instance.
