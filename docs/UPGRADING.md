@@ -1,5 +1,41 @@
 # Upgrading phpvms
 
+## Unreleased — Laravel Passport (OAuth2) API authentication
+
+The API can now be authenticated with OAuth2 (Laravel Passport) in addition to
+the legacy per-user API key. **Existing API keys keep working unchanged** — the
+`api.auth` middleware tries a Passport bearer token first and falls back to the
+legacy `api_key` lookup, and legacy keys retain full access.
+
+### Required actions
+
+#### 1. Run pending migrations
+
+```bash
+php artisan migrate
+```
+
+Adds the Passport `oauth_*` tables (clients, access/refresh/auth codes, device codes).
+
+#### 2. Provision Passport encryption keys
+
+For a single-server install, generate the key files:
+
+```bash
+php artisan passport:keys
+```
+
+For multi-node / ephemeral-filesystem / Octane deployments, set the keys via env
+instead (so every node shares them) — see `PASSPORT_PRIVATE_KEY` /
+`PASSPORT_PUBLIC_KEY` in `.env.example`. `composer run setup` runs
+`passport:keys` automatically for fresh installs.
+
+The `DatabaseSeeder` seeds a personal-access client automatically; for an
+existing install without one, create it with `php artisan passport:client --personal`.
+
+See [API Authentication](api-authentication.md) for scopes, personal access
+tokens, PKCE and the migration path off legacy keys.
+
 ## Unreleased — schema modernization for RouteForge prerequisites
 
 This release introduces four schema/behavior changes. Two are **required actions**, two are **optional one-shot commands**.
