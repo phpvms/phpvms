@@ -42,12 +42,16 @@ class ApiAuth implements Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // 1. Prefer Passport. The token guard reads `Authorization: Bearer <jwt>`
-        //    and attaches the resolved access token (with its scopes) to the
-        //    user. A legacy key sent raw in Authorization has no `Bearer`
-        //    prefix, so bearerToken() is null and the guard returns null —
-        //    cleanly falling through to the legacy branch below.
-        $user = Auth::guard('api')->user();
+        // 1. Prefer Passport, but only when an actual bearer token is present.
+        //    Resolving the `api` guard builds Passport's OAuth resource server
+        //    (which loads the encryption keys), so we must NOT touch it for
+        //    legacy requests — otherwise a missing/invalid Passport key would
+        //    break legacy api_key auth too. A legacy key sent raw in
+        //    Authorization has no `Bearer ` prefix, so bearerToken() is null
+        //    and we skip straight to the legacy branch below.
+        $user = $request->bearerToken() !== null
+            ? Auth::guard('api')->user()
+            : null;
 
         if ($user instanceof User) {
             return $this->authenticate($request, $next, $user);

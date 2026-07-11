@@ -217,6 +217,12 @@ jobs:
           echo 'DB_USERNAME="phpvms"' >> .env
           echo 'DB_PASSWORD="phpvms"' >> .env
 
+      # Passport's OAuth2 resource server loads encryption keys when the `api`
+      # guard is resolved for a bearer token. Generate them once here (before
+      # the parallel workers fork) so the OAuth token tests have a valid keypair.
+      - name: Generate Passport keys
+        run: php artisan passport:keys --force
+
       - name: Run Pest
         env:
           PHP_CS_FIXER_IGNORE_ENV: "1"

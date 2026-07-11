@@ -92,4 +92,9 @@ function apiAs(User $user): void
 function apiAsToken(User $user, array $scopes = ['*']): void
 {
     Passport::actingAs($user, $scopes);
+
+    // ApiAuth only consults the Passport guard when a bearer token is present.
+    // Passport::actingAs stubs the guard, so the token value is irrelevant —
+    // this header just makes the request take the Passport path.
+    test()->withHeader('Authorization', 'Bearer pest-token');
 }
