@@ -153,4 +153,7 @@ return [
     'add_a_comment'         => 'Add a comment…',
     'no_notes_or_comments'  => 'No notes or comments yet.',
     'net'                   => 'Net',
+    'confirm'               => 'Confirm',
+    'cancel'                => 'Cancel',
+    'back'                  => 'Back',
 ];

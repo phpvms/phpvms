@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserField;
 use App\Models\UserFieldValue;
 use App\Services\UserService;
+use App\Support\ApiScope;
 use App\Support\Countries;
 use App\Support\Timezonelist;
 use App\Support\Utils;
@@ -235,6 +236,100 @@ class ProfileController extends Controller
         flash('New API key generated!')->success();
 
         return redirect(route('frontend.profile.index'));
+    }
+
+    /**
+     * Show the API connections page: authorized OAuth applications and the
+     * user's personal access tokens.
+     */
+    public function connections(): View
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $tokens = $user->tokens()
+            ->where('revoked', false)
+            ->where(function ($query): void {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->with('client')
+            ->latest('created_at')
+            ->get()
+            ->filter(fn ($token): bool => $token->client !== null);
+
+        // Personal access tokens vs. third-party authorized applications.
+        $personalTokens = $tokens->filter(fn ($token): bool => $token->client->hasGrantType('personal_access'));
+        $authorizedApps = $tokens
+            ->reject(fn ($token): bool => $token->client->hasGrantType('personal_access'))
+            ->groupBy('client_id');
+
+        return view('profile.connections', [
+            'user'           => $user,
+            'personalTokens' => $personalTokens,
+            'authorizedApps' => $authorizedApps,
+            'scopes'         => ApiScope::catalog(),
+        ]);
+    }
+
+    /**
+     * Create a personal access token with the selected scopes. The plaintext
+     * token is flashed to the session for a one-time display.
+     */
+    public function store_token(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'scopes'   => 'nullable|array',
+            'scopes.*' => 'string',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Only allow scopes that exist in the catalog (never the wildcard).
+        $scopes = array_values(array_intersect(
+            $validated['scopes'] ?? [],
+            array_keys(ApiScope::catalog())
+        ));
+
+        $token = $user->createToken($validated['name'], $scopes);
+
+        return redirect(route('frontend.profile.connections'))
+            ->with('plain_text_token', $token->accessToken);
+    }
+
+    /**
+     * Revoke one of the user's personal access tokens.
+     */
+    public function destroy_token(string $token_id): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $token = $user->tokens()->where('id', $token_id)->first();
+        $token?->revoke();
+
+        flash('Token revoked.')->success();
+
+        return redirect(route('frontend.profile.connections'));
+    }
+
+    /**
+     * Revoke every token an authorized application holds for this user.
+     */
+    public function destroy_connection(string $client_id): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $user->tokens()
+            ->where('client_id', $client_id)
+            ->get()
+            ->each(fn ($token) => $token->revoke());
+
+        flash('Application access revoked.')->success();
+
+        return redirect(route('frontend.profile.connections'));
     }
 
     /**

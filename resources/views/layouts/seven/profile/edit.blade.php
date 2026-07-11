@@ -47,6 +47,9 @@
                         style="background-color:#29B473;">Unlink VATSIM Account</a>
                 @endif
 
+                <a href="{{ route('frontend.profile.connections') }}" class="btn btn-primary">
+                    <i class="bi bi-key"></i> @lang('oauth.connections')</a>
+                &nbsp;
                 <a href="{{ route('frontend.profile.regen_apikey') }}" class="btn btn-warning"
                     onclick="return confirm('Are you sure? This will reset your API key!')">@lang('profile.newapikey')</a>
             </div>
@@ -62,7 +65,9 @@
                     </th>
                     <td><span id="apiKey_show" style="display: none">{{ $user->api_key }} <i class="bi bi-eye"
                                 onclick="apiKeyHide()"></i></span><span id="apiKey_hide">@lang('profile.apikey-show') <i
-                                class="bi bi-eye" onclick="apiKeyShow()"></i></span></td>
+                                class="bi bi-eye" onclick="apiKeyShow()"></i></span>
+                        <div class="text-muted small mt-1">@lang('oauth.legacy_key_deprecated')</div>
+                    </td>
                 </tr>
                 <tr>
                     <th scope="row">Discord ID</th>
