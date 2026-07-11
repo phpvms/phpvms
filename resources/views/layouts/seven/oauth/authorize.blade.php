@@ -9,7 +9,7 @@
                     <strong>{{ $client->name }}</strong>
                 </div>
                 <div class="card-body">
-                    <p>{{ $client->name }} is requesting permission to access your account.</p>
+                    <p>{{ __('oauth.authorize_request', ['client' => $client->name]) }}</p>
 
                     @if (count($scopes) > 0)
                         <p>@lang('oauth.scopes'):</p>

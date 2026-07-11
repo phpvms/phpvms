@@ -17,7 +17,7 @@ return new class() extends Migration
             $table->foreignUuid('client_id')->index();
             $table->char('user_code', 8)->unique();
             $table->text('scopes');
-            $table->boolean('revoked');
+            $table->boolean('revoked')->default(false);
             $table->dateTime('user_approved_at')->nullable();
             $table->dateTime('last_polled_at')->nullable();
             $table->dateTime('expires_at')->nullable();

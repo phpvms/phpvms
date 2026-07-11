@@ -19,7 +19,7 @@ return new class() extends Migration
             $table->string('provider')->nullable();
             $table->text('redirect_uris');
             $table->text('grant_types');
-            $table->boolean('revoked');
+            $table->boolean('revoked')->default(false);
             $table->timestamps();
         });
     }

@@ -79,7 +79,7 @@
                                 <td class="text-end">
                                     <form method="post"
                                         action="{{ route('frontend.profile.tokens.destroy', $token->id) }}"
-                                        onsubmit="return confirm('Revoke this token?')">
+                                        onsubmit="return confirm('{{ __('oauth.confirm_revoke_token') }}')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">@lang('oauth.revoke')</button>
@@ -121,7 +121,7 @@
                                 <td class="text-end">
                                     <form method="post"
                                         action="{{ route('frontend.profile.connections.destroy', $clientId) }}"
-                                        onsubmit="return confirm('Revoke this application?')">
+                                        onsubmit="return confirm('{{ __('oauth.confirm_revoke_connection') }}')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">@lang('oauth.revoke')</button>
