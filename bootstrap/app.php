@@ -7,6 +7,7 @@ use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
 use App\Exceptions\Unauthenticated;
 use App\Http\Middleware\ApiAuth;
+use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
 use App\Http\Middleware\SetActiveLanguage;
@@ -50,6 +51,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'api.auth'           => ApiAuth::class,
+            'scope'              => CheckApiScope::class,
+            'scopes'             => CheckApiScope::class,
             'update_pending'     => UpdatePending::class,
             'role'               => RoleMiddleware::class,
             'permission'         => PermissionMiddleware::class,
