@@ -42,7 +42,11 @@ class OAuthClientForm
                     ->helperText(__('oauth.redirect_uris_hint'))
                     ->visible(fn (Get $get, string $operation): bool => $operation === 'edit'
                         ? true
-                        : in_array($get('client_type'), ['authorization_code', 'pkce'], true)),
+                        : in_array($get('client_type'), ['authorization_code', 'pkce'], true))
+                    // authorization_code / PKCE clients are invalid without a
+                    // redirect URI, so require at least one when creating them.
+                    ->required(fn (Get $get, string $operation): bool => $operation === 'create'
+                        && in_array($get('client_type'), ['authorization_code', 'pkce'], true)),
 
                 Toggle::make('revoked')
                     ->label(__('oauth.revoked'))

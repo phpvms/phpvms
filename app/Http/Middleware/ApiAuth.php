@@ -66,7 +66,8 @@ class ApiAuth implements Middleware
 
         $user = User::where('api_key', $api_key)->first();
         if ($user === null) {
-            return $this->unauthorized('User not found with key "'.$api_key.'"');
+            // Do not echo the submitted credential back into the response/logs.
+            return $this->unauthorized('No user matches the provided key');
         }
 
         // Grant legacy keys full access via a transient token so every scope

@@ -12,7 +12,7 @@ use Livewire\Livewire;
 
 it('renders the list page for an authorized admin', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
-    createAdminUser();
+    $this->actingAs(createAdminUser());
 
     Livewire::test(ListOAuthClients::class)->assertSuccessful();
 });
@@ -50,6 +50,22 @@ it('creates a confidential authorization-code client with a secret', function ()
     expect($client)->not->toBeNull()
         ->and($client->confidential())->toBeTrue()
         ->and($client->hasGrantType('authorization_code'))->toBeTrue();
+});
+
+it('requires a redirect URI for authorization-code clients', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+
+    Livewire::test(CreateOAuthClient::class)
+        ->fillForm([
+            'name'          => 'No Redirect',
+            'client_type'   => 'authorization_code',
+            'redirect_uris' => [],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['redirect_uris']);
+
+    expect(OauthClient::query()->where('name', 'No Redirect')->exists())->toBeFalse();
 });
 
 it('creates a public PKCE client without a secret', function (): void {
