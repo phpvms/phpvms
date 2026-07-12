@@ -7,31 +7,30 @@ the legacy per-user API key. **Existing API keys keep working unchanged** — th
 `api.auth` middleware tries a Passport bearer token first and falls back to the
 legacy `api_key` lookup, and legacy keys retain full access.
 
-### Required actions
+### What happens automatically
 
-#### 1. Run pending migrations
+Running the web updater (or installer) applies the pending migrations — which
+add the Passport `oauth_*` tables — seeds a personal-access client, and
+**generates the Passport signing keys if they aren't already present**. A
+standard upgrade therefore needs no manual OAuth steps.
+
+### Multi-node / Octane deployments
+
+Provide the keys via env so every node shares the same pair — set
+`PASSPORT_PRIVATE_KEY` / `PASSPORT_PUBLIC_KEY` (see `.env.example`). When these
+are set, the installer/updater leaves them alone and generates nothing.
+
+### Manual / CLI
+
+If you provision from the CLI instead of the web updater:
 
 ```bash
 php artisan migrate
+php artisan passport:keys                    # or set the env keys above
+php artisan passport:client --personal       # if no personal-access client exists
 ```
 
-Adds the Passport `oauth_*` tables (clients, access/refresh/auth codes, device codes).
-
-#### 2. Provision Passport encryption keys
-
-For a single-server install, generate the key files:
-
-```bash
-php artisan passport:keys
-```
-
-For multi-node / ephemeral-filesystem / Octane deployments, set the keys via env
-instead (so every node shares them) — see `PASSPORT_PRIVATE_KEY` /
-`PASSPORT_PUBLIC_KEY` in `.env.example`. `composer run setup` runs
-`passport:keys` automatically for fresh installs.
-
-The `DatabaseSeeder` seeds a personal-access client automatically; for an
-existing install without one, create it with `php artisan passport:client --personal`.
+`composer run setup` runs these for fresh installs.
 
 See [API Authentication](api-authentication.md) for scopes, personal access
 tokens, PKCE and the migration path off legacy keys.

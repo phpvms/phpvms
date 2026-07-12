@@ -70,9 +70,13 @@ will phase the raw key out.
 
 ## Deployment notes
 
-- Run `php artisan migrate` to create the `oauth_*` tables.
-- Provide Passport keys: `php artisan passport:keys` for a single server, or set
-  `PASSPORT_PRIVATE_KEY` / `PASSPORT_PUBLIC_KEY` for multi-node / Octane
-  deployments (see `.env.example`).
-- Ensure a personal-access client exists (seeded by `DatabaseSeeder`, or
-  `php artisan passport:client --personal`).
+- The web installer and updater run the `oauth_*` migrations, seed a
+  personal-access client, and **generate the Passport signing keys
+  automatically** when they aren't already present — so a standard install needs
+  no manual OAuth setup.
+- **Multi-node / Octane deployments** should instead provide the keys via
+  `PASSPORT_PRIVATE_KEY` / `PASSPORT_PUBLIC_KEY` so every node shares the same
+  pair (see `.env.example`); when these are set the installer leaves them alone.
+- For a manual/CLI setup you can still run `php artisan passport:keys` and
+  `php artisan passport:client --personal` yourself; `composer run setup` does
+  this for you.

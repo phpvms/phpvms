@@ -50,4 +50,28 @@ class InstallerService extends Service
     {
         Artisan::call('optimize:clear');
     }
+
+    /**
+     * Ensure Laravel Passport has encryption keys to sign OAuth2 tokens.
+     *
+     * Idempotent, so it is safe to call on both install and upgrade:
+     *  - if the keys are provided via env (PASSPORT_PRIVATE_KEY/PUBLIC_KEY),
+     *    e.g. multi-node or Octane deployments, there is nothing to generate;
+     *  - if the key files already exist on disk, we leave them untouched;
+     *  - otherwise we generate them, so operators never have to run
+     *    `php artisan passport:keys` by hand.
+     */
+    public function ensurePassportKeys(): void
+    {
+        if (config('passport.private_key') && config('passport.public_key')) {
+            return;
+        }
+
+        if (file_exists(storage_path('oauth-private.key')) && file_exists(storage_path('oauth-public.key'))) {
+            return;
+        }
+
+        Artisan::call('passport:keys', ['--force' => true]);
+        Log::info('Generated Passport encryption keys');
+    }
 }
