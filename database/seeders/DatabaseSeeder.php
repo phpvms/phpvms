@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             RolesPermissionsSeeder::class,
             SettingsSeeder::class,
             BaseDataSeeder::class,
+            PassportSeeder::class,
         ];
 
         // Always insert the samples in the demo environment

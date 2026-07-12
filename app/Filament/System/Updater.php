@@ -115,6 +115,10 @@ class Updater extends Page
 
         $seederSvc->syncAllSeeds();
 
+        // Existing installs upgrading to Passport won't have signing keys yet;
+        // generate them (idempotent) so the API keeps working post-upgrade.
+        app(InstallerService::class)->ensurePassportKeys();
+
         if (count($dataMigrationsPending) !== 0) {
             $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
         }
