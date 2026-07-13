@@ -18,7 +18,7 @@ class SubfleetExporter extends Exporter
     #[Override]
     public static function modifyQuery(Builder $query): Builder
     {
-        return $query->with(['fares', 'ranks']);
+        return $query->with(['fares', 'ranks', 'typeratings']);
     }
 
     public static function getColumns(): array
@@ -38,6 +38,7 @@ class SubfleetExporter extends Exporter
             ExportColumn::make('gross_weight'),
             ExportColumn::make('fares')->formatStateUsing(fn (Subfleet $record): string => self::getFares($record)),
             ExportColumn::make('ranks')->formatStateUsing(fn (Subfleet $record): string => self::getRanks($record)),
+            ExportColumn::make('type_ratings')->formatStateUsing(fn (Subfleet $record): string => self::getTypeRatings($record)),
         ];
     }
 
@@ -98,5 +99,18 @@ class SubfleetExporter extends Exporter
         }
 
         return Utils::objectToMultiString($ranks);
+    }
+
+    /**
+     * Return the type ratings linked to this subfleet as a ;-delimited list of IDs
+     */
+    private static function getTypeRatings(Subfleet $subfleet): string
+    {
+        $type_ratings = [];
+        foreach ($subfleet->typeratings as $typerating) {
+            $type_ratings[] = $typerating->id;
+        }
+
+        return Utils::objectToMultiString($type_ratings);
     }
 }

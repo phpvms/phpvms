@@ -5,6 +5,7 @@ namespace App\Filament\Imports;
 use App\Models\Fare;
 use App\Models\Rank;
 use App\Models\Subfleet;
+use App\Models\Typerating;
 use App\Services\FareService;
 use App\Services\FleetService;
 use App\Support\Utils;
@@ -60,6 +61,8 @@ class SubfleetImporter extends Importer
                 ->fillRecordUsing(function (): void {}),
             ImportColumn::make('ranks')
                 ->fillRecordUsing(function (): void {}),
+            ImportColumn::make('type_ratings')
+                ->fillRecordUsing(function (): void {}),
         ];
     }
 
@@ -78,6 +81,10 @@ class SubfleetImporter extends Importer
 
         if (array_key_exists('ranks', $this->data) && $this->data['ranks'] != '') {
             $this->processRanks($this->record, $this->data['ranks']);
+        }
+
+        if (array_key_exists('type_ratings', $this->data) && $this->data['type_ratings'] != '') {
+            $this->processTypeRatings($this->record, $this->data['type_ratings']);
         }
     }
 
@@ -133,6 +140,31 @@ class SubfleetImporter extends Importer
             $rank = Rank::firstOrCreate(['id' => $rank_id], ['name' => 'Imported rank '.$rank_id]);
             app(FleetService::class)->addSubfleetToRank($subfleet, $rank, $rank_attributes);
             $rank->save();
+        }
+    }
+
+    /**
+     * Parse all of the type ratings in the multi-format
+     */
+    private function processTypeRatings(Subfleet $subfleet, string $col): void
+    {
+        $type_ratings = Utils::parseMultiColumnValues($col);
+        foreach ($type_ratings as $typerating_id => $typerating_attributes) {
+            if (!\is_array($typerating_attributes)) {
+                $typerating_id = $typerating_attributes;
+            }
+
+            $typerating = Typerating::find($typerating_id);
+            if ($typerating === null) {
+                $typerating = new Typerating([
+                    'name' => 'Imported type rating '.$typerating_id,
+                    'type' => 'Imported type rating '.$typerating_id,
+                ]);
+                $typerating->id = (int) $typerating_id;
+                $typerating->save();
+            }
+
+            app(FleetService::class)->addSubfleetToTypeRating($subfleet, $typerating);
         }
     }
 }

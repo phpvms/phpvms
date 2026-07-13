@@ -43,6 +43,7 @@ class SubfleetExporter extends ImportExport
         $ret['airline'] = $row->airline->icao;
         $ret['fares'] = $this->getFares($row);
         $ret['ranks'] = $this->getRanks($row);
+        $ret['type_ratings'] = $this->getTypeRatings($row);
 
         return $ret;
     }
@@ -93,6 +94,19 @@ class SubfleetExporter extends ImportExport
         }
 
         return $this->objectToMultiString($ranks);
+    }
+
+    /**
+     * Return the type ratings linked to this subfleet as a ;-delimited list of IDs
+     */
+    protected function getTypeRatings(Subfleet $subfleet): string
+    {
+        $type_ratings = [];
+        foreach ($subfleet->typeratings as $typerating) {
+            $type_ratings[] = $typerating->id;
+        }
+
+        return $this->objectToMultiString($type_ratings);
     }
 
     /**
