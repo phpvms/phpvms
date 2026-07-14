@@ -26,6 +26,7 @@
     "ext-bcmath": "*",
     "ext-pdo": "*",
     "ext-intl": "*",
+    "ext-pcntl": "*",
     "ext-zip": "*",
     "fisharebest/ext-calendar": "^2.5",
     "symfony/polyfill-iconv": "*",
