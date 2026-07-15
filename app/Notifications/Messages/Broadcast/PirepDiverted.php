@@ -60,7 +60,8 @@ class PirepDiverted extends Notification
      */
     private function createFields(Pirep $pirep): array
     {
-        $diversion_apt = $pirep->fields->firstWhere('slug', 'diversion-airport')?->value
+        // No ?-> needed: ?? already suppresses reading value off a missing field.
+        $diversion_apt = $pirep->fields->firstWhere('slug', 'diversion-airport')->value
             ?? __('notifications.discord.diverted.not_reported');
 
         $diversion_reason = abs((float) $pirep->landing_rate) > self::CRASH_LANDING_RATE

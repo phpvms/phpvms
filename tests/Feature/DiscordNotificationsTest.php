@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserAward;
 use App\Notifications\Messages\Broadcast\AwardAwarded;
 use App\Notifications\Messages\Broadcast\NewsAdded;
+use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Notifications\Messages\Broadcast\PirepFiled;
 use App\Notifications\Messages\Broadcast\PirepStatusChanged;
 use App\Notifications\Messages\Broadcast\UserRegistered;
@@ -134,6 +135,19 @@ test('the staff announcement is skipped when only the public route is set', func
     Notification::send([app(StaffBroadcast::class)], new UserRegistered(User::factory()->create()));
 
     Http::assertNothingSent();
+});
+
+// --- Diversion ---------------------------------------------------------------
+
+test('a diversion with no diversion-airport field still announces', function (): void {
+    $pirep = Pirep::factory()->create();
+
+    // The field is normally present, but reading it must not be able to take
+    // the announcement down if it is missing.
+    $fields = discordEmbedFields(new PirepDiverted($pirep)->toDiscord(app(PublicBroadcast::class)));
+
+    expect($fields['Diverted'])->toBe('Not Reported')
+        ->and($fields['Reason'])->toBe('Operational');
 });
 
 // --- Locale ------------------------------------------------------------------
