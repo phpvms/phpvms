@@ -5,6 +5,7 @@ namespace App\Notifications\Messages\Broadcast;
 use App\Contracts\Notification;
 use App\Enums\PirepStatus;
 use App\Models\Pirep;
+use App\Notifications\Concerns\BuildsDiscordEmbeds;
 use App\Notifications\DiscordEmbedColor;
 use App\Support\Units\Time;
 use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
@@ -17,6 +18,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
  */
 class PirepStatusChanged extends Notification implements ShouldQueue
 {
+    use BuildsDiscordEmbeds;
+
     /**
      * Statuses that read as trouble rather than routine progress.
      */
@@ -46,8 +49,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
     {
         $pirep = $this->pirep;
 
-        // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = empty($pirep->user->avatar) ? $pirep->user->gravatar(256) : $pirep->user->avatar->url;
+        $user_avatar = $this->discordAvatarUrl($pirep->user);
 
         // Pirep Filed > success, normals > warning, non-normals > error
         $color = in_array($pirep->status, self::DANGER_STATUSES, true)
@@ -68,10 +70,7 @@ class PirepStatusChanged extends Notification implements ShouldQueue
                 ->url(route('frontend.profile.show', [$pirep->user_id])))
             ->timestamp(now());
 
-        foreach ($this->createFields($pirep) as $name => $value) {
-            // Names stay bolded and inline, as the previous embed builder forced.
-            $embed->field('**'.$name.'**', (string) $value, true);
-        }
+        $this->addDiscordFields($embed, $this->createFields($pirep));
 
         return DiscordMessage::make()->embed($embed);
     }

@@ -4,6 +4,7 @@ namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
 use App\Models\Pirep;
+use App\Notifications\Concerns\BuildsDiscordEmbeds;
 use App\Notifications\DiscordEmbedColor;
 use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
 use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbedAuthor;
@@ -11,6 +12,8 @@ use Arthurpar06\DiscordNotifier\Messages\DiscordMessage;
 
 class PirepDiverted extends Notification
 {
+    use BuildsDiscordEmbeds;
+
     /**
      * A landing rate beyond this reads as a crash rather than an operational
      * diversion.
@@ -35,8 +38,7 @@ class PirepDiverted extends Notification
     {
         $pirep = $this->pirep;
 
-        // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = $pirep->user->avatar->url ?? $pirep->user->gravatar(256);
+        $user_avatar = $this->discordAvatarUrl($pirep->user);
 
         $embed = DiscordEmbed::make()
             ->color(DiscordEmbedColor::Error->value)
@@ -47,10 +49,7 @@ class PirepDiverted extends Notification
             ]))->url(route('frontend.profile.show', [$pirep->user_id])))
             ->timestamp(now());
 
-        foreach ($this->createFields($pirep) as $name => $value) {
-            // Names stay bolded and inline, as the previous embed builder forced.
-            $embed->field('**'.$name.'**', (string) $value, true);
-        }
+        $this->addDiscordFields($embed, $this->createFields($pirep));
 
         return DiscordMessage::make()->embed($embed);
     }

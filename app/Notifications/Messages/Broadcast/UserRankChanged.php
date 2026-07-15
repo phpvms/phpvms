@@ -4,6 +4,7 @@ namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
 use App\Models\User;
+use App\Notifications\Concerns\BuildsDiscordEmbeds;
 use App\Notifications\DiscordEmbedColor;
 use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
 use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbedAuthor;
@@ -12,6 +13,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UserRankChanged extends Notification implements ShouldQueue
 {
+    use BuildsDiscordEmbeds;
+
     /**
      * Create a new notification instance.
      */
@@ -30,10 +33,7 @@ class UserRankChanged extends Notification implements ShouldQueue
     {
         $user = $this->user;
 
-        // User avatar, somehow $user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = empty($user->avatar)
-            ? $user->gravatar(256)
-            : $user->avatar->url;
+        $user_avatar = $this->discordAvatarUrl($user);
 
         return DiscordMessage::make()->embed(
             DiscordEmbed::make()

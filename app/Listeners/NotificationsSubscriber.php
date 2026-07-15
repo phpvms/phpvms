@@ -160,15 +160,16 @@ class NotificationsSubscriber
      * Status Change notification.
      * Reduced the messages (Boarding, Pushback, TakeOff, Landing and non-normals only)
      * If needed array can be tied to a setting at admin side for further customization
+     *
+     * PirepStatus::DIVERTED is deliberately absent from the list: a diversion is
+     * announced by PirepService::handleDiversion() through Broadcast\PirepDiverted,
+     * which carries the diversion airport and reason. Listing it here as well
+     * announced every diversion twice.
      */
     public function handlePirepStatusChange(PirepStatusChange $event): void
     {
         Log::info('NotificationEvents::onPirepStatusChange: '.$event->pirep->id.' status changed');
 
-        // PirepStatus::DIVERTED is deliberately absent: PirepService::handleDiversion()
-        // announces a diversion through Broadcast\PirepDiverted, which carries the
-        // diversion airport and reason. Listing it here too announced every
-        // diversion twice.
         $message_types = [
             PirepStatus::BOARDING,
             PirepStatus::PUSHBACK_TOW,
