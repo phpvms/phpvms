@@ -358,6 +358,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
+     * Route Discord notifications to this user's DM channel, which
+     * UserService::retrieveDiscordPrivateChannelId() opens and stores when they
+     * link their Discord account, and OAuthController clears when they unlink.
+     *
+     * Null for a user who never linked Discord (the common case), which the
+     * notifier treats as "nowhere to send" and skips, leaving the other
+     * channels in a notification's via() list unaffected.
+     */
+    public function routeNotificationForDiscord(): ?string
+    {
+        return $this->discord_private_channel_id ?: null;
+    }
+
+    /**
      * @param mixed $size Size of the gravatar, in pixels
      */
     public function gravatar($size = null): string

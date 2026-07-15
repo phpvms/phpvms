@@ -687,22 +687,22 @@ class SettingsSeeder extends Seeder
 
         // Notifications
         [
-            'key'         => 'notifications.discord_public_webhook_url',
-            'name'        => 'Discord Public Webhook URL',
+            'key'         => 'notifications.discord_public_route',
+            'name'        => 'Discord Public Route',
             'group'       => 'notifications',
             'value'       => '',
             'type'        => 'text',
             'options'     => '',
-            'description' => 'The Discord Webhook URL for public notifications',
+            'description' => 'Where public notifications are sent: either a Discord Webhook URL, or a channel ID to post through your bot (a channel ID requires DISCORD_BOT_TOKEN to be set)',
         ],
         [
-            'key'         => 'notifications.discord_private_webhook_url',
-            'name'        => 'Discord Private Webhook URL',
+            'key'         => 'notifications.discord_private_route',
+            'name'        => 'Discord Private Route',
             'group'       => 'notifications',
             'value'       => '',
             'type'        => 'text',
             'options'     => '',
-            'description' => 'The Discord Webhook URL for private notifications',
+            'description' => 'Where private (staff) notifications are sent: either a Discord Webhook URL, or a channel ID to post through your bot (a channel ID requires DISCORD_BOT_TOKEN to be set)',
         ],
         [
             'key'         => 'notifications.discord_pirep_status',

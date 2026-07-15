@@ -38,6 +38,7 @@ use App\Models\PirepFieldValue;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
+use App\Notifications\Notifiables\PublicBroadcast;
 use App\Services\Finance\PirepFinanceService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
@@ -721,7 +722,7 @@ class PirepService extends Service
         event(new PirepDiverted($pirep));
 
         if (setting('notifications.discord_pirep_diverted', false)) {
-            Notification::send([$pirep], new PirepDiverted($pirep));
+            Notification::send([app(PublicBroadcast::class)], new PirepDiverted($pirep));
         }
 
         // Update aircraft position

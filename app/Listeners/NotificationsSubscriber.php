@@ -23,6 +23,8 @@ use App\Notifications\Messages\Broadcast\UserRankChanged;
 use App\Notifications\Messages\UserPending;
 use App\Notifications\Messages\UserRegistered;
 use App\Notifications\Messages\UserRejected;
+use App\Notifications\Notifiables\PublicBroadcast;
+use App\Notifications\Notifiables\StaffBroadcast;
 use Exception;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Collection;
@@ -124,7 +126,7 @@ class NotificationsSubscriber
         /*
          * Broadcast notifications
          */
-        Notification::send([$user], new Messages\Broadcast\UserRegistered($user));
+        Notification::send([app(StaffBroadcast::class)], new Messages\Broadcast\UserRegistered($user));
     }
 
     /**
@@ -146,16 +148,12 @@ class NotificationsSubscriber
     }
 
     /**
-     * Prefile notification. Disabled intentionally, No need to send it to Discord
+     * Prefile notification. Intentionally announces nothing to Discord — a
+     * prefiled flight is not news, and the flight is announced when it is filed.
      */
     public function handlePirepPrefiled(PirepPrefiled $event): void
     {
         Log::info('NotificationEvents::onPirepPrefile: '.$event->pirep->id.' prefiled');
-
-        /*
-         * Broadcast notifications
-         */
-        // Notification::send([$event->pirep], new Messages\Broadcast\PirepPrefiled($event->pirep));
     }
 
     /**
@@ -167,13 +165,16 @@ class NotificationsSubscriber
     {
         Log::info('NotificationEvents::onPirepStatusChange: '.$event->pirep->id.' status changed');
 
+        // PirepStatus::DIVERTED is deliberately absent: PirepService::handleDiversion()
+        // announces a diversion through Broadcast\PirepDiverted, which carries the
+        // diversion airport and reason. Listing it here too announced every
+        // diversion twice.
         $message_types = [
             PirepStatus::BOARDING,
             PirepStatus::PUSHBACK_TOW,
             PirepStatus::GRND_RTRN,
             PirepStatus::TAKEOFF,
             PirepStatus::LANDED,
-            PirepStatus::DIVERTED,
             PirepStatus::CANCELLED,
             PirepStatus::PAUSED,
             PirepStatus::EMERG_DESCENT,
@@ -181,7 +182,7 @@ class NotificationsSubscriber
 
         if (setting('notifications.discord_pirep_status', true) && in_array($event->pirep->status, $message_types,
             true)) {
-            Notification::send([$event->pirep], new PirepStatusChanged($event->pirep));
+            Notification::send([app(PublicBroadcast::class)], new PirepStatusChanged($event->pirep));
         }
     }
 
@@ -199,7 +200,7 @@ class NotificationsSubscriber
          * Broadcast notifications
          */
         if (setting('notifications.discord_pirep_filed', true)) {
-            Notification::send([$event->pirep], new Messages\Broadcast\PirepFiled($event->pirep));
+            Notification::send([app(PublicBroadcast::class)], new Messages\Broadcast\PirepFiled($event->pirep));
         }
     }
 
@@ -238,7 +239,7 @@ class NotificationsSubscriber
         /*
          * Broadcast notifications
          */
-        Notification::send([$event->news], new Messages\Broadcast\NewsAdded($event->news));
+        Notification::send([app(PublicBroadcast::class)], new Messages\Broadcast\NewsAdded($event->news));
     }
 
     /**
@@ -254,7 +255,7 @@ class NotificationsSubscriber
         /*
          * Broadcast notifications
          */
-        Notification::send([$event->news], new Messages\Broadcast\NewsAdded($event->news));
+        Notification::send([app(PublicBroadcast::class)], new Messages\Broadcast\NewsAdded($event->news));
     }
 
     /**
@@ -266,7 +267,7 @@ class NotificationsSubscriber
          * Broadcast notifications
          */
         if (setting('notifications.discord_award_awarded', true)) {
-            Notification::send([$event->userAward], new Messages\Broadcast\AwardAwarded($event->userAward));
+            Notification::send([app(PublicBroadcast::class)], new Messages\Broadcast\AwardAwarded($event->userAward));
         }
     }
 
@@ -279,7 +280,7 @@ class NotificationsSubscriber
          * Broadcast notifications
          */
         if (setting('notifications.discord_user_rank_changed', true) && $event->stat_name === 'rank') {
-            Notification::send([$event->user], new UserRankChanged($event->user));
+            Notification::send([app(PublicBroadcast::class)], new UserRankChanged($event->user));
         }
     }
 }

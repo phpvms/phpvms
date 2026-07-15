@@ -4,7 +4,10 @@ namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
 use App\Models\User;
-use App\Notifications\Channels\Discord\DiscordMessage;
+use App\Notifications\DiscordEmbedColor;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbedAuthor;
+use Arthurpar06\DiscordNotifier\Messages\DiscordMessage;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UserRankChanged extends Notification implements ShouldQueue
@@ -12,46 +15,39 @@ class UserRankChanged extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(private readonly User $user)
-    {
-        parent::__construct();
-    }
+    public function __construct(private readonly User $user) {}
 
     public function via($notifiable): array
     {
-        return ['discord_webhook'];
+        return ['discord'];
     }
 
     /**
-     * Send a Discord notification
+     * Send a Discord notification. The destination comes from the notifiable,
+     * so this only builds content.
      */
-    public function toDiscordChannel(User $user): ?DiscordMessage
+    public function toDiscord($notifiable): DiscordMessage
     {
-        $title = 'Rank changed '.$user->rank->name;
-        // $fields = $this->createFields($user);
+        $user = $this->user;
 
-        // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
+        // User avatar, somehow $user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
         $user_avatar = empty($user->avatar)
             ? $user->gravatar(256)
             : $user->avatar->url;
 
-        $dm = new DiscordMessage();
-
-        return $dm
-            ->webhook(setting('notifications.discord_public_webhook_url'))
-            ->success()
-            ->title($title)
-            ->description(
-                $user->discord_id
-                    ? 'Rank changed for <@'.$user->discord_id.'>'
-                    : ''
-            )
-            ->thumbnail(['url' => $user_avatar])
-            ->image(['url' => $user->rank->image_url])
-            ->author([
-                'name' => $user->ident.' - '.$user->name_private,
-                'url'  => route('frontend.profile.show', [$user->id]),
-            ]);
+        return DiscordMessage::make()->embed(
+            DiscordEmbed::make()
+                ->color(DiscordEmbedColor::Success->value)
+                ->title(__('notifications.discord.rank_changed', ['rank' => $user->rank->name]))
+                ->description($user->discord_id
+                    ? __('notifications.discord.rank_changed_for', ['mention' => '<@'.$user->discord_id.'>'])
+                    : null)
+                ->thumbnail($user_avatar)
+                ->image($user->rank->image_url)
+                ->author(DiscordEmbedAuthor::make($user->ident.' - '.$user->name_private)
+                    ->url(route('frontend.profile.show', [$user->id])))
+                ->timestamp(now())
+        );
     }
 
     /**

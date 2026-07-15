@@ -13,7 +13,6 @@ use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\Channels\Discord\DiscordWebhook;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\AddonSettingService;
 use App\Services\ModuleService;
@@ -51,7 +50,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -120,8 +118,6 @@ class AppServiceProvider extends ServiceProvider
         Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => new NanoidClient($length)->formattedId(BaseModel::ID_ALPHABET, $length));
 
         Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
-
-        Notification::extend('discord_webhook', fn ($app) => app(DiscordWebhook::class));
 
         /**
          * Gates (i.e. Authentication) definition
