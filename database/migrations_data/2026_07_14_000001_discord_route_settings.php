@@ -64,8 +64,14 @@ return new class() extends Migration
 
     /**
      * Recreate a setting under a new key, preserving the admin's value and the
-     * row's position within its group, then drop the old key. Idempotent: a
-     * re-run finds the target already present and leaves it alone.
+     * row's position within its group, then drop the old key.
+     *
+     * The target usually exists already: Updater runs SeederService::syncAllSeeds()
+     * before the data migrations, so the seeder has just inserted the new key with
+     * an empty value. Carry the old value onto it rather than dropping it, which
+     * would silently unconfigure Discord on every install that had it working.
+     *
+     * Idempotent, and never clobbers a value an admin has since set on the new key.
      */
     private function move(string $from, string $to, string $name, string $description): void
     {
@@ -73,6 +79,11 @@ return new class() extends Migration
         $source = Setting::where('id', Setting::formatKey($from))->first();
 
         if ($target instanceof Setting) {
+            if (blank($target->value) && $source instanceof Setting && filled($source->value)) {
+                $target->value = $source->value;
+                $target->save();
+            }
+
             $source?->delete();
 
             return;

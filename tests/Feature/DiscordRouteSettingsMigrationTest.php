@@ -27,12 +27,54 @@ function putSetting(string $key, string $value, string $name): void
     $model->save();
 }
 
-beforeEach(function (): void {
-    // The seeder already created the new keys; start from a pre-upgrade shape.
+/**
+ * Drop the new keys, leaving the shape an install has *before* SettingsSeeder
+ * has ever run with them. Note this is NOT the upgrade order — Updater runs
+ * syncAllSeeds() before the data migrations, so the new keys normally exist and
+ * are empty by the time the migration runs. See the seeded-first test below.
+ */
+function dropRouteSettings(): void
+{
     Setting::query()->whereIn('id', [
         Setting::formatKey('notifications.discord_public_route'),
         Setting::formatKey('notifications.discord_private_route'),
     ])->delete();
+}
+
+beforeEach(function (): void {
+    dropRouteSettings();
+});
+
+test('the seeder having already created the new key does not cost the admin their value', function (): void {
+    // The real upgrade order: Updater.php runs syncAllSeeds() (which inserts
+    // notifications.discord_public_route with an empty value) and only then runs
+    // the data migrations. Deleting the source without carrying its value across
+    // would silently unconfigure Discord on every install that had it working.
+    putSetting('notifications.discord_public_route', '', 'Discord Public Route');
+    putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/abc', 'Discord Public Webhook URL');
+
+    discordRouteMigration()->up();
+
+    expect(setting('notifications.discord_public_route'))->toBe('https://discord.com/api/webhooks/1/abc')
+        ->and(Setting::where('id', Setting::formatKey('notifications.discord_public_webhook_url'))->exists())->toBeFalse();
+});
+
+test('a value already set on the new key wins over the old one', function (): void {
+    putSetting('notifications.discord_public_route', '123456789012345678', 'Discord Public Route');
+    putSetting('notifications.discord_public_webhook_url', 'https://discord.com/api/webhooks/1/stale', 'Discord Public Webhook URL');
+
+    discordRouteMigration()->up();
+
+    expect(setting('notifications.discord_public_route'))->toBe('123456789012345678');
+});
+
+test('an empty old value does not overwrite a configured new key', function (): void {
+    putSetting('notifications.discord_public_route', '123456789012345678', 'Discord Public Route');
+    putSetting('notifications.discord_public_webhook_url', '', 'Discord Public Webhook URL');
+
+    discordRouteMigration()->up();
+
+    expect(setting('notifications.discord_public_route'))->toBe('123456789012345678');
 });
 
 test('an install with a configured webhook keeps its value', function (): void {
