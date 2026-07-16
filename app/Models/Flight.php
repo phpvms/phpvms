@@ -598,9 +598,14 @@ class Flight extends Model
     /**
      * Backwards-compatible alias for the renamed scope. Equivalent to
      * `Flight::visible()`. Kept indefinitely for module compatibility.
+     *
+     * Deliberately uses the `scope` prefix rather than `#[Scope]`: the
+     * `flights.active` column was renamed to `enabled`, so a bare `active()`
+     * method makes `Model::isRelation('active')` return true and Eloquent
+     * invokes it as a relationship with zero arguments on any `$flight->active`
+     * read. The prefix keeps `Flight::active()` working without the collision.
      */
-    #[Scope]
-    protected function active(Builder $query): Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('visible', true);
     }
