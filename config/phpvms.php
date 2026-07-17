@@ -16,6 +16,17 @@ return [
     'installed' => env('PHPVMS_INSTALLED', false),
 
     /*
+     * The site's own language, for anything addressed to everyone rather than
+     * to a visitor — Discord channel announcements, for instance.
+     *
+     * Reads the same APP_LOCALE as config('app.locale'), but nothing writes to
+     * it: App::setLocale() (which SetActiveLanguage calls on every request)
+     * overwrites config('app.locale') with the visitor's language, so that key
+     * cannot answer "what language is this site in?".
+     */
+    'default_locale' => env('APP_LOCALE', 'en'),
+
+    /*
      * Avatar resize settings
      * feel free to edit the following lines.
      * Both parameters are in px.

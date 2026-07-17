@@ -95,7 +95,8 @@
     "hidehalo/nanoid-php": "^2.0",
     "laravel/octane": "^2.17",
     "spatie/laravel-permission": "^8.0",
-    "laravel/passport": "^13.7"
+    "laravel/passport": "^13.7",
+    "arthurpar06/laravel-discord-notifier": "^0.2"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",

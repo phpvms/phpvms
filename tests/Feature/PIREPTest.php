@@ -17,10 +17,10 @@ use App\Models\Rank;
 use App\Models\Subfleet;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
-use App\Notifications\Messages\Broadcast\PirepPrefiled;
 use App\Notifications\Messages\Broadcast\PirepStatusChanged;
 use App\Notifications\Messages\PirepAccepted;
 use App\Notifications\Messages\PirepFiled;
+use App\Notifications\Notifiables\PublicBroadcast;
 use App\Services\AircraftService;
 use App\Services\BidService;
 use App\Services\PirepService;
@@ -505,6 +505,7 @@ test('prefile clears stale acars data when reusing a duplicate pirep', function 
     // First leg: prefiled, never filed or cancelled.
     $response = $this->post('/api/pireps/prefile', $payload);
     $response->assertStatus(200);
+
     $pirep_id = $response->json()['data']['id'];
 
     // Give it a track and a log entry, plus a planned route that must survive.
@@ -521,6 +522,7 @@ test('prefile clears stale acars data when reusing a duplicate pirep', function 
     // Restart the same flight: prefile reuses the in-progress PIREP...
     $response = $this->post('/api/pireps/prefile', $payload);
     $response->assertStatus(200);
+
     expect($response->json()['data']['id'])->toEqual($pirep_id);
 
     // ...with its stale track and logs cleared, but the planned route intact.
@@ -647,18 +649,15 @@ test('notification formatting', function (): void {
         'planned_flight_time' => 90,
     ]);
 
-    $discordNotif = new PirepPrefiled($pirep);
-    $fields = $discordNotif->createFields($pirep);
-    expect($fields['Flight Time (Planned)'])->toEqual('1h 30m')
-        ->and($fields['Distance'])->toEqual('370.4 km');
+    $notifiable = app(PublicBroadcast::class);
 
-    $discordNotif = new PirepStatusChanged($pirep);
-    $fields = $discordNotif->createFields($pirep);
+    // PirepStatusChanged reports the flown distance and the planned one.
+    $fields = discordEmbedFields(new PirepStatusChanged($pirep)->toDiscord($notifiable));
     expect($fields['Flight Time'])->toEqual('1h 0m')
         ->and($fields['Distance'])->toEqual('185.2/370.4 km');
 
-    $discordNotif = new App\Notifications\Messages\Broadcast\PirepFiled($pirep);
-    $fields = $discordNotif->createFields($pirep);
+    // PirepFiled reports only the flown distance.
+    $fields = discordEmbedFields(new App\Notifications\Messages\Broadcast\PirepFiled($pirep)->toDiscord($notifiable));
     expect($fields['Flight Time'])->toEqual('1h 0m')
         ->and($fields['Distance'])->toEqual('185.2 km');
 });
@@ -708,7 +707,7 @@ test('diversion handler', function (): void {
     expect($user->curr_airport_id)->toEqual($diversionAirport->id)
         ->and($aircraft->airport_id)->toEqual($diversionAirport->id);
 
-    Notification::assertSentTo([$pirep], PirepDiverted::class);
+    Notification::assertSentTo([app(PublicBroadcast::class)], PirepDiverted::class);
 });
 
 /*

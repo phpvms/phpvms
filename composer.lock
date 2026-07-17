@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2ff0c735360ba50d5b8e8e5e177ca414",
+    "content-hash": "d828f586bb8c87074b8dc8f240870e7f",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -141,6 +141,84 @@
                 "source": "https://github.com/arrilot/laravel-widgets/tree/3.15.0"
             },
             "time": "2025-12-21T14:43:07+00:00"
+        },
+        {
+            "name": "arthurpar06/laravel-discord-notifier",
+            "version": "v0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/arthurpar06/laravel-discord-notifier.git",
+                "reference": "fe400a90d98cba7c56de4f36e5a655a62499c4ef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/arthurpar06/laravel-discord-notifier/zipball/fe400a90d98cba7c56de4f36e5a655a62499c4ef",
+                "reference": "fe400a90d98cba7c56de4f36e5a655a62499c4ef",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^11.0||^12.0||^13.0",
+                "php": "^8.3",
+                "spatie/laravel-package-tools": "^1.16"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.14",
+                "nunomaduro/collision": "^8.8",
+                "orchestra/testbench": "^11.0.0||^10.0.0||^9.0.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-arch": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0",
+                "pestphp/pest-plugin-type-coverage": "^4.0",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "spatie/laravel-ray": "^1.35"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Arthurpar06\\DiscordNotifier\\DiscordNotifierServiceProvider"
+                    ]
+                },
+                "phpstan/extension-installer": {
+                    "ignore": [
+                        "tomasvotruba/type-coverage"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Arthurpar06\\DiscordNotifier\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Arthur Parienté",
+                    "email": "arthur.pariente.voisins@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A strongly-typed way to send Discord notifications through Laravel's notification system, via webhooks or a bot.",
+            "homepage": "https://github.com/arthurpar06/laravel-discord-notifier",
+            "keywords": [
+                "arthurpar06",
+                "discord",
+                "discord-notifier",
+                "laravel",
+                "notifications",
+                "webhook"
+            ],
+            "support": {
+                "issues": "https://github.com/arthurpar06/laravel-discord-notifier/issues",
+                "source": "https://github.com/arthurpar06/laravel-discord-notifier/tree/v0.2.0"
+            },
+            "time": "2026-07-14T18:27:38+00:00"
         },
         {
             "name": "aws/aws-crt-php",
