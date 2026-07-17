@@ -11,7 +11,14 @@ return new class() extends Migration
      */
     public function up(): void
     {
-        // 1. Convert existing comma-separated strings to JSON arrays
+        // 1. Widen the column first so the JSON representation fits during conversion.
+        // The original VARCHAR(50) is too small for the encoded array once an expense
+        // has many flight types (e.g. all of them), which would truncate/fail the update.
+        Schema::table('expenses', function (Blueprint $table): void {
+            $table->text('flight_type')->nullable()->change();
+        });
+
+        // 2. Convert existing comma-separated strings to JSON arrays
         DB::table('expenses')->orderBy('id')->chunk(100, function ($expenses): void {
             foreach ($expenses as $expense) {
                 // Only process if it has a value and isn't already a JSON array
@@ -32,7 +39,7 @@ return new class() extends Migration
             }
         });
 
-        // 2. Officially change the column type to JSON
+        // 3. Officially change the column type to JSON
         // Note: You must have doctrine/dbal installed for this step on older Laravel versions
 
         if (DB::getDriverName() === 'pgsql') {
