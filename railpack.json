@@ -1,6 +1,9 @@
 {
   "$schema": "https://schema.railpack.com",
   "steps": {
+    "extensions": {
+      "commands": ["...", "install-php-extensions pcntl"]
+    },
     "build": {
       "commands": ["...", "php artisan filament:assets"]
     }
