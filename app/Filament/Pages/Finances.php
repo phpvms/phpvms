@@ -19,6 +19,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Carbon;
 use Override;
 use UnitEnum;
 
@@ -41,13 +42,16 @@ class Finances extends Page
 
     public function filtersForm(Schema $schema): Schema
     {
+        $startDate = setting('general.start_date') instanceof Carbon ? setting('general.start_date') : now();
+        $minDate = $startDate->diffInSeconds() > 2 ? $startDate : now()->subYear();
+
         return $schema->components([
             Section::make()->schema([
                 DatePicker::make('start_date')
                     ->label(__('common.start_date'))
                     ->native(false)
                     // Some magic cause if no start_date is set, now is returned
-                    ->minDate(setting('general.start_date')->diffInSeconds() > 2 ? setting('general.start_date') : now()->subYear())
+                    ->minDate($minDate)
                     ->maxDate(fn (Get $get): mixed => $get('end_date') ?: now()),
 
                 DatePicker::make('end_date')
