@@ -14,32 +14,76 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Passport\TransientToken;
 
+/**
+ * Composite API authentication.
+ *
+ * A request is authenticated by, in order:
+ *   1. Passport — a valid OAuth2 bearer token on the `api` guard. The token's
+ *      scopes travel with the resolved user and are enforced downstream by
+ *      {@see CheckApiScope}.
+ *   2. Legacy fallback — the per-user `api_key` sent raw in `Authorization` or
+ *      in `X-API-Key`. Legacy keys are treated as full-access: the user is given
+ *      a {@see TransientToken} whose scopes satisfy everything, so Passport's
+ *      own `tokenCan()` (used by the scope middleware) lets legacy clients
+ *      through every route unchanged.
+ *
+ * Both paths enforce the same UserState gate (ACTIVE/ON_LEAVE only), force the
+ * `en` locale, and return the identical 401 error shape on failure — preserving
+ * the behaviour every existing API client depends on.
+ */
 class ApiAuth implements Middleware
 {
     /**
      * Handle an incoming request.
      *
-     *
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if Authorization header is in place
-        $api_key = $request->header('x-api-key');
-        if ($api_key === null) {
-            $api_key = $request->header('Authorization');
-            if ($api_key === null) {
-                return $this->unauthorized('X-API-KEY header missing');
-            }
+        // 1. Prefer Passport, but only when an actual bearer token is present.
+        //    Resolving the `api` guard builds Passport's OAuth resource server
+        //    (which loads the encryption keys), so we must NOT touch it for
+        //    legacy requests — otherwise a missing/invalid Passport key would
+        //    break legacy api_key auth too. A legacy key sent raw in
+        //    Authorization has no `Bearer ` prefix, so bearerToken() is null
+        //    and we skip straight to the legacy branch below.
+        $user = $request->bearerToken() !== null
+            ? Auth::guard('api')->user()
+            : null;
+
+        if ($user instanceof User) {
+            return $this->authenticate($request, $next, $user);
         }
 
-        // Try to find the user via API key. Cache this lookup
+        // 2. Fall back to the legacy api_key lookup, preserving the historic
+        //    header contract (X-API-Key, or the key sent raw in Authorization).
+        $api_key = $request->header('x-api-key') ?? $request->header('Authorization');
+        if ($api_key === null) {
+            return $this->unauthorized('X-API-KEY header missing');
+        }
+
         $user = User::where('api_key', $api_key)->first();
         if ($user === null) {
-            return $this->unauthorized('User not found with key "'.$api_key.'"');
+            // Do not echo the submitted credential back into the response/logs.
+            return $this->unauthorized('No user matches the provided key');
         }
 
+        // Grant legacy keys full access via a transient token so every scope
+        // check (tokenCan) passes — keeps existing clients working untouched.
+        $user->withAccessToken(new TransientToken());
+
+        return $this->authenticate($request, $next, $user);
+    }
+
+    /**
+     * Apply the shared state gate, bind the user to the request, and continue.
+     *
+     * @return mixed
+     */
+    private function authenticate(Request $request, Closure $next, User $user)
+    {
         if ($user->state !== UserState::ACTIVE && $user->state !== UserState::ON_LEAVE) {
             return $this->unauthorized('User is not ACTIVE, please contact an administrator');
         }
@@ -47,7 +91,7 @@ class ApiAuth implements Middleware
         // Set the user to the request
         Auth::setUser($user);
         $request->merge(['user' => $user]);
-        $request->setUserResolver(fn () => $user);
+        $request->setUserResolver(fn (): User => $user);
 
         // Force english locale for API
         app()->setLocale('en');

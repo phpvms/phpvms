@@ -27,6 +27,7 @@ use ReflectionNamedType;
  *  - routes/console.php → require (closure routes; console context only)
  *  - resources/views  → loadViewsFrom
  *  - lang/            → loadTranslationsFrom
+ *  - database/migrations → loadMigrationsFrom
  *  - app/Console/Commands/*.php → commands() (top-level dir only; no subdirectory scan)
  *  - app/Listeners/*.php        → Event::listen (top-level dir only; no subdirectory scan)
  *
@@ -62,6 +63,7 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->registerRoutes();
         $this->registerViews();
         $this->registerTranslations();
+        $this->registerMigrations();
         $this->registerCommands();
         $this->registerListeners();
     }
@@ -80,7 +82,9 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * Resolve the addon root directory.
      *
      * Default: 3 levels up from the provider file, which lives at
-     * `{root}/app/Providers/XxxServiceProvider.php`.
+     * `{root}/app/Providers/XxxServiceProvider.php` (PSR-4 maps
+     * `Modules\Name\` → `{root}/app`). Resources (config, routes, views, lang,
+     * database/migrations) live at `{root}`.
      *
      * Override for non-standard layouts or tests.
      */
@@ -212,6 +216,22 @@ abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, $this->addonNamespace());
+        }
+    }
+
+    /**
+     * Register the addon's database migrations so `artisan migrate` runs them
+     * whenever the addon is enabled.
+     *
+     * Convention: `{root}/database/migrations` (lowercase), mirroring a standard
+     * Laravel application and the `modules/*` addon layout.
+     */
+    private function registerMigrations(): void
+    {
+        $migrationsPath = $this->addonBasePath().'/database/migrations';
+
+        if (is_dir($migrationsPath)) {
+            $this->loadMigrationsFrom($migrationsPath);
         }
     }
 

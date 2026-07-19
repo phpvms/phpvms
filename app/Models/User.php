@@ -28,6 +28,8 @@ use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Kyslik\ColumnSortable\Sortable;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\HasApiTokens;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -166,8 +168,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[ObservedBy(UserObserver::class)]
-class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, OAuthenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use HasRelationships;
     use HasRoles;
@@ -352,6 +355,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
                 return new File(['path' => $value]);
             }
         );
+    }
+
+    /**
+     * Route Discord notifications to this user's DM channel, which
+     * UserService::retrieveDiscordPrivateChannelId() opens and stores when they
+     * link their Discord account, and OAuthController clears when they unlink.
+     *
+     * Null for a user who never linked Discord (the common case), which the
+     * notifier treats as "nowhere to send" and skips, leaving the other
+     * channels in a notification's via() list unaffected.
+     */
+    public function routeNotificationForDiscord(): ?string
+    {
+        return $this->discord_private_channel_id ?: null;
     }
 
     /**

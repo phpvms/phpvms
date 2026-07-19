@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Contracts\Service;
 use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
-use Illuminate\Support\Carbon;
+use App\Services\Concerns\CastsSettingValue;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -23,11 +23,24 @@ use Illuminate\Support\Facades\Cache;
  * The 60-second CacheableRepository layer that the old repo inherited is
  * intentionally not preserved — the only path doing many reads is the
  * `setting()` helper, which has its own application cache.
+ *
+ * Tier-1 memo: $memo caches resolved values for the duration of one request
+ * (keyed by the formatted setting id). The service is bound as a singleton
+ * and registered in config/octane.php 'flush' so Octane discards the instance
+ * (and its memo) before every new request.
  */
 class SettingService extends Service
 {
+    use CastsSettingValue;
+
+    /** @var array<string, mixed> Per-request in-process memo, keyed by formatted setting id. */
+    private array $memo = [];
+
     /**
      * Retrieve a typed setting value.
+     *
+     * Resolved values are memoized in $memo for the lifetime of the current
+     * request so repeated reads of the same key hit the source at most once.
      *
      * @throws SettingNotFound when the key has no row in `settings`.
      */
@@ -35,19 +48,17 @@ class SettingService extends Service
     {
         $key = Setting::formatKey($key);
 
+        if (array_key_exists($key, $this->memo)) {
+            return $this->memo[$key];
+        }
+
         $setting = Setting::where('id', $key)->first(['type', 'value']);
 
         if ($setting === null) {
             throw new SettingNotFound($key.' not found');
         }
 
-        return match ($setting->type) {
-            'bool', 'boolean'          => in_array($setting->value, ['true', '1', 1], true),
-            'date'                     => Carbon::parse($setting->value),
-            'int', 'integer', 'number' => (int) $setting->value,
-            'float'                    => (float) $setting->value,
-            default                    => $setting->value,
-        };
+        return $this->memo[$key] = $this->castSettingValue($setting->type, $setting->value);
     }
 
     /**
@@ -81,6 +92,7 @@ class SettingService extends Service
             $setting->save();
 
             $this->forgetCache($key);
+            unset($this->memo[$formattedKey]);
         }
 
         return $value;
@@ -92,6 +104,16 @@ class SettingService extends Service
     public function save(string $key, mixed $value): mixed
     {
         return $this->store($key, $value);
+    }
+
+    /**
+     * Clear all memoized values. Called at request/job boundaries that the
+     * Octane 'flush' does not cover (AppServiceProvider's Queue::before hook)
+     * and after raw settings writes that bypass store() (YamlDatabaseService).
+     */
+    public function clearMemo(): void
+    {
+        $this->memo = [];
     }
 
     private function forgetCache(string $key): void

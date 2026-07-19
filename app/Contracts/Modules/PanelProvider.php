@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Modules;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Pages\AddonSettings;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
@@ -98,6 +99,9 @@ abstract class PanelProvider extends FilamentPanelProvider
             ])
             ->pages([
                 Dashboard::class,
+                // Shared settings editor; auto-hidden unless this addon has
+                // registered settings (see AddonSettings::canAccess()).
+                AddonSettings::class,
             ])
             ->plugins([
                 PanelSwitcherPlugin::make(),

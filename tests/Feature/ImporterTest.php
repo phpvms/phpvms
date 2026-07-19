@@ -14,12 +14,15 @@ use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\Rank;
 use App\Models\Subfleet;
+use App\Models\Typerating;
 use App\Services\ExportService;
 use App\Services\FareService;
 use App\Services\ImportExport\AircraftExporter;
 use App\Services\ImportExport\AirportExporter;
 use App\Services\ImportExport\ExpenseExporter;
 use App\Services\ImportExport\FlightExporter;
+use App\Services\ImportExport\SubfleetExporter;
+use App\Services\ImportExport\SubfleetImporter;
 use App\Services\ImportService;
 use App\Support\Days;
 use Illuminate\Support\Facades\Storage;
@@ -692,6 +695,8 @@ test('subfleet importer', function (): void {
     $fare_business = Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
     $rank_cpt = Rank::factory()->create(['id' => 99, 'name' => 'cpt']);
     $rank_fo = Rank::factory()->create(['id' => 100, 'name' => 'fo']);
+    $typerating_a = Typerating::forceCreate(['id' => 1, 'name' => 'A320 Family', 'type' => 'A320']);
+    $typerating_b = Typerating::forceCreate(['id' => 2, 'name' => 'B747 Family', 'type' => 'B747']);
     $airline = Airline::firstWhere(['icao' => 'VMS']) ?? Airline::factory()->create(['icao' => 'VMS']);
 
     $importer = app(ImportService::class);
@@ -744,6 +749,67 @@ test('subfleet importer', function (): void {
         ->and($fo->acars_pay)->toEqual($rank_fo->acars_pay)
         ->and($fo->manual_pay)->toEqual($rank_fo->manual_pay);
 
+    // get the type ratings and check the pivot associations
+    $type_ratings = $subfleet->typeratings()->get();
+    expect($type_ratings)->toHaveCount(2)
+        ->and($type_ratings->pluck('id')->all())->toEqualCanonicalizing([$typerating_a->id, $typerating_b->id]);
+});
+
+test('subfleet exporter round-trips type ratings', function (): void {
+    Fare::factory()->create(['code' => 'Y']);
+    $airline = Airline::firstWhere(['icao' => 'VMS']) ?? Airline::factory()->create(['icao' => 'VMS']);
+
+    $typerating = Typerating::forceCreate(['id' => 1, 'name' => 'A320 Family', 'type' => 'A320']);
+
+    $with_ratings = Subfleet::factory()->create(['airline_id' => $airline->id, 'type' => 'A32X']);
+    $with_ratings->typeratings()->sync([$typerating->id]);
+
+    $without_ratings = Subfleet::factory()->create(['airline_id' => $airline->id, 'type' => 'B738']);
+
+    $exporter = app(ExportService::class);
+    $importer = app(ImportService::class);
+
+    // Export produces the type ratings for the associated subfleet and an empty cell for the other
+    $exported = new SubfleetExporter()->export($with_ratings);
+    expect($exported)->toHaveKey('type_ratings')
+        ->and($exported['type_ratings'])->toEqual((string) $typerating->id);
+
+    $exported_empty = new SubfleetExporter()->export($without_ratings);
+    expect($exported_empty['type_ratings'])->toEqual('');
+
+    // Round-trip: export both, then re-import and confirm associations are preserved
+    $file = $exporter->exportSubfleets(collect([$with_ratings, $without_ratings]));
+    $status = $importer->importSubfleets($file, delete_previous: false);
+
+    expect($status['success'])->toHaveCount(2)
+        ->and($status['errors'])->toHaveCount(0);
+
+    $reimported = Subfleet::where('type', 'A32X')->first();
+    expect($reimported->typeratings()->pluck('id')->all())->toEqual([$typerating->id]);
+
+    $reimported_empty = Subfleet::where('type', 'B738')->first();
+    expect($reimported_empty->typeratings()->get())->toHaveCount(0);
+});
+
+test('subfleet importer creates missing type ratings', function (): void {
+    Fare::factory()->create(['code' => 'Y']);
+    $airline = Airline::firstWhere(['icao' => 'VMS']) ?? Airline::factory()->create(['icao' => 'VMS']);
+    $subfleet = Subfleet::factory()->create(['airline_id' => $airline->id, 'type' => 'A32X']);
+
+    $importer = new SubfleetImporter();
+    $importer->import([
+        'airline'      => $airline->icao,
+        'type'         => 'A32X',
+        'name'         => 'Airbus A320',
+        'fuel_type'    => null,
+        'type_ratings' => '4242',
+    ], 0);
+
+    $typerating = Typerating::find(4242);
+    expect($typerating)->not->toBeNull();
+
+    $subfleet->refresh();
+    expect($subfleet->typeratings()->pluck('id')->all())->toEqual([4242]);
 });
 
 test('airport special chars importer', function (): void {

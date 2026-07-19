@@ -6,6 +6,7 @@ use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\SystemPanelProvider;
+use App\Providers\PassportServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 
 return [
@@ -14,6 +15,7 @@ return [
      */
     AppServiceProvider::class,
     AddonServiceProvider::class,
+    PassportServiceProvider::class,
     AdminPanelProvider::class,
     SystemPanelProvider::class,
 

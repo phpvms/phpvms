@@ -106,7 +106,7 @@ class SeederService extends Service
 
     /**
      * Locate the `*DatabaseSeeder.php` entry points inside an addon's
-     * `Database/seeds` directory.
+     * `database/seeders` directory.
      *
      * @return list<string>
      */
@@ -118,7 +118,7 @@ class SeederService extends Service
             return [];
         }
 
-        $seedDir = $path.'/Database/seeds';
+        $seedDir = $path.'/database/seeders';
 
         if (!is_dir($seedDir)) {
             return [];

@@ -111,3 +111,8 @@ modules_statuses.json
 /intellij_style.xml
 /justfile
 /package.xml
+
+**/caddy
+frankenphp
+
+frankenphp-worker.php

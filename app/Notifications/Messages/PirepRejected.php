@@ -19,7 +19,6 @@ class PirepRejected extends Notification implements ShouldQueue
     public function __construct(
         private readonly Pirep $pirep
     ) {
-        parent::__construct();
 
         $this->setMailable(
             'PIREP Rejected!',

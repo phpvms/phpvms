@@ -5,127 +5,104 @@ namespace App\Notifications\Messages\Broadcast;
 use App\Contracts\Notification;
 use App\Enums\PirepStatus;
 use App\Models\Pirep;
-use App\Notifications\Channels\Discord\DiscordMessage;
-use App\Notifications\Channels\Discord\DiscordWebhook;
+use App\Notifications\Concerns\BuildsDiscordEmbeds;
+use App\Notifications\DiscordEmbedColor;
 use App\Support\Units\Time;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbedAuthor;
+use Arthurpar06\DiscordNotifier\Messages\DiscordMessage;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Send the PIREP accepted message to a particular user, can also be sent to Discord
+ * Announce that a PIREP reached one of the key statuses.
  */
 class PirepStatusChanged extends Notification implements ShouldQueue
 {
-    // TODO: Int'l languages for these
-    protected static $verbs = [
-        'INI' => 'is initialized',
-        'SCH' => 'is scheduled',
-        'BST' => 'is boarding',
-        'RDT' => 'is ready for start',
-        'PBT' => 'is pushing back',
-        'OFB' => 'has departed',
-        'DIR' => 'is ready for de-icing',
-        'DIC' => 'is de-icing',
-        'GRT' => 'on ground return',
-        'TXI' => 'is taxiing',
-        'TOF' => 'has taken off',
-        'ICL' => 'in initial climb',
-        'TKO' => 'is enroute',
-        'ENR' => 'is enroute',
-        'DV'  => 'has diverted',
-        'TEN' => 'on approach',
-        'APR' => 'on approach',
-        'FIN' => 'on final approach',
-        'LDG' => 'is landing',
-        'LAN' => 'has landed',
-        'ONB' => 'has arrived',
-        'ARR' => 'has arrived',
-        'DX'  => 'is cancelled',
-        'PSD' => 'is paused',
-        'EMG' => 'in emergency descent',
+    use BuildsDiscordEmbeds;
+
+    /**
+     * Statuses that read as trouble rather than routine progress.
+     */
+    private const array DANGER_STATUSES = [
+        PirepStatus::GRND_RTRN,
+        PirepStatus::DIVERTED,
+        PirepStatus::CANCELLED,
+        PirepStatus::PAUSED,
+        PirepStatus::EMERG_DESCENT,
     ];
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(private readonly Pirep $pirep)
-    {
-        parent::__construct();
-    }
+    public function __construct(private readonly Pirep $pirep) {}
 
     public function via($notifiable): array
     {
-        return [DiscordWebhook::class];
+        return ['discord'];
     }
 
     /**
-     * Send a Discord notification
-     *
-     * @param Pirep $pirep
+     * Send a Discord notification. The destination comes from the notifiable,
+     * so this only builds content.
      */
-    public function toDiscordChannel($pirep): ?DiscordMessage
+    public function toDiscord($notifiable): DiscordMessage
     {
-        if (empty(setting('notifications.discord_public_webhook_url'))) {
-            return null;
-        }
+        $pirep = $this->pirep;
 
-        $title = 'Flight '.$pirep->ident.' '.self::$verbs[$pirep->status->value];
-        $fields = $this->createFields($pirep);
+        $user_avatar = $this->discordAvatarUrl($pirep->user);
 
-        // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = empty($pirep->user->avatar) ? $pirep->user->gravatar(256) : $pirep->user->avatar->url;
-
-        // Proper coloring for the messages
         // Pirep Filed > success, normals > warning, non-normals > error
-        $danger_types = [
-            PirepStatus::GRND_RTRN,
-            PirepStatus::DIVERTED,
-            PirepStatus::CANCELLED,
-            PirepStatus::PAUSED,
-            PirepStatus::EMERG_DESCENT,
-        ];
+        $color = in_array($pirep->status, self::DANGER_STATUSES, true)
+            ? DiscordEmbedColor::Error
+            : DiscordEmbedColor::Warning;
 
-        $color = in_array($pirep->status, $danger_types, true) ? 'ED2939' : 'FD6A02';
+        $embed = DiscordEmbed::make()
+            ->color($color->value)
+            ->title(__('notifications.discord.pirep_filed_status', [
+                'ident' => $pirep->ident,
+                'verb'  => __('notifications.discord.status.'.$pirep->status->value),
+            ]))
+            ->description($pirep->user->discord_id
+                ? __('notifications.discord.flight_by', ['mention' => '<@'.$pirep->user->discord_id.'>'])
+                : null)
+            ->thumbnail($user_avatar)
+            ->author(DiscordEmbedAuthor::make($pirep->user->ident.' - '.$pirep->user->name_private)
+                ->url(route('frontend.profile.show', [$pirep->user_id])))
+            ->timestamp(now());
 
-        $dm = new DiscordMessage();
+        $this->addDiscordFields($embed, $this->createFields($pirep));
 
-        return $dm->webhook(setting('notifications.discord_public_webhook_url'))
-            ->color($color)
-            ->title($title)
-            ->description($pirep->user->discord_id ? 'Flight by <@'.$pirep->user->discord_id.'>' : '')
-            ->thumbnail(['url' => $user_avatar])
-            ->author([
-                'name' => $pirep->user->ident.' - '.$pirep->user->name_private,
-                'url'  => route('frontend.profile.show', [$pirep->user_id]),
-            ])
-            ->fields($fields);
+        return DiscordMessage::make()->embed($embed);
     }
 
-    public function createFields(Pirep $pirep): array
+    /**
+     * @return array<string, string>
+     */
+    private function createFields(Pirep $pirep): array
     {
         $fields = [
-            'Dep.Airport' => $pirep->dpt_airport_id,
-            'Arr.Airport' => $pirep->arr_airport_id,
-            'Equipment'   => $pirep->aircraft->ident,
-            'Flight Time' => Time::minutesToTimeString($pirep->flight_time),
+            __('notifications.discord.fields.dep_airport') => $pirep->dpt_airport_id,
+            __('notifications.discord.fields.arr_airport') => $pirep->arr_airport_id,
+            __('notifications.discord.fields.equipment')   => $pirep->aircraft->ident,
+            __('notifications.discord.fields.flight_time') => Time::minutesToTimeString($pirep->flight_time),
         ];
 
         if ($pirep->landing_rate) {
-            $fields['Landing Rate'] = $pirep->landing_rate.'ft/min';
+            $fields[__('notifications.discord.fields.landing_rate')] = $pirep->landing_rate.'ft/min';
         }
 
         // Show the distance, but include the planned distance if it's been set
-        $fields['Distance'] = [];
+        $distance = [];
         if ($pirep->distance) {
-            $fields['Distance'][] = $pirep->distance->local(2);
+            $distance[] = $pirep->distance->local(2);
         }
 
         if ($pirep->planned_distance) {
-            $fields['Distance'][] = $pirep->planned_distance->local(2);
+            $distance[] = $pirep->planned_distance->local(2);
         }
 
-        if ($fields['Distance'] !== []) {
-            $fields['Distance'] = implode('/', $fields['Distance']);
-            $fields['Distance'] .= ' '.setting('units.distance');
+        if ($distance !== []) {
+            $fields[__('notifications.discord.fields.distance')] = implode('/', $distance).' '.setting('units.distance');
         }
 
         return $fields;

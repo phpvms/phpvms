@@ -254,6 +254,10 @@ class Installer extends Page
             }
         );
 
+        // Generate Passport's OAuth2 signing keys if they aren't already
+        // provided (env) or present on disk, so the API works out of the box.
+        app(InstallerService::class)->ensurePassportKeys();
+
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
             content: __('installer.migrations_completed').PHP_EOL,

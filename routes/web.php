@@ -50,6 +50,12 @@ Route::group([
     Route::get('profile/acars', [ProfileController::class, 'acars'])->name('profile.acars');
     Route::get('profile/regen_apikey', [ProfileController::class, 'regen_apikey'])->name('profile.regen_apikey');
 
+    // API Connections: authorized OAuth apps + personal access tokens
+    Route::get('profile/connections', [ProfileController::class, 'connections'])->name('profile.connections');
+    Route::post('profile/tokens', [ProfileController::class, 'store_token'])->name('profile.tokens.store');
+    Route::delete('profile/tokens/{token_id}', [ProfileController::class, 'destroy_token'])->name('profile.tokens.destroy');
+    Route::delete('profile/connections/{client_id}', [ProfileController::class, 'destroy_connection'])->name('profile.connections.destroy');
+
     Route::resource('profile', ProfileController::class);
 
     Route::get('simbrief/generate', [SimBriefController::class, 'generate'])->name('simbrief.generate');
