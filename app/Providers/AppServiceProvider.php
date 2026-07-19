@@ -40,6 +40,7 @@ use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
@@ -50,6 +51,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -81,6 +83,22 @@ class AppServiceProvider extends ServiceProvider
         // processes — otherwise a stale memoized value could be written back into
         // the shared cache on the next Cache::remember() miss.
         Queue::before(static fn () => app(SettingService::class)->clearMemo());
+
+        // The cron_daily channel (storage/logs/cron.log) is reserved for the
+        // scheduler and the queue worker. Switch the default log channel only
+        // when one of those commands starts, rather than mutating it globally
+        // in routes/console.php: under Octane that global mutation leaked into
+        // every HTTP worker (octane:start is itself an Artisan command that
+        // loads the console routes), sending web request logs to cron.log.
+        // CommandStarting never fires for HTTP requests, so Octane workers keep
+        // the default (daily) channel.
+        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
+            $cronCommands = ['schedule:run', 'schedule:work', 'queue:work', 'queue:listen'];
+
+            if (in_array($event->command, $cronCommands, true)) {
+                Log::setDefaultDriver('cron_daily');
+            }
+        });
 
         Model::preventLazyLoading(!$this->app->isProduction());
 
