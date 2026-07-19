@@ -8,6 +8,7 @@ use App\Contracts\ImportExport;
 use App\Models\Fare;
 use App\Models\Rank;
 use App\Models\Subfleet;
+use App\Models\Typerating;
 use App\Services\FareService;
 use App\Services\FleetService;
 use Exception;
@@ -35,6 +36,7 @@ class SubfleetImporter extends ImportExport
         'ground_handling_multiplier' => 'nullable',
         'fares'                      => 'nullable',
         'ranks'                      => 'nullable',
+        'type_ratings'               => 'nullable',
     ];
 
     private readonly FareService $fareSvc;
@@ -72,6 +74,7 @@ class SubfleetImporter extends ImportExport
 
         $this->processFares($subfleet, $row['fares'] ?? '');
         $this->processRanks($subfleet, $row['ranks'] ?? '');
+        $this->processTypeRatings($subfleet, $row['type_ratings'] ?? '');
 
         $this->log('Imported '.$row['type']);
 
@@ -111,6 +114,34 @@ class SubfleetImporter extends ImportExport
             $rank = Rank::firstOrCreate(['id' => $rank_id], ['name' => 'Imported rank '.$rank_id]);
             $this->fleetSvc->addSubfleetToRank($subfleet, $rank, $rank_attributes);
             $rank->save();
+        }
+    }
+
+    /**
+     * Parse all of the type ratings in the multi-format
+     *
+     * The typerating_subfleet pivot has no extra columns, so the value is a
+     * simple ;-delimited list of type rating IDs.
+     */
+    protected function processTypeRatings(Subfleet $subfleet, string $col): void
+    {
+        $type_ratings = $this->parseMultiColumnValues($col);
+        foreach ($type_ratings as $typerating_id => $typerating_attributes) {
+            if (!\is_array($typerating_attributes)) {
+                $typerating_id = $typerating_attributes;
+            }
+
+            $typerating = Typerating::find($typerating_id);
+            if ($typerating === null) {
+                $typerating = new Typerating([
+                    'name' => 'Imported type rating '.$typerating_id,
+                    'type' => 'Imported type rating '.$typerating_id,
+                ]);
+                $typerating->id = (int) $typerating_id;
+                $typerating->save();
+            }
+
+            $this->fleetSvc->addSubfleetToTypeRating($subfleet, $typerating);
         }
     }
 }
