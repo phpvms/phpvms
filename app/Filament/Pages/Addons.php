@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Addons\AddonRegistry;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Models\Addon;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -136,8 +137,8 @@ class Addons extends Page implements HasTable
 
     public function getModulesRecords(): Collection
     {
-        return app(AddonRegistry::class)->all()->map(fn ($addon): array => [
-            'name'    => $addon->getName(),
+        return app(AddonRegistry::class)->all()->map(fn (Addon $addon): array => [
+            'name'    => empty($addon->registry_id) ? $addon->getName() : $addon->registry_id.'('.$addon->getName().')',
             'enabled' => $addon->isEnabled(),
         ])->values();
     }

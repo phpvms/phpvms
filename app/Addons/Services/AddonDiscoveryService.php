@@ -202,8 +202,11 @@ class AddonDiscoveryService
      * Returns an empty array when the directory does not exist; modules
      * may be absent on a fresh install (LOAD-01).
      *
-     * Path-traversal guard (T-04-03): resolved realpath must stay within the
-     * scanned base dir; suspicious directories are skipped and logged.
+     * Path-traversal guard (T-04-03): each entry must be a direct child of the
+     * scanned base dir. Direct-child symlinks are permitted even when their
+     * target lives outside the project (operator-placed = trusted; supports
+     * symlinked local-module dev). Broken symlinks and non-direct-child entries
+     * are skipped and logged.
      *
      * @return AddonManifest[]
      */
@@ -224,9 +227,23 @@ class AddonDiscoveryService
         foreach (File::directories($dir) as $subDir) {
             $resolved = realpath($subDir);
 
-            // T-04-03: skip if the resolved path escapes the base directory.
-            if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered", $subDir));
+            // Broken symlink or vanished directory — nothing to scan.
+            if ($resolved === false) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path does not resolve", $subDir));
+
+                continue;
+            }
+
+            // T-04-03: the entry must be an immediate child of the scanned base.
+            // A symlink placed directly under the base is allowed even when its
+            // target lives outside the project: creating it requires filesystem
+            // write access to the base — the same trust as dropping a real
+            // module there — and addon providers execute arbitrary code anyway,
+            // so this is not a security boundary. Allowing it supports the
+            // standard symlinked local-module dev workflow. What stays blocked
+            // is any entry that is not a direct child of the base.
+            if (realpath(dirname($subDir)) !== $realBase) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — not a direct child of the addon base", $subDir));
 
                 continue;
             }

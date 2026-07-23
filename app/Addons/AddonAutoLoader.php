@@ -63,6 +63,21 @@ class AddonAutoLoader
         $this->guard->assertRuntimeAutoloadSupported($loader);
 
         foreach ($rows as $entry) {
+            // Missing on disk (deleted files / broken symlink): don't load a
+            // phantom addon. A stale boot-cache row with a vanished path loads
+            // nothing useful and would otherwise emit a misleading
+            // "not a ServiceProvider" warning when its provider class fails to
+            // autoload.
+            if ($entry->autoloadPath !== '' && !is_dir($entry->autoloadPath)) {
+                Log::warning(sprintf(
+                    'AddonAutoLoader: skipping addon "%s" — autoload path missing on disk: %s',
+                    $entry->namespace,
+                    $entry->autoloadPath,
+                ));
+
+                continue;
+            }
+
             $this->registerPsr4($loader, $entry);
             $this->loadAutoloadFiles($entry);
             $this->registerProviders($app, $entry);

@@ -13,6 +13,7 @@ it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', func
             'tables' => ['  things  ', '', 'things', 42, 'more_things'],
         ],
     ]));
+    file_put_contents($tmpDir.'/composer.json', '{}');
 
     try {
         $parser = new ManifestParser();
@@ -20,6 +21,7 @@ it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', func
 
         expect($result->tables)->toBe(['things', 'more_things']);
     } finally {
+        unlink($tmpDir.'/composer.json');
         unlink($tmpDir.'/module.json');
         rmdir($tmpDir);
     }
@@ -36,6 +38,7 @@ it('parses phpVMS keys: type, compat, registry_id, version', function (): void {
         'version'     => '2.3.0',
         'providers'   => [],
     ]));
+    file_put_contents($tmpDir.'/composer.json', '{}');
 
     try {
         $parser = new ManifestParser();
@@ -47,6 +50,7 @@ it('parses phpVMS keys: type, compat, registry_id, version', function (): void {
             ->and($result->registryId)->toBe('acme/widget')
             ->and($result->version)->toBe('2.3.0');
     } finally {
+        unlink($tmpDir.'/composer.json');
         unlink($tmpDir.'/module.json');
         rmdir($tmpDir);
     }
@@ -211,6 +215,7 @@ it('normalises blank registry_id to null (D-03)', function (): void {
         'registry_id' => '   ',
         'providers'   => [],
     ]));
+    file_put_contents($tmpDir.'/composer.json', '{}');
 
     try {
         $parser = new ManifestParser();
@@ -219,6 +224,7 @@ it('normalises blank registry_id to null (D-03)', function (): void {
         expect($result)->toBeInstanceOf(AddonManifest::class)
             ->and($result->registryId)->toBeNull();
     } finally {
+        unlink($tmpDir.'/composer.json');
         unlink($tmpDir.'/module.json');
         rmdir($tmpDir);
     }
