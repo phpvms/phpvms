@@ -39,7 +39,7 @@ class UserService extends Service
      */
     public function getUser(int $user_id, bool $with_subfleets = true): ?User
     {
-        $with = ['airline', 'bids', 'rank'];
+        $with = ['airline', 'bids', 'rank', 'roles'];
 
         if ($with_subfleets) {
             $with[] = 'rank.subfleets';

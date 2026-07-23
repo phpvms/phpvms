@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 /*
  * Locks in the JSON response shape of the public User API.
@@ -49,9 +50,24 @@ test('user resource returns expected json structure', function (): void {
             'total_time',
             'timezone',
             'state',
+            'roles',
             'airline',
             'bids',
             'rank',
         ],
     ]);
+});
+
+test("user resource returns the pilot's role names", function (): void {
+    Role::create(['name' => 'test_role', 'guard_name' => 'web']);
+
+    /** @var User $user */
+    $user = User::factory()->create();
+    $user->assignRole('test_role');
+
+    $response = $this->withHeader('Authorization', $user->api_key)->get('/api/user');
+
+    $response->assertOk();
+
+    expect($response->json('data.roles'))->toBe(['test_role']);
 });

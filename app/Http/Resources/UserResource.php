@@ -39,6 +39,12 @@ class UserResource extends Resource
             'state'             => $this->state,
         ];
 
+        // Role names for the authenticated pilot, so an OAuth client (e.g. the
+        // ACARS desktop app after the device-code login) can gate its UI. Only
+        // emitted when the relation is eager-loaded (UserService::getUser), so
+        // it never triggers an N+1.
+        $res['roles'] = $this->whenLoaded('roles', fn () => $this->roles->pluck('name')->values());
+
         $res['airline'] = AirlineResource::make($this->whenLoaded('airline'));
         $res['bids'] = UserBidResource::collection($this->whenLoaded('bids'));
         $res['rank'] = RankResource::make($this->whenLoaded('rank'));
