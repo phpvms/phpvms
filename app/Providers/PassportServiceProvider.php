@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Auth\RichBearerTokenResponse;
 use App\Support\ApiScope;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
@@ -44,5 +45,10 @@ class PassportServiceProvider extends ServiceProvider
 
         // Custom consent screen rendered inside the app frontend theme.
         Passport::authorizationView('oauth.authorize');
+
+        // Return the pilot's roles + effective permissions in the /oauth/token
+        // response body, so the device-code client gets its scopes and the
+        // pilot's capabilities in one exchange (no separate /api/user call).
+        Passport::useAuthorizationServerResponseType(new RichBearerTokenResponse());
     }
 }
