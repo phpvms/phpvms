@@ -51,6 +51,7 @@ test('user resource returns expected json structure', function (): void {
             'timezone',
             'state',
             'roles',
+            'permissions',
             'airline',
             'bids',
             'rank',

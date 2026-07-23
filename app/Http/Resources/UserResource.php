@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use App\Contracts\Resource;
 use App\Models\User;
+use App\Services\PermissionRegistry;
 use Override;
 
 /**
@@ -44,6 +45,17 @@ class UserResource extends Resource
         // emitted when the relation is eager-loaded (UserService::getUser), so
         // it never triggers an N+1.
         $res['roles'] = $this->whenLoaded('roles', fn () => $this->roles->pluck('name')->values());
+
+        // Effective permissions for the *authenticated* pilot only — the concrete
+        // "what can I do" list an OAuth client (e.g. vmsACARS) gates its UI on.
+        // Evaluated via can() so the super-admin Gate::before bypass is reflected
+        // (a super-admin gets every registered permission without being assigned
+        // one). Never exposed for other users' records (/users/{id}).
+        if (auth()->check() && auth()->id() === $this->id) {
+            $res['permissions'] = collect(array_keys(app(PermissionRegistry::class)->all()))
+                ->filter(fn (string $permission): bool => $this->resource->can($permission))
+                ->values();
+        }
 
         $res['airline'] = AirlineResource::make($this->whenLoaded('airline'));
         $res['bids'] = UserBidResource::collection($this->whenLoaded('bids'));
