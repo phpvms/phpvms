@@ -13,8 +13,10 @@ use Filament\Pages\Page;
 use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Override;
+use Throwable;
 
 class Updater extends Page
 {
@@ -113,11 +115,20 @@ class Updater extends Page
             $migrationSvc->runAllMigrationsWithStreaming($streamCallback);
         }
 
-        $seederSvc->syncAllSeeds();
+        // These run in-process, after streaming has begun. An uncaught throw
+        // here would try to render an error response after output was flushed,
+        // fataling with "headers already sent". Contain it: stream the failure
+        // and let the update finish.
+        try {
+            $seederSvc->syncAllSeeds();
 
-        // Existing installs upgrading to Passport won't have signing keys yet;
-        // generate them (idempotent) so the API keeps working post-upgrade.
-        app(InstallerService::class)->ensurePassportKeys();
+            // Existing installs upgrading to Passport won't have signing keys yet;
+            // generate them (idempotent) so the API keeps working post-upgrade.
+            app(InstallerService::class)->ensurePassportKeys();
+        } catch (Throwable $throwable) {
+            Log::error('Update seeding/key generation failed', ['exception' => $throwable]);
+            $streamCallback(__('installer.update_step_failed'));
+        }
 
         if (count($dataMigrationsPending) !== 0) {
             $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);

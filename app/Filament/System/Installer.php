@@ -256,7 +256,19 @@ class Installer extends Page
 
         // Generate Passport's OAuth2 signing keys if they aren't already
         // provided (env) or present on disk, so the API works out of the box.
-        app(InstallerService::class)->ensurePassportKeys();
+        //
+        // Runs in-process, after streaming has begun. An uncaught throw here would
+        // try to render an error response after output was already flushed, which
+        // fatals with "headers already sent". Contain it: stream the failure and
+        // let the install finish — the keys can be regenerated later if needed.
+        try {
+            app(InstallerService::class)->ensurePassportKeys();
+        } catch (Throwable $throwable) {
+            Log::error('Passport key generation failed during install', ['exception' => $throwable]);
+            $message = __('installer.passport_keys_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
 
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
