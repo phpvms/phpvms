@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Auth\InstallSafeUserProvider;
 use App\Contracts\Metar;
 use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;
@@ -47,6 +48,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -136,6 +138,13 @@ class AppServiceProvider extends ServiceProvider
         Str::macro('nanoid', fn (int $length = BaseModel::ID_MAX_LENGTH): string => new NanoidClient($length)->formattedId(BaseModel::ID_ALPHABET, $length));
 
         Str::macro('isNanoid', fn (mixed $value): bool => is_string($value) && preg_match('/^['.BaseModel::ID_ALPHABET.']{'.BaseModel::ID_MAX_LENGTH.'}$/', $value) === 1);
+
+        /**
+         * Override the stock `eloquent` auth provider so a stale session cookie
+         * over a fresh/wiped database (no users table yet) resolves to no user
+         * instead of throwing during install. See InstallSafeUserProvider.
+         */
+        Auth::provider('eloquent', static fn ($app, array $config): InstallSafeUserProvider => new InstallSafeUserProvider($app['hash'], $config['model']));
 
         /**
          * Gates (i.e. Authentication) definition

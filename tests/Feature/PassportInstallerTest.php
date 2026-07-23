@@ -22,11 +22,18 @@ function useEmptyStoragePath(): string
 
 it('generates keys when none are configured or present', function (): void {
     config(['passport.private_key' => null, 'passport.public_key' => null]);
-    useEmptyStoragePath();
+    $tmp = useEmptyStoragePath();
 
-    Artisan::shouldReceive('call')->once()->with('passport:keys', ['--force' => true]);
+    // Keys are generated in-process (phpseclib), NOT via `passport:keys` —
+    // that command is unregistered outside console and the installer runs on the web.
+    Artisan::shouldReceive('call')->with('passport:keys', Mockery::any())->never();
 
     app(InstallerService::class)->ensurePassportKeys();
+
+    expect(file_exists($tmp.'/oauth-private.key'))->toBeTrue()
+        ->and(file_exists($tmp.'/oauth-public.key'))->toBeTrue()
+        ->and(file_get_contents($tmp.'/oauth-private.key'))->toContain('PRIVATE KEY')
+        ->and(file_get_contents($tmp.'/oauth-public.key'))->toContain('PUBLIC KEY');
 });
 
 it('does not generate keys when provided via env', function (): void {

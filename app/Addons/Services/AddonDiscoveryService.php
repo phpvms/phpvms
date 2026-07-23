@@ -101,13 +101,57 @@ class AddonDiscoveryService
      */
     public function primeIfNeeded(): bool
     {
-        if ($this->bootCache->isFresh()) {
+        // Rebuild when the cache is schema-stale OR when it no longer reflects the
+        // current DB addons state. isFresh() alone only catches code-schema drift
+        // (D2-09): an addon enabled/disabled/installed/deleted in the DB after the
+        // cache was written leaves a schema-valid but data-stale cache that would
+        // never rebuild — so its namespace is never registered and its seeder
+        // fails class-not-found. The fingerprint check closes that gap.
+        if ($this->bootCache->isFresh() && $this->cacheMatchesDatabase()) {
             return false;
         }
 
         $this->run();
 
         return true;
+    }
+
+    /**
+     * Whether the boot cache was built from the current DB `addons` state.
+     *
+     * Compares the fingerprint stamped into the cache against a freshly computed
+     * one. A null DB fingerprint (table absent / DB unreachable / pre-install)
+     * means there is nothing to reconcile against, so the cache is left as-is —
+     * the fresh-install disk bootstrap owns it until migrations land.
+     */
+    private function cacheMatchesDatabase(): bool
+    {
+        $databaseFingerprint = $this->databaseFingerprint();
+
+        if ($databaseFingerprint === null) {
+            return true;
+        }
+
+        return $this->bootCache->fingerprint() === $databaseFingerprint;
+    }
+
+    /**
+     * A cheap fingerprint of the DB `addons` table: row count + latest mutation
+     * timestamp. Any enable/disable/install/delete/update changes the count or
+     * bumps updated_at, so a changed fingerprint means the enabled-set diverged.
+     *
+     * Returns null when the table cannot be queried (not yet migrated), so the
+     * pre-install boot path is never blocked by a failing query.
+     */
+    private function databaseFingerprint(): ?string
+    {
+        try {
+            $row = Addon::query()->selectRaw('count(*) as c, max(updated_at) as m')->first();
+
+            return (int) ($row->c ?? 0).':'.($row->m ?? '');
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -193,7 +237,9 @@ class AddonDiscoveryService
             }
         }
 
-        $this->bootCache->write($cacheRows);
+        // Stamp the DB fingerprint so a later boot can tell this cache still
+        // matches the current addons state (see primeIfNeeded/cacheMatchesDatabase).
+        $this->bootCache->write($cacheRows, $this->databaseFingerprint());
     }
 
     /**
@@ -202,8 +248,11 @@ class AddonDiscoveryService
      * Returns an empty array when the directory does not exist; modules
      * may be absent on a fresh install (LOAD-01).
      *
-     * Path-traversal guard (T-04-03): resolved realpath must stay within the
-     * scanned base dir; suspicious directories are skipped and logged.
+     * Path-traversal guard (T-04-03): each entry must be a direct child of the
+     * scanned base dir. Direct-child symlinks are permitted even when their
+     * target lives outside the project (operator-placed = trusted; supports
+     * symlinked local-module dev). Broken symlinks and non-direct-child entries
+     * are skipped and logged.
      *
      * @return AddonManifest[]
      */
@@ -224,9 +273,23 @@ class AddonDiscoveryService
         foreach (File::directories($dir) as $subDir) {
             $resolved = realpath($subDir);
 
-            // T-04-03: skip if the resolved path escapes the base directory.
-            if ($resolved === false || !str_starts_with($resolved, $realBase.DIRECTORY_SEPARATOR)) {
-                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path traversal guard triggered", $subDir));
+            // Broken symlink or vanished directory — nothing to scan.
+            if ($resolved === false) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — path does not resolve", $subDir));
+
+                continue;
+            }
+
+            // T-04-03: the entry must be an immediate child of the scanned base.
+            // A symlink placed directly under the base is allowed even when its
+            // target lives outside the project: creating it requires filesystem
+            // write access to the base — the same trust as dropping a real
+            // module there — and addon providers execute arbitrary code anyway,
+            // so this is not a security boundary. Allowing it supports the
+            // standard symlinked local-module dev workflow. What stays blocked
+            // is any entry that is not a direct child of the base.
+            if (realpath(dirname($subDir)) !== $realBase) {
+                Log::warning(sprintf("AddonRuntimeService: skipping '%s' — not a direct child of the addon base", $subDir));
 
                 continue;
             }

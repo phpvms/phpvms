@@ -62,6 +62,28 @@ class Installer extends Page
     private ?array $cachedRequirementsData = null;
 
     /**
+     * Hard gate on the installer route. Once the wizard has created the initial
+     * admin user the app is installed, so the installer must be completely
+     * inaccessible — Filament aborts the route with a 403 before the page is
+     * ever mounted, so migrations/seeders can never be re-triggered.
+     *
+     * Before that point (a fresh or partially-completed install) the page stays
+     * reachable so the operator can finish setup: the `users` table may not
+     * exist yet, or exists but holds no rows.
+     */
+    #[Override]
+    public static function canAccess(): bool
+    {
+        try {
+            return !(Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists());
+        } catch (QueryException) {
+            // DB unreachable/not yet migrated — treat as not installed so the
+            // installer can run.
+            return true;
+        }
+    }
+
+    /**
      * Called whenever the component is loaded
      */
     public function mount(): void
@@ -256,7 +278,19 @@ class Installer extends Page
 
         // Generate Passport's OAuth2 signing keys if they aren't already
         // provided (env) or present on disk, so the API works out of the box.
-        app(InstallerService::class)->ensurePassportKeys();
+        //
+        // Runs in-process, after streaming has begun. An uncaught throw here would
+        // try to render an error response after output was already flushed, which
+        // fatals with "headers already sent". Contain it: stream the failure and
+        // let the install finish — the keys can be regenerated later if needed.
+        try {
+            app(InstallerService::class)->ensurePassportKeys();
+        } catch (Throwable $throwable) {
+            Log::error('Passport key generation failed during install', ['exception' => $throwable]);
+            $message = __('installer.passport_keys_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
 
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(

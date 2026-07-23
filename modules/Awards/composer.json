@@ -1,0 +1,20 @@
+{
+    "name": "phpvms/awards-module",
+    "type": "phpvms-module",
+    "description": "Awards module for phpVMS",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Awards\\Providers\\AwardServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Awards\\": "."
+        }
+    }
+}

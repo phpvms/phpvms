@@ -47,7 +47,10 @@ class MigrationService extends Service
             'core' => App::databasePath().'/'.$dir,
         ];
 
-        $modules = $this->addonRegistry->enabled();
+        // During a fresh install this runs *before* the core migrations that
+        // create the addons table, so querying enabled addons would 42P01.
+        // No addons can be enabled pre-install anyway — skip to core-only paths.
+        $modules = Schema::hasTable('addons') ? $this->addonRegistry->enabled() : collect();
         foreach ($modules as $module) {
             if (!is_dir($module->getPath())) {
                 Log::warning(sprintf(

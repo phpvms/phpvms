@@ -29,6 +29,11 @@ beforeEach(function (): void {
         ],
     ]));
 
+    // A valid addon requires composer.json alongside module.json.
+    File::put($this->addonPath.'/composer.json', json_encode([
+        'autoload' => ['psr-4' => ['Modules\\FixtureContract\\' => 'app/']],
+    ]));
+
     // Migration with a deliberately no-op down(): proves uninstall drops the
     // table via the declared contract, not via the migration's down().
     File::put($migrationDir.'/2099_01_01_000000_create_fixture_contract_things_table.php', <<<'PHP'

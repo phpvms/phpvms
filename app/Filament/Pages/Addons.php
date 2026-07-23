@@ -3,8 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Addons\AddonRegistry;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Models\Addon;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -70,7 +72,7 @@ class Addons extends Page implements HasTable
                     ->icon(Heroicon::OutlinedCheckCircle)
                     ->visible(fn (array $record): bool => !$record['enabled'])
                     ->action(function (array $record): void {
-                        app(AddonRegistry::class)->enable($record['name']);
+                        app(AddonRegistry::class)->enable($record['key']);
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
@@ -80,7 +82,7 @@ class Addons extends Page implements HasTable
                     ->icon(Heroicon::OutlinedMinusCircle)
                     ->visible(fn (array $record): bool => $record['enabled'])
                     ->action(function (array $record): void {
-                        app(AddonRegistry::class)->disable($record['name']);
+                        app(AddonRegistry::class)->disable($record['key']);
                         $this->redirectRoute('filament.admin.pages.addons');
                     }),
 
@@ -98,7 +100,7 @@ class Addons extends Page implements HasTable
                     ])
                     ->action(function (array $record, array $data): void {
                         app(AddonRegistry::class)->delete(
-                            $record['name'],
+                            $record['key'],
                             (bool) ($data['remove_tables'] ?? false),
                         );
                         $this->redirectRoute('filament.admin.pages.addons');
@@ -136,8 +138,21 @@ class Addons extends Page implements HasTable
 
     public function getModulesRecords(): Collection
     {
-        return app(AddonRegistry::class)->all()->map(fn ($addon): array => [
-            'name'    => $addon->getName(),
+        // Detect addons that are present on disk but have no DB row — freshly
+        // uploaded (e.g. via FTP) or uninstalled/deleted while their files
+        // remain — so they resurface here as installable (disabled) entries.
+        // Idempotent: existing rows are skipped, new ones are inserted disabled
+        // without touching the boot cache. The boot-cache prime alone can't do
+        // this: after a panel delete it rewrites a fresh cache, so the next boot
+        // short-circuits discovery and the on-disk addon is never re-detected.
+        app(AddonDiscoveryService::class)->discoverNewAddons();
+
+        return app(AddonRegistry::class)->all()->map(fn (Addon $addon): array => [
+            // Canonical, machine-readable name used to resolve the addon in the
+            // registry (enable/disable/delete). Kept separate from the display
+            // label below, which may be decorated with the registry id.
+            'key'     => $addon->getName(),
+            'name'    => empty($addon->registry_id) ? $addon->getName() : $addon->registry_id.'('.$addon->getName().')',
             'enabled' => $addon->isEnabled(),
         ])->values();
     }

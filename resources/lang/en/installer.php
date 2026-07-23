@@ -21,6 +21,8 @@ return [
     'db_connection_failed'              => 'Unable to connect to the database. Please check your .env database settings. Exception: :exception',
     'starting_migration_process'        => 'Starting migration process...',
     'migrations_completed'              => 'Migrations completed successfully.',
+    'passport_keys_failed'              => 'WARNING: Could not generate Passport API keys. The install will continue; run "php artisan passport:keys" afterwards to enable the API.',
+    'update_step_failed'                => 'WARNING: A seeding or key-generation step failed. The update will continue; check the logs for details.',
     'generating_app_key'                => 'Generating new application key...',
     'app_key_warning'                   => 'WARNING: You are still using the default application key. This is not recommended. Please generate a new key by running:',
     'requirements'                      => 'Requirements',
