@@ -86,6 +86,46 @@ it('returns null when no module.json exists', function (): void {
     }
 });
 
+it('returns null when composer.json is missing (both files required)', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'NoComposer',
+        'providers' => [],
+    ]));
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($tmpDir);
+
+        expect($result)->toBeNull();
+    } finally {
+        unlink($tmpDir.'/module.json');
+        rmdir($tmpDir);
+    }
+});
+
+it('returns null when composer.json contains invalid JSON', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'BadComposer',
+        'providers' => [],
+    ]));
+    file_put_contents($tmpDir.'/composer.json', '{not valid json}');
+
+    try {
+        $parser = new ManifestParser();
+        $result = $parser->parse($tmpDir);
+
+        expect($result)->toBeNull();
+    } finally {
+        unlink($tmpDir.'/composer.json');
+        unlink($tmpDir.'/module.json');
+        rmdir($tmpDir);
+    }
+});
+
 it('resolves composer autoload.files into absolute paths under the addon dir', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
