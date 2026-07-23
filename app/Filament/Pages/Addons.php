@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Addons\AddonRegistry;
+use App\Addons\Services\AddonDiscoveryService;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
@@ -137,6 +138,15 @@ class Addons extends Page implements HasTable
 
     public function getModulesRecords(): Collection
     {
+        // Detect addons that are present on disk but have no DB row — freshly
+        // uploaded (e.g. via FTP) or uninstalled/deleted while their files
+        // remain — so they resurface here as installable (disabled) entries.
+        // Idempotent: existing rows are skipped, new ones are inserted disabled
+        // without touching the boot cache. The boot-cache prime alone can't do
+        // this: after a panel delete it rewrites a fresh cache, so the next boot
+        // short-circuits discovery and the on-disk addon is never re-detected.
+        app(AddonDiscoveryService::class)->discoverNewAddons();
+
         return app(AddonRegistry::class)->all()->map(fn (Addon $addon): array => [
             // Canonical, machine-readable name used to resolve the addon in the
             // registry (enable/disable/delete). Kept separate from the display
