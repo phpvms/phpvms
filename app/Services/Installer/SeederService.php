@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
+use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
+use App\Addons\Models\AddonManifest;
+use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
 use App\Models\Addon;
 use App\Models\Kvp;
@@ -20,6 +23,8 @@ class SeederService extends Service
 {
     public function __construct(
         private readonly AddonRegistry $addonRegistry,
+        private readonly AddonAutoLoader $autoLoader,
+        private readonly ManifestParser $manifestParser,
     ) {}
 
     /**
@@ -98,6 +103,19 @@ class SeederService extends Service
 
             if ($files === []) {
                 continue;
+            }
+
+            // Register the addon's own PSR-4 namespace + autoload files before
+            // running its seeders. seedAddons() iterates the DB enabled() set,
+            // which can include an addon that is missing from (or stale in) the
+            // boot cache — so AddonServiceProvider::register() never registered
+            // its namespace and a seeder referencing the addon's own models would
+            // throw class-not-found. Registering from the manifest here makes
+            // seeding self-sufficient regardless of boot-cache state.
+            $manifest = $this->manifestParser->parse($addon->getPath());
+
+            if ($manifest instanceof AddonManifest) {
+                $this->autoLoader->registerClasses($manifest);
             }
 
             // Isolate each addon: a faulty seeder (missing model, bad SQL) must

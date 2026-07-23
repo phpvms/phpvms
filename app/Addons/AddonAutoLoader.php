@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Addons;
 
 use App\Addons\Models\AddonBootCache;
+use App\Addons\Models\AddonManifest;
 use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Exceptions\AutoloadModeException;
@@ -81,6 +82,32 @@ class AddonAutoLoader
             $this->registerPsr4($loader, $entry);
             $this->loadAutoloadFiles($entry);
             $this->registerProviders($app, $entry);
+        }
+    }
+
+    /**
+     * Register just the class autoloading (PSR-4 namespace + autoload files) for
+     * a single addon described by its manifest — without registering its service
+     * providers.
+     *
+     * Used when an addon's classes must be resolvable outside the boot-cache
+     * path: notably running its database seeders during install/update, where the
+     * addon may be enabled in the DB but absent from (or stale in) the boot cache,
+     * so AddonServiceProvider::register() never registered its namespace. Without
+     * this, a seeder that references the addon's own models throws a
+     * class-not-found. Idempotent and Octane-safe (addPsr4 is additive, files are
+     * require_once-guarded).
+     */
+    public function registerClasses(AddonManifest $manifest): void
+    {
+        if ($manifest->namespace !== '' && $manifest->autoloadPath !== '') {
+            $this->classLoader()->addPsr4(rtrim($manifest->namespace, '\\').'\\', $manifest->autoloadPath);
+        }
+
+        foreach ($manifest->files as $file) {
+            if (is_string($file) && $file !== '' && is_file($file)) {
+                require_once $file;
+            }
         }
     }
 
