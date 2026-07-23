@@ -97,21 +97,32 @@ class AddonServiceProvider extends ServiceProvider
      * Sync enabled addons' declared settings into the addon_settings table.
      *
      * Runs once per worker boot (not per request), alongside the cache prime.
-     * Guarded by a table-existence check so it no-ops before the addon-settings
-     * migration has run (fresh install / pre-migrate boot), and swallows any
+     * Gated on installed() so it no-ops (silently) when the DB is unreachable or
+     * the app is not yet installed, then guarded by an addon_settings table-
+     * existence check for the v8 upgrade window, and finally swallows any sync
      * error so settings sync can never break application boot.
      */
     private function syncAddonSettings(): void
     {
+        // Fresh install / unreachable DB: nothing to sync yet. installed()
+        // swallows connection failures silently (see app/helpers.php), so a
+        // pre-install boot (/system/install) no longer logs a spurious warning.
+        if (!installed()) {
+            return;
+        }
+
         try {
+            // Installed, but the addon-settings migration may not have run yet
+            // (v8 upgrade window). The DB is reachable here, so hasTable() won't
+            // throw a connection error — it just reports the missing table.
             if (!Schema::hasTable('addon_settings')) {
                 return;
             }
 
             $this->app->make(AddonSettingSyncService::class)->sync();
         } catch (Throwable $throwable) {
-            // Never let settings sync halt boot — it self-heals next boot —
-            // but surface the failure so persistent drift is observable.
+            // A genuine failure against a reachable DB — never halt boot (it
+            // self-heals next boot) but surface it so persistent drift shows.
             Log::warning('Addon settings sync failed during boot; continuing startup.', [
                 'exception' => $throwable,
             ]);
