@@ -101,13 +101,57 @@ class AddonDiscoveryService
      */
     public function primeIfNeeded(): bool
     {
-        if ($this->bootCache->isFresh()) {
+        // Rebuild when the cache is schema-stale OR when it no longer reflects the
+        // current DB addons state. isFresh() alone only catches code-schema drift
+        // (D2-09): an addon enabled/disabled/installed/deleted in the DB after the
+        // cache was written leaves a schema-valid but data-stale cache that would
+        // never rebuild — so its namespace is never registered and its seeder
+        // fails class-not-found. The fingerprint check closes that gap.
+        if ($this->bootCache->isFresh() && $this->cacheMatchesDatabase()) {
             return false;
         }
 
         $this->run();
 
         return true;
+    }
+
+    /**
+     * Whether the boot cache was built from the current DB `addons` state.
+     *
+     * Compares the fingerprint stamped into the cache against a freshly computed
+     * one. A null DB fingerprint (table absent / DB unreachable / pre-install)
+     * means there is nothing to reconcile against, so the cache is left as-is —
+     * the fresh-install disk bootstrap owns it until migrations land.
+     */
+    private function cacheMatchesDatabase(): bool
+    {
+        $databaseFingerprint = $this->databaseFingerprint();
+
+        if ($databaseFingerprint === null) {
+            return true;
+        }
+
+        return $this->bootCache->fingerprint() === $databaseFingerprint;
+    }
+
+    /**
+     * A cheap fingerprint of the DB `addons` table: row count + latest mutation
+     * timestamp. Any enable/disable/install/delete/update changes the count or
+     * bumps updated_at, so a changed fingerprint means the enabled-set diverged.
+     *
+     * Returns null when the table cannot be queried (not yet migrated), so the
+     * pre-install boot path is never blocked by a failing query.
+     */
+    private function databaseFingerprint(): ?string
+    {
+        try {
+            $row = Addon::query()->selectRaw('count(*) as c, max(updated_at) as m')->first();
+
+            return (int) ($row->c ?? 0).':'.($row->m ?? '');
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -193,7 +237,9 @@ class AddonDiscoveryService
             }
         }
 
-        $this->bootCache->write($cacheRows);
+        // Stamp the DB fingerprint so a later boot can tell this cache still
+        // matches the current addons state (see primeIfNeeded/cacheMatchesDatabase).
+        $this->bootCache->write($cacheRows, $this->databaseFingerprint());
     }
 
     /**

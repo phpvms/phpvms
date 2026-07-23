@@ -84,6 +84,26 @@ class BootCache
     }
 
     /**
+     * The DB `addons`-table fingerprint this cache was built from, or null when
+     * absent (fresh-install disk bootstrap) or the file is missing/stale-schema.
+     *
+     * AddonDiscoveryService compares this against a freshly computed fingerprint
+     * to decide whether the cache still reflects the current DB enabled-set.
+     */
+    public function fingerprint(): ?string
+    {
+        $data = $this->loadEnvelope();
+
+        if ($data === null || ($data['schema'] ?? null) !== self::SCHEMA) {
+            return null;
+        }
+
+        $fingerprint = $data['fingerprint'] ?? null;
+
+        return is_string($fingerprint) ? $fingerprint : null;
+    }
+
+    /**
      * Read the boot cache and return hydrated AddonBootCache rows.
      *
      * Returns an empty array when:
@@ -130,13 +150,19 @@ class BootCache
      * Uses a per-process temp file in the same directory so rename() is
      * POSIX-atomic and never crosses filesystems (T-03-02, T-03-03).
      *
+     * The optional $fingerprint records the state of the DB `addons` table this
+     * cache was built from, so a later boot can detect that the DB enabled-set
+     * has diverged and rebuild (see AddonDiscoveryService). BootCache itself
+     * performs no DB reads — the caller computes and passes the value.
+     *
      * @param list<AddonBootCache> $addons
      */
-    public function write(array $addons): void
+    public function write(array $addons, ?string $fingerprint = null): void
     {
         $wrapper = [
             'schema'       => self::SCHEMA,
             'generated_at' => gmdate('c'),
+            'fingerprint'  => $fingerprint,
             'addons'       => array_map(fn (AddonBootCache $e): array => $e->toArray(), $addons),
         ];
 
