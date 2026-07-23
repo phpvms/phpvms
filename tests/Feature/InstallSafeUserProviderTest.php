@@ -4,8 +4,19 @@ declare(strict_types=1);
 
 use App\Auth\InstallSafeUserProvider;
 use App\Models\User;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
+
+/**
+ * Authenticatable model pointed at a table that does not exist, to exercise the
+ * "users table missing" path without dropping the real table (Postgres refuses
+ * to drop a table with dependent foreign keys, and DDL breaks the test
+ * transaction on MySQL).
+ */
+class MissingTableUser extends Authenticatable
+{
+    protected $table = 'a_users_table_that_does_not_exist';
+}
 
 it('registers the install-safe provider for the users provider', function (): void {
     expect(Auth::createUserProvider('users'))->toBeInstanceOf(InstallSafeUserProvider::class);
@@ -20,13 +31,9 @@ it('resolves a user normally when the users table exists', function (): void {
         ->and($resolved->getAuthIdentifier())->toBe($user->id);
 });
 
-it('returns null instead of throwing when the users table is missing (fresh/wiped DB)', function (): void {
-    // Simulate a wiped database while a stale session cookie still references a
-    // user id: dropping the table must not crash auth resolution.
-    Schema::disableForeignKeyConstraints();
-    Schema::drop('users');
-    Schema::enableForeignKeyConstraints();
+it('returns null instead of throwing when the backing table is missing (fresh/wiped DB)', function (): void {
+    // A stale session cookie references a user id, but the table isn't there yet.
+    $provider = new InstallSafeUserProvider(app('hash'), MissingTableUser::class);
 
-    expect(Schema::hasTable('users'))->toBeFalse()
-        ->and(Auth::createUserProvider('users')->retrieveById(1))->toBeNull();
+    expect($provider->retrieveById(1))->toBeNull();
 });
