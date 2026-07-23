@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Laravel\Passport\Passport;
 use phpseclib3\Crypt\RSA;
+use RuntimeException;
 
 class InstallerService extends Service
 {
@@ -105,8 +106,13 @@ class InstallerService extends Service
         // calling it throws CommandNotFoundException. This mirrors KeysCommand.
         $key = RSA::createKey(4096);
 
-        file_put_contents($publicKey, (string) $key->getPublicKey());
-        file_put_contents($privateKey, (string) $key);
+        // A false return means the write failed (e.g. an unwritable storage
+        // path). Fail loudly here rather than logging success and letting the
+        // problem resurface later when Passport tries to sign a token.
+        if (file_put_contents($publicKey, (string) $key->getPublicKey()) === false
+            || file_put_contents($privateKey, (string) $key) === false) {
+            throw new RuntimeException('Failed to write Passport encryption keys to '.dirname($privateKey));
+        }
 
         if (!windows_os()) {
             @chmod($publicKey, 0660);

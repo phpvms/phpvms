@@ -13,6 +13,7 @@ use Database\Seeders\BaseDataSeeder;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class SeederService extends Service
@@ -58,6 +59,14 @@ class SeederService extends Service
      */
     public function coreSeedsPending(): bool
     {
+        // Before the core migration that creates `settings` has run, querying it
+        // would throw. Treat a missing table as core-pending so callers such as
+        // UpdatePending redirect to /system/update instead of erroring — mirrors
+        // the addons-table guard in MigrationService.
+        if (!Schema::hasTable('settings')) {
+            return true;
+        }
+
         return new SettingsSeeder()->settingsPending();
     }
 
