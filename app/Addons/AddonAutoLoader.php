@@ -105,7 +105,7 @@ class AddonAutoLoader
         }
 
         foreach ($manifest->files as $file) {
-            if (is_string($file) && $file !== '' && is_file($file)) {
+            if ($file !== '' && is_file($file)) {
                 require_once $file;
             }
         }

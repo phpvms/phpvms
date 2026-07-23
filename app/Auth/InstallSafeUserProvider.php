@@ -6,6 +6,7 @@ namespace App\Auth;
 
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Schema;
 use Override;
@@ -28,20 +29,27 @@ use Throwable;
  */
 class InstallSafeUserProvider extends EloquentUserProvider
 {
+    /**
+     * @return (Authenticatable&Model)|null
+     */
     #[Override]
     public function retrieveById($identifier): ?Authenticatable
     {
-        return $this->tolerateMissingTable(fn (): ?Authenticatable => parent::retrieveById($identifier));
-    }
-
-    #[Override]
-    public function retrieveByToken($identifier, #[SensitiveParameter] $token): ?Authenticatable
-    {
-        return $this->tolerateMissingTable(fn (): ?Authenticatable => parent::retrieveByToken($identifier, $token));
+        return $this->tolerateMissingTable(fn () => parent::retrieveById($identifier));
     }
 
     /**
-     * @param callable(): ?Authenticatable $callback
+     * @return (Authenticatable&Model)|null
+     */
+    #[Override]
+    public function retrieveByToken($identifier, #[SensitiveParameter] $token): ?Authenticatable
+    {
+        return $this->tolerateMissingTable(fn () => parent::retrieveByToken($identifier, $token));
+    }
+
+    /**
+     * @param  callable(): ((Authenticatable&Model)|null) $callback
+     * @return (Authenticatable&Model)|null
      */
     private function tolerateMissingTable(callable $callback): ?Authenticatable
     {
