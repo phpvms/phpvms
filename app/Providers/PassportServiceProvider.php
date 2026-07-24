@@ -37,6 +37,19 @@ class PassportServiceProvider extends ServiceProvider
         // per-plugin ScopeRepository binding. Bound in register() so it is in
         // place before the AuthorizationServer singleton is first resolved.
         $this->app->bind(PassportScopeRepository::class, ScopeRepository::class);
+
+        // Add the api_key grant lazily — only when Passport actually builds the
+        // AuthorizationServer (on a real token request), never at boot. Resolving
+        // it eagerly would force makeCryptKey('private') during console/build
+        // steps (e.g. package:discover) before the OAuth keys exist. Passport's
+        // own grants are enabled inside the singleton builder before this fires,
+        // and enableGrantType() keys by identifier, so it is idempotent.
+        $this->app->resolving(
+            AuthorizationServer::class,
+            static function (AuthorizationServer $server): void {
+                $server->enableGrantType(new ApiKeyGrant(), Passport::tokensExpireIn());
+            },
+        );
     }
 
     public function boot(): void
@@ -54,16 +67,6 @@ class PassportServiceProvider extends ServiceProvider
             $apiScopeCatalog = app(PermissionRegistry::class)->apiScopeCatalog();
 
             Passport::tokensCan(array_merge($catalog, $apiScopeCatalog));
-        });
-
-        // Register the api_key grant (App\Auth\Grants\ApiKeyGrant) once the
-        // AuthorizationServer singleton exists, so it is added after
-        // Passport's own grants build inside that binding's closure.
-        // enableGrantType() keys grants by identifier ('api_key'), so
-        // re-registration is idempotent — safe under Octane.
-        $this->app->booted(static function (): void {
-            $server = app(AuthorizationServer::class);
-            $server->enableGrantType(new ApiKeyGrant(), Passport::tokensExpireIn());
         });
 
         // Least-privilege default: a token that requests no scopes gets only the
