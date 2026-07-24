@@ -72,10 +72,11 @@ class PassportServiceProvider extends ServiceProvider
         // entirely with wildcard access (see CheckApiScope).
         Passport::defaultScopes([ApiScope::UserRead->value]);
 
-        // Token lifetimes. Access tokens are short-lived and refreshable;
-        // personal access tokens (used by ACARS/scripts) live longer.
-        Passport::tokensExpireIn(now()->addDays(15));
-        Passport::refreshTokensExpireIn(now()->addDays(30));
+        // Token lifetimes. phpVMS's OAuth is API-only (the web frontend uses
+        // session auth), so access tokens serve long-lived desktop/ACARS clients
+        // — issued for ~8 months across all grants (device flow, api_key, etc.).
+        Passport::tokensExpireIn(now()->addMonths(8));
+        Passport::refreshTokensExpireIn(now()->addMonths(9));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
 
         // Custom consent screen rendered inside the app frontend theme.

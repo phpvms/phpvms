@@ -87,6 +87,16 @@ test('a valid api_key with a held scope returns a scoped token', function (): vo
         ->and(grantedScopes($response->json('access_token')))->toContain('x:test');
 });
 
+test('the issued token uses the configured long-lived TTL', function (): void {
+    $user = User::factory()->create(['state' => UserState::ACTIVE]);
+
+    $response = postApiKeyGrant(['api_key' => $user->api_key]);
+
+    $response->assertStatus(200);
+    // ~8 months — well beyond the former 15-day access TTL.
+    expect((int) $response->json('expires_in'))->toBeGreaterThan(180 * 86400);
+});
+
 test('the grant never issues a refresh token', function (): void {
     $user = User::factory()->create(['state' => UserState::ACTIVE]);
 
