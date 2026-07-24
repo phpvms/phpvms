@@ -78,6 +78,41 @@ class RoleResource extends Resource
     }
 
     /**
+     * Permission groups whose entries are ALL registered API scopes
+     * (OAuth-exposable), surfaced in their own matrix tab. A group qualifies
+     * only when every permission in it is an API scope, so a mixed admin group
+     * is never pulled out of its scope tab.
+     *
+     * @return list<array{key: string, label: string, type: string, scope: string, scope_key: string, permissions: list<array{name: string, ability: ?string, label: string}>}>
+     */
+    public static function apiPermissionGroups(): array
+    {
+        $apiScopes = array_flip(app(PermissionRegistry::class)->apiScopes());
+
+        return array_values(array_filter(
+            static::permissionGroups(),
+            static fn (array $group): bool => $group['permissions'] !== []
+                && collect($group['permissions'])->every(static fn (array $permission): bool => isset($apiScopes[$permission['name']])),
+        ));
+    }
+
+    /**
+     * Permission groups for the per-scope tabs — everything that is not an
+     * all-API-scope group (which lives in the dedicated API Scopes tab).
+     *
+     * @return list<array{key: string, label: string, type: string, scope: string, scope_key: string, permissions: list<array{name: string, ability: ?string, label: string}>}>
+     */
+    public static function scopePermissionGroups(): array
+    {
+        $apiKeys = array_flip(array_column(static::apiPermissionGroups(), 'key'));
+
+        return array_values(array_filter(
+            static::permissionGroups(),
+            static fn (array $group): bool => !isset($apiKeys[$group['key']]),
+        ));
+    }
+
+    /**
      * A form-safe field key for a group (colons/dashes break dot-notation).
      */
     public static function safeKey(string $key): string

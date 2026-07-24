@@ -37,6 +37,13 @@ class PermissionRegistry
      */
     protected array $custom = [];
 
+    /**
+     * Names of permissions also declared as OAuth-exposable API scopes.
+     *
+     * @var list<string>
+     */
+    protected array $apiScopes = [];
+
     public function __construct(private readonly BootCache $bootCache) {}
 
     /**
@@ -67,6 +74,50 @@ class PermissionRegistry
 
             $this->register($name, $group, $label);
         }
+    }
+
+    /**
+     * Register a permission-backed OAuth scope.
+     *
+     * Records the name as a normal permission (so it flows through
+     * `permission:sync`, appears in the roles matrix, and is role-assignable)
+     * AND flags it as an API scope (see {@see apiScopes()}), which
+     * `PassportServiceProvider` merges into the Passport catalog and
+     * `App\Auth\ScopeRepository` gates by `$user->can($name)` at token
+     * issuance. Scope id **is** the permission name — no separate mapping.
+     */
+    public function registerApiScope(string $name, string $group = 'API', ?string $label = null): void
+    {
+        $this->register($name, $group, $label);
+
+        $this->apiScopes[] = $name;
+    }
+
+    /**
+     * Names of permissions declared as API scopes via {@see registerApiScope()}.
+     *
+     * @return list<string>
+     */
+    public function apiScopes(): array
+    {
+        return array_values(array_unique($this->apiScopes));
+    }
+
+    /**
+     * Registered API scopes as a `name => label` map, for merging into the
+     * Passport scope catalog (`PassportServiceProvider::boot()`).
+     *
+     * @return array<string, string>
+     */
+    public function apiScopeCatalog(): array
+    {
+        $catalog = [];
+
+        foreach ($this->apiScopes() as $name) {
+            $catalog[$name] = $this->custom[$name]['label'] ?? Str::headline($name);
+        }
+
+        return $catalog;
     }
 
     /**

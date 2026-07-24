@@ -12,6 +12,7 @@ use App\Addons\Support\AutoloadGuard;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\ManifestParser;
 use App\Services\AddonSettingSyncService;
+use App\Support\RegistersApiScopes;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -41,6 +42,8 @@ use Throwable;
  */
 class AddonServiceProvider extends ServiceProvider
 {
+    use RegistersApiScopes;
+
     /**
      * Bind engine services and run the addon loader.
      *

@@ -8,6 +8,7 @@ use App\Filament\Resources\Roles\RoleResource;
 use App\Models\Role;
 use App\Services\PermissionRegistry;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
@@ -70,7 +71,7 @@ class RoleForm
     {
         $scopes = [];
 
-        foreach (RoleResource::permissionGroups() as $group) {
+        foreach (RoleResource::scopePermissionGroups() as $group) {
             $key = $group['scope_key'];
 
             if (!isset($scopes[$key])) {
@@ -102,7 +103,36 @@ class RoleForm
                 ]);
         }
 
+        // Permission-backed OAuth API scopes get their own tab, separate from the
+        // admin permission matrix. Always present so the capability is
+        // discoverable even before a module registers any.
+        $tabs[] = static::apiScopeTab();
+
         return $tabs;
+    }
+
+    /**
+     * The dedicated "API Scopes" tab: one fieldset per registering module, or an
+     * empty-state hint when no API scopes are registered.
+     */
+    protected static function apiScopeTab(): Tab
+    {
+        $groups = RoleResource::apiPermissionGroups();
+
+        if ($groups === []) {
+            return Tab::make(__('filament.permissions_api_tab'))
+                ->schema([
+                    Placeholder::make('api_scopes_empty')
+                        ->hiddenLabel()
+                        ->content(__('filament.permissions_api_empty')),
+                ]);
+        }
+
+        return Tab::make(__('filament.permissions_api_tab'))
+            ->schema([
+                Grid::make(['default' => 1, 'md' => 2, 'xl' => 3])
+                    ->schema(array_map(static::permissionFieldset(...), $groups)),
+            ]);
     }
 
     /**
