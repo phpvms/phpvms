@@ -137,3 +137,32 @@ it('lets modules register custom permissions at runtime', function (): void {
     expect($group)->not->toBeNull();
     expect($group['permissions'][0]['name'])->toBe('export-data');
 });
+
+it('is resolved as a singleton so registrations accumulate across callers', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->registerApiScope('x:first', 'API');
+
+    // Resolving again must return the SAME instance, not a fresh one, or the
+    // second registration below would be lost to a separate object.
+    $again = app(PermissionRegistry::class);
+    $again->registerApiScope('x:second', 'API');
+
+    expect($registry)->toBe($again);
+    expect(app(PermissionRegistry::class)->apiScopes())->toContain('x:first', 'x:second');
+});
+
+it('registers an API scope as both a permission and an API scope', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->registerApiScope('x:test', 'API', 'Test Scope');
+
+    expect($registry->all())->toContain('x:test');
+    expect($registry->apiScopes())->toContain('x:test');
+});
+
+it('does not treat a plain registered permission as an API scope', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->register('plain-permission', 'Custom');
+
+    expect($registry->all())->toContain('plain-permission');
+    expect($registry->apiScopes())->not->toContain('plain-permission');
+});

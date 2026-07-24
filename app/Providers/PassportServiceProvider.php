@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Auth\ScopeRepository;
+use App\Services\PermissionRegistry;
 use App\Support\ApiScope;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Bridge\ScopeRepository as PassportScopeRepository;
 use Laravel\Passport\Passport;
+use Override;
 
 /**
  * Wires Laravel Passport into the application: the OAuth scope catalog, token
@@ -23,12 +27,32 @@ use Laravel\Passport\Passport;
  */
 class PassportServiceProvider extends ServiceProvider
 {
+    #[Override]
+    public function register(): void
+    {
+        // Gate every catalog scope by the holder's Spatie permission at token
+        // issuance (App\Auth\ScopeRepository::finalizeScopes()). Replaces any
+        // per-plugin ScopeRepository binding. Bound in register() so it is in
+        // place before the AuthorizationServer singleton is first resolved.
+        $this->app->bind(PassportScopeRepository::class, ScopeRepository::class);
+    }
+
     public function boot(): void
     {
         // Register the full scope catalog (including the wildcard) so tokens may
         // be issued for any of them and the consent screen can describe them.
         $catalog = [ApiScope::All->value => ApiScope::All->description()] + ApiScope::catalog();
         Passport::tokensCan($catalog);
+
+        // Merge in permission-backed API scopes (App\Services\PermissionRegistry
+        // ::registerApiScope()) once every provider — including addons — has
+        // booted and declared its scopes, so the merge never races a provider
+        // that registers later. Preserves the ApiScope catalog set above.
+        $this->app->booted(static function () use ($catalog): void {
+            $apiScopeCatalog = app(PermissionRegistry::class)->apiScopeCatalog();
+
+            Passport::tokensCan(array_merge($catalog, $apiScopeCatalog));
+        });
 
         // Least-privilege default: a token that requests no scopes gets only the
         // ability to read its owner's profile. Everything else must be granted
