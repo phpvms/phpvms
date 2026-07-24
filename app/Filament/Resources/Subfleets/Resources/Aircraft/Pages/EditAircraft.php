@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Models\Aircraft;
 use App\Models\File;
@@ -14,6 +15,8 @@ use Override;
 
 class EditAircraft extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = AircraftResource::class;
 
     #[Override]

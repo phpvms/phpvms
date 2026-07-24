@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Support\Units\Mass;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Override;
 
 class CreateAircraft extends CreateRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = AircraftResource::class;
 
     #[Override]

@@ -26,6 +26,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
@@ -167,7 +168,7 @@ class AddonSettings extends Page
     {
         return Actions::make([
             $this->getSaveFormAction(),
-        ]);
+        ])->alignment(Alignment::End);
     }
 
     protected function getSaveFormAction(): Action

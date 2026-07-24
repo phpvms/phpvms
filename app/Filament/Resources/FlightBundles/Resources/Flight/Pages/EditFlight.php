@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
@@ -12,6 +13,8 @@ use Override;
 
 class EditFlight extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = FlightResource::class;
 
     #[Override]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OAuthClients\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\OAuthClients\OAuthClientResource;
 use App\Models\OauthClient;
 use Filament\Notifications\Notification;
@@ -14,6 +15,8 @@ use Override;
 
 class CreateOAuthClient extends CreateRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = OAuthClientResource::class;
 
     /**

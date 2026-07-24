@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
@@ -14,6 +15,8 @@ use Override;
 
 class EditPirep extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = PirepResource::class;
 
     #[Override]

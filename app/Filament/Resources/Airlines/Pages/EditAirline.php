@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Airlines\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Airlines\AirlineResource;
 use App\Models\Airline;
 use App\Models\File;
@@ -14,6 +15,8 @@ use Override;
 
 class EditAirline extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = AirlineResource::class;
 
     #[Override]

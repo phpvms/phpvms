@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Awards\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Awards\AwardResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -13,6 +14,8 @@ use Override;
 
 class EditAward extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = AwardResource::class;
 
     #[Override]

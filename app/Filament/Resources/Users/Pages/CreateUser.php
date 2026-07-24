@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\UserService;
@@ -10,6 +11,8 @@ use Override;
 
 class CreateUser extends CreateRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = UserResource::class;
 
     #[Override]

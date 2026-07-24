@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Roles\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Models\Role;
 use Filament\Actions\DeleteAction;
@@ -12,6 +13,8 @@ use Override;
 
 class EditRole extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = RoleResource::class;
 
     /**

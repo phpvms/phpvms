@@ -36,6 +36,8 @@ use App\Services\SettingService;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Filament\Pages\BasePage;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
@@ -78,6 +80,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Right-align the Save/Cancel row on every Filament form page. This is a
+        // static on BasePage that no page class redeclares, so setting it once
+        // covers both panels. The ordering within that row is handled per page
+        // by the PutsPrimaryActionLast concern.
+        BasePage::formActionsAlignment(Alignment::End);
 
         // The SettingService memo is request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo

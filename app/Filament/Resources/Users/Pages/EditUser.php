@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
 use App\Filament\Resources\Users\Actions\VerifyEmailAction;
 use App\Filament\Resources\Users\UserResource;
@@ -18,6 +19,8 @@ use Override;
 
 class EditUser extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     private ?UserState $oldState = null;
 
     private ?int $oldRankId = null;

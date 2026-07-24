@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
@@ -139,9 +140,9 @@ class Settings extends Page
     public function getFormActionsComponents(): Actions
     {
         return Actions::make([
-            $this->getSaveFormAction(),
             $this->getCancelFormAction(),
-        ]);
+            $this->getSaveFormAction(),
+        ])->alignment(Alignment::End);
     }
 
     protected function getSaveFormAction(): Action

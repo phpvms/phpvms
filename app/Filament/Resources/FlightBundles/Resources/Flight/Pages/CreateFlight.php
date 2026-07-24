@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use Carbon\Carbon;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Override;
 
 class CreateFlight extends CreateRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = FlightResource::class;
 
     #[Override]

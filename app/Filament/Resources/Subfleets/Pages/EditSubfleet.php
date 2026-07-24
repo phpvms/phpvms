@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Pages;
 
+use App\Filament\Concerns\PutsPrimaryActionLast;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\File;
 use App\Models\Subfleet;
@@ -14,6 +15,8 @@ use Override;
 
 class EditSubfleet extends EditRecord
 {
+    use PutsPrimaryActionLast;
+
     protected static string $resource = SubfleetResource::class;
 
     #[Override]
