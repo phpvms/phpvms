@@ -44,7 +44,7 @@
 
 <li>
   <a data-toggle="collapse" href="#config_menu" class="menu config_menu" aria-expanded="true">
-    <h5>config&nbsp;<b class="pe-7s-angle-right"></b></h5>
+    <h5>config&nbsp<b class="pe-7s-angle-right"></b></h5>
   </a>
 
   <div class="collapse" id="config_menu" aria-expanded="true">
@@ -94,6 +94,10 @@
         </li>
       @endcan
 
+      @can('view:settings')
+      <li><a href="{{ \App\Filament\Pages\Settings::getUrl() }}"><i class="pe-7s-config"></i>settings</a></li>
+      @endcan
+
       @can('view:modules')
         <li><a href="{{ \App\Filament\Pages\Addons::getUrl() }}"><i class="pe-7s-box2"></i>addons/modules</a>
         </li>
@@ -105,10 +109,6 @@
 
       @can('view:activity')
         <li><a href="{{ \App\Filament\Resources\ActivityLogs\ActivityLogResource::getUrl() }}"><i class="pe-7s-news-paper"></i>activities</a></li>
-      @endcan
-
-      @can('view:settings')
-        <li><a href="{{ \App\Filament\Pages\Settings::getUrl() }}"><i class="pe-7s-config"></i>settings</a></li>
       @endcan
     </ul>
   </div>
