@@ -6,6 +6,7 @@ use App\Enums\UserState;
 use App\Models\Permission;
 use App\Models\User;
 use App\Services\PermissionRegistry;
+use Illuminate\Database\QueryException;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 
@@ -99,6 +100,13 @@ test('the issued token uses the configured access-token TTL', function (): void 
         ->toBeLessThan(8 * 86400);
 });
 
+test('api_key is unique at the database level', function (): void {
+    User::factory()->create(['api_key' => 'shared-key-0000000000']);
+
+    expect(fn () => User::factory()->create(['api_key' => 'shared-key-0000000000']))
+        ->toThrow(QueryException::class);
+});
+
 test('the grant never issues a refresh token', function (): void {
     $user = User::factory()->create(['state' => UserState::ACTIVE]);
 
@@ -107,17 +115,6 @@ test('the grant never issues a refresh token', function (): void {
     $response->assertStatus(200);
 
     expect($response->json('refresh_token'))->toBeNull();
-});
-
-test('an api_key matching more than one user is rejected generically', function (): void {
-    User::factory()->create(['state' => UserState::ACTIVE, 'api_key' => 'dup-key-000000000000000000000000000000']);
-    User::factory()->create(['state' => UserState::ACTIVE, 'api_key' => 'dup-key-000000000000000000000000000000']);
-
-    $response = postApiKeyGrant(['api_key' => 'dup-key-000000000000000000000000000000']);
-
-    $response->assertStatus(400);
-
-    expect($response->json('error'))->toBe('invalid_grant');
 });
 
 test('a scope the user lacks is dropped from the granted token', function (): void {

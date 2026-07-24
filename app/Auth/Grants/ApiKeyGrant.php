@@ -45,14 +45,13 @@ final class ApiKeyGrant extends AbstractGrant
         $apiKey = $this->getRequestParameter('api_key', $request)
             ?? throw OAuthServerException::invalidRequest('api_key');
 
-        // api_key is indexed but not unique; reject an ambiguous match rather
-        // than issue a token for an arbitrary user should duplicates ever exist.
-        // A unique constraint is the durable fix (tracked as a follow-up).
-        $matches = User::where('api_key', $apiKey)->limit(2)->get();
-        $user = $matches->count() === 1 ? $matches->first() : null;
+        // Resolve the user by their api_key — a single indexed exact-match lookup
+        // (no LIKE). A DB unique constraint guarantees at most one match (see the
+        // add_users_api_key_unique_index migration).
+        $user = User::where('api_key', $apiKey)->first();
 
-        // Generic error for an unknown/ambiguous key or a failed state gate —
-        // never reveal which check failed or echo the submitted key.
+        // Generic error for an unknown key or a failed state gate — never reveal
+        // which check failed or echo the submitted key.
         if ($user === null || ($user->state !== UserState::ACTIVE && $user->state !== UserState::ON_LEAVE)) {
             throw OAuthServerException::invalidCredentials();
         }
