@@ -122,6 +122,8 @@ return [
     'role_permissions_help'              => 'Grant this role access to resources, pages and other features.',
     'role_super_admin_notice'            => 'The super administrator role automatically has access to everything and cannot be edited.',
     'permissions_core_tab'               => 'phpVMS',
+    'permissions_api_tab'                => 'API Scopes',
+    'permissions_api_empty'              => 'No API scopes are registered yet. Modules that expose OAuth API scopes will list them here.',
     'module_access'                      => 'Module Access',
     'access'                             => 'Access',
     'backup_create'                      => 'Create',
