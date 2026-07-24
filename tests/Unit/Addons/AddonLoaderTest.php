@@ -261,3 +261,48 @@ class AddonLoaderTestProviderBeta extends ServiceProvider
     #[Override]
     public function register(): void {}
 }
+
+// ---------------------------------------------------------------------------
+// Loader resolution vs. foreign autoloaders
+// ---------------------------------------------------------------------------
+
+/**
+ * Phar-distributed tools (PHPStan, PHPUnit) register their own Composer
+ * ClassLoader and prepend it, so it sits ahead of ours in the autoload stack.
+ * classLoader() must still return *our* loader: the foreign one is
+ * classmap-authoritative (which would trip the mode guard) and is thrown away
+ * when the tool exits (so addPsr4 on it would silently lose the addon).
+ */
+it('classLoader() returns our loader, not a foreign one prepended to the stack', function (): void {
+    $ours = ClassLoader::getRegisteredLoaders()[base_path('vendor')] ?? null;
+    expect($ours)->toBeInstanceOf(ClassLoader::class);
+
+    $foreign = new ClassLoader();
+    $foreign->setClassMapAuthoritative(true);
+    $foreign->register(true); // prepend, as a phar bootstrap does
+
+    try {
+        $resolved = loaderWithRows([])->classLoader();
+
+        expect($resolved)->toBe($ours)
+            ->and($resolved->isClassMapAuthoritative())->toBeFalse();
+    } finally {
+        $foreign->unregister();
+    }
+});
+
+it('does not report authoritative mode when only a foreign loader is authoritative', function (): void {
+    $foreign = new ClassLoader();
+    $foreign->setClassMapAuthoritative(true);
+    $foreign->register(true);
+
+    try {
+        // Would throw AutoloadModeException if the foreign loader were picked.
+        loaderWithRows([addonRow('Modules\\ForeignProbe', app_path('Addons'))])
+            ->register(app());
+    } finally {
+        $foreign->unregister();
+    }
+
+    expect(true)->toBeTrue();
+});
