@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
-use App\Filament\Concerns\PutsPrimaryActionLast;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Support\Units\Mass;
 use Filament\Resources\Pages\CreateRecord;
@@ -10,9 +10,15 @@ use Override;
 
 class CreateAircraft extends CreateRecord
 {
-    use PutsPrimaryActionLast;
+    use ReversePrimaryButtons;
 
     protected static string $resource = AircraftResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array

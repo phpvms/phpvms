@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
@@ -23,7 +24,6 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
@@ -42,6 +42,7 @@ class Settings extends Page
 {
     use AuthorizesAccess;
     use InteractsWithFormActions;
+    use ReversePrimaryButtons;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
@@ -139,10 +140,10 @@ class Settings extends Page
 
     public function getFormActionsComponents(): Actions
     {
-        return Actions::make([
-            $this->getCancelFormAction(),
+        return Actions::make($this->reversePrimaryButtons([
             $this->getSaveFormAction(),
-        ])->alignment(Alignment::End);
+            $this->getCancelFormAction(),
+        ]));
     }
 
     protected function getSaveFormAction(): Action

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Airlines\Pages;
 
-use App\Filament\Concerns\PutsPrimaryActionLast;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Airlines\AirlineResource;
 use App\Models\Airline;
 use App\Models\File;
@@ -15,9 +15,15 @@ use Override;
 
 class EditAirline extends EditRecord
 {
-    use PutsPrimaryActionLast;
+    use ReversePrimaryButtons;
 
     protected static string $resource = AirlineResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array
