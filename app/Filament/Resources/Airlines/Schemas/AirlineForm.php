@@ -10,7 +10,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -88,10 +87,8 @@ class AirlineForm
                             alt: __('filament.airline_logo'),
                         )
                             ->imageHeight('10rem')
+                            ->alignCenter()
                             ->visible(fn (Get $get, ?Airline $record): bool => filled(self::previewUrl($get('logo'), $record))),
-
-                        Text::make(__('filament.airline_logo_empty'))
-                            ->visible(fn (Get $get, ?Airline $record): bool => blank(self::previewUrl($get('logo'), $record))),
                     ])
                     ->columnSpanFull()
                     ->columns(2),
@@ -106,10 +103,9 @@ class AirlineForm
     private static function logoUpload(): FileUpload
     {
         return FileUpload::make('logo')
-            ->label(__('filament.airline_logo'))
-            ->helperText(__('filament.airline_logo_hint'))
+            ->label('')
             ->image()
-            ->acceptedFileTypes(['image/*', 'image/svg+xml'])
+            ->acceptedFileTypes(['image/png', 'image/svg+xml'])
             // The preview lives in the other column of this card, so the drop
             // zone stays a drop zone.
             ->previewable(false)
