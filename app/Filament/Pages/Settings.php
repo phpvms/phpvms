@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
@@ -41,6 +42,7 @@ class Settings extends Page
 {
     use AuthorizesAccess;
     use InteractsWithFormActions;
+    use ReversePrimaryButtons;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
@@ -138,10 +140,10 @@ class Settings extends Page
 
     public function getFormActionsComponents(): Actions
     {
-        return Actions::make([
+        return Actions::make($this->reversePrimaryButtons([
             $this->getSaveFormAction(),
             $this->getCancelFormAction(),
-        ]);
+        ]));
     }
 
     protected function getSaveFormAction(): Action

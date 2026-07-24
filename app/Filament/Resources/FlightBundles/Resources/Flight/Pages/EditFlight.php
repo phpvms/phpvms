@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
@@ -12,7 +13,15 @@ use Override;
 
 class EditFlight extends EditRecord
 {
+    use ReversePrimaryButtons;
+
     protected static string $resource = FlightResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array
