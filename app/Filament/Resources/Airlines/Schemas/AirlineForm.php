@@ -121,7 +121,7 @@ class AirlineForm
             // client the image behind that URL is new. A record that has not
             // been created yet has no id to use, so it falls back to a ULID.
             ->getUploadedFileNameForStorageUsing(
-                fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record?->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
+                fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
             )
             // The column may hold an external URL, which has no file on our disk
             // for the default resolver to stat. Hand those to the preview as-is.
