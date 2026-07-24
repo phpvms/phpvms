@@ -26,22 +26,21 @@ class AircraftImporter extends ImportExport
      * Should match the database fields, for the most part
      */
     public static array $columns = [
-        'subfleet'      => 'required',
-        'iata'          => 'nullable',
-        'icao'          => 'nullable',
-        'hub_id'        => 'nullable',
-        'airport_id'    => 'nullable',
-        'name'          => 'required',
-        'registration'  => 'required',
-        'fin'           => 'nullable',
-        'hex_code'      => 'nullable',
-        'selcal'        => 'nullable',
-        'dow'           => 'nullable|numeric',
-        'zfw'           => 'nullable|numeric',
-        'mtow'          => 'nullable|numeric',
-        'mlw'           => 'nullable|numeric',
-        'status'        => 'nullable',
-        'simbrief_type' => 'nullable',
+        'subfleet'     => 'required',
+        'iata'         => 'nullable',
+        'icao'         => 'nullable',
+        'hub_id'       => 'nullable',
+        'airport_id'   => 'nullable',
+        'name'         => 'required',
+        'registration' => 'required',
+        'fin'          => 'nullable',
+        'hex_code'     => 'nullable',
+        'selcal'       => 'nullable',
+        'dow'          => 'nullable|numeric',
+        'zfw'          => 'nullable|numeric',
+        'mtow'         => 'nullable|numeric',
+        'mlw'          => 'nullable|numeric',
+        'status'       => 'nullable',
     ];
 
     /**
@@ -86,7 +85,6 @@ class AircraftImporter extends ImportExport
         // Somehow they got empty strings instead of null without this!
         $row['fin'] = blank($row['fin']) ? null : $row['fin'];
         $row['selcal'] = blank($row['selcal']) ? null : $row['selcal'];
-        $row['simbrief_type'] = blank($row['simbrief_type']) ? null : $row['simbrief_type'];
         // Set the correct mass units
         $row['dow'] = $this->CorrectMassUnit((float) $row['dow']);
         $row['zfw'] = $this->CorrectMassUnit((float) $row['zfw']);

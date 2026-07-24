@@ -30,7 +30,6 @@ class AircraftExporter extends Exporter
             ExportColumn::make('mtow'),
             ExportColumn::make('mlw'),
             ExportColumn::make('zfw'),
-            ExportColumn::make('simbrief_type'),
             ExportColumn::make('fuel_onboard'),
             ExportColumn::make('flight_time'),
             ExportColumn::make('status'),

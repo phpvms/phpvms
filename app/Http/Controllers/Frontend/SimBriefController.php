@@ -263,7 +263,7 @@ class SimBriefController
             'maxpax'  => $acd_maxpax,
         ];
 
-        $actype = (filled($aircraft->simbrief_type)) ? $aircraft->simbrief_type : ((filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao);
+        $actype = (filled(optional($aircraft->subfleet)->simbrief_type)) ? $aircraft->subfleet->simbrief_type : $aircraft->icao;
         $sbaircraft = filled($aircraft->sbaircraft) ? collect(json_decode((string) $aircraft->sbaircraft->details)) : null;
         $sbairframes = (setting('simbrief.use_custom_airframes', false)) ? $aircraft->sbairframes->where('source', AirframeSource::INTERNAL) : $aircraft->sbairframes;
 
