@@ -12,6 +12,7 @@ use App\Enums\PirepFieldSource;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Enums\PirepStatus;
+use App\Enums\SimType;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
 use App\Traits\HasNanoIds;
@@ -199,6 +200,7 @@ class Pirep extends Model
         'score',
         'source',
         'source_name',
+        'sim_type',
         'flight_type',
         'state',
         'status',
@@ -600,6 +602,7 @@ class Pirep extends Model
             'landing_rate'        => 'float',
             'score'               => 'integer',
             'source'              => PirepSource::class,
+            'sim_type'            => SimType::class,
             'state'               => PirepState::class,
             'status'              => PirepStatus::class,
             'submitted_at'        => CarbonCast::class,

@@ -20,6 +20,7 @@ class PrefileRequest extends FormRequest
             'dpt_airport_id'      => 'required',
             'arr_airport_id'      => 'required',
             'source_name'         => 'required',
+            'sim_type'            => 'sometimes|nullable|integer',
             'alt_airport_id'      => 'sometimes',
             'status'              => 'sometimes',
             'level'               => 'nullable|numeric',
