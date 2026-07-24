@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Auth\Grants\ApiKeyGrant;
 use App\Auth\ScopeRepository;
 use App\Services\PermissionRegistry;
 use App\Support\ApiScope;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Bridge\ScopeRepository as PassportScopeRepository;
 use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
 use Override;
 
 /**
@@ -52,6 +54,16 @@ class PassportServiceProvider extends ServiceProvider
             $apiScopeCatalog = app(PermissionRegistry::class)->apiScopeCatalog();
 
             Passport::tokensCan(array_merge($catalog, $apiScopeCatalog));
+        });
+
+        // Register the api_key grant (App\Auth\Grants\ApiKeyGrant) once the
+        // AuthorizationServer singleton exists, so it is added after
+        // Passport's own grants build inside that binding's closure.
+        // enableGrantType() keys grants by identifier ('api_key'), so
+        // re-registration is idempotent — safe under Octane.
+        $this->app->booted(static function (): void {
+            $server = app(AuthorizationServer::class);
+            $server->enableGrantType(new ApiKeyGrant(), Passport::tokensExpireIn());
         });
 
         // Least-privilege default: a token that requests no scopes gets only the
