@@ -49,7 +49,6 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @property mixed|null                      $mtow
  * @property mixed|null                      $mlw
  * @property mixed|null                      $zfw
- * @property string|null                     $simbrief_type
  * @property mixed|null                      $fuel_onboard
  * @property float|null                      $flight_time
  * @property AircraftStatus                  $status
@@ -103,7 +102,6 @@ use Znck\Eloquent\Traits\BelongsToThrough;
  * @method static Builder<static>|Aircraft whereName($value)
  * @method static Builder<static>|Aircraft whereRegistration($value)
  * @method static Builder<static>|Aircraft whereSelcal($value)
- * @method static Builder<static>|Aircraft whereSimbriefType($value)
  * @method static Builder<static>|Aircraft whereState($value)
  * @method static Builder<static>|Aircraft whereStatus($value)
  * @method static Builder<static>|Aircraft whereSubfleetId($value)
@@ -147,7 +145,6 @@ class Aircraft extends Model
         'fuel_onboard',
         'status',
         'state',
-        'simbrief_type',
     ];
 
     public $sortable = [
@@ -168,7 +165,6 @@ class Aircraft extends Model
         'mlw',
         'zfw',
         'fuel_onboard',
-        'simbrief_type',
         'status',
         'state',
     ];

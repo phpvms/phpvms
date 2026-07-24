@@ -69,7 +69,6 @@ class AircraftImporter extends Importer
                 })
                 ->numeric()
                 ->rules(['nullable', 'integer']),
-            ImportColumn::make('simbrief_type'),
             ImportColumn::make('fuel_onboard')
                 ->numeric()
                 ->rules(['nullable', 'integer']),

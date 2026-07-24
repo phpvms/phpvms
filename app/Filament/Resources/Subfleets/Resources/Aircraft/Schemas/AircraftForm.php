@@ -63,10 +63,6 @@ class AircraftForm
                             ->label('FIN')
                             ->string(),
 
-                        TextInput::make('simbrief_type')
-                            ->label(__('common.simbrief_airframe_id'))
-                            ->string(),
-
                         TextInput::make('hex_code')
                             ->label(__('aircraft.hex_code'))
                             ->string(),
