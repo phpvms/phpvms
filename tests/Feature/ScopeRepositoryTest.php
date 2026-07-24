@@ -31,7 +31,9 @@ beforeEach(function (): void {
     // that when a client is found — using an unknown id skips the client
     // filter in Passport's parent::finalizeScopes() entirely.
     $this->client = mock(ClientEntityInterface::class);
-    $this->client->allows('getIdentifier')->andReturns('nonexistent-client');
+    // A valid-format UUID (oauth_clients.id is a UUID column on postgres, so a
+    // non-UUID string errors when the base repository looks the client up).
+    $this->client->allows('getIdentifier')->andReturns('00000000-0000-0000-0000-000000000000');
 });
 
 function scopeRepo(): ScopeRepository
