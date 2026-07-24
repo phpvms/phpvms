@@ -188,8 +188,10 @@ test('a missing or invalid client_id is rejected before credentials are checked'
 
     $response = test()->postJson('/oauth/token', [
         'grant_type' => 'api_key',
-        'client_id'  => 'does-not-exist',
-        'api_key'    => $user->api_key,
+        // A valid-format but nonexistent client id (oauth_clients.id is a UUID
+        // column on postgres, so a non-UUID string errors instead of missing).
+        'client_id' => '00000000-0000-0000-0000-000000000000',
+        'api_key'   => $user->api_key,
     ]);
 
     $response->assertStatus(401);
