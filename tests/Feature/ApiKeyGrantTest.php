@@ -19,13 +19,17 @@ use Laravel\Passport\Passport;
  */
 
 beforeEach(function (): void {
+    // Capture the base catalog so the throwaway scope below never leaks into
+    // Passport's static scope registry beyond this test (restored in afterEach).
+    $this->originalScopes = Passport::scopes()->pluck('description', 'id')->all();
+
     app(PermissionRegistry::class)->registerApiScope('x:test', 'API');
 
     // PassportServiceProvider::boot() merges registered API scopes into the
     // catalog inside its own booted() callback, which has already run by the
     // time this test's beforeEach fires — so register the throwaway scope in
     // the live catalog directly (mirrors ScopeRepositoryTest.php).
-    Passport::tokensCan(array_merge(Passport::scopes()->pluck('description', 'id')->all(), [
+    Passport::tokensCan(array_merge($this->originalScopes, [
         'x:test' => 'Test scope',
     ]));
 
@@ -39,6 +43,10 @@ beforeEach(function (): void {
         'grant_types'   => ['api_key'],
         'revoked'       => false,
     ]);
+});
+
+afterEach(function (): void {
+    Passport::tokensCan($this->originalScopes);
 });
 
 function postApiKeyGrant(array $params): TestResponse
@@ -77,6 +85,27 @@ test('a valid api_key with a held scope returns a scoped token', function (): vo
     expect($response->json('access_token'))->not->toBeEmpty()
         ->and($response->json('token_type'))->toBe('Bearer')
         ->and(grantedScopes($response->json('access_token')))->toContain('x:test');
+});
+
+test('the grant never issues a refresh token', function (): void {
+    $user = User::factory()->create(['state' => UserState::ACTIVE]);
+
+    $response = postApiKeyGrant(['api_key' => $user->api_key]);
+
+    $response->assertStatus(200);
+
+    expect($response->json('refresh_token'))->toBeNull();
+});
+
+test('an api_key matching more than one user is rejected generically', function (): void {
+    User::factory()->create(['state' => UserState::ACTIVE, 'api_key' => 'dup-key-000000000000000000000000000000']);
+    User::factory()->create(['state' => UserState::ACTIVE, 'api_key' => 'dup-key-000000000000000000000000000000']);
+
+    $response = postApiKeyGrant(['api_key' => 'dup-key-000000000000000000000000000000']);
+
+    $response->assertStatus(400);
+
+    expect($response->json('error'))->toBe('invalid_grant');
 });
 
 test('a scope the user lacks is dropped from the granted token', function (): void {
