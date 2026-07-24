@@ -40,7 +40,7 @@ class PositionRequest extends FormRequest
             'positions.*.autopilot'    => 'sometimes',
             'positions.*.fuel'         => 'sometimes|numeric',
             'positions.*.fuel_flow'    => 'sometimes|numeric',
-            'positions.*.log'          => 'sometimes|nullable',
+            'positions.*.log'          => 'sometimes|nullable|string|max:1000',
             'positions.*.sim_time'     => 'sometimes|date',
             'positions.*.created_at'   => 'sometimes|date',
         ];
