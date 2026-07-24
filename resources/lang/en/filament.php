@@ -23,6 +23,8 @@ return [
     'fare_multiplier_hint'             => 'Auto pricing: multiplier for this seat category (e.g. 3 for business). Absolute value only.',
     'airline_low_cost'                 => 'Low-cost carrier',
     'airline_low_cost_hint'            => 'Apply the low-cost auto-pricing multiplier to fares flown under this airline.',
+    'airline_logo'                     => 'Logo',
+    'airline_logo_saved'               => 'Logo saved',
     'flight_information'               => 'Flight Information',
     'flight_pilot_pay_hint'            => 'Fill this in to pay a pilot a fixed amount for this flight.',
     'flight_load_factor_hint'          => 'Percentage value for pax/cargo load, leave blank to use the default value.',

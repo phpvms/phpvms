@@ -22,7 +22,7 @@ class AirlineResource extends Resource
             'iata'    => $this->iata,
             'name'    => $this->name,
             'country' => $this->country,
-            'logo'    => $this->logo,
+            'logo'    => $this->logo_url,
             // 'active' => $this->active,
             // 'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,
