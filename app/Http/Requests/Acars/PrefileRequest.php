@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Acars;
 
 use App\Contracts\FormRequest;
+use App\Enums\SimType;
+use Illuminate\Validation\Rules\Enum;
 use Override;
 
 class PrefileRequest extends FormRequest
@@ -20,7 +22,7 @@ class PrefileRequest extends FormRequest
             'dpt_airport_id'      => 'required',
             'arr_airport_id'      => 'required',
             'source_name'         => 'required',
-            'sim_type'            => 'sometimes|nullable|integer',
+            'sim_type'            => ['sometimes', 'nullable', new Enum(SimType::class)],
             'alt_airport_id'      => 'sometimes',
             'status'              => 'sometimes',
             'level'               => 'nullable|numeric',
