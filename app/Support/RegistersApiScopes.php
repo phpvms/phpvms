@@ -18,14 +18,22 @@ trait RegistersApiScopes
     /**
      * Declare permission-backed API scopes under one group.
      *
-     * @param list<string> $names
+     * Accepts either a plain list of names or a `name => label` map (the label
+     * feeds the roles matrix); mirrors {@see PermissionRegistry::registerMany()}.
+     *
+     * @param array<int|string, string> $scopes
      */
-    protected function registerApiScopes(array $names, string $group): void
+    protected function registerApiScopes(array $scopes, string $group): void
     {
         $registry = app(PermissionRegistry::class);
 
-        foreach ($names as $name) {
-            $registry->registerApiScope($name, $group);
+        foreach ($scopes as $name => $label) {
+            if (is_int($name)) {
+                $name = $label;
+                $label = null;
+            }
+
+            $registry->registerApiScope($name, $group, $label);
         }
     }
 }

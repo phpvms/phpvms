@@ -45,6 +45,26 @@ it('gives App\\Contracts\\Modules\\ServiceProvider a registerApiScopes() helper 
     expect($registry->all())->toContain('x:module-scope');
 });
 
+it('preserves an explicit label when registerApiScopes is given a name => label map', function (): void {
+    $app = app();
+    $provider = new class($app) extends ModuleServiceProvider
+    {
+        public function boot(): void
+        {
+            $this->registerApiScopes(['x:labelled' => 'Nice Label'], 'ModuleGroup');
+        }
+    };
+
+    $provider->boot();
+
+    $labels = collect(app(PermissionRegistry::class)->grouped())
+        ->flatMap(fn (array $group): array => $group['permissions'])
+        ->keyBy('name');
+
+    expect($labels->has('x:labelled'))->toBeTrue()
+        ->and($labels['x:labelled']['label'])->toBe('Nice Label');
+});
+
 it('gives App\\Providers\\AddonServiceProvider a registerApiScopes() helper that forwards to the registry', function (): void {
     $provider = new AddonServiceProvider(app());
 
