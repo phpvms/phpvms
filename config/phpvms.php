@@ -16,6 +16,11 @@ return [
     'installed' => env('PHPVMS_INSTALLED', false),
 
     /*
+     * Base URL for the hosted phpVMS API (airport lookups, etc).
+     */
+    'api_url' => env('PHPVMS_API_URL', 'https://api.phpvms.net'),
+
+    /*
      * The site's own language, for anything addressed to everyone rather than
      * to a visitor — Discord channel announcements, for instance.
      *
@@ -78,16 +83,6 @@ return [
      * URL for fetching SimBrief OFP
      */
     'simbrief_ofp_url' => 'https://www.simbrief.com/api/xml.fetcher.php',
-
-    /*
-     * Your vaCentral API key
-     */
-    'vacentral_api_key' => env('VACENTRAL_API_KEY', ''),
-
-    /*
-     * vaCentral API URL. You likely don't need to change this
-     */
-    'vacentral_api_url' => 'https://api.vacentral.net',
 
     /*
      * Misc Settings
