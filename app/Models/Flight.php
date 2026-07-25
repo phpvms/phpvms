@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Kyslik\ColumnSortable\Sortable;
 use Override;
 use Spatie\Activitylog\LogOptions;
@@ -544,9 +545,17 @@ class Flight extends Model
     /**
      * Resolve the subfleets shown for this flight given a user.
      *
-     * Pinned subfleets win. If none are pinned, fall back to:
+     * Ordering rule: eligibility first, access second. Whether the fallback
+     * applies is decided by the flight's `flight_subfleet` pins alone, before
+     * any user filtering. If the flight is pinned to anything at all, the
+     * answer is those pins narrowed by access — legitimately empty when the
+     * user is qualified for none of them. Only a flight with no pins
+     * whatsoever falls back to:
      *   - airline subfleets when `flights.only_company_aircraft` is on
-     *   - all user-allowed subfleets otherwise
+     *   - all subfleets otherwise
+     *
+     * Filtering by access first would let a restricted flight fall through and
+     * offer the user the entire fleet they can fly.
      *
      * User access constraints (rank / type rating) are applied throughout.
      * Use this in single-flight controllers; list endpoints use the
@@ -554,22 +563,42 @@ class Flight extends Model
      */
     public function accessibleSubfleetsFor(User $user, array $with = []): Collection
     {
-        $pinned = Subfleet::query()
+        return Subfleet::query()
             ->allowedFor($user)
-            ->whereHas('flights', fn ($q) => $q->whereKey($this->id))
             ->with($with)
+            ->where(function (Builder $query): void {
+                // This flight's pins.
+                $query->whereExists(function ($sub): void {
+                    $sub->select(DB::raw(1))
+                        ->from('flight_subfleet')
+                        ->whereColumn('flight_subfleet.subfleet_id', 'subfleets.id')
+                        ->where('flight_subfleet.flight_id', $this->id);
+                });
+
+                // Fallback, reachable only when the flight has no LIVE pins.
+                //
+                // The join onto `subfleets` matters: soft-deleting a subfleet
+                // leaves its `flight_subfleet` rows in place (nothing detaches
+                // them — see SubfleetObserver), and the outer SoftDeletes scope
+                // hides the subfleet from the result. Counting those dead rows
+                // as pins would suppress the fallback and leave every flight
+                // pinned solely to a retired subfleet resolving to nothing, for
+                // every pilot.
+                $query->orWhere(function (Builder $fallback): void {
+                    $fallback->whereNotExists(function ($sub): void {
+                        $sub->select(DB::raw(1))
+                            ->from('flight_subfleet')
+                            ->join('subfleets as pinned_subfleets', 'pinned_subfleets.id', '=', 'flight_subfleet.subfleet_id')
+                            ->whereNull('pinned_subfleets.deleted_at')
+                            ->where('flight_subfleet.flight_id', $this->id);
+                    });
+
+                    if (setting('flights.only_company_aircraft', false)) {
+                        $fallback->where('subfleets.airline_id', $this->airline_id);
+                    }
+                });
+            })
             ->get();
-
-        if ($pinned->isNotEmpty()) {
-            return $pinned;
-        }
-
-        $fallback = Subfleet::query()->allowedFor($user)->with($with);
-        if (setting('flights.only_company_aircraft', false)) {
-            $fallback->where('airline_id', $this->airline_id);
-        }
-
-        return $fallback->get();
     }
 
     public function user(): BelongsTo
