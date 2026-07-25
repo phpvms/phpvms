@@ -55,6 +55,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
  * @property-read Airline|null $airline
+ * @property-read Collection<int, FlightBundle> $bundles
+ * @property-read int|null $bundles_count
  * @property-read Collection<int, Expense> $expenses
  * @property-read int|null $expenses_count
  * @property-read Collection<int, Fare> $fares
@@ -192,6 +194,14 @@ class Subfleet extends Model
     public function flights(): BelongsToMany
     {
         return $this->belongsToMany(Flight::class, 'flight_subfleet');
+    }
+
+    /**
+     * Bundles that offer this subfleet as a default to their flights.
+     */
+    public function bundles(): BelongsToMany
+    {
+        return $this->belongsToMany(FlightBundle::class, 'bundle_subfleet', 'subfleet_id', 'bundle_id');
     }
 
     public function ranks(): BelongsToMany

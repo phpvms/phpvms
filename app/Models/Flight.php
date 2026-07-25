@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Kyslik\ColumnSortable\Sortable;
+use LogicException;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -545,29 +546,82 @@ class Flight extends Model
     /**
      * Resolve the subfleets shown for this flight given a user.
      *
-     * Ordering rule: eligibility first, access second. Whether the fallback
-     * applies is decided by the flight's `flight_subfleet` pins alone, before
-     * any user filtering. If the flight is pinned to anything at all, the
-     * answer is those pins narrowed by access — legitimately empty when the
-     * user is qualified for none of them. Only a flight with no pins
-     * whatsoever falls back to:
-     *   - airline subfleets when `flights.only_company_aircraft` is on
-     *   - all subfleets otherwise
+     * Ordering rule: eligibility first, access second. Which rung applies is
+     * decided by configuration alone, before any user filtering:
      *
+     *   1. the flight's own `flight_subfleet` pins, if it has any LIVE ones;
+     *   2. otherwise its bundle's `bundle_subfleet` defaults, if any are LIVE;
+     *   3. otherwise the fallback — airline subfleets when
+     *      `flights.only_company_aircraft` is on, all subfleets otherwise.
+     *
+     * The rungs replace, they do not union: a flight with its own pins ignores
+     * its bundle entirely. The winning rung is then narrowed by access, and a
+     * rung narrowed to nothing stays empty — it does not drop to a lower rung.
      * Filtering by access first would let a restricted flight fall through and
      * offer the user the entire fleet they can fly.
+     *
+     * The bundle's `enabled` and `deleted_at` are deliberately NOT consulted.
+     * Eligibility is configuration, not publication, and publication is mostly
+     * handled upstream by `flights.visible`. That upstream is not airtight —
+     * RecomputeBundleVisibility is queued, nothing observes a flight moving
+     * between bundles, and mass updates bypass observers — so a flight can be
+     * visible while its bundle is disabled. In that window this choice still
+     * shows the bundle's configured subfleets, which is a narrowing; consulting
+     * the bundle's state instead would WIDEN those flights to the whole fleet,
+     * which is the dangerous direction. Assignments must also survive for
+     * restore, and rung 1 likewise ignores the flight's own enabled state.
      *
      * User access constraints (rank / type rating) are applied throughout.
      * Use this in single-flight controllers; list endpoints use the
      * `withAccessibleSubfleets` scope which skips the fallback.
+     *
+     * @throws LogicException when the model was hydrated without `bundle_id`
      */
     public function accessibleSubfleetsFor(User $user, array $with = []): Collection
     {
+        // A partially-hydrated model (Flight::select('id')->first()) leaves
+        // bundle_id null, which makes rung 2 vacuously false and silently
+        // WIDENS the result to the whole fleet. Fail loudly instead.
+        if (!array_key_exists('bundle_id', $this->attributes)) {
+            throw new LogicException(
+                'accessibleSubfleetsFor() requires bundle_id; this Flight was hydrated without it.'
+            );
+        }
+
+        // "Live" means the referenced subfleet is not soft-deleted. The join
+        // onto `subfleets` is what enforces it, and it matters: soft-deleting a
+        // subfleet leaves its pivot rows in place (nothing detaches them — see
+        // SubfleetObserver) while the outer SoftDeletes scope hides it from the
+        // result. Counting those dead rows as configuration would suppress the
+        // rung below and leave the flight resolving to nothing for every pilot.
+        $hasLivePins = function ($sub): void {
+            $sub->select(DB::raw(1))
+                ->from('flight_subfleet')
+                ->join('subfleets as pinned_subfleets', 'pinned_subfleets.id', '=', 'flight_subfleet.subfleet_id')
+                ->whereNull('pinned_subfleets.deleted_at')
+                ->where('flight_subfleet.flight_id', $this->id);
+        };
+
+        $hasLiveBundleDefaults = function ($sub): void {
+            $sub->select(DB::raw(1))
+                ->from('bundle_subfleet')
+                ->join('subfleets as bundled_subfleets', 'bundled_subfleets.id', '=', 'bundle_subfleet.subfleet_id')
+                ->whereNull('bundled_subfleets.deleted_at')
+                ->where('bundle_subfleet.bundle_id', $this->bundle_id);
+        };
+
+        // Nested rather than three flat OR branches so each "is this rung
+        // configured?" gate is written — and planned — exactly once, and so the
+        // shape mirrors the cascade it implements.
         return Subfleet::query()
             ->allowedFor($user)
             ->with($with)
-            ->where(function (Builder $query): void {
-                // This flight's pins.
+            ->where(function (Builder $query) use ($hasLivePins, $hasLiveBundleDefaults): void {
+                // Rung 1 — this flight's own pins. No liveness join needed here:
+                // the correlation to `subfleets.id` already rides the outer
+                // SoftDeletes scope. That holds because this method builds the
+                // query itself; copying this closure somewhere that uses
+                // withTrashed() would need the join back.
                 $query->whereExists(function ($sub): void {
                     $sub->select(DB::raw(1))
                         ->from('flight_subfleet')
@@ -575,27 +629,27 @@ class Flight extends Model
                         ->where('flight_subfleet.flight_id', $this->id);
                 });
 
-                // Fallback, reachable only when the flight has no LIVE pins.
-                //
-                // The join onto `subfleets` matters: soft-deleting a subfleet
-                // leaves its `flight_subfleet` rows in place (nothing detaches
-                // them — see SubfleetObserver), and the outer SoftDeletes scope
-                // hides the subfleet from the result. Counting those dead rows
-                // as pins would suppress the fallback and leave every flight
-                // pinned solely to a retired subfleet resolving to nothing, for
-                // every pilot.
-                $query->orWhere(function (Builder $fallback): void {
-                    $fallback->whereNotExists(function ($sub): void {
-                        $sub->select(DB::raw(1))
-                            ->from('flight_subfleet')
-                            ->join('subfleets as pinned_subfleets', 'pinned_subfleets.id', '=', 'flight_subfleet.subfleet_id')
-                            ->whereNull('pinned_subfleets.deleted_at')
-                            ->where('flight_subfleet.flight_id', $this->id);
-                    });
+                $query->orWhere(function (Builder $unpinned) use ($hasLivePins, $hasLiveBundleDefaults): void {
+                    $unpinned->whereNotExists($hasLivePins)
+                        ->where(function (Builder $inner) use ($hasLiveBundleDefaults): void {
+                            // Rung 2 — the bundle's defaults.
+                            $inner->whereExists(function ($sub): void {
+                                $sub->select(DB::raw(1))
+                                    ->from('bundle_subfleet')
+                                    ->whereColumn('bundle_subfleet.subfleet_id', 'subfleets.id')
+                                    ->where('bundle_subfleet.bundle_id', $this->bundle_id);
+                            });
 
-                    if (setting('flights.only_company_aircraft', false)) {
-                        $fallback->where('subfleets.airline_id', $this->airline_id);
-                    }
+                            // Rung 3 — fallback, when the bundle configures
+                            // nothing live either.
+                            $inner->orWhere(function (Builder $fallback) use ($hasLiveBundleDefaults): void {
+                                $fallback->whereNotExists($hasLiveBundleDefaults);
+
+                                if (setting('flights.only_company_aircraft', false)) {
+                                    $fallback->where('subfleets.airline_id', $this->airline_id);
+                                }
+                            });
+                        });
                 });
             })
             ->get();
