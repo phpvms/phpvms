@@ -11,6 +11,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
@@ -55,6 +56,8 @@ class SubfleetsRelationManager extends RelationManager
                 AttachAction::make()
                     ->multiple()
                     ->preloadRecordSelect()
+                    // recordTitle() reads the airline off every option.
+                    ->recordSelectOptionsQuery(fn (Builder $query): Builder => $query->with('airline'))
                     ->recordTitle(fn (Subfleet $record): string => trim(($record->airline?->name ?? '').' - '.$record->name, ' -')),
             ])
             ->recordActions([

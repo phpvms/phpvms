@@ -55,6 +55,27 @@ it('opens the attach modal without throwing', function (): void {
         ->assertSuccessful();
 });
 
+it('opens the bundle subfleets attach modal when a subfleet has no airline', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->actingAs(createAdminUser());
+
+    $bundle = FlightBundle::factory()->create();
+    Subfleet::factory()->create(['airline_id' => null]);
+    Subfleet::factory()->create();
+
+    // subfleets.airline_id is nullable but the factory always fills it, so
+    // nothing else covers this. recordTitle() runs over every option, so an
+    // unguarded $record->airline->name kills the whole modal — not just the
+    // airline-less row — which is why a normal subfleet is seeded alongside.
+    Livewire::test(SubfleetsRelationManager::class, [
+        'ownerRecord' => $bundle,
+        'pageClass'   => EditFlightBundle::class,
+    ])
+        ->mountAction(TestAction::make('attach')->table())
+        ->assertHasNoActionErrors()
+        ->assertSuccessful();
+});
+
 it('attaches a subfleet to a bundle', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
