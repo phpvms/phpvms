@@ -112,14 +112,34 @@ class AddonAutoLoader
     }
 
     /**
-     * Return the Composer ClassLoader instance from the global autoload stack.
+     * Return this application's Composer ClassLoader.
      *
-     * Composer registers its loader as [$classLoaderInstance, 'loadClass'].
+     * Composer's ClassLoader is not a singleton, and phar-distributed tools
+     * (PHPStan, PHPUnit) register their own — usually *prepended*, so it sits
+     * ahead of ours in the autoload stack. Picking the first loader off that
+     * stack therefore returns the tool's loader rather than ours, which is
+     * doubly wrong: its classmap is authoritative (tripping the mode guard
+     * with a message about an autoloader that was never the problem), and any
+     * addPsr4() call lands on a loader that is discarded when the tool exits,
+     * so addons silently fail to load.
      *
-     * @throws RuntimeException when no ClassLoader is found in the autoload stack
+     * getRegisteredLoaders() is keyed by vendor directory and only ever
+     * contains loaders booted from a real vendor/autoload.php, so looking ours
+     * up by path identifies it unambiguously. The stack scan stays as a
+     * fallback for the case where our loader was registered without going
+     * through Composer's initializer (as some test harnesses do).
+     *
+     * @throws RuntimeException when no ClassLoader is found
      */
     public function classLoader(): ClassLoader
     {
+        $loaders = ClassLoader::getRegisteredLoaders();
+        $ours = $loaders[base_path('vendor')] ?? null;
+
+        if ($ours instanceof ClassLoader) {
+            return $ours;
+        }
+
         foreach (spl_autoload_functions() as $entry) {
             if (is_array($entry) && $entry[0] instanceof ClassLoader) {
                 return $entry[0];
