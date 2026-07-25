@@ -796,11 +796,32 @@ class Flight extends Model
     }
 
     /**
-     * Eager-load subfleets, their aircraft, and their fares constrained to the
-     * user's access policy. No flight context is passed to the aircraft scope
-     * here — airport restriction is a per-flight concern handled by
-     * single-flight callers via `Aircraft::allowedFor($user, $flight)`. Rank,
-     * type-rating, and bid-block constraints still apply.
+     * List-view counterpart to `accessibleSubfleetsFor`: resolve every flight's
+     * subfleets in a constant number of queries and leave the answer on
+     * `$flight->subfleets`, so consumers keep reading the relation they always
+     * read.
+     *
+     * Implements rungs 1 and 2 only — the flight's own live pins, else its
+     * bundle's defaults. Rung 3, the fallback to the airline's or the entire
+     * fleet, is deliberately omitted: it is unbounded, and a list page would
+     * materialise it once per flight. A flight that reaches rung 3 shows nothing
+     * here and resolves properly on its own page.
+     *
+     * Rung 2 is also capped, at `phpvms.subfleets.inherited_list_limit` per
+     * bundle, ordered by id so the same N come back every request. The inherited
+     * set here can therefore be a subset of what `accessibleSubfleetsFor`
+     * returns for the same flight. A list row is a summary; the flight page is
+     * the authority.
+     *
+     * Which rung applies is decided by configuration BEFORE access filtering.
+     * The has-pins probe deliberately skips `allowedFor`, so a flight whose pins
+     * the user cannot fly resolves to nothing rather than sliding onto its
+     * bundle and offering aircraft the flight never listed.
+     *
+     * No flight context is passed to the aircraft scope here — airport
+     * restriction is a per-flight concern handled by single-flight callers via
+     * `Aircraft::allowedFor($user, $flight)`. Rank, type-rating, and bid-block
+     * constraints still apply.
      *
      * `fares` is eager-loaded because callers commonly run the result through
      * `FareService::getReconciledFaresForFlight()`, which reads
@@ -810,12 +831,87 @@ class Flight extends Model
     #[Scope]
     protected function withAccessibleSubfleets(Builder $query, User $user): Builder
     {
-        return $query->with([
-            'subfleets' => fn ($sq) => $sq->allowedFor($user)->with([
-                'aircraft' => fn ($aq) => $aq->allowedFor($user),
-                'aircraft.bid',
-                'fares',
-            ]),
-        ]);
+        $nested = [
+            'aircraft' => fn ($aq) => $aq->allowedFor($user),
+            'aircraft.bid',
+            'fares',
+        ];
+
+        return $query
+            // Liveness rides the relation's own SoftDeletes scope: a pin left
+            // dangling by a soft-deleted subfleet (nothing detaches the pivot —
+            // see SubfleetObserver) is not configuration and must not suppress
+            // the rung below.
+            ->withExists('subfleets as has_live_pins')
+            ->with([
+                // Publication state is not eligibility, matching
+                // accessibleSubfleetsFor. Without withTrashed a soft-deleted
+                // bundle would resolve to null here and quietly strip its
+                // flights of the subfleets they are still configured with.
+                'bundle'           => fn ($bq) => $bq->withTrashed(),
+                'bundle.subfleets' => fn ($sq) => $sq->allowedFor($user)
+                    ->with($nested)
+                    ->orderBy('subfleets.id')
+                    ->limit((int) config('phpvms.subfleets.inherited_list_limit')),
+                'subfleets' => fn ($sq) => $sq->allowedFor($user)->with($nested),
+            ])
+            ->afterQuery(function ($results) {
+                foreach ($results as $flight) {
+                    // afterQuery also fires for pluck(), whose collection holds
+                    // scalars rather than models. The probe check keeps this
+                    // idempotent: a builder the scope was applied to twice runs
+                    // this twice, and a second pass reading an already-consumed
+                    // probe would take every pinned flight for an inheriting one
+                    // and blank it.
+                    if (!$flight instanceof self) {
+                        continue;
+                    }
+                    if (!array_key_exists('has_live_pins', $flight->getAttributes())) {
+                        continue;
+                    }
+                    $inherits = !$flight->getAttribute('has_live_pins');
+                    $bundle = $flight->relationLoaded('bundle') ? $flight->getRelation('bundle') : null;
+
+                    // Both are working state for this scope. FlightResource
+                    // leans on parent::toArray, which serialises every loaded
+                    // attribute and relation, so leaving them on would change
+                    // the API response shape.
+                    unset($flight['has_live_pins']);
+                    $flight->unsetRelation('bundle');
+
+                    if (!$inherits) {
+                        continue;
+                    }
+
+                    // Every flight in a bundle shares one hydrated Bundle, so
+                    // handing them its Subfleet and Fare instances verbatim
+                    // would let FareService::getReconciledFaresForFlight() —
+                    // which replaces `$subfleet->fares` and mutates the Fare
+                    // models in place — reconcile one flight's overrides into
+                    // its neighbours on the same page.
+                    $pivots = $flight->subfleets();
+
+                    $flight->setRelation('subfleets', $bundle?->subfleets->map(function (Subfleet $subfleet) use ($flight, $pivots): Subfleet {
+                        $copy = clone $subfleet;
+                        $copy->setRelation('fares', $subfleet->fares->map(fn (Fare $fare): Fare => clone $fare));
+
+                        // These arrive carrying their `bundle_subfleet` pivot,
+                        // which SubfleetResource would serialise — publishing
+                        // bundle ids and dropping the `flight_id` every subfleet
+                        // row on this endpoint has always had. Restate it as the
+                        // pivot the relation being populated describes. No such
+                        // row exists in `flight_subfleet`; the pairing does, and
+                        // that is what a pivot on `$flight->subfleets` means.
+                        $copy->setRelation('pivot', $pivots->newExistingPivot([
+                            'flight_id'   => $flight->getKey(),
+                            'subfleet_id' => $subfleet->getKey(),
+                        ]));
+
+                        return $copy;
+                    }) ?? new Collection());
+                }
+
+                return $results;
+            });
     }
 }

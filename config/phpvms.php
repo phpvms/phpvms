@@ -179,6 +179,21 @@ return [
         'max'   => env('PHPVMS_PAGINATION_MAX', 100),
     ],
 
+    /*
+     * Subfleet resolution limits.
+     *
+     * `inherited_list_limit` caps how many bundle-inherited subfleets the
+     * `Flight::withAccessibleSubfleets()` list scope loads per bundle. A list
+     * page fans a bundle's defaults out across every flight on it, so an
+     * uncapped bundle multiplies: 100 subfleets over a 100-flight page is 10k
+     * hydrated rows. Single-flight resolution
+     * (`Flight::accessibleSubfleetsFor()`) is not capped, so a list row can show
+     * fewer subfleets than the flight's own page.
+     */
+    'subfleets' => [
+        'inherited_list_limit' => env('PHPVMS_INHERITED_SUBFLEET_LIMIT', 5),
+    ],
+
     /**
      * Installer related config
      */
