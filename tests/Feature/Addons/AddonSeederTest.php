@@ -6,6 +6,8 @@ use App\Models\Addon;
 use App\Models\Kvp;
 use App\Services\Installer\SeederService;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 beforeEach(function (): void {
     // The addons migration seeds bundled module rows; clear them so each test
@@ -47,10 +49,11 @@ afterEach(function (): void {
 function makeFixtureAddon(string $path): Addon
 {
     return Addon::factory()->create([
-        'name'    => 'FixtureAddon',
-        'version' => '1.0.0',
-        'path'    => $path,
-        'enabled' => true,
+        'name'      => 'FixtureAddon',
+        'namespace' => 'Modules\\FixtureAddon',
+        'version'   => '1.0.0',
+        'path'      => $path,
+        'enabled'   => true,
     ]);
 }
 
@@ -66,7 +69,7 @@ it('runs addon seeders by file path and records a seed marker', function (): voi
     $this->seederSvc->seedAddons();
 
     expect(Kvp::where('key', 'fixture_addon_proof')->exists())->toBeTrue()
-        ->and(Kvp::where('key', 'addon_seeded:FixtureAddon:1.0.0')->exists())->toBeTrue()
+        ->and(Kvp::where('key', 'addon_seeded:modules-fixtureaddon:1.0.0')->exists())->toBeTrue()
         ->and($this->seederSvc->addonSeedsPending())->toBeFalse();
 });
 
@@ -94,4 +97,60 @@ it('surfaces addon seed state through seedsPending()', function (): void {
     $this->seederSvc->seedAddons();
 
     expect($this->seederSvc->seedsPending())->toBeFalse();
+});
+
+it('logs the underlying exception message when an addon seeder throws, and still seeds the next addon', function (): void {
+    // Use a dedicated addon path/class rather than the beforeEach fixture:
+    // runSeederFile() checks class_exists($class, false) before requiring the
+    // file, so re-declaring FixtureAddonDatabaseSeeder here would be shadowed
+    // by the non-throwing class definition an earlier test already loaded into
+    // this PHP process.
+    $throwingPath = sys_get_temp_dir().'/phpvms-addon-seed-throwing-'.uniqid('', true);
+    $throwingSeedDir = $throwingPath.'/database/seeders';
+    File::ensureDirectoryExists($throwingSeedDir);
+    File::put($throwingSeedDir.'/ThrowingAddonDatabaseSeeder.php', <<<'PHP'
+        <?php
+
+        namespace PhpvmsTests\Fixtures\AddonSeed;
+
+        use Illuminate\Database\Seeder;
+        use RuntimeException;
+
+        class ThrowingAddonDatabaseSeeder extends Seeder
+        {
+            public function run(): void
+            {
+                throw new RuntimeException("SQLSTATE[42P01]: Undefined table:\n  relation \"vmsacars_rules\" does not exist");
+            }
+        }
+        PHP);
+
+    Addon::factory()->create([
+        'name'      => 'ThrowingAddon',
+        'namespace' => 'Modules\\ThrowingAddon',
+        'version'   => '1.0.0',
+        'path'      => $throwingPath,
+        'enabled'   => true,
+    ]);
+
+    // A second, well-behaved addon must still seed even though the throwing
+    // addon above fails.
+    makeFixtureAddon($this->addonPath);
+
+    Log::spy();
+
+    $this->seederSvc->seedAddons();
+
+    Log::shouldHaveReceived('error')
+        ->once()
+        ->withArgs(fn (string $message, array $context): bool => str_starts_with($message, 'Addon "ThrowingAddon" seeder failed; continuing: ')
+            && str_contains($message, 'SQLSTATE[42P01]: Undefined table: relation "vmsacars_rules" does not exist')
+            && !str_contains($message, "\n")
+            && ($context['exception'] ?? null) instanceof Throwable);
+
+    expect(Kvp::where('key', 'addon_seeded:modules-throwingaddon:1.0.0')->exists())->toBeFalse()
+        ->and(Kvp::where('key', 'fixture_addon_proof')->exists())->toBeTrue()
+        ->and(Kvp::where('key', 'addon_seeded:modules-fixtureaddon:1.0.0')->exists())->toBeTrue();
+
+    File::deleteDirectory($throwingPath);
 });

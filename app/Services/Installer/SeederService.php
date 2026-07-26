@@ -125,9 +125,19 @@ class SeederService extends Service
                     $this->runSeederFile($file);
                 }
             } catch (Throwable $throwable) {
-                Log::error(sprintf('Addon "%s" seeder failed; continuing', $addon->getName()), [
-                    'exception' => $throwable,
-                ]);
+                // Fold the exception's own message into the log message (not just
+                // the context) so it is visible wherever the message alone is
+                // rendered — e.g. Laravel Pail's header box shows the message and
+                // exception class, but not the context array. Collapsed to one
+                // line: QueryException messages embed the raw SQL and often carry
+                // newlines from the underlying PDO driver message, and Pail's
+                // bordered box wraps multi-line text badly. The context still
+                // carries the full $throwable for the file log's stack trace.
+                Log::error(sprintf(
+                    'Addon "%s" seeder failed; continuing: %s',
+                    $addon->getName(),
+                    preg_replace('/\s+/', ' ', trim($throwable->getMessage())),
+                ), ['exception' => $throwable]);
 
                 continue;
             }
@@ -142,11 +152,20 @@ class SeederService extends Service
     /**
      * Remove every seed marker for an addon (all versions), so a later reinstall
      * re-runs its seeders. Called when uninstalling an addon with table removal.
+     *
+     * Keyed on registry_id (falling back to namespace), not the display name: the
+     * name is nullable, non-unique and mutable, so an addon rebrand would leave
+     * this unable to find its own markers.
+     *
+     * Safe to interpolate into a LIKE pattern: seedMarkerIdentity() runs the
+     * identity through keyed_str(), which leaves only letters, digits and the
+     * `-` delimiter — no backslash (whose LIKE-escape meaning differs across
+     * MySQL, Postgres and sqlite) and no `%` or `_` wildcards.
      */
     public function clearAddonSeedMarkers(Addon $addon): void
     {
         Kvp::query()
-            ->where('key', 'like', 'addon_seeded:'.$addon->getName().':%')
+            ->where('key', 'like', 'addon_seeded:'.$this->seedMarkerIdentity($addon).':%')
             ->delete();
     }
 
@@ -243,9 +262,38 @@ class SeederService extends Service
     /**
      * KVP marker key for an addon's seed state, versioned so an addon update
      * re-runs its seeders.
+     *
+     * Keyed on registry_id, falling back to namespace, not the display name: the
+     * name is nullable, non-unique and mutable, so an addon rebrand would move
+     * it, stranding the marker and leaving addonSeedsPending() permanently true.
+     * A bare registry_id would collide bundled addons that declare none (Awards,
+     * Sample both resolve to null) on addon_seeded::base, so namespace — unique
+     * and always present — is the fallback.
      */
     private function seedMarkerKey(Addon $addon): string
     {
-        return 'addon_seeded:'.$addon->getName().':'.($addon->version ?? 'base');
+        return 'addon_seeded:'.$this->seedMarkerIdentity($addon).':'.($addon->version ?? 'base');
+    }
+
+    /**
+     * The stable identity segment of an addon's seed marker.
+     *
+     * Uses filled() rather than ?? so an empty-string registry_id — which the
+     * backfill tolerates and Addon::isLegacy() already treats as absent — falls
+     * back to namespace instead of collapsing every such addon onto
+     * `addon_seeded::{version}`.
+     *
+     * keyed_str() then slugifies it the same way AddonRegistry::safeName() and
+     * PermissionRegistry::moduleKey() key off an addon, so `phpvms/acars` and
+     * `Modules\Sample` become `phpvms-acars` and `modules-sample`. Keeping the
+     * separator as `-` (rather than dropping it, as Str::slug would) preserves
+     * the segment boundary, so `Modules\Sample` cannot collide with a different
+     * addon named `ModulesSample`.
+     */
+    private function seedMarkerIdentity(Addon $addon): string
+    {
+        $identity = filled($addon->registry_id) ? (string) $addon->registry_id : (string) $addon->namespace;
+
+        return keyed_str(strtolower($identity));
     }
 }
