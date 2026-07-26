@@ -34,7 +34,7 @@ class Updater extends Page
         return $schema->components([
             StreamEntry::make('output')
                 ->state(fn (): string => $this->updateOutput)
-                ->label(__('installer.output'))
+                ->hiddenLabel()
                 ->extraAttributes($this->updateStarted ? [] : ['wire:init' => 'runUpdate'])
                 ->viewData([
                     'stream' => $this->stream,
