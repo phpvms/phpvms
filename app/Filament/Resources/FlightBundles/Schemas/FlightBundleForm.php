@@ -41,7 +41,8 @@ class FlightBundleForm
                             ->label(__('common.end_date'))
                             ->helperText(__('filament.bundles.fields.end_date_helper')),
                     ])
-                    ->columns(2),
+                    ->columnSpanFull()
+                    ->columns(1),
             ]);
     }
 }
