@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Addons\AddonAutoLoader;
 use App\Filament\Pages\AddonSettings;
 use App\Models\Addon;
 use App\Models\AddonSetting;
@@ -21,6 +22,14 @@ function sampleSettingsPanel(): Panel
 
 beforeEach(function (): void {
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
+
+    // Priming only writes the boot cache; it does not touch the class loader.
+    // Modules\Sample lives in a directory the root psr-4 map does not cover, so
+    // its namespace is only resolvable once the addon loader has registered it —
+    // and that must happen before the first Modules\Sample\* lookup, since
+    // Composer's ClassLoader memoises misses in $missingClasses.
+    app(AddonAutoLoader::class)->register(app());
+
     app(AddonSettingSyncService::class)->sync();
 });
 

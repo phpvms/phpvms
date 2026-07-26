@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Addons\AddonAutoLoader;
 use App\Addons\Services\AddonDiscoveryService;
 use App\Addons\Support\BootCache;
 use App\Models\Permission;
@@ -11,6 +12,18 @@ use Filament\Facades\Filament;
 use Filament\Panel;
 use Modules\Sample\Filament\Resources\SampleResource;
 use Modules\Sample\Providers\Filament\SampleAdminPanelProvider;
+
+// The root psr-4 map ("Modules\\": "modules/") only ever resolved Modules\Sample
+// because the bundled module happened to sit in a directory literally named
+// "Sample". The addon engine is directory-name agnostic — it reads each addon's
+// own composer.json psr-4 map — so these tests must boot it the way production
+// does: prime the boot cache, then register the addon namespaces. Priming has to
+// happen before the first Modules\Sample\* lookup, because Composer's ClassLoader
+// memoises misses in $missingClasses and a later addPsr4() will not undo one.
+beforeEach(function (): void {
+    app(AddonDiscoveryService::class)->run();
+    app(AddonAutoLoader::class)->register(app());
+});
 
 function samplePanel(): Panel
 {
@@ -25,8 +38,6 @@ it('builds the Sample panel at /admin/sample from the base contract', function (
 });
 
 it('declares its panel provider in the boot cache so the engine registers it', function (): void {
-    app(AddonDiscoveryService::class)->run();
-
     $sample = app(BootCache::class)->all()
         ->firstWhere(fn ($entry): bool => $entry->namespace === 'Modules\\Sample');
 
