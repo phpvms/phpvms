@@ -10,24 +10,20 @@ use App\Models\Subfleet;
 use App\Models\User;
 
 /**
- * Regression: Flight::accessibleSubfleetsFor applies the access filter BEFORE
- * testing whether the flight has pinned subfleets (app/Models/Flight.php:557-565):
+ * Regression cover for the ordering of eligibility against access.
  *
- *     $pinned = Subfleet::query()
- *         ->allowedFor($user)                  // <-- access filter first
- *         ->whereHas('flights', ...)
- *         ->get();
+ * `Flight::accessibleSubfleetsFor()` used to narrow by `allowedFor($user)`
+ * before asking whether the flight had any pins, then read an empty result as
+ * "this flight pins nothing" and fall through to the fallback. A pilot
+ * unqualified for a flight's designated aircraft was therefore offered the
+ * entire rest of the fleet, on a flight that had been explicitly restricted
+ * away from them — the failure ran in the widening direction, which is the
+ * dangerous one.
  *
- *     if ($pinned->isNotEmpty()) { return $pinned; }
- *     // ...otherwise fall through to every subfleet the user can access
- *
- * So a pilot who is not qualified for a flight's designated aircraft does not
- * get an empty list — they fall through to the unbounded fallback and are
- * offered the whole rest of the fleet, on a flight that was explicitly
- * restricted away from them.
- *
- * Correct behaviour: eligibility is resolved first, access filtering second.
- * A flight with pins the pilot cannot use resolves to nothing.
+ * It now decides which rung applies from configuration alone and narrows the
+ * winning rung by access afterwards, so a rung narrowed to nothing stays
+ * empty. These tests hold that line: each fails if the two steps are swapped
+ * back.
  */
 test('a pilot unqualified for a flights only pinned subfleet is offered nothing', function (): void {
     updateSetting('pireps.restrict_aircraft_to_rank', true);
