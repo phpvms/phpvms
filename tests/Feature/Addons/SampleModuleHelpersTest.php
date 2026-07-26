@@ -23,7 +23,7 @@ it('loads the Sample module helpers.php so its global helper is callable', funct
 
     expect(function_exists('sample_module_greeting'))->toBeTrue()
         ->and(sample_module_greeting())->toBe('Hello from the Sample module!');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('records the Sample module helpers.php in the boot cache files list', function (): void {
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
@@ -41,4 +41,4 @@ it('records the Sample module helpers.php in the boot cache files list', functio
 
     expect($sample)->not->toBeNull()
         ->and($endsWithHelper)->toBeTrue('Sample boot-cache row must record helpers.php in files');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');

@@ -35,7 +35,7 @@ it('builds the Sample panel at /admin/sample from the base contract', function (
 
     expect($panel->getId())->toBe('sample')
         ->and($panel->getPath())->toBe('admin/sample');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('declares its panel provider in the boot cache so the engine registers it', function (): void {
     $sample = app(BootCache::class)->all()
@@ -43,7 +43,7 @@ it('declares its panel provider in the boot cache so the engine registers it', f
 
     expect($sample)->not->toBeNull()
         ->and($sample->providers)->toContain(SampleAdminPanelProvider::class);
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('does not register the Sample resource on the main admin panel', function (): void {
     $adminResources = Filament::getPanel('admin')->getResources();
@@ -58,7 +58,7 @@ it('admits a user holding the per-module access permission', function (): void {
     $user->givePermissionTo('access:sample');
 
     expect($user->fresh()->canAccessPanel(samplePanel()))->toBeTrue();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('admits a user via the legacy view:modules fallback', function (): void {
     Permission::firstOrCreate(['name' => 'view:modules', 'guard_name' => 'web']);
@@ -67,7 +67,7 @@ it('admits a user via the legacy view:modules fallback', function (): void {
     $user->givePermissionTo('view:modules');
 
     expect($user->fresh()->canAccessPanel(samplePanel()))->toBeTrue();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('admits a super admin', function (): void {
     $role = Role::firstOrCreate(['name' => Role::superAdminName(), 'guard_name' => 'web']);
@@ -76,10 +76,10 @@ it('admits a super admin', function (): void {
     $user->assignRole($role);
 
     expect($user->fresh()->canAccessPanel(samplePanel()))->toBeTrue();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('denies a user without access:sample, view:modules, or super admin', function (): void {
     $user = User::factory()->create();
 
     expect($user->canAccessPanel(samplePanel()))->toBeFalse();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');

@@ -36,7 +36,7 @@ it('inserts declared keys with their defaults on first sync', function (): void 
         ->and($greeting->value)->toBe('Hello from the Sample module!')
         ->and($greeting->default)->toBe('Hello from the Sample module!')
         ->and($greeting->alias)->toBe('sample');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('preserves a user-edited value but reconciles metadata on re-sync', function (): void {
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
@@ -54,7 +54,7 @@ it('preserves a user-edited value but reconciles metadata on re-sync', function 
 
     expect($row->value)->toBe('Custom greeting')
         ->and($row->description)->toBe('Text returned by sample_module_greeting()');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('is idempotent — repeated syncs do not duplicate rows', function (): void {
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
@@ -70,7 +70,7 @@ it('is idempotent — repeated syncs do not duplicate rows', function (): void {
 
     expect($countAfterFirst)->toBe(5)
         ->and($countAfterSecond)->toBe($countAfterFirst);
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 // ── No HasSettings (8.2) ─────────────────────────────────────────────────────
 
@@ -96,7 +96,7 @@ it('resolves a setting by addon alias', function (): void {
     app(AddonSettingSyncService::class)->sync();
 
     expect(addon_setting('sample', 'greeting'))->toBe('Hello from the Sample module!');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('resolves a setting by addon registry_id', function (): void {
     makeAddonSetting(
