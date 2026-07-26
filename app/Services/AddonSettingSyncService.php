@@ -136,20 +136,27 @@ class AddonSettingSyncService extends Service
     }
 
     /**
-     * Resolve the addon row id for a boot-cache entry (registry_id when managed,
-     * namespace when bundled).
+     * Resolve the addon row id for a boot-cache entry (registry_id when
+     * declared, namespace when not).
+     *
+     * A declared registry_id that matches no row (e.g. an install predating the
+     * registry_id backfill) falls through to the namespace lookup instead of
+     * returning null, and logs a warning — a silent no-op would otherwise leave
+     * every declared setting missing with no signal at all.
      */
     private function resolveAddonId(AddonBootCache $entry): ?int
     {
-        $query = Addon::query();
-
         if ($entry->registryId !== null) {
-            $query->where('registry_id', $entry->registryId);
-        } else {
-            $query->where('namespace', $entry->namespace);
+            $id = Addon::query()->where('registry_id', $entry->registryId)->value('id');
+
+            if ($id !== null) {
+                return (int) $id;
+            }
+
+            Log::warning('AddonSettingSync: no addon row for registry_id '.$entry->registryId.'; falling back to namespace');
         }
 
-        $id = $query->value('id');
+        $id = Addon::query()->where('namespace', $entry->namespace)->value('id');
 
         return $id === null ? null : (int) $id;
     }
