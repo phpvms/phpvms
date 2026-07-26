@@ -181,6 +181,8 @@
     "test:refactor": "rector --dry-run",
     "test:types": "phpstan analyse",
     "test:arch": "pest --filter=arch",
+    "test:mysql": "bin/test-db.sh mysql",
+    "test:pgsql": "bin/test-db.sh pgsql",
     "test:type-coverage": "pest --type-coverage",
     "test:unit": "pest --parallel --coverage",
     "tests": "composer run test",

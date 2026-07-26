@@ -22,6 +22,7 @@ use App\Services\ImportExport\SubfleetImporter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use League\Csv\Exception;
@@ -188,8 +189,20 @@ class ImportService extends Service
         if (!in_array($delete_previous, [null, '', '0'], true)) {
             // If delete_previous contains all, then delete everything
             if ($delete_previous === 'all') {
-                Flight::truncate();
-                FlightFieldValue::truncate();
+                // MySQL refuses to TRUNCATE a table that any foreign key points
+                // at, even when the referencing table is empty, so `flights`
+                // cannot be truncated while `flight_subfleet` references it.
+                // Suspend the constraints and clear children before parents.
+                Schema::withoutForeignKeyConstraints(function (): void {
+                    // Not scope creep: `flight_subfleet` rows are only reachable
+                    // through a flight, so dropping every flight without them
+                    // leaves exactly the dangling pivot rows the foreign key on
+                    // `flight_id` exists to prevent.
+                    DB::table('flight_subfleet')->truncate();
+
+                    Flight::truncate();
+                    FlightFieldValue::truncate();
+                });
             } elseif ($delete_previous === 'core') {
                 // Delete all flights where the owner_type is null
                 Flight::whereNull('owner_type')->delete();
@@ -210,10 +223,19 @@ class ImportService extends Service
     public function importSubfleets(string $csv_file, bool $delete_previous = true): array
     {
         if ($delete_previous) {
-            Subfleet::truncate();
-            DB::table('subfleet_rank')->truncate();
-            DB::table('flight_subfleet')->truncate();
-            DB::table('typerating_subfleet')->truncate();
+            // Same constraint as importFlights(): `subfleets` is referenced by
+            // `flight_subfleet` and `bundle_subfleet`, so MySQL rejects the
+            // TRUNCATE outright. `bundle_subfleet` is cleared for the same
+            // reason as the flight pivot above -- a bundle's subfleet defaults
+            // cannot outlive the subfleets they name.
+            Schema::withoutForeignKeyConstraints(function (): void {
+                DB::table('bundle_subfleet')->truncate();
+                DB::table('flight_subfleet')->truncate();
+                DB::table('subfleet_rank')->truncate();
+                DB::table('typerating_subfleet')->truncate();
+
+                Subfleet::truncate();
+            });
 
             // Log::warning('Subfleet and tied relationship tables truncated by User: '.Auth::id().' , '.Auth::user()->name_private);
         }

@@ -169,4 +169,4 @@ it('syncs declared settings when the addon row has a null registry_id but the bo
 
     expect($greeting)->not->toBeNull()
         ->and($greeting->value)->toBe('Hello from the Sample module!');
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');

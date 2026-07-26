@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Flight> $flights
+ * @property-read Collection<int, Subfleet> $subfleets
  * @property-read User|null $creator
  * @property-read bool $has_dates
  * @property int|null $enabled_flights_count
@@ -68,6 +70,16 @@ class FlightBundle extends Model
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class, 'bundle_id');
+    }
+
+    /**
+     * Default subfleets for this bundle's flights. A flight inherits these only
+     * when it has no `flight_subfleet` pins of its own — see
+     * Flight::accessibleSubfleetsFor().
+     */
+    public function subfleets(): BelongsToMany
+    {
+        return $this->belongsToMany(Subfleet::class, 'bundle_subfleet', 'bundle_id', 'subfleet_id');
     }
 
     public function creator(): BelongsTo

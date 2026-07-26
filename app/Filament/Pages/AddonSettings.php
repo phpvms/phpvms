@@ -167,7 +167,7 @@ class AddonSettings extends Page
     {
         return Actions::make([
             $this->getSaveFormAction(),
-        ]);
+        ])->alignRight();
     }
 
     protected function getSaveFormAction(): Action

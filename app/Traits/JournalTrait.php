@@ -14,7 +14,13 @@ trait JournalTrait
     public static function bootJournalTrait(): void
     {
         static::created(function ($model): void {
-            $model->initJournal(setting('units.currency'));
+            // The default on initJournal() cannot cover this: an explicit
+            // argument always beats a declared default, and setting() returns
+            // null for a key it cannot read. During install the first airline
+            // is created before units.currency necessarily exists, so passing
+            // the bare lookup hands a null to a string parameter. Every other
+            // caller of this setting already names the fallback.
+            $model->initJournal(setting('units.currency', 'USD'));
         });
     }
 

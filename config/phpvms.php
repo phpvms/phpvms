@@ -179,6 +179,29 @@ return [
         'max'   => env('PHPVMS_PAGINATION_MAX', 100),
     ],
 
+    /*
+     * Subfleet resolution limits.
+     *
+     * `inherited_list_limit` caps how many bundle-inherited subfleets the
+     * `Flight::withAccessibleSubfleets()` list scope loads per bundle.
+     *
+     * It bounds hydrated PHP objects, not queries — the scope runs a constant
+     * number of queries whatever this is set to, and however many distinct
+     * bundles a page spans. What scales is the per-flight copy the scope makes
+     * of its bundle's subfleets (needed so one flight's fare overrides cannot
+     * leak onto another on the same page): roughly `page size x limit` Subfleet
+     * models, plus their fares. Page size is capped by `pagination.max` above,
+     * so at the default 25 a full 100-flight page tops out around 2,500.
+     *
+     * A bundle trimmed by this cap logs one `debug` line per request naming the
+     * bundle, its accessible subfleet count and the cap. Single-flight
+     * resolution (`Flight::accessibleSubfleetsFor()`) is not capped, so a list
+     * row can show fewer subfleets than the flight's own page.
+     */
+    'subfleets' => [
+        'inherited_list_limit' => env('PHPVMS_INHERITED_SUBFLEET_LIMIT', 25),
+    ],
+
     /**
      * Installer related config
      */

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Typeratings\RelationManagers;
+namespace App\Filament\Resources\FlightBundles\RelationManagers;
 
 use App\Models\Subfleet;
 use Filament\Actions\AttachAction;
@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
+/**
+ * Bundle-level subfleet defaults. Flights in this bundle inherit these unless
+ * they pin subfleets of their own — see Flight::accessibleSubfleetsFor().
+ */
 class SubfleetsRelationManager extends RelationManager
 {
     protected static string $relationship = 'subfleets';
@@ -31,13 +35,16 @@ class SubfleetsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            // Filament's guess (`typeratings`) happens to be right today; naming
-            // it pins the attach modal against a rename on Subfleet.
-            ->inverseRelationship('typeratings')
+            // Filament otherwise guesses the inverse as `flightBundles` (plural
+            // camel of the owner model) and the attach modal throws.
+            ->inverseRelationship('bundles')
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('airline.name')
                     ->label(__('common.airline')),
+
+                TextColumn::make('type')
+                    ->label(__('common.type')),
 
                 TextColumn::make('name')
                     ->label(__('common.name')),

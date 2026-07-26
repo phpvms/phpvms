@@ -134,7 +134,17 @@ class FareService extends Service
             return $flight_fares->map(fn (Fare $fare, $_): Fare => $this->getFareWithPivot($fare, $fare->pivot));
         }
 
-        return $subfleet_fares->map(function (Fare $sf_fare, $_) use ($flight_fares): Fare {
+        /**
+         * Key the flight fares by their fare ID once, up front. Otherwise every subfleet
+         * fare would linearly scan the whole flight fare collection looking for its
+         * override, which is O(subfleet_fares x flight_fares) per subfleet.
+         *
+         * The flight_fare pivot is keyed on (flight_id, fare_id), so there can only ever
+         * be one row per fare and keying can't drop an override.
+         */
+        $flight_fares_by_id = $flight_fares->keyBy('id');
+
+        return $subfleet_fares->map(function (Fare $sf_fare, $_) use ($flight_fares_by_id): Fare {
             /**
              * Get the fare, using the subfleet's pivot values. This will return
              * the fares with all the costs, etc, that are overridden for the given subfleet
@@ -148,7 +158,7 @@ class FareService extends Service
              * First look to see that there actually is an override for that fare that's on
              * the flight
              */
-            $flight_fare = $flight_fares->whereStrict('id', $fare->id)->first();
+            $flight_fare = $flight_fares_by_id->get($fare->id);
             if ($flight_fare === null) {
                 return $fare;
             }

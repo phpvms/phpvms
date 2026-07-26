@@ -11,6 +11,7 @@ use App\Models\Airport;
 use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
+use App\Models\FlightBundle;
 use App\Models\FlightFieldValue;
 use App\Models\Rank;
 use App\Models\Subfleet;
@@ -25,6 +26,7 @@ use App\Services\ImportExport\SubfleetExporter;
 use App\Services\ImportExport\SubfleetImporter;
 use App\Services\ImportService;
 use App\Support\Days;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
@@ -753,6 +755,72 @@ test('subfleet importer', function (): void {
     $type_ratings = $subfleet->typeratings()->get();
     expect($type_ratings)->toHaveCount(2)
         ->and($type_ratings->pluck('id')->all())->toEqualCanonicalizing([$typerating_a->id, $typerating_b->id]);
+});
+
+test('subfleet importer delete previous clears every pivot', function (): void {
+    Fare::factory()->create(['code' => 'Y', 'capacity' => 150]);
+    Fare::factory()->create(['code' => 'B', 'capacity' => 20]);
+    $rank_cpt = Rank::factory()->create(['id' => 99, 'name' => 'cpt']);
+    Rank::factory()->create(['id' => 100, 'name' => 'fo']);
+    $typerating_a = Typerating::forceCreate(['id' => 1, 'name' => 'A320 Family', 'type' => 'A320']);
+    Typerating::forceCreate(['id' => 2, 'name' => 'B747 Family', 'type' => 'B747']);
+    $airline = Airline::firstWhere(['icao' => 'VMS']) ?? Airline::factory()->create(['icao' => 'VMS']);
+
+    // Pre-existing state on every foreign key that now points at `subfleets`.
+    // MySQL refuses to TRUNCATE a referenced table whether or not the child
+    // holds rows, so the wiring below is what the import has to survive.
+    $pinned = Subfleet::factory()->create(['airline_id' => $airline->id, 'type' => 'OLD1']);
+    $bundled = Subfleet::factory()->create(['airline_id' => $airline->id, 'type' => 'OLD2']);
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id]);
+    $flight->subfleets()->syncWithoutDetaching([$pinned->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $bundle->subfleets()->attach([$pinned->id, $bundled->id]);
+
+    $pinned->ranks()->attach($rank_cpt->id);
+    $pinned->typeratings()->attach($typerating_a->id);
+
+    $importer = app(ImportService::class);
+    $file_path = base_path('tests/data/subfleets.csv');
+    $status = $importer->importSubfleets($file_path, delete_previous: true);
+
+    expect($status['success'])->toHaveCount(1)
+        ->and($status['errors'])->toHaveCount(1);
+
+    // Identity has to come from the type, not the id: TRUNCATE resets the
+    // auto-increment, so the subfleet imported from the CSV is handed the id
+    // the pinned one used to hold. Asserting on ids here would be asserting
+    // that the new row does not exist.
+    expect(DB::table('subfleets')->whereIn('type', ['OLD1', 'OLD2'])->count())->toEqual(0)
+        ->and(Subfleet::where('type', 'A32X')->first())->not->toBeNull();
+
+    // The pivots the stale subfleets sat on are cleared outright -- nothing in
+    // the import re-attaches a flight or a bundle.
+    expect(DB::table('flight_subfleet')->count())->toEqual(0)
+        ->and(DB::table('bundle_subfleet')->count())->toEqual(0);
+
+    // The invariant the foreign keys exist to hold: no pivot row may name a
+    // subfleet that is not there. Ranks and type ratings are excluded from the
+    // emptiness check above because the importer legitimately re-attaches them.
+    foreach (['flight_subfleet', 'bundle_subfleet', 'subfleet_rank', 'typerating_subfleet'] as $pivot) {
+        expect(
+            DB::table($pivot)->whereNotIn('subfleet_id', DB::table('subfleets')->select('id'))->count()
+        )->toEqual(0, $pivot.' kept a row naming a subfleet that no longer exists');
+    }
+
+    // Clearing the parent without its children would leave pivot rows naming a
+    // subfleet that no longer exists -- exactly what the foreign keys forbid.
+    $orphaned_pins = DB::table('flight_subfleet')
+        ->whereNotIn('subfleet_id', DB::table('subfleets')->select('id'))
+        ->count();
+
+    $orphaned_defaults = DB::table('bundle_subfleet')
+        ->whereNotIn('subfleet_id', DB::table('subfleets')->select('id'))
+        ->count();
+
+    expect($orphaned_pins)->toEqual(0)
+        ->and($orphaned_defaults)->toEqual(0);
 });
 
 test('subfleet exporter round-trips type ratings', function (): void {
