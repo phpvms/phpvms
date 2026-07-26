@@ -4,13 +4,18 @@
     default sqlite config never exercises.
 
         docker compose -f compose.test.yml up -d pgsql
-        vendor/bin/pest -c phpunit.pgsql.xml
+        bin/test-db.sh pgsql
+
+    Use the script rather than `pest -c` directly. It creates the scratch
+    database `phpvms_suite` for the run and drops it afterwards. Do not aim this
+    at the `testing` database compose.test.yml ships: a local .env may point the
+    development app at that same name on the same container, and the suite runs
+    RefreshDatabase, which would drop the schema out from under a running app.
 
     Worth doing before shipping anything schema-shaped. sqlite silently accepts
     things a real server rejects: it does not enforce TRUNCATE against a
     foreign-key-referenced table, and it has no collation or jsonb behaviour to
-    disagree with. Credentials match compose.test.yml; this connects to the
-    throwaway `testing` database only.
+    disagree with. Credentials match compose.test.yml.
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
@@ -51,11 +56,11 @@
              not stop it; the <server> entries do. Same reason APP_ENV above is
              declared twice. -->
         <server name="DB_CONNECTION" value="pgsql" force="true"/>
-        <server name="DB_DATABASE" value="testing" force="true"/>
-        <server name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/testing" force="true"/>
+        <server name="DB_DATABASE" value="phpvms_suite" force="true"/>
+        <server name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/phpvms_suite" force="true"/>
         <env name="DB_CONNECTION" value="pgsql" force="true"/>
-        <env name="DB_DATABASE" value="testing" force="true"/>
-        <env name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/testing" force="true"/>
+        <env name="DB_DATABASE" value="phpvms_suite" force="true"/>
+        <env name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/phpvms_suite" force="true"/>
         <env name="MAIL_MAILER" value="array" force="true"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
