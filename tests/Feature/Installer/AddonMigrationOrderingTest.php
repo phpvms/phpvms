@@ -60,6 +60,22 @@ function makeDiskAddon(string $base, string $dirName, array $options = []): stri
 }
 
 /**
+ * Drop the addons table to simulate the pre-install state getMigrationPaths()
+ * has to cope with.
+ *
+ * addon_settings carries a foreign key to addons, so Postgres and MySQL refuse a
+ * bare `drop table addons` ("Dependent objects still exist") where sqlite allows
+ * it. Dropping the child first is portable across all three, and avoids both a
+ * driver-specific CASCADE and toggling foreign key constraints. RefreshDatabase
+ * restores both tables for the next test.
+ */
+function dropAddonsTable(): void
+{
+    Schema::dropIfExists('addon_settings');
+    Schema::dropIfExists('addons');
+}
+
+/**
  * Create a fixture addon backed by a real DB row (App\Models\Addon), with a
  * matching directory + migration on disk so a `getMigrationPaths()` lookup
  * against AddonRegistry::enabled() actually resolves.
@@ -87,7 +103,7 @@ afterEach(function (): void {
 
 describe('pre-install (no addons table)', function (): void {
     beforeEach(function (): void {
-        Schema::drop('addons');
+        dropAddonsTable();
     });
 
     it('includes a disk addon with a module.json and a migrations directory', function (): void {
@@ -169,7 +185,7 @@ describe('post-install (addons table present)', function (): void {
 it('runs an addon migration in the same pass as core on a simulated fresh install', function (): void {
     makeDiskAddon($this->addonBase, 'Demo', ['migrations' => true]);
 
-    Schema::drop('addons');
+    dropAddonsTable();
 
     $service = app(MigrationService::class);
 
