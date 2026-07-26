@@ -51,7 +51,7 @@ class SubfleetsRelationManager extends RelationManager
                     ->preloadRecordSelect()
                     // recordTitle() reads the airline off every option.
                     ->recordSelectOptionsQuery(fn (Builder $query): Builder => $query->with('airline'))
-                    ->recordTitle(fn (Subfleet $record): string => trim(($record->airline?->name ?? '').' - '.$record->name, ' -')),
+                    ->recordTitle(fn (Subfleet $record): string => trim(($record->airline->name ?? '').' - '.$record->name, ' -')),
             ])
             ->recordActions([
                 DetachAction::make(),
