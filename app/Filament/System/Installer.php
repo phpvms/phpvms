@@ -496,7 +496,7 @@ class Installer extends Page
             ->schema([
                 StreamEntry::make('output')
                     ->state(fn (): string => $this->migrationOutput)
-                    ->label(__('installer.output'))
+                    ->hiddenLabel()
                     ->viewData([
                         'stream' => $this->stream,
                     ]),

@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -47,25 +48,79 @@ class MigrationService extends Service
             'core' => App::databasePath().'/'.$dir,
         ];
 
-        // During a fresh install this runs *before* the core migrations that
-        // create the addons table, so querying enabled addons would 42P01.
-        // No addons can be enabled pre-install anyway — skip to core-only paths.
-        $modules = Schema::hasTable('addons') ? $this->addonRegistry->enabled() : collect();
-        foreach ($modules as $module) {
-            if (!is_dir($module->getPath())) {
+        // Pre-install, the `addons` table doesn't exist yet, so the enabled
+        // registry can't be queried. But create_addons_table (the core
+        // migration that creates it) scans disk and inserts every module it
+        // finds as enabled — so the set of addons that *will* be enabled is
+        // exactly what's on disk right now. Scan disk directly rather than
+        // waiting for a table that a single migration pass will create.
+        $modules = Schema::hasTable('addons')
+            ? $this->addonRegistry->enabled()->mapWithKeys(fn ($module): array => [$module->getName() => $module->getPath()])
+            : $this->scanAddonPathsOnDisk();
+
+        foreach ($modules as $name => $path) {
+            if (!is_dir($path)) {
                 Log::warning(sprintf(
                     'Addon "%s" is enabled but its path does not exist on disk: %s',
-                    $module->getName(),
-                    $module->getPath(),
+                    $name,
+                    $path,
                 ));
 
                 continue;
             }
 
-            $module_path = $module->getPath().'/database/'.$dir;
+            $module_path = $path.'/database/'.$dir;
             if (file_exists($module_path)) {
-                $paths[$module->getName()] = $module_path;
+                $paths[$name] = $module_path;
             }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Scan disk for addon directories, mirroring
+     * AddonDiscoveryService::scanLocation()'s conventions: immediate child
+     * directories of the addon base that contain a module.json. Used only
+     * pre-install, before the `addons` table exists to be the source of
+     * truth (see getMigrationPaths()).
+     *
+     * Direct-child symlinks are permitted (e.g. modules/phpvms-acars
+     * symlinked to an external checkout); anything that isn't a direct
+     * child of the base, or has no module.json, is skipped.
+     *
+     * @return array<string, string> addon directory basename => absolute path
+     */
+    private function scanAddonPathsOnDisk(): array
+    {
+        $base = config('addons.paths.base');
+
+        if (!is_dir($base)) {
+            return [];
+        }
+
+        $realBase = realpath($base);
+
+        if ($realBase === false) {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach (File::directories($base) as $subDir) {
+            $resolved = realpath($subDir);
+            if ($resolved === false) {
+                continue;
+            }
+            if (realpath(dirname((string) $subDir)) !== $realBase) {
+                continue;
+            }
+
+            if (!file_exists($resolved.'/module.json')) {
+                continue;
+            }
+
+            $paths[basename($subDir)] = $resolved;
         }
 
         return $paths;

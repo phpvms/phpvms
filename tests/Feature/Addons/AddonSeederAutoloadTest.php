@@ -76,5 +76,5 @@ it("registers an enabled addon's namespace so its seeder can load the addon's ow
     // PSR-4 namespace was registered first).
     expect(Kvp::where('key', 'seedfixture_ran')->value('value'))->toBe('widget-loaded')
         // ...and a per-addon seed marker was written, so it won't re-run forever.
-        ->and(Kvp::where('key', 'like', 'addon_seeded:SeedFixture:%')->exists())->toBeTrue();
+        ->and(Kvp::where('key', 'like', 'addon_seeded:modules-seedfixture:%')->exists())->toBeTrue();
 });
