@@ -3,6 +3,7 @@
     "schema_version": 1,
     "name": "Awards",
     "alias": "awards",
+    "registry_id": "phpvms/awards",
     "type": "module",
     "description": "",
     "keywords": [],
