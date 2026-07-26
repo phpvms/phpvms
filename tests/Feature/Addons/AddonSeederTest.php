@@ -7,7 +7,6 @@ use App\Models\Kvp;
 use App\Services\Installer\SeederService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 beforeEach(function (): void {
     // The addons migration seeds bundled module rows; clear them so each test
