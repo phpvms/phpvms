@@ -48,15 +48,23 @@ case "$driver" in
         ;;
 esac
 
-if ! docker inspect "$container" >/dev/null 2>&1; then
+# On .State.Running, not on `docker inspect` succeeding: a container that
+# exists but is stopped inspects just fine, and the raw "cannot exec in a
+# stopped container" from the first docker exec is not the help this prints.
+if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null)" != "true" ]; then
     echo "container $container is not running -- start it with:" >&2
     echo "    docker compose -f compose.test.yml up -d $driver" >&2
     exit 1
 fi
 
-# Fires on success, failure and interrupt, so the scratch database does not
-# outlive the run.
-trap cleanup EXIT INT TERM
+# EXIT alone owns the cleanup, so it runs exactly once -- listing INT and TERM
+# alongside it would fire the handler on the signal and again on the way out.
+# The signal traps just exit with the conventional 128+signo, which is what
+# gets the EXIT trap there. An exit code the script does not set itself is
+# untouched by this, so pest's status still propagates.
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 create
 vendor/bin/pest -c "phpunit.$driver.xml" "$@"
