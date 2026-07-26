@@ -72,7 +72,7 @@ class AddonDiscoveryService
             $rows[] = $this->buildBootCacheRow($m, true);
         }
 
-        $this->bootCache->write($rows);
+        $this->bootCache->write($rows, null, $this->diskFingerprint());
     }
 
     /**
@@ -107,7 +107,7 @@ class AddonDiscoveryService
         // cache was written leaves a schema-valid but data-stale cache that would
         // never rebuild — so its namespace is never registered and its seeder
         // fails class-not-found. The fingerprint check closes that gap.
-        if ($this->bootCache->isFresh() && $this->cacheMatchesDatabase()) {
+        if ($this->bootCache->isFresh() && $this->cacheMatchesDatabase() && $this->cacheMatchesDisk()) {
             return false;
         }
 
@@ -152,6 +152,57 @@ class AddonDiscoveryService
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Whether the boot cache was built from the current state of disk.
+     *
+     * Compares the disk fingerprint stamped into the cache against a freshly
+     * computed one. A null stored fingerprint means the cache predates this
+     * field, which the BootCache::SCHEMA bump already handles by forcing one
+     * rebuild.
+     */
+    private function cacheMatchesDisk(): bool
+    {
+        return $this->bootCache->diskFingerprint() === $this->diskFingerprint();
+    }
+
+    /**
+     * A fingerprint of the addon manifests on disk: for each immediate child
+     * directory of the addons base path, the mtime+size of module.json and
+     * composer.json (both feed a boot-cache entry — namespace and version
+     * derive from composer.json). Hashing the sorted set means an added or
+     * removed addon directory, or an edited manifest, changes the hash.
+     *
+     * databaseFingerprint() cannot see any of this: renaming an addon in its
+     * module.json leaves the addons table untouched, so without a disk
+     * dimension the cache serves the old manifest values forever.
+     */
+    private function diskFingerprint(): string
+    {
+        $base = config('addons.paths.base');
+
+        if (!is_dir($base)) {
+            return sha1('');
+        }
+
+        $parts = [];
+
+        foreach (File::directories($base) as $dir) {
+            foreach (['module.json', 'composer.json'] as $file) {
+                $path = $dir.'/'.$file;
+
+                if (!File::exists($path)) {
+                    continue;
+                }
+
+                $parts[] = $path.'|'.filemtime($path).'|'.filesize($path);
+            }
+        }
+
+        sort($parts);
+
+        return sha1(implode("\n", $parts));
     }
 
     /**
@@ -237,9 +288,9 @@ class AddonDiscoveryService
             }
         }
 
-        // Stamp the DB fingerprint so a later boot can tell this cache still
-        // matches the current addons state (see primeIfNeeded/cacheMatchesDatabase).
-        $this->bootCache->write($cacheRows, $this->databaseFingerprint());
+        // Stamp the DB and disk fingerprints so a later boot can tell this cache
+        // still matches the current addons state (see primeIfNeeded/cacheMatchesDatabase/cacheMatchesDisk).
+        $this->bootCache->write($cacheRows, $this->databaseFingerprint(), $this->diskFingerprint());
     }
 
     /**
