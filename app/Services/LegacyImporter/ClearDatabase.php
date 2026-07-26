@@ -23,6 +23,7 @@ use App\Models\Subfleet;
 use App\Models\User;
 use App\Models\UserAward;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Override;
 
 class ClearDatabase extends BaseImporter
@@ -56,42 +57,70 @@ class ClearDatabase extends BaseImporter
     {
         $this->info('Running database cleanup/empty before starting');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        // MySQL refuses to TRUNCATE any table a foreign key points at, even
+        // when the referencing table holds no rows, so the constraints are
+        // suspended and children are cleared before parents.
+        // Schema::withoutForeignKeyConstraints() rather than the bare
+        // `SET FOREIGN_KEY_CHECKS` this used to issue: that statement is a
+        // syntax error on the SQLite and Postgres targets the importer also
+        // writes to, and it left the checks off for the rest of the
+        // connection when a truncate in between threw.
+        Schema::withoutForeignKeyConstraints(function (): void {
+            Bid::truncate();
+            File::truncate();
+            News::truncate();
 
-        Bid::truncate();
-        File::truncate();
-        News::truncate();
+            Expense::truncate();
+            JournalTransaction::truncate();
+            Journal::truncate();
+            Ledger::truncate();
 
-        Expense::truncate();
-        JournalTransaction::truncate();
-        Journal::truncate();
-        Ledger::truncate();
+            // Clear flights
+            DB::table('flight_fare')->truncate();
+            DB::table('flight_subfleet')->truncate();
+            FlightField::truncate();
+            FlightFieldValue::truncate();
+            Flight::truncate();
 
-        // Clear flights
-        DB::table('flight_fare')->truncate();
-        DB::table('flight_subfleet')->truncate();
-        FlightField::truncate();
-        FlightFieldValue::truncate();
-        Flight::truncate();
-        Subfleet::truncate();
-        Aircraft::truncate();
+            // Every one of these is reachable only through a subfleet, and
+            // `subfleets.id` is an auto-increment this truncate resets: a row
+            // left behind does not dangle, it renames itself onto whichever
+            // freshly imported subfleet lands on its old id. A bundle's
+            // subfleet defaults cannot outlive the subfleets they name, and
+            // neither can a fare override, a rank grant or a type rating --
+            // ImportService::importSubfleets() clears the same set.
+            DB::table('bundle_subfleet')->truncate();
+            DB::table('subfleet_fare')->truncate();
+            DB::table('subfleet_rank')->truncate();
+            DB::table('typerating_subfleet')->truncate();
+            Subfleet::truncate();
 
-        Airline::truncate();
-        Airport::truncate();
-        Acars::truncate();
-        Pirep::truncate();
+            Aircraft::truncate();
 
-        UserAward::truncate();
-        User::truncate();
+            Airline::truncate();
+            Airport::truncate();
+            Acars::truncate();
+            Pirep::truncate();
 
-        // Clear permissions
-        DB::table('permission_role')->truncate();
-        DB::table('permission_user')->truncate();
-        DB::table('role_user')->truncate();
+            UserAward::truncate();
+            User::truncate();
 
-        // Role::truncate();
+            // Clear permissions. These are the spatie/laravel-permission
+            // pivots: the laratrust tables this used to name
+            // (`permission_role`, `permission_user`, `role_user`) were dropped
+            // by the v7 -> v8 migration, so every run of this importer died
+            // here on "no such table". Both are keyed by `users.id`, another
+            // auto-increment reset above -- a row left behind would grant a
+            // freshly imported pilot the roles of the one who held that id.
+            //
+            // `role_has_permissions` is deliberately absent: roles and
+            // permissions are seeded configuration, not imported data, and
+            // neither table is truncated here.
+            DB::table('model_has_roles')->truncate();
+            DB::table('model_has_permissions')->truncate();
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            // Role::truncate();
+        });
 
         $this->idMapper->clear();
     }
