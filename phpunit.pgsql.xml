@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Runs the suite against the PostgreSQL 18 service in compose.test.yml, which the
+    default sqlite config never exercises.
+
+        docker compose -f compose.test.yml up -d pgsql
+        vendor/bin/pest -c phpunit.pgsql.xml
+
+    Worth doing before shipping anything schema-shaped. sqlite silently accepts
+    things a real server rejects: it does not enforce TRUNCATE against a
+    foreign-key-referenced table, and it has no collation or jsonb behaviour to
+    disagree with. Credentials match compose.test.yml; this connects to the
+    throwaway `testing` database only.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Arch">
+            <file>tests/ArchTest.php</file>
+            <directory>tests/Arch</directory>
+        </testsuite>
+        <testsuite name="Components">
+            <directory suffix=".test.php">resources/views</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <server name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="BROADCAST_CONNECTION" value="null" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <!-- Both blocks are required. Laravel resolves env() through a repository
+             that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
+             shell variables into $_SERVER, so an exported DB_CONNECTION silently
+             redirects the whole suite at a real database. <env force> alone does
+             not stop it; the <server> entries do. Same reason APP_ENV above is
+             declared twice. -->
+        <server name="DB_CONNECTION" value="pgsql" force="true"/>
+        <server name="DB_DATABASE" value="testing" force="true"/>
+        <server name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/testing" force="true"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_DATABASE" value="testing" force="true"/>
+        <env name="DB_URL" value="postgres://phpvms:password@127.0.0.1:15432/testing" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>
+    </php>
+</phpunit>
