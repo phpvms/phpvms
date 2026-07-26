@@ -40,6 +40,8 @@ return [
     'click_update_to_run'               => 'Click "Update" to run the script.',
     'update'                            => 'Update',
     'migrations_not_completed'          => 'You still have :count migrations to run. Please try again...',
+    'pause'                             => 'Pause',
+    'resume'                            => 'Resume',
     'user_and_airline_setup'            => 'User & Airline Setup',
     'legacy_importer'                   => 'phpvms v5 Legacy Importer',
     'super_admin_information'           => 'Super Admin User Information',
