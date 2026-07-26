@@ -287,6 +287,36 @@ test('inherited defaults are capped per bundle and the cap is deterministic', fu
     }
 });
 
+test('an unusable configured cap falls back instead of emptying the rung', function (array $subfleetConfig, int $expected): void {
+    config(['phpvms.subfleets' => $subfleetConfig]);
+
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $subfleets = collect(range(1, 6))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
+    $bundle->subfleets()->attach($subfleets->pluck('id')->all());
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id, 'bundle_id' => $bundle->id]);
+
+    // `limit(0)` compiles to `row_num <= 0`, which matches nothing: read
+    // without a default, an absent or empty setting does not fall back, it
+    // switches bundle inheritance off for the whole site and does it quietly.
+    expect(throughScope($flight, $user)->subfleets->pluck('id')->all())
+        ->toBe($subfleets->pluck('id')->sort()->values()->take($expected)->all());
+})->with([
+    // A config cache built before this release carries no key at all.
+    'key absent' => [[], 5],
+    'null'       => [['inherited_list_limit' => null], 5],
+    // `PHPVMS_INHERITED_SUBFLEET_LIMIT=` in .env reads back as ''.
+    'empty string' => [['inherited_list_limit' => ''], 5],
+    'zero'         => [['inherited_list_limit' => 0], 5],
+    'negative'     => [['inherited_list_limit' => -1], 1],
+]);
+
 test('the per bundle cap orders inside its window function', function (): void {
     $airline = Airline::factory()->create();
     $rank = Rank::factory()->create(['name' => 'Line']);
@@ -476,6 +506,44 @@ test('the flight api response shape is unchanged by inheritance', function (): v
         ->and($rows[$inherits->id]['subfleets'])->toHaveCount(1)
         ->and($rows[$inherits->id]['subfleets'][0]['id'])->toBe($bundled->id)
         ->and($rows[$pins->id]['subfleets'][0]['id'])->toBe($pinned->id);
+});
+
+test('a bundle the caller eager loaded outlives the scope', function (): void {
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $bundled = listableSubfleet($airline, 'Bundled', [$rank]);
+
+    $bundle = FlightBundle::factory()->create();
+    $bundle->subfleets()->attach($bundled->id);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    // Two flights, because Builder::hydrate only arms preventLazyLoading() on
+    // a result set of more than one row — a single-row page would hide the
+    // violation this test exists to catch.
+    $flights = collect(range(1, 2))->map(fn (): Flight => Flight::factory()->create([
+        'airline_id' => $airline->id,
+        'bundle_id'  => $bundle->id,
+    ]));
+
+    $got = Flight::query()
+        ->with('bundle')
+        ->whereIn('id', $flights->pluck('id')->all())
+        ->withAccessibleSubfleets($user)
+        ->get();
+
+    // The scope loads `bundle` for rung 2 and drops it again so it stays off
+    // the wire, but a bundle the caller asked for is the caller's. Dropping it
+    // turns this read into a lazy load: LazyLoadingViolationException outside
+    // production, a silent N+1 inside it. Rung 2 still has to resolve on the
+    // same query.
+    expect($got->pluck('bundle.id')->all())->toBe([$bundle->id, $bundle->id])
+        ->and($got->every(fn (Flight $flight): bool => $flight->relationLoaded('bundle')))->toBeTrue()
+        ->and($got->pluck('subfleets.*.id')->all())->toBe([[$bundled->id], [$bundled->id]]);
+
+    // And when nobody asked, it is still gone.
+    expect(throughScope($flights->first(), $user)->relationLoaded('bundle'))->toBeFalse();
 });
 
 test('applying the scope twice resolves the same as applying it once', function (): void {

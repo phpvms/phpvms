@@ -837,6 +837,19 @@ class Flight extends Model
             'fares',
         ];
 
+        // `limit(0)` on the eager load below compiles to `row_num <= 0` and
+        // matches nothing, so an unusable setting would switch rung 2 off
+        // site-wide instead of falling back. A config cache built before this
+        // release has no key at all and `PHPVMS_INHERITED_SUBFLEET_LIMIT=` in
+        // .env reads back as '' — both cast to 0, as does a literal 0. Hence
+        // the named default, and the floor for a negative.
+        $inheritedLimit = max(1, (int) config('phpvms.subfleets.inherited_list_limit', 5) ?: 5);
+
+        // Whether the caller already asked for the bundle. The eager load
+        // added below is this scope's own working state and gets dropped
+        // again afterQuery, but only when the caller was not relying on it.
+        $callerLoadsBundle = array_key_exists('bundle', $query->getEagerLoads());
+
         return $query
             // Liveness rides the relation's own SoftDeletes scope: a pin left
             // dangling by a soft-deleted subfleet (nothing detaches the pivot —
@@ -852,10 +865,10 @@ class Flight extends Model
                 'bundle.subfleets' => fn ($sq) => $sq->allowedFor($user)
                     ->with($nested)
                     ->orderBy('subfleets.id')
-                    ->limit((int) config('phpvms.subfleets.inherited_list_limit')),
+                    ->limit($inheritedLimit),
                 'subfleets' => fn ($sq) => $sq->allowedFor($user)->with($nested),
             ])
-            ->afterQuery(function ($results) {
+            ->afterQuery(function ($results) use ($callerLoadsBundle) {
                 foreach ($results as $flight) {
                     // afterQuery also fires for pluck(), whose collection holds
                     // scalars rather than models. The probe check keeps this
@@ -866,18 +879,26 @@ class Flight extends Model
                     if (!$flight instanceof self) {
                         continue;
                     }
+
                     if (!array_key_exists('has_live_pins', $flight->getAttributes())) {
                         continue;
                     }
+
                     $inherits = !$flight->getAttribute('has_live_pins');
                     $bundle = $flight->relationLoaded('bundle') ? $flight->getRelation('bundle') : null;
 
-                    // Both are working state for this scope. FlightResource
-                    // leans on parent::toArray, which serialises every loaded
-                    // attribute and relation, so leaving them on would change
-                    // the API response shape.
+                    // The probe is always this scope's own working state, and
+                    // so is the bundle unless the caller eager-loaded it
+                    // first. FlightResource leans on parent::toArray, which
+                    // serialises every loaded attribute and relation, so
+                    // leaving them on would change the API response shape.
+                    // Unsetting a bundle the caller asked for is worse: with
+                    // preventLazyLoading() on, their next read of it throws.
                     unset($flight['has_live_pins']);
-                    $flight->unsetRelation('bundle');
+
+                    if (!$callerLoadsBundle) {
+                        $flight->unsetRelation('bundle');
+                    }
 
                     if (!$inherits) {
                         continue;
