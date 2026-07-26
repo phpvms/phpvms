@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Bundle-level subfleet defaults as seen through the LIST path — the
@@ -296,7 +297,9 @@ test('an unusable configured cap falls back instead of emptying the rung', funct
     $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
 
     $bundle = FlightBundle::factory()->create();
-    $subfleets = collect(range(1, 6))
+    // One more than the effective cap, so a fallback that resolved to the wrong
+    // number — not just to zero — is caught too.
+    $subfleets = collect(range(1, $expected + 1))
         ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
     $bundle->subfleets()->attach($subfleets->pluck('id')->all());
 
@@ -305,17 +308,193 @@ test('an unusable configured cap falls back instead of emptying the rung', funct
     // `limit(0)` compiles to `row_num <= 0`, which matches nothing: read
     // without a default, an absent or empty setting does not fall back, it
     // switches bundle inheritance off for the whole site and does it quietly.
+    // The named default and the `?:` fallback are two separate literals in the
+    // scope and both have to say 25 — 'key absent' exercises the first, the
+    // rest exercise the second.
     expect(throughScope($flight, $user)->subfleets->pluck('id')->all())
         ->toBe($subfleets->pluck('id')->sort()->values()->take($expected)->all());
 })->with([
     // A config cache built before this release carries no key at all.
-    'key absent' => [[], 5],
-    'null'       => [['inherited_list_limit' => null], 5],
+    'key absent' => [[], 25],
+    'null'       => [['inherited_list_limit' => null], 25],
     // `PHPVMS_INHERITED_SUBFLEET_LIMIT=` in .env reads back as ''.
-    'empty string' => [['inherited_list_limit' => ''], 5],
-    'zero'         => [['inherited_list_limit' => 0], 5],
+    'empty string' => [['inherited_list_limit' => ''], 25],
+    'zero'         => [['inherited_list_limit' => 0], 25],
     'negative'     => [['inherited_list_limit' => -1], 1],
 ]);
+
+test('the shipped default cap is 25', function (): void {
+    // The dataset above proves the scope's own fallbacks; this pins the value
+    // config/phpvms.php actually ships, which is what an untouched install gets.
+    expect(config('phpvms.subfleets.inherited_list_limit'))->toBe(25);
+});
+
+/**
+ * The line `withAccessibleSubfleets` emits for a truncated bundle. Stated once
+ * so a message change cannot pass by being wrong in the test as well.
+ */
+function truncationLine(FlightBundle $bundle, int $accessible, int $limit): string
+{
+    return 'Flight list: bundle '.$bundle->id.' has '.$accessible
+        .' accessible subfleets, showing the first '.$limit
+        .' (phpvms.subfleets.inherited_list_limit)';
+}
+
+test('a bundle inside the cap says nothing', function (): void {
+    config(['phpvms.subfleets.inherited_list_limit' => 3]);
+
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $subfleets = collect(range(1, 3))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
+    $bundle->subfleets()->attach($subfleets->pluck('id')->all());
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id, 'bundle_id' => $bundle->id]);
+
+    Log::spy();
+
+    // Exactly at the cap is the boundary that matters: nothing was dropped, so
+    // a `>=` in the scope would cry wolf on every correctly configured bundle
+    // that happens to sit on the limit.
+    expect(throughScope($flight, $user)->subfleets)->toHaveCount(3);
+
+    Log::shouldNotHaveReceived('debug');
+});
+
+test('a bundle over the cap says so once, naming the bundle, the count and the cap', function (): void {
+    config(['phpvms.subfleets.inherited_list_limit' => 2]);
+
+    $airline = Airline::factory()->create();
+    $junior = Rank::factory()->create(['name' => 'Junior']);
+    $senior = Rank::factory()->create(['name' => 'Senior']);
+
+    $user = User::factory()->create(['rank_id' => $junior->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $reachable = collect(range(1, 4))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$junior, $senior]));
+    // Configured on the bundle but unflyable by this pilot. It is not part of
+    // what was trimmed from his list, so counting it would report a truncation
+    // one wider than the one he is actually seeing.
+    $unreachable = listableSubfleet($airline, 'Senior Only', [$senior]);
+    $bundle->subfleets()->attach($reachable->pluck('id')->push($unreachable->id)->all());
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id, 'bundle_id' => $bundle->id]);
+
+    Log::spy();
+
+    expect(throughScope($flight, $user)->subfleets->pluck('id')->all())
+        ->toBe($reachable->pluck('id')->sort()->values()->take(2)->all());
+
+    // The dropped rows are the highest ids — the subfleet an admin just added
+    // and is now hunting for. Without the count the message cannot say how much
+    // is missing, and without the cap it cannot say which setting to raise.
+    Log::shouldHaveReceived('debug')->once()->with(truncationLine($bundle, 4, 2));
+});
+
+test('a hundred flights on one over capped bundle log one line, not a hundred', function (): void {
+    config(['phpvms.subfleets.inherited_list_limit' => 2]);
+
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $subfleets = collect(range(1, 5))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
+    $bundle->subfleets()->attach($subfleets->pluck('id')->all());
+
+    $flights = Flight::factory()->count(100)->create([
+        'airline_id' => $airline->id,
+        'bundle_id'  => $bundle->id,
+    ]);
+
+    Log::spy();
+
+    $got = Flight::query()
+        ->whereIn('id', $flights->pluck('id')->all())
+        ->withAccessibleSubfleets($user)
+        ->get();
+
+    expect($got)->toHaveCount(100)
+        ->and($got->every(fn (Flight $flight): bool => $flight->subfleets->count() === 2))->toBeTrue();
+
+    // One hydrated Bundle backs all 100 rows, so the naive "log where you
+    // truncate" reading of this turns a single misconfiguration into a
+    // hundred-line burst on every page load. Dedupe is inside the afterQuery
+    // callback, which sees the whole page at once.
+    Log::shouldHaveReceived('debug')->once()->with(truncationLine($bundle, 5, 2));
+});
+
+test('applying the scope twice still logs the truncation once', function (): void {
+    config(['phpvms.subfleets.inherited_list_limit' => 1]);
+
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $subfleets = collect(range(1, 3))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
+    $bundle->subfleets()->attach($subfleets->pluck('id')->all());
+
+    $flight = Flight::factory()->create(['airline_id' => $airline->id, 'bundle_id' => $bundle->id]);
+
+    Log::spy();
+
+    // Two stacked afterQuery callbacks each walk the page with their own dedupe
+    // set. The count being consumed on the first pass is what keeps the second
+    // quiet, exactly as the consumed has-pins probe does above.
+    Flight::query()
+        ->whereKey($flight->id)
+        ->withAccessibleSubfleets($user)
+        ->withAccessibleSubfleets($user)
+        ->get();
+
+    Log::shouldHaveReceived('debug')->once()->with(truncationLine($bundle, 3, 1));
+});
+
+test('the truncation count never reaches a bundle the caller kept', function (): void {
+    config(['phpvms.subfleets.inherited_list_limit' => 2]);
+
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $bundle = FlightBundle::factory()->create();
+    $subfleets = collect(range(1, 4))
+        ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'Sub '.$i, [$rank]));
+    $bundle->subfleets()->attach($subfleets->pluck('id')->all());
+
+    $flights = collect(range(1, 2))->map(fn (): Flight => Flight::factory()->create([
+        'airline_id' => $airline->id,
+        'bundle_id'  => $bundle->id,
+    ]));
+
+    $got = Flight::query()
+        ->with('bundle')
+        ->whereIn('id', $flights->pluck('id')->all())
+        ->withAccessibleSubfleets($user)
+        ->get();
+
+    // The count is a `withCount` subselect, so it lands as a plain attribute on
+    // the bundle and would serialise straight through `parent::toArray()` on
+    // any endpoint that publishes the bundle. It is this scope's working state,
+    // and gets stripped alongside the has-pins probe — but the bundle survives,
+    // because the caller asked for it.
+    foreach ($got as $flight) {
+        expect($flight->relationLoaded('bundle'))->toBeTrue()
+            ->and($flight->bundle->getAttributes())->not->toHaveKey('subfleets_count')
+            ->and($flight->bundle->toArray())->not->toHaveKey('subfleets_count');
+    }
+});
 
 test('the per bundle cap orders inside its window function', function (): void {
     $airline = Airline::factory()->create();
@@ -354,6 +533,67 @@ test('the per bundle cap orders inside its window function', function (): void {
         ->and($windowed[0])->toMatch(
             '/row_number\(\)\s*over\s*\(\s*partition\s+by\s+bundle_subfleet\.bundle_id\s+order\s+by\s+subfleets\.id\b/i'
         );
+});
+
+test('the scope costs a fixed number of queries however many flights and bundles a page spans', function (): void {
+    $airline = Airline::factory()->create();
+    $rank = Rank::factory()->create(['name' => 'Line']);
+
+    $user = User::factory()->create(['rank_id' => $rank->id, 'airline_id' => $airline->id]);
+
+    $page = function (int $bundleCount, int $flightsPerBundle) use ($airline, $rank): array {
+        $ids = [];
+
+        foreach (range(1, $bundleCount) as $b) {
+            $bundle = FlightBundle::factory()->create();
+            $bundle->subfleets()->attach(
+                collect(range(1, 4))
+                    ->map(fn (int $i): Subfleet => listableSubfleet($airline, 'B'.$b.' Sub '.$i, [$rank]))
+                    ->pluck('id')
+                    ->all()
+            );
+
+            $ids = array_merge($ids, Flight::factory()->count($flightsPerBundle)->create([
+                'airline_id' => $airline->id,
+                'bundle_id'  => $bundle->id,
+            ])->pluck('id')->all());
+        }
+
+        return $ids;
+    };
+
+    $count = function (array $ids) use ($user): int {
+        $queries = 0;
+        DB::listen(function () use (&$queries): void {
+            $queries++;
+        });
+
+        Flight::query()->whereIn('id', $ids)->withAccessibleSubfleets($user)->get();
+
+        // Laravel keeps every listener registered for the life of the
+        // connection, so the second call would otherwise be counted by both.
+        DB::getEventDispatcher()->forget(QueryExecuted::class);
+
+        return $queries;
+    };
+
+    $small = $count($page(1, 2));
+    $large = $count($page(6, 15));
+
+    // Seven statements plus the four `settings` reads `Aircraft::allowedFor`
+    // makes: the flights (with the has-pins probe folded in), the bundles, the
+    // capped bundle subfleets, their aircraft, those aircraft's bids, the
+    // subfleets' fares, and the flights' own pins.
+    //
+    // The accessible-subfleet count that drives truncation logging is a
+    // correlated subselect on the bundles statement, not a statement of its
+    // own, so it is inside this number rather than added to it — dropping the
+    // `withCount` and re-running gives 11 as well.
+    //
+    // The constant is the whole point of the scope: it must not move with page
+    // size or with how many distinct bundles the page touches.
+    expect($small)->toBe(11)
+        ->and($large)->toBe(11);
 });
 
 test('inheritance resolves through a nested eager load', function (): void {
@@ -494,7 +734,11 @@ test('the flight api response shape is unchanged by inheritance', function (): v
     foreach ([$inherits->id, $pins->id] as $id) {
         expect(array_keys($rows[$id]))
             ->not->toContain('bundle')
-            ->and(array_keys($rows[$id]))->not->toContain('has_live_pins');
+            ->and(array_keys($rows[$id]))->not->toContain('has_live_pins')
+            // The truncation count is loaded onto the bundle, so it leaves by
+            // the same door the bundle does — but it is a separate unset, and
+            // an endpoint that publishes the bundle would carry it out.
+            ->and(array_keys($rows[$id]))->not->toContain('subfleets_count');
     }
 
     $inheritedKeys = array_keys($rows[$inherits->id]);

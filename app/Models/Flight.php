@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Kyslik\ColumnSortable\Sortable;
 use LogicException;
 use Override;
@@ -811,7 +812,9 @@ class Flight extends Model
      * bundle, ordered by id so the same N come back every request. The inherited
      * set here can therefore be a subset of what `accessibleSubfleetsFor`
      * returns for the same flight. A list row is a summary; the flight page is
-     * the authority.
+     * the authority. A bundle the cap actually trims logs one debug line per
+     * request — the trimmed rows are the highest ids, so what disappears is
+     * whatever an admin most recently added.
      *
      * Which rung applies is decided by configuration BEFORE access filtering.
      * The has-pins probe deliberately skips `allowedFor`, so a flight whose pins
@@ -843,7 +846,7 @@ class Flight extends Model
         // release has no key at all and `PHPVMS_INHERITED_SUBFLEET_LIMIT=` in
         // .env reads back as '' — both cast to 0, as does a literal 0. Hence
         // the named default, and the floor for a negative.
-        $inheritedLimit = max(1, (int) config('phpvms.subfleets.inherited_list_limit', 5) ?: 5);
+        $inheritedLimit = max(1, (int) config('phpvms.subfleets.inherited_list_limit', 25) ?: 25);
 
         // Whether the caller already asked for the bundle. The eager load
         // added below is this scope's own working state and gets dropped
@@ -861,14 +864,28 @@ class Flight extends Model
                 // accessibleSubfleetsFor. Without withTrashed a soft-deleted
                 // bundle would resolve to null here and quietly strip its
                 // flights of the subfleets they are still configured with.
-                'bundle'           => fn ($bq) => $bq->withTrashed(),
+                //
+                // The count is a correlated subselect on the same bundle query
+                // — no extra round trip — and is the only way to tell a bundle
+                // that fits under the cap from one the cap silently trimmed,
+                // since the capped load below can only ever hand back
+                // `$inheritedLimit` rows. It carries the same `allowedFor`
+                // constraint, so it counts what the pilot could have seen, not
+                // what the bundle holds.
+                'bundle' => fn ($bq) => $bq->withTrashed()
+                    ->withCount(['subfleets' => fn ($cq) => $cq->allowedFor($user)]),
                 'bundle.subfleets' => fn ($sq) => $sq->allowedFor($user)
                     ->with($nested)
                     ->orderBy('subfleets.id')
                     ->limit($inheritedLimit),
                 'subfleets' => fn ($sq) => $sq->allowedFor($user)->with($nested),
             ])
-            ->afterQuery(function ($results) use ($callerLoadsBundle) {
+            ->afterQuery(function ($results) use ($callerLoadsBundle, $inheritedLimit) {
+                // One hydrated Bundle backs every flight pointing at it, so a
+                // page of 100 flights on one over-capped bundle has to report
+                // that bundle once, not 100 times.
+                $seenBundles = [];
+
                 foreach ($results as $flight) {
                     // afterQuery also fires for pluck(), whose collection holds
                     // scalars rather than models. The probe check keeps this
@@ -898,6 +915,30 @@ class Flight extends Model
 
                     if (!$callerLoadsBundle) {
                         $flight->unsetRelation('bundle');
+                    }
+
+                    // The count rides the same bundle row and is this scope's
+                    // own working state, so it is stripped for the same reason
+                    // the probe is: a bundle the caller eager-loaded would
+                    // otherwise serialise it. Stripping it also makes a second
+                    // application of this scope read 0 and stay quiet, so the
+                    // once-per-bundle guarantee survives a doubled scope.
+                    if ($bundle !== null && !array_key_exists($bundle->getKey(), $seenBundles)) {
+                        $seenBundles[$bundle->getKey()] = true;
+
+                        $accessible = (int) $bundle->getAttribute('subfleets_count');
+                        unset($bundle['subfleets_count']);
+
+                        // The trimmed rows are the highest ids — the subfleet
+                        // an admin just added and is now hunting for. Silence
+                        // makes that look like a permissions bug.
+                        if ($accessible > $inheritedLimit) {
+                            Log::debug(
+                                'Flight list: bundle '.$bundle->getKey().' has '.$accessible
+                                .' accessible subfleets, showing the first '.$inheritedLimit
+                                .' (phpvms.subfleets.inherited_list_limit)'
+                            );
+                        }
                     }
 
                     if (!$inherits) {
