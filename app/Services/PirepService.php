@@ -202,7 +202,7 @@ class PirepService extends Service
                 'user_id' => $pirep->user_id,
                 // Not `pireps`.`status`, which is INITIATED here. Phase and state
                 // are allowed to disagree.
-                'phase'        => PirepPhase::SCHEDULED,
+                'phase'        => PirepPhase::SCHEDULED->value,
                 'lat'          => $airport->lat ?? 0,
                 'lon'          => $airport->lon ?? 0,
                 'heading'      => 0,

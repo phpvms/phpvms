@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Casts\DistanceCast;
 use App\Casts\FuelCast;
 use App\Contracts\Model;
-use App\Enums\PirepPhase;
 use Database\Factories\PirepPositionFactory;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,20 +18,20 @@ use Override;
  * A PIREP's last-known position, one row per flight. Its existence is what puts a
  * flight on the live map. `updated_at` moves on position batches only.
  *
- * @property string     $pirep_id
- * @property int        $user_id
- * @property PirepPhase $phase
- * @property float      $lat
- * @property float      $lon
- * @property int        $heading
- * @property mixed      $distance
- * @property float      $altitude_agl
- * @property float      $altitude_msl
- * @property float      $vs
- * @property int        $gs
- * @property int        $ias
- * @property int        $flight_time
- * @property mixed      $fuel_used
+ * @property string $pirep_id
+ * @property int    $user_id
+ * @property string $phase
+ * @property float  $lat
+ * @property float  $lon
+ * @property int    $heading
+ * @property mixed  $distance
+ * @property float  $altitude_agl
+ * @property float  $altitude_msl
+ * @property float  $vs
+ * @property int    $gs
+ * @property int    $ias
+ * @property int    $flight_time
+ * @property mixed  $fuel_used
  * @property-read float $altitude
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -79,8 +78,12 @@ class PirepPosition extends Model
     protected function casts(): array
     {
         return [
-            'user_id'      => 'integer',
-            'phase'        => PirepPhase::class,
+            'user_id' => 'integer',
+            // `phase` is deliberately NOT cast to PirepPhase. It is a per-sample
+            // reading passed through from the ACARS client, whose `phase` is an
+            // open string vocabulary — a code this phpVMS predates must store
+            // rather than throw on save. `pireps.status` keeps its cast: that is
+            // a lifecycle column phpVMS owns and sets itself.
             'lat'          => 'float',
             'lon'          => 'float',
             'heading'      => 'integer',

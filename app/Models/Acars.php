@@ -22,6 +22,7 @@ use Override;
  * @property string          $id
  * @property string          $pirep_id
  * @property AcarsType       $type
+ * @property string|null     $phase
  * @property NavaidType|null $nav_type
  * @property int             $order
  * @property string|null     $name
@@ -43,7 +44,6 @@ use Override;
  * @property string|null     $sim_time
  * @property Carbon|null     $created_at
  * @property Carbon|null     $updated_at
- * @property string|null     $source
  * @property float           $altitude
  * @property-read Pirep|null $pirep
  *
@@ -74,9 +74,9 @@ use Override;
  * @method static Builder<static>|Acars whereName($value)
  * @method static Builder<static>|Acars whereNavType($value)
  * @method static Builder<static>|Acars whereOrder($value)
+ * @method static Builder<static>|Acars wherePhase($value)
  * @method static Builder<static>|Acars wherePirepId($value)
  * @method static Builder<static>|Acars whereSimTime($value)
- * @method static Builder<static>|Acars whereSource($value)
  * @method static Builder<static>|Acars whereStatus($value)
  * @method static Builder<static>|Acars whereTransponder($value)
  * @method static Builder<static>|Acars whereType($value)
@@ -97,6 +97,11 @@ class Acars extends Model
         'id',
         'pirep_id',
         'type',
+        // The flight phase this row was recorded in. A plain string, not the
+        // PirepPhase enum: the ACARS contract sends an open vocabulary, so a
+        // code phpVMS does not yet define must still store. `status` holds the
+        // recognised code for anything still reading the old column.
+        'phase',
         'nav_type',
         'order',
         'name',
@@ -134,7 +139,6 @@ class Acars extends Model
         'taxi_lights',
         'wing_lights',
         'sim_time',
-        'source',
         'created_at',
         'updated_at',
     ];

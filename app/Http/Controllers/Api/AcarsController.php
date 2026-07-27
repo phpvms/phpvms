@@ -237,7 +237,7 @@ class AcarsController extends Controller
             [
                 'user_id' => $pirep->user_id,
                 // Off the PIREP, not `acars`.`status` - a different column entirely.
-                'phase'        => $pirep->status,
+                'phase'        => $pirep->status?->value ?? '',
                 'lat'          => $latest->lat ?? 0,
                 'lon'          => $latest->lon ?? 0,
                 'heading'      => $latest->heading ?? 0,
