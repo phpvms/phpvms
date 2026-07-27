@@ -8,7 +8,6 @@ use App\Enums\PirepState;
 use App\Events\CronFiveMinute;
 use App\Models\PirepPosition;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Decides what leaves the live map. Five-minutely, not hourly, because both of its
@@ -57,7 +56,7 @@ class PirepPositionExpiration extends Listener
      */
     private function evict(Carbon $before, callable $constrain): void
     {
-        $ids = DB::table('pirep_positions')
+        $ids = PirepPosition::query()
             ->join('pireps', 'pireps.id', '=', 'pirep_positions.pirep_id')
             ->where('pirep_positions.updated_at', '<', $before)
             ->tap($constrain)
