@@ -188,30 +188,9 @@ class PirepService extends Service
     }
 
     /**
-     * Put a freshly prefiled flight on the live map, parked at its departure
-     * gate.
-     *
-     * A row in `pirep_positions` *is* map membership, so this is what makes a
-     * flight visible before it has reported anything of its own. Previously the
-     * map discarded PIREPs with no position, and a flight stayed invisible until
-     * its first breadcrumb — operators will notice the change.
-     *
-     * The coordinates are the departure airport's, not a placeholder: a prefiled
-     * aircraft really is sitting there. Seeding them rather than leaving them
-     * null is what lets the read path stay filter-free — a null-coordinate row
-     * would force a `lat IS NOT NULL` check back onto the hot path, and any row
-     * slipping through it would be drawn at 0°N 0°E.
-     *
-     * Everything else is zero rather than null. A parked aircraft genuinely has
-     * zero groundspeed and has flown zero miles, so these are values, not
-     * placeholders, and no consumer has to tell "not yet reported" from "zero".
-     * The one inaccuracy is `altitude_msl`, which is wrong at any airport above
-     * sea level; it is overwritten by the first position batch and nothing
-     * renders a parked aircraft's altitude in the meantime.
-     *
-     * `updateOrCreate` rather than `create` because prefiling can land on a
-     * reused duplicate leg that already carries a row, whose track has just been
-     * cleared above.
+     * Put a prefiled flight on the map, parked at its departure gate. Real
+     * coordinates rather than nulls, so the read path needs no null check.
+     * updateOrCreate because prefiling can land on a reused duplicate leg.
      */
     private function openPositionRow(Pirep $pirep): void
     {
@@ -221,10 +200,8 @@ class PirepService extends Service
             ['pirep_id' => $pirep->id],
             [
                 'user_id' => $pirep->user_id,
-                // The phase the flight is scheduled in, which is not
-                // `pireps`.`status` — that is INITIATED at this point. Phase
-                // describes what the aircraft is doing; state describes what the
-                // record is, and the two are allowed to disagree.
+                // Not `pireps`.`status`, which is INITIATED here. Phase and state
+                // are allowed to disagree.
                 'phase'        => PirepPhase::SCHEDULED,
                 'lat'          => $airport->lat ?? 0,
                 'lon'          => $airport->lon ?? 0,
@@ -541,10 +518,8 @@ class PirepService extends Service
         ]);
         $pirep->refresh();
 
-        // Off the map before the request completes, rather than within five
-        // minutes. Everything else waits for PirepPositionExpiration, but a
-        // pilot who has explicitly ended a flight watching their own aircraft
-        // linger is a visible wrong.
+        // Synchronous, not left to PirepPositionExpiration: the pilot explicitly
+        // ended this flight and would watch it linger for five minutes otherwise.
         PirepPosition::where('pirep_id', $pirep->id)->delete();
 
         event(new PirepCancelled($pirep));
@@ -578,11 +553,8 @@ class PirepService extends Service
 
             $w = ['pirep_id' => $pirep->id];
 
-            // `acars` has been listed above since this method was written and
-            // was never actually deleted, so every install that has ever
-            // hard-deleted a PIREP carries orphaned telemetry. The foreign keys
-            // now cover this too, but SQLite cannot express the one on `acars`,
-            // so the service path has to do it as well rather than instead.
+            // Listed above since this method was written and never actually
+            // deleted. The FK covers it too, but SQLite can't express that one.
             Acars::where($w)->delete();
             PirepPosition::where($w)->delete();
 

@@ -26,9 +26,7 @@ class LiveMap extends Widget
     {
         $geoSvc = app(GeoService::class);
 
-        // The same source the API endpoints use. This widget calls the scope
-        // directly rather than going through the API, so it had to be moved too
-        // or it would have kept rendering from `acars`.
+        // Same source as the API endpoints; this widget bypasses them.
         $pireps = Pirep::onLiveMap()->get();
         $positions = $geoSvc->getFeatureForLiveFlights($pireps);
 

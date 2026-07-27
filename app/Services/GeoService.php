@@ -224,13 +224,9 @@ class GeoService extends Service
             ]);
         }
 
-        // The breadcrumbs and the live position move at different cadences, so
-        // the trail can end minutes behind the aircraft and draw the marker
-        // floating ahead of its own track. Appending the live position closes
-        // that gap. It fabricates nothing — the point is a real reported
-        // position, just one that has not reached `acars` yet — and is skipped
-        // when the last breadcrumb is already there, so a trail never gains a
-        // duplicate final point.
+        // Breadcrumbs and the live position move at different cadences, so the
+        // trail can end minutes behind the marker. Appending closes that gap - a
+        // real reported point, not an interpolated one.
         $live = $pirep->position;
         $last = $actual_route->last();
 

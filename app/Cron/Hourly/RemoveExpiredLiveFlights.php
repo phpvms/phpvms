@@ -4,9 +4,11 @@ namespace App\Cron\Hourly;
 
 use App\Contracts\Listener;
 use App\Enums\PirepPhase;
+use App\Enums\PirepState;
 use App\Events\CronHourly;
 use App\Events\PirepCancelled;
 use App\Models\Pirep;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -16,17 +18,8 @@ use Illuminate\Support\Facades\Log;
 class RemoveExpiredLiveFlights extends Listener
 {
     /**
-     * Cancel in-progress PIREPs that have gone silent for longer than the
-     * tombstone period.
+     * Remove expired live flights that haven't had an update in the live time
      *
-     * `pireps.tombstone_time` is `acars.live_time` renamed, in the same unit
-     * with the same default — this listener's half of the two jobs that setting
-     * used to do. The other half, how long a finished flight stays drawn, is now
-     * `livemap.live_time` and belongs to PirepPositionExpiration.
-     *
-     * The PAUSED exemption stays. A paused PIREP is paused deliberately and
-     * reaping it would destroy a flight the pilot means to resume; `livemap.idle_time`
-     * takes it off the map without touching the record.
      *
      * @throws Exception
      */
@@ -36,7 +29,9 @@ class RemoveExpiredLiveFlights extends Listener
             return;
         }
 
-        $pireps = Pirep::silentInProgress(setting('pireps.tombstone_time'))
+        $date = Carbon::now('UTC')->subHours(setting('pireps.tombstone_time'));
+        $pireps = Pirep::where('updated_at', '<', $date)
+            ->where('state', PirepState::IN_PROGRESS)
             ->where('status', '<>', PirepPhase::PAUSED)
             ->get();
 

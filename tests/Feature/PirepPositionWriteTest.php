@@ -53,10 +53,7 @@ function positionRow(Pirep $pirep): ?PirepPosition
     return PirepPosition::find($pirep->id);
 }
 
-/**
- * Post a position batch. `created_at` on each point is when the client collected
- * it, which is what makes arrival order and collection order separable.
- */
+/** `created_at` is collection time, which separates arrival from collection order. */
 function postPositions(Pirep $pirep, array $positions): void
 {
     test()->post('/api/pireps/'.$pirep->id.'/acars/position', ['positions' => $positions])
@@ -133,14 +130,13 @@ test('an out-of-order batch does not move the position row backwards', function 
 
     postPositions($pirep, [point($now->copy(), 50.0, 10.0)]);
 
-    // Collected earlier, arriving later — a replay, or a client catching up
-    // after a dropped connection.
+    // Collected earlier, arriving later: a replay or a catching-up client.
     postPositions($pirep, [point($now->copy()->subMinutes(10), 20.0, 20.0)]);
 
     expect((float) positionRow($pirep)->lat)->toBe(50.0)
         ->and((float) positionRow($pirep)->lon)->toBe(10.0);
 
-    // The breadcrumb itself is still recorded — only the marker refuses to move.
+    // The breadcrumb is still recorded; only the marker refuses to move.
     expect(Acars::where('pirep_id', $pirep->id)->flightPath()->count())->toBe(2);
 });
 
@@ -163,8 +159,7 @@ test('a batch for a filed PIREP still moves the marker', function (): void {
 
     postPositions($pirep, [point($at->copy(), 33.0, 33.0)]);
 
-    // Filing moves the PIREP to PENDING while the client may still be sending
-    // the last of the flight.
+    // Filing moves it to PENDING while the client may still be sending.
     $pirep->state = PirepState::PENDING;
     $pirep->save();
 
@@ -182,7 +177,7 @@ test('a batch for an accepted PIREP writes acars but no position', function (): 
 
     postPositions($pirep, [point(Carbon::now('UTC'), 33.0, 33.0)]);
 
-    // The breadcrumb is still written — that endpoint's contract is unchanged.
+    // The breadcrumb is still written: that contract is unchanged.
     expect(Acars::where('pirep_id', $pirep->id)->flightPath()->count())->toBe(1)
         ->and(positionRow($pirep))->toBeNull();
 });
@@ -210,7 +205,7 @@ test('the position row updated_at moves on batches but not on an admin edit', fu
     postPositions($pirep, [point(Carbon::now('UTC'), 5.0, 5.0)]);
     $afterBatch = positionRow($pirep)->updated_at;
 
-    // Time has to actually pass, or "unchanged" proves nothing.
+    // Time has to pass, or "unchanged" proves nothing.
     Carbon::setTestNow(Carbon::now('UTC')->addHour());
 
     $pirep->notes = 'reviewed by an administrator';

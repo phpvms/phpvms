@@ -74,7 +74,7 @@ class PirepResource extends Resource
         $res['dpt_airport'] = new AirportResource($this->dpt_airport);
         $res['arr_airport'] = new AirportResource($this->arr_airport);
 
-        $res['position'] = PirepPositionResource::make($this->whenLoaded('position'));
+        $res['position'] = AcarsResource::make($this->whenLoaded('position'));
         $res['comments'] = PirepCommentResource::collection($this->whenLoaded('comments'));
         $res['user'] = UserResource::make($this->whenLoaded('user'));
 

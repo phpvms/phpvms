@@ -109,7 +109,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @method static PirepFactory          factory($count = null, $state = [])
  * @method static Builder<static>|Pirep onLiveMap()
- * @method static Builder<static>|Pirep silentInProgress(int $hours)
  * @method static Builder<static>|Pirep newModelQuery()
  * @method static Builder<static>|Pirep newQuery()
  * @method static Builder<static>|Pirep onlyTrashed()
@@ -551,12 +550,8 @@ class Pirep extends Model
     }
 
     /**
-     * The flight's current position.
-     *
-     * This used to resolve the latest `acars` FLIGHT_PATH row per PIREP, which
-     * made every live map poll a latest-of-many over a table that grows for the
-     * life of the install. It is now a plain one-to-one on `pirep_positions`,
-     * whose row count is the number of flights on the map.
+     * The flight's current position. Was a latest-of-many over `acars`; now a plain
+     * one-to-one on `pirep_positions`.
      */
     public function position(): HasOne
     {
@@ -612,39 +607,16 @@ class Pirep extends Model
     }
 
     /**
-     * Scope: the flights on the live map, with the relations those endpoints
-     * need eager-loaded.
-     *
-     * Membership is a join and nothing else: a PIREP is on the map if and only
-     * if it has a `pirep_positions` row. There is no state filter and no time
-     * arithmetic here, because deciding what leaves the map belongs to
-     * PirepPositionExpiration and to the cancel path, not to a query that runs
-     * on every poll.
+     * Scope: the flights on the live map. Membership is the join and nothing else -
+     * eviction belongs to PirepPositionExpiration, not to a query that runs per poll.
      */
     public function scopeOnLiveMap(Builder $query): Builder
     {
         return $query
-            // `user.airline` because User::ident reads it, and this endpoint
-            // renders every flight's pilot.
+            // user.airline because User::ident reads it.
             ->with(['aircraft', 'airline', 'arr_airport', 'dpt_airport', 'position', 'user', 'user.airline'])
             ->join('pirep_positions', 'pirep_positions.pirep_id', '=', 'pireps.id')
             ->select('pireps.*')
             ->orderBy('pirep_positions.updated_at', 'desc');
-    }
-
-    /**
-     * Scope: in-progress PIREPs that have gone silent for longer than $hours.
-     *
-     * This is what `scopeActiveFlights` narrowed to. It stopped being the live
-     * map's query — that is `scopeOnLiveMap` — and now says only what the reaper
-     * means by it. `pireps`.`updated_at` is the right clock here precisely
-     * because this is about the record rather than the aircraft.
-     */
-    public function scopeSilentInProgress(Builder $query, int $hours): Builder
-    {
-        return $query
-            ->where('state', PirepState::IN_PROGRESS)
-            ->where('updated_at', '<', Carbon::now('UTC')->subHours($hours))
-            ->orderBy('updated_at', 'desc');
     }
 }

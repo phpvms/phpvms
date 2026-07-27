@@ -13,11 +13,7 @@ use App\Services\GeoService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * The trail's coordinates, in order. `getLine()` hands back a FeatureCollection
- * holding a single LineString feature, and returns an empty one when there are
- * fewer than two points to join.
- */
+/** getLine() returns an empty FeatureCollection below two points. */
 function trailCoordinates(array $geo): array
 {
     $features = $geo['line']->getFeatures();
@@ -46,8 +42,7 @@ test('a flight is on the map if and only if it has a position row', function ():
     // In progress, but no position row: not on the map.
     $offMap = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
 
-    // Finished, but its row has not been evicted yet: still on the map. Under
-    // the old query this was filtered out by `state = IN_PROGRESS`.
+    // Finished but not yet evicted. The old query filtered this out.
     $completed = flightOnLiveMap(['state' => PirepState::PENDING]);
 
     $ids = collect(test()->get('/api/acars')->json('data'))->pluck('id');
@@ -100,9 +95,7 @@ test('a flight with thousands of breadcrumbs costs no extra queries', function (
 
     test()->get('/api/acars')->assertOk();
 
-    // The whole point of the change: no per-PIREP latest-row lookup against
-    // `acars` on the live map path, so the cost of drawing a flight does not
-    // grow with the length of its track.
+    // No latest-row lookup against `acars`, so cost doesn't grow with track length.
     $acarsQueries = array_filter($queries, fn (string $sql): bool => str_contains($sql, '"acars"') || str_contains($sql, '`acars`'));
 
     expect($acarsQueries)->toBe([]);
@@ -124,8 +117,7 @@ test('the trail ends at the live position', function (): void {
     $geo = app(GeoService::class)->getFeatureFromAcars($pirep->fresh());
     $coords = trailCoordinates($geo);
 
-    // Three breadcrumbs plus the live position, in that order — the marker sits
-    // at the end of its own track rather than floating ahead of it.
+    // Three breadcrumbs plus the live position, in order.
     expect($coords)->toHaveCount(4)
         ->and(end($coords))->toBe([-80.0, 40.0])
         ->and($geo['position'])->toBe(['lat' => 40.0, 'lon' => -80.0]);
@@ -143,8 +135,7 @@ test('the trail renders with no breadcrumbs yet', function (): void {
 test('appending the live position invents no intermediate points', function (): void {
     $pirep = flightOnLiveMap(positionAttrs: ['lat' => 60.0, 'lon' => -10.0]);
 
-    // Two breadcrumbs a long way apart, then a live position a long way from
-    // both. Nothing may be interpolated to smooth either gap.
+    // Wide gaps. Nothing may be interpolated to smooth them.
     foreach ([[10.0, -100.0], [30.0, -60.0]] as $i => [$lat, $lon]) {
         Acars::factory()->create([
             'pirep_id'   => $pirep->id,
@@ -173,9 +164,7 @@ test('the trail gains no duplicate point when the position matches the last brea
 
     $geo = app(GeoService::class)->getFeatureFromAcars($pirep->fresh());
 
-    // One breadcrumb, and the live position sits on top of it, so the trail is
-    // a single point and gains no duplicate. (getLine() needs two points to
-    // draw a line at all, hence the assertion on points rather than coords.)
+    // The live position sits on the one breadcrumb, so the trail stays a single point.
     expect($geo['points']->getFeatures())->toHaveCount(1)
         ->and(trailCoordinates($geo))->toBe([]);
 });
@@ -197,8 +186,7 @@ test('a single PIREP flown route still comes from acars', function (): void {
     apiAs(User::find($pirep->user_id));
     $route = test()->get('/api/pireps/'.$pirep->id.'/acars/position')->assertOk()->json('data');
 
-    // The recorded track is untouched by this change: same rows, same order,
-    // and the live position is not among them.
+    // Same rows, same order, and the live position is not among them.
     expect($route)->toHaveCount(2)
         ->and($route[0]['lat'])->toEqual(33.0)
         ->and($route[1]['lat'])->toEqual(35.0);

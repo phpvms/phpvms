@@ -15,10 +15,7 @@ function findSetting(string $key): ?Setting
     return Setting::where('id', Setting::formatKey($key))->first();
 }
 
-/**
- * Recreate one of the pre-change `acars` group settings, the way an install
- * carries it before this migration has run.
- */
+/** A pre-change `acars` group setting, as an install carries it. */
 function putAcarsSetting(string $key, string $value, string $name, string $type = 'int'): void
 {
     $model = new Setting([
@@ -38,9 +35,8 @@ function putAcarsSetting(string $key, string $value, string $name, string $type 
 }
 
 /**
- * The shape a real upgrade presents to the migration: SettingsSeeder has already
- * run (Pest's global beforeEach does that), so the new keys exist at their
- * defaults, and the old `acars` keys are still there alongside them.
+ * What a real upgrade presents: the seeder has already run, so the new keys exist
+ * at their defaults with the old `acars` keys still alongside them.
  */
 function seedPreUpgradeState(string $liveTime = '12'): void
 {
@@ -57,7 +53,7 @@ test('a customised live time survives the move to the tombstone setting', functi
 
     $tombstone = findSetting('pireps.tombstone_time');
 
-    // 24 hours, still meaning 24 hours. The unit is deliberately not converted.
+    // 24 hours, still meaning 24 hours: the unit is not converted.
     expect($tombstone)->not->toBeNull()
         ->and($tombstone->value)->toBe('24')
         ->and($tombstone->group)->toBe('pireps')
@@ -103,8 +99,7 @@ test('the two new timers are left to the seeder', function (): void {
 
     liveMapSettingsMigration()->up();
 
-    // Greenfield: no old key maps onto either, so the migration must not touch
-    // the values SettingsSeeder gave them.
+    // No old key maps onto either, so the migration must not touch them.
     expect(findSetting('livemap.live_time')->value)->toBe('30')
         ->and(findSetting('livemap.live_time')->group)->toBe('livemap')
         ->and(findSetting('livemap.idle_time')->value)->toBe('60')
@@ -117,9 +112,7 @@ test('a re-run leaves a value the admin has since changed alone', function (): v
 
     Setting::where('id', Setting::formatKey('pireps.tombstone_time'))->update(['value' => '6']);
 
-    // The source is gone by now, so there is nothing to carry and nothing to
-    // clobber. This is the only way the destination can hold a value the
-    // migration did not put there.
+    // The source is gone, so there is nothing to carry and nothing to clobber.
     liveMapSettingsMigration()->up();
 
     expect(findSetting('pireps.tombstone_time')->value)->toBe('6');
@@ -160,8 +153,7 @@ test('reversing removes the settings that did not exist before', function (): vo
 
     liveMapSettingsMigration()->down();
 
-    // These have no pre-change counterpart, so reversing means removing them
-    // rather than renaming them back to something that never existed.
+    // No pre-change counterpart to rename back to.
     expect(findSetting('livemap.live_time'))->toBeNull()
         ->and(findSetting('livemap.idle_time'))->toBeNull();
 });
@@ -186,15 +178,14 @@ test('a fresh install and an upgraded install agree on key, group and default', 
         ])
         ->all();
 
-    // Pest's global beforeEach has already seeded, so this is the fresh install.
+    // Pest's beforeEach has already seeded: this is the fresh install.
     $fresh = $snapshot();
 
-    // Wind back to a pre-change install: the new keys gone, the old ones present.
+    // Wind back to a pre-change install.
     Setting::query()->whereIn('id', array_map(Setting::formatKey(...), $keys))->delete();
     seedPreUpgradeState(liveTime: '24');
 
-    // Then replay the upgrade in the order Updater uses — seeders, then the data
-    // migrations.
+    // Replay the upgrade in Updater's order: seeders, then data migrations.
     new SettingsSeeder()->run();
     liveMapSettingsMigration()->up();
 

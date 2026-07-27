@@ -19,9 +19,7 @@ test('distance keeps its fractional part', function (): void {
         'distance' => 1234.56,
     ]);
 
-    // The raw column, past the cast: `acars`.`distance` was an unsigned integer
-    // and would have stored 1234 here, which is the disagreement the widening
-    // migration exists to remove.
+    // Past the cast: `acars`.`distance` was an int and would have stored 1234.
     $raw = DB::table('pirep_positions')->where('pirep_id', $pirep->id)->value('distance');
 
     expect(round((float) $raw, 2))->toBe(1234.56);
@@ -56,16 +54,14 @@ test('display units apply as they do for acars', function (): void {
         'distance' => 100,
     ]);
 
-    // Same quantity, same mechanism: units come from the cast, not from the
-    // column name, which is why neither column carries a unit suffix.
+    // Units come from the cast, not the column name.
     expect($position->fresh()->distance)->toBeInstanceOf(Distance::class)
         ->and($position->fresh()->distance->local(2))
         ->toBe($acars->fresh()->distance->local(2));
 });
 
 test('every telemetry column is not null', function (): void {
-    // The seeded-to-zero decision only holds if the schema enforces it —
-    // otherwise a consumer still has to distinguish "not reported" from zero.
+    // Seeded-to-zero only holds if the schema enforces it.
     $nullable = collect(Schema::getColumns('pirep_positions'))
         ->reject(fn (array $column): bool => in_array($column['name'], ['created_at', 'updated_at'], true))
         ->filter(fn (array $column): bool => $column['nullable'])

@@ -20,10 +20,8 @@ function runExpiration(): void
 }
 
 /**
- * A flight on the map. `$reportedAgo` is how long since its last position batch;
- * `$moved` distinguishes one that has reported at least once from one that has
- * been sitting at the gate since prefile — the position row records that as
- * `updated_at` still equalling `created_at`.
+ * A flight on the map. `$moved` false means it has sat at the gate since prefile,
+ * which the row records as updated_at still equalling created_at.
  */
 function flightOnMap(int $reportedAgo, array $pirepAttrs = [], bool $moved = true): Pirep
 {
@@ -58,16 +56,6 @@ beforeEach(function (): void {
     updateSetting('livemap.idle_time', 60);
 });
 
-test('a silent in-progress flight past the tombstone period leaves the map', function (): void {
-    $silent = flightOnMap(reportedAgo: 60 * 13);
-    $recent = flightOnMap(reportedAgo: 60 * 11);
-
-    runExpiration();
-
-    expect(onMap($silent))->toBeFalse()
-        ->and(onMap($recent))->toBeTrue();
-});
-
 test('a completed flight past its window leaves the map', function (): void {
     $old = flightOnMap(reportedAgo: 45, pirepAttrs: ['state' => PirepState::PENDING]);
     $fresh = flightOnMap(reportedAgo: 15, pirepAttrs: ['state' => PirepState::PENDING]);
@@ -83,9 +71,7 @@ test('a paused flight past its window leaves the map but survives as a PIREP', f
 
     runExpiration();
 
-    // Two different questions the old single setting could not separate: a
-    // paused PIREP is paused deliberately, so eviction from the map must not
-    // touch the record.
+    // A paused PIREP is paused deliberately: eviction must not touch the record.
     expect(onMap($pirep))->toBeFalse()
         ->and(Pirep::find($pirep->id))->not->toBeNull()
         ->and(Pirep::find($pirep->id)->state)->toBe(PirepState::IN_PROGRESS);
@@ -100,8 +86,7 @@ test('a paused flight within its window stays on the map', function (): void {
 });
 
 test('a paused flight is not reaped on the tombstone clock', function (): void {
-    // Paused for longer than the tombstone period. It leaves the map on
-    // idle_time, but idle_time governs map membership only and never reaping.
+    // idle_time governs map membership only, never reaping.
     $pirep = flightOnMap(reportedAgo: 60 * 20, pirepAttrs: ['status' => PirepPhase::PAUSED]);
 
     runExpiration();
@@ -117,17 +102,13 @@ test('a prefiled flight that never departs is evicted on the stationary timer', 
 
     runExpiration();
 
-    // Same timer as a paused flight: both are present and not moving. Note this
-    // is well inside the 12-hour tombstone, so the stationary rule is what did
-    // it.
+    // Same timer as a paused flight: both are present and not moving.
     expect(onMap($stale))->toBeFalse()
         ->and(onMap($recent))->toBeTrue();
 });
 
 test('phase and state disagreeing resolves on state', function (): void {
-    // Filed, so the record is finished — but the last thing the client reported
-    // was an arrived aircraft. 45 minutes is past live_time (30) and nowhere
-    // near the tombstone (12h), so which rule fires reveals which field won.
+    // Filed, but the last reported phase is still an arrived aircraft.
     $pirep = flightOnMap(reportedAgo: 45, pirepAttrs: [
         'state'  => PirepState::PENDING,
         'status' => PirepPhase::ARRIVED,
@@ -139,8 +120,7 @@ test('phase and state disagreeing resolves on state', function (): void {
 });
 
 test('a completed flight is clocked from its last position, not its filing time', function (): void {
-    // Landed at 12:00, filed at 15:00. Clocking from submitted_at would leave a
-    // landed aeroplane drawn for three and a half hours.
+    // Landed 12:00, filed 15:00. submitted_at would draw it for 3.5 more hours.
     Carbon::setTestNow(Carbon::parse('2026-07-27 15:05:00', 'UTC'));
 
     $pirep = Pirep::factory()->create([
@@ -158,8 +138,7 @@ test('a completed flight is clocked from its last position, not its filing time'
 
     runExpiration();
 
-    // Five minutes after filing, three hours after landing: gone, on the
-    // landing clock.
+    // Gone on the landing clock, not the filing one.
     expect(onMap($pirep))->toBeFalse();
 
     Carbon::setTestNow();
@@ -168,17 +147,14 @@ test('a completed flight is clocked from its last position, not its filing time'
 test('zero disables a timer rather than expiring everything', function (): void {
     updateSetting('livemap.live_time', 0);
     updateSetting('livemap.idle_time', 0);
-    updateSetting('pireps.tombstone_time', 0);
 
     $completed = flightOnMap(reportedAgo: 60 * 24, pirepAttrs: ['state' => PirepState::PENDING]);
     $paused = flightOnMap(reportedAgo: 60 * 24, pirepAttrs: ['status' => PirepPhase::PAUSED]);
-    $silent = flightOnMap(reportedAgo: 60 * 24);
 
     runExpiration();
 
     expect(onMap($completed))->toBeTrue()
-        ->and(onMap($paused))->toBeTrue()
-        ->and(onMap($silent))->toBeTrue();
+        ->and(onMap($paused))->toBeTrue();
 });
 
 test('cancelling takes a flight off the map before the request completes', function (): void {
@@ -186,6 +162,6 @@ test('cancelling takes a flight off the map before the request completes', funct
 
     app(PirepService::class)->cancel($pirep);
 
-    // No expiration run in between: the cancel path deletes it synchronously.
+    // No expiration run in between - the cancel path is synchronous.
     expect(onMap($pirep))->toBeFalse();
 });

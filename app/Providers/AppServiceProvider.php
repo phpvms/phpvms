@@ -303,9 +303,6 @@ class AppServiceProvider extends ServiceProvider
             'PirepSource' => PirepSource::class,
             'PirepState'  => PirepState::class,
             'PirepPhase'  => PirepPhase::class,
-
-            // Themes and addons written against the old root alias keep working:
-            // both names point at the same enum.
             'PirepStatus' => PirepPhase::class,
         ];
 

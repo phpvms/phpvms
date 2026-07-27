@@ -16,10 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Whether the database is actually enforcing the `acars` constraint. SQLite has
- * no ALTER TABLE ADD CONSTRAINT, so the migration skips it there — and a test
- * that asserts a foreign key works, on a connection with no foreign key, is
- * worse than no test.
+ * SQLite has no ALTER TABLE ADD CONSTRAINT, so the migration skips it there. A test
+ * asserting an FK works, on a connection with no FK, is worse than no test.
  */
 function acarsForeignKeyExists(): bool
 {
@@ -60,8 +58,7 @@ test('deleting a PIREP through the service removes its telemetry', function (): 
 
     app(PirepService::class)->delete($pirep);
 
-    // The docblock has claimed `acars` since this method was written. Now it is
-    // true.
+    // The docblock has claimed `acars` since this method was written.
     expect(telemetryCount($pirep))->toBe(['acars' => 0, 'position' => 0])
         ->and(Pirep::withTrashed()->find($pirep->id))->toBeNull();
 });
@@ -71,8 +68,7 @@ test('a soft-deleted PIREP keeps its telemetry', function (): void {
 
     $pirep->delete();
 
-    // The PIREP still exists and may be restored, so its telemetry is not
-    // rubbish yet.
+    // The PIREP still exists and may be restored.
     expect(telemetryCount($pirep))->toBe(['acars' => 3, 'position' => 1])
         ->and(Pirep::withTrashed()->find($pirep->id))->not->toBeNull();
 });
@@ -81,9 +77,8 @@ test('a soft-deleted PIREP is not counted as an orphan parent', function (): voi
     $pirep = flightWithTelemetry();
     $pirep->delete();
 
-    // The exact anti-join the migration purges on. A naive orphan query that
-    // went through Eloquent would apply the SoftDeletes scope, miss the parent,
-    // and destroy live telemetry.
+    // The migration's anti-join. Through Eloquent the SoftDeletes scope would hide
+    // the parent and this would destroy live telemetry.
     $orphans = DB::table('acars')
         ->whereNotNull('acars.pirep_id')
         ->whereNotExists(fn ($query) => $query->select(DB::raw(1))
@@ -101,7 +96,7 @@ test('deleting a PIREP outside the service still removes its telemetry', functio
 
     $pirep = flightWithTelemetry();
 
-    // Straight at the table, bypassing the service, the model and the observers.
+    // Bypassing the service, the model and the observers.
     DB::table('pireps')->where('id', $pirep->id)->delete();
 
     expect(telemetryCount($pirep))->toBe(['acars' => 0, 'position' => 0]);
@@ -119,8 +114,7 @@ test('telemetry for a PIREP that does not exist is rejected', function (): void 
 });
 
 test('the position row cascades on every platform', function (): void {
-    // Declared at create time rather than by ALTER, so this constraint exists
-    // everywhere, SQLite included.
+    // Declared at create time, so it exists everywhere including SQLite.
     $pirep = flightWithTelemetry();
 
     DB::table('pireps')->where('id', $pirep->id)->delete();
@@ -152,9 +146,7 @@ test('replacing a stored route still works under the constraint', function (): v
     Acars::factory()->count(2)->create(['pirep_id' => $pirep->id, 'type' => AcarsType::ROUTE]);
     Acars::factory()->count(2)->create(['pirep_id' => $pirep->id, 'type' => AcarsType::FLIGHT_PATH]);
 
-    // What PirepController::route_post and PirepService::saveRoute do: clear the
-    // old route rows before writing the new ones. Unrelated to PIREP deletion,
-    // and must keep working.
+    // What route_post and saveRoute do. Unrelated to PIREP deletion.
     Acars::where('pirep_id', $pirep->id)->where('type', AcarsType::ROUTE)->delete();
 
     expect(Acars::where('pirep_id', $pirep->id)->where('type', AcarsType::ROUTE)->count())->toBe(0)
@@ -168,7 +160,7 @@ test('clearing logs and flight path on a reused leg still works', function (): v
     Acars::factory()->count(2)->create(['pirep_id' => $pirep->id, 'type' => AcarsType::FLIGHT_PATH]);
     Acars::factory()->count(1)->create(['pirep_id' => $pirep->id, 'type' => AcarsType::ROUTE]);
 
-    // PirepService::prefile clears a duplicate leg's stale track and logs.
+    // What prefile does to a reused duplicate leg.
     Acars::where('pirep_id', $pirep->id)
         ->whereIn('type', [AcarsType::FLIGHT_PATH, AcarsType::LOG])
         ->delete();

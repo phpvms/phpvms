@@ -8,22 +8,10 @@ use Illuminate\Support\Facades\Schema;
 return new class() extends Migration
 {
     /**
-     * Split `acars.live_time`'s two jobs apart and move the live map's display
-     * settings out of the ACARS group.
-     *
-     * `acars.live_time` governed two unrelated behaviours: how long a finished
-     * flight stayed drawn on the map, and how long a silent in-progress PIREP
-     * survived before the reaper cancelled it. It becomes `pireps.tombstone_time`
-     * — only the second of those — and keeps hours as its unit and 12 as its
-     * default, because converting the unit would silently reinterpret every
-     * value an operator has already stored.
-     *
-     * `livemap.live_time` and `livemap.idle_time` take over the first job. They
-     * are new settings expressed in minutes, so they are left entirely to
-     * SettingsSeeder: there is no old value to carry onto them.
-     *
-     * The remaining three keys are a straight regroup. They were only ever under
-     * `acars` because the live map arrived as an ACARS feature.
+     * `acars.live_time` decided two unrelated things. It becomes
+     * `pireps.tombstone_time` - the reaper's half - keeping hours and 12 so stored
+     * values aren't reinterpreted. `livemap.live_time` and `livemap.idle_time` take
+     * the map's half and are new, so the seeder owns them. The rest is a regroup.
      *
      * @var list<array{old: string, new: string, name: string, group: string, type: string, default: string, description: string}>
      */
@@ -67,8 +55,7 @@ return new class() extends Migration
     ];
 
     /**
-     * The settings that did not exist before this change, and so have to be
-     * removed rather than renamed back when it is reversed.
+     * New here, so reversing removes them rather than renaming them back.
      *
      * @var list<string>
      */
@@ -116,34 +103,20 @@ return new class() extends Migration
             );
         }
 
-        // These have no pre-change counterpart to be restored to, so reversing
-        // means removing them rather than moving them anywhere.
+        // No pre-change counterpart to restore to.
         foreach ($this->introduced as $key) {
             Setting::where('id', Setting::formatKey($key))->delete();
         }
     }
 
     /**
-     * Rename a setting onto a new key, in place.
+     * Renamed in place, not recreated: `value` is not among the columns written, so
+     * it survives by construction. The discord migration's copy-when-blank rule would
+     * never fire here, since every setting moved seeds to a real default.
      *
-     * The row is renamed rather than recreated, which is what keeps an
-     * operator's configured value: `value` is simply not among the columns
-     * written, so it survives by construction rather than by a rule about when
-     * to copy it. That distinction matters here in a way it did not for
-     * `2026_07_14_000001_discord_route_settings`, whose settings all seed to an
-     * empty string — every setting moved here seeds to a real default, so a
-     * copy-only-when-the-destination-is-blank rule would never fire and every
-     * customised live time would quietly reset to 12 hours.
-     *
-     * The destination usually exists already. Updater runs
-     * SeederService::syncAllSeeds() before the data migrations, so SettingsSeeder
-     * has just inserted the new key at its default. That freshly seeded row is
-     * dropped and its placement adopted, so an upgraded install ends up with the
-     * same group, order and default as a fresh one, and differs only in the
-     * value the operator chose.
-     *
-     * Idempotent: with the source already gone there is nothing to carry, and
-     * the seeded destination is left exactly as it is.
+     * The seeder runs first, so the destination usually exists. Its placement is
+     * adopted and the row dropped, leaving upgrades and fresh installs identical
+     * except for the operator's value. Idempotent: no source, nothing to do.
      */
     private function move(
         string $from,
@@ -167,9 +140,8 @@ return new class() extends Migration
 
         $target?->delete();
 
-        // Straight to the query builder: this rewrites the primary key, and
-        // listing the columns explicitly is what documents that `value` is not
-        // among them.
+        // Query builder because this rewrites the primary key, and the explicit
+        // column list is what documents that `value` is not among them.
         DB::table('settings')
             ->where('id', Setting::formatKey($from))
             ->update([

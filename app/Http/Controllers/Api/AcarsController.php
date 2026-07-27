@@ -66,11 +66,7 @@ class AcarsController extends Controller
      */
     public function live_flights()
     {
-        // No filtering: a row in `pirep_positions` is what puts a flight on the
-        // map, so the join is the whole membership test. The null-position
-        // filter that used to be here is gone with the source it guarded — a
-        // position row always carries real coordinates, seeded from the
-        // departure airport at prefile.
+        // No filtering: the join is the whole membership test.
         $pireps = Pirep::onLiveMap()->get();
 
         return PirepResource::collection($pireps);
@@ -200,42 +196,20 @@ class AcarsController extends Controller
 
         $latest = $this->syncPosition($pirep);
 
-        // Post a new update for this ACARS position. Still the `acars` row, not
-        // the position row: this event's payload is not this change's to alter.
+        // Still the acars row, not the position row - this event's payload is unchanged.
         event(new AcarsUpdate($pirep, $latest));
 
         return $this->message($count.' positions added', $count);
     }
 
     /**
-     * Bring the PIREP's `pirep_positions` row up to date with the newest
-     * breadcrumb it has.
+     * Upsert the position row from the PIREP's newest breadcrumb. Resolved from
+     * `acars` server-side, not from the batch, so a replayed or out-of-order batch
+     * can't move the aircraft backwards - `acars`.`created_at` is collection time.
      *
-     * Nothing about what the batch writes to `acars` or to `pireps` changes;
-     * this is purely additional. Together with prefiling, it is the only path
-     * that writes a position row — the PIREP update and file endpoints are
-     * deliberately untouched, so position data arrives at whatever cadence
-     * clients post batches and the map is no fresher than it was.
-     *
-     * The newest point is resolved from `acars` server-side rather than taken
-     * from the batch, which is what keeps an out-of-order or replayed batch from
-     * moving the aircraft backwards: `acars`.`created_at` is when the client
-     * collected the point, so the newest row for the PIREP is the newest
-     * position however the batches carrying it happened to arrive. `order` is
-     * the tiebreaker for points collected within the same second, since the
-     * timestamp only resolves to one.
-     *
-     * Only an in-progress or pending PIREP gets a position row. Pending counts
-     * because filing moves a PIREP there while its client may still be posting
-     * the tail of the flight, and refusing those would freeze the marker short
-     * of where the aircraft actually stopped — the flight is still drawn for
-     * `livemap.live_time` after it finishes, so the position it is drawn at
-     * should be its last one. Every other state is refused, so a cancelled,
-     * rejected, accepted or already-evicted flight cannot be returned to the map
-     * by a late batch.
-     *
-     * A refused batch still writes its `acars` rows: that endpoint's contract is
-     * not this change's to alter, and only the position upsert is skipped.
+     * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
+     * client may still be posting the tail of the flight. Refused batches still write
+     * their `acars` rows.
      */
     private function syncPosition(Pirep $pirep): ?Acars
     {
@@ -258,8 +232,7 @@ class AcarsController extends Controller
             ['pirep_id' => $pirep->id],
             [
                 'user_id' => $pirep->user_id,
-                // Phase comes off the PIREP, not off `acars`.`status`, which is
-                // a different column with a different meaning.
+                // Off the PIREP, not `acars`.`status` - a different column entirely.
                 'phase'        => $pirep->status,
                 'lat'          => $latest->lat ?? 0,
                 'lon'          => $latest->lon ?? 0,
@@ -270,8 +243,7 @@ class AcarsController extends Controller
                 'vs'           => $latest->vs ?? 0,
                 'gs'           => $latest->gs ?? 0,
                 'ias'          => $latest->ias ?? 0,
-                // Elapsed time and fuel burned live on the PIREP; `acars` has
-                // neither. Its `fuel` column is fuel remaining, not fuel used.
+                // On the PIREP: `acars` has neither, and its `fuel` is fuel remaining.
                 'flight_time' => $pirep->flight_time ?? 0,
                 'fuel_used'   => $pirep->fuel_used?->internal(2) ?? 0,
             ]
