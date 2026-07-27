@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 use App\Enums\AcarsType;
 use App\Models\Acars;
+use App\Models\Pirep;
+
+/**
+ * `acars`.`pirep_id` carries a foreign key on every platform that can express
+ * one, so these rows need real parents rather than invented ids.
+ */
+beforeEach(function (): void {
+    Pirep::factory()->create(['id' => 'PIREP-A']);
+    Pirep::factory()->create(['id' => 'PIREP-B']);
+});
 
 test('Acars::forPirep returns only matching pirep rows', function (): void {
     Acars::factory()->create([

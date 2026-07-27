@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\LegacyImporter;
 
 use App\Enums\FlightType;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Models\Pirep;
 use App\Services\FinanceService;
 use App\Support\Money;
@@ -75,7 +75,7 @@ class PirepImporter extends BaseImporter
                 'route'          => $row->route ?: '',
                 'source_name'    => $row->source,
                 'state'          => $this->mapState($row->accepted),
-                'status'         => PirepStatus::ARRIVED,
+                'status'         => PirepPhase::ARRIVED,
                 'submitted_at'   => $this->parseDate($row->submitdate),
                 'created_at'     => $this->parseDate($row->submitdate),
                 'updated_at'     => $this->parseDate($row->submitdate),

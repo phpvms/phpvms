@@ -26,10 +26,11 @@ class LiveMap extends Widget
     {
         $geoSvc = app(GeoService::class);
 
-        $pireps = Pirep::activeFlights(setting('acars.live_time', 0))->get();
+        // Same source as the API endpoints; this widget bypasses them.
+        $pireps = Pirep::onLiveMap()->get();
         $positions = $geoSvc->getFeatureForLiveFlights($pireps);
 
-        $center_coords = setting('acars.center_coords', '0,0');
+        $center_coords = setting('livemap.center_coords', '0,0');
         $center_coords = array_map(fn ($c): float => (float) trim($c), explode(',', $center_coords));
 
         return view('widgets.live_map', [
@@ -37,7 +38,7 @@ class LiveMap extends Widget
             'pireps'    => $pireps,
             'positions' => $positions,
             'center'    => $center_coords,
-            'zoom'      => setting('acars.default_zoom', 5),
+            'zoom'      => setting('livemap.default_zoom', 5),
         ]);
     }
 }

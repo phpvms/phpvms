@@ -24,7 +24,7 @@ function createInProgressPirep($subtractTime): Pirep
 }
 
 test('expired flight not being removed', function (): void {
-    updateSetting('acars.live_time', 0);
+    updateSetting('pireps.tombstone_time', 0);
     $pirep = createInProgressPirep(2);
 
     /** @var RemoveExpiredLiveFlights $eventListener */
@@ -36,7 +36,7 @@ test('expired flight not being removed', function (): void {
 });
 
 test('expired flight should not be removed', function (): void {
-    updateSetting('acars.live_time', 3);
+    updateSetting('pireps.tombstone_time', 3);
     $pirep = createInProgressPirep(2);
 
     /** @var RemoveExpiredLiveFlights $eventListener */
@@ -48,7 +48,7 @@ test('expired flight should not be removed', function (): void {
 });
 
 test('expired flight should be removed', function (): void {
-    updateSetting('acars.live_time', 3);
+    updateSetting('pireps.tombstone_time', 3);
     $pirep = createInProgressPirep(4);
 
     /** @var RemoveExpiredLiveFlights $eventListener */
@@ -60,7 +60,7 @@ test('expired flight should be removed', function (): void {
 });
 
 test('completed flights should not be deleted', function (): void {
-    updateSetting('acars.live_time', 3);
+    updateSetting('pireps.tombstone_time', 3);
     $pirep = createInProgressPirep(4);
 
     // Make sure the state is accepted

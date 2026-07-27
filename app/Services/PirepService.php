@@ -8,9 +8,9 @@ use App\Contracts\Service;
 use App\Enums\AcarsType;
 use App\Enums\AircraftState;
 use App\Enums\FlightType;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Events\PirepAccepted;
 use App\Events\PirepCancelled;
 use App\Events\PirepFiled;
@@ -35,6 +35,7 @@ use App\Models\Pirep;
 use App\Models\PirepComment;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
+use App\Models\PirepPosition;
 use App\Models\SimBrief;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
@@ -74,7 +75,7 @@ class PirepService extends Service
         $attrs['state'] = PirepState::IN_PROGRESS;
 
         if (!array_key_exists('status', $attrs)) {
-            $attrs['status'] = PirepStatus::INITIATED;
+            $attrs['status'] = PirepPhase::INITIATED;
         }
 
         // Default to a scheduled passenger flight
@@ -162,7 +163,7 @@ class PirepService extends Service
                 ->delete();
         }
 
-        $pirep->status = PirepStatus::INITIATED;
+        $pirep->status = PirepPhase::INITIATED;
         $pirep->save();
         $pirep->refresh();
 
@@ -179,9 +180,42 @@ class PirepService extends Service
         $this->updateCustomFields($pirep->id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
 
+        $this->openPositionRow($pirep);
+
         event(new PirepPrefiled($pirep));
 
         return $pirep;
+    }
+
+    /**
+     * Put a prefiled flight on the map, parked at its departure gate. Real
+     * coordinates rather than nulls, so the read path needs no null check.
+     * updateOrCreate because prefiling can land on a reused duplicate leg.
+     */
+    private function openPositionRow(Pirep $pirep): void
+    {
+        $airport = $pirep->dpt_airport;
+
+        PirepPosition::updateOrCreate(
+            ['pirep_id' => $pirep->id],
+            [
+                'user_id' => $pirep->user_id,
+                // Not `pireps`.`status`, which is INITIATED here. Phase and state
+                // are allowed to disagree.
+                'phase'        => PirepPhase::SCHEDULED,
+                'lat'          => $airport->lat ?? 0,
+                'lon'          => $airport->lon ?? 0,
+                'heading'      => 0,
+                'distance'     => 0,
+                'altitude_agl' => 0,
+                'altitude_msl' => 0,
+                'vs'           => 0,
+                'gs'           => 0,
+                'ias'          => 0,
+                'flight_time'  => 0,
+                'fuel_used'    => 0,
+            ]
+        );
     }
 
     /**
@@ -211,7 +245,7 @@ class PirepService extends Service
             $pirep->submitted_at = Carbon::now('UTC');
         }
 
-        $pirep->status = PirepStatus::ARRIVED;
+        $pirep->status = PirepPhase::ARRIVED;
 
         // Copy some fields over from Flight/SimBrief if we have it
         if ($pirep->flight) {
@@ -273,7 +307,7 @@ class PirepService extends Service
         }
 
         $attrs['state'] = PirepState::PENDING;
-        $attrs['status'] = PirepStatus::ARRIVED;
+        $attrs['status'] = PirepPhase::ARRIVED;
         $attrs['submitted_at'] = Carbon::now('UTC');
 
         $pirep->update($attrs);
@@ -480,9 +514,13 @@ class PirepService extends Service
 
         $pirep->update([
             'state'  => PirepState::CANCELLED,
-            'status' => PirepStatus::CANCELLED,
+            'status' => PirepPhase::CANCELLED,
         ]);
         $pirep->refresh();
+
+        // Synchronous, not left to PirepPositionExpiration: the pilot explicitly
+        // ended this flight and would watch it linger for five minutes otherwise.
+        PirepPosition::where('pirep_id', $pirep->id)->delete();
 
         event(new PirepCancelled($pirep));
 
@@ -499,6 +537,7 @@ class PirepService extends Service
      * pirep_comments
      * pirep_fares
      * pirep_field_values
+     * pirep_positions
      * simbrief
      */
     public function delete(Pirep $pirep): void
@@ -513,6 +552,12 @@ class PirepService extends Service
             $this->pirepFinanceSvc->deleteFinancesForPirep($pirep);
 
             $w = ['pirep_id' => $pirep->id];
+
+            // Listed above since this method was written and never actually
+            // deleted. The FK covers it too, but SQLite can't express that one.
+            Acars::where($w)->delete();
+            PirepPosition::where($w)->delete();
+
             PirepComment::where($w)->forceDelete();
             PirepFare::where($w)->forceDelete();
             PirepFieldValue::where($w)->forceDelete();

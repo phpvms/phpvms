@@ -3,7 +3,7 @@
 namespace App\Services\Pirep;
 
 use App\Enums\AcarsType;
-use App\Enums\PirepStatus;
+use App\Enums\PirepPhase;
 use App\Models\Acars;
 use App\Models\Pirep;
 use DateTimeInterface;
@@ -61,7 +61,7 @@ class PerformanceChartService
 
     /**
      * Compact phase-timing summary rendered as four stat boxes beneath the
-     * performance chart. Bucket per PirepStatus code:
+     * performance chart. Bucket per PirepPhase code:
      *
      *   - climb   : TAKEOFF, INIT_CLIM, AIRBORNE
      *   - cruise  : ENROUTE
@@ -402,24 +402,24 @@ class PerformanceChartService
     }
 
     /**
-     * Log-substring → PirepStatus marker table. Ordered by typical flight
+     * Log-substring → PirepPhase marker table. Ordered by typical flight
      * sequence; substrings matched case-insensitively against the first
      * occurrence of each row in the LOG stream (with "flaps set to up"
      * gated to fire only after takeoff — pre-takeoff flap retract and
      * post-landing flap stow share the same string).
      *
-     * @var array<int, array{needle: string, status: PirepStatus, after_takeoff: bool}>
+     * @var array<int, array{needle: string, status: PirepPhase, after_takeoff: bool}>
      */
     private const array LOG_MARKERS = [
-        ['needle' => 'started boarding',  'status' => PirepStatus::BOARDING,      'after_takeoff' => false],
-        ['needle' => 'started pushback',  'status' => PirepStatus::PUSHBACK_TOW,  'after_takeoff' => false],
-        ['needle' => 'started taxi out',  'status' => PirepStatus::TAXI,          'after_takeoff' => false],
-        ['needle' => 'started takeoff',   'status' => PirepStatus::TAKEOFF,       'after_takeoff' => false],
-        ['needle' => 'flaps set to up',   'status' => PirepStatus::ENROUTE,       'after_takeoff' => true],
-        ['needle' => 'on approach',       'status' => PirepStatus::APPROACH_ICAO, 'after_takeoff' => true],
-        ['needle' => 'on final approach', 'status' => PirepStatus::ON_FINAL,      'after_takeoff' => true],
-        ['needle' => 'landing rate',      'status' => PirepStatus::LANDING,       'after_takeoff' => true],
-        ['needle' => 'blocks on time',    'status' => PirepStatus::ON_BLOCK,      'after_takeoff' => true],
+        ['needle' => 'started boarding',  'status' => PirepPhase::BOARDING,      'after_takeoff' => false],
+        ['needle' => 'started pushback',  'status' => PirepPhase::PUSHBACK_TOW,  'after_takeoff' => false],
+        ['needle' => 'started taxi out',  'status' => PirepPhase::TAXI,          'after_takeoff' => false],
+        ['needle' => 'started takeoff',   'status' => PirepPhase::TAKEOFF,       'after_takeoff' => false],
+        ['needle' => 'flaps set to up',   'status' => PirepPhase::ENROUTE,       'after_takeoff' => true],
+        ['needle' => 'on approach',       'status' => PirepPhase::APPROACH_ICAO, 'after_takeoff' => true],
+        ['needle' => 'on final approach', 'status' => PirepPhase::ON_FINAL,      'after_takeoff' => true],
+        ['needle' => 'landing rate',      'status' => PirepPhase::LANDING,       'after_takeoff' => true],
+        ['needle' => 'blocks on time',    'status' => PirepPhase::ON_BLOCK,      'after_takeoff' => true],
     ];
 
     /**
@@ -502,7 +502,7 @@ class PerformanceChartService
 
                 $matched[$i] = ['status' => $marker['status'], 'ts' => $ts];
 
-                if ($marker['status'] === PirepStatus::TAKEOFF) {
+                if ($marker['status'] === PirepPhase::TAKEOFF) {
                     $takeoffSeen = true;
                 }
 
@@ -547,9 +547,9 @@ class PerformanceChartService
         return $this->collapseToPhases(
             $samples,
             fn ($s): string => match (true) {
-                (float) ($s->vs ?? 0) > 200  => PirepStatus::INIT_CLIM->value,
-                (float) ($s->vs ?? 0) < -200 => PirepStatus::APPROACH_ICAO->value,
-                default                      => PirepStatus::ENROUTE->value,
+                (float) ($s->vs ?? 0) > 200  => PirepPhase::INIT_CLIM->value,
+                (float) ($s->vs ?? 0) < -200 => PirepPhase::APPROACH_ICAO->value,
+                default                      => PirepPhase::ENROUTE->value,
             },
         );
     }
@@ -557,7 +557,7 @@ class PerformanceChartService
     /**
      * Walk the sample collection, group contiguous runs that share the same
      * phase code (resolved by `$codeFor`), and emit one entry per run with
-     * its translated PirepStatus label.
+     * its translated PirepPhase label.
      *
      * @param  callable(Acars): string                                              $codeFor
      * @return array<int, array{code: string, label: string, start: int, end: int}>
@@ -595,7 +595,7 @@ class PerformanceChartService
     }
 
     /**
-     * Label = the PirepStatus 3-letter code itself (e.g. 'TXI', 'ENR').
+     * Label = the PirepPhase 3-letter code itself (e.g. 'TXI', 'ENR').
      * Chart corner real estate is cramped and the codes are unambiguous
      * to anyone reading flight data. Unknown codes pass through as-is.
      */

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Enums\AcarsType;
+use App\Enums\PirepState;
 use App\Events\AcarsUpdate;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepNotFound;
@@ -14,6 +15,7 @@ use App\Http\Resources\AcarsRouteResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepPosition;
 use App\Services\GeoService;
 use Carbon\Carbon;
 use DateTime;
@@ -64,9 +66,8 @@ class AcarsController extends Controller
      */
     public function live_flights()
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get()->filter(
-            fn (Pirep $pirep): bool => $pirep->position !== null
-        );
+        // No filtering: the join is the whole membership test.
+        $pireps = Pirep::onLiveMap()->get();
 
         return PirepResource::collection($pireps);
     }
@@ -76,7 +77,7 @@ class AcarsController extends Controller
      */
     public function pireps_geojson(Request $request): JsonResponse
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get();
+        $pireps = Pirep::onLiveMap()->get();
         $positions = $this->geoSvc->getFeatureForLiveFlights($pireps);
 
         return response()->json([
@@ -135,6 +136,8 @@ class AcarsController extends Controller
         );*/
 
         $count = 0;
+        $latest = null;
+        $latestAt = null;
         $positions = $request->post('positions');
         foreach ($positions as $position) {
             $position['pirep_id'] = $id;
@@ -169,16 +172,29 @@ class AcarsController extends Controller
             }
 
             try {
-                DB::transaction(function () use ($position): void {
+                $written = null;
+
+                DB::transaction(function () use ($position, &$written): void {
                     if (!empty($position['id'])) {
                         Acars::updateOrInsert(
                             ['id' => $position['id']],
                             $position
                         );
+
+                        $written = new Acars($position);
                     } else {
-                        Acars::create($position);
+                        $written = Acars::create($position);
                     }
                 });
+
+                // Newest by collection time, not by position in the array: a
+                // batch can carry its points in any order.
+                $collectedAt = $position['created_at'] ?? Carbon::now('UTC');
+
+                if ($latestAt === null || $collectedAt->greaterThanOrEqualTo($latestAt)) {
+                    $latest = $written;
+                    $latestAt = $collectedAt;
+                }
 
                 $count++;
             } catch (QueryException $ex) {
@@ -187,16 +203,55 @@ class AcarsController extends Controller
         }
 
         // Change the PIREP status if it's as SCHEDULED before
-        /*if ($pirep->status === PirepStatus::INITIATED) {
-            $pirep->status = PirepStatus::AIRBORNE;
+        /*if ($pirep->status === PirepPhase::INITIATED) {
+            $pirep->status = PirepPhase::AIRBORNE;
         }*/
 
         $pirep->save();
 
-        // Post a new update for this ACARS position
-        event(new AcarsUpdate($pirep, $pirep->position));
+        $this->syncPosition($pirep, $latest);
+
+        // Still the acars row, not the position row - this event's payload is unchanged.
+        event(new AcarsUpdate($pirep, $latest));
 
         return $this->message($count.' positions added', $count);
+    }
+
+    /**
+     * Upsert the position row from the newest point the batch carried.
+     *
+     * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
+     * client may still be posting the tail of the flight. Refused batches still write
+     * their `acars` rows.
+     */
+    private function syncPosition(Pirep $pirep, ?Acars $latest): void
+    {
+        if (!$latest instanceof Acars
+            || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
+        ) {
+            return;
+        }
+
+        PirepPosition::updateOrCreate(
+            ['pirep_id' => $pirep->id],
+            [
+                'user_id' => $pirep->user_id,
+                // Off the PIREP, not `acars`.`status` - a different column entirely.
+                'phase'        => $pirep->status,
+                'lat'          => $latest->lat ?? 0,
+                'lon'          => $latest->lon ?? 0,
+                'heading'      => $latest->heading ?? 0,
+                'distance'     => $latest->distance?->internal(2) ?? 0,
+                'altitude_agl' => $latest->altitude_agl ?? 0,
+                'altitude_msl' => $latest->altitude_msl ?? 0,
+                'vs'           => $latest->vs ?? 0,
+                'gs'           => $latest->gs ?? 0,
+                'ias'          => $latest->ias ?? 0,
+                // On the PIREP: `acars` has neither, and its `fuel` is fuel remaining.
+                'flight_time' => $pirep->flight_time ?? 0,
+                'fuel_used'   => $pirep->fuel_used?->internal(2) ?? 0,
+            ]
+        );
     }
 
     /**

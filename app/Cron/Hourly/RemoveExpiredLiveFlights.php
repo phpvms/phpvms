@@ -3,8 +3,8 @@
 namespace App\Cron\Hourly;
 
 use App\Contracts\Listener;
+use App\Enums\PirepPhase;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Events\CronHourly;
 use App\Events\PirepCancelled;
 use App\Models\Pirep;
@@ -25,14 +25,14 @@ class RemoveExpiredLiveFlights extends Listener
      */
     public function handle(CronHourly $event): void
     {
-        if (setting('acars.live_time') === 0) {
+        if (setting('pireps.tombstone_time') === 0) {
             return;
         }
 
-        $date = Carbon::now('UTC')->subHours(setting('acars.live_time'));
+        $date = Carbon::now('UTC')->subHours(setting('pireps.tombstone_time'));
         $pireps = Pirep::where('updated_at', '<', $date)
             ->where('state', PirepState::IN_PROGRESS)
-            ->where('status', '<>', PirepStatus::PAUSED)
+            ->where('status', '<>', PirepPhase::PAUSED)
             ->get();
 
         foreach ($pireps as $pirep) {

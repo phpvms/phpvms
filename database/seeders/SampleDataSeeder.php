@@ -15,9 +15,9 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\PirepFieldSource;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\Pirep;
@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Override;
 use Symfony\Component\Finder\SplFileInfo;
 
 class SampleDataSeeder extends YamlSeeder
@@ -39,7 +40,7 @@ class SampleDataSeeder extends YamlSeeder
         parent::__construct($this->yamlDbSvc);
     }
 
-    #[\Override]
+    #[Override]
     public function run(): void
     {
         $seedPath = database_path('seeders/sample');
@@ -172,7 +173,7 @@ class SampleDataSeeder extends YamlSeeder
                 'source'              => 0,
                 'source_name'         => $bulkSeedMarker,
                 'state'               => $state->value,
-                'status'              => PirepStatus::ARRIVED->value,
+                'status'              => PirepPhase::ARRIVED->value,
                 'notes'               => 'Seeded PIREP #'.$flightNum,
                 'block_off_time'      => $blockOffStr,
                 'block_on_time'       => $blockOnStr,
@@ -227,7 +228,7 @@ class SampleDataSeeder extends YamlSeeder
             'source'              => PirepSource::ACARS->value,
             'source_name'         => 'vmsacars',
             'state'               => PirepState::ACCEPTED->value,
-            'status'              => PirepStatus::ARRIVED->value,
+            'status'              => PirepPhase::ARRIVED->value,
             'block_off_time'      => '2026-05-16 14:45:46',
             'block_on_time'       => '2026-05-16 15:34:45',
             'submitted_at'        => '2026-05-16 15:35:12',

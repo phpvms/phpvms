@@ -2,8 +2,8 @@
 
 use App\Enums\AcarsType;
 use App\Enums\PirepFieldSource;
+use App\Enums\PirepPhase;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Enums\UserState;
 use App\Models\Acars;
 use App\Models\Aircraft;
@@ -753,7 +753,7 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
         'airline_id'     => $airline->id,
         'flight_number'  => $flight->flight_number,
         'callsign'       => $flight->callsign,
-        'route_code'     => PirepStatus::DIVERTED,
+        'route_code'     => PirepPhase::DIVERTED,
         'dpt_airport_id' => $diversionAirport->id,
         'arr_airport_id' => $originalArrivalAirport->id,
         'user_id'        => $user->id,
@@ -783,7 +783,7 @@ test('diversion handler reuses matching reposition flight and attaches subfleet'
         'airline_id'     => $airline->id,
         'flight_number'  => $flight->flight_number,
         'callsign'       => $flight->callsign,
-        'route_code'     => PirepStatus::DIVERTED,
+        'route_code'     => PirepPhase::DIVERTED,
         'dpt_airport_id' => $diversionAirport->id,
         'arr_airport_id' => $originalArrivalAirport->id,
         'user_id'        => $user->id,

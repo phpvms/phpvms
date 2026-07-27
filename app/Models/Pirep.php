@@ -9,9 +9,9 @@ use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\FlightType;
 use App\Enums\PirepFieldSource;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Enums\SimType;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
@@ -66,7 +66,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property PirepSource|null $source
  * @property string|null      $source_name
  * @property PirepState       $state
- * @property PirepStatus      $status
+ * @property PirepPhase       $status
  * @property mixed|null       $submitted_at
  * @property mixed|null       $block_off_time
  * @property mixed|null       $block_on_time
@@ -99,7 +99,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read User|null $pilot
- * @property-read Acars|null $position
+ * @property-read PirepPosition|null $position
  * @property-read float $progress_percent
  * @property-read bool $read_only
  * @property-read SimBrief|null $simbrief
@@ -107,8 +107,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $transactions_count
  * @property-read User|null $user
  *
- * @method static Builder<static>|Pirep activeFlights(int $liveTime = 0)
  * @method static PirepFactory          factory($count = null, $state = [])
+ * @method static Builder<static>|Pirep onLiveMap()
  * @method static Builder<static>|Pirep newModelQuery()
  * @method static Builder<static>|Pirep newQuery()
  * @method static Builder<static>|Pirep onlyTrashed()
@@ -550,15 +550,12 @@ class Pirep extends Model
     }
 
     /**
-     * Relationship that holds the current position, but limits the ACARS
-     *  relationship to only one row (the latest), to prevent an N+! problem
+     * The flight's current position. Was a latest-of-many over `acars`; now a plain
+     * one-to-one on `pirep_positions`.
      */
     public function position(): HasOne
     {
-        return $this->hasOne(Acars::class, 'pirep_id')
-            ->flightPath()
-            ->latest('created_at')
-            ->latest('sim_time');
+        return $this->hasOne(PirepPosition::class, 'pirep_id');
     }
 
     public function simbrief(): BelongsTo
@@ -604,28 +601,22 @@ class Pirep extends Model
             'source'              => PirepSource::class,
             'sim_type'            => SimType::class,
             'state'               => PirepState::class,
-            'status'              => PirepStatus::class,
+            'status'              => PirepPhase::class,
             'submitted_at'        => CarbonCast::class,
         ];
     }
 
     /**
-     * Scope: PIREPs with state = IN_PROGRESS, optionally constrained to those
-     * updated within the last $liveTime hours, ordered by updated_at desc, with
-     * the relations needed by the live-map / live-flights endpoints eager-loaded.
-     *
-     * Replaces the previously-misnamed AcarsRepository::getPositions() method.
+     * Scope: the flights on the live map. Membership is the join and nothing else -
+     * eviction belongs to PirepPositionExpiration, not to a query that runs per poll.
      */
-    public function scopeActiveFlights(Builder $query, int $liveTime = 0): Builder
+    public function scopeOnLiveMap(Builder $query): Builder
     {
-        $query
-            ->with(['aircraft', 'airline', 'arr_airport', 'dpt_airport', 'position', 'user'])
-            ->where('state', PirepState::IN_PROGRESS);
-
-        if ($liveTime > 0) {
-            $query->where('updated_at', '>=', Carbon::now()->subHours($liveTime));
-        }
-
-        return $query->orderBy('updated_at', 'desc');
+        return $query
+            // user.airline because User::ident reads it.
+            ->with(['aircraft', 'airline', 'arr_airport', 'dpt_airport', 'position', 'user', 'user.airline'])
+            ->join('pirep_positions', 'pirep_positions.pirep_id', '=', 'pireps.id')
+            ->select('pireps.*')
+            ->orderBy('pirep_positions.updated_at', 'desc');
     }
 }

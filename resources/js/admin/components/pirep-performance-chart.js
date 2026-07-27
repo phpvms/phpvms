@@ -18,10 +18,10 @@ import "chartjs-adapter-date-fns";
 
 Chart.register(annotationPlugin);
 
-// Phase shading keyed off ACARS sample `status` (PirepStatus enum value).
+// Phase shading keyed off ACARS sample `status` (PirepPhase enum value).
 // Codes that don't appear here render unshaded — keeps unknown / SCH from
 // painting the whole chart gray. Labels come from the server payload
-// (`phase.label`) so translations stay in PHP land (PirepStatus::getLabel).
+// (`phase.label`) so translations stay in PHP land (PirepPhase::getLabel).
 // Low-alpha backgrounds so the data line stays visually dominant.
 const PHASE_COLORS = {
   // Ground / pre-flight

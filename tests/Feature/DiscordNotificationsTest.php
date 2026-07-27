@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\PirepStatus;
+use App\Enums\PirepPhase;
 use App\Models\Award;
 use App\Models\News;
 use App\Models\Pirep;
@@ -190,8 +190,8 @@ test('a key status change announces once', function (): void {
     Notification::fake();
     updateSetting('notifications.discord_pirep_status', true);
 
-    $pirep = Pirep::factory()->create(['status' => PirepStatus::INITIATED]);
-    $pirep->status = PirepStatus::BOARDING;
+    $pirep = Pirep::factory()->create(['status' => PirepPhase::INITIATED]);
+    $pirep->status = PirepPhase::BOARDING;
     $pirep->save();
 
     // Proves the status-change announcement fires at all, which is what makes
@@ -203,8 +203,8 @@ test('a diverted status does not also announce a status change', function (): vo
     Notification::fake();
     updateSetting('notifications.discord_pirep_status', true);
 
-    $pirep = Pirep::factory()->create(['status' => PirepStatus::INITIATED]);
-    $pirep->status = PirepStatus::DIVERTED;
+    $pirep = Pirep::factory()->create(['status' => PirepPhase::INITIATED]);
+    $pirep->status = PirepPhase::DIVERTED;
     $pirep->save();
 
     // PirepService::handleDiversion() announces a diversion via PirepDiverted,
