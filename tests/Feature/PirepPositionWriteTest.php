@@ -111,14 +111,14 @@ test('the first position batch replaces the seeded coordinates', function (): vo
         ->and((float) $position->lat)->not->toBe((float) $seeded->lat);
 });
 
-test('the position row reflects the last point in a batch', function (): void {
+test('the position row reflects the newest point in a batch, whatever order it arrives in', function (): void {
     [$pirep] = prefileFlight();
     $at = Carbon::now('UTC');
 
     postPositions($pirep, [
         point($at->copy()->subMinutes(2), 10.0, 10.0),
-        point($at->copy()->subMinute(), 11.0, 11.0),
         point($at->copy(), 12.0, 12.0),
+        point($at->copy()->subMinute(), 11.0, 11.0),
     ]);
 
     expect((float) positionRow($pirep)->lat)->toBe(12.0);

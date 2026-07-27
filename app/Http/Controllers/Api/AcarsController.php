@@ -137,6 +137,7 @@ class AcarsController extends Controller
 
         $count = 0;
         $latest = null;
+        $latestAt = null;
         $positions = $request->post('positions');
         foreach ($positions as $position) {
             $position['pirep_id'] = $id;
@@ -171,18 +172,29 @@ class AcarsController extends Controller
             }
 
             try {
-                DB::transaction(function () use ($position, &$latest): void {
+                $written = null;
+
+                DB::transaction(function () use ($position, &$written): void {
                     if (!empty($position['id'])) {
                         Acars::updateOrInsert(
                             ['id' => $position['id']],
                             $position
                         );
 
-                        $latest = new Acars($position);
+                        $written = new Acars($position);
                     } else {
-                        $latest = Acars::create($position);
+                        $written = Acars::create($position);
                     }
                 });
+
+                // Newest by collection time, not by position in the array: a
+                // batch can carry its points in any order.
+                $collectedAt = $position['created_at'] ?? Carbon::now('UTC');
+
+                if ($latestAt === null || $collectedAt->greaterThanOrEqualTo($latestAt)) {
+                    $latest = $written;
+                    $latestAt = $collectedAt;
+                }
 
                 $count++;
             } catch (QueryException $ex) {
@@ -206,7 +218,7 @@ class AcarsController extends Controller
     }
 
     /**
-     * Upsert the position row from the last point the batch carried.
+     * Upsert the position row from the newest point the batch carried.
      *
      * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
      * client may still be posting the tail of the flight. Refused batches still write
