@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Enums\PirepStatus;
+use App\Enums\PirepPhase;
 use App\Enums\UserState;
 use App\Events\AwardAwarded;
 use App\Events\NewsAdded;
@@ -161,7 +161,7 @@ class NotificationsSubscriber
      * Reduced the messages (Boarding, Pushback, TakeOff, Landing and non-normals only)
      * If needed array can be tied to a setting at admin side for further customization
      *
-     * PirepStatus::DIVERTED is deliberately absent from the list: a diversion is
+     * PirepPhase::DIVERTED is deliberately absent from the list: a diversion is
      * announced by PirepService::handleDiversion() through Broadcast\PirepDiverted,
      * which carries the diversion airport and reason. Listing it here as well
      * announced every diversion twice.
@@ -171,14 +171,14 @@ class NotificationsSubscriber
         Log::info('NotificationEvents::onPirepStatusChange: '.$event->pirep->id.' status changed');
 
         $message_types = [
-            PirepStatus::BOARDING,
-            PirepStatus::PUSHBACK_TOW,
-            PirepStatus::GRND_RTRN,
-            PirepStatus::TAKEOFF,
-            PirepStatus::LANDED,
-            PirepStatus::CANCELLED,
-            PirepStatus::PAUSED,
-            PirepStatus::EMERG_DESCENT,
+            PirepPhase::BOARDING,
+            PirepPhase::PUSHBACK_TOW,
+            PirepPhase::GRND_RTRN,
+            PirepPhase::TAKEOFF,
+            PirepPhase::LANDED,
+            PirepPhase::CANCELLED,
+            PirepPhase::PAUSED,
+            PirepPhase::EMERG_DESCENT,
         ];
 
         if (setting('notifications.discord_pirep_status', true) && in_array($event->pirep->status, $message_types,

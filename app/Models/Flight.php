@@ -419,7 +419,7 @@ class Flight extends Model
      * the legacy "leg zero or empty" sentinel) from `'0'` (string), both of
      * which we collapse, from a real string `'abc'` that we preserve.
      *
-     * Backed enums (e.g. `PirepStatus::DIVERTED` set on `route_code` by the
+     * Backed enums (e.g. `PirepPhase::DIVERTED` set on `route_code` by the
      * diversion handler) are coerced via their backing `->value`. Pure unit
      * enums fall back to their `->name`. This keeps legacy callers working
      * without forcing them to pre-stringify enum values.

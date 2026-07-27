@@ -5,9 +5,9 @@
 namespace Database\Factories;
 
 use App\Contracts\Factory;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Flight;
@@ -71,7 +71,7 @@ class PirepFactory extends Factory
             ),
             'source_name'  => 'TestFactory',
             'state'        => PirepState::PENDING,
-            'status'       => PirepStatus::SCHEDULED,
+            'status'       => PirepPhase::SCHEDULED,
             'submitted_at' => Carbon::now('UTC')->toDateTimeString(),
             'created_at'   => Carbon::now('UTC')->toDateTimeString(),
             'updated_at'   => fn (array $pirep) => $pirep['created_at'],

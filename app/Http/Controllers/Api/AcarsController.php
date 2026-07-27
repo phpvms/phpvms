@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Enums\AcarsType;
+use App\Enums\PirepState;
 use App\Events\AcarsUpdate;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepNotFound;
@@ -14,6 +15,7 @@ use App\Http\Resources\AcarsRouteResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepPosition;
 use App\Services\GeoService;
 use Carbon\Carbon;
 use DateTime;
@@ -64,9 +66,12 @@ class AcarsController extends Controller
      */
     public function live_flights()
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get()->filter(
-            fn (Pirep $pirep): bool => $pirep->position !== null
-        );
+        // No filtering: a row in `pirep_positions` is what puts a flight on the
+        // map, so the join is the whole membership test. The null-position
+        // filter that used to be here is gone with the source it guarded — a
+        // position row always carries real coordinates, seeded from the
+        // departure airport at prefile.
+        $pireps = Pirep::onLiveMap()->get();
 
         return PirepResource::collection($pireps);
     }
@@ -76,7 +81,7 @@ class AcarsController extends Controller
      */
     public function pireps_geojson(Request $request): JsonResponse
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get();
+        $pireps = Pirep::onLiveMap()->get();
         $positions = $this->geoSvc->getFeatureForLiveFlights($pireps);
 
         return response()->json([
@@ -187,16 +192,92 @@ class AcarsController extends Controller
         }
 
         // Change the PIREP status if it's as SCHEDULED before
-        /*if ($pirep->status === PirepStatus::INITIATED) {
-            $pirep->status = PirepStatus::AIRBORNE;
+        /*if ($pirep->status === PirepPhase::INITIATED) {
+            $pirep->status = PirepPhase::AIRBORNE;
         }*/
 
         $pirep->save();
 
-        // Post a new update for this ACARS position
-        event(new AcarsUpdate($pirep, $pirep->position));
+        $latest = $this->syncPosition($pirep);
+
+        // Post a new update for this ACARS position. Still the `acars` row, not
+        // the position row: this event's payload is not this change's to alter.
+        event(new AcarsUpdate($pirep, $latest));
 
         return $this->message($count.' positions added', $count);
+    }
+
+    /**
+     * Bring the PIREP's `pirep_positions` row up to date with the newest
+     * breadcrumb it has.
+     *
+     * Nothing about what the batch writes to `acars` or to `pireps` changes;
+     * this is purely additional. Together with prefiling, it is the only path
+     * that writes a position row — the PIREP update and file endpoints are
+     * deliberately untouched, so position data arrives at whatever cadence
+     * clients post batches and the map is no fresher than it was.
+     *
+     * The newest point is resolved from `acars` server-side rather than taken
+     * from the batch, which is what keeps an out-of-order or replayed batch from
+     * moving the aircraft backwards: `acars`.`created_at` is when the client
+     * collected the point, so the newest row for the PIREP is the newest
+     * position however the batches carrying it happened to arrive. `order` is
+     * the tiebreaker for points collected within the same second, since the
+     * timestamp only resolves to one.
+     *
+     * Only an in-progress or pending PIREP gets a position row. Pending counts
+     * because filing moves a PIREP there while its client may still be posting
+     * the tail of the flight, and refusing those would freeze the marker short
+     * of where the aircraft actually stopped — the flight is still drawn for
+     * `livemap.live_time` after it finishes, so the position it is drawn at
+     * should be its last one. Every other state is refused, so a cancelled,
+     * rejected, accepted or already-evicted flight cannot be returned to the map
+     * by a late batch.
+     *
+     * A refused batch still writes its `acars` rows: that endpoint's contract is
+     * not this change's to alter, and only the position upsert is skipped.
+     */
+    private function syncPosition(Pirep $pirep): ?Acars
+    {
+        /** @var ?Acars $latest */
+        $latest = Acars::query()
+            ->forPirep($pirep->id)
+            ->flightPath()
+            ->orderBy('created_at', 'desc')
+            ->orderBy('order', 'desc')
+            ->orderBy('sim_time', 'desc')
+            ->first();
+
+        if ($latest === null
+            || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
+        ) {
+            return $latest;
+        }
+
+        PirepPosition::updateOrCreate(
+            ['pirep_id' => $pirep->id],
+            [
+                'user_id' => $pirep->user_id,
+                // Phase comes off the PIREP, not off `acars`.`status`, which is
+                // a different column with a different meaning.
+                'phase'        => $pirep->status,
+                'lat'          => $latest->lat ?? 0,
+                'lon'          => $latest->lon ?? 0,
+                'heading'      => $latest->heading ?? 0,
+                'distance'     => $latest->distance?->internal(2) ?? 0,
+                'altitude_agl' => $latest->altitude_agl ?? 0,
+                'altitude_msl' => $latest->altitude_msl ?? 0,
+                'vs'           => $latest->vs ?? 0,
+                'gs'           => $latest->gs ?? 0,
+                'ias'          => $latest->ias ?? 0,
+                // Elapsed time and fuel burned live on the PIREP; `acars` has
+                // neither. Its `fuel` column is fuel remaining, not fuel used.
+                'flight_time' => $pirep->flight_time ?? 0,
+                'fuel_used'   => $pirep->fuel_used?->internal(2) ?? 0,
+            ]
+        );
+
+        return $latest;
     }
 
     /**

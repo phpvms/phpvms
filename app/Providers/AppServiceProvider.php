@@ -6,9 +6,9 @@ use App\Auth\InstallSafeUserProvider;
 use App\Contracts\Metar;
 use App\Contracts\Model as BaseModel;
 use App\Enums\ActiveState;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Enums\UserState;
 use App\Http\Composers\PageLinksComposer;
 use App\Http\Composers\VersionComposer;
@@ -302,7 +302,11 @@ class AppServiceProvider extends ServiceProvider
             'UserState'   => UserState::class,
             'PirepSource' => PirepSource::class,
             'PirepState'  => PirepState::class,
-            'PirepStatus' => PirepStatus::class,
+            'PirepPhase'  => PirepPhase::class,
+
+            // Themes and addons written against the old root alias keep working:
+            // both names point at the same enum.
+            'PirepStatus' => PirepPhase::class,
         ];
 
         foreach ($aliases as $alias => $class) {

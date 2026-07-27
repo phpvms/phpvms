@@ -224,6 +224,27 @@ class GeoService extends Service
             ]);
         }
 
+        // The breadcrumbs and the live position move at different cadences, so
+        // the trail can end minutes behind the aircraft and draw the marker
+        // floating ahead of its own track. Appending the live position closes
+        // that gap. It fabricates nothing — the point is a real reported
+        // position, just one that has not reached `acars` yet — and is skipped
+        // when the last breadcrumb is already there, so a trail never gains a
+        // duplicate final point.
+        $live = $pirep->position;
+        $last = $actual_route->last();
+
+        if ($live !== null
+            && ($last === null
+                || (float) $last->lat !== (float) $live->lat
+                || (float) $last->lon !== (float) $live->lon)
+        ) {
+            $route->addPoint($live->lat, $live->lon, [
+                'pirep_id' => $pirep->id,
+                'alt'      => $live->altitude,
+            ]);
+        }
+
         return [
             // If there is a position update from ACARS, show where it is
             // Otherwise, just assume it's at the arrival airport currently

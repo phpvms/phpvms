@@ -7,9 +7,9 @@ namespace App\Services\Finance;
 use App\Contracts\Service;
 use App\Enums\ExpenseType;
 use App\Enums\FuelType;
+use App\Enums\PirepPhase;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Events\Expenses as ExpensesEvent;
 use App\Events\Fares as FaresEvent;
 use App\Models\Aircraft;
@@ -209,7 +209,7 @@ class PirepFinanceService extends Service
             $prev_flight = Pirep::where([
                 'aircraft_id' => $pirep->aircraft->id,
                 'state'       => PirepState::ACCEPTED,
-                'status'      => PirepStatus::ARRIVED,
+                'status'      => PirepPhase::ARRIVED,
             ])
                 ->where('submitted_at', '<=', $pirep->submitted_at)
                 ->orderby('submitted_at', 'desc')

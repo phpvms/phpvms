@@ -43,7 +43,7 @@ return [
         'user_registered'  => 'New User Registered: :ident',
 
         /*
-         * Verbs completing "Flight <ident> ...", keyed by PirepStatus value.
+         * Verbs completing "Flight <ident> ...", keyed by PirepPhase value.
          */
         'status' => [
             'INI' => 'is initialized',

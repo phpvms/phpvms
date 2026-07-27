@@ -21,7 +21,7 @@ use Override;
  *   search     Free-text or `field:value[;field:value...]` (max 255 chars)
  *   user_id    Filter by pilot
  *   state      PirepState integer
- *   status     PirepStatus string
+ *   status     PirepPhase string
  *   orderBy    One of ORDERABLE_FIELDS
  *   sortedBy   asc | desc
  *   page       Pagination page number (min 1)

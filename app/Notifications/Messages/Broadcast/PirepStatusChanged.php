@@ -3,7 +3,7 @@
 namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
-use App\Enums\PirepStatus;
+use App\Enums\PirepPhase;
 use App\Models\Pirep;
 use App\Notifications\Concerns\BuildsDiscordEmbeds;
 use App\Notifications\DiscordEmbedColor;
@@ -24,11 +24,11 @@ class PirepStatusChanged extends Notification implements ShouldQueue
      * Statuses that read as trouble rather than routine progress.
      */
     private const array DANGER_STATUSES = [
-        PirepStatus::GRND_RTRN,
-        PirepStatus::DIVERTED,
-        PirepStatus::CANCELLED,
-        PirepStatus::PAUSED,
-        PirepStatus::EMERG_DESCENT,
+        PirepPhase::GRND_RTRN,
+        PirepPhase::DIVERTED,
+        PirepPhase::CANCELLED,
+        PirepPhase::PAUSED,
+        PirepPhase::EMERG_DESCENT,
     ];
 
     /**

@@ -1,7 +1,7 @@
 <?php
 
+use App\Enums\PirepPhase;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Exceptions\AircraftNotAtAirport;
 use App\Exceptions\UserNotAtAirport;
 use App\Models\Acars;
@@ -366,7 +366,7 @@ it('can receive acars updates', function (): void {
         'level'               => 38000,
         'planned_distance'    => 400,
         'planned_flight_time' => 120,
-        'status'              => PirepStatus::BOARDING->value,
+        'status'              => PirepPhase::BOARDING->value,
         'route'               => 'POINTA POINTB',
         'source_name'         => 'AcarsTest::testAcarsUpdates',
         'fields'              => [
@@ -388,7 +388,7 @@ it('can receive acars updates', function (): void {
     // Check the PIREP state and status
     $pirep = getPirepFromApi($pirep_id);
     expect(PirepState::from($pirep['state']))->toEqual(PirepState::IN_PROGRESS)
-        ->and(PirepStatus::from($pirep['status']))->toEqual(PirepStatus::INITIATED)
+        ->and(PirepPhase::from($pirep['status']))->toEqual(PirepPhase::INITIATED)
         ->and($pirep)->toHaveKey('fields')
         ->and($pirep['fields']['custom_field'])->toEqual('custom_value')
         ->and($pirep['planned_distance']['nmi'])->toEqual($pirep_create['planned_distance'])
@@ -405,7 +405,7 @@ it('can receive acars updates', function (): void {
     $this->post($uri, [
         'flight_time' => 60,
         'distance'    => 20,
-        'status'      => PirepStatus::AIRBORNE->value,
+        'status'      => PirepPhase::AIRBORNE->value,
         'fields'      => [
             'custom_field' => 'custom_value_changed',
         ],
@@ -443,7 +443,7 @@ it('can receive acars updates', function (): void {
     // Make sure PIREP state moved into ENROUTE
     $pirep = getPirepFromApi($pirep_id);
     expect(PirepState::from($pirep['state']))->toEqual(PirepState::IN_PROGRESS)
-        ->and(PirepStatus::from($pirep['status']))->toEqual(PirepStatus::AIRBORNE);
+        ->and(PirepPhase::from($pirep['status']))->toEqual(PirepPhase::AIRBORNE);
 
     $response = $this->get($uri);
     $response->assertStatus(200);
@@ -542,7 +542,7 @@ test('multiple altitudes', function (): void {
         'level'               => 38000,
         'planned_distance'    => 400,
         'planned_flight_time' => 120,
-        'status'              => PirepStatus::BOARDING->value,
+        'status'              => PirepPhase::BOARDING->value,
         'route'               => 'POINTA POINTB',
         'source_name'         => 'AcarsTest::testAcarsUpdates',
         'fields'              => [

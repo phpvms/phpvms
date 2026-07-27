@@ -1,5 +1,80 @@
 # Upgrading phpvms
 
+## Unreleased — live map positions
+
+The live map now reads from a new `pirep_positions` table — one row per flight —
+instead of resolving the newest `acars` breadcrumb for every flight on every
+poll. A row in that table _is_ what puts a flight on the map.
+
+### ⚠ Orphaned ACARS rows are permanently deleted
+
+`PirepService::delete()` has always listed `acars` as a child table it removes,
+and never removed it. There was no foreign key either, so **every install that
+has ever hard-deleted a PIREP is carrying `acars` rows whose PIREP no longer
+exists.** `add_acars_pirep_foreign_key` counts those rows, logs the number, and
+deletes them in batches of 10,000 before adding the constraint — the database
+rejects the constraint while they exist.
+
+**This cannot be undone.** Rolling the migration back drops the foreign key; it
+does not bring the rows back. Take a backup first if you want them.
+
+The rows were already unreachable: nothing joins `acars` to a PIREP that is not
+there. Soft-deleted PIREPs are _not_ affected — the PIREP row still exists, so
+its telemetry is not orphaned.
+
+On a synthetic 2,000,000-row `acars` table with 1,000,000 orphans the whole
+migration took about 45 seconds on MySQL 8. Time scales with your orphan count,
+which nothing can predict in advance.
+
+SQLite cannot add a foreign key to an existing table, so the constraint is
+skipped there and telemetry cleanup relies on the service layer alone. The
+orphan purge and the column widening still apply.
+
+### Behaviour changes you will notice
+
+- **Prefiled flights now appear on the map before they move**, stationary at
+  their departure airport. Previously a flight was invisible until its first
+  position report.
+- **Completed and paused flights stay on the map for a configured period.**
+  Previously a completed flight vanished the instant its PIREP left
+  `IN_PROGRESS`.
+- **An administrator editing a PIREP no longer keeps a dead flight on the map.**
+  Liveness is now measured on the position row, which only position reports
+  touch.
+
+### Settings
+
+`acars.live_time` did two unrelated jobs. It has been split, and the live map's
+display settings have moved out of the ACARS group into a new **Live map** group.
+Your configured values are carried across automatically.
+
+| Old key                 | New key                   | Unit    | Default |
+| ----------------------- | ------------------------- | ------- | ------- |
+| `acars.live_time`       | `pireps.tombstone_time`   | hours   | 12      |
+| —                       | `livemap.live_time`       | minutes | 30      |
+| —                       | `livemap.idle_time`       | minutes | 60      |
+| `acars.center_coords`   | `livemap.center_coords`   |         |         |
+| `acars.default_zoom`    | `livemap.default_zoom`    |         |         |
+| `acars.update_interval` | `livemap.update_interval` |         |         |
+
+`pireps.tombstone_time` keeps hours and keeps your number — it governs only when
+a silent in-progress PIREP is cancelled. The two new settings are in minutes and
+govern only the map: how long a finished flight stays drawn, and how long a
+flight that is not moving stays drawn (a paused one, or one prefiled and not yet
+departed).
+
+### For addon authors
+
+`App\Enums\PirepStatus` is deprecated in favour of `App\Enums\PirepPhase`. It is
+a `class_alias`, not a second enum, so `PirepStatus::TAXI` and
+`PirepPhase::TAXI` are the same case — identity comparison, `instanceof` and
+existing model casts all keep working, and no stored value changes. No database
+column was renamed; `pireps`.`status` and `acars`.`status` are untouched.
+
+`Pirep::position()` now returns a `PirepPosition`, not an `Acars`.
+`Pirep::scopeActiveFlights()` is gone: use `Pirep::onLiveMap()` for the map, or
+`Pirep::silentInProgress($hours)` for the reaper's meaning.
+
 ## Unreleased — Laravel Passport (OAuth2) API authentication
 
 The API can now be authenticated with OAuth2 (Laravel Passport) in addition to
