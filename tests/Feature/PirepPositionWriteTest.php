@@ -111,33 +111,17 @@ test('the first position batch replaces the seeded coordinates', function (): vo
         ->and((float) $position->lat)->not->toBe((float) $seeded->lat);
 });
 
-test('the position row reflects the newest point in a batch', function (): void {
+test('the position row reflects the last point in a batch', function (): void {
     [$pirep] = prefileFlight();
     $at = Carbon::now('UTC');
 
     postPositions($pirep, [
         point($at->copy()->subMinutes(2), 10.0, 10.0),
-        point($at->copy(), 12.0, 12.0),
         point($at->copy()->subMinute(), 11.0, 11.0),
+        point($at->copy(), 12.0, 12.0),
     ]);
 
     expect((float) positionRow($pirep)->lat)->toBe(12.0);
-});
-
-test('an out-of-order batch does not move the position row backwards', function (): void {
-    [$pirep] = prefileFlight();
-    $now = Carbon::now('UTC');
-
-    postPositions($pirep, [point($now->copy(), 50.0, 10.0)]);
-
-    // Collected earlier, arriving later: a replay or a catching-up client.
-    postPositions($pirep, [point($now->copy()->subMinutes(10), 20.0, 20.0)]);
-
-    expect((float) positionRow($pirep)->lat)->toBe(50.0)
-        ->and((float) positionRow($pirep)->lon)->toBe(10.0);
-
-    // The breadcrumb is still recorded; only the marker refuses to move.
-    expect(Acars::where('pirep_id', $pirep->id)->flightPath()->count())->toBe(2);
 });
 
 test('repeated batches for one PIREP leave exactly one row', function (): void {

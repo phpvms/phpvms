@@ -136,6 +136,7 @@ class AcarsController extends Controller
         );*/
 
         $count = 0;
+        $latest = null;
         $positions = $request->post('positions');
         foreach ($positions as $position) {
             $position['pirep_id'] = $id;
@@ -170,14 +171,16 @@ class AcarsController extends Controller
             }
 
             try {
-                DB::transaction(function () use ($position): void {
+                DB::transaction(function () use ($position, &$latest): void {
                     if (!empty($position['id'])) {
                         Acars::updateOrInsert(
                             ['id' => $position['id']],
                             $position
                         );
+
+                        $latest = new Acars($position);
                     } else {
-                        Acars::create($position);
+                        $latest = Acars::create($position);
                     }
                 });
 
@@ -194,7 +197,7 @@ class AcarsController extends Controller
 
         $pirep->save();
 
-        $latest = $this->syncPosition($pirep);
+        $this->syncPosition($pirep, $latest);
 
         // Still the acars row, not the position row - this event's payload is unchanged.
         event(new AcarsUpdate($pirep, $latest));
@@ -203,29 +206,18 @@ class AcarsController extends Controller
     }
 
     /**
-     * Upsert the position row from the PIREP's newest breadcrumb. Resolved from
-     * `acars` server-side, not from the batch, so a replayed or out-of-order batch
-     * can't move the aircraft backwards - `acars`.`created_at` is collection time.
+     * Upsert the position row from the last point the batch carried.
      *
      * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
      * client may still be posting the tail of the flight. Refused batches still write
      * their `acars` rows.
      */
-    private function syncPosition(Pirep $pirep): ?Acars
+    private function syncPosition(Pirep $pirep, ?Acars $latest): void
     {
-        /** @var ?Acars $latest */
-        $latest = Acars::query()
-            ->forPirep($pirep->id)
-            ->flightPath()
-            ->orderBy('created_at', 'desc')
-            ->orderBy('order', 'desc')
-            ->orderBy('sim_time', 'desc')
-            ->first();
-
-        if ($latest === null
+        if (!$latest instanceof Acars
             || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
         ) {
-            return $latest;
+            return;
         }
 
         PirepPosition::updateOrCreate(
@@ -248,8 +240,6 @@ class AcarsController extends Controller
                 'fuel_used'   => $pirep->fuel_used?->internal(2) ?? 0,
             ]
         );
-
-        return $latest;
     }
 
     /**
