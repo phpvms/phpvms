@@ -33,7 +33,7 @@ class PirepPositionFactory extends Factory
         return [
             'pirep_id'     => $pirep,
             'user_id'      => fn (array $attrs): int => Pirep::find($attrs['pirep_id'])->user_id,
-            'phase'        => PirepPhase::ENROUTE,
+            'phase'        => PirepPhase::ENROUTE->value,
             'lat'          => $this->faker->latitude(),
             'lon'          => $this->faker->longitude(),
             'heading'      => $this->faker->numberBetween(0, 359),

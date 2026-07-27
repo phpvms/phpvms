@@ -79,7 +79,7 @@ test('prefiling puts the flight on the map at its departure airport', function (
     expect($position)->not->toBeNull()
         ->and((float) $position->lat)->toBe((float) $airport->lat)
         ->and((float) $position->lon)->toBe((float) $airport->lon)
-        ->and($position->phase)->toBe(PirepPhase::SCHEDULED)
+        ->and($position->phase)->toBe(PirepPhase::SCHEDULED->value)
         ->and($position->user_id)->toBe($pirep->user_id);
 });
 

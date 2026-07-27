@@ -1,6 +1,7 @@
 {
     "name": "phpvms/awards-module",
     "type": "phpvms-module",
+    "registry_id": "phpvms/awards",
     "description": "Awards module for phpVMS",
     "require": {
         "composer/installers": "~1.0"
