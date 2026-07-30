@@ -21,7 +21,7 @@ import {
   render_base_map,
   render_live_map,
   render_route_map,
-} from "../maps/index";
+} from "./maps/index";
 
 window.phpvms.bids = {
   addBid,

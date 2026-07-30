@@ -109,6 +109,8 @@
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
     </script>
 
+    {{-- Start of the required tags block. Don't remove these or things will break!! --}}
+    @vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
     @yield('scripts')
 
     {{-- This is the color theme switcher --}}
