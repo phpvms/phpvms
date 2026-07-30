@@ -228,6 +228,21 @@ body[class*="fi-panel-"]::after {
   border-right: 0;
 }
 
+/* Sidebar nav scrollbar: thin, and only visible on hover. */
+.fi-panel-admin .fi-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 150ms ease;
+}
+
+.fi-panel-admin .fi-sidebar-nav:hover {
+  scrollbar-color: #d1d5dc transparent;
+}
+
+.dark .fi-panel-admin .fi-sidebar-nav:hover {
+  scrollbar-color: #364153 transparent;
+}
+
 /* Group label (docs custom.css:537-545) */
 .fi-panel-admin .fi-sidebar-group-label {
   font-family: var(--font-mono-display), ui-monospace, monospace;
