@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Subfleets\Schemas;
 use App\Enums\FlightType;
 use App\Enums\FuelType;
 use App\Models\Airport;
+use App\Models\SimBriefAirframe;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -40,9 +41,32 @@ class SubfleetForm
                             ->required()
                             ->string(),
 
-                        TextInput::make('simbrief_type')
+                        Select::make('simbrief_type')
                             ->label(__('common.simbrief_airframe_id'))
-                            ->string(),
+                            ->searchable()
+                            ->native(false)
+                            ->getSearchResultsUsing(fn (string $search): array => SimBriefAirframe::query()
+                                ->whereNotNull('airframe_id')
+                                ->where('airframe_id', '!=', '')
+                                ->where(function ($query) use ($search): void {
+                                    $query->where('name', 'like', sprintf('%%%s%%', $search))
+                                        ->orWhere('icao', 'like', sprintf('%%%s%%', $search))
+                                        ->orWhere('airframe_id', 'like', sprintf('%%%s%%', $search));
+                                })
+                                ->orderBy('name')
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn (SimBriefAirframe $airframe): array => [$airframe->airframe_id => $airframe->name.' ('.$airframe->icao.')'])
+                                ->all())
+                            ->getOptionLabelUsing(function (?string $value): ?string {
+                                if (blank($value)) {
+                                    return null;
+                                }
+
+                                $airframe = SimBriefAirframe::where('airframe_id', $value)->first(['name', 'icao']);
+
+                                return $airframe ? $airframe->name.' ('.$airframe->icao.')' : $value;
+                            }),
 
                         TextInput::make('name')
                             ->label(__('common.name'))
