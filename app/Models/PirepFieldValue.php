@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\PirepFieldSource;
+use App\Enums\PirepFieldType;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -13,16 +14,19 @@ use Illuminate\Support\Str;
 use Override;
 
 /**
- * @property int              $id
- * @property string           $pirep_id
- * @property string           $name
- * @property string|null      $slug
- * @property string|null      $value
- * @property PirepFieldSource $source
- * @property Carbon|null      $created_at
- * @property Carbon|null      $updated_at
+ * @property int                 $id
+ * @property string              $pirep_id
+ * @property string              $name
+ * @property string|null         $slug
+ * @property string|null         $value
+ * @property PirepFieldType|null $type
+ * @property string|null         $units
+ * @property PirepFieldSource    $source
+ * @property Carbon|null         $created_at
+ * @property Carbon|null         $updated_at
  * @property-read Pirep|null $pirep
  * @property-read bool $read_only
+ * @property-read float|bool|Carbon|string|null $typed_value
  *
  * @method static Builder<static>|PirepFieldValue newModelQuery()
  * @method static Builder<static>|PirepFieldValue newQuery()
@@ -49,6 +53,8 @@ class PirepFieldValue extends Model
         'name',
         'slug',
         'value',
+        'type',
+        'units',
         'source',
     ];
 
@@ -80,6 +86,23 @@ class PirepFieldValue extends Model
     }
 
     /**
+     * `value`, cast per the ACARS-declared `type`: NUMBER → float, BOOLEAN →
+     * bool, TIMESTAMP → Carbon. TEXT or an untyped row returns the raw string,
+     * so this is safe to use on any field value.
+     */
+    public function typedValue(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): float|bool|Carbon|string|null => match ($this->type) {
+                PirepFieldType::NUMBER    => (float) $this->value,
+                PirepFieldType::BOOLEAN   => filter_var($this->value, FILTER_VALIDATE_BOOLEAN),
+                PirepFieldType::TIMESTAMP => Carbon::parse($this->value),
+                default                   => $this->value,
+            }
+        );
+    }
+
+    /**
      * Relationships
      */
     public function pirep(): BelongsTo
@@ -92,6 +115,7 @@ class PirepFieldValue extends Model
     {
         return [
             'source' => PirepFieldSource::class,
+            'type'   => PirepFieldType::class,
         ];
     }
 }
