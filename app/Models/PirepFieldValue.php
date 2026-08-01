@@ -93,7 +93,7 @@ class PirepFieldValue extends Model
     public function typedValue(): Attribute
     {
         return Attribute::make(
-            get: fn (): float|bool|Carbon|string|null => match ($this->type) {
+            get: fn (): float|bool|Carbon|string|null => $this->value === null ? null : match ($this->type) {
                 PirepFieldType::NUMBER    => (float) $this->value,
                 PirepFieldType::BOOLEAN   => filter_var($this->value, FILTER_VALIDATE_BOOLEAN),
                 PirepFieldType::TIMESTAMP => Carbon::parse($this->value),
