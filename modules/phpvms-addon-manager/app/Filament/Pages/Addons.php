@@ -19,6 +19,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Modules\AddonManager\Jobs\InstallAddonJob;
@@ -397,7 +398,7 @@ class Addons extends Page
                     $row['id'],
                     $row['latest_version'],
                     (bool) ($data['run_migrations'] ?? true),
-                    (int) auth()->id(),
+                    (int) Auth::id(),
                 );
 
                 // Sync path: the job has already run to completion and sent its own

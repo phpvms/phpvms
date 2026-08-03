@@ -22,6 +22,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -71,12 +72,12 @@ class InstallAddonJob implements ShouldQueue
             && !app(CronService::class)->cronProblemExists();
 
         if ($willBeProcessed) {
-            dispatch($job);
+            Bus::dispatch($job);
 
             return false;
         }
 
-        dispatch_sync($job);
+        Bus::dispatchSync($job);
 
         return true;
     }
@@ -115,7 +116,7 @@ class InstallAddonJob implements ShouldQueue
             }
 
             /** @var array<string, mixed> $payload */
-            $payload = json_decode($mint['body'], true) ?: [];
+            $payload = json_decode((string) $mint['body'], true) ?: [];
             $url = (string) ($payload['url'] ?? '');
             $sha256 = (string) ($payload['sha256'] ?? '');
 
