@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
 use App\Filament\Plugins\ClearCachesPlugin;
@@ -38,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        $panel = $panel
             ->default()
             ->id('admin')
             ->path('admin')
@@ -125,6 +126,65 @@ class AdminPanelProvider extends PanelProvider
             ->errorNotifications()
             ->databaseNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css');
+
+        return $this->discoverModuleComponents($panel);
+    }
+
+    /**
+     * Discover Filament pages/resources/widgets contributed by each enabled
+     * module into the main admin panel.
+     *
+     * A module's PSR-4 root (`{module}/app`, namespace e.g. `Modules\Foo`) is
+     * read from the boot cache — the same DB-free source `AddonAutoLoader` uses,
+     * which is already registered before panel boot — so its
+     * `app/Filament/{Pages,Resources,Widgets}` directories map to
+     * `Modules\Foo\Filament\{Pages,Resources,Widgets}`. Disabled modules are
+     * absent from `enabled()` and contribute nothing. Discovery is additive and
+     * baked into `filament:cache-components` like the core paths above.
+     *
+     * Modules that ship their OWN Filament panel (they declare a `*PanelProvider`
+     * in their manifest — e.g. ACARS, VACentral) are skipped: that provider
+     * already discovers the same `app/Filament/*` directories into its own
+     * gated sub-panel, so contributing them to the main panel too would
+     * duplicate the nav and, worse, bypass the sub-panel's `access:{moduleKey}`
+     * gate. Main-panel contribution is therefore reserved for modules without a
+     * panel of their own (the addon manager).
+     */
+    private function discoverModuleComponents(Panel $panel): Panel
+    {
+        foreach (app(BootCache::class)->enabled() as $entry) {
+            $namespace = rtrim($entry->namespace, '\\');
+            $base = rtrim($entry->autoloadPath, '/');
+            if ($namespace === '') {
+                continue;
+            }
+            if ($base === '') {
+                continue;
+            }
+
+            $shipsOwnPanel = collect($entry->providers)
+                ->contains(fn (string $provider): bool => str_ends_with($provider, 'PanelProvider'));
+
+            if ($shipsOwnPanel) {
+                continue;
+            }
+
+            $filament = $base.'/Filament';
+
+            if (is_dir($filament.'/Resources')) {
+                $panel->discoverResources(in: $filament.'/Resources', for: $namespace.'\\Filament\\Resources');
+            }
+
+            if (is_dir($filament.'/Pages')) {
+                $panel->discoverPages(in: $filament.'/Pages', for: $namespace.'\\Filament\\Pages');
+            }
+
+            if (is_dir($filament.'/Widgets')) {
+                $panel->discoverWidgets(in: $filament.'/Widgets', for: $namespace.'\\Filament\\Widgets');
+            }
+        }
+
+        return $panel;
     }
 
     public function boot(): void

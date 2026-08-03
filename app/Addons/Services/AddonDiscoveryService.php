@@ -407,9 +407,14 @@ class AddonDiscoveryService
         $addon->version = $m->version;
         $addon->registry_id = $m->registryId;
         $addon->path = $m->path;
+        // Bundled is a property of the module (not an operator choice), so keep
+        // it in sync on every discovery, including existing rows.
+        $addon->bundled = $m->isBundled();
 
         if (!$addon->exists) {
-            $addon->enabled = false;
+            // Newly discovered addons install disabled — except bundled ones,
+            // which ship enabled by default.
+            $addon->enabled = $m->isBundled();
             $addon->installed_at = now();
         }
 

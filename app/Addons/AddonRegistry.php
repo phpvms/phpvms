@@ -16,8 +16,12 @@ use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
+use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 /**
  * Lifecycle façade for addons. Owns reads (find/all/enabled), enable/disable,
@@ -106,6 +110,10 @@ class AddonRegistry
             return;
         }
 
+        if ($addon->isBundled()) {
+            throw new RuntimeException(sprintf('The "%s" addon is bundled with phpVMS and cannot be deleted.', $name));
+        }
+
         if ($removeTables) {
             $this->removeAddonTables($addon);
             app(SeederService::class)->clearAddonSeedMarkers($addon);
@@ -116,6 +124,7 @@ class AddonRegistry
         $addon->delete();
 
         app(AddonDiscoveryService::class)->rebuildCache();
+        $this->bustPanelComponentCache();
         $this->octane->reload();
     }
 
@@ -200,6 +209,7 @@ class AddonRegistry
         $addon = $this->register($manifest, $dest);
 
         $this->assetLinker->link($addon->getName(), $addon->getPath());
+        $this->bustPanelComponentCache();
         $this->octane->reload();
 
         return $addon;
@@ -207,11 +217,22 @@ class AddonRegistry
 
     /**
      * Update an installed addon's files from a new source, preserving its enabled
-     * flag. Does NOT run migrations.
+     * flag. Does NOT run migrations itself, but accepts an optional post-placement
+     * hook (e.g. running the new version's migrations) that runs inside the
+     * protected window: if it throws, the previous version is restored.
+     *
+     * Non-destructive: the current version's directory is moved aside (not
+     * deleted) before the new version is placed. On ANY failure — placement or
+     * the post-placement hook — the previous directory and database row are
+     * restored and no tables are dropped, so a failed update never uninstalls a
+     * working addon.
+     *
+     * @param Closure(Addon):void|null $afterPlace runs after the row is saved
+     *                                             and the boot cache rebuilt
      *
      * @throws AddonInstallException
      */
-    public function update(string $name, AddonSource $source): Addon
+    public function update(string $name, AddonSource $source, ?Closure $afterPlace = null): Addon
     {
         $existing = $this->find($name);
 
@@ -219,38 +240,105 @@ class AddonRegistry
             throw new AddonInstallException(sprintf('Addon not installed: %s', $name));
         }
 
-        $wasEnabled = $existing->isEnabled();
+        // Snapshot the prior DB state so it can be restored on failure.
+        $prior = [
+            'version'   => $existing->version,
+            'namespace' => $existing->namespace,
+            'path'      => $existing->path,
+            'enabled'   => $existing->isEnabled(),
+        ];
 
         $staging = $this->stagingPath();
         File::ensureDirectoryExists($staging);
 
         $extracted = $source->fetch($staging);
+        $backup = null;
 
         try {
             $manifest = $this->validator->validate($extracted);
             $dest = config('addons.paths.base').'/'.$this->safeName($manifest);
 
-            File::deleteDirectory($dest);
+            // Move the current version aside instead of deleting it.
+            if (File::isDirectory($dest)) {
+                $backup = $dest.'.bak-'.uniqid('', true);
+
+                if (!File::moveDirectory($dest, $backup)) {
+                    throw new AddonInstallException(sprintf('Failed to stage the current version aside: %s', $manifest->name));
+                }
+            }
 
             if (!File::moveDirectory($extracted, $dest)) {
                 throw new AddonInstallException(sprintf('Failed to place addon: %s', $manifest->name));
             }
-        } finally {
+
+            $existing->version = $manifest->version;
+            $existing->namespace = $manifest->namespace;
+            $existing->path = $dest;
+            $existing->enabled = $prior['enabled'];
+            $existing->save();
+
+            app(AddonDiscoveryService::class)->rebuildCache();
+
+            if ($afterPlace instanceof Closure) {
+                $afterPlace($existing);
+            }
+        } catch (Throwable $throwable) {
+            $this->restorePreviousVersion($existing, $prior, $dest ?? null, $backup);
             File::deleteDirectory($staging);
+
+            throw $throwable instanceof AddonInstallException
+                ? $throwable
+                : new AddonInstallException(sprintf('Update failed: %s', $throwable->getMessage()), (int) $throwable->getCode(), $throwable);
         }
 
-        $existing->version = $manifest->version;
-        $existing->namespace = $manifest->namespace;
-        $existing->path = $dest;
-        $existing->enabled = $wasEnabled;
-        $existing->save();
+        File::deleteDirectory($staging);
 
-        app(AddonDiscoveryService::class)->rebuildCache();
+        if ($backup !== null) {
+            File::deleteDirectory($backup);
+        }
 
         $this->assetLinker->link($existing->getName(), $existing->getPath());
+        $this->bustPanelComponentCache();
         $this->octane->reload();
 
         return $existing->refresh();
+    }
+
+    /**
+     * Restore an addon to its prior version after a failed update: put the
+     * backed-up directory back, restore the DB row, rebuild the boot cache, and
+     * relink assets. No tables are dropped — a failed update must not uninstall
+     * a working addon.
+     *
+     * @param array{version: ?string, namespace: string, path: string, enabled: bool} $prior
+     */
+    private function restorePreviousVersion(Addon $addon, array $prior, ?string $dest, ?string $backup): void
+    {
+        if ($backup !== null && $dest !== null && File::isDirectory($backup)) {
+            File::deleteDirectory($dest);
+
+            if (!File::moveDirectory($backup, $dest)) {
+                // Restore failed (disk full, cross-device, permissions): the DB
+                // row below points at $dest which no longer exists. Surface it
+                // loudly — the addon needs manual recovery from $backup.
+                Log::error(sprintf(
+                    'AddonRegistry: failed to restore "%s" from backup after a failed update; backup left at %s',
+                    $addon->getName(),
+                    $backup,
+                ));
+            }
+        }
+
+        $addon->version = $prior['version'];
+        $addon->namespace = $prior['namespace'];
+        $addon->path = $prior['path'];
+        $addon->enabled = $prior['enabled'];
+        $addon->save();
+
+        app(AddonDiscoveryService::class)->rebuildCache();
+        $this->assetLinker->link($addon->getName(), $addon->getPath());
+        $this->bustPanelComponentCache();
+        $this->octane->reload();
     }
 
     /**
@@ -322,10 +410,37 @@ class AddonRegistry
             return;
         }
 
+        if (!$enabled && $addon->isBundled()) {
+            throw new RuntimeException(sprintf('The "%s" addon is bundled with phpVMS and cannot be disabled.', $name));
+        }
+
         $addon->enabled = $enabled;
         $addon->save();
 
         app(AddonDiscoveryService::class)->rebuildCache();
+        $this->bustPanelComponentCache();
         $this->octane->reload();
+    }
+
+    /**
+     * Invalidate Filament's per-panel component cache after an addon state
+     * change. Module Filament components are discovered into the admin panel at
+     * registration (see AdminPanelProvider); once an operator has run
+     * `filament:cache-components`, that cache is authoritative and Filament
+     * skips rediscovery — so a newly enabled/disabled/installed/updated/deleted
+     * module would otherwise keep serving its stale cached component list.
+     * Clearing the cached panel files forces rediscovery on the next request;
+     * operators re-run `filament:cache-components` to restore the optimization.
+     *
+     * Runs on every transition (not on passive boot-cache rebuilds) so a
+     * freshly built component cache on a cold deploy is never wiped.
+     */
+    private function bustPanelComponentCache(): void
+    {
+        $dir = (config('filament.cache_path') ?? base_path('bootstrap/cache/filament')).'/panels';
+
+        if (File::isDirectory($dir)) {
+            File::cleanDirectory($dir);
+        }
     }
 }

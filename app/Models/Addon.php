@@ -56,6 +56,7 @@ class Addon extends Model
         'namespace',
         'path',
         'enabled',
+        'bundled',
         'installed_at',
     ];
 
@@ -75,6 +76,7 @@ class Addon extends Model
     {
         return [
             'enabled'      => 'boolean',
+            'bundled'      => 'boolean',
             'installed_at' => 'datetime',
         ];
     }
@@ -160,5 +162,14 @@ class Addon extends Model
     public function isEnabled(): bool
     {
         return $this->enabled;
+    }
+
+    /**
+     * Whether the addon is bundled with phpVMS. Bundled addons cannot be
+     * disabled or deleted from the panel.
+     */
+    public function isBundled(): bool
+    {
+        return $this->bundled;
     }
 }
