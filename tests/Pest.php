@@ -26,13 +26,23 @@ pest()
         // isolated (a shared path would leak boot-cache state between tests).
         config(['addons.paths.boot_cache' => sys_get_temp_dir().'/phpvms-addons-boot-'.uniqid('', true).'.php']);
 
+        // Same reasoning for the KVP store. It is a single JSON file that
+        // Valuestore rewrites wholesale, and more than one test writes it
+        // (UtilsTest directly, VersionTest through VersionService), so under
+        // --parallel two workers race and one loses its keys. KvpService is not
+        // a singleton and reads this config in its constructor, so a unique
+        // path per test is enough to isolate them.
+        config(['phpvms.kvp_storage_path' => sys_get_temp_dir().'/phpvms-kvp-'.uniqid('', true).'.json']);
+
         $this->seed(SettingsSeeder::class);
     })
     ->afterEach(function (): void {
-        $path = config('addons.paths.boot_cache');
+        foreach (['addons.paths.boot_cache', 'phpvms.kvp_storage_path'] as $key) {
+            $path = config($key);
 
-        if (is_string($path) && str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
-            @unlink($path);
+            if (is_string($path) && str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
+                @unlink($path);
+            }
         }
     })
     ->in('Unit', 'Feature', 'Arch', '../resources/views');
