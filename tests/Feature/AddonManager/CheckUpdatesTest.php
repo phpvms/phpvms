@@ -6,11 +6,13 @@ use App\Addons\AddonAutoLoader;
 use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use Database\Seeders\RolesPermissionsSeeder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Modules\AddonManager\Console\Commands\CheckUpdates;
 use Modules\AddonManager\Filament\Pages\Addons as AddonsPage;
 use Modules\AddonManager\Services\RegistryClient;
 
@@ -20,6 +22,12 @@ beforeEach(function (): void {
     app(BootCache::class)->delete();
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
     app(AddonAutoLoader::class)->register(app());
+
+    // `phpvms:addons-prime` (above) builds and caches the console app before the
+    // module registers, so the module's late command registration misses it.
+    // Add it explicitly so `addons:check-updates` resolves regardless of the
+    // order tests touch Artisan in a shared (parallel) worker process.
+    Artisan::registerCommand(app(CheckUpdates::class));
 
     $this->seed(RolesPermissionsSeeder::class);
     $this->admin = createAdminUser();
