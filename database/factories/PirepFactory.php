@@ -17,7 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Pirep>
+ * @extends Factory<Pirep>
  */
 class PirepFactory extends Factory
 {

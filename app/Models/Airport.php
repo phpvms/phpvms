@@ -104,7 +104,10 @@ class Airport extends Model
 {
     use ExpensableTrait;
     use FilesTrait;
+
+    /** @use HasFactory<AirportFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
     use Sortable;

@@ -151,7 +151,9 @@ use UnitEnum;
 #[WithoutIncrementing]
 class Flight extends Model
 {
+    /** @use HasFactory<FlightFactory> */
     use HasFactory;
+
     use HasNanoIds;
     use LogsActivity;
     use SoftDeletes;

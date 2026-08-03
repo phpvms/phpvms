@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<JournalTransaction>
+ * @extends Factory<JournalTransaction>
  */
 class JournalTransactionsFactory extends Factory
 {

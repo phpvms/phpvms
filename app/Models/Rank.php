@@ -69,7 +69,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Rank extends Model
 {
+    /** @use HasFactory<RankFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
     use Sortable;

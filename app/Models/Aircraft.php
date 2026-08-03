@@ -118,7 +118,10 @@ class Aircraft extends Model
     use BelongsToThrough;
     use ExpensableTrait;
     use FilesTrait;
+
+    /** @use HasFactory<AircraftFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
     use Sortable;

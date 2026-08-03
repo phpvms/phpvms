@@ -11,7 +11,7 @@ use App\Enums\ExpenseType;
 use App\Models\Expense;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Expense>
+ * @extends Factory<Expense>
  */
 class ExpenseFactory extends Factory
 {

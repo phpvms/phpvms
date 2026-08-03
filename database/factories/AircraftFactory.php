@@ -17,7 +17,7 @@ use DateTime;
 use Exception;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Aircraft>
+ * @extends Factory<Aircraft>
  */
 class AircraftFactory extends Factory
 {

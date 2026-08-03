@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Addons\Models\AddonManifest;
 use App\Contracts\Model;
+use Database\Factories\AddonFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,6 +45,7 @@ use Str;
  */
 class Addon extends Model
 {
+    /** @use HasFactory<AddonFactory> */
     use HasFactory;
 
     public $table = 'addons';

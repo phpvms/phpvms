@@ -39,6 +39,7 @@ use Override;
 #[WithoutTimestamps]
 class Navdata extends Model
 {
+    /** @use HasFactory<NavdataFactory> */
     use HasFactory;
 
     public $table = 'navdata';

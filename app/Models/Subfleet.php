@@ -104,7 +104,10 @@ class Subfleet extends Model
 {
     use ExpensableTrait;
     use FilesTrait;
+
+    /** @use HasFactory<SubfleetFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
     use Sortable;

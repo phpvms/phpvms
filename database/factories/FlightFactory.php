@@ -15,7 +15,7 @@ use DateTime;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Flight>
+ * @extends Factory<Flight>
  */
 class FlightFactory extends Factory
 {

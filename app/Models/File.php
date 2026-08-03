@@ -50,7 +50,9 @@ use Override;
  */
 class File extends Model
 {
+    /** @use HasFactory<FileFactory> */
     use HasFactory;
+
     use HasNanoIds;
 
     public $table = 'files';

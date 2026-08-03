@@ -171,7 +171,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, OAuthenticatable
 {
     use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasRelationships;
     use HasRoles;
     use JournalTrait;

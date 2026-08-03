@@ -158,7 +158,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Pirep extends Model
 {
     use AttributeEvents;
+
+    /** @use HasFactory<PirepFactory> */
     use HasFactory;
+
     use HasNanoIds;
     use LogsActivity;
     use Notifiable;

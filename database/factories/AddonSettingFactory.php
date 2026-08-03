@@ -11,7 +11,7 @@ use App\Models\Addon;
 use App\Models\AddonSetting;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<AddonSetting>
+ * @extends Factory<AddonSetting>
  */
 class AddonSettingFactory extends Factory
 {

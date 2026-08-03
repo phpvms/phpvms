@@ -88,7 +88,9 @@ use Override;
 #[WithoutIncrementing]
 class Acars extends Model
 {
+    /** @use HasFactory<AcarsFactory> */
     use HasFactory;
+
     use HasNanoIds;
 
     public $table = 'acars';

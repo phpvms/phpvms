@@ -46,6 +46,7 @@ use Override;
 #[WithoutIncrementing]
 class PirepPosition extends Model
 {
+    /** @use HasFactory<PirepPositionFactory> */
     use HasFactory;
 
     public $table = 'pirep_positions';

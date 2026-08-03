@@ -12,7 +12,7 @@ use App\Models\Pirep;
 use App\Models\PirepPosition;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<PirepPosition>
+ * @extends Factory<PirepPosition>
  */
 class PirepPositionFactory extends Factory
 {

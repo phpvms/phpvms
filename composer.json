@@ -118,7 +118,8 @@
     "fruitcake/laravel-debugbar": "^4.2.8",
     "laravel/boost": "^2.4",
     "laravel/tinker": "^3.0",
-    "carthage-software/mago": "^1.29.0"
+    "carthage-software/mago": "^1.29.0",
+    "pestphp/pest-plugin-phpstan": "^5.0"
   },
   "autoload": {
     "files": [

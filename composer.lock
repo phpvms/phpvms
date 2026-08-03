@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f7e9fdd133ec178c0aa65ade5937a55",
+    "content-hash": "78dde58f58a236b9adbb68b494873aff",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -18803,6 +18803,97 @@
                 }
             ],
             "time": "2026-07-21T07:48:56+00:00"
+        },
+        {
+            "name": "pestphp/pest-plugin-phpstan",
+            "version": "v5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pestphp/pest-plugin-phpstan.git",
+                "reference": "a1a7f29f9882b74df013298fee455cf0ab0b7dd6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pestphp/pest-plugin-phpstan/zipball/a1a7f29f9882b74df013298fee455cf0ab0b7dd6",
+                "reference": "a1a7f29f9882b74df013298fee455cf0ab0b7dd6",
+                "shasum": ""
+            },
+            "require": {
+                "pestphp/pest": "^5.0.0",
+                "php": "^8.4",
+                "phpstan/phpstan": "^2.2.5"
+            },
+            "conflict": {
+                "pestphp/pest": "<5.0.0"
+            },
+            "require-dev": {
+                "laravel/pao": "^1.1.2",
+                "laravel/pint": "^1.29.3",
+                "pestphp/pest-plugin-rector": "^5.0",
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan-strict-rules": "^2.0.12",
+                "rector/rector": "^2.5.7"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Pest\\PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Punyapal Shah",
+                    "email": "mrpunyapal@gmail.com"
+                },
+                {
+                    "name": "Nuno Maduro",
+                    "email": "enunomaduro@gmail.com"
+                }
+            ],
+            "description": "PHPStan plugin for Pest",
+            "keywords": [
+                "PHPStan",
+                "framework",
+                "pest",
+                "php",
+                "plugin",
+                "test",
+                "testing",
+                "unit"
+            ],
+            "support": {
+                "source": "https://github.com/pestphp/pest-plugin-phpstan/tree/v5.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/mrpunyapal",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nunomaduro",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/nunomaduro",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2026-07-28T14:27:06+00:00"
         },
         {
             "name": "pestphp/pest-plugin-profanity",
