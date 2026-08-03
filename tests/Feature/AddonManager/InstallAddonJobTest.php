@@ -6,6 +6,8 @@ use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
 use App\Addons\Support\BootCache;
 use App\Addons\Support\RegistrySignatureVerifier;
+use App\Events\AddonInstalled;
+use App\Events\AddonUpdated;
 use App\Models\Addon;
 use App\Models\User;
 use App\Services\CronService;
@@ -14,6 +16,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Modules\AddonManager\Jobs\InstallAddonJob;
@@ -242,4 +245,21 @@ it('updates an installed addon to a newer version', function (): void {
 
     expect(Addon::where('registry_id', 'acme/demo')->value('version'))->toBe('2.0.0');
     expect(InstallProgress::get('acme/demo')['status'])->toBe('done');
+});
+
+it('dispatches AddonInstalled on a fresh install and AddonUpdated on an update', function (): void {
+    Event::fake([AddonInstalled::class, AddonUpdated::class]);
+
+    $v1 = buildAddonZip($this->work.'/demo-v1.zip', 'acme/demo', '1.0.0');
+    fakeRegistry('acme/demo', '1.0.0', $v1, $this->secret);
+    runInstall('acme/demo', '1.0.0', false, $this->user->id);
+
+    Event::assertDispatched(AddonInstalled::class, fn (AddonInstalled $e): bool => $e->addon->registry_id === 'acme/demo');
+    Event::assertNotDispatched(AddonUpdated::class);
+
+    $v2 = buildAddonZip($this->work.'/demo-v2.zip', 'acme/demo', '2.0.0');
+    fakeRegistry('acme/demo', '2.0.0', $v2, $this->secret);
+    runInstall('acme/demo', '2.0.0', false, $this->user->id);
+
+    Event::assertDispatched(AddonUpdated::class, fn (AddonUpdated $e): bool => $e->addon->version === '2.0.0');
 });

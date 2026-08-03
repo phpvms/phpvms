@@ -248,9 +248,10 @@ class RegistryClient
             // Tolerate camelCase (contract) or snake_case (older registry builds).
             'repository_url' => (string) ($row['repositoryUrl'] ?? $row['repository_url'] ?? ''),
             // Store bare minimums: tolerate a registry that still sends composer
-            // constraints (">=8.4") by stripping the leading operator.
-            'min_php'        => $this->bareMin($versions['php'] ?? ''),
-            'min_phpvms'     => $this->bareMin($versions['phpvms'] ?? ''),
+            // constraints (">=8.4") by stripping the leading operator. Version
+            // handling lives in CompatibilityEvaluator, not hand-rolled here.
+            'min_php'        => CompatibilityEvaluator::normalizeMin((string) ($versions['php'] ?? '')),
+            'min_phpvms'     => CompatibilityEvaluator::normalizeMin((string) ($versions['phpvms'] ?? '')),
             'version'        => (string) ($row['version'] ?? ''),
             'icon'           => isset($row['icon']) ? (string) $row['icon'] : null,
             'screenshots'    => $screenshots,
@@ -291,14 +292,6 @@ class RegistryClient
         }
 
         return [$parts[0], $parts[1]];
-    }
-
-    /**
-     * Strip a leading version-constraint operator (">=8.4" / "^8.4" → "8.4").
-     */
-    private function bareMin(mixed $constraint): string
-    {
-        return preg_replace('/^[^\d]*/', '', (string) $constraint) ?? '';
     }
 
     private function url(string $path): string

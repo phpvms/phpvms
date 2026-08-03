@@ -16,8 +16,7 @@ use Illuminate\Support\Str;
  *    and written to BOTH stores so the ACARS plugin's lazy `kvp` read resolves
  *    the same identity until it migrates to reading settings.
  *  - `registry.public_key`: pinned Ed25519 key used to verify signed registry
- *    responses. Left empty here; delivered by an addon-manager release or the
- *    `php artisan registry:set-key` command.
+ *    responses. Seeded here and updated via addon-manager releases.
  *
  * Both rows are also seeded by SettingsSeeder for fresh installs; this migration
  * covers existing installs (which upgrade via `migrate` + `migrate-data`, not by
@@ -43,8 +42,8 @@ return new class() extends Migration
         $this->ensureSetting('registry.public_key', 'Registry Public Key', self::REGISTRY_PUBLIC_KEY);
 
         // Deliver the pinned key to installs whose row was seeded empty before
-        // the key shipped. Never overwrites a non-empty value, so an operator
-        // key set via `php artisan registry:set-key` survives.
+        // the key shipped. Never overwrites a non-empty value, so an
+        // operator-customised key survives.
         DB::table('settings')
             ->where('id', Setting::formatKey('registry.public_key'))
             ->where('value', '')

@@ -46,11 +46,11 @@ class RegistrySignatureVerifier
         $publicKey = $this->publicKey();
 
         if ($publicKey === null) {
-            return 'No registry public key is pinned — set one with `php artisan registry:set-key`.';
+            return 'No valid registry public key is pinned.';
         }
 
         if (!sodium_crypto_sign_verify_detached($signature, $body, $publicKey)) {
-            return 'The registry signature did not match the pinned public key — if you changed registries, update the pinned key with `php artisan registry:set-key`.';
+            return 'The registry signature did not match the pinned public key.';
         }
 
         return null;

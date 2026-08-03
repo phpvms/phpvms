@@ -337,15 +337,15 @@ class Addons extends Page
 
         if ($result['error'] !== null || $result['stale']) {
             Notification::make()
-                ->title(__('Could not reach the registry'))
-                ->body(__('Showing the last cached catalog.'))
+                ->title(__('addon-manager::addons.registry_unreachable'))
+                ->body(__('addon-manager::addons.showing_cached_catalog'))
                 ->warning()
                 ->send();
 
             return;
         }
 
-        Notification::make()->title(__('Catalog refreshed'))->success()->send();
+        Notification::make()->title(__('addon-manager::addons.catalog_refreshed'))->success()->send();
     }
 
     public function enable(string $key): void
@@ -373,14 +373,14 @@ class Addons extends Page
     {
         return Action::make('install')
             ->label(fn (): string => ($this->selected()['update_available'] ?? false)
-                ? __('Update to v:version', ['version' => $this->selected()['latest_version'] ?? ''])
-                : __('Install'))
-            ->modalHeading(fn (): string => __('Install :name', ['name' => $this->selected()['name'] ?? '']))
+                ? __('addon-manager::addons.update_to', ['version' => $this->selected()['latest_version'] ?? ''])
+                : __('addon-manager::addons.install'))
+            ->modalHeading(fn (): string => __('addon-manager::addons.install_name', ['name' => $this->selected()['name'] ?? '']))
             ->modalDescription(fn (): ?string => $this->installModalDescription())
-            ->modalSubmitActionLabel(__('Install'))
+            ->modalSubmitActionLabel(__('addon-manager::addons.install'))
             ->schema([
                 Toggle::make('run_migrations')
-                    ->label(__('Run database migrations after install'))
+                    ->label(__('addon-manager::addons.run_migrations'))
                     ->default(true),
             ])
             ->disabled(fn (): bool => !$this->isInstallable($this->selected()))
@@ -411,11 +411,11 @@ class Addons extends Page
                     return;
                 }
 
-                InstallProgress::set($row['id'], 'queued', 5, __('Queued…'));
+                InstallProgress::set($row['id'], 'queued', 5, __('addon-manager::addons.queued'));
 
                 Notification::make()
-                    ->title(__('Install queued'))
-                    ->body(__('The install is running in the background.'))
+                    ->title(__('addon-manager::addons.install_queued'))
+                    ->body(__('addon-manager::addons.install_running_bg'))
                     ->success()
                     ->send();
             });
@@ -452,7 +452,7 @@ class Addons extends Page
         $parts = [];
 
         if ($row['publisher']) {
-            $parts[] = __('by :publisher', ['publisher' => $row['publisher']]);
+            $parts[] = __('addon-manager::addons.by_publisher', ['publisher' => $row['publisher']]);
         }
 
         $requires = array_filter([
@@ -460,15 +460,15 @@ class Addons extends Page
             $row['min_phpvms'] ? 'phpvms ≥'.$row['min_phpvms'] : null,
         ]);
         if ($requires !== []) {
-            $parts[] = __('requires :req ✓', ['req' => implode(' · ', $requires)]);
+            $parts[] = __('addon-manager::addons.requires_ok', ['req' => implode(' · ', $requires)]);
         }
 
         $size = $row['release']['size'] ?? null;
         if (is_numeric($size)) {
-            $parts[] = __('size :size', ['size' => $this->humanBytes((int) $size)]);
+            $parts[] = __('addon-manager::addons.size', ['size' => $this->humanBytes((int) $size)]);
         }
 
-        $parts[] = __('The download is verified by registry signature and sha256.');
+        $parts[] = __('addon-manager::addons.verified_download');
 
         return implode(' · ', $parts);
     }
@@ -497,12 +497,12 @@ class Addons extends Page
     public function uploadZipAction(): Action
     {
         return Action::make('uploadZip')
-            ->label(__('Upload .zip'))
+            ->label(__('addon-manager::addons.upload_zip'))
             ->color('gray')
-            ->modalSubmitActionLabel(__('Install'))
+            ->modalSubmitActionLabel(__('addon-manager::addons.install'))
             ->schema([
                 FileUpload::make('zip')
-                    ->label(__('Addon package'))
+                    ->label(__('addon-manager::addons.addon_package'))
                     ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed'])
                     ->storeFiles(false)
                     ->required(),
@@ -513,9 +513,9 @@ class Addons extends Page
 
                 try {
                     app(AddonRegistry::class)->install(new ZipSource($file->getRealPath()));
-                    Notification::make()->title(__('Addon installed'))->success()->send();
+                    Notification::make()->title(__('addon-manager::addons.addon_installed'))->success()->send();
                 } catch (Throwable $throwable) {
-                    Notification::make()->title(__('Install failed'))->body($throwable->getMessage())->danger()->send();
+                    Notification::make()->title(__('addon-manager::addons.install_failed'))->body($throwable->getMessage())->danger()->send();
                 }
             });
     }

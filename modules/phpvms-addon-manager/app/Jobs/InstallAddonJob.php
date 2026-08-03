@@ -106,7 +106,7 @@ class InstallAddonJob implements ShouldQueue
             // Verify the Ed25519 signature over the RAW body before trusting the
             // url/sha256 it carries. Nothing is downloaded on failure; the reason
             // is specific so the admin can tell a mis-signed registry from a
-            // key-pinning problem they can fix with `registry:set-key`.
+            // key-pinning problem.
             $reason = $verifier->reason($mint['body'], $mint['signature']);
 
             if ($reason !== null) {

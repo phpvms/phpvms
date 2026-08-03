@@ -11,6 +11,8 @@ use App\Addons\Support\AddonAssetLinker;
 use App\Addons\Support\AddonValidator;
 use App\Addons\Support\ManifestParser;
 use App\Addons\Support\OctaneReloader;
+use App\Events\AddonInstalled;
+use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
@@ -212,6 +214,8 @@ class AddonRegistry
         $this->bustPanelComponentCache();
         $this->octane->reload();
 
+        AddonInstalled::dispatch($addon);
+
         return $addon;
     }
 
@@ -300,6 +304,8 @@ class AddonRegistry
         $this->assetLinker->link($existing->getName(), $existing->getPath());
         $this->bustPanelComponentCache();
         $this->octane->reload();
+
+        AddonUpdated::dispatch($existing);
 
         return $existing->refresh();
     }

@@ -8,12 +8,9 @@
     "description": "Browse, install, and update addons from the phpVMS registry.",
     "keywords": [],
     "bundled": true,
-    "active": 1,
-    "order": 0,
     "providers": [
         "Modules\\AddonManager\\Providers\\AddonManagerServiceProvider"
     ],
-    "aliases": {},
     "files": [],
     "requires": [],
     "database": {

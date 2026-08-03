@@ -837,8 +837,8 @@ class SettingsSeeder extends Seeder
 
         // Registry identity (hidden — never shown in the settings UI). The
         // actual values are populated by the registry_identity_settings data
-        // migration (va_global_id) and the addon-manager release / `php artisan
-        // registry:set-key` command (public key).
+        // migration (va_global_id) and shipped/updated via addon-manager
+        // releases (public key).
         [
             'key'         => 'va_global_id',
             'name'        => 'VA Global ID',

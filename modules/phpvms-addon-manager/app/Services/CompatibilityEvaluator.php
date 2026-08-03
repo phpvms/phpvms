@@ -81,15 +81,23 @@ class CompatibilityEvaluator
     }
 
     /**
+     * Strip a leading constraint operator or `v` from a loose version/min string
+     * (">=8.4", "^8.4", "v8.4" → "8.4"). The single home for version-string
+     * normalization so RegistryClient doesn't hand-roll its own — this class owns
+     * version handling (comparison runs through nikolaposa/version).
+     */
+    public static function normalizeMin(string $version): string
+    {
+        return preg_replace('/^[^\d]*/', '', trim($version)) ?? '';
+    }
+
+    /**
      * Pad a partial version ("8.4") to a full semver ("8.4.0") and strip any
      * build/prerelease suffix so nikolaposa/version accepts it.
      */
     private function pad(string $version): string
     {
-        // Drop any leading constraint operator (">=8.4", "^8.4", "~8.4" → "8.4")
-        // and a leading v, then split off build/prerelease suffixes.
-        $trimmed = preg_replace('/^[^\d]*/', '', trim($version)) ?? $version;
-        $core = preg_split('/[-+]/', $trimmed)[0] ?? $trimmed;
+        $core = preg_split('/[-+]/', self::normalizeMin($version))[0] ?? '';
         $parts = array_slice(array_pad(explode('.', $core), 3, '0'), 0, 3);
 
         return implode('.', array_map(fn ($p): int => (int) $p, $parts));
