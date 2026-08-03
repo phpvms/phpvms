@@ -44,7 +44,7 @@
             <div class="am-list-col">
                 <div class="am-list-controls">
                     <input type="search" wire:model.live.debounce.300ms="search" class="am-input"
-                        placeholder="{{ __('Search :count addons…', ['count' => $counts['browse']]) }}">
+                        placeholder="{{ __('addon-manager::addons.search_addons', ['count' => $counts['browse']]) }}">
                     <select wire:model.live="category" class="am-select">
                         <option value="">{{ __('addon-manager::addons.all_categories') }}</option>
                         @foreach ($cats as $c)
@@ -56,6 +56,8 @@
                 <ul class="am-rows">
                     @forelse ($rows as $row)
                         <li wire:key="{{ $row['id'] }}" wire:click="select(@js($row['id']))"
+                            wire:keydown.enter="select(@js($row['id']))" wire:keydown.space.prevent="select(@js($row['id']))"
+                            tabindex="0" role="button" aria-label="{{ $row['name'] }}"
                             class="am-row @if ($sel && $sel['id'] === $row['id']) am-row-selected @endif @unless ($row['compatible']) am-row-dim @endunless">
                             <div class="am-tile">
                                 @if ($row['icon'])
@@ -199,7 +201,7 @@
 
                     {{-- Verification footer --}}
                     <p class="am-footer">
-                        {{ __('sha256 verified · signed by :host', ['host' => $registryHost]) }}
+                        {{ __('addon-manager::addons.verified_note', ['host' => $registryHost]) }}
                         @if ($sel['repository_url'] ?? false)
                             · <a class="am-link" href="{{ $sel['repository_url'] }}" target="_blank" rel="noopener">{{ __('addon-manager::addons.repository') }} ↗</a>
                         @endif

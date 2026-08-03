@@ -134,6 +134,28 @@ class RegistryClient
     }
 
     /**
+     * Read-only cached catalog for callers that must NEVER trigger a network
+     * fetch — the nav badge renders on every admin page, so it reads the
+     * last-known entries (empty until the Addons page or the scheduled
+     * `addons:check-updates` command populates them) rather than risk blocking
+     * an unrelated admin request on the registry.
+     *
+     * @return array{entries: array<string, array<string, mixed>>, synced_at: ?string, stale: bool, error: ?string}
+     */
+    public function cachedCatalog(): array
+    {
+        $cached = $this->cache()->get(self::CATALOG_KEY);
+
+        if (!is_array($cached)) {
+            return ['entries' => [], 'synced_at' => null, 'stale' => true, 'error' => null];
+        }
+
+        $syncedAt = (isset($cached['synced_at']) && is_string($cached['synced_at'])) ? $cached['synced_at'] : null;
+
+        return $this->result($cached, stale: $syncedAt === null || !$this->isFresh($syncedAt));
+    }
+
+    /**
      * Force a re-fetch (manual refresh button / cron).
      *
      * @return array{entries: array<string, array<string, mixed>>, synced_at: ?string, stale: bool, error: ?string}

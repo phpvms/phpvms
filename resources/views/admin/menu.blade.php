@@ -99,8 +99,23 @@
       @endcan
 
       @can('view:modules')
-        <li><a href="{{ \Modules\AddonManager\Filament\Pages\Addons::getUrl() }}"><i class="pe-7s-box2"></i>addons/modules</a>
-        </li>
+        @php
+            // The Addon Manager is a bundled module, but its files can be removed
+            // and its row disabled (AddonAutoLoader only registers enabled addons).
+            // Resolve the URL defensively so a missing/unregistered page hides this
+            // one link instead of throwing and breaking the whole admin menu.
+            $addonManagerUrl = null;
+            if (class_exists(\Modules\AddonManager\Filament\Pages\Addons::class)) {
+                try {
+                    $addonManagerUrl = \Modules\AddonManager\Filament\Pages\Addons::getUrl();
+                } catch (\Throwable) {
+                    $addonManagerUrl = null;
+                }
+            }
+        @endphp
+        @if ($addonManagerUrl)
+          <li><a href="{{ $addonManagerUrl }}"><i class="pe-7s-box2"></i>addons/modules</a></li>
+        @endif
       @endcan
 
       @can('view:maintenance')

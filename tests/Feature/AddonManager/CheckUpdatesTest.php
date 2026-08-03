@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Modules\AddonManager\Filament\Pages\Addons as AddonsPage;
+use Modules\AddonManager\Services\RegistryClient;
 
 beforeEach(function (): void {
     Cache::flush();
@@ -97,11 +98,14 @@ it('fails without notifying when the registry is unreachable and no catalog is c
 
 it('shows a nav badge count that clears once updated', function (): void {
     fakeAcarsCatalog();
+    // The badge reads cache-only; populate it once (as the page or cron would).
+    app(RegistryClient::class)->refresh();
 
     expect(AddonsPage::getNavigationBadge())->toBe('1');
 
+    // Bumping the installed version to the catalog's clears the badge without a
+    // re-fetch: the cached catalog is unchanged, the addon is just no longer behind.
     Addon::query()->update(['version' => '2.2.0']);
-    Cache::flush(); // drop the cached catalog so the badge re-derives
 
     expect(AddonsPage::getNavigationBadge())->toBeNull();
 });

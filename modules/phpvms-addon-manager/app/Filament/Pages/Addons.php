@@ -306,7 +306,9 @@ class Addons extends Page
      */
     public function updateCount(): int
     {
-        $catalog = $this->catalogState()['entries'];
+        // Cache-only: the badge renders on every admin page and must never
+        // trigger a registry fetch on the request thread.
+        $catalog = app(RegistryClient::class)->cachedCatalog()['entries'];
 
         if ($catalog === []) {
             return 0;

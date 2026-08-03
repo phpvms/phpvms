@@ -22,6 +22,7 @@ use Str;
  * @property string      $namespace
  * @property string      $path
  * @property bool        $enabled
+ * @property bool        $bundled
  * @property Carbon|null $installed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

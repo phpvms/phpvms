@@ -24,6 +24,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Modules\AddonManager\Services\RegistryClient;
 use Modules\AddonManager\Support\InstallProgress;
 use Throwable;
@@ -123,7 +124,14 @@ class InstallAddonJob implements ShouldQueue
             }
 
             $source = new UrlSource($url, $sha256);
-            $existing = Addon::query()->where('registry_id', $this->registryId)->first();
+            // Match case-insensitively: the stored registry_id comes from the
+            // addon manifest and $this->registryId from the catalog API, and the
+            // page merges them the same way. A case-only difference on a
+            // case-sensitive store (pgsql/sqlite) must still resolve to an update,
+            // not fall through to a fresh install that aborts as "already installed".
+            $existing = Addon::query()
+                ->whereRaw('LOWER(registry_id) = ?', [Str::lower($this->registryId)])
+                ->first();
 
             if ($existing instanceof Addon) {
                 InstallProgress::set($this->registryId, 'updating', 60, 'Updating…');

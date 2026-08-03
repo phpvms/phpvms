@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace Modules\AddonManager\Providers;
 
 use App\Contracts\Modules\ServiceProvider;
-use Filament\Facades\Filament;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Support\Facades\FilamentView;
-use Filament\View\PanelsRenderHook;
 use Illuminate\Console\Scheduling\Schedule;
-use Modules\AddonManager\Services\RegistryClient;
 use Override;
-use Throwable;
 
 /**
  * Service provider for the bundled Addon Manager module.
@@ -46,21 +41,9 @@ class AddonManagerServiceProvider extends ServiceProvider
             };
         });
 
-        // Warm the catalog cache on admin-panel entry so the Addons page and its
-        // update badge render without a first-hit fetch. RegistryClient::catalog()
-        // self-limits to one refresh per TTL and serves stale on failure, so this
-        // is a cache read on all but the first (or post-expiry) admin request.
-        FilamentView::registerRenderHook(PanelsRenderHook::BODY_START, function (): string {
-            if (Filament::getCurrentPanel()?->getId() === 'admin') {
-                try {
-                    app(RegistryClient::class)->catalog();
-                } catch (Throwable) {
-                    // Never let catalog warming break an admin page render.
-                }
-            }
-
-            return '';
-        });
+        // The catalog is fetched lazily when the Addons page is opened and kept
+        // fresh by the scheduled `addons:check-updates` command — never on an
+        // unrelated admin render, so a slow registry can't delay other pages.
     }
 
     /**
