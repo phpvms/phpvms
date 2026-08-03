@@ -10,6 +10,13 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
+    // These tests are ->skip()ped when the sample addon is absent, and Pest
+    // still fires afterEach for a replayed skip -- with no Application booted.
+    // See appIsBooted() in tests/Helpers/AppHelpers.php.
+    if (!appIsBooted()) {
+        return;
+    }
+
     app(BootCache::class)->delete();
 });
 

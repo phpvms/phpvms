@@ -80,6 +80,14 @@ parameters:
           message: '#Pest\\(Arch\\Contracts\\ArchExpectation|PendingCalls\\TestCall|Support\\HigherOrderTapProxy)#'
           path: tests/
 
+        # appIsBooted() exists precisely because these instanceof checks are not
+        # always true at runtime: Pest's Tia engine reaches afterEach with app()
+        # as a bare Container, or as an Application whose bindings have been
+        # flushed so app('config') returns the Config facade. Static analysis
+        # sees only the declared return types and calls both checks redundant.
+        - identifier: instanceof.alwaysTrue
+          path: tests/Helpers/AppHelpers.php
+
         # The acme addon fixture under tests/fixtures/ registers its view namespace
         # and helper file at runtime when the test boots it, so neither the
         # `acme::` view namespace nor its helper functions exist statically.

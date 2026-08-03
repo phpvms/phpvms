@@ -23,7 +23,7 @@ pest()
         // Never let addon lifecycle tests write the real bootstrap/cache/addons.php.
         // A unique path per test keeps both parallel runs and sequential tests
         // isolated (a shared path would leak boot-cache state between tests).
-        config(['addons.paths.boot_cache' => sys_get_temp_dir().'/phpvms-addons-boot-'.uniqid('', true).'.php']);
+        $bootCache = sys_get_temp_dir().'/phpvms-addons-boot-'.uniqid('', true).'.php';
 
         // Same reasoning for the KVP store. It is a single JSON file that
         // Valuestore rewrites wholesale, and more than one test writes it
@@ -31,22 +31,26 @@ pest()
         // --parallel two workers race and one loses its keys. KvpService is not
         // a singleton and reads this config in its constructor, so a unique
         // path per test is enough to isolate them.
-        config(['phpvms.kvp_storage_path' => sys_get_temp_dir().'/phpvms-kvp-'.uniqid('', true).'.json']);
+        $kvpStore = sys_get_temp_dir().'/phpvms-kvp-'.uniqid('', true).'.json';
+
+        config([
+            'addons.paths.boot_cache' => $bootCache,
+            'phpvms.kvp_storage_path' => $kvpStore,
+        ]);
+
+        // Recorded for cleanup so afterEach never has to read these back out of
+        // the container. Doing so there is not safe: Pest's Tia engine can reach
+        // afterEach after Laravel has torn the application down, at which point
+        // the Application object still exists but its bindings are flushed, so
+        // app('config') resolves to the Facade class and config() dies with
+        // "Call to undefined method Illuminate\Support\Facades\Config::get()".
+        phpvmsTempPaths([$bootCache, $kvpStore]);
     })
     ->afterEach(function (): void {
-        // The container is not guaranteed to be booted here. Pest's Tia engine
-        // replays cached results and still fires this hook, at which point
-        // resolving `config` throws BindingResolutionException and every
-        // replayed test is reported as a false failure. Nothing to clean up in
-        // that case anyway, since no test body ran.
-        if (!app()->bound('config')) {
-            return;
-        }
-
-        foreach (['addons.paths.boot_cache', 'phpvms.kvp_storage_path'] as $key) {
-            $path = config($key);
-
-            if (is_string($path) && str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
+        // Pure filesystem work -- no container access, so this is safe whatever
+        // state the application is in, including a replayed test that never ran.
+        foreach (phpvmsTempPaths() as $path) {
+            if (str_starts_with($path, sys_get_temp_dir()) && file_exists($path)) {
                 @unlink($path);
             }
         }
