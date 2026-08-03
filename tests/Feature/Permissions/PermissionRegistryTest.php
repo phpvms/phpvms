@@ -6,7 +6,6 @@ use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\BootCache;
 use App\Models\User;
 use App\Services\PermissionRegistry;
-use Modules\VMSAcars\Models\Rule;
 
 it('exposes three abilities per resource subject', function (): void {
     $registry = app(PermissionRegistry::class);
@@ -71,7 +70,7 @@ it('attributes app classes to the core scope and module classes to their module'
     expect($registry->moduleOf(User::class))->toBeNull();
     // Plain class strings — moduleOf() only inspects the namespace, so no real
     // addon needs to be installed.
-    expect($registry->moduleOf(Rule::class))->toBe('VMSAcars');
+    expect($registry->moduleOf('Modules\\VMSAcars\\Models\\Rule'))->toBe('VMSAcars');
     expect($registry->moduleOf('Modules\\Awards\\Filament\\Pages\\Foo'))->toBe('Awards');
 
     expect($registry->moduleKey('VMSAcars'))->toBe('vmsacars');
