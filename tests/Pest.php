@@ -13,7 +13,6 @@ declare(strict_types=1);
 |
 */
 
-use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,10 +32,17 @@ pest()
         // a singleton and reads this config in its constructor, so a unique
         // path per test is enough to isolate them.
         config(['phpvms.kvp_storage_path' => sys_get_temp_dir().'/phpvms-kvp-'.uniqid('', true).'.json']);
-
-        $this->seed(SettingsSeeder::class);
     })
     ->afterEach(function (): void {
+        // The container is not guaranteed to be booted here. Pest's Tia engine
+        // replays cached results and still fires this hook, at which point
+        // resolving `config` throws BindingResolutionException and every
+        // replayed test is reported as a false failure. Nothing to clean up in
+        // that case anyway, since no test body ran.
+        if (!app()->bound('config')) {
+            return;
+        }
+
         foreach (['addons.paths.boot_cache', 'phpvms.kvp_storage_path'] as $key) {
             $path = config($key);
 

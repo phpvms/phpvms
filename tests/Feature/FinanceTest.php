@@ -9,7 +9,6 @@ use App\Models\Expense;
 use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Journal;
-use App\Models\JournalTransaction;
 use App\Models\Pirep;
 use App\Models\PirepFare;
 use App\Models\Rank;
@@ -1078,10 +1077,6 @@ test('pirep finances expenses multi airline', function (): void {
 
     $transactions = $journalQuery->build($pirep);
 
-    /** @var JournalTransaction $transaction */
-    /*foreach ($transactions['transactions'] as $transaction) {
-          echo $transaction->memo."-"."\n";
-      }*/
     // Check that all the different transaction types are there
     // test by the different groups that exist
     $transaction_tags = [

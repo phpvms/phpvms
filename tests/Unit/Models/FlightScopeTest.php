@@ -13,10 +13,12 @@ it('active scope produces same SQL as visible scope', function (): void {
 
 it('active scope is a plain alias and does not trigger deprecation notices', function (): void {
     $triggered = false;
-    set_error_handler(function ($errno, $errstr) use (&$triggered): void {
+    set_error_handler(function (int $errno, string $errstr, string $errfile = '', int $errline = 0) use (&$triggered): bool {
         if (str_contains($errstr, 'deprecated')) {
             $triggered = true;
         }
+
+        return true;
     });
 
     Flight::active()->toSql();

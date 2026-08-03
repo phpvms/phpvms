@@ -128,7 +128,7 @@ test('get all aircraft', function (): void {
      */
     updateSetting('pireps.restrict_aircraft_to_rank', true);
 
-    $resp = $this->get('/api/user/fleet', [], $user)->assertStatus(200);
+    $resp = $this->get('/api/user/fleet')->assertStatus(200);
 
     // Get all the aircraft from that subfleet, check the fares
     $body = $resp->json()['data'];
@@ -169,7 +169,7 @@ test('get aircraft allowed from flight', function (): void {
     // And restrict the aircraft
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 
-    $response = $this->get('/api/flights/'.$flight->id, [], $user);
+    $response = $this->get('/api/flights/'.$flight->id);
     $response->assertStatus(200);
 
     expect($response->json()['data']['subfleets'])->toHaveCount(2);
@@ -182,7 +182,7 @@ test('get aircraft allowed from flight', function (): void {
     /**
      * Make sure it's filtered out from the single flight call
      */
-    $response = $this->get('/api/flights/'.$flight->id, [], $user);
+    $response = $this->get('/api/flights/'.$flight->id);
     $response->assertStatus(200);
 
     expect($response->json()['data']['subfleets'])->toHaveCount(1);
@@ -190,7 +190,7 @@ test('get aircraft allowed from flight', function (): void {
     /**
      * Make sure it's filtered out from the flight list
      */
-    $response = $this->get('/api/flights', [], $user);
+    $response = $this->get('/api/flights');
     $body = $response->json()['data'];
     $response->assertStatus(200);
     expect($body[0]['subfleets'])->toHaveCount(1);
@@ -198,7 +198,7 @@ test('get aircraft allowed from flight', function (): void {
     /**
      * Filtered from search?
      */
-    $response = $this->get('/api/flights/search?flight_id='.$flight->id, [], $user);
+    $response = $this->get('/api/flights/search?flight_id='.$flight->id);
     $response->assertStatus(200);
 
     $body = $response->json()['data'];
@@ -325,7 +325,13 @@ test('user pilot deleted', function (): void {
     // Delete the user
     $userSvc->removeUser($user);
 
-    $response = $this->get('/api/user/'.$user->id, [], $admin_user);
+    // FIXME: `/api/user/{id}` is not a route -- only `/api/users/{id}` (plural)
+    // exists. This request 404s unconditionally, so the assertion below proves
+    // nothing about the deletion. Surfaced by static analysis, which caught a
+    // third argument being passed to get() and silently discarded (the intent
+    // was presumably apiAs($admin_user)). Left as-is: fixing it means deciding
+    // what /api/users/{id} should return for a soft-deleted user.
+    $response = $this->get('/api/user/'.$user->id);
     $response->assertStatus(404);
 
     // Get from the DB
@@ -352,7 +358,13 @@ test('user pilot deleted with pireps', function (): void {
     // Delete the user
     $userSvc->removeUser($user);
 
-    $response = $this->get('/api/user/'.$user->id, [], $admin_user);
+    // FIXME: `/api/user/{id}` is not a route -- only `/api/users/{id}` (plural)
+    // exists. This request 404s unconditionally, so the assertion below proves
+    // nothing about the deletion. Surfaced by static analysis, which caught a
+    // third argument being passed to get() and silently discarded (the intent
+    // was presumably apiAs($admin_user)). Left as-is: fixing it means deciding
+    // what /api/users/{id} should return for a soft-deleted user.
+    $response = $this->get('/api/user/'.$user->id);
     $response->assertStatus(404);
 
     // Get from the DB

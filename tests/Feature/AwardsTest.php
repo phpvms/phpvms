@@ -44,7 +44,7 @@ test('awards given', function (): void {
     ];
 
     // Make sure only one is awarded
-    expect(UserAward::where($w)->count(['id']))->toEqual(1);
+    expect(UserAward::where($w)->count('id'))->toEqual(1);
 
     $found_award = UserAward::where($w)->first();
     expect($found_award)->not->toBeNull();

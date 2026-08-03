@@ -182,6 +182,7 @@ class Subfleet extends Model
         return $this->home();
     }
 
+    /** @return BelongsToMany<Fare, $this> */
     public function fares(): BelongsToMany
     {
         return $this->belongsToMany(Fare::class, 'subfleet_fare')->withPivot(
@@ -207,6 +208,7 @@ class Subfleet extends Model
         return $this->belongsToMany(FlightBundle::class, 'bundle_subfleet', 'subfleet_id', 'bundle_id');
     }
 
+    /** @return BelongsToMany<Rank, $this> */
     public function ranks(): BelongsToMany
     {
         return $this->belongsToMany(Rank::class, 'subfleet_rank')

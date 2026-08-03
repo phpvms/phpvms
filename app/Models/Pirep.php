@@ -15,6 +15,7 @@ use App\Enums\PirepState;
 use App\Enums\SimType;
 use App\Events\PirepStateChange;
 use App\Events\PirepStatusChange;
+use App\Support\Units\Fuel;
 use App\Traits\HasNanoIds;
 use Database\Factories\PirepFactory;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
@@ -38,27 +39,29 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * @property string           $id
- * @property int              $user_id
- * @property int              $airline_id
- * @property int|null         $aircraft_id
- * @property int|null         $event_id
- * @property string|null      $flight_id
- * @property string|null      $flight_number
- * @property string|null      $route_code
- * @property string|null      $route_leg
- * @property FlightType       $flight_type
- * @property string           $dpt_airport_id
- * @property string           $arr_airport_id
- * @property string|null      $alt_airport_id
- * @property int|null         $level
- * @property mixed|null       $distance
- * @property mixed|null       $planned_distance
- * @property int|null         $flight_time
- * @property int|null         $planned_flight_time
- * @property float|null       $zfw
- * @property mixed|null       $block_fuel
- * @property mixed|null       $fuel_used
+ * @property string      $id
+ * @property int         $user_id
+ * @property int         $airline_id
+ * @property int|null    $aircraft_id
+ * @property int|null    $event_id
+ * @property string|null $flight_id
+ * @property string|null $flight_number
+ * @property string|null $route_code
+ * @property string|null $route_leg
+ * @property FlightType  $flight_type
+ * @property string      $dpt_airport_id
+ * @property string      $arr_airport_id
+ * @property string|null $alt_airport_id
+ * @property int|null    $level
+ * @property mixed|null  $distance
+ * @property mixed|null  $planned_distance
+ * @property int|null    $flight_time
+ * @property int|null    $planned_flight_time
+ * @property float|null  $zfw
+ * @property-read Fuel|null $block_fuel
+ * @property-write mixed $block_fuel
+ * @property-read Fuel|null $fuel_used
+ * @property-write mixed $fuel_used
  * @property float|null       $landing_rate
  * @property int|null         $score
  * @property string|null      $route

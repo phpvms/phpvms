@@ -1,11 +1,15 @@
 includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon
+    # Teaches PHPStan the Pest functional API (it/test/expect, $this in closures).
+    # Registered explicitly because phpstan/extension-installer is not installed.
+    - vendor/pestphp/pest-plugin-phpstan/extension.neon
 
 parameters:
 
     paths:
         - app/
+        - tests/
 
     # Level 10 is the highest level
     level: 5
@@ -13,7 +17,7 @@ parameters:
     ignoreErrors:
 
         # PHPStan is not able to understand the pivot attributes at the moment
-        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z]+#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z_]+#'
 
         # FilesTrait::files() defines a morphMany via traits — larastan's relationExistence
         # rule can't statically resolve trait-defined polymorphic relations even though they
@@ -21,7 +25,91 @@ parameters:
         - identifier: larastan.relationExistence
           message: '#Relation ''files'' is not found in App\\Models\\(Aircraft|Airline|Airport|Subfleet) model\.#'
 
-#        - '#PHPDoc tag @var#'
-#
-#    excludePaths:
-#        - ./*/*/FileToBeExcluded.php
+        # ── tests/ only ────────────────────────────────────────────────────────
+        # Each entry below is a static-analysis blind spot, not a defect. Real
+        # findings were fixed at the source rather than listed here.
+
+        # Eloquent attaches `pivot` dynamically to BelongsToMany results. It is a
+        # runtime-materialised property that has no declaration to resolve against,
+        # the same gap the Pivot entry above already covers for app/.
+        - identifier: property.notFound
+          message: '#Access to an undefined property App\\Models\\[A-Za-z]+::\$pivot#'
+          path: tests/
+
+        # Livewire's Testable and Filament's testing macros are mixed in at runtime,
+        # so calls like set()/assertSet()/assertFormExists()/assertCanSeeTableRecords()
+        # resolve against TestResponse, which does not declare them.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::#'
+          path: tests/
+
+        # Facade spies. Log::shouldHaveReceived()/shouldNotHaveReceived() exist on the
+        # underlying Mockery spy, not on the facade's static surface.
+        - identifier: staticMethod.notFound
+          message: '#Call to an undefined static method Illuminate\\Support\\Facades\\Log::#'
+          path: tests/
+
+        # Mockery mocks are typed as the union of Mockery's own interfaces, so
+        # expectation chaining and property access on them cannot be resolved.
+        - message: '#Mockery\\(ExpectationInterface|HigherOrderMessage|MockInterface)#'
+          path: tests/
+
+        # MorphTo and Model::resolveRouteBinding() return the base Model by design;
+        # the concrete type is only known at runtime from the stored morph class.
+        - identifier: property.notFound
+          message: '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$[a-zA-Z_]+#'
+          path: tests/
+
+        # The sample addon is not tracked (modules/.gitignore ignores every addon
+        # directory), so a fresh clone or CI checkout has no Modules\Sample at all.
+        # The tests that drive it already guard with ->skip(sampleAddonMissing(...)).
+        - identifier: class.notFound
+          message: '#Modules\\Sample#'
+          path: tests/
+
+        # App\Enums\PirepStatus is a deprecated class_alias onto PirepPhase, created
+        # at runtime, so no amount of static analysis can see it. A stub was rejected:
+        # it would duplicate all 25 enum cases with no way to catch drift, since at
+        # runtime the two names are literally the same class.
+        - message: '#App\\Enums\\PirepStatus#'
+          path: tests/Feature/PirepPhaseEnumTest.php
+
+        # Pest's arch expectations are built through a fluent proxy whose properties
+        # (->classes, ->not, ...) are resolved dynamically.
+        - identifier: property.notFound
+          message: '#Pest\\(Arch\\Contracts\\ArchExpectation|PendingCalls\\TestCall|Support\\HigherOrderTapProxy)#'
+          path: tests/
+
+        # The acme addon fixture under tests/fixtures/ registers its view namespace
+        # and helper file at runtime when the test boots it, so neither the
+        # `acme::` view namespace nor its helper functions exist statically.
+        - identifier: method.impossibleType
+          message: '#View\\Factory::exists\(\) with ''acme::#'
+          path: tests/Feature/Addons/BaseAddonServiceProviderTest.php
+        - identifier: function.notFound
+          message: '#Function sample_module_greeting not found#'
+          path: tests/Feature/Addons/SampleModuleHelpersTest.php
+
+        # FAKE_MODULE_PAGE deliberately names a class that does not exist -- the
+        # test asserts a panel registering an unresolvable module page stays safe.
+        # A real class-string would defeat the point of the test.
+        - identifier: argument.type
+          message: '#\$pages of method Filament\\Panel::pages\(\)#'
+          path: tests/Feature/Permissions/ModulePanelAccessTest.php
+
+        # Pest declares `expect()` as `@param TValue|null $value`. When the argument
+        # is itself a complex generic, unifying TValue against that nullable
+        # parameter reports the type as incompatible with itself -- the message
+        # reads "expects Collection<...>|null, Collection<...> given". A quirk of
+        # Pest's own signature, not of the calling code.
+        - identifier: argument.type
+          message: '#\$value of function expect expects Illuminate\\Support\\Collection#'
+          path: tests/
+
+        # A "redundant" expectation is one static analysis can already prove, which
+        # is a style opinion rather than a defect: the proof comes from docblocks,
+        # and this very change corrected several that were wrong. Deleting working
+        # runtime assertions to satisfy it would trade real safety for tidiness.
+        # pest.expectation.impossible stays enabled -- that one catches real bugs.
+        - identifier: pest.expectation.redundant
+          path: tests/

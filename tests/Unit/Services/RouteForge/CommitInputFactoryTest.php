@@ -90,7 +90,7 @@ it('writes the validation error against the bundle.existing_bundle_id field', fu
             'rows' => [],
         ], causerId: 1);
 
-        expect(false)->toBeTrue('Expected ValidationException');
+        $this->fail('Expected ValidationException');
     } catch (ValidationException $validationException) {
         expect($validationException->errors())->toHaveKey('bundle.existing_bundle_id');
     }

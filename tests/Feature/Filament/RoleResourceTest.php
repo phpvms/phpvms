@@ -82,7 +82,7 @@ it('recreates a registry permission missing from the database when saving', func
     $admin = createAdminUser();
     $this->actingAs($admin);
 
-    $role = Role::create(['name' => 'Dispatcher', 'guard_name' => 'web']);
+    $role = Role::query()->create(['name' => 'Dispatcher', 'guard_name' => 'web']);
 
     // Simulate the web matrix offering a permission the console sync never
     // persisted (e.g. a module access permission only visible in web context).
@@ -102,7 +102,7 @@ it('drops permission names that are not in the registry', function (): void {
     $admin = createAdminUser();
     $this->actingAs($admin);
 
-    $role = Role::create(['name' => 'Dispatcher', 'guard_name' => 'web']);
+    $role = Role::query()->create(['name' => 'Dispatcher', 'guard_name' => 'web']);
 
     RoleResource::syncRolePermissions($role, ['view:airline', 'bogus:permission']);
 
