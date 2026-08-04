@@ -26,6 +26,13 @@ pest()
         // isolated (a shared path would leak boot-cache state between tests).
         config(['addons.paths.boot_cache' => sys_get_temp_dir().'/phpvms-addons-boot-'.uniqid('', true).'.php']);
 
+        // Pin the registry cache to the (array) test store at runtime so a stale
+        // bootstrap/cache/config.php can't override the phpunit env and make
+        // RegistryClient fall back to the `file` store — which is shared with a
+        // dev app and would leak fixture catalogs into it. Runtime config() wins
+        // over cached config.
+        config(['addon-manager.cache_store' => 'array']);
+
         $this->seed(SettingsSeeder::class);
     })
     ->afterEach(function (): void {
