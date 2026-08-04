@@ -834,6 +834,29 @@ class SettingsSeeder extends Seeder
             'options'     => '',
             'description' => '',
         ],
+
+        // Registry identity (hidden — never shown in the settings UI). The
+        // actual values are populated by the registry_identity_settings data
+        // migration (va_global_id) and shipped/updated via addon-manager
+        // releases (public key).
+        [
+            'key'         => 'va_global_id',
+            'name'        => 'VA Global ID',
+            'group'       => 'general',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'registry.public_key',
+            'name'        => 'Registry Public Key',
+            'group'       => 'general',
+            'value'       => '+SDNBf6LCATJElc5yi2mrhpJwGh5So/s1Hi3jCUETic=',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
     ];
 
     public function run(): void

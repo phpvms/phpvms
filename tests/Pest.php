@@ -58,6 +58,13 @@ pest()
             'phpvms.kvp_storage_path' => $kvpStore,
         ]);
 
+        // Pin the registry cache to the (array) test store at runtime so a stale
+        // bootstrap/cache/config.php can't override the phpunit env and make
+        // RegistryClient fall back to the `file` store — which is shared with a
+        // dev app and would leak fixture catalogs into it. Runtime config() wins
+        // over cached config.
+        config(['addon-manager.cache_store' => 'array']);
+
         // Recorded for cleanup so afterEach never has to read these back out of
         // the container. Doing so there is not safe: Pest's Tia engine can reach
         // afterEach after Laravel has torn the application down, at which point

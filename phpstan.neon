@@ -11,6 +11,14 @@ parameters:
         - app/
         - tests/
 
+    # Modules are still not analysed -- this only indexes their symbols so tests
+    # that drive a bundled module resolve against the real class. Composer cannot
+    # autoload them for us: the root maps `Modules\` to `modules/`, but a module
+    # directory does not have to match its namespace (`phpvms-addon-manager`
+    # provides `Modules\AddonManager`), and modules are not installed packages.
+    scanDirectories:
+        - modules/
+
     # Level 10 is the highest level
     level: 5
 
