@@ -36,22 +36,49 @@ parameters:
           message: '#Access to an undefined property App\\Models\\[A-Za-z]+::\$pivot#'
           path: tests/
 
-        # Livewire's Testable and Filament's testing macros are mixed in at runtime,
-        # so calls like set()/assertSet()/assertFormExists()/assertCanSeeTableRecords()
-        # resolve against TestResponse, which does not declare them.
+        # Filament registers its table and form assertions as runtime macros on
+        # Livewire's Testable, so they have no declaration to resolve against.
+        # Testable carries `@mixin \Illuminate\Testing\TestResponse`, which is why
+        # the message names TestResponse rather than Testable.
+        # Listed by name on purpose: a broad `TestResponse::` pattern would also
+        # swallow genuine typos.
         - identifier: method.notFound
-          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::#'
+          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::(assertCanSeeTableRecords|assertCanRenderTableColumn|assertCanNotRenderTableColumn|assertFormExists|assertFormFieldExists|assertFormFieldDoesNotExist)\(\)#'
           path: tests/
 
-        # Facade spies. Log::shouldHaveReceived()/shouldNotHaveReceived() exist on the
-        # underlying Mockery spy, not on the facade's static surface.
+        # set() and assertSet() are real Testable methods. They only fail to resolve
+        # because the chain reaches them through the TestResponse mixin above:
+        # `Livewire::test(...)->assertSuccessful()` returns TestResponse, so every
+        # later link in that chain is typed against TestResponse instead of Testable.
+        # Reordering the chains would silence this, but at the cost of contorting
+        # readable tests to suit the analyser.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::(set|assertSet)\(\)#'
+          path: tests/
+
+        # Facade spies. These exist on the underlying Mockery spy, not on the
+        # facade's static surface.
         - identifier: staticMethod.notFound
-          message: '#Call to an undefined static method Illuminate\\Support\\Facades\\Log::#'
+          message: '#Call to an undefined static method Illuminate\\Support\\Facades\\Log::(shouldHaveReceived|shouldNotHaveReceived)\(\)#'
           path: tests/
 
-        # Mockery mocks are typed as the union of Mockery's own interfaces, so
-        # expectation chaining and property access on them cannot be resolved.
-        - message: '#Mockery\\(ExpectationInterface|HigherOrderMessage|MockInterface)#'
+        # Mockery's stub types andReturns() as taking no arguments, though it is
+        # variadic in practice.
+        - identifier: arguments.count
+          message: '#Method Mockery\\ExpectationInterface::andReturns\(\) invoked with 1 parameter, 0 required\.#'
+          path: tests/
+
+        # A Mockery mock is typed as the union of Mockery's own interfaces rather
+        # than as the class it doubles, so passing one where the real interface is
+        # expected cannot be checked. Named per call site so a mock handed to the
+        # wrong parameter is still reported.
+        - identifier: argument.type
+          message: '#\$clientEntity of method App\\Auth\\ScopeRepository::finalizeScopes\(\) expects League\\OAuth2\\Server\\Entities\\ClientEntityInterface, Mockery\\MockInterface given#'
+          path: tests/
+
+        # Same union, read side: these are properties of the access-token double.
+        - identifier: property.notFound
+          message: '#Access to an undefined property Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\|Mockery\\MockInterface::\$(token|refreshToken|expiresIn)#'
           path: tests/
 
         # MorphTo and Model::resolveRouteBinding() return the base Model by design;

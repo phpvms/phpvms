@@ -325,14 +325,9 @@ test('user pilot deleted', function (): void {
     // Delete the user
     $userSvc->removeUser($user);
 
-    // FIXME: `/api/user/{id}` is not a route -- only `/api/users/{id}` (plural)
-    // exists. This request 404s unconditionally, so the assertion below proves
-    // nothing about the deletion. Surfaced by static analysis, which caught a
-    // third argument being passed to get() and silently discarded (the intent
-    // was presumably apiAs($admin_user)). Left as-is: fixing it means deciding
-    // what /api/users/{id} should return for a soft-deleted user.
-    $response = $this->get('/api/user/'.$user->id);
-    $response->assertStatus(404);
+    // A user without PIREPs is hard-deleted, so the API no longer resolves them.
+    apiAs($admin_user);
+    $this->get('/api/users/'.$user->id)->assertStatus(404);
 
     // Get from the DB
     $user = User::find($user->id);
@@ -358,14 +353,10 @@ test('user pilot deleted with pireps', function (): void {
     // Delete the user
     $userSvc->removeUser($user);
 
-    // FIXME: `/api/user/{id}` is not a route -- only `/api/users/{id}` (plural)
-    // exists. This request 404s unconditionally, so the assertion below proves
-    // nothing about the deletion. Surfaced by static analysis, which caught a
-    // third argument being passed to get() and silently discarded (the intent
-    // was presumably apiAs($admin_user)). Left as-is: fixing it means deciding
-    // what /api/users/{id} should return for a soft-deleted user.
-    $response = $this->get('/api/user/'.$user->id);
-    $response->assertStatus(404);
+    // A user with PIREPs is kept but anonymised into the DELETED state, which
+    // UserService::getUser() treats as absent, so the API still hides them.
+    apiAs($admin_user);
+    $this->get('/api/users/'.$user->id)->assertStatus(404);
 
     // Get from the DB
     $user = User::find($user->id);
