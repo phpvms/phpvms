@@ -70,4 +70,13 @@ final readonly class AddonManifest
         public array $files = [],
     ) {}
 
+    /**
+     * Whether the addon is bundled with phpVMS (declared via `"bundled": true`
+     * in module.json). Bundled addons are enabled by default and cannot be
+     * disabled or deleted from the panel.
+     */
+    public function isBundled(): bool
+    {
+        return (bool) ($this->raw['bundled'] ?? false);
+    }
 }

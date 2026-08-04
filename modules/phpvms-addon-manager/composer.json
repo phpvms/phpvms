@@ -1,0 +1,17 @@
+{
+    "name": "phpvms/addon-manager-module",
+    "type": "phpvms-module",
+    "description": "Browse, install, and update addons from the phpVMS registry.",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\AddonManager\\Providers\\AddonManagerServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\AddonManager\\": "app"
+        }
+    }
+}

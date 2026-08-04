@@ -26,6 +26,7 @@
     "ext-bcmath": "*",
     "ext-pdo": "*",
     "ext-intl": "*",
+    "ext-sodium": "*",
     "ext-zip": "*",
     "fisharebest/ext-calendar": "^2.5",
     "symfony/polyfill-iconv": "*",
@@ -205,7 +206,7 @@
     "dev": [
       "Composer\\Config::disableProcessTimeout",
       "@php artisan optimize:clear",
-      "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite --kill-others"
+      "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0 --port 7474\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite --kill-others"
     ]
   },
   "config": {

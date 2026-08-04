@@ -31,6 +31,9 @@
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>
         <env name="BROADCAST_CONNECTION" value="null" force="true"/>
         <env name="CACHE_STORE" value="array" force="true"/>
+        <!-- Pin the addon-manager registry cache to the (array) test store too,
+             so it stays flushable/isolated instead of falling back to file. -->
+        <env name="ADDON_REGISTRY_CACHE_STORE" value="array" force="true"/>
         <!-- Both blocks are required. Laravel resolves env() through a repository
              that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
              shell variables into $_SERVER, so an exported DB_CONNECTION silently

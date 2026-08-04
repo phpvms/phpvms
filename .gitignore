@@ -117,3 +117,4 @@ modules_statuses.json
 frankenphp
 
 frankenphp-worker.php
+public/vendor/**
