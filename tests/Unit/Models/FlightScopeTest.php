@@ -25,9 +25,13 @@ it('active scope is a plain alias and does not trigger deprecation notices', fun
         return false;
     });
 
-    Flight::active()->toSql();
-
-    restore_error_handler();
+    // set_error_handler() is process-global, so a throw here would leak the
+    // handler into every later test in the same worker.
+    try {
+        Flight::active()->toSql();
+    } finally {
+        restore_error_handler();
+    }
 
     expect($triggered)->toBeFalse();
 });
