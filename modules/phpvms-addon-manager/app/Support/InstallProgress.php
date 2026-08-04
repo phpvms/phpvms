@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\AddonManager\Support;
 
 use Illuminate\Contracts\Cache\Repository;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Cache-backed install progress for an addon, keyed by its registry id. The
@@ -62,21 +61,11 @@ class InstallProgress
     /**
      * Persistent store so progress written by the install job is readable by the
      * later poll requests — the app's non-persistent `array` default would drop
-     * it between requests. Mirrors RegistryClient::store().
+     * it between requests. Store resolution is shared with RegistryClient via
+     * RegistryCache.
      */
-    private static function store(): ?string
-    {
-        $configured = config('addon-manager.cache_store');
-
-        if (is_string($configured) && $configured !== '') {
-            return $configured;
-        }
-
-        return config('cache.default') === 'array' ? 'file' : null;
-    }
-
     private static function cache(): Repository
     {
-        return Cache::store(self::store());
+        return RegistryCache::store();
     }
 }

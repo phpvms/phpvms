@@ -14,10 +14,10 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Modules\AddonManager\Services\CompatibilityEvaluator;
 use Modules\AddonManager\Services\RegistryClient;
+use Modules\AddonManager\Support\RegistryCache;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
@@ -56,9 +56,11 @@ class CheckUpdates extends Command
             if ($entry === null) {
                 continue;
             }
+
             if ($latest === '') {
                 continue;
             }
+
             if (!$evaluator->isNewer($latest, (string) $addon->version)) {
                 continue;
             }
@@ -118,15 +120,11 @@ class CheckUpdates extends Command
 
     /**
      * The module's persistent cache store, so the dedup marker survives between
-     * daily cron processes. Mirrors RegistryClient::store()/InstallProgress.
+     * daily cron processes. Store resolution is shared with RegistryClient via
+     * RegistryCache.
      */
     private function cache(): Repository
     {
-        $configured = config('addon-manager.cache_store');
-        $store = (is_string($configured) && $configured !== '')
-            ? $configured
-            : (config('cache.default') === 'array' ? 'file' : null);
-
-        return Cache::store($store);
+        return RegistryCache::store();
     }
 }

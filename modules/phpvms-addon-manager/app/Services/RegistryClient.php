@@ -6,10 +6,10 @@ namespace Modules\AddonManager\Services;
 
 use App\Services\VersionService;
 use Illuminate\Contracts\Cache\Repository;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Modules\AddonManager\Support\RegistryCache;
 use RuntimeException;
 use Throwable;
 
@@ -332,25 +332,13 @@ class RegistryClient
     }
 
     /**
-     * The persistent cache store for registry data. The catalog and release
-     * metadata are fetched on admin-panel load and kept on disk so page
-     * interactions never re-hit the network. Honours an explicit config; else
-     * the app default — unless that is the non-persistent `array` driver (dev),
-     * in which case `file` (storage/framework/cache) is used so it still persists.
+     * The persistent cache repository for registry data (catalog + release
+     * metadata): kept on disk so page interactions never re-hit the network.
+     * Store resolution is shared with InstallProgress/CheckUpdates via
+     * RegistryCache.
      */
-    private function store(): ?string
-    {
-        $configured = config('addon-manager.cache_store');
-
-        if (is_string($configured) && $configured !== '') {
-            return $configured;
-        }
-
-        return config('cache.default') === 'array' ? 'file' : null;
-    }
-
     private function cache(): Repository
     {
-        return Cache::store($this->store());
+        return RegistryCache::store();
     }
 }
