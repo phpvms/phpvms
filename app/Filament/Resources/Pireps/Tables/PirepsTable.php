@@ -15,6 +15,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
@@ -102,6 +103,25 @@ class PirepsTable
                             fn (Builder $query): Builder => $query->whereDate('submitted_at', '<=', $data['filed_before']),
                         )),
                 TrashedFilter::make(),
+
+                // Deep-linked from the dashboard activity calendar: /admin/pireps?departed_from=...&departed_to=...
+                Filter::make('departed')
+                    ->label(__('filament.departed_between'))
+                    ->schema([
+                        DateTimePicker::make('from')
+                            ->label(__('filament.departed_from')),
+                        DateTimePicker::make('to')
+                            ->label(__('filament.departed_to')),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when(
+                            filled($data['from'] ?? null),
+                            fn (Builder $query): Builder => $query->where('block_off_time', '>=', $data['from']),
+                        )
+                        ->when(
+                            filled($data['to'] ?? null),
+                            fn (Builder $query): Builder => $query->where('block_off_time', '<=', $data['to']),
+                        )),
             ])
             ->filtersLayout(FiltersLayout::Modal)
             ->filtersFormColumns(2)

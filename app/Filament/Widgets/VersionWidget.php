@@ -12,7 +12,7 @@ class VersionWidget extends Widget
 {
     protected string $view = 'filament.widgets.version-widget';
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 1;
 
     protected static ?int $sort = 0;
 

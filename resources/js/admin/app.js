@@ -24,10 +24,14 @@ window.axios = axios;
 
 // Lazy-load the maps chunk on first call. Subsequent calls reuse the
 // resolved module via the cached promise (ES module spec dedupes by URL).
+// `import.meta.glob` (not a bare `import("./maps")`) is used so Vite rewrites
+// the chunk URL correctly in dev AND build: a bare dynamic import becomes an
+// absolute path that the browser resolves against the document origin, which
+// 404s when the page is served behind a proxy different from the dev server.
 let mapsModulePromise = null;
 const loadMaps = () => {
   if (!mapsModulePromise) {
-    mapsModulePromise = import("./maps");
+    mapsModulePromise = import.meta.glob("./maps/index.js")["./maps/index.js"]();
   }
 
   return mapsModulePromise;
@@ -59,3 +63,12 @@ window.phpvms = {
 // promise inside init() rather than touching `window.phpvms` directly.
 window.phpvmsReady = Promise.resolve(window.phpvms);
 window.dispatchEvent(new CustomEvent("phpvms:ready", { detail: window.phpvms }));
+
+// Dashboard charts (D3) — loaded on every admin page; `init()` sets up a
+// MutationObserver so widgets that Filament lazy-mounts (scroll-triggered
+// hydration) still get rendered when they appear. Same `import.meta.glob`
+// treatment as the maps chunk above (see that comment).
+import.meta
+  .glob("./dashboard/index.js")
+  ["./dashboard/index.js"]()
+  .then((m) => m.init());

@@ -10,6 +10,7 @@ use App\Filament\Resources\Pireps\Widgets\PirepStats;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Carbon;
 use Override;
 
 class ListPireps extends ListRecords
@@ -31,6 +32,35 @@ class ListPireps extends ListRecords
     {
         // No EmbeddedTable. The custom blade renders filters + cards directly.
         return $schema->components([]);
+    }
+
+    /**
+     * The dashboard activity calendar deep-links here with
+     * ?departed_from=...&departed_to=... (one-hour block). Hydrate the
+     * `departed` table filter before the table boots so the list is
+     * pre-filtered to that time block.
+     */
+    #[Override]
+    public function mount(): void
+    {
+        parent::mount();
+
+        $from = request()->query('departed_from');
+        $to = request()->query('departed_to');
+
+        if (filled($from) || filled($to)) {
+            $this->tableFilters['departed'] = [
+                'from' => filled($from) ? Carbon::parse($from)->format('Y-m-d H:i:s') : null,
+                'to'   => filled($to) ? Carbon::parse($to)->format('Y-m-d H:i:s') : null,
+            ];
+        } elseif (session()->has($this->getTableFiltersSessionKey())) {
+            // Direct visit (no deep-link params): drop a previously
+            // calendar-set `departed` filter so the list isn't stuck on an
+            // hour block for the rest of the session.
+            $filters = session()->get($this->getTableFiltersSessionKey(), []);
+            unset($filters['departed']);
+            session()->put($this->getTableFiltersSessionKey(), $filters);
+        }
     }
 
     #[Override]
