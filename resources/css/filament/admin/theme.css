@@ -2313,6 +2313,13 @@ body[class*="fi-panel-"]::after {
   border-top: 0;
 }
 
+/* Original Flight card — empty state when no archive row exists */
+.fi-panel-admin .fi-pirep-detail-v2-empty-note {
+  padding: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+}
+
 /* Finance tables — clean table matching demo */
 .fi-panel-admin .fi-pirep-fin-table {
   width: 100%;
