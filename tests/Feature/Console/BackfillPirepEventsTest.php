@@ -15,12 +15,15 @@ it('migrates a JSON blob row, mapping telemetry_id to acars_id', function (): vo
         'pirep_id' => $pirep->id,
         'type'     => AcarsType::LOG,
         'log'      => json_encode([
-            'type'         => 'phase-change',
-            'category'     => 'phase',
-            'phase'        => 'takeoff',
-            'log'          => 'Started takeoff',
-            'payload'      => ['runway' => '27L'],
-            'telemetry_id' => $telemetry->id,
+            'type'            => 'phase-change',
+            'category'        => 'phase',
+            'phase'           => 'takeoff',
+            'log'             => 'Started takeoff',
+            'payload'         => ['runway' => '27L'],
+            'telemetry_id'    => $telemetry->id,
+            'lat'             => 51.4775,
+            'lon'             => -0.4614,
+            'altitude_msl_ft' => 3500,
         ]),
     ]);
 
@@ -34,7 +37,10 @@ it('migrates a JSON blob row, mapping telemetry_id to acars_id', function (): vo
         ->and($event->phase)->toBe('takeoff')
         ->and($event->log)->toBe('Started takeoff')
         ->and($event->details)->toBe(['runway' => '27L'])
-        ->and($event->acars_id)->toBe($telemetry->id);
+        ->and($event->acars_id)->toBe($telemetry->id)
+        ->and($event->lat)->toEqualWithDelta(51.4775, 0.001)
+        ->and($event->lon)->toEqualWithDelta(-0.4614, 0.001)
+        ->and($event->altitude_msl)->toEqualWithDelta(3500, 0.001);
 });
 
 it('nulls acars_id and reports the count when telemetry_id matches no acars row', function (): void {
@@ -65,6 +71,8 @@ it('runs a plain string row through the classifier', function (): void {
         'pirep_id' => $pirep->id,
         'type'     => AcarsType::LOG,
         'log'      => 'Flaps set to 15',
+        'lat'      => 40.6413,
+        'lon'      => -73.7781,
     ]);
 
     $this->artisan('phpvms:backfill-pirep-events')->assertExitCode(0);
@@ -74,7 +82,31 @@ it('runs a plain string row through the classifier', function (): void {
     expect($event->type)->toBe('flaps-change')
         ->and($event->category)->toBe('aircraft')
         ->and($event->log)->toBe('Flaps set to 15')
-        ->and($event->details)->toBe(['flaps' => '15']);
+        ->and($event->details)->toBe(['flaps' => '15'])
+        ->and($event->lat)->toEqualWithDelta(40.6413, 0.001)
+        ->and($event->lon)->toEqualWithDelta(-73.7781, 0.001)
+        ->and($event->altitude_msl)->toBeNull();
+});
+
+it('leaves position null for a row that never reported one', function (): void {
+    $pirep = Pirep::factory()->create();
+
+    // acars.lat/lon are ->default(0), so a positionless log row reads back as
+    // 0,0 — copying that verbatim would drop the event at Null Island.
+    $string = Acars::factory()->create([
+        'pirep_id' => $pirep->id,
+        'type'     => AcarsType::LOG,
+        'log'      => 'Flaps set to 15',
+        'lat'      => 0,
+        'lon'      => 0,
+    ]);
+
+    $this->artisan('phpvms:backfill-pirep-events')->assertExitCode(0);
+
+    $event = PirepEvent::findOrFail($string->id);
+
+    expect($event->lat)->toBeNull()
+        ->and($event->lon)->toBeNull();
 });
 
 it('creates no duplicates when run a second time', function (): void {

@@ -73,7 +73,7 @@ class BackfillPirepEvents extends Command
         PirepEvent::query()->upsert(
             $events->all(),
             ['id'],
-            ['pirep_id', 'acars_id', 'type', 'category', 'phase', 'log', 'details', 'sim_time', 'created_at']
+            ['pirep_id', 'acars_id', 'type', 'category', 'phase', 'lat', 'lon', 'altitude_msl', 'log', 'details', 'sim_time', 'created_at']
         );
 
         $this->migrated += $events->count();
@@ -110,6 +110,9 @@ class BackfillPirepEvents extends Command
                 'type'            => $blob['type'] ?? null,
                 'category'        => $category,
                 'phase'           => $blob['phase'] ?? null,
+                'lat'             => $blob['lat'] ?? $this->position($acars)['lat'],
+                'lon'             => $blob['lon'] ?? $this->position($acars)['lon'],
+                'altitude_msl'    => $blob['altitude_msl_ft'] ?? null,
                 'log'             => $blob['log'] ?? null,
                 'details'         => $details === null ? null : json_encode($details),
                 'sim_time'        => $acars->sim_time,
@@ -127,11 +130,36 @@ class BackfillPirepEvents extends Command
             'type'            => $classified['type'],
             'category'        => $classified['category'],
             'phase'           => $classified['phase'],
+            'lat'             => $this->position($acars)['lat'],
+            'lon'             => $this->position($acars)['lon'],
+            'altitude_msl'    => null,
             'log'             => $acars->log,
             'details'         => $classified['details'] === null ? null : json_encode($classified['details']),
             'sim_time'        => $acars->sim_time,
             'created_at'      => $acars->created_at,
         ];
+    }
+
+    /**
+     * The source row's position, or nulls when it never reported one.
+     *
+     * `acars.lat`/`lon` are `->default(0)`, so a log row that carried no
+     * position reads back as 0,0 rather than null. Copying that verbatim
+     * would drop every positionless legacy log at Null Island, so the pair
+     * is treated as unset when both halves are zero.
+     *
+     * @return array{lat: ?float, lon: ?float}
+     */
+    private function position(Acars $acars): array
+    {
+        $lat = (float) $acars->lat;
+        $lon = (float) $acars->lon;
+
+        if ($lat === 0.0 && $lon === 0.0) {
+            return ['lat' => null, 'lon' => null];
+        }
+
+        return ['lat' => $lat, 'lon' => $lon];
     }
 
     /**

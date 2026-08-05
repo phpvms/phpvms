@@ -15,8 +15,9 @@ test('admin view-pirep flight log renders entries sourced from pirep_events', fu
     $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
 
     PirepEvent::factory()->create([
-        'pirep_id' => $pirep->id,
-        'log'      => 'Flaps set to 15',
+        'pirep_id'     => $pirep->id,
+        'log'          => 'Flaps set to 15',
+        'altitude_msl' => 3500,
     ]);
 
     // An acars LOG-shaped row for the same pirep must NOT leak into the
@@ -31,5 +32,6 @@ test('admin view-pirep flight log renders entries sourced from pirep_events', fu
         ->get(PirepResource::getUrl('view', ['record' => $pirep]))
         ->assertSuccessful()
         ->assertSee('Flaps set to 15')
+        ->assertSee('3,500 ft')
         ->assertDontSee('Should not appear in flight log');
 });

@@ -23,6 +23,9 @@ return new class() extends Migration
             $table->string('type')->nullable()->index();
             $table->string('category')->index();
             $table->string('phase')->nullable();
+            $table->decimal('lat', 10, 5)->nullable();
+            $table->decimal('lon', 11, 5)->nullable();
+            $table->decimal('altitude_msl')->nullable();
             $table->text('log')->nullable();
             $table->json('details')->nullable();
             $table->string('sim_time')->nullable();

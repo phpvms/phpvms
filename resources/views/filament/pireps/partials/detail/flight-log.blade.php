@@ -6,6 +6,7 @@
     $logSort = $this->logSort;
 
     $fmtTime = fn (?\Illuminate\Support\Carbon $dt): string => $dt?->format('H:i:s') ?? '—';
+    $fmtAlt = fn (?float $v): string => $v !== null ? number_format((int) $v) . ' ft' : '—';
 
     // Strip redundant ACARS client metadata from log messages.
     // The left column already shows time; header shows aircraft.
@@ -83,7 +84,7 @@
 
         {{-- Table header --}}
         <div class="fi-pirep-flight-log-grid fi-pirep-flight-log-grid-head">
-            <div class="fi-pirep-flight-log-time">Time</div>
+            <div class="fi-pirep-flight-log-time">Time / Alt</div>
             <div class="fi-pirep-flight-log-event">Event</div>
         </div>
 
@@ -101,6 +102,7 @@
                 <div class="{{ $rowClasses }}">
                     <div class="fi-pirep-flight-log-time">
                         <div class="time">{{ $fmtTime($entry->created_at) }}</div>
+                        <div class="data">{{ $fmtAlt($entry->altitude_msl) }}</div>
                     </div>
                     <div class="fi-pirep-flight-log-event">
                         <span class="msg">{{ $cleanLog($entry->log) }}</span>

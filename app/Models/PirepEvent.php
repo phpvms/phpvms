@@ -19,6 +19,9 @@ use Override;
  * @property string|null $type
  * @property string      $category
  * @property string|null $phase
+ * @property float|null  $lat
+ * @property float|null  $lon
+ * @property float|null  $altitude_msl
  * @property string|null $log
  * @property array|null  $details
  * @property string|null $sim_time
@@ -49,6 +52,9 @@ class PirepEvent extends Model
         'type',
         'category',
         'phase',
+        'lat',
+        'lon',
+        'altitude_msl',
         'log',
         'details',
         'sim_time',
@@ -59,8 +65,11 @@ class PirepEvent extends Model
     protected function casts(): array
     {
         return [
-            'details'    => 'array',
-            'created_at' => 'datetime',
+            'details'      => 'array',
+            'lat'          => 'float',
+            'lon'          => 'float',
+            'altitude_msl' => 'float',
+            'created_at'   => 'datetime',
         ];
     }
 

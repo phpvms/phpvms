@@ -895,7 +895,7 @@ it('can receive acars log', function (): void {
     $acars = Acars::factory()->make();
     $post_log = [
         'logs' => [
-            ['log' => $acars->log],
+            ['log' => $acars->log, 'lat' => $acars->lat, 'lon' => $acars->lon],
         ],
     ];
 
@@ -910,6 +910,8 @@ it('can receive acars log', function (): void {
     $event = PirepEvent::where('pirep_id', $pirep_id)->first();
     expect($event)->not->toBeNull();
     expect($event->log)->toEqual($acars->log);
+    expect(round($event->lat, 2))->toEqual(round($acars->lat, 2));
+    expect(round($event->lon, 2))->toEqual(round($acars->lon, 2));
     expect(Acars::where('pirep_id', $pirep_id)->where('type', AcarsType::LOG)->count())->toEqual(0);
 
     $acars = Acars::factory()->make();
