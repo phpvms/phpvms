@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AcarsType;
 use App\Enums\PirepPhase;
 use App\Enums\PirepState;
 use App\Exceptions\AircraftNotAtAirport;
@@ -10,6 +11,7 @@ use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Fare;
 use App\Models\Navdata;
+use App\Models\PirepEvent;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
 use App\Models\Rank;
@@ -905,6 +907,11 @@ it('can receive acars log', function (): void {
 
     expect($body['count'])->toEqual(1);
 
+    $event = PirepEvent::where('pirep_id', $pirep_id)->first();
+    expect($event)->not->toBeNull();
+    expect($event->log)->toEqual($acars->log);
+    expect(Acars::where('pirep_id', $pirep_id)->where('type', AcarsType::LOG)->count())->toEqual(0);
+
     $acars = Acars::factory()->make();
     $post_log = [
         'events' => [
@@ -919,6 +926,96 @@ it('can receive acars log', function (): void {
     $body = $response->json();
 
     expect($body['count'])->toEqual(1);
+
+    $event = PirepEvent::where('pirep_id', $pirep_id)->where('log', $acars->log)->first();
+    expect($event)->not->toBeNull();
+    expect(Acars::where('pirep_id', $pirep_id)->where('type', AcarsType::LOG)->count())->toEqual(0);
+});
+
+it('classifies an aircraft log string when receiving acars logs/events', function (): void {
+    $pirep = createPirep();
+    apiAs($pirep->user);
+    $pirep = $pirep->toArray();
+    $pirep = transformData($pirep);
+
+    $uri = '/api/pireps/prefile';
+    $response = $this->post($uri, $pirep);
+    $pirep_id = $response->json()['data']['id'];
+
+    $log_string = 'Flaps set to 15';
+
+    $uri = '/api/pireps/'.$pirep_id.'/acars/logs';
+    $response = $this->post($uri, ['logs' => [['log' => $log_string]]]);
+    $response->assertStatus(200);
+
+    expect($response->json()['count'])->toEqual(1);
+
+    $event = PirepEvent::where('pirep_id', $pirep_id)->where('log', $log_string)->first();
+    expect($event)->not->toBeNull();
+    expect($event->category)->toEqual('aircraft');
+    expect($event->type)->not->toBeNull();
+    expect($event->log)->toEqual($log_string);
+
+    $uri = '/api/pireps/'.$pirep_id.'/acars/events';
+    $response = $this->post($uri, ['events' => [['event' => $log_string]]]);
+    $response->assertStatus(200);
+
+    expect($response->json()['count'])->toEqual(1);
+
+    $event = PirepEvent::where('pirep_id', $pirep_id)->where('log', $log_string)->latest()->first();
+    expect($event->category)->toEqual('aircraft');
+    expect($event->type)->not->toBeNull();
+});
+
+it('classifies a violation log string into details when receiving acars logs', function (): void {
+    $pirep = createPirep();
+    apiAs($pirep->user);
+    $pirep = $pirep->toArray();
+    $pirep = transformData($pirep);
+
+    $uri = '/api/pireps/prefile';
+    $response = $this->post($uri, $pirep);
+    $pirep_id = $response->json()['data']['id'];
+
+    $log_string = 'Rule Triggered - Overspeed (2x), 10pts';
+
+    $uri = '/api/pireps/'.$pirep_id.'/acars/logs';
+    $response = $this->post($uri, ['logs' => [['log' => $log_string]]]);
+    $response->assertStatus(200);
+
+    expect($response->json()['count'])->toEqual(1);
+
+    $event = PirepEvent::where('pirep_id', $pirep_id)->where('log', $log_string)->first();
+    expect($event)->not->toBeNull();
+    expect($event->category)->toEqual('violation');
+    expect($event->details['rule_name'])->toEqual('Overspeed');
+    expect($event->details['count'])->toEqual(2);
+    expect($event->details['points'])->toEqual(10);
+});
+
+it('classifies an unrecognized log string as a message when receiving acars logs', function (): void {
+    $pirep = createPirep();
+    apiAs($pirep->user);
+    $pirep = $pirep->toArray();
+    $pirep = transformData($pirep);
+
+    $uri = '/api/pireps/prefile';
+    $response = $this->post($uri, $pirep);
+    $pirep_id = $response->json()['data']['id'];
+
+    $log_string = 'Some totally unrecognized log string';
+
+    $uri = '/api/pireps/'.$pirep_id.'/acars/logs';
+    $response = $this->post($uri, ['logs' => [['log' => $log_string]]]);
+    $response->assertStatus(200);
+
+    expect($response->json()['count'])->toEqual(1);
+
+    $event = PirepEvent::where('pirep_id', $pirep_id)->where('log', $log_string)->first();
+    expect($event)->not->toBeNull();
+    expect($event->type)->toBeNull();
+    expect($event->category)->toEqual('message');
+    expect($event->log)->toEqual($log_string);
 });
 
 it('can receive acars route', function (): void {
@@ -997,4 +1094,24 @@ it('handles duplicate pirep', function (): void {
     $dupe_pirep_id = $response->json()['data']['id'];
 
     expect($dupe_pirep_id)->toEqual($pirep_id);
+});
+
+it('upserts a log on a client-supplied id rather than duplicating it', function (): void {
+    $pirep = createPirep();
+    apiAs($pirep->user);
+    $pirep = $pirep->toArray();
+    $pirep = transformData($pirep);
+
+    $pirep_id = $this->post('/api/pireps/prefile', $pirep)->json()['data']['id'];
+    $uri = '/api/pireps/'.$pirep_id.'/acars/logs';
+
+    $this->post($uri, ['logs' => [['id' => 'client-1', 'log' => 'Flaps set to 15']]])->assertStatus(200);
+    $this->post($uri, ['logs' => [['id' => 'client-1', 'log' => 'Flaps set to 20']]])->assertStatus(200);
+
+    $events = PirepEvent::where('pirep_id', $pirep_id)->get();
+
+    expect($events)->toHaveCount(1)
+        ->and($events->first()->log)->toEqual('Flaps set to 20')
+        ->and($events->first()->client_event_id)->toEqual('client-1')
+        ->and($events->first()->id)->not->toEqual('client-1');
 });

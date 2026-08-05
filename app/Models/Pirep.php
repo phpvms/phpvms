@@ -79,6 +79,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $acars_logs_count
  * @property-read Collection<int, Acars> $acars_route
  * @property-read int|null $acars_route_count
+ * @property-read Collection<int, PirepEvent> $events
+ * @property-read int|null $events_count
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Aircraft|null $aircraft
@@ -481,6 +483,12 @@ class Pirep extends Model
         return $this->hasMany(Acars::class, 'pirep_id')
             ->ofType(AcarsType::ROUTE)
             ->orderedByOrder();
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(PirepEvent::class, 'pirep_id')
+            ->orderBy('created_at', 'asc');
     }
 
     public function aircraft(): BelongsTo

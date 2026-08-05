@@ -33,6 +33,7 @@ use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\PirepComment;
+use App\Models\PirepEvent;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
 use App\Models\PirepPosition;
@@ -157,7 +158,11 @@ class PirepService extends Service
             }
 
             // Clear the reused leg's old track and logs so a restarted flight
-            // doesn't inherit a stale flight path or fused log.
+            // doesn't inherit a stale flight path or fused log. Events must go
+            // first: acars_id has an ON DELETE RESTRICT FK, so deleting a
+            // referenced acars row before its pirep_events row throws.
+            PirepEvent::where('pirep_id', $pirep->id)->delete();
+
             Acars::where('pirep_id', $pirep->id)
                 ->whereIn('type', [AcarsType::FLIGHT_PATH, AcarsType::LOG])
                 ->delete();
@@ -552,6 +557,10 @@ class PirepService extends Service
             $this->pirepFinanceSvc->deleteFinancesForPirep($pirep);
 
             $w = ['pirep_id' => $pirep->id];
+
+            // pirep_events.acars_id has an ON DELETE RESTRICT FK, so events
+            // must be deleted before the acars rows they reference.
+            PirepEvent::where($w)->delete();
 
             // Listed above since this method was written and never actually
             // deleted. The FK covers it too, but SQLite can't express that one.
