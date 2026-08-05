@@ -1,8 +1,10 @@
 <?php
 
+use App\Enums\AcarsType;
 use App\Enums\PirepPhase;
 use App\Enums\PirepStatus;
 use App\Http\Resources\PirepResource;
+use App\Models\Acars;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +39,20 @@ test('phase values stored before the rename read back to the same cases', functi
     expect($reloaded->status)->toBe(PirepPhase::ENROUTE)
         ->and($reloaded->status)->toBe(PirepStatus::ENROUTE)
         ->and($reloaded->status->value)->toBe('ENR');
+});
+
+test('acars rows marshal phase to the enum', function (): void {
+    $pirep = Pirep::factory()->create();
+    $acars = Acars::factory()->create([
+        'pirep_id' => $pirep->id,
+        'type'     => AcarsType::FLIGHT_PATH,
+        'phase'    => 'ENR',
+    ]);
+
+    $reloaded = Acars::find($acars->id);
+
+    expect($reloaded->phase)->toBe(PirepPhase::ENROUTE)
+        ->and($reloaded->phase->value)->toBe('ENR');
 });
 
 test('the API still publishes the value under phase', function (): void {
