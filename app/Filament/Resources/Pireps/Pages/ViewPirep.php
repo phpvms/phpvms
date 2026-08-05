@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
-use App\Enums\AcarsType;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
-use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
@@ -102,16 +101,15 @@ class ViewPirep extends ViewRecord
     }
 
     /**
-     * Computed getter for LOG entries. Queries acars rows where type = LOG
-     * and log is not null, ordered by the current $logSort direction.
+     * Computed getter for the Flight Log entries. Queries pirep_events rows
+     * with a non-null log string, ordered by the current $logSort direction.
      *
-     * @return Collection<int, Acars>
+     * @return Collection<int, PirepEvent>
      */
     public function getLogEntriesProperty(): Collection
     {
-        return Acars::query()
+        return PirepEvent::query()
             ->where('pirep_id', $this->record->id)
-            ->where('type', AcarsType::LOG)
             ->whereNotNull('log')
             ->orderBy('created_at', $this->logSort)
             ->get();

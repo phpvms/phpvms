@@ -15,8 +15,10 @@ use App\Http\Resources\AcarsRouteResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepEvent;
 use App\Models\PirepPosition;
 use App\Services\GeoService;
+use App\Services\Pirep\EventClassifier;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\QueryException;
@@ -275,7 +277,6 @@ class AcarsController extends Controller
         $logs = $request->post('logs');
         foreach ($logs as $log) {
             $log['pirep_id'] = $id;
-            $log['type'] = AcarsType::LOG;
 
             if (isset($log['sim_time'])) {
                 $log['sim_time'] = Carbon::createFromTimeString($log['sim_time']);
@@ -285,16 +286,26 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
+            // A client-supplied id is the per-pirep upsert key, not the row's
+            // primary key — leaving it in would set the PK and turn a repost
+            // into a duplicate-key error instead of an update.
+            $log['client_event_id'] = $log['id'] ?? null;
+            unset($log['id']);
+
+            $log = array_merge($log, EventClassifier::classify($log['log']));
+
             try {
                 DB::transaction(function () use ($log): void {
-                    if (isset($log['id'])) {
-                        Acars::updateOrInsert(
-                            ['id' => $log['id']],
-                            $log
-                        );
-                    } else {
-                        Acars::create($log);
+                    if ($log['client_event_id'] === null) {
+                        PirepEvent::create($log);
+
+                        return;
                     }
+
+                    PirepEvent::updateOrCreate([
+                        'pirep_id'        => $log['pirep_id'],
+                        'client_event_id' => $log['client_event_id'],
+                    ], $log);
                 });
 
                 $count++;
@@ -327,7 +338,6 @@ class AcarsController extends Controller
         $logs = $request->post('events');
         foreach ($logs as $log) {
             $log['pirep_id'] = $id;
-            $log['type'] = AcarsType::LOG;
             $log['log'] = $log['event'];
 
             if (isset($log['sim_time'])) {
@@ -338,16 +348,26 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
+            // A client-supplied id is the per-pirep upsert key, not the row's
+            // primary key — leaving it in would set the PK and turn a repost
+            // into a duplicate-key error instead of an update.
+            $log['client_event_id'] = $log['id'] ?? null;
+            unset($log['id']);
+
+            $log = array_merge($log, EventClassifier::classify($log['log']));
+
             try {
                 DB::transaction(function () use ($log): void {
-                    if (isset($log['id'])) {
-                        Acars::updateOrInsert(
-                            ['id' => $log['id']],
-                            $log
-                        );
-                    } else {
-                        Acars::create($log);
+                    if ($log['client_event_id'] === null) {
+                        PirepEvent::create($log);
+
+                        return;
                     }
+
+                    PirepEvent::updateOrCreate([
+                        'pirep_id'        => $log['pirep_id'],
+                        'client_event_id' => $log['client_event_id'],
+                    ], $log);
                 });
 
                 $count++;
