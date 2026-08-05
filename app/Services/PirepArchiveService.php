@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\PirepState;
 use App\Models\Aircraft;
 use App\Models\Flight;
 use App\Models\Pirep;
@@ -15,33 +16,37 @@ use App\Support\Dto\SimBriefOfp\SimBriefOfpNavlog;
 
 /**
  * Builds and persists the self-contained `pirep_archive` snapshot for a filed
- * PIREP: the flight scalars + custom fields, the aircraft + subfleet, and a
- * trimmed SimBrief plan. Sources that don't resolve are simply absent from
- * the blob — see openspec/changes/pirep-archive/design.md for the shape.
+ * PIREP: the flight scalars + custom fields, the aircraft + subfleet, a
+ * trimmed SimBrief plan, and the navlog. Sources that don't resolve leave
+ * their column null — see openspec/changes/pirep-archive/design.md for the shape.
  */
 class PirepArchiveService extends Service
 {
     /**
      * Build and upsert the archive row for a PIREP. Safe to call repeatedly;
      * re-filing replaces the existing row rather than duplicating it.
+     *
+     * @param array{flight: ?array, aircraft: ?array, simbrief: ?array, navlog: ?array}|null $data
      */
     public function save(Pirep $pirep, ?array $data = null): PirepArchive
     {
         return PirepArchive::updateOrCreate(
             ['pirep_id' => $pirep->id],
-            [
-                'flight_id' => $pirep->flight_id,
-                'data'      => $data ?? $this->build($pirep),
-            ],
+            array_merge(['flight_id' => $pirep->flight_id], $data ?? $this->build($pirep)),
         );
     }
 
     /**
-     * @return array{flight?: array, aircraft?: array, simbrief?: array}
+     * @return array{flight: ?array, aircraft: ?array, simbrief: ?array, navlog: ?array}
      */
     public function build(Pirep $pirep): array
     {
-        $data = [];
+        $data = [
+            'flight'   => null,
+            'aircraft' => null,
+            'simbrief' => null,
+            'navlog'   => null,
+        ];
 
         $flight = $pirep->flight_id ? Flight::withTrashed()->find($pirep->flight_id) : null;
         if ($flight !== null) {
@@ -50,12 +55,13 @@ class PirepArchiveService extends Service
 
         $aircraft = $pirep->aircraft_id ? Aircraft::withTrashed()->find($pirep->aircraft_id) : null;
         if ($aircraft !== null) {
-            $data['aircraft'] = $this->buildAircraft($aircraft);
+            $data['aircraft'] = $this->buildAircraft($aircraft, $pirep);
         }
 
         $ofp = $pirep->simbrief?->ofp;
         if ($ofp !== null) {
             $data['simbrief'] = $this->buildSimBrief($ofp);
+            $data['navlog'] = $this->buildNavlog($ofp);
         }
 
         return $data;
@@ -84,10 +90,10 @@ class PirepArchiveService extends Service
 
     /**
      * @return array{registration: ?string, name: ?string, icao: ?string, iata: ?string,
-     *     fin: ?string, simbrief_type: ?string, mtow: mixed, zfw: mixed,
+     *     fin: ?string, simbrief_type: ?string, mtow: mixed, zfw: mixed, flight_time: int,
      *     subfleet: ?array{name: ?string, type: ?string, airline_id: ?int}}
      */
-    private function buildAircraft(Aircraft $aircraft): array
+    private function buildAircraft(Aircraft $aircraft, Pirep $pirep): array
     {
         $subfleet = $aircraft->subfleet_id ? Subfleet::withTrashed()->find($aircraft->subfleet_id) : null;
 
@@ -100,6 +106,7 @@ class PirepArchiveService extends Service
             'simbrief_type' => $subfleet?->simbrief_type,
             'mtow'          => $aircraft->getRawOriginal('mtow') === null ? null : (float) $aircraft->getRawOriginal('mtow'),
             'zfw'           => $aircraft->getRawOriginal('zfw') === null ? null : (float) $aircraft->getRawOriginal('zfw'),
+            'flight_time'   => $this->aircraftFlightTimeBefore($aircraft, $pirep),
             'subfleet'      => $subfleet === null ? null : [
                 'name'       => $subfleet->name,
                 'type'       => $subfleet->type,
@@ -109,10 +116,24 @@ class PirepArchiveService extends Service
     }
 
     /**
-     * Trims the ~130KB OFP down to what's needed to redraw the planned route
-     * and show times/profiles/config: navlog fixes reduced to ident/type/pos.
+     * Sum of flight_time (minutes) for this aircraft's ACCEPTED PIREPs filed
+     * before this one, so a backfilled archive reflects the hours on the
+     * airframe as of that pirep rather than today's running total.
+     */
+    private function aircraftFlightTimeBefore(Aircraft $aircraft, Pirep $pirep): int
+    {
+        return (int) Pirep::where('aircraft_id', $aircraft->id)
+            ->where('state', PirepState::ACCEPTED)
+            ->where('submitted_at', '<', $pirep->submitted_at)
+            ->sum('flight_time');
+    }
+
+    /**
+     * Trims the ~130KB OFP down to what's needed to show times/profiles/config.
+     * The navlog (used to redraw the planned route) is archived separately —
+     * it can be rather large.
      *
-     * @return array{general: array, aircraft: array, times: array, navlog: array}
+     * @return array{general: array, aircraft: array, times: array}
      */
     private function buildSimBrief(SimBriefOfp $ofp): array
     {
@@ -143,15 +164,22 @@ class PirepArchiveService extends Service
                 'est_block'          => $ofp->times->est_block,
                 'reserve_time'       => $ofp->times->reserve_time,
             ],
-            'navlog' => array_map(
-                static fn (SimBriefOfpNavlog $fix): array => [
-                    'ident'    => $fix->ident,
-                    'type'     => $fix->type,
-                    'pos_lat'  => $fix->pos_lat,
-                    'pos_long' => $fix->pos_long,
-                ],
-                $ofp->navlog,
-            ),
         ];
+    }
+
+    /**
+     * @return array<int, array{ident: ?string, type: ?string, pos_lat: mixed, pos_long: mixed}>
+     */
+    private function buildNavlog(SimBriefOfp $ofp): array
+    {
+        return array_map(
+            static fn (SimBriefOfpNavlog $fix): array => [
+                'ident'    => $fix->ident,
+                'type'     => $fix->type,
+                'pos_lat'  => $fix->pos_lat,
+                'pos_long' => $fix->pos_long,
+            ],
+            $ofp->navlog,
+        );
     }
 }

@@ -4,7 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
-use App\Jobs\BackfillPirepArchives;
+use App\Jobs\BackfillPirepsParentFlight;
 use App\Services\CronService;
 use App\Services\Installer\InstallerService;
 use App\Services\Installer\SeederService;
@@ -68,7 +68,7 @@ class Maintenance extends Page
                     Flex::make([
                         $this->optimizeApp(),
                         $this->clearCache(),
-                        $this->archivePireps(),
+                        $this->archivePirepFlights(),
                     ]),
                 ]),
 
@@ -273,18 +273,18 @@ class Maintenance extends Page
             });
     }
 
-    public function archivePireps(): Action
+    public function archivePirepFlights(): Action
     {
-        return Action::make('archivePireps')
+        return Action::make('archivePirepFlights')
             ->icon(Heroicon::OutlinedArchiveBox)
-            ->label(__('filament.maintenance_archive_pireps'))
+            ->label(__('filament.maintenance_archive_pirep_flights'))
             ->requiresConfirmation()
-            ->modalDescription(__('filament.maintenance_archive_pireps_confirm'))
+            ->modalDescription(__('filament.maintenance_archive_pirep_flights_confirm'))
             ->action(function (): void {
-                BackfillPirepArchives::dispatch();
+                BackfillPirepsParentFlight::dispatch();
 
                 Notification::make()
-                    ->title(__('filament.maintenance_archive_pireps_queued'))
+                    ->title(__('filament.maintenance_archive_pirep_flights_queued'))
                     ->success()
                     ->send();
             });

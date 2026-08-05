@@ -26,7 +26,10 @@ return new class() extends Migration
             // it survives even if pireps.flight_id is ever cleared. Dangling
             // (flight hard-deleted) is fine; null means a manual pirep.
             $table->string('flight_id', 36)->nullable();
-            $table->json('data');
+            $table->json('flight')->nullable();
+            $table->json('aircraft')->nullable();
+            $table->json('simbrief')->nullable();
+            $table->json('navlog')->nullable();
             $table->timestamps();
 
             $table->foreign('pirep_id')->references('id')->on('pireps')->cascadeOnDelete();

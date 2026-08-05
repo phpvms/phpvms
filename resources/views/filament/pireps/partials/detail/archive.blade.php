@@ -3,14 +3,14 @@
     use App\Support\Units\Time;
 
     /** @var \App\Models\Pirep $record */
-    // Read only from the archive blob — no Flight/Aircraft/SimBrief relation
-    // fallback. Sections whose key is absent are hidden entirely.
-    $archive = $record->archive?->data;
+    // Read only from the archived metadata columns — no Flight/Aircraft/SimBrief
+    // relation fallback. Sections whose column is null are hidden entirely.
+    $archive = $record->metadata;
     $currency = setting('units.currency');
 
-    $flight = $archive['flight'] ?? null;
-    $aircraft = $archive['aircraft'] ?? null;
-    $simbrief = $archive['simbrief'] ?? null;
+    $flight = $archive?->flight;
+    $aircraft = $archive?->aircraft;
+    $simbrief = $archive?->simbrief;
 @endphp
 
 <div class="fi-pirep-detail-v2-card fi-pirep-detail-v2-archive">
@@ -18,7 +18,7 @@
         <h3>{{ __('filament.original_flight') }}</h3>
     </div>
 
-    @if (! $archive)
+    @if (! $flight && ! $aircraft && ! $simbrief)
         <div class="fi-pirep-detail-v2-card-body flush">
             <p class="fi-pirep-detail-v2-empty-note">{{ __('filament.original_flight_empty') }}</p>
         </div>

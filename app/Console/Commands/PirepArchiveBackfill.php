@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\BackfillPirepArchives;
+use App\Jobs\BackfillPirepsParentFlight;
 use App\Models\Pirep;
 use App\Services\PirepArchiveService;
 use Illuminate\Console\Attributes\Description;
@@ -15,12 +15,12 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'pireps:archive-backfill', description: "Backfill pirep_archive rows for filed PIREPs that don't have one yet")]
 #[Description("Backfill pirep_archive rows for filed PIREPs that don't have one yet")]
 #[Signature('pireps:archive-backfill')]
-class ArchiveBackfillPireps extends Command
+class PirepArchiveBackfill extends Command
 {
-    public function handle(PirepArchiveService $archiveService, BackfillPirepArchives $job): int
+    public function handle(PirepArchiveService $archiveService, BackfillPirepsParentFlight $job): int
     {
-        $pending = Pirep::whereIn('state', BackfillPirepArchives::FILED_STATES)
-            ->whereDoesntHave('archive')
+        $pending = Pirep::whereIn('state', BackfillPirepsParentFlight::FILED_STATES)
+            ->whereDoesntHave('metadata')
             ->count();
 
         if ($pending === 0) {
@@ -33,8 +33,8 @@ class ArchiveBackfillPireps extends Command
 
         $job->handle($archiveService);
 
-        $remaining = Pirep::whereIn('state', BackfillPirepArchives::FILED_STATES)
-            ->whereDoesntHave('archive')
+        $remaining = Pirep::whereIn('state', BackfillPirepsParentFlight::FILED_STATES)
+            ->whereDoesntHave('metadata')
             ->count();
 
         $this->info('Archived: '.($pending - $remaining).', Skipped: '.$remaining);

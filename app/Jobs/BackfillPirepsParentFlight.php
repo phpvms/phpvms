@@ -16,12 +16,13 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Backfills `pirep_archive` rows for filed PIREPs that don't have one yet,
- * built from whatever Flight/Aircraft/SimBrief rows still resolve. Dispatched
- * from the admin Maintenance page; `pireps:archive-backfill` runs the same
- * logic synchronously.
+ * Backfills `pirep_archive` rows for ACCEPTED PIREPs that don't have one yet,
+ * built from whatever Flight/Aircraft/SimBrief rows still resolve. Only
+ * accepted PIREPs are backfilled — the others get pruned. Dispatched from the
+ * admin Maintenance page; `pireps:archive-backfill` runs the same logic
+ * synchronously.
  */
-class BackfillPirepArchives implements ShouldQueue
+class BackfillPirepsParentFlight implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -32,10 +33,7 @@ class BackfillPirepArchives implements ShouldQueue
      * @var array<int, PirepState>
      */
     public const FILED_STATES = [
-        PirepState::PENDING,
         PirepState::ACCEPTED,
-        PirepState::CANCELLED,
-        PirepState::REJECTED,
     ];
 
     /**
@@ -47,12 +45,12 @@ class BackfillPirepArchives implements ShouldQueue
     public function handle(PirepArchiveService $archiveService): void
     {
         Pirep::whereIn('state', self::FILED_STATES)
-            ->whereDoesntHave('archive')
+            ->whereDoesntHave('metadata')
             ->chunkById(500, function ($pireps) use ($archiveService): void {
                 foreach ($pireps as $pirep) {
                     try {
                         $data = $archiveService->build($pirep);
-                        if ($data === []) {
+                        if (array_filter($data) === []) {
                             // Nothing resolves for this pirep; skip rather
                             // than writing an empty archive row.
                             continue;

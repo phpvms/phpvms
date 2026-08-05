@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PirepState;
+use App\Models\Aircraft;
 use App\Models\Pirep;
 use App\Models\PirepArchive;
 use App\Models\SimBrief;
@@ -31,10 +32,13 @@ test('trims a full simbrief OFP down to the archive shape', function (): void {
 
     $data = app(PirepArchiveService::class)->build($pirep->fresh());
 
-    expect($data)->toHaveKeys(['flight', 'aircraft', 'simbrief']);
+    expect($data['flight'])->not->toBeNull()
+        ->and($data['aircraft'])->not->toBeNull()
+        ->and($data['simbrief'])->not->toBeNull()
+        ->and($data['navlog'])->not->toBeNull();
 
     $simbrief = $data['simbrief'];
-    expect($simbrief)->toHaveKeys(['general', 'aircraft', 'times', 'navlog'])
+    expect($simbrief)->toHaveKeys(['general', 'aircraft', 'times'])
         ->and($simbrief['general'])->toHaveKeys([
             'cruise_profile', 'climb_profile', 'descent_profile', 'reserve_profile',
             'costindex', 'initial_altitude', 'stepclimb_string', 'route', 'route_distance', 'passengers',
@@ -45,10 +49,43 @@ test('trims a full simbrief OFP down to the archive shape', function (): void {
         ]);
 
     // The full OFP has 41 keys per navlog fix; the archive keeps only 4.
-    expect($simbrief['navlog'])->not->toBeEmpty();
-    foreach ($simbrief['navlog'] as $fix) {
+    expect($data['navlog'])->not->toBeEmpty();
+    foreach ($data['navlog'] as $fix) {
         expect(array_keys($fix))->toEqual(['ident', 'type', 'pos_lat', 'pos_long']);
     }
+});
+
+test('build() sums accepted flight time on the aircraft filed before this pirep', function (): void {
+    $aircraft = Aircraft::factory()->create();
+
+    $earlier = Pirep::factory()->create([
+        'state'        => PirepState::ACCEPTED,
+        'aircraft_id'  => $aircraft->id,
+        'submitted_at' => now()->subDays(2),
+        'flight_time'  => 90,
+    ]);
+    $later = Pirep::factory()->create([
+        'state'        => PirepState::ACCEPTED,
+        'aircraft_id'  => $aircraft->id,
+        'submitted_at' => now()->subDay(),
+        'flight_time'  => 60,
+    ]);
+    $notAccepted = Pirep::factory()->create([
+        'state'        => PirepState::REJECTED,
+        'aircraft_id'  => $aircraft->id,
+        'submitted_at' => now()->subDays(3),
+        'flight_time'  => 500,
+    ]);
+
+    $pirep = Pirep::factory()->create([
+        'state'        => PirepState::IN_PROGRESS,
+        'aircraft_id'  => $aircraft->id,
+        'submitted_at' => now(),
+    ]);
+
+    $data = app(PirepArchiveService::class)->build($pirep->fresh());
+
+    expect($data['aircraft']['flight_time'])->toEqual(150);
 });
 
 test('file() archives flight, aircraft, and simbrief data', function (): void {
@@ -61,9 +98,11 @@ test('file() archives flight, aircraft, and simbrief data', function (): void {
 
     expect($archive)->not->toBeNull()
         ->and($archive->flight_id)->toEqual($pirep->flight_id)
-        ->and($archive->data)->toHaveKeys(['flight', 'aircraft', 'simbrief'])
-        ->and($archive->data['flight']['callsign'])->toEqual($pirep->flight->callsign)
-        ->and($archive->data['aircraft']['registration'])->toEqual($pirep->aircraft->registration);
+        ->and($archive->flight)->not->toBeNull()
+        ->and($archive->aircraft)->not->toBeNull()
+        ->and($archive->simbrief)->not->toBeNull()
+        ->and($archive->flight['callsign'])->toEqual($pirep->flight->callsign)
+        ->and($archive->aircraft['registration'])->toEqual($pirep->aircraft->registration);
 });
 
 test('file() on a manual pirep writes a sparse archive row', function (): void {
@@ -79,8 +118,8 @@ test('file() on a manual pirep writes a sparse archive row', function (): void {
 
     expect($archive)->not->toBeNull()
         ->and($archive->flight_id)->toBeNull()
-        ->and($archive->data)->not->toHaveKey('flight')
-        ->and($archive->data)->not->toHaveKey('simbrief');
+        ->and($archive->flight)->toBeNull()
+        ->and($archive->simbrief)->toBeNull();
 });
 
 test('file() survives a simbrief row whose OFP file is missing', function (): void {
@@ -98,8 +137,9 @@ test('file() survives a simbrief row whose OFP file is missing', function (): vo
     $archive = PirepArchive::find($pirep->id);
 
     expect($archive)->not->toBeNull()
-        ->and($archive->data)->toHaveKeys(['flight', 'aircraft'])
-        ->and($archive->data)->not->toHaveKey('simbrief');
+        ->and($archive->flight)->not->toBeNull()
+        ->and($archive->aircraft)->not->toBeNull()
+        ->and($archive->simbrief)->toBeNull();
 });
 
 test('re-filing a pirep upserts the archive row', function (): void {

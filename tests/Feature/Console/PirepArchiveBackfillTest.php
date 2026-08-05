@@ -7,7 +7,7 @@ use App\Models\Pirep;
 use App\Models\PirepArchive;
 use Illuminate\Support\Facades\Artisan;
 
-test('creates archives for filed pireps lacking one', function (): void {
+test('creates archives for accepted pireps lacking one', function (): void {
     $pirep = Pirep::factory()->create(['state' => PirepState::ACCEPTED]);
 
     Artisan::call('pireps:archive-backfill');
@@ -17,11 +17,11 @@ test('creates archives for filed pireps lacking one', function (): void {
 
 test('leaves existing archives untouched', function (): void {
     $pirep = Pirep::factory()->create(['state' => PirepState::ACCEPTED]);
-    $archive = PirepArchive::factory()->create(['pirep_id' => $pirep->id, 'data' => ['flight' => ['callsign' => 'ABC123']]]);
+    $archive = PirepArchive::factory()->create(['pirep_id' => $pirep->id, 'flight' => ['callsign' => 'ABC123']]);
 
     Artisan::call('pireps:archive-backfill');
 
-    expect(PirepArchive::find($pirep->id)->data)->toEqual($archive->data);
+    expect(PirepArchive::find($pirep->id)->flight)->toEqual($archive->flight);
 });
 
 test('skips pireps where no source resolves instead of writing an empty row', function (): void {
@@ -36,8 +36,8 @@ test('skips pireps where no source resolves instead of writing an empty row', fu
     expect(PirepArchive::find($pirep->id))->toBeNull();
 });
 
-test('ignores non-filed states', function (): void {
-    $pirep = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
+test('ignores non-accepted states', function (): void {
+    $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
 
     Artisan::call('pireps:archive-backfill');
 

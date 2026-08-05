@@ -18,7 +18,10 @@ use Override;
  *
  * @property string      $pirep_id
  * @property string|null $flight_id
- * @property array       $data
+ * @property array|null  $flight
+ * @property array|null  $aircraft
+ * @property array|null  $simbrief
+ * @property array|null  $navlog
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Pirep|null $pirep
@@ -42,14 +45,20 @@ class PirepArchive extends Model
     public $fillable = [
         'pirep_id',
         'flight_id',
-        'data',
+        'flight',
+        'aircraft',
+        'simbrief',
+        'navlog',
     ];
 
     #[Override]
     protected function casts(): array
     {
         return [
-            'data' => 'array',
+            'flight'   => 'array',
+            'aircraft' => 'array',
+            'simbrief' => 'array',
+            'navlog'   => 'array',
         ];
     }
 

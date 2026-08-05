@@ -29,7 +29,10 @@ class PirepArchiveFactory extends Factory
     {
         return [
             'pirep_id' => Pirep::factory(),
-            'data'     => [],
+            'flight'   => null,
+            'aircraft' => null,
+            'simbrief' => null,
+            'navlog'   => null,
         ];
     }
 }

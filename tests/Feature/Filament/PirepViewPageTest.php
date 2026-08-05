@@ -48,8 +48,8 @@ test('view-pirep page renders the original flight card from the archive after fl
     $flight->forceDelete();
     $aircraft->forceDelete();
 
-    $archivedCallsign = $pirep->archive->data['flight']['callsign'];
-    $archivedRegistration = $pirep->archive->data['aircraft']['registration'];
+    $archivedCallsign = $pirep->metadata->flight['callsign'];
+    $archivedRegistration = $pirep->metadata->aircraft['registration'];
 
     $this->actingAs($admin)
         ->get(PirepResource::getUrl('view', ['record' => $pirep]))

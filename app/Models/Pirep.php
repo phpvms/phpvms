@@ -488,7 +488,7 @@ class Pirep extends Model
         return $this->belongsTo(Aircraft::class, 'aircraft_id');
     }
 
-    public function archive(): HasOne
+    public function metadata(): HasOne
     {
         return $this->hasOne(PirepArchive::class, 'pirep_id');
     }
