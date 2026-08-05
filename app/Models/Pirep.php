@@ -62,6 +62,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-write mixed $block_fuel
  * @property-read Fuel|null $fuel_used
  * @property-write mixed $fuel_used
+ * @property-read PirepArchive|null $metadata
  * @property float|null       $landing_rate
  * @property int|null         $score
  * @property string|null      $route

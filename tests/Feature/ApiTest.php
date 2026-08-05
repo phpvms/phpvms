@@ -79,6 +79,7 @@ it('can retrieve news', function (): void {
     $response->assertSuccessful();
 
     $response->assertJsonCount(1, 'data');
+
     expect($response->json('data'))->toEqual($expected);
 });
 

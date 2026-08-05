@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -34,7 +36,7 @@ class AirportFactory extends Factory
         for ($i = 0; $i < 5; $i++) {
             try {
                 $string .= $characters[random_int(0, $max)];
-            } catch (Exception $e) {
+            } catch (Exception) {
             }
         }
 
@@ -49,7 +51,7 @@ class AirportFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => function () {
+            'id' => function (): string {
                 do {
                     $airport = $this->createFactoryICAO();
                 } while (in_array($airport, $this->usedIcaos, true));
@@ -59,12 +61,12 @@ class AirportFactory extends Factory
             'icao'                 => fn (array $apt) => $apt['id'],
             'iata'                 => fn (array $apt) => $apt['id'],
             'name'                 => fake()->sentence(3),
-            'country'              => fake()->country,
-            'timezone'             => fake()->timezone,
-            'lat'                  => fake()->latitude,
-            'lon'                  => fake()->longitude,
-            'location'             => fake()->city,
-            'region'               => fake()->state,
+            'country'              => fake()->country(),
+            'timezone'             => fake()->timezone(),
+            'lat'                  => fake()->latitude(),
+            'lon'                  => fake()->longitude(),
+            'location'             => fake()->city(),
+            'region'               => fake()->state(),
             'elevation'            => fake()->numberBetween(0, 10000),
             'hub'                  => false,
             'notes'                => null,

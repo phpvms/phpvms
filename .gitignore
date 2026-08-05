@@ -118,3 +118,4 @@ frankenphp
 
 frankenphp-worker.php
 public/vendor/**
+public/css/phpvms/**

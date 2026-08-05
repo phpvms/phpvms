@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Filament\Pages\Settings;
-use App\Filament\Widgets\LatestPirepsChart;
+use App\Filament\Widgets\PirepStateChart;
 use App\Models\Permission;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -49,5 +49,5 @@ it('shows a widget regardless of permissions', function (): void {
     // renders them is the gate.
     $this->actingAs(userWithPermissions());
 
-    expect(LatestPirepsChart::canView())->toBeTrue();
+    expect(PirepStateChart::canView())->toBeTrue();
 });

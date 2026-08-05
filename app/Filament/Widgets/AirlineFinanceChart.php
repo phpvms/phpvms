@@ -32,8 +32,8 @@ class AirlineFinanceChart extends ChartWidget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         if ($airline_id === null || $airline_id === '') {
@@ -41,6 +41,13 @@ class AirlineFinanceChart extends ChartWidget
         }
 
         $airline = Airline::find($airline_id);
+
+        if (!$airline?->journal) {
+            return [
+                'datasets' => [],
+                'labels'   => [],
+            ];
+        }
 
         $debit = Trend::query(JournalTransaction::where(['journal_id' => $airline->journal->id]))
             ->between(
@@ -85,7 +92,8 @@ class AirlineFinanceChart extends ChartWidget
     #[Override]
     public static function canView(): bool
     {
-        // Display if the page is finance or a /livewire-{hash}/update request from finance
+        // Display if the page is finance, or a /livewire-{hash}/update request
+        // coming from it
         if (request()->url() === Finances::getUrl()) {
             return true;
         }
