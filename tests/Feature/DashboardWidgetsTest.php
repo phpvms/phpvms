@@ -80,8 +80,8 @@ it('filters the pireps list from the calendar deep-link', function (): void {
 
     get('/admin/pireps?departed_from=2026-08-02%2001:00:00&departed_to=2026-08-02%2001:59:59')
         ->assertOk()
-        ->assertSee($pirep->flight->flight_number)
-        ->assertDontSee($other->flight->flight_number);
+        ->assertSee((string) $pirep->flight->flight_number)
+        ->assertDontSee((string) $other->flight->flight_number);
 });
 
 it('ignores malformed calendar deep-link dates instead of erroring', function (): void {
