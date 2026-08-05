@@ -181,6 +181,7 @@ class ViewPirep extends ViewRecord
             'fares.pirep',
             'field_values.pirep',
             'field_values',
+            'metadata',
         ]);
 
         // GeoService returns FeatureCollection value objects; convert to plain
@@ -199,6 +200,22 @@ class ViewPirep extends ViewRecord
                 'error'    => $throwable->getMessage(),
             ]);
             $this->mapFeatures = [];
+        }
+
+        // Archived planned route (from the pirep_archive SimBrief navlog),
+        // drawn as a distinct line from the live planned/actual routes above.
+        // Same fail-soft contract as the map build.
+        try {
+            $navlog = $this->record->metadata->navlog ?? [];
+            if ($navlog !== []) {
+                $archivedLine = app(GeoService::class)->archivedRouteLine($navlog);
+                $this->mapFeatures['archived_rte_line'] = json_decode((string) json_encode($archivedLine), true) ?? [];
+            }
+        } catch (Throwable $throwable) {
+            Log::warning('PIREP archived route build failed', [
+                'pirep_id' => $this->record->id,
+                'error'    => $throwable->getMessage(),
+            ]);
         }
 
         // Build chart payload (null when no ACARS data). Same fail-soft
