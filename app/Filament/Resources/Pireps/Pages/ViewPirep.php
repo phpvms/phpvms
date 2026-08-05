@@ -206,7 +206,7 @@ class ViewPirep extends ViewRecord
         // drawn as a distinct line from the live planned/actual routes above.
         // Same fail-soft contract as the map build.
         try {
-            $navlog = $this->record->metadata?->navlog ?? [];
+            $navlog = $this->record->metadata->navlog ?? [];
             if ($navlog !== []) {
                 $archivedLine = app(GeoService::class)->archivedRouteLine($navlog);
                 $this->mapFeatures['archived_rte_line'] = json_decode((string) json_encode($archivedLine), true) ?? [];

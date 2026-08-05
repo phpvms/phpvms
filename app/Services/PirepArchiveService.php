@@ -39,7 +39,7 @@ class PirepArchiveService extends Service
     /**
      * @return array{flight: ?array, aircraft: ?array, simbrief: ?array, navlog: ?array}
      */
-    public function build(Pirep $pirep): array
+    public function build(Pirep $pirep, ?PirepArchiveSources $sources = null): array
     {
         $data = [
             'flight'   => null,
@@ -48,14 +48,18 @@ class PirepArchiveService extends Service
             'navlog'   => null,
         ];
 
-        $flight = $pirep->flight_id ? Flight::withTrashed()->find($pirep->flight_id) : null;
+        $flight = $pirep->flight_id
+            ? ($sources?->flights[$pirep->flight_id] ?? Flight::withTrashed()->find($pirep->flight_id))
+            : null;
         if ($flight !== null) {
             $data['flight'] = $this->buildFlight($flight);
         }
 
-        $aircraft = $pirep->aircraft_id ? Aircraft::withTrashed()->find($pirep->aircraft_id) : null;
+        $aircraft = $pirep->aircraft_id
+            ? ($sources?->aircraft[$pirep->aircraft_id] ?? Aircraft::withTrashed()->find($pirep->aircraft_id))
+            : null;
         if ($aircraft !== null) {
-            $data['aircraft'] = $this->buildAircraft($aircraft, $pirep);
+            $data['aircraft'] = $this->buildAircraft($aircraft, $pirep, $sources);
         }
 
         $ofp = $pirep->simbrief?->ofp;
@@ -77,7 +81,7 @@ class PirepArchiveService extends Service
         return [
             'callsign'             => $flight->callsign,
             'alt_airport_id'       => $flight->alt_airport_id,
-            'flight_type'          => $flight->flight_type?->value,
+            'flight_type'          => $flight->flight_type->value,
             'dpt_time'             => $flight->dpt_time,
             'arr_time'             => $flight->arr_time,
             'flight_time'          => $flight->flight_time,
@@ -93,9 +97,11 @@ class PirepArchiveService extends Service
      *     fin: ?string, simbrief_type: ?string, mtow: mixed, zfw: mixed, flight_time: int,
      *     subfleet: ?array{name: ?string, type: ?string, airline_id: ?int}}
      */
-    private function buildAircraft(Aircraft $aircraft, Pirep $pirep): array
+    private function buildAircraft(Aircraft $aircraft, Pirep $pirep, ?PirepArchiveSources $sources = null): array
     {
-        $subfleet = $aircraft->subfleet_id ? Subfleet::withTrashed()->find($aircraft->subfleet_id) : null;
+        $subfleet = $aircraft->subfleet_id
+            ? ($sources?->subfleets[$aircraft->subfleet_id] ?? Subfleet::withTrashed()->find($aircraft->subfleet_id))
+            : null;
 
         return [
             'registration'  => $aircraft->registration,

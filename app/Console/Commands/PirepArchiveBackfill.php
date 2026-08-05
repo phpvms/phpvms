@@ -10,6 +10,7 @@ use App\Services\PirepArchiveService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'pireps:archive-backfill', description: "Backfill pirep_archive rows for filed PIREPs that don't have one yet")]
@@ -31,7 +32,13 @@ class PirepArchiveBackfill extends Command
 
         $this->info(sprintf('Backfilling archives for %s PIREP(s)...', $pending));
 
-        $job->handle($archiveService);
+        try {
+            $job->handle($archiveService);
+        } catch (RuntimeException $runtimeException) {
+            $this->error($runtimeException->getMessage());
+
+            return self::FAILURE;
+        }
 
         $remaining = Pirep::whereIn('state', BackfillPirepsParentFlight::FILED_STATES)
             ->whereDoesntHave('metadata')

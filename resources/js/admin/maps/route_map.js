@@ -98,7 +98,7 @@ export default (_opts) => {
 
     // With the live flight gone there may be no planned line to frame the
     // map, so fall back to framing the archived route.
-    if (!opts.planned_route_line) {
+    if (!opts.planned_route_line || opts.planned_route_line.features.length === 0) {
       try {
         map.fitBounds(archivedRouteLayer.getBounds());
       } catch (e) {

@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\PirepState;
+use App\Models\Aircraft;
+use App\Models\Flight;
 use App\Models\Pirep;
+use App\Models\Subfleet;
 use App\Services\PirepArchiveService;
+use App\Services\PirepArchiveSources;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -44,12 +49,29 @@ class BackfillPirepsParentFlight implements ShouldQueue
 
     public function handle(PirepArchiveService $archiveService): void
     {
+        $failedIds = [];
+
         Pirep::whereIn('state', self::FILED_STATES)
             ->whereDoesntHave('metadata')
-            ->chunkById(500, function ($pireps) use ($archiveService): void {
+            ->with('simbrief')
+            ->chunkById(500, function ($pireps) use ($archiveService, &$failedIds): void {
+                $flightIds = $pireps->pluck('flight_id')->filter()->unique()->all();
+                $aircraftIds = $pireps->pluck('aircraft_id')->filter()->unique()->all();
+
+                $flights = Flight::withTrashed()->with('field_values')->findMany($flightIds)->keyBy('id');
+                $aircraft = Aircraft::withTrashed()->findMany($aircraftIds)->keyBy('id');
+                $subfleetIds = $aircraft->pluck('subfleet_id')->filter()->unique()->all();
+                $subfleets = Subfleet::withTrashed()->findMany($subfleetIds)->keyBy('id');
+
+                $sources = new PirepArchiveSources(
+                    flights: $flights->all(),
+                    aircraft: $aircraft->all(),
+                    subfleets: $subfleets->all(),
+                );
+
                 foreach ($pireps as $pirep) {
                     try {
-                        $data = $archiveService->build($pirep);
+                        $data = $archiveService->build($pirep, $sources);
                         if (array_filter($data) === []) {
                             // Nothing resolves for this pirep; skip rather
                             // than writing an empty archive row.
@@ -62,8 +84,17 @@ class BackfillPirepsParentFlight implements ShouldQueue
                             'pirep_id' => $pirep->id,
                             'error'    => $e->getMessage(),
                         ]);
+                        $failedIds[] = $pirep->id;
                     }
                 }
             });
+
+        if ($failedIds !== []) {
+            throw new RuntimeException(sprintf(
+                'Failed to backfill %d pirep archive(s): %s',
+                count($failedIds),
+                implode(', ', array_slice($failedIds, 0, 20)),
+            ));
+        }
     }
 }

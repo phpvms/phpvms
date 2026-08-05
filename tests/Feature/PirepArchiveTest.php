@@ -124,13 +124,16 @@ test('file() on a manual pirep writes a sparse archive row', function (): void {
 
 test('file() survives a simbrief row whose OFP file is missing', function (): void {
     $pirep = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
-    SimBrief::factory()->create([
+    $simbrief = SimBrief::factory()->create([
         'user_id'       => $pirep->user_id,
         'flight_id'     => $pirep->flight_id,
         'aircraft_id'   => $pirep->aircraft_id,
         'pirep_id'      => $pirep->id,
         'ofp_json_path' => 'simbrief/does-not-exist.json',
     ]);
+
+    expect($simbrief->images)->toBeEmpty()
+        ->and($simbrief->files)->toBeEmpty();
 
     app(PirepService::class)->file($pirep);
 
