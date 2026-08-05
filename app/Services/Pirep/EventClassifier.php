@@ -184,7 +184,9 @@ class EventClassifier
             $name = trim($m['name']);
             $details = [
                 'points' => (int) $m['points'],
-                'count'  => ($m['count'] ?? '') !== '' ? (int) $m['count'] : 1,
+                // The optional count group is followed by a group that always
+                // matches, so PHP fills it in as '' rather than omitting it.
+                'count' => $m['count'] !== '' ? (int) $m['count'] : 1,
             ];
 
             if ($name !== '') {
