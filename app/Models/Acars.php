@@ -7,6 +7,7 @@ use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\NavaidType;
+use App\Enums\PirepPhase;
 use App\Traits\HasNanoIds;
 use Database\Factories\AcarsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -22,7 +23,7 @@ use Override;
  * @property string          $id
  * @property string          $pirep_id
  * @property AcarsType       $type
- * @property string|null     $phase
+ * @property PirepPhase|null $phase
  * @property NavaidType|null $nav_type
  * @property int             $order
  * @property string|null     $name
@@ -97,10 +98,9 @@ class Acars extends Model
         'id',
         'pirep_id',
         'type',
-        // The flight phase this row was recorded in. A plain string, not the
-        // PirepPhase enum: the ACARS contract sends an open vocabulary, so a
-        // code phpVMS does not yet define must still store. `status` holds the
-        // recognised code for anything still reading the old column.
+        // The flight phase this row was recorded in, a PirepPhase code.
+        // `status` holds the same code for anything still reading the old
+        // column.
         'phase',
         'nav_type',
         'order',
@@ -150,6 +150,7 @@ class Acars extends Model
     {
         return [
             'type'         => AcarsType::class,
+            'phase'        => PirepPhase::class,
             'order'        => 'integer',
             'nav_type'     => NavaidType::class,
             'lat'          => 'float',
