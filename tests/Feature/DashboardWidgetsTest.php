@@ -84,6 +84,11 @@ it('filters the pireps list from the calendar deep-link', function (): void {
         ->assertDontSee($other->flight->flight_number);
 });
 
+it('ignores malformed calendar deep-link dates instead of erroring', function (): void {
+    get('/admin/pireps?departed_from=not-a-date&departed_to=2026-08-02%2001:59:59')
+        ->assertOk();
+});
+
 it('shares one filter session key across every report sub-page', function (): void {
     session()->put('reports_filters', [
         'start_date' => '2026-01-01',

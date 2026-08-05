@@ -76,4 +76,6 @@ window.dispatchEvent(new CustomEvent("phpvms:ready", { detail: window.phpvms }))
 // a function", and the chunk is dropped in build).
 const loadDashboardCharts = () =>
   import.meta.glob("./dashboard/index.js")["./dashboard/index.js"]();
-loadDashboardCharts().then((m) => m.init());
+loadDashboardCharts()
+  .then((m) => m.init())
+  .catch((err) => console.error("[dashboard] failed to load charts", err));

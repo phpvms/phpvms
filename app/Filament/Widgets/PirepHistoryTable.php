@@ -38,8 +38,8 @@ class PirepHistoryTable extends TableWidget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         return $table

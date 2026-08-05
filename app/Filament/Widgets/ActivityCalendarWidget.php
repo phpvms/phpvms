@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Models\Acars;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Override;
 
 /**
@@ -34,14 +34,13 @@ class ActivityCalendarWidget extends Widget
             ];
         }
 
-        DB::table('acars')
+        Acars::query()
             ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->pluck('created_at')
-            ->each(function (string $createdAt) use (&$days): void {
-                $ts = Carbon::parse($createdAt);
-                $key = $ts->toDateString();
+            ->each(function (Carbon $createdAt) use (&$days): void {
+                $key = $createdAt->toDateString();
                 if (isset($days[$key])) {
-                    $days[$key]['values'][$ts->hour]++;
+                    $days[$key]['values'][$createdAt->hour]++;
                 }
             });
 

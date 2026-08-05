@@ -37,8 +37,8 @@ class PilotHoursChart extends Widget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         $pilots = Pirep::query()
@@ -51,6 +51,7 @@ class PilotHoursChart extends Widget
             ->selectRaw('user_id, SUM(flight_time) as total_minutes')
             ->groupBy('user_id')
             ->orderByDesc('total_minutes')
+            ->with('user:id,name')
             ->limit(10)
             ->get();
 

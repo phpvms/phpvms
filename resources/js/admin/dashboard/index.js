@@ -307,7 +307,10 @@ function renderHBar(el, data) {
     .attr("rx", 2)
     .attr("fill", (v) => color(v))
     .style("cursor", hrefs.length ? "pointer" : null)
-    .on("click", (_, i) => {
+    // D3 v7 listeners receive (event, datum) — the index is not passed, so
+    // read it from the datum via indexOf instead of trusting a second arg.
+    .on("click", (_, v) => {
+      const i = values.indexOf(v);
       if (hrefs[i]) window.location.href = hrefs[i];
     })
     .append("title")
@@ -332,7 +335,9 @@ function renderHBar(el, data) {
       .style("text-decoration", "underline")
       .style("text-decoration-style", "dotted")
       .style("text-underline-offset", "2px")
-      .on("click", (_, i) => {
+      // Axis tick datum is the label string (axisLeft domain), not the index.
+      .on("click", (_, label) => {
+        const i = labels.indexOf(label);
         if (hrefs[i]) window.location.href = hrefs[i];
       });
   }
@@ -400,7 +405,10 @@ function renderCalendar(el, data) {
       .attr("stroke", "currentColor")
       .attr("stroke-opacity", (v) => (v ? 0 : 0.08))
       .style("cursor", "pointer")
-      .on("click", (_, hi) => {
+      // D3 v7 click listeners get (event, datum) — datum is the hour's event
+      // count, so recover the hour index from its position in day.values.
+      .on("click", (_, v) => {
+        const hi = day.values.indexOf(v);
         const hour = String(hi).padStart(2, "0");
         const from = `${day.date} ${hour}:00:00`;
         const to = `${day.date} ${hour}:59:59`;
@@ -478,7 +486,18 @@ export function bootstrap() {
 }
 
 export function init() {
-  const run = () => bootstrap();
+  // Coalesce observer callbacks to one scan per animation frame — bootstrap()
+  // mutates the observed subtree (SVG nodes), so without this every render
+  // re-triggers the observer and the scan runs repeatedly.
+  let framePending = false;
+  const run = () => {
+    if (framePending) return;
+    framePending = true;
+    requestAnimationFrame(() => {
+      framePending = false;
+      bootstrap();
+    });
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);

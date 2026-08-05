@@ -98,7 +98,7 @@
                     flights: @js($bundleFlights),
                     value: '',
                 }"
-                x-on:change="if (value) window.location.href = value"
+                x-on:change="if ($event.target.value) window.location.href = $event.target.value"
                 class="block w-full rounded-md border border-gray-300 bg-white px-2.5 py-1 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 aria-label="Switch flight"
             >

@@ -16,6 +16,7 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use League\Csv\CannotInsertRecord;
 use Override;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -102,7 +103,8 @@ class FleetUtilizationTable extends TableWidget
     {
         $subfleets = $this->baseQuery()->get();
 
-        $path = storage_path('app/import/fleet-utilization-'.now()->format('Ymd-His').'.csv');
+        // Unique name so two exports in the same second can't truncate each other.
+        $path = storage_path('app/import/fleet-utilization-'.now()->format('Ymd-His').'-'.Str::uuid().'.csv');
         Storage::makeDirectory('import');
 
         $writer = app(ExportService::class)->openCsv($path);

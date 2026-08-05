@@ -37,8 +37,8 @@ class PirepStateChart extends Widget
                 fn (Builder $query): Builder => $query->whereBetween(
                     'submitted_at',
                     [
-                        $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear(),
-                        $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now(),
+                        $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear(),
+                        $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now(),
                     ],
                 ),
             )

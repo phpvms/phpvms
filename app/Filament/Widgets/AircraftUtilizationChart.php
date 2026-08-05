@@ -7,6 +7,7 @@ namespace App\Filament\Widgets;
 use App\Enums\PirepState;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Reports\AircraftReport;
+use App\Models\Aircraft;
 use App\Models\Pirep;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
@@ -37,8 +38,8 @@ class AircraftUtilizationChart extends Widget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         $aircraft = Pirep::query()
@@ -54,14 +55,25 @@ class AircraftUtilizationChart extends Widget
             ->limit(15)
             ->get();
 
+        // Resolve the aircraft rows in one query (keyed by id) instead of one
+        // query per Pirep; skip rows whose aircraft is gone or soft-deleted.
+        $aircraftById = Aircraft::query()
+            ->whereIn('id', $aircraft->pluck('aircraft_id'))
+            ->get()
+            ->keyBy('id');
+
+        $rows = $aircraft
+            ->filter(fn (Pirep $pirep): bool => $aircraftById->has($pirep->aircraft_id))
+            ->values();
+
         return [
             'heading'   => __('filament.dashboard.aircraft_utilization'),
             'chartType' => 'hbar',
             'json'      => json_encode([
-                'labels' => $aircraft->map(fn (Pirep $pirep): string => $pirep->aircraft->registration)->all(),
-                'values' => $aircraft->map(fn (Pirep $pirep): int => (int) round(((int) ($pirep->total_minutes ?? 0)) / 60))->all(),
+                'labels' => $rows->map(fn (Pirep $pirep): string => $aircraftById[$pirep->aircraft_id]->registration)->all(),
+                'values' => $rows->map(fn (Pirep $pirep): int => (int) round(((int) ($pirep->total_minutes ?? 0)) / 60))->all(),
                 // Aircraft live under their subfleet (SubfleetResource relation manager).
-                'hrefs' => $aircraft->map(fn (Pirep $pirep): string => route('filament.admin.resources.subfleets.edit', ['record' => $pirep->aircraft->subfleet_id]))->all(),
+                'hrefs' => $rows->map(fn (Pirep $pirep): string => route('filament.admin.resources.subfleets.edit', ['record' => $aircraftById[$pirep->aircraft_id]->subfleet_id]))->all(),
             ]),
         ];
     }

@@ -32,8 +32,8 @@ class AirlineFinanceChart extends ChartWidget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         if ($airline_id === null || $airline_id === '') {
@@ -43,8 +43,6 @@ class AirlineFinanceChart extends ChartWidget
         $airline = Airline::find($airline_id);
 
         if (!$airline?->journal) {
-            // No airline selected (or the airline has no journal yet) — nothing
-            // to chart. Return an empty payload rather than dereferencing null.
             return [
                 'datasets' => [],
                 'labels'   => [],

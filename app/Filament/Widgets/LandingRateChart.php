@@ -32,8 +32,8 @@ class LandingRateChart extends Widget
             'airline_id' => null,
         ];
 
-        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->subDays(13)->startOfDay();
-        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->subDays(13)->startOfDay();
+        $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
         $airline_id = $filters['airline_id'];
 
         $data = Trend::query(
