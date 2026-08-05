@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\AddonManager\Filament\Pages\Addons as AddonsPage;
 use Modules\AddonManager\Jobs\InstallAddonJob;
@@ -19,14 +20,29 @@ use Modules\AddonManager\Jobs\InstallAddonJob;
 /**
  * A three-package catalog: one installed with an update (acars), one installable
  * (skybank), one incompatible (weatherdeck, needs phpvms 999).
- *
- * @return array<int, array<string, mixed>>
  */
 function fakeDefaultCatalog(): void
 {
     // A single stub per test: Http::fake() appends (first match wins), so setting
     // one here and another in a test would let this one shadow the override.
     Http::fake(['*' => Http::response(['data' => fakeCatalogPackages()], 200)]);
+}
+
+/**
+ * Livewire's Testable::instance() is declared as the base Component, so the
+ * concrete page type -- and with it every method the page declares -- is lost.
+ * Narrow it back with a real runtime check rather than an assertion the
+ * analyser has to take on trust.
+ */
+function addonsPageInstance(Testable $testable): AddonsPage
+{
+    $instance = $testable->instance();
+
+    if (!$instance instanceof AddonsPage) {
+        throw new RuntimeException('Expected the Livewire component to be an AddonsPage.');
+    }
+
+    return $instance;
 }
 
 /**
@@ -115,7 +131,7 @@ it('renders for an authorized admin and lists the catalog', function (): void {
 it('counts browse, updates and installed tabs', function (): void {
     fakeDefaultCatalog();
 
-    $counts = Livewire::test(AddonsPage::class)->instance()->tabCounts();
+    $counts = addonsPageInstance(Livewire::test(AddonsPage::class))->tabCounts();
 
     expect($counts)->toBe([
         'browse'    => 3,
@@ -210,10 +226,9 @@ it('scrubs a non-http repository url from an untrusted catalog entry', function 
         'version'       => '1.0.0',
     ]]], 200)]);
 
-    $row = Livewire::test(AddonsPage::class)
-        ->call('select', 'evil/pkg')
-        ->instance()
-        ->selected();
+    $row = addonsPageInstance(
+        Livewire::test(AddonsPage::class)->call('select', 'evil/pkg')
+    )->selected();
 
     expect($row['repository_url'])->toBe('');
 });

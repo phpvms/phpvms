@@ -60,6 +60,7 @@ use Override;
  */
 class Expense extends Model
 {
+    /** @use HasFactory<ExpenseFactory> */
     use HasFactory;
 
     public $table = 'expenses';

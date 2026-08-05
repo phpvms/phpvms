@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Observers\BundleObserver;
+use Database\Factories\FlightBundleFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,7 +44,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 #[ObservedBy(BundleObserver::class)]
 class FlightBundle extends Model
 {
+    /** @use HasFactory<FlightBundleFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
 

@@ -8,7 +8,7 @@ use App\Contracts\Factory;
 use App\Models\Airport;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Airport>
+ * @extends Factory<Airport>
  */
 class AirportFactory extends Factory
 {

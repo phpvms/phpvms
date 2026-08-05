@@ -40,6 +40,7 @@ use Override;
  */
 class Event extends Model
 {
+    /** @use HasFactory<EventFactory> */
     use HasFactory;
 
     public $table = 'events';

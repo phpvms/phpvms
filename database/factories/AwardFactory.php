@@ -10,7 +10,7 @@ use App\Contracts\Factory;
 use App\Models\Award;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Award>
+ * @extends Factory<Award>
  */
 class AwardFactory extends Factory
 {

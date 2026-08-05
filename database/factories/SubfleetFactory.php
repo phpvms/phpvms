@@ -11,7 +11,7 @@ use App\Models\Airline;
 use App\Models\Subfleet;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Subfleet>
+ * @extends Factory<Subfleet>
  */
 class SubfleetFactory extends Factory
 {

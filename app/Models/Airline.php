@@ -87,7 +87,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Airline extends Model
 {
     use FilesTrait;
+
+    /** @use HasFactory<AirlineFactory> */
     use HasFactory;
+
     use JournalTrait;
     use LogsActivity;
     use SoftDeletes;

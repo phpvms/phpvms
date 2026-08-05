@@ -39,38 +39,40 @@ use UnitEnum;
  * @property int               $airline_id
  * @property int               $flight_number
  * @property string|null       $callsign
- * @property string|null       $route_code
- * @property int|null          $route_leg
- * @property string            $dpt_airport_id
- * @property string            $arr_airport_id
- * @property string|null       $alt_airport_id
- * @property string|null       $dpt_time
- * @property string|null       $arr_time
- * @property Carbon|null       $departure_time
- * @property Carbon|null       $arrival_time
- * @property int|null          $level
- * @property mixed|null        $distance
- * @property int|null          $flight_time
- * @property FlightType        $flight_type
- * @property float|null        $load_factor
- * @property float|null        $load_factor_variance
- * @property string|null       $route
- * @property float|null        $pilot_pay
- * @property string|null       $notes
- * @property int|null          $scheduled
- * @property int|null          $days
- * @property Carbon|null       $start_date
- * @property Carbon|null       $end_date
- * @property bool              $has_bid
- * @property bool              $enabled
- * @property bool              $visible
- * @property int|null          $event_id
- * @property int|null          $user_id
- * @property Carbon|null       $created_at
- * @property Carbon|null       $updated_at
- * @property Carbon|null       $deleted_at
- * @property string|null       $owner_type
- * @property string|null       $owner_id
+ * @property-read string|null  $route_code
+ * @property-write mixed        $route_code
+ * @property-read int|null     $route_leg
+ * @property-write mixed        $route_leg
+ * @property string|null $dpt_airport_id
+ * @property string|null $arr_airport_id
+ * @property string|null $alt_airport_id
+ * @property string|null $dpt_time
+ * @property string|null $arr_time
+ * @property Carbon|null $departure_time
+ * @property Carbon|null $arrival_time
+ * @property int|null    $level
+ * @property mixed|null  $distance
+ * @property int|null    $flight_time
+ * @property FlightType  $flight_type
+ * @property float|null  $load_factor
+ * @property float|null  $load_factor_variance
+ * @property string|null $route
+ * @property float|null  $pilot_pay
+ * @property string|null $notes
+ * @property int|null    $scheduled
+ * @property int|null    $days
+ * @property Carbon|null $start_date
+ * @property Carbon|null $end_date
+ * @property bool        $has_bid
+ * @property bool        $enabled
+ * @property bool        $visible
+ * @property int|null    $event_id
+ * @property int|null    $user_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property string|null $owner_type
+ * @property string|null $owner_id
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Airline|null $airline
@@ -151,7 +153,9 @@ use UnitEnum;
 #[WithoutIncrementing]
 class Flight extends Model
 {
+    /** @use HasFactory<FlightFactory> */
     use HasFactory;
+
     use HasNanoIds;
     use LogsActivity;
     use SoftDeletes;
@@ -256,7 +260,7 @@ class Flight extends Model
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
      *
-     * @param  Days[]          $days List of the enumerated values
+     * @param  int[]           $days List of Days::* bitmask constants
      * @return Builder<Flight>
      */
     public static function findByDays(array $days): Builder
@@ -575,6 +579,9 @@ class Flight extends Model
      * User access constraints (rank / type rating) are applied throughout.
      * Use this in single-flight controllers; list endpoints use the
      * `withAccessibleSubfleets` scope which skips the fallback.
+     *
+     * @param  array<int, string>        $with
+     * @return Collection<int, Subfleet>
      *
      * @throws LogicException when the model was hydrated without `bundle_id`
      */

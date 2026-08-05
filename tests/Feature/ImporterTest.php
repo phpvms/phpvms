@@ -740,16 +740,16 @@ test('subfleet importer', function (): void {
     // get the ranks and check the pivot tables and the main tables
     $ranks = $subfleet->ranks()->get();
     $cpt = $ranks->firstWhere('name', 'cpt');
+    // Only the pivot carries acars_pay/manual_pay. Rank itself has no such
+    // columns (it has acars_base_pay_rate/manual_base_pay_rate), so the
+    // previous $cpt->acars_pay vs $rank_cpt->acars_pay assertions compared
+    // null to null and proved nothing.
     expect($cpt->pivot->acars_pay)->toEqual(null)
-        ->and($cpt->pivot->manual_pay)->toEqual(null)
-        ->and($cpt->acars_pay)->toEqual($rank_cpt->acars_pay)
-        ->and($cpt->manual_pay)->toEqual($rank_cpt->manual_pay);
+        ->and($cpt->pivot->manual_pay)->toEqual(null);
 
     $fo = $ranks->firstWhere('name', 'fo');
     expect($fo->pivot->acars_pay)->toEqual(200)
-        ->and($fo->pivot->manual_pay)->toEqual(100)
-        ->and($fo->acars_pay)->toEqual($rank_fo->acars_pay)
-        ->and($fo->manual_pay)->toEqual($rank_fo->manual_pay);
+        ->and($fo->pivot->manual_pay)->toEqual(100);
 
     // get the type ratings and check the pivot associations
     $type_ratings = $subfleet->typeratings()->get();

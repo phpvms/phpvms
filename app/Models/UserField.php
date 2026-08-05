@@ -18,6 +18,11 @@ use Override;
  * @property bool|null   $private
  * @property bool        $internal
  * @property bool|null   $active
+ *
+ * Populated at runtime by UserService::getUserFields(), which copies the
+ * matching UserFieldValue onto the field. Not a column, but written as well as
+ * read, so it cannot be declared read-only.
+ * @property string|null $value
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read mixed $slug

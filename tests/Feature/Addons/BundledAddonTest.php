@@ -62,8 +62,9 @@ it('discovers a normal on-disk addon as disabled and not bundled', function (): 
 it('refuses to disable a bundled addon', function (): void {
     $addon = Addon::factory()->create(['name' => 'CoreMod', 'bundled' => true, 'enabled' => true]);
 
-    expect(fn (): mixed => app(AddonRegistry::class)->disable($addon->getName()))
-        ->toThrow(RuntimeException::class);
+    expect(function () use ($addon): void {
+        app(AddonRegistry::class)->disable($addon->getName());
+    })->toThrow(RuntimeException::class);
 
     expect(Addon::query()->find($addon->id)->enabled)->toBeTrue();
 });
@@ -71,8 +72,9 @@ it('refuses to disable a bundled addon', function (): void {
 it('refuses to delete a bundled addon', function (): void {
     $addon = Addon::factory()->create(['name' => 'CoreMod', 'bundled' => true]);
 
-    expect(fn (): mixed => app(AddonRegistry::class)->delete($addon->getName()))
-        ->toThrow(RuntimeException::class);
+    expect(function () use ($addon): void {
+        app(AddonRegistry::class)->delete($addon->getName());
+    })->toThrow(RuntimeException::class);
 
     expect(Addon::query()->find($addon->id))->not->toBeNull();
 });

@@ -55,6 +55,7 @@ use Override;
 #[WithoutIncrementing]
 class SimBrief extends Model
 {
+    /** @use HasFactory<SimBriefFactory> */
     use HasFactory;
 
     public $table = 'simbrief';

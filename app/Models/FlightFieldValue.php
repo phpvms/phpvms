@@ -40,7 +40,9 @@ use Illuminate\Support\Str;
  */
 class FlightFieldValue extends Model
 {
+    /** @use HasFactory<FlightFieldValueFactory> */
     use HasFactory;
+
     use HasSlug;
 
     public $table = 'flight_field_values';
