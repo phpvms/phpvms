@@ -171,7 +171,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, OAuthenticatable
 {
     use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasRelationships;
     use HasRoles;
     use JournalTrait;
@@ -450,6 +453,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasMany(UserFieldValue::class, 'user_id');
     }
 
+    /** @return HasMany<UserOAuthToken, $this> */
     public function oauth_tokens(): HasMany
     {
         return $this->hasMany(UserOAuthToken::class, 'user_id');
@@ -479,6 +483,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
      * Composable query for the subfleets this user is allowed to operate, given
      * the current restrict_aircraft_to_rank / restrict_aircraft_to_typerating
      * settings. Callers chain ->get(), ->paginate($per), ->pluck('id'), etc.
+     *
+     * @return Builder<Subfleet>
      */
     public function allowedSubfleets(): Builder
     {

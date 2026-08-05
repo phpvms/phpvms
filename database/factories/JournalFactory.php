@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -8,7 +10,7 @@ use App\Contracts\Factory;
 use App\Models\Journal;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Journal>
+ * @extends Factory<Journal>
  */
 class JournalFactory extends Factory
 {

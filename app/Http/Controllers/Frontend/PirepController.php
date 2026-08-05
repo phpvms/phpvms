@@ -182,7 +182,7 @@ class PirepController extends Controller
     {
         // Support retrieval of deleted relationships
         $with = [
-            'acars_logs',
+            'events',
             'aircraft'    => fn ($query) => $query->withTrashed()->with(['airline' => fn ($query) => $query->withTrashed()]),
             'airline'     => fn ($query) => $query->withTrashed()->with('journal'),
             'arr_airport' => fn ($query) => $query->withTrashed(),

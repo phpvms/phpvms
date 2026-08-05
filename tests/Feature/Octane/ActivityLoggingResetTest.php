@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\EnableActivityLogging;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Spatie\Activitylog\ActivityLogStatus;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Octane keeps the framework booted across requests on the same worker.

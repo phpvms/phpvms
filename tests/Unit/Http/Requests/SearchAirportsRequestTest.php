@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Http\Requests\SearchAirportsRequest;
 use Illuminate\Support\Facades\Validator;
 
-function validateSearchAirports(array $data): Illuminate\Contracts\Validation\Validator
+function validateSearchAirports(array $data): Illuminate\Validation\Validator
 {
     $request = new SearchAirportsRequest();
 

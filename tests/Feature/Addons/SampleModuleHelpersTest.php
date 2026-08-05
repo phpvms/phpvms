@@ -10,6 +10,13 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
+    // These tests are ->skip()ped when the sample addon is absent, and Pest
+    // still fires afterEach for a replayed skip -- with no Application booted.
+    // See appIsBooted() in tests/Helpers/AppHelpers.php.
+    if (!appIsBooted()) {
+        return;
+    }
+
     app(BootCache::class)->delete();
 });
 
@@ -35,7 +42,7 @@ it('records the Sample module helpers.php in the boot cache files list', functio
     // name: the engine resolves autoload.files relative to wherever the addon
     // was found, so pinning this to "modules/Sample" would only be testing that
     // the checkout happens to use that folder name.
-    $endsWithHelper = collect($sample?->files ?? [])
+    $endsWithHelper = collect($sample->files ?? [])
         ->contains(fn (string $path): bool => str_starts_with($path, (string) $sample?->path)
             && str_ends_with(str_replace('\\', '/', $path), '/helpers.php'));
 

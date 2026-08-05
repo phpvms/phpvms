@@ -109,17 +109,19 @@
     "rector/rector": "^2.4.2",
     "driftingly/rector-laravel": "^2.3",
     "laravel/pail": "^1.2.6",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-type-coverage": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.1",
-    "pestphp/pest-plugin-livewire": "^4.0",
-    "pestphp/pest-plugin-arch": "^4.0.2",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-type-coverage": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
+    "pestphp/pest-plugin-livewire": "^5.0",
+    "pestphp/pest-plugin-arch": "^5.0",
     "barryvdh/laravel-ide-helper": "^3.7.0",
     "larastan/larastan": "^3.9.6",
     "fruitcake/laravel-debugbar": "^4.2.8",
     "laravel/boost": "^2.4",
     "laravel/tinker": "^3.0",
-    "carthage-software/mago": "^1.29.0"
+    "carthage-software/mago": "^1.29.0",
+    "pestphp/pest-plugin-phpstan": "^5.0",
+    "pestphp/pest-plugin-agent": "^5.0"
   },
   "autoload": {
     "files": [

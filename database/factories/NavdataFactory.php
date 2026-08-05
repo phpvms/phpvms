@@ -9,7 +9,7 @@ use App\Enums\NavaidType;
 use App\Models\Navdata;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Navdata>
+ * @extends Factory<Navdata>
  */
 class NavdataFactory extends Factory
 {

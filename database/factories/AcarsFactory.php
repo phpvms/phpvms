@@ -11,7 +11,7 @@ use App\Models\Acars;
 use DateTime;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Acars>
+ * @extends Factory<Acars>
  */
 class AcarsFactory extends Factory
 {

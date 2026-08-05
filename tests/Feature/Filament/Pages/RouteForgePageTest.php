@@ -34,7 +34,7 @@ it('runs zero data-loading Eloquent queries at page mount', function (): void {
 
     $dataLoadingTables = ['airlines', 'flight_bundles', 'subfleets', 'flights'];
     foreach ($queries as $query) {
-        $sql = strtolower((string) ($query['query'] ?? ''));
+        $sql = strtolower((string) $query['query']);
         foreach ($dataLoadingTables as $table) {
             // The auth + Spatie permission lookups touch `users`, `roles`, and
             // `model_has_*` tables — those are expected. We assert ONLY that

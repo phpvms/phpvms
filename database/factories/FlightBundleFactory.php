@@ -10,7 +10,7 @@ use App\Contracts\Factory;
 use App\Models\FlightBundle;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<FlightBundle>
+ * @extends Factory<FlightBundle>
  */
 class FlightBundleFactory extends Factory
 {

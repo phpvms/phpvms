@@ -70,7 +70,6 @@ function throughScope(Flight $flight, User $user): Flight
     return Flight::query()
         ->whereKey($flight->id)
         ->withAccessibleSubfleets($user)
-        ->get()
         ->first();
 }
 
@@ -134,7 +133,6 @@ test('a flight with no resolvable bundle resolves to nothing', function (): void
         ->select('flights.id')
         ->whereKey($flight->id)
         ->withAccessibleSubfleets($user)
-        ->get()
         ->first();
 
     expect($partial->bundle)->toBeNull()

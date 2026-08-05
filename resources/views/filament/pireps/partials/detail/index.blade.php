@@ -65,6 +65,8 @@
                     'performance'  => $performance,
                 ])
 
+                @include('filament.pireps.partials.detail.archive', ['record' => $record])
+
                 @livewire(
                     \App\Livewire\Filament\PirepCommentThread::class,
                     ['record' => $record],

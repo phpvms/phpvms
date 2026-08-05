@@ -267,7 +267,7 @@
     </div>
   </div>
 
-  @if(count($pirep->acars_logs) > 0)
+  @if(count($pirep->events) > 0)
     <div class="separator"></div>
     <div class="row">
       <div class="col-12">
@@ -276,7 +276,7 @@
       <div class="col-12">
         <table class="table table-hover table-condensed" id="users-table">
           <tbody>
-          @foreach($pirep->acars_logs->sortBy('created_at') as $log)
+          @foreach($pirep->events as $log)
             <tr>
               <td nowrap="true">{{ show_datetime($log->created_at) }}</td>
               <td>{{ $log->log }}</td>

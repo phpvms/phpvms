@@ -36,6 +36,7 @@ use Override;
  */
 class Bid extends Model
 {
+    /** @use HasFactory<BidFactory> */
     use HasFactory;
 
     public $table = 'bids';

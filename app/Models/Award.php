@@ -55,7 +55,9 @@ use Kyslik\ColumnSortable\Sortable;
  */
 class Award extends Model
 {
+    /** @use HasFactory<AwardFactory> */
     use HasFactory;
+
     use SoftDeletes;
     use Sortable;
 

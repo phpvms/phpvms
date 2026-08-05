@@ -61,6 +61,7 @@ use UnexpectedValueException;
 #[ObservedBy(JournalObserver::class)]
 class Journal extends Model
 {
+    /** @use HasFactory<JournalFactory> */
     use HasFactory;
 
     protected $table = 'journals';

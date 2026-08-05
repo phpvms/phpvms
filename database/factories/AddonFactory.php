@@ -11,7 +11,7 @@ use App\Models\Addon;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Addon>
+ * @extends Factory<Addon>
  */
 class AddonFactory extends Factory
 {
