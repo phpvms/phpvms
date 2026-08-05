@@ -27,6 +27,7 @@ return [
     'airline_logo_saved'               => 'Logo saved',
     'flight_information'               => 'Flight Information',
     'flight_pilot_pay_hint'            => 'Fill this in to pay a pilot a fixed amount for this flight.',
+    'pilot_id_out_of_range_hint'       => 'Outside the configured pilot ID range (:start–:end).',
     'flight_load_factor_hint'          => 'Percentage value for pax/cargo load, leave blank to use the default value.',
     'flight_load_factor_variance_hint' => 'Percentage of how much the load can vary (+/-), leave blank to use the default value.',
     'scheduling'                       => 'Scheduling',

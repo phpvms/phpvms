@@ -10,6 +10,7 @@ use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
 use App\Exceptions\PilotIdNotFound;
+use App\Exceptions\PilotIdRangeExhausted;
 use App\Exceptions\UserPilotIdExists;
 use App\Models\Airline;
 use App\Models\Bid;
@@ -28,6 +29,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -120,27 +122,31 @@ class UserService extends Service
      */
     public function createUser(array $attrs, array $roles = [], ?int $state = null): User
     {
-        $user = User::create($attrs);
-        $user->api_key = Utils::generateApiKey();
-        $user->curr_airport_id = $user->home_airport_id;
+        $user = DB::transaction(function () use ($attrs, $roles, $state): User {
+            $user = User::create($attrs);
+            $user->api_key = Utils::generateApiKey();
+            $user->curr_airport_id = $user->home_airport_id;
 
-        // Determine if we want to auto accept
-        if ($state === null && setting('pilots.auto_accept') === true) {
-            $user->state = UserState::ACTIVE;
-        } elseif ($state === null) {
-            $user->state = UserState::PENDING;
-        }
+            // Determine if we want to auto accept
+            if ($state === null && setting('pilots.auto_accept') === true) {
+                $user->state = UserState::ACTIVE;
+            } elseif ($state === null) {
+                $user->state = UserState::PENDING;
+            }
 
-        $user->save();
+            $user->save();
 
-        // Attach any additional roles
-        foreach ($roles as $role) {
-            $this->addUserToRole($user, $role);
-        }
+            // Attach any additional roles
+            foreach ($roles as $role) {
+                $this->addUserToRole($user, $role);
+            }
 
-        // Let's check their rank and where they should start
-        $this->calculatePilotRank($user);
-        $user->refresh();
+            // Let's check their rank and where they should start
+            $this->calculatePilotRank($user);
+            $user->refresh();
+
+            return $user;
+        });
 
         event(new Registered($user));
 
@@ -192,16 +198,118 @@ class UserService extends Service
     }
 
     /**
-     * Find and return the next available pilot ID (usually just the max+1)
+     * Find and return the next available pilot ID, honoring the
+     * `pilots.id_range_*`, `pilots.id_fill_gaps`, and `pilots.id_reuse_deleted` settings.
+     *
+     * @throws PilotIdRangeExhausted when a range is enabled and no ID is available
      */
     public function getNextAvailablePilotId(): int
     {
-        return (int) User::withTrashed()->max('pilot_id') + 1;
+        $reuseDeleted = (bool) setting('pilots.id_reuse_deleted');
+        $rangeEnabled = (bool) setting('pilots.id_range_enabled');
+
+        $floor = $rangeEnabled ? max(1, (int) setting('pilots.id_range_start')) : 1;
+        $ceil = $rangeEnabled ? (int) setting('pilots.id_range_end') : null;
+
+        $nextId = (bool) setting('pilots.id_fill_gaps')
+            ? $this->findLowestAvailablePilotId($floor, $ceil, $reuseDeleted)
+            : $this->findNextPilotIdAfterMax($floor, $ceil, $reuseDeleted);
+
+        if ($ceil !== null && $nextId > $ceil) {
+            throw new PilotIdRangeExhausted();
+        }
+
+        return $nextId;
     }
 
     /**
-     * Find the next available pilot ID and set the current user's pilot_id to that +1
+     * The lowest untaken pilot ID in `[$floor, $ceil]`, found with a single
+     * self-left-join query rather than looping over every ID in PHP.
+     */
+    private function findLowestAvailablePilotId(int $floor, ?int $ceil, bool $reuseDeleted): int
+    {
+        if (!$this->isPilotIdTaken($floor, $reuseDeleted)) {
+            return $floor;
+        }
+
+        $table = new User()->getTable();
+
+        $query = DB::table($table.' as u1')
+            ->leftJoin($table.' as u2', function ($join) use ($reuseDeleted): void {
+                $join->on('u2.pilot_id', '=', DB::raw('u1.pilot_id + 1'));
+
+                if ($reuseDeleted) {
+                    $join->whereNull('u2.deleted_at');
+                }
+            })
+            ->whereNull('u2.pilot_id')
+            ->where('u1.pilot_id', '>=', $floor);
+
+        if ($reuseDeleted) {
+            $query->whereNull('u1.deleted_at');
+        }
+
+        if ($ceil !== null) {
+            $query->where('u1.pilot_id', '<', $ceil);
+        }
+
+        $nextId = $query->min(DB::raw('u1.pilot_id + 1'));
+
+        return $nextId !== null ? (int) $nextId : ($ceil ?? $floor) + 1;
+    }
+
+    /**
+     * max(taken) + 1, clamped to at least $floor.
+     *
+     * When $ceil is set, the max is taken only over IDs within [$floor, $ceil],
+     * so pilots grandfathered in above an enabled range don't make every
+     * registration look like the range is exhausted.
+     */
+    private function findNextPilotIdAfterMax(int $floor, ?int $ceil, bool $reuseDeleted): int
+    {
+        $query = $this->takenPilotIdsQuery($reuseDeleted);
+
+        if ($ceil !== null) {
+            $query->whereBetween('pilot_id', [$floor, $ceil]);
+        }
+
+        $max = (int) $query->max('pilot_id');
+
+        return max($max + 1, $floor);
+    }
+
+    /**
+     * Whether an active (or, when $reuseDeleted is off, soft-deleted) user already holds this ID.
+     */
+    private function isPilotIdTaken(int $pilotId, bool $reuseDeleted): bool
+    {
+        return $this->takenPilotIdsQuery($reuseDeleted)->where('pilot_id', $pilotId)->exists();
+    }
+
+    /**
+     * Base query over users whose pilot_id counts as "taken", per `pilots.id_reuse_deleted`.
+     */
+    private function takenPilotIdsQuery(bool $reuseDeleted)
+    {
+        $query = User::query();
+
+        if (!$reuseDeleted) {
+            $query->withTrashed();
+        }
+
+        return $query;
+    }
+
+    /**
+     * Find the next available pilot ID and set the current user's pilot_id to it.
      * Called from UserObserver right now after a record is created
+     *
+     * The migration for this feature dropped the DB unique index on
+     * users.pilot_id, so the compute+save is no longer guarded by the
+     * database. A cache lock serializes assignment across concurrent
+     * requests so two registrations can't compute the same next ID.
+     *
+     * @throws PilotIdRangeExhausted
      */
     public function findAndSetPilotId(User $user): User
     {
@@ -209,15 +317,14 @@ class UserService extends Service
             return $user;
         }
 
-        return DB::transaction(function () use ($user): User {
-            $maxPilotId = (int) User::withTrashed()->max('pilot_id');
-            $user->pilot_id = $maxPilotId + 1;
+        return Cache::lock('pilot-id-assignment', 10)->block(5, fn () => DB::transaction(function () use ($user): User {
+            $user->pilot_id = $this->getNextAvailablePilotId();
             $user->save();
 
             Log::info('Set pilot ID for user '.$user->id.' to '.$user->pilot_id);
 
             return $user;
-        });
+        }));
     }
 
     /**
@@ -231,6 +338,9 @@ class UserService extends Service
     /**
      * Change a user's pilot ID
      *
+     * Guarded by the same cache lock as findAndSetPilotId(), since the DB
+     * no longer enforces uniqueness on pilot_id and this also relies on a
+     * check-then-write.
      *
      * @throws UserPilotIdExists
      */
@@ -240,8 +350,8 @@ class UserService extends Service
             return $user;
         }
 
-        return DB::transaction(function () use ($user, $pilot_id): User {
-            if (User::where('pilot_id', '=', $pilot_id)->exists()) {
+        return Cache::lock('pilot-id-assignment', 10)->block(5, fn () => DB::transaction(function () use ($user, $pilot_id): User {
+            if ($this->isPilotIdTaken($pilot_id, (bool) setting('pilots.id_reuse_deleted'))) {
                 Log::error('User with id '.$pilot_id.' already exists');
 
                 throw new UserPilotIdExists($user);
@@ -254,7 +364,7 @@ class UserService extends Service
             Log::info('Changed pilot ID for user '.$user->id.' from '.$old_id.' to '.$user->pilot_id);
 
             return $user;
-        });
+        }));
     }
 
     /**

@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Unique;
 use League\ISO3166\ISO3166;
 
 class UserForm
@@ -28,7 +29,12 @@ class UserForm
                                 TextInput::make('pilot_id')
                                     ->required()
                                     ->numeric()
-                                    ->unique()
+                                    ->unique(modifyRuleUsing: fn (Unique $rule): Unique => setting('pilots.id_reuse_deleted')
+                                        ? $rule->whereNull('deleted_at')
+                                        : $rule)
+                                    ->live(onBlur: true)
+                                    ->hint(fn (int|string|null $state): ?string => self::pilotIdRangeHint($state))
+                                    ->hintColor('warning')
                                     ->label(__('common.pilot_id')),
 
                                 TextInput::make('callsign')
@@ -135,5 +141,26 @@ class UserForm
                     ->columnSpan(['lg' => 1]),
             ])
             ->columns(3);
+    }
+
+    /**
+     * Non-blocking warning shown when the entered pilot ID falls outside an
+     * enabled `pilots.id_range_*` range. Returns null when the range is
+     * disabled, the value is blank, or the value is in range.
+     */
+    public static function pilotIdRangeHint(int|string|null $pilotId): ?string
+    {
+        if (!setting('pilots.id_range_enabled') || $pilotId === null || $pilotId === '') {
+            return null;
+        }
+
+        $start = (int) setting('pilots.id_range_start');
+        $end = (int) setting('pilots.id_range_end');
+
+        if ((int) $pilotId >= $start && (int) $pilotId <= $end) {
+            return null;
+        }
+
+        return __('filament.pilot_id_out_of_range_hint', ['start' => $start, 'end' => $end]);
     }
 }
