@@ -79,6 +79,9 @@ class SimBrief extends Model
             }
 
             $ofp = Storage::json($this->attributes['ofp_json_path']);
+            if ($ofp === null) {
+                return null;
+            }
 
             return SimBriefOfp::from($ofp);
         });

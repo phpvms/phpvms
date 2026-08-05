@@ -488,6 +488,11 @@ class Pirep extends Model
         return $this->belongsTo(Aircraft::class, 'aircraft_id');
     }
 
+    public function archive(): HasOne
+    {
+        return $this->hasOne(PirepArchive::class, 'pirep_id');
+    }
+
     public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class, 'airline_id');

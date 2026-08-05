@@ -32,6 +32,7 @@ use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
+use App\Models\PirepArchive;
 use App\Models\PirepComment;
 use App\Models\PirepFare;
 use App\Models\PirepFieldValue;
@@ -55,6 +56,7 @@ class PirepService extends Service
         private readonly AirportService $airportSvc,
         private readonly FareService $fareSvc,
         private readonly GeoService $geoSvc,
+        private readonly PirepArchiveService $pirepArchiveSvc,
         private readonly PirepFinanceService $pirepFinanceSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly UserService $userSvc
@@ -337,7 +339,7 @@ class PirepService extends Service
 
         // Copy some fields over from Flight/SimBrief if we have it
         if ($pirep->flight) {
-            $pirep->planned_distance = $pirep->simbrief !== null ? $pirep->simbrief->ofp->general->air_distance : $pirep->flight->distance;
+            $pirep->planned_distance = $pirep->simbrief?->ofp?->general->air_distance ?? $pirep->flight->distance;
             $pirep->planned_flight_time = $pirep->flight->flight_time;
         }
 
@@ -346,6 +348,7 @@ class PirepService extends Service
 
         $this->updateCustomFields($pirep->id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
+        $this->pirepArchiveSvc->save($pirep);
 
         return $pirep;
     }
@@ -558,6 +561,7 @@ class PirepService extends Service
             Acars::where($w)->delete();
             PirepPosition::where($w)->delete();
 
+            PirepArchive::where($w)->delete();
             PirepComment::where($w)->forceDelete();
             PirepFare::where($w)->forceDelete();
             PirepFieldValue::where($w)->forceDelete();

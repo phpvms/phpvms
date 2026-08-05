@@ -9,7 +9,7 @@ import leaflet from "leaflet";
 
 import draw_base_map from "./base_map";
 import { addWMSLayer } from "./helpers";
-import { ACTUAL_ROUTE_COLOR, CIRCLE_COLOR, PLAN_ROUTE_COLOR } from "./config";
+import { ACTUAL_ROUTE_COLOR, ARCHIVED_ROUTE_COLOR, CIRCLE_COLOR, PLAN_ROUTE_COLOR } from "./config";
 
 /**
  * Bind a popup to each route point feature when it has popup HTML.
@@ -37,6 +37,8 @@ export default (_opts) => {
       flown_route_color: ACTUAL_ROUTE_COLOR,
       circle_color: CIRCLE_COLOR,
       flightplan_route_color: PLAN_ROUTE_COLOR,
+      archived_route_line: null,
+      archived_route_color: ARCHIVED_ROUTE_COLOR,
       metar_wms: {
         url: "",
         params: {},
@@ -77,6 +79,31 @@ export default (_opts) => {
       map.fitBounds(plannedRouteLayer.getBounds());
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  // Archived planned route (SimBrief navlog snapshot from pirep_archive),
+  // dashed so it reads as distinct from the live planned/actual lines above.
+  if (opts.archived_route_line && opts.archived_route_line.features.length > 0) {
+    const archivedRouteLayer = new L.Geodesic([], {
+      weight: 3,
+      opacity: 0.8,
+      color: opts.archived_route_color,
+      dashArray: "6 6",
+      steps: 50,
+      wrap: false,
+    }).addTo(map);
+
+    archivedRouteLayer.fromGeoJson(opts.archived_route_line);
+
+    // With the live flight gone there may be no planned line to frame the
+    // map, so fall back to framing the archived route.
+    if (!opts.planned_route_line) {
+      try {
+        map.fitBounds(archivedRouteLayer.getBounds());
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
 
