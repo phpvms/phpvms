@@ -6,14 +6,18 @@ namespace App\Filament\Widgets;
 
 use App\Enums\PirepState;
 use App\Models\Pirep;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Override;
 
 class HoursFlownChart extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.dashboard.chart';
 
     protected int|string|array $columnSpan = 1;
@@ -23,10 +27,25 @@ class HoursFlownChart extends Widget
     #[Override]
     protected function getViewData(): array
     {
+        $filters = $this->pageFilters ?? [
+            'start_date' => null,
+            'end_date'   => null,
+            'airline_id' => null,
+        ];
+
+        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->subDays(13)->startOfDay();
+        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $airline_id = $filters['airline_id'];
+
         $data = Trend::query(
-            Pirep::query()->whereIn('state', [PirepState::ACCEPTED, PirepState::IN_PROGRESS])
+            Pirep::query()
+                ->whereIn('state', [PirepState::ACCEPTED, PirepState::IN_PROGRESS])
+                ->when(
+                    filled($airline_id),
+                    fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+                )
         )
-            ->between(start: now()->subDays(13)->startOfDay(), end: now())
+            ->between(start: $start_date, end: $end_date)
             ->perDay()
             ->sum('flight_time');
 

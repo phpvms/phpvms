@@ -68,7 +68,12 @@ window.dispatchEvent(new CustomEvent("phpvms:ready", { detail: window.phpvms }))
 // MutationObserver so widgets that Filament lazy-mounts (scroll-triggered
 // hydration) still get rendered when they appear. Same `import.meta.glob`
 // treatment as the maps chunk above (see that comment).
-import.meta
-  .glob("./dashboard/index.js")
-  ["./dashboard/index.js"]()
-  .then((m) => m.init());
+//
+// NOTE: keep the EXACT shape of the maps lazy-load above — Vite's glob
+// transform (and rolldown's build-time builtin) matches `import.meta.glob`
+// calls literally; a multi-line call or a `.then()` chain on the result is
+// not transformed (raw call reaches the browser → "import.meta.glob is not
+// a function", and the chunk is dropped in build).
+const loadDashboardCharts = () =>
+  import.meta.glob("./dashboard/index.js")["./dashboard/index.js"]();
+loadDashboardCharts().then((m) => m.init());

@@ -4,12 +4,24 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
-use App\Models\Aircraft;
+use App\Enums\PirepState;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Reports\AircraftReport;
+use App\Models\Pirep;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Override;
 
+/**
+ * Aircraft utilization — top 15 aircraft by flight time in the selected
+ * period. Lives on the Aircraft report page (not the dashboard).
+ */
 class AircraftUtilizationChart extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.dashboard.chart';
 
     protected int|string|array $columnSpan = 'full';
@@ -19,20 +31,49 @@ class AircraftUtilizationChart extends Widget
     #[Override]
     protected function getViewData(): array
     {
-        $aircraft = Aircraft::query()
-            ->orderByDesc('flight_time')
+        $filters = $this->pageFilters ?? [
+            'start_date' => null,
+            'end_date'   => null,
+            'airline_id' => null,
+        ];
+
+        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $airline_id = $filters['airline_id'];
+
+        $aircraft = Pirep::query()
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])
+            ->whereBetween('submitted_at', [$start_date, $end_date])
+            ->when(
+                filled($airline_id),
+                fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+            )
+            ->selectRaw('aircraft_id, SUM(flight_time) as total_minutes')
+            ->groupBy('aircraft_id')
+            ->orderByDesc('total_minutes')
             ->limit(15)
-            ->get(['registration', 'flight_time', 'subfleet_id']);
+            ->get();
 
         return [
             'heading'   => __('filament.dashboard.aircraft_utilization'),
             'chartType' => 'hbar',
             'json'      => json_encode([
-                'labels' => $aircraft->pluck('registration')->all(),
-                'values' => $aircraft->map(fn (Aircraft $ac): int => (int) round($ac->flight_time / 60))->all(),
+                'labels' => $aircraft->map(fn (Pirep $pirep): string => $pirep->aircraft->registration)->all(),
+                'values' => $aircraft->map(fn (Pirep $pirep): int => (int) round(((int) ($pirep->total_minutes ?? 0)) / 60))->all(),
                 // Aircraft live under their subfleet (SubfleetResource relation manager).
-                'hrefs' => $aircraft->map(fn (Aircraft $ac): string => route('filament.admin.resources.subfleets.edit', ['record' => $ac->subfleet_id]))->all(),
+                'hrefs' => $aircraft->map(fn (Pirep $pirep): string => route('filament.admin.resources.subfleets.edit', ['record' => $pirep->aircraft->subfleet_id]))->all(),
             ]),
         ];
+    }
+
+    #[Override]
+    public static function canView(): bool
+    {
+        // Only render on the Aircraft report page (or a Livewire update request from it)
+        if (request()->url() === AircraftReport::getUrl()) {
+            return true;
+        }
+
+        return request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(AircraftReport::getUrl());
     }
 }

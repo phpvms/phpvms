@@ -42,6 +42,15 @@ class AirlineFinanceChart extends ChartWidget
 
         $airline = Airline::find($airline_id);
 
+        if (!$airline?->journal) {
+            // No airline selected (or the airline has no journal yet) — nothing
+            // to chart. Return an empty payload rather than dereferencing null.
+            return [
+                'datasets' => [],
+                'labels'   => [],
+            ];
+        }
+
         $debit = Trend::query(JournalTransaction::where(['journal_id' => $airline->journal->id]))
             ->between(
                 start: $start_date,
@@ -85,7 +94,8 @@ class AirlineFinanceChart extends ChartWidget
     #[Override]
     public static function canView(): bool
     {
-        // Display if the page is finance or a /livewire-{hash}/update request from finance
+        // Display if the page is finance, or a /livewire-{hash}/update request
+        // coming from it
         if (request()->url() === Finances::getUrl()) {
             return true;
         }

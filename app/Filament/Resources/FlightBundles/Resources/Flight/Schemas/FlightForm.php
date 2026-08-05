@@ -32,6 +32,19 @@ class FlightForm
             ->components([
                 Grid::make()->schema([
                     Section::make(__('filament.flight_information'))
+                        ->id('flight-information')
+                        ->collapsible()
+                        ->persistCollapsed()
+                        ->footer([
+                            Toggle::make('enabled')
+                                ->inline()
+                                ->label(__('common.enabled'))
+                                ->offIcon(Heroicon::XCircle)
+                                ->offColor('danger')
+                                ->onIcon(Heroicon::CheckCircle)
+                                ->onColor('success')
+                                ->default(true),
+                        ])
                         ->schema([
                             Select::make('airline_id')
                                 ->label(__('common.airline'))
@@ -98,10 +111,14 @@ class FlightForm
                                 ->columnSpanFull()
                                 ->columnSpan(3),
                         ])
+                        ->compact()
                         ->columns(3)
                         ->columnSpan(['lg' => 2, 'default' => 'full']),
 
                     Section::make(__('filament.scheduling'))
+                        ->id('scheduling')
+                        ->collapsible()
+                        ->persistCollapsed()
                         ->schema([
                             DatePicker::make('start_date')
                                 ->label(__('common.start_date'))
@@ -148,6 +165,9 @@ class FlightForm
                     ->columns(3),
 
                 Section::make(__('flights.route'))
+                    ->id('route')
+                    ->collapsible()
+                    ->persistCollapsed()
                     ->schema([
                         Grid::make()->schema([
                             Select::make('dpt_airport_id')
@@ -197,30 +217,16 @@ class FlightForm
                     ])
                     ->columnSpanFull(),
 
-                Section::make(trans_choice('common.remark', 2))
+                Section::make(__('common.notes'))
+                    ->id('remarks')
+                    ->collapsible()
+                    ->persistCollapsed()
                     ->schema([
                         RichEditor::make('notes')
-                            ->label(__('common.notes'))
+                            ->hiddenLabel()
                             ->columnSpanFull(),
-
-                        TextEntry::make('status_badge')
-                            ->label(__('common.status'))
-                            ->visible(fn (?Flight $record): bool => $record instanceof Flight)
-                            ->badge()
-                            ->state(fn (Flight $record): string => self::flightStatusBadge($record)[0])
-                            ->color(fn (Flight $record): string => self::flightStatusBadge($record)[1]),
-
-                        Toggle::make('enabled')
-                            ->inline()
-                            ->label(__('common.enabled'))
-                            ->offIcon(Heroicon::XCircle)
-                            ->offColor('danger')
-                            ->onIcon(Heroicon::CheckCircle)
-                            ->onColor('success')
-                            ->default(true),
                     ])
-                    ->columnSpanFull()
-                    ->columns(2),
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -300,7 +306,7 @@ class FlightForm
      *
      * @return array{0: string, 1: string} [label, color]
      */
-    private static function flightStatusBadge(Flight $record): array
+    public static function flightStatusBadge(Flight $record): array
     {
         if (!$record->enabled) {
             return [__('filament.flights.status.disabled'), 'danger'];

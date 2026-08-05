@@ -4,12 +4,24 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
+use App\Enums\PirepState;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Reports\PilotsReport;
+use App\Models\Pirep;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Override;
 
+/**
+ * Pilot hours — top 10 pilots by flight time in the selected period.
+ * Lives on the Pilots report page (not the dashboard).
+ */
 class PilotHoursChart extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.dashboard.chart';
 
     protected int|string|array $columnSpan = 'full';
@@ -19,20 +31,48 @@ class PilotHoursChart extends Widget
     #[Override]
     protected function getViewData(): array
     {
-        $pilots = User::query()
-            ->where('flight_time', '>', 0)
-            ->orderByDesc('flight_time')
+        $filters = $this->pageFilters ?? [
+            'start_date' => null,
+            'end_date'   => null,
+            'airline_id' => null,
+        ];
+
+        $start_date = $filters['start_date'] !== null ? Carbon::createFromTimeString($filters['start_date']) : now()->startOfYear();
+        $end_date = $filters['end_date'] !== null ? Carbon::createFromTimeString($filters['end_date']) : now();
+        $airline_id = $filters['airline_id'];
+
+        $pilots = Pirep::query()
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])
+            ->whereBetween('submitted_at', [$start_date, $end_date])
+            ->when(
+                filled($airline_id),
+                fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+            )
+            ->selectRaw('user_id, SUM(flight_time) as total_minutes')
+            ->groupBy('user_id')
+            ->orderByDesc('total_minutes')
             ->limit(10)
-            ->get(['id', 'name', 'flight_time']);
+            ->get();
 
         return [
             'heading'   => __('filament.dashboard.pilot_hours'),
             'chartType' => 'hbar',
             'json'      => json_encode([
-                'labels' => $pilots->pluck('name')->all(),
-                'values' => $pilots->map(fn (User $user): int => (int) round($user->flight_time / 60))->all(),
-                'hrefs'  => $pilots->map(fn (User $user): string => route('filament.admin.resources.users.edit', ['record' => $user->id]))->all(),
+                'labels' => $pilots->map(fn (Pirep $pirep): string => $pirep->user->name)->all(),
+                'values' => $pilots->map(fn (Pirep $pirep): int => (int) round(((int) ($pirep->total_minutes ?? 0)) / 60))->all(),
+                'hrefs'  => $pilots->map(fn (Pirep $pirep): string => route('filament.admin.resources.users.edit', ['record' => $pirep->user_id]))->all(),
             ]),
         ];
+    }
+
+    #[Override]
+    public static function canView(): bool
+    {
+        // Only render on the Pilots report page (or a Livewire update request from it)
+        if (request()->url() === PilotsReport::getUrl()) {
+            return true;
+        }
+
+        return request()->url() !== Dashboard::getUrl() && str(request()->header('referer'))->contains(PilotsReport::getUrl());
     }
 }

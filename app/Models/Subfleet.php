@@ -54,6 +54,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $activities_count
  * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
+ * @property-read int|null $aircraft_sum_flight_time
  * @property-read Airline|null $airline
  * @property-read Collection<int, FlightBundle> $bundles
  * @property-read int|null $bundles_count

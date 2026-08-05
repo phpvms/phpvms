@@ -62,9 +62,9 @@ function axisText(sel, size = 10) {
 }
 
 /**
- * Wrap the plot area of a Cartesian chart so it can be zoomed (wheel) and
- * panned (drag). Axes stay fixed; the returned group holds the zoomed
- * content and is clipped to the plot box.
+ * Wrap the plot area of a Cartesian chart in a clip path so bars/lines
+ * never bleed outside the plot box. Axes stay fixed; the returned group
+ * holds the (unzoomed) content.
  */
 function chartContainer(s, g, width, height) {
   const clipId = `chart-clip-${uid++}`;
@@ -73,14 +73,7 @@ function chartContainer(s, g, width, height) {
     .append("rect")
     .attr("width", width)
     .attr("height", height);
-  const plot = g.append("g").attr("clip-path", `url(#${clipId})`);
-  s.call(
-    d3
-      .zoom()
-      .scaleExtent([1, 8])
-      .on("zoom", (event) => plot.attr("transform", event.transform)),
-  );
-  return plot;
+  return g.append("g").attr("clip-path", `url(#${clipId})`);
 }
 
 /** Vertical bar chart: { labels: string[], values: number[] } */
@@ -460,13 +453,14 @@ let uid = 0;
 
 export function bootstrap() {
   document.querySelectorAll("[data-dashboard-chart]").forEach((el) => {
-    if (el.dataset.rendered) return;
-    el.dataset.rendered = "1";
     const type = el.dataset.dashboardChart;
     const renderer = RENDERERS[type];
     if (!renderer) return;
     const payload = el.dataset.chartPayload;
     if (!payload) return;
+    // Re-render when the payload changes (e.g. report page filters drive a
+    // new Livewire render of the widget); skip only when nothing changed.
+    if (el.dataset.rendered === payload) return;
     let data;
     try {
       data = JSON.parse(payload);
@@ -476,6 +470,7 @@ export function bootstrap() {
     }
     try {
       renderer(el, data);
+      el.dataset.rendered = payload;
     } catch (err) {
       console.error(`[dashboard] failed to render "${type}"`, err);
     }
@@ -493,7 +488,13 @@ export function init() {
 
   // Filament lazy-mounts dashboard widgets (they arrive as
   // `fi-loading-section` placeholders and hydrate after the initial page
-  // render, often on scroll), so re-scan whenever the DOM changes.
+  // render, often on scroll), and report-page filters re-render widgets
+  // with a new payload, so re-scan whenever the DOM or a payload changes.
   const observer = new MutationObserver(run);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["data-chart-payload"],
+  });
 }
