@@ -2455,3 +2455,10 @@ body[class*="fi-panel-"]::after {
   border-bottom: 0;
   border-top: 0;
 }
+
+/* Dashboard chart links (bars, row labels, calendar cells) get a visible
+ * focus ring for keyboard users — SVG shapes don't inherit :focus styling. */
+.fi-panel-admin [data-dashboard-chart] [tabindex]:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 1px;
+}

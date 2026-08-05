@@ -309,9 +309,20 @@ function renderHBar(el, data) {
     .style("cursor", hrefs.length ? "pointer" : null)
     // D3 v7 listeners receive (event, datum) — the index is not passed, so
     // read it from the datum via indexOf instead of trusting a second arg.
+    // Make bars keyboard-activatable when they link somewhere.
+    .attr("tabindex", hrefs.length ? 0 : null)
+    .attr("role", hrefs.length ? "link" : null)
+    .attr("aria-label", (v, i) => (hrefs[i] ? `${labels[i]}: ${Number(v).toLocaleString()}` : null))
     .on("click", (_, v) => {
       const i = values.indexOf(v);
       if (hrefs[i]) window.location.href = hrefs[i];
+    })
+    .on("keydown", (event, v) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const i = values.indexOf(v);
+      if (!hrefs[i]) return;
+      event.preventDefault();
+      window.location.href = hrefs[i];
     })
     .append("title")
     .text((v, i) => `${labels[i]}: ${Number(v).toLocaleString()}`);
@@ -336,9 +347,18 @@ function renderHBar(el, data) {
       .style("text-decoration-style", "dotted")
       .style("text-underline-offset", "2px")
       // Axis tick datum is the label string (axisLeft domain), not the index.
+      .attr("tabindex", 0)
+      .attr("role", "link")
       .on("click", (_, label) => {
         const i = labels.indexOf(label);
         if (hrefs[i]) window.location.href = hrefs[i];
+      })
+      .on("keydown", (event, label) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const i = labels.indexOf(label);
+        if (!hrefs[i]) return;
+        event.preventDefault();
+        window.location.href = hrefs[i];
       });
   }
 }
@@ -407,7 +427,24 @@ function renderCalendar(el, data) {
       .style("cursor", "pointer")
       // D3 v7 click listeners get (event, datum) — datum is the hour's event
       // count, so recover the hour index from its position in day.values.
+      // Cells are always links into the pireps list: focusable + Enter/Space.
+      .attr("tabindex", 0)
+      .attr("role", "link")
+      .attr(
+        "aria-label",
+        (v, hi) =>
+          `${day.date} ${String(hi).padStart(2, "0")}:00 — ${v} event${v === 1 ? "" : "s"}`,
+      )
       .on("click", (_, v) => {
+        const hi = day.values.indexOf(v);
+        const hour = String(hi).padStart(2, "0");
+        const from = `${day.date} ${hour}:00:00`;
+        const to = `${day.date} ${hour}:59:59`;
+        window.location.href = `/admin/pireps?departed_from=${encodeURIComponent(from)}&departed_to=${encodeURIComponent(to)}`;
+      })
+      .on("keydown", (event, v) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
         const hi = day.values.indexOf(v);
         const hour = String(hi).padStart(2, "0");
         const from = `${day.date} ${hour}:00:00`;
