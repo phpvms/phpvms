@@ -21,7 +21,7 @@ class SimBriefAirframeResource extends Resource
 {
     protected static ?string $model = SimBriefAirframe::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Fleet;
 
     protected static ?int $navigationSort = 2;
 

@@ -37,7 +37,7 @@ class Maintenance extends Page
 
     use AuthorizesAccess;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::System;
 
     protected static ?int $navigationSort = 2;
 

@@ -23,7 +23,7 @@ import {
   routePresetPatch,
 } from "../lib/presets";
 import type { FrequencyPreset, RoutePreset } from "../state/types";
-import { Field, INPUT_CLASS } from "./Field";
+import { Field, SELECT_CLASS } from "./Field";
 import { HelpModal, type HelpModalItem } from "./HelpModal";
 
 /**
@@ -89,7 +89,7 @@ function RoutePresetPicker() {
       >
         <select
           id="rf-route-preset"
-          class={INPUT_CLASS}
+          class={SELECT_CLASS}
           value={f.route_preset}
           onChange={handleChange}
         >
@@ -135,7 +135,7 @@ function FrequencyPresetPicker() {
     >
       <select
         id="rf-frequency-preset"
-        class={INPUT_CLASS}
+        class={SELECT_CLASS}
         value={f.frequency_preset}
         onChange={handleChange}
       >

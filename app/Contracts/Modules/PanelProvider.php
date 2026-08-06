@@ -9,7 +9,6 @@ use App\Filament\Pages\AddonSettings;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
-use App\Filament\Plugins\SidebarCollapseTogglePlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -89,7 +88,7 @@ abstract class PanelProvider extends FilamentPanelProvider
             ->navigationGroups([
                 NavigationGroup::Operations->name,
                 NavigationGroup::Config->name,
-                NavigationGroup::Developers->name,
+                NavigationGroup::System->name,
             ])
             ->navigationItems([
                 NavigationItem::make()
@@ -107,7 +106,6 @@ abstract class PanelProvider extends FilamentPanelProvider
                 PanelSwitcherPlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
-                SidebarCollapseTogglePlugin::make(),
             ])
             ->bootUsing(function (): void {
                 activity()->enableLogging();

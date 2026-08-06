@@ -14,11 +14,23 @@
  * pay no cost beyond this thin entry.
  */
 
+// The console rail is fixed collapsed on desktop; the collapse controls are
+// removed. Pin Filament's persisted sidebar state before Alpine reads it.
+// Filament's sidebar store (vendor/filament/filament/resources/js/stores/
+// sidebar.js) persists via `window.Alpine.$persist(true).as('isOpenDesktop')`
+// — Alpine's persist plugin uses the `.as()` alias as the raw localStorage
+// key with no `_x_` prefix (that prefix only applies when `.as()` is NOT
+// called), so the real key is `isOpenDesktop`, not `_x_isOpenDesktop`.
+localStorage.setItem("isOpenDesktop", JSON.stringify(false));
+
 import axios from "axios";
 
 import config from "./config";
 import request from "./request";
 import Storage from "./storage";
+import "./rail-nav";
+import "./theme-picker";
+import "./utc-clock";
 
 window.axios = axios;
 

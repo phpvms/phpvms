@@ -24,7 +24,7 @@ class AwardResource extends Resource
 {
     protected static ?string $model = Award::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Pilots;
 
     protected static ?int $navigationSort = 6;
 

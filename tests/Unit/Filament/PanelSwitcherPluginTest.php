@@ -14,8 +14,10 @@ it('renders an entry per panel and marks the current one active', function (): v
     $sample = Panel::make()->id('sample')->path('admin/sample');
 
     $html = view('filament.plugins.panel-switcher', [
-        'panels'  => [$admin, $sample],
-        'current' => $admin,
+        'panels'    => [$admin, $sample],
+        'current'   => $admin,
+        'brandName' => 'phpvms',
+        'addonsUrl' => null,
     ])->render();
 
     // Both panels are linked by their path...
@@ -24,17 +26,23 @@ it('renders an entry per panel and marks the current one active', function (): v
         // ...the human labels are present...
         ->and($html)->toContain('Sample')
         // ...and the current (admin) panel is flagged active.
-        ->and($html)->toContain('aria-current="page"');
+        ->and($html)->toContain('aria-current="true"')
+        // ...and the admin panel is sorted first in the menu.
+        ->and(strpos($html, url('admin')))->toBeLessThan(strpos($html, url('admin/sample')));
 });
 
-it('does not render a dropdown when only one panel is accessible', function (): void {
+it('renders a static brand button without a dropdown when only one panel is accessible', function (): void {
     $admin = Panel::make()->id('admin')->path('admin');
 
     $html = trim(view('filament.plugins.panel-switcher', [
-        'panels'  => [$admin],
-        'current' => $admin,
+        'panels'    => [$admin],
+        'current'   => $admin,
+        'brandName' => 'phpvms',
+        'addonsUrl' => null,
     ])->render());
 
-    // Guarded by `@if (count($panels) > 1)` — nothing to switch to.
-    expect($html)->toBe('');
+    // Guarded by `@if (count($panels) > 1)` — nothing to switch to, so it
+    // renders the static brand button with no dropdown markup.
+    expect($html)->toContain('fi-brandbtn')
+        ->and($html)->not->toContain('fi-dropdown');
 });

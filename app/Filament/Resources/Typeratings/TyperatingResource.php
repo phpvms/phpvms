@@ -20,7 +20,7 @@ use UnitEnum;
 
 class TyperatingResource extends Resource
 {
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Fleet;
 
     protected static ?int $navigationSort = 5;
 

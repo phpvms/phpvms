@@ -28,7 +28,7 @@ class Finances extends Page
     use AuthorizesAccess;
     use HasFiltersForm;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Finance;
 
     protected static ?int $navigationSort = 5;
 

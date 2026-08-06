@@ -25,7 +25,7 @@ class OAuthClientResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
     #[Override]
     public static function form(Schema $schema): Schema

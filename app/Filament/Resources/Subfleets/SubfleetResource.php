@@ -31,7 +31,7 @@ class SubfleetResource extends Resource
 {
     protected static ?string $model = Subfleet::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Fleet;
 
     protected static ?int $navigationSort = 3;
 

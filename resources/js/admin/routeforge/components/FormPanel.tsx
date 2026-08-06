@@ -27,7 +27,7 @@ import { AirportPicker } from "./AirportPicker";
 const TOUR_TOPOLOGY = "tour";
 import { BundleConfigSection } from "./BundleConfigSection";
 import { DaysPicker } from "./DaysPicker";
-import { Field, INPUT_CLASS } from "./Field";
+import { Field, SELECT_CLASS } from "./Field";
 import { FlightNumberStrategyPicker } from "./FlightNumberStrategyPicker";
 import { PresetPicker } from "./PresetPicker";
 import { ReturnFlightsToggle } from "./ReturnFlightsToggle";
@@ -128,7 +128,7 @@ function AirlineSelect() {
     >
       <select
         id="rf-airline"
-        class={INPUT_CLASS}
+        class={SELECT_CLASS}
         value={f.airline_id === null ? "" : String(f.airline_id)}
         onChange={handleChange}
       >
@@ -171,7 +171,7 @@ function FlightTypeSelect() {
     >
       <select
         id="rf-flight-type"
-        class={INPUT_CLASS}
+        class={SELECT_CLASS}
         value={f.flight_type ?? ""}
         onChange={handleChange}
       >
@@ -189,7 +189,7 @@ function FlightTypeSelect() {
 function EventPlaceholder() {
   return (
     <Field label={t("form.event")} hint="Event picker deferred to v2 (no /events endpoint yet).">
-      <select class={INPUT_CLASS} disabled>
+      <select class={SELECT_CLASS} disabled>
         <option>— Events backend pending —</option>
       </select>
     </Field>

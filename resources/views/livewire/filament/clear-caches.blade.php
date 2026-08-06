@@ -4,5 +4,6 @@
         :tooltip="__('filament.maintenance_clear_cache')"
         color="gray"
         wire:click="clear"
+        class="fi-clear-caches-btn"
     />
 </div>

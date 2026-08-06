@@ -118,7 +118,11 @@ return [
     'addons'                                    => 'Add-Ons',
     'addon_remove_tables'                       => 'Also remove database tables',
     'addon_remove_tables_help'                  => "Drops the add-on's tables and data. This cannot be undone.",
-    'developers'                                => 'Developers',
+    'planning'                                  => 'Planning',
+    'fleet'                                     => 'Fleet',
+    'pilots'                                    => 'Pilots',
+    'finance'                                   => 'Finance',
+    'system'                                    => 'System',
     'today'                                     => 'Today',
     'this_week'                                 => 'This week',
     'this_month'                                => 'This month',
@@ -176,7 +180,7 @@ return [
         ],
     ],
     'flights' => [
-        'navigation_label'           => 'Flights',
+        'navigation_label'           => 'Schedules',
         'fields'                     => ['bundle' => 'Flight Bundle'],
         'bundle_owned_dates_message' => "Date pickers are hidden because this flight's bundle <a href=\":url\" class=\"text-primary-600 hover:underline\">:bundle</a> owns its schedule window (:start to :end). Edit the bundle to change dates.",
         'status'                     => [

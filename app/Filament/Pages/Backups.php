@@ -23,7 +23,7 @@ class Backups extends BaseBackups
     #[Override]
     public static function getNavigationGroup(): UnitEnum
     {
-        return NavigationGroup::Developers;
+        return NavigationGroup::System;
     }
 
     /**

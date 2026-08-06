@@ -9,6 +9,8 @@ use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
+use Modules\AddonManager\Filament\Pages\Addons;
+use Throwable;
 
 /**
  * Renders a panel-switcher dropdown at the left of the topbar.
@@ -72,9 +74,31 @@ final class PanelSwitcherPlugin implements Plugin
             $panels[] = $panel;
         }
 
+        // The admin panel always leads the menu; the rest keep registry order.
+        usort($panels, static fn (Panel $a, Panel $b): int => ($b->getId() === 'admin') <=> ($a->getId() === 'admin'));
+
         return view('filament.plugins.panel-switcher', [
-            'panels'  => $panels,
-            'current' => $current,
+            'panels'    => $panels,
+            'current'   => $current,
+            'brandName' => config('app.name') ?: 'phpvms',
+            'addonsUrl' => $this->addonsUrl(),
         ]);
+    }
+
+    /**
+     * URL of the addon manager page, or null when the module isn't
+     * installed or the current user can't access it.
+     */
+    private function addonsUrl(): ?string
+    {
+        try {
+            if (!class_exists(Addons::class) || !Addons::canAccess()) {
+                return null;
+            }
+
+            return Addons::getUrl();
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

@@ -23,7 +23,7 @@ class FareResource extends Resource
 {
     protected static ?string $model = Fare::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Finance;
 
     protected static ?int $navigationSort = 4;
 

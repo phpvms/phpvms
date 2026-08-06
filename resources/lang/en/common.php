@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'dashboard'       => 'Dashboard',
     'administration'  => 'Admin',
+    'panels'          => 'Panels',
     'flight'          => 'Flight|Flights',
     'live_map'        => 'Live Map',
     'pilot'           => 'Pilot|Pilots',
@@ -114,6 +115,7 @@ return [
     'enabled'               => 'Enabled',
     'enable'                => 'Enable',
     'addons'                => 'Add-Ons',
+    'manage_addons'         => 'Manage add-ons',
     'page'                  => 'Page',
     'icon'                  => 'Icon',
     'public'                => 'Public',

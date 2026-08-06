@@ -27,7 +27,7 @@ class FlightBundleResource extends Resource
 {
     protected static ?string $model = FlightBundle::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Planning;
 
     protected static ?int $navigationSort = 2;
 

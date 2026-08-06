@@ -8,10 +8,11 @@ use App\Filament\Pages\Backups;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
-use App\Filament\Plugins\SidebarCollapseTogglePlugin;
+use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -74,23 +75,49 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('14.5rem')
+            // Rail-foot avatar, not a topbar dropdown — the console rail is
+            // the one persistent chrome element, so account access lives
+            // there instead of in the bar that scrolls out of memory.
+            ->userMenu(position: UserMenuPosition::Sidebar)
+            // 76px collapsed — the console rail width, wide enough for the
+            // module label the theme draws under each icon.
+            ->collapsedSidebarWidth('4.75rem')
             ->maxContentWidth(Width::Full)
+            // Icons turn the collapsed desktop sidebar into a module rail:
+            // Filament renders the group icon instead of its items, and opens
+            // the items in a dropdown beside it. That is the console's rail
+            // plus its flyout menu, with no custom markup.
+            // The module rail, in order. Dashboard stays ungrouped so it sits
+            // on the rail as its own item rather than inside a module.
             ->navigationGroups([
-                EnumsNavigationGroup::Operations->name,
-                EnumsNavigationGroup::Config->name,
-                EnumsNavigationGroup::Developers->name,
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
+                    ->icon(Heroicon::OutlinedPaperAirplane),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
+                    ->icon(Heroicon::OutlinedCalendarDays),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
+                    ->icon(Heroicon::OutlinedCube),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
+                    ->icon(Heroicon::OutlinedUsers),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
+                    ->icon(Heroicon::OutlinedBanknotes),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
+                    ->icon(Heroicon::OutlinedCog6Tooth),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
+                    ->icon(Heroicon::OutlinedCommandLine),
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
 
                 NavigationItem::make()
-                    ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
-                    ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->url('/'),
-
-                NavigationItem::make()
                     ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
-                    ->group(EnumsNavigationGroup::Developers)
+                    ->group(EnumsNavigationGroup::System)
                     ->sort(3)
                     ->icon(Heroicon::OutlinedDocumentText)
                     ->label(fn (): string => __('common.view_logs'))
@@ -102,7 +129,6 @@ class AdminPanelProvider extends PanelProvider
                 PanelSwitcherPlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
-                SidebarCollapseTogglePlugin::make(),
             ])
             ->bootUsing(function (): void {
                 activity()->enableLogging();
@@ -116,10 +142,29 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => view('filament.auth.login-hero')->render(),
             )
+            // UTC clock, pinned to the head of the module rail.
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_START,
+                fn (): string => view('filament.shared.rail-clock')->render(),
+            )
+            // Workspace navigator: the active module's items as topbar tabs,
+            // so moving inside a module never needs the rail. Hooked after the
+            // logo rather than at TOPBAR_START, which would render it ahead of
+            // the brand.
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_LOGO_AFTER,
+                fn (): string => view('filament.shared.workspace-nav')->render(),
+            )
             // Inject vite this way - it might not exist when this is registered
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
+            )
+            // Theme picker: brand colour, appearance, density — lands in the
+            // topbar tools cluster right before the search box.
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn (): string => view('filament.plugins.theme-picker')->render(),
             )
             ->breadcrumbs(false)
             ->unsavedChangesAlerts()

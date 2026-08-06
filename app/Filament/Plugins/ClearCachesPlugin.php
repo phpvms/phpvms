@@ -25,7 +25,7 @@ final class ClearCachesPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->renderHook(
-            PanelsRenderHook::USER_MENU_BEFORE,
+            PanelsRenderHook::GLOBAL_SEARCH_AFTER,
             fn (): string => Blade::render(
                 '@livewire($component)',
                 ['component' => ClearCaches::class],
