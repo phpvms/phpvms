@@ -463,6 +463,11 @@
   margin-top: 2px;
   font-size: 12.5px;
   color: color-mix(in oklab, white 84%, var(--primary-600));
+  /* Sublines can carry a state chip beside text (PIREP view) — keep a gap
+   * between inline children without affecting single-child sublines. */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Subheading metrics (mockup .head-metrics, theme.css:1082-1112). Renders
@@ -1904,9 +1909,13 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * doesn't — same mechanism .fi-section already relies on above.
  * ------------------------------------------------------------------------- */
 /* The mockup's workspace rhythm is one 14px gap everywhere (gap-3.5).
- * Filament's schema grids default to 24px — tightened for page-level
- * content grids only; grids INSIDE sections (form layouts) keep vendor
- * spacing. */
+ * Filament's schema grids default to 24px and .fi-page-content itself to
+ * 32px — tightened for page-level content only; grids INSIDE sections
+ * (form layouts) keep vendor spacing. */
+.fi-page-content {
+  gap: 14px;
+}
+
 .fi-page-content .fi-grid:not(.fi-section *) {
   gap: 14px;
 }
@@ -2106,4 +2115,685 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   height: 11px;
   border-radius: 1px;
   vertical-align: -1px;
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — in-page tabs (mockup .subtabs/.subtab, theme.css:1633-1658).
+ * ------------------------------------------------------------------------- */
+.subtabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--surface-2);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.subtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px 8px;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: var(--ink-3);
+  border-bottom: 2px solid transparent;
+  border-right: 1px solid var(--line-soft);
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.subtab svg {
+  width: 14px;
+  height: 14px;
+}
+
+.subtab:hover {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+.subtab[aria-selected="true"] {
+  background-color: var(--surface);
+  color: var(--ink);
+  border-bottom-color: var(--primary-600);
+  font-weight: 550;
+}
+
+.subtab em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — split layout with a sticky context rail (mockup .with-context/
+ * .context, theme.css:1311-1318, responsive collapse theme.css:2080-2088).
+ *
+ * top: 58px = the 44px topbar plus the page's 14px section gap, same value
+ * the mockup uses for its own (taller) chrome.
+ * ------------------------------------------------------------------------- */
+.with-context {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 350px;
+}
+
+.context {
+  position: sticky;
+  top: 58px;
+}
+
+@media (max-width: 1080px) {
+  .with-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .context {
+    position: static;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — route bar (mockup .route-bar family, theme.css:1687-1730).
+ * ------------------------------------------------------------------------- */
+.route-bar {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--surface-2);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.route-bar__end {
+  min-width: 0;
+}
+
+.route-bar__end--arr {
+  text-align: right;
+}
+
+.route-bar__icao {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.route-bar__name {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-bar__time {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+.route-bar__mid {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: 150px;
+}
+
+.route-bar__leg {
+  width: 100%;
+  height: 1px;
+  position: relative;
+  background-color: var(--line-strong);
+}
+
+.route-bar__leg::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  border-left: 6px solid var(--line-strong);
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+}
+
+.route-bar__figures {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* Route string (mockup .route-string, theme.css:1732-1739). */
+.route-string {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  background-color: var(--sunken);
+  overflow-wrap: break-word;
+}
+
+.route-string b {
+  color: var(--ink);
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — phase legend (mockup .phase-legend family, theme.css:1742-1761).
+ * ------------------------------------------------------------------------- */
+.phase-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.phase-legend__item {
+  display: grid;
+  gap: 1px;
+  padding: 5px 9px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--line-soft);
+  background-color: var(--surface-2);
+  min-width: 88px;
+}
+
+.phase-legend__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+.phase-legend__swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+}
+
+.phase-legend__value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — read-out grid (mockup .readout, theme.css:1764-1779).
+ * ------------------------------------------------------------------------- */
+.readout {
+  display: grid;
+  border-top: 1px solid var(--line-soft);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.readout > div {
+  padding: 7px 12px;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.readout dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+.readout dd {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — activity log row + phase tag (mockup theme.css:1781-1789).
+ * The first cell just needs its own color/font; row height and cell padding
+ * stay owned by the table it renders in (.fi-ta-cell density rules above) —
+ * this doesn't set its own height.
+ * ------------------------------------------------------------------------- */
+.log-row td:first-child {
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+}
+
+.phase-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 2px;
+  border: 1px solid;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw state chips (mockup .chip, theme.css:1378-1410). .fi-badge above covers
+ * Filament's own badges; the PIREP view's raw markup (phase tags, context
+ * panel status) uses these directly instead of a badge component, so both
+ * need the same palette.
+ * ------------------------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 2px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.chip::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background-color: currentColor;
+}
+
+.chip--plain::before {
+  display: none;
+}
+
+.chip--ok {
+  color: var(--ok);
+  background-color: var(--ok-soft);
+  border-color: var(--ok-line);
+}
+
+.chip--warn {
+  color: var(--warn);
+  background-color: var(--warn-soft);
+  border-color: var(--warn-line);
+}
+
+.chip--bad {
+  color: var(--bad);
+  background-color: var(--bad-soft);
+  border-color: var(--bad-line);
+}
+
+.chip--info {
+  color: var(--info);
+  background-color: var(--info-soft);
+  border-color: var(--info-line);
+}
+
+.chip--maint {
+  color: var(--maint);
+  background-color: var(--maint-soft);
+  border-color: var(--maint-line);
+}
+
+.chip--mute {
+  color: var(--mute);
+  background-color: var(--mute-soft);
+  border-color: var(--mute-line);
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — definition list (mockup .dl, theme.css:1565-1593).
+ * ------------------------------------------------------------------------- */
+.dl {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+}
+
+.dl > div {
+  display: contents;
+}
+
+.dl dt,
+.dl dd {
+  display: flex;
+  align-items: center;
+  gap: 0.34em;
+  min-height: 29px;
+  margin: 0;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12.5px;
+}
+
+.dl dt {
+  background-color: var(--surface-2);
+  border-right: 1px solid var(--line-soft);
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+.dl dd {
+  color: var(--ink);
+}
+
+.dl > div:last-child dt,
+.dl > div:last-child dd {
+  border-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — context panel head/actions (mockup .context__*,
+ * theme.css:1547-1563, 1595-1597). Same 6px-outer/5px-inset relationship as
+ * .fi-section-has-header above — the context panel is a bordered panel too.
+ * ------------------------------------------------------------------------- */
+.context__head {
+  display: grid;
+  gap: 10px;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 11px 12px 10px;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--surface-2);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.context__eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+}
+
+.context__title {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.context__sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.context__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  background-color: var(--surface-2);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw filter bar (mockup .filters/.field/.result-count, theme.css:1600-1630).
+ * `.fi-ta-header-toolbar` above covers Filament's own table toolbar; the
+ * PIREP view's raw markup uses these directly instead.
+ * ------------------------------------------------------------------------- */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--surface-2);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 27px;
+  padding: 0 8px;
+  border-radius: 3px;
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.field svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-4);
+}
+
+.field select,
+.field input {
+  border: 0;
+  background-color: transparent;
+  padding: 0;
+  outline: none;
+  color: var(--ink);
+  font: inherit;
+}
+
+.filters__spacer {
+  flex: 1;
+}
+
+.result-count {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.result-count b {
+  font-family: var(--font-mono);
+  color: var(--ink-2);
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw segmented control (mockup .segmented, theme.css:1145-1164) — chart
+ * series / sort toggles inside a panel head. Distinct from the theme picker's
+ * `.fi-picker-segmented` above; same accent formula for consistency.
+ * ------------------------------------------------------------------------- */
+.segmented {
+  display: inline-flex;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface);
+}
+
+.segmented button {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--ink-3);
+  border-right: 1px solid var(--line);
+  transition:
+    background-color 100ms,
+    color 100ms;
+}
+
+.segmented button:last-child {
+  border-right: 0;
+}
+
+.segmented button:hover {
+  background-color: var(--surface-2);
+  color: var(--ink);
+}
+
+.segmented button[aria-pressed="true"] {
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+  color: var(--primary-600);
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Ghost button (mockup .ghost-btn, theme.css:1284-1295) — panel-tool icon
+ * buttons (export, refresh) that don't warrant a bordered .fi-btn.
+ * ------------------------------------------------------------------------- */
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 3px;
+  color: var(--ink-3);
+  font-size: 12px;
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.ghost-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ghost-btn:hover {
+  background-color: var(--sunken);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw panel body/foot (mockup .panel__body/--flush/--centred/.panel__foot,
+ * theme.css:1268-1282). `.fi-section-content`/`.fi-section-footer` above
+ * cover Filament's own `<x-filament::section>`; the PIREP view's tabbed
+ * panel uses these raw classes on its own content/foot divs instead.
+ * ------------------------------------------------------------------------- */
+.panel__body {
+  padding: 12px;
+}
+
+.panel__body--flush {
+  padding: 0;
+}
+
+.panel__body--centred {
+  display: grid;
+  align-content: center;
+  flex: 1 1 auto;
+  overflow-x: auto;
+}
+
+.panel__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+/* Strong identifier variant (mockup .id--strong, theme.css:706-709) —
+ * extends .id above (theme.css:2065-2072). */
+.id--strong {
+  color: var(--ink);
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw data table (mockup .tbl, theme.css:1321-1375) — for hand-rolled tables
+ * inside custom blades (PIREP view flight log / finances), where Filament's
+ * .fi-ta-* skin doesn't apply. Same visual system as the Filament tables:
+ * sticky uppercase heads, 30px rows, hover, no zebra.
+ * ------------------------------------------------------------------------- */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.tbl thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--surface-2);
+  text-align: left;
+  white-space: nowrap;
+  padding: 7px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.tbl tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-2);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+html[data-density="comfortable"] .tbl tbody td {
+  padding-block: 10px;
+}
+
+.tbl tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tbl tbody tr:hover td {
+  background-color: var(--surface-2);
+}
+
+.tbl .r,
+.tbl th.r {
+  text-align: right;
+}
+
+.tbl__group td {
+  background-color: var(--sunken);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  height: 26px;
+}
+
+.tbl__primary {
+  color: var(--ink);
+  font-weight: 550;
+}
+
+.tbl a.tbl__primary:hover {
+  color: var(--primary-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

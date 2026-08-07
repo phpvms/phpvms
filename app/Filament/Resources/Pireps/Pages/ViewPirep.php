@@ -17,8 +17,10 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 use Override;
 use Throwable;
 
@@ -76,6 +78,46 @@ class ViewPirep extends ViewRecord
         $parts[] = $record->dpt_airport_id.'→'.$record->arr_airport_id;
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * Plain-text subline under the heading (mockup pirep.html:476):
+     * "{pilot name} · filed {date} via {source}". Mirrors the source-label
+     * logic the old avatar-hero header partial used to compute.
+     */
+    #[Override]
+    public function getSubheading(): string|Htmlable|null
+    {
+        $record = $this->record;
+
+        $filed = $record->submitted_at
+            ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
+            : null;
+
+        $sourceLabel = filled($record->source_name)
+            ? $record->source?->getLabel().' · '.$record->source_name
+            : $record->source?->getLabel();
+
+        if (filled($sourceLabel)) {
+            $filed = filled($filed) ? $filed.' via '.$sourceLabel : 'via '.$sourceLabel;
+        }
+
+        $parts = array_filter([$record->user?->name, $filed], fn (?string $part): bool => filled($part));
+
+        /* State chip rides the subline (mockup puts it beside the actions) so
+         * the report's state is visible without opening a tab. */
+        $chipClass = match ($record->state->getColor()) {
+            'success' => 'chip--ok',
+            'warning' => 'chip--warn',
+            'danger'  => 'chip--bad',
+            'info'    => 'chip--info',
+            default   => 'chip--mute',
+        };
+        $chip = '<span class="chip '.$chipClass.'">'.e($record->state->getLabel()).'</span>';
+
+        return new HtmlString(
+            $chip.($parts === [] ? '' : '<span>'.e(implode(' · ', $parts)).'</span>'),
+        );
     }
 
     #[Override]
