@@ -43,26 +43,34 @@ class AdminPanelProvider extends BasePanelProvider
             // plus its flyout menu, with no custom markup.
             // The module rail, in order. Dashboard stays ungrouped so it sits
             // on the rail as its own item rather than inside a module.
+            // Keyed by enum case name: NavigationManager matches an item's group
+            // against the registered array key first, and only falls back to
+            // comparing translated labels. Bare (numerically-indexed) entries hit
+            // that fallback and stop matching under any locale whose label differs
+            // from the case name, which silently drops the icon.
             ->navigationGroups([
-                NavigationGroup::make()
+                EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
                     ->icon('tabler-plane'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Planning->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
                     ->icon('tabler-calendar-time'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Fleet->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
                     ->icon('tabler-box'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Pilots->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
                     ->icon('tabler-users'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Finance->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
                     ->icon('tabler-cash'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
                     ->icon('tabler-settings'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::AddOns->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::AddOns->getLabel())
+                    ->icon('tabler-puzzle'),
+                EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
                     ->icon('tabler-terminal'),
             ])

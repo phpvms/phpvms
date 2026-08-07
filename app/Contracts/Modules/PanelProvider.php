@@ -53,15 +53,17 @@ abstract class PanelProvider extends BasePanelProvider
             /* Icon-bearing group objects, mirroring AdminPanelProvider —
              * groups registered as bare name strings have no icon, so the
              * collapsed rail can't render its icon-only trigger and falls
-             * back to stacking every item inline. */
+             * back to stacking every item inline. Keys are enum case names so
+             * NavigationManager matches on the key rather than falling back to
+             * the translated label, which only lines up under English. */
             ->navigationGroups([
-                NavigationGroup::make()
+                EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
                     ->icon('tabler-plane'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
                     ->icon('tabler-settings'),
-                NavigationGroup::make()
+                EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
                     ->icon('tabler-terminal'),
             ])
