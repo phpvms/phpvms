@@ -15,7 +15,6 @@ use BackedEnum;
 use Filament\Resources\ParentResourceRegistration;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +26,7 @@ class FlightResource extends Resource
 {
     protected static ?string $model = Flight::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-map';
 
     protected static ?string $parentResource = FlightBundleResource::class;
 

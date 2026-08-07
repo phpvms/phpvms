@@ -1,25 +1,37 @@
 <?php
 
 use App\Enums\PirepState;
+use App\Filament\Resources\Pireps\Pages\ListPireps;
 use App\Models\Pirep;
 use Database\Seeders\RolesPermissionsSeeder;
+use Livewire\Livewire;
 
 /**
- * Smoke test: feed-style PIREP admin list renders.
- *
- * Verifies the Filament Layout\View + custom row partial wiring works
- * end-to-end against the real list page route.
+ * Smoke test: the PIREP admin list renders as a standard Filament table.
  */
-test('admin pirep list renders feed-style rows', function (): void {
+test('admin pirep list renders submitted pireps in the table', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
     $pirep = Pirep::factory()->create(['state' => PirepState::PENDING]);
 
-    $this->actingAs($admin)
-        ->get('/admin/pireps')
+    $this->actingAs($admin);
+
+    Livewire::test(ListPireps::class)
         ->assertSuccessful()
-        ->assertSee($pirep->dpt_airport_id)
-        ->assertSee($pirep->arr_airport_id)
-        ->assertSee('fi-pirep-row', false);
+        ->assertCanSeeTableRecords([$pirep])
+        ->assertSee($pirep->ident);
+});
+
+test('admin pirep list shows the head metrics subheading', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    Pirep::factory()->create(['state' => PirepState::PENDING]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ListPireps::class)
+        ->assertSuccessful()
+        ->assertSee(__('pireps.state.pending'));
 });

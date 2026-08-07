@@ -14,7 +14,6 @@ use App\Models\OauthClient;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -23,7 +22,7 @@ class OAuthClientResource extends Resource
 {
     protected static ?string $model = OauthClient::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-key';
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 

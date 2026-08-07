@@ -12,7 +12,6 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListFares extends ListRecords
@@ -38,7 +37,7 @@ class ListFares extends ListRecords
                 ->exporter(FareExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }

@@ -13,7 +13,6 @@ use App\Models\Typerating;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -24,7 +23,7 @@ class TyperatingResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRocketLaunch;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-rocket';
 
     protected static ?string $model = Typerating::class;
 

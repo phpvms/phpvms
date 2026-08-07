@@ -7,7 +7,6 @@ use App\Models\Invite;
 use App\Notifications\Messages\InviteLink;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Override;
@@ -21,7 +20,7 @@ class ManageInvites extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle)
+                ->icon('tabler-circle-plus')
                 ->mutateDataUsing(function (array $data): array {
                     if (!is_null($data['email'])) {
                         $data['usage_limit'] = 1;

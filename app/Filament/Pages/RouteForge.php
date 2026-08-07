@@ -7,7 +7,6 @@ namespace App\Filament\Pages;
 use App\Enums\NavigationGroup;
 use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Override;
 use UnitEnum;
 
@@ -31,7 +30,7 @@ class RouteForge extends Page
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-stack';
 
     protected string $view = 'filament.pages.route-forge';
 

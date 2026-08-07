@@ -12,7 +12,6 @@ use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -62,18 +61,18 @@ class AirlineForm
                             ->label(label: __('common.active'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon(Heroicon::CheckCircle)
+                            ->onIcon('tabler-check')
                             ->offColor('danger')
-                            ->offIcon(Heroicon::XCircle),
+                            ->offIcon('tabler-x'),
 
                         Toggle::make('low_cost')
                             ->label(__('filament.airline_low_cost'))
                             ->helperText(__('filament.airline_low_cost_hint'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon(Heroicon::CheckCircle)
+                            ->onIcon('tabler-check')
                             ->offColor('danger')
-                            ->offIcon(Heroicon::XCircle),
+                            ->offIcon('tabler-x'),
                     ])
                     ->columnSpanFull()
                     ->columns(3),

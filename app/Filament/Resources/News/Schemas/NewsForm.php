@@ -6,7 +6,6 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class NewsForm
 {
@@ -31,9 +30,9 @@ class NewsForm
                     ->dehydrated(false)
                     ->default(false)
                     ->onColor('success')
-                    ->onIcon(Heroicon::CheckCircle)
+                    ->onIcon('tabler-check')
                     ->offColor('danger')
-                    ->offIcon(Heroicon::XCircle),
+                    ->offIcon('tabler-x'),
             ]);
     }
 }

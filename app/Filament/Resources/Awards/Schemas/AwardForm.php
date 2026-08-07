@@ -11,7 +11,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class AwardForm
 {
@@ -68,9 +67,9 @@ class AwardForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon(icon: Heroicon::XCircle)
+                            ->offIcon(icon: 'tabler-x')
                             ->offColor('danger')
-                            ->onIcon(icon: Heroicon::CheckCircle)
+                            ->onIcon(icon: 'tabler-check')
                             ->onColor('success')
                             ->default(true),
                     ])

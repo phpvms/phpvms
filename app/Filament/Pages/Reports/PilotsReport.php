@@ -6,7 +6,6 @@ namespace App\Filament\Pages\Reports;
 
 use App\Filament\Widgets\PilotHoursChart;
 use BackedEnum;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 /**
@@ -16,7 +15,7 @@ class PilotsReport extends BaseReportPage
 {
     protected static ?string $slug = 'pilots';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-users';
 
     protected static ?int $navigationSort = 2;
 

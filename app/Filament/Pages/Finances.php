@@ -18,7 +18,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Override;
 use UnitEnum;
@@ -32,7 +31,7 @@ class Finances extends Page
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-chart-bar';
 
     #[Override]
     public static function getNavigationLabel(): string

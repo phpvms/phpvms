@@ -5,46 +5,24 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
-use App\Filament\Plugins\ClearCachesPlugin;
-use App\Filament\Plugins\LanguageSwitcherPlugin;
-use App\Filament\Plugins\PanelSwitcherPlugin;
-use Filament\Enums\UserMenuPosition;
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
-use Filament\PanelProvider;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Support\Icons\Heroicon;
-use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
-class AdminPanelProvider extends PanelProvider
+class AdminPanelProvider extends BasePanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $panel = $panel
+        $panel = $this->applyConsoleChrome($panel)
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
             ->colors([
                 'primary' => Color::generatePalette('#067ec1'),
             ])
@@ -59,30 +37,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
             ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                PreventRequestForgery::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ])
-            ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('14.5rem')
-            // Rail-foot avatar, not a topbar dropdown — the console rail is
-            // the one persistent chrome element, so account access lives
-            // there instead of in the bar that scrolls out of memory.
-            ->userMenu(position: UserMenuPosition::Sidebar)
-            // 76px collapsed — the console rail width, wide enough for the
-            // module label the theme draws under each icon.
-            ->collapsedSidebarWidth('4.75rem')
-            ->maxContentWidth(Width::Full)
             // Icons turn the collapsed desktop sidebar into a module rail:
             // Filament renders the group icon instead of its items, and opens
             // the items in a dropdown beside it. That is the console's rail
@@ -92,25 +46,25 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
-                    ->icon(Heroicon::OutlinedPaperAirplane),
+                    ->icon('tabler-plane'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
-                    ->icon(Heroicon::OutlinedCalendarDays),
+                    ->icon('tabler-calendar-time'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
-                    ->icon(Heroicon::OutlinedCube),
+                    ->icon('tabler-box'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
-                    ->icon(Heroicon::OutlinedUsers),
+                    ->icon('tabler-users'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
-                    ->icon(Heroicon::OutlinedBanknotes),
+                    ->icon('tabler-cash'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
-                    ->icon(Heroicon::OutlinedCog6Tooth),
+                    ->icon('tabler-settings'),
                 NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
-                    ->icon(Heroicon::OutlinedCommandLine),
+                    ->icon('tabler-terminal'),
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
@@ -119,59 +73,16 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
                     ->group(EnumsNavigationGroup::System)
                     ->sort(3)
-                    ->icon(Heroicon::OutlinedDocumentText)
+                    ->icon('tabler-file-text')
                     ->label(fn (): string => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])
+            // Base plugins (panel switcher, caches, language) come from
+            // applyConsoleChrome(); plugins() is additive.
             ->plugins([
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-                PanelSwitcherPlugin::make(),
-                ClearCachesPlugin::make(),
-                LanguageSwitcherPlugin::make(),
-            ])
-            ->bootUsing(function (): void {
-                activity()->enableLogging();
-            })
-            ->brandName('phpvms')
-            ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
-            ->brandLogoHeight('3rem')
-            ->font('Geist')
-            ->favicon(asset('assets/img/favicon.png'))
-            ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn (): string => view('filament.auth.login-hero')->render(),
-            )
-            // UTC clock, pinned to the head of the module rail.
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_START,
-                fn (): string => view('filament.shared.rail-clock')->render(),
-            )
-            // Workspace navigator: the active module's items as topbar tabs,
-            // so moving inside a module never needs the rail. Hooked after the
-            // logo rather than at TOPBAR_START, which would render it ahead of
-            // the brand.
-            ->renderHook(
-                PanelsRenderHook::TOPBAR_LOGO_AFTER,
-                fn (): string => view('filament.shared.workspace-nav')->render(),
-            )
-            // Inject vite this way - it might not exist when this is registered
-            ->renderHook(
-                PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
-            )
-            // Theme picker: brand colour, appearance, density — lands in the
-            // topbar tools cluster right before the search box.
-            ->renderHook(
-                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
-                fn (): string => view('filament.plugins.theme-picker')->render(),
-            )
-            ->breadcrumbs(false)
-            ->unsavedChangesAlerts()
-            ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
-            ->errorNotifications()
-            ->databaseNotifications()
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ]);
 
         return $this->discoverModuleComponents($panel);
     }

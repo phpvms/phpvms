@@ -7,7 +7,6 @@ namespace App\Filament\Clusters;
 use App\Enums\NavigationGroup;
 use BackedEnum;
 use Filament\Clusters\Cluster;
-use Filament\Support\Icons\Heroicon;
 use Override;
 use UnitEnum;
 
@@ -21,7 +20,7 @@ class Reports extends Cluster
 
     protected static ?int $navigationSort = 6;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentChartBar;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-report';
 
     #[Override]
     public static function getNavigationLabel(): string

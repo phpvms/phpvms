@@ -12,7 +12,6 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ManageExpenses extends ManageRecords
@@ -38,7 +37,7 @@ class ManageExpenses extends ManageRecords
                 ->exporter(ExpenseExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }

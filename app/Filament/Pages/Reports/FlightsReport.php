@@ -10,7 +10,6 @@ use App\Filament\Widgets\LandingRateChart;
 use App\Filament\Widgets\PirepHistoryTable;
 use App\Filament\Widgets\PirepStateChart;
 use BackedEnum;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 /**
@@ -21,7 +20,7 @@ class FlightsReport extends BaseReportPage
 {
     protected static ?string $slug = 'flights';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-plane';
 
     protected static ?int $navigationSort = 1;
 

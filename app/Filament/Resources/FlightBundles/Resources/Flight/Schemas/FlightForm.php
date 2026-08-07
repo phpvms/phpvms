@@ -21,7 +21,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\HtmlString;
 
 class FlightForm
@@ -39,9 +38,9 @@ class FlightForm
                             Toggle::make('enabled')
                                 ->inline()
                                 ->label(__('common.enabled'))
-                                ->offIcon(Heroicon::XCircle)
+                                ->offIcon('tabler-x')
                                 ->offColor('danger')
-                                ->onIcon(Heroicon::CheckCircle)
+                                ->onIcon('tabler-check')
                                 ->onColor('success')
                                 ->default(true),
                         ])

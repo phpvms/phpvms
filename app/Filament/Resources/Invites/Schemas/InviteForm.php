@@ -7,7 +7,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class InviteForm
 {
@@ -44,9 +43,9 @@ class InviteForm
                     ->label(__('invites.email_link'))
                     ->helperText(__('filament.invite_email_link_hint'))
                     ->disabled(fn (Get $get): bool => $get('email') === null || $get('email') === '')
-                    ->offIcon(Heroicon::XCircle)
+                    ->offIcon('tabler-x')
                     ->offColor('danger')
-                    ->onIcon(Heroicon::CheckCircle)
+                    ->onIcon('tabler-check')
                     ->onColor('success'),
             ])
             ->columns();

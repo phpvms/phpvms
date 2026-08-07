@@ -33,6 +33,10 @@ return [
     'date_flown'           => 'Date Flown',
     'delete_pirep'         => 'Delete PIREP',
     'submitted'            => 'Submitted',
+    'tail'                 => 'Tail',
+    'block'                => 'Block',
+    'landing'              => 'Landing',
+    'filed'                => 'Filed',
     'source_types'         => [
         'manual' => 'Manual',
         'acars'  => 'ACARS',

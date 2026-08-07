@@ -7,7 +7,6 @@ namespace App\Filament\Resources\FlightBundles\Pages;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListFlightBundles extends ListRecords
@@ -18,7 +17,7 @@ class ListFlightBundles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->icon(Heroicon::OutlinedPlusCircle),
+            CreateAction::make()->icon('tabler-circle-plus'),
         ];
     }
 }

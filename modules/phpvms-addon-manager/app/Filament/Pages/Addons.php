@@ -17,7 +17,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -47,7 +46,7 @@ class Addons extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-puzzle';
 
     protected string $view = 'addon-manager::filament.pages.addons';
 
@@ -530,7 +529,7 @@ class Addons extends Page
     {
         return Action::make('delete')
             ->label(__('filament-actions::delete.single.label'))
-            ->icon(Heroicon::OutlinedTrash)
+            ->icon('tabler-trash')
             ->color('danger')
             ->requiresConfirmation()
             ->schema([

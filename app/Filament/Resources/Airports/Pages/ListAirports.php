@@ -17,7 +17,6 @@ use Filament\Actions\ImportAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Width;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
@@ -51,11 +50,11 @@ class ListAirports extends ListRecords
                 ->exporter(AirportExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
 
             Action::make('bulkAdd')
                 ->label(__('airports.bulk_add'))
-                ->icon(Heroicon::OutlinedRectangleStack)
+                ->icon('tabler-stack')
                 ->modalHeading(__('airports.bulk_add'))
                 ->modalWidth(Width::TwoExtraLarge)
                 ->modalSubmitAction(false)

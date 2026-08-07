@@ -9,7 +9,6 @@ use App\Filament\Resources\News\NewsResource;
 use App\Models\News;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
@@ -22,7 +21,7 @@ class ListNews extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle)
+                ->icon('tabler-circle-plus')
                 ->mutateDataUsing(function (array $data): array {
                     $data['user_id'] = Auth::id();
 

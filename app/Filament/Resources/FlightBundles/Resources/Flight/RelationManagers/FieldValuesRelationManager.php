@@ -10,7 +10,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
@@ -57,7 +56,7 @@ class FieldValuesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->icon('tabler-circle-plus')
                     ->mutateDataUsing(function (array $data): array {
                         /** @var Flight $flight */
                         $flight = $this->getOwnerRecord();

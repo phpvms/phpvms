@@ -7,7 +7,6 @@ namespace App\Filament\Pages\Reports;
 use App\Filament\Widgets\AircraftUtilizationChart;
 use App\Filament\Widgets\FleetUtilizationTable;
 use BackedEnum;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 /**
@@ -18,7 +17,7 @@ class AircraftReport extends BaseReportPage
 {
     protected static ?string $slug = 'aircraft';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-globe';
 
     protected static ?int $navigationSort = 3;
 

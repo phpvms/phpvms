@@ -4,36 +4,19 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Pireps\Pages;
 
+use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\PirepFieldsAction;
 use App\Filament\Resources\Pireps\PirepResource;
-use App\Filament\Resources\Pireps\Widgets\PirepStats;
-use Filament\Pages\Concerns\ExposesTableToWidgets;
+use App\Models\Pirep;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
 use Override;
 use Throwable;
 
 class ListPireps extends ListRecords
 {
-    use ExposesTableToWidgets;
-
     protected static string $resource = PirepResource::class;
-
-    /**
-     * Custom blade view that renders pireps as cards instead of an embedded table.
-     * The page still extends ListRecords so Filament wires the Table object's
-     * filters, search, sort, and pagination via Livewire — we just don't render
-     * the table markup.
-     */
-    protected string $view = 'filament.pireps.pages.list-pireps';
-
-    #[Override]
-    public function content(Schema $schema): Schema
-    {
-        // No EmbeddedTable. The custom blade renders filters + cards directly.
-        return $schema->components([]);
-    }
 
     /**
      * The dashboard activity calendar deep-links here with
@@ -89,11 +72,19 @@ class ListPireps extends ListRecords
         ];
     }
 
+    /**
+     * Inline metrics row (band header eyebrow variant) replacing the old
+     * StatsOverviewWidget cards. `$total` mirrors the table's base query
+     * scope (see PirepsTable::configure) so the count matches what's
+     * actually listed.
+     */
     #[Override]
-    protected function getHeaderWidgets(): array
+    public function getSubheading(): string|Htmlable|null
     {
-        return [
-            PirepStats::class,
-        ];
+        return view('filament.pireps.partials.head-metrics', [
+            'total'    => Pirep::whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])->count(),
+            'pending'  => Pirep::where('state', PirepState::PENDING)->count(),
+            'accepted' => Pirep::where('state', PirepState::ACCEPTED)->count(),
+        ]);
     }
 }

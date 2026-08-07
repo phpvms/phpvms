@@ -13,7 +13,6 @@ use App\Models\Aircraft;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +24,7 @@ class AircraftResource extends Resource
 {
     protected static ?string $model = Aircraft::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-stack';
 
     protected static ?string $parentResource = SubfleetResource::class;
 

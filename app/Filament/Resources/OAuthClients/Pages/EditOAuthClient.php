@@ -11,7 +11,6 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 use Override;
 
@@ -44,7 +43,7 @@ class EditOAuthClient extends EditRecord
     {
         return Action::make('rotateSecret')
             ->label(__('oauth.rotate_secret'))
-            ->icon(Heroicon::OutlinedArrowPath)
+            ->icon('tabler-refresh')
             ->color('warning')
             ->requiresConfirmation()
             ->modalDescription(__('oauth.rotate_secret_confirm'))

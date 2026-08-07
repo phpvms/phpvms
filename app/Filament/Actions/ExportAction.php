@@ -84,8 +84,8 @@ class ExportAction extends Action
 
         $this->successNotificationTitle('Data exported successfully');
 
-        $this->icon('heroicon-o-document-arrow-down');
+        $this->icon('tabler-file-download');
 
-        $this->groupedIcon('heroicon-m-document-arrow-down');
+        $this->groupedIcon('tabler-file-download');
     }
 }

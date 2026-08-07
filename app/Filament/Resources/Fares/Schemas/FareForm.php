@@ -9,7 +9,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class FareForm
 {
@@ -79,9 +78,9 @@ class FareForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon(Heroicon::XCircle)
+                            ->offIcon('tabler-x')
                             ->offColor('danger')
-                            ->onIcon(Heroicon::CheckCircle)
+                            ->onIcon('tabler-check')
                             ->onColor('success'),
                     ])
                     ->columnSpanFull()

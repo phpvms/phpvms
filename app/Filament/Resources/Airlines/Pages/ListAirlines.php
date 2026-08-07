@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Airlines\Pages;
 use App\Filament\Resources\Airlines\AirlineResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListAirlines extends ListRecords
@@ -19,7 +18,7 @@ class ListAirlines extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }

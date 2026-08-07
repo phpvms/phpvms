@@ -7,7 +7,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class PirepFieldForm
 {
@@ -34,9 +33,9 @@ class PirepFieldForm
                 Toggle::make('required')
                     ->label(__('common.required'))
                     ->inline(false)
-                    ->offIcon(Heroicon::XCircle)
+                    ->offIcon('tabler-x')
                     ->offColor('danger')
-                    ->onIcon(Heroicon::CheckCircle)
+                    ->onIcon('tabler-check')
                     ->onColor('success'),
             ]);
     }

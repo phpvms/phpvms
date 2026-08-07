@@ -7,7 +7,6 @@ use App\Models\Pirep;
 use App\Services\PirepService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Support\Icons\Heroicon;
 
 class AcceptAction
 {
@@ -15,7 +14,7 @@ class AcceptAction
     {
         return Action::make('accept')
             ->color('success')
-            ->icon(Heroicon::CheckCircle)
+            ->icon('tabler-circle-check')
             ->label(__('common.accept'))
             ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
             ->action(function (Pirep $record): void {

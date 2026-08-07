@@ -9,12 +9,10 @@ use App\Filament\Resources\Pireps\Pages\ListPireps;
 use App\Filament\Resources\Pireps\Pages\ViewPirep;
 use App\Filament\Resources\Pireps\Schemas\PirepForm;
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
-use App\Filament\Resources\Pireps\Widgets\PirepStats;
 use App\Models\Pirep;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,7 +29,7 @@ class PirepResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-clipboard-list';
 
     public static function getNavigationBadge(): ?string
     {
@@ -68,14 +66,6 @@ class PirepResource extends Resource
             'index' => ListPireps::route('/'),
             'view'  => ViewPirep::route('/{record}'),
             'edit'  => EditPirep::route('/{record}/edit'),
-        ];
-    }
-
-    #[Override]
-    public static function getWidgets(): array
-    {
-        return [
-            PirepStats::class,
         ];
     }
 

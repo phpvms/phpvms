@@ -4,32 +4,14 @@ declare(strict_types=1);
 
 namespace App\Contracts\Modules;
 
-use App\Enums\NavigationGroup;
+use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\AddonSettings;
-use App\Filament\Plugins\ClearCachesPlugin;
-use App\Filament\Plugins\LanguageSwitcherPlugin;
-use App\Filament\Plugins\PanelSwitcherPlugin;
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationItem;
+use App\Providers\Filament\BasePanelProvider;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Filament\PanelProvider as FilamentPanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Icons\Heroicon;
-use Filament\View\PanelsRenderHook;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Override;
 use ReflectionClass;
 
@@ -53,7 +35,7 @@ use ReflectionClass;
  *
  * Octane-safe: no mutable instance state; all registration is idempotent.
  */
-abstract class PanelProvider extends FilamentPanelProvider
+abstract class PanelProvider extends BasePanelProvider
 {
     /**
      * The module's short machine key. Used as the panel id and path segment
@@ -64,67 +46,31 @@ abstract class PanelProvider extends FilamentPanelProvider
     #[Override]
     public function panel(Panel $panel): Panel
     {
-        $panel = $panel
+        $panel = $this->applyConsoleChrome($panel)
             ->id($this->moduleKey())
             ->path('admin/'.$this->moduleKey())
             ->colors($this->colors())
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                PreventRequestForgery::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ])
-            ->login()
-            ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('14.5rem')
+            /* Icon-bearing group objects, mirroring AdminPanelProvider —
+             * groups registered as bare name strings have no icon, so the
+             * collapsed rail can't render its icon-only trigger and falls
+             * back to stacking every item inline. */
             ->navigationGroups([
-                NavigationGroup::Operations->name,
-                NavigationGroup::Config->name,
-                NavigationGroup::System->name,
-            ])
-            ->navigationItems([
-                NavigationItem::make()
-                    ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
-                    ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->url(fn (): string => route('frontend.dashboard.index')),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
+                    ->icon('tabler-plane'),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
+                    ->icon('tabler-settings'),
+                NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
+                    ->icon('tabler-terminal'),
             ])
             ->pages([
                 Dashboard::class,
                 // Shared settings editor; auto-hidden unless this addon has
                 // registered settings (see AddonSettings::canAccess()).
                 AddonSettings::class,
-            ])
-            ->plugins([
-                PanelSwitcherPlugin::make(),
-                ClearCachesPlugin::make(),
-                LanguageSwitcherPlugin::make(),
-            ])
-            ->bootUsing(function (): void {
-                activity()->enableLogging();
-            })
-            ->brandName('phpvms')
-            ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
-            ->brandLogoHeight('3rem')
-            ->font('Geist')
-            ->favicon(asset('assets/img/favicon.png'))
-            ->renderHook(
-                PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
-            )
-            ->viteTheme('resources/css/filament/admin/theme.css')
-            ->unsavedChangesAlerts()
-            ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
-            ->breadcrumbs(false)
-            ->databaseNotifications()
-            ->errorNotifications();
+            ]);
 
         $this->discoverModuleComponents($panel);
 

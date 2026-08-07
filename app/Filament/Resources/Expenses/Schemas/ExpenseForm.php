@@ -9,7 +9,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class ExpenseForm
 {
@@ -57,16 +56,16 @@ class ExpenseForm
                         ->label(__('common.multiplier'))
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(Heroicon::CheckCircle)
+                        ->onIcon('tabler-check')
                         ->offColor('danger')
-                        ->offIcon(Heroicon::XCircle),
+                        ->offIcon('tabler-x'),
 
                     Toggle::make('active')
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(Heroicon::CheckCircle)
+                        ->onIcon('tabler-check')
                         ->offColor('danger')
-                        ->offIcon(Heroicon::XCircle),
+                        ->offIcon('tabler-x'),
                 ])
                     ->columnSpanFull()
                     ->columns(2),

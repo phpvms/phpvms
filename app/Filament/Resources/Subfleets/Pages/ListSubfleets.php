@@ -12,7 +12,6 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListSubfleets extends ListRecords
@@ -38,7 +37,7 @@ class ListSubfleets extends ListRecords
                 ->exporter(SubfleetExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }

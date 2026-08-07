@@ -12,7 +12,6 @@ use App\Models\Page;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -25,7 +24,7 @@ class PageResource extends Resource
 
     protected static ?int $navigationSort = 7;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-file-text';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -9,7 +9,6 @@ use App\Filament\Pages\Reports\AircraftReport;
 use App\Models\Subfleet;
 use App\Services\ExportService;
 use Filament\Actions\Action;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -68,7 +67,7 @@ class FleetUtilizationTable extends TableWidget
             ->headerActions([
                 Action::make('exportCsv')
                     ->label(__('filament.reports_fleet_export'))
-                    ->icon(Heroicon::OutlinedArrowDownTray)
+                    ->icon('tabler-download')
                     ->action(fn (): BinaryFileResponse => $this->exportCsv()),
             ])
             ->paginated([10, 25, 50]);

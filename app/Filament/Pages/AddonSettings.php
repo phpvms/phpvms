@@ -27,7 +27,6 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -52,7 +51,7 @@ class AddonSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-settings';
 
     protected static ?int $navigationSort = 99;
 
@@ -215,9 +214,9 @@ class AddonSettings extends Page
             return Toggle::make($setting->key)
                 ->label($setting->name)
                 ->helperText($setting->description)
-                ->offIcon(Heroicon::XCircle)
+                ->offIcon('tabler-x')
                 ->offColor('danger')
-                ->onIcon(Heroicon::CheckCircle)
+                ->onIcon('tabler-check')
                 ->onColor('success');
         }
 

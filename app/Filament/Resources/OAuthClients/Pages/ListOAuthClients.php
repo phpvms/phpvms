@@ -7,7 +7,6 @@ namespace App\Filament\Resources\OAuthClients\Pages;
 use App\Filament\Resources\OAuthClients\OAuthClientResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListOAuthClients extends ListRecords
@@ -19,7 +18,7 @@ class ListOAuthClients extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }

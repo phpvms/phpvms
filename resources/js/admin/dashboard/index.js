@@ -12,26 +12,74 @@ import * as d3 from "d3";
 const W = 800;
 const H = 240;
 
-const SEQUENTIAL = [
-  "#e0e7ff",
-  "#c7d2fe",
-  "#a5b4fc",
-  "#818cf8",
-  "#6366f1",
-  "#4f46e5",
-  "#4338ca",
-  "#3730a3",
-];
-const CATEGORICAL = [
-  "#4f46e5",
-  "#0ea5e9",
-  "#f59e0b",
-  "#ef4444",
-  "#10b981",
-  "#8b5cf6",
-  "#64748b",
-  "#ec4899",
-];
+/**
+ * Chart colours are read from the console's theme tokens (--primary-600,
+ * --ok/--warn/--bad/--info/--mute) instead of a hardcoded palette, so
+ * charts retint with the theme picker's brand colour and dark mode.
+ *
+ * resolveColor() forces the browser to resolve a `var()` reference to a
+ * concrete rgb() via a hidden probe element (getComputedStyle().color).
+ * This only works for *literal* custom properties: every --primary-N shade
+ * except --primary-600 is itself set by the theme picker as a
+ * `color-mix(in oklab, ...)` string, and Chrome's computed-value
+ * serialization for that returns an `oklab(...)`/`color(srgb ...)`
+ * string — which d3-color can't parse (it silently falls back to black).
+ * --primary-600 is always the literal brand hex, so it's safe; lighter/
+ * darker shades are mixed in JS with d3.interpolateRgb below instead of
+ * asking CSS to pre-mix them.
+ */
+let colorProbe = null;
+let colorCache = new Map();
+function resolveColor(cssVar) {
+  if (colorCache.has(cssVar)) return colorCache.get(cssVar);
+  if (!colorProbe) {
+    colorProbe = document.createElement("div");
+    colorProbe.style.cssText = "position:fixed;top:-9999px;left:-9999px;visibility:hidden;";
+    document.body.appendChild(colorProbe);
+  }
+  colorProbe.style.color = cssVar;
+  const resolved = getComputedStyle(colorProbe).color;
+  colorCache.set(cssVar, resolved);
+  return resolved;
+}
+
+function isDarkMode() {
+  return document.documentElement.classList.contains("dark");
+}
+
+/**
+ * 8-step sequential ramp (light wash -> deep accent), same shape as the old
+ * hardcoded indigo array so renderers can keep indexing into it. Built at
+ * render time so it tracks the current brand colour and appearance.
+ */
+function sequentialShades() {
+  const accent = resolveColor("var(--primary-600)");
+  const dark = isDarkMode();
+  // Light end: mostly white (light mode) or mostly the dark surface (dark
+  // mode) with a wash of accent, matching the ~12%/16% mixes elsewhere in
+  // the theme. Dark end: accent mixed toward black, like a primary-700/800
+  // shade — both computed in JS, not via CSS color-mix (see note above).
+  const lightEnd = dark
+    ? d3.interpolateRgb("black", accent)(0.16)
+    : d3.interpolateRgb("white", accent)(0.12);
+  const darkEnd = d3.interpolateRgb(accent, "black")(0.15);
+  const interpolate = d3.interpolateRgb(lightEnd, darkEnd);
+  return d3.range(8).map((i) => interpolate(i / 7));
+}
+
+/** Accent + console state colours, for categorical series (pie/doughnut). */
+function categoricalColors() {
+  return [
+    resolveColor("var(--primary-600)"),
+    resolveColor("var(--info)"),
+    resolveColor("var(--warn)"),
+    resolveColor("var(--bad)"),
+    resolveColor("var(--ok)"),
+    resolveColor("var(--mute)"),
+    "#8b5cf6",
+    "#ec4899",
+  ];
+}
 
 function svg(el, width, height) {
   el.replaceChildren();
@@ -89,10 +137,11 @@ function renderBar(el, data) {
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
+  const shades = sequentialShades();
   const x = d3.scaleBand().domain(labels).range([0, width]).padding(0.25);
   const max = Math.max(...values) * 1.1 || 1;
   const y = d3.scaleLinear().domain([0, max]).range([height, 0]);
-  const color = d3.scaleLinear().domain([0, max]).range([SEQUENTIAL[1], SEQUENTIAL[5]]);
+  const color = d3.scaleLinear().domain([0, max]).range([shades[1], shades[5]]);
 
   g.append("g")
     .call(d3.axisLeft(y).ticks(4).tickSizeOuter(0))
@@ -136,6 +185,7 @@ function renderLine(el, data) {
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
+  const shades = sequentialShades();
   const x = d3.scalePoint().domain(labels).range([0, width]);
   const min = Math.min(0, ...values);
   const max = Math.max(...values, 1);
@@ -153,19 +203,14 @@ function renderLine(el, data) {
     .y((v) => y(v))
     .curve(d3.curveMonotoneX);
 
-  plot
-    .append("path")
-    .datum(values)
-    .attr("d", area)
-    .attr("fill", SEQUENTIAL[3])
-    .attr("opacity", 0.25);
+  plot.append("path").datum(values).attr("d", area).attr("fill", shades[3]).attr("opacity", 0.25);
 
   plot
     .append("path")
     .datum(values)
     .attr("d", line)
     .attr("fill", "none")
-    .attr("stroke", SEQUENTIAL[5])
+    .attr("stroke", shades[5])
     .attr("stroke-width", 2);
 
   g.append("g")
@@ -190,7 +235,7 @@ function renderLine(el, data) {
     .attr("cx", (_, i) => x(labels[i]))
     .attr("cy", (v) => y(v))
     .attr("r", 2.5)
-    .attr("fill", SEQUENTIAL[6])
+    .attr("fill", shades[6])
     .append("title")
     .text((v, i) => `${labels[i]}: ${Number(v).toLocaleString()}`);
 }
@@ -215,7 +260,7 @@ function renderDoughnut(el, data) {
     .arc()
     .innerRadius(radius * 0.58)
     .outerRadius(radius);
-  const color = d3.scaleOrdinal().domain(labels).range(CATEGORICAL);
+  const color = d3.scaleOrdinal().domain(labels).range(categoricalColors());
 
   g.selectAll("path")
     .data(pie(values.map((v, i) => [labels[i], v])))
@@ -283,10 +328,11 @@ function renderHBar(el, data) {
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
+  const shades = sequentialShades();
   const y = d3.scaleBand().domain(labels).range([0, height]).padding(0.3);
   const max = Math.max(...values) * 1.05 || 1;
   const x = d3.scaleLinear().domain([0, max]).range([0, width]);
-  const color = d3.scaleLinear().domain([0, max]).range([SEQUENTIAL[2], SEQUENTIAL[6]]);
+  const color = d3.scaleLinear().domain([0, max]).range([shades[2], shades[6]]);
 
   g.append("g")
     .call(d3.axisLeft(y).tickSizeOuter(0))
@@ -380,8 +426,9 @@ function renderCalendar(el, data) {
   const g = s.append("g").attr("transform", `translate(${gutterL},${gutterT})`);
   const plot = chartContainer(s, g, width - gutterL, height - gutterT - 8);
 
+  const shades = sequentialShades();
   const color = d3
-    .scaleSequential(d3.interpolateRgb(SEQUENTIAL[1], SEQUENTIAL[6]))
+    .scaleSequential(d3.interpolateRgb(shades[1], shades[6]))
     .domain([0, data.max || 1]);
 
   // hour labels (every 3h)
@@ -497,6 +544,9 @@ const RENDERERS = {
 let uid = 0;
 
 export function bootstrap() {
+  // Resolved colours are cached per pass only — they must be recomputed
+  // whenever the theme changes (see retintOnThemeChange below).
+  colorCache.clear();
   document.querySelectorAll("[data-dashboard-chart]").forEach((el) => {
     const type = el.dataset.dashboardChart;
     const renderer = RENDERERS[type];
@@ -552,5 +602,28 @@ export function init() {
     subtree: true,
     attributes: true,
     attributeFilter: ["data-chart-payload"],
+  });
+
+  // Chart colours are resolved from theme tokens (see resolveColor above),
+  // so charts need a forced repaint — bypassing the "payload unchanged"
+  // skip in bootstrap() — whenever the theme changes: dark/light mode
+  // (Filament's own `theme-changed` window event, also used by
+  // maps/base_map.js) or the brand colour, which the theme picker applies
+  // as inline custom properties on <html> with no dedicated event, so a
+  // narrow observer on <html>'s own style/class attributes catches it.
+  let retintTimer = null;
+  const retint = () => {
+    clearTimeout(retintTimer);
+    retintTimer = setTimeout(() => {
+      document.querySelectorAll("[data-dashboard-chart]").forEach((el) => {
+        delete el.dataset.rendered;
+      });
+      bootstrap();
+    }, 50);
+  };
+  window.addEventListener("theme-changed", retint);
+  new MutationObserver(retint).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["style", "class"],
   });
 }

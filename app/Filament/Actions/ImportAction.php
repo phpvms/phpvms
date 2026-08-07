@@ -110,8 +110,8 @@ class ImportAction extends Action
 
         $this->modalSubmitActionLabel('Import');
 
-        $this->icon('heroicon-o-document-arrow-up');
+        $this->icon('tabler-file-upload');
 
-        $this->groupedIcon('heroicon-m-document-arrow-up');
+        $this->groupedIcon('tabler-file-upload');
     }
 }

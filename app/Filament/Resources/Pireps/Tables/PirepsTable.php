@@ -5,7 +5,11 @@ namespace App\Filament\Resources\Pireps\Tables;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
+use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Airport;
+use App\Models\Pirep;
+use App\Support\Units\Time;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -16,6 +20,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Support\Enums\FontFamily;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
@@ -26,13 +31,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Table configuration for the PIREP list page.
- *
- * NOTE: The list page (ListPireps) overrides `$view` and `content()` to
- * render pireps as custom cards instead of an embedded table. The Table
- * object here is used only as a query/filter/pagination machine — its
- * columns are intentionally empty (Filament requires at least one
- * sortable column for the toolbar). Actions defined below are mounted
- * by the custom blade per-row via `mountTableAction()`.
  */
 class PirepsTable
 {
@@ -43,10 +41,63 @@ class PirepsTable
                 ->with(['airline', 'aircraft', 'user', 'dpt_airport:id,icao,name', 'arr_airport:id,icao,name'])
                 ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
             ->columns([
-                // Empty placeholder column — the custom blade view renders rows itself.
-                // Filament needs at least one column for default sort/search wiring.
+                TextColumn::make('ident')
+                    ->label(trans_choice('common.flight', 1))
+                    ->fontFamily(FontFamily::Mono)
+                    ->url(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record]))
+                    ->searchable(['flight_number'])
+                    ->sortable(['flight_number']),
+
+                TextColumn::make('user.name')
+                    ->label(trans_choice('common.pilot', 1))
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('route')
+                    ->label(__('flights.route'))
+                    ->fontFamily(FontFamily::Mono)
+                    ->state(fn (Pirep $record): string => trim($record->dpt_airport_id.' → '.$record->arr_airport_id)),
+
+                TextColumn::make('aircraft.registration')
+                    ->label(__('pireps.tail'))
+                    ->fontFamily(FontFamily::Mono),
+
+                TextColumn::make('flight_time')
+                    ->label(__('pireps.block'))
+                    ->fontFamily(FontFamily::Mono)
+                    ->alignEnd()
+                    ->formatStateUsing(function (?int $state): string {
+                        $hm = Time::minutesToTimeParts($state ?? 0);
+
+                        return sprintf('%d:%02d', $hm['h'], $hm['m']);
+                    }),
+
+                TextColumn::make('landing_rate')
+                    ->label(__('pireps.landing'))
+                    ->fontFamily(FontFamily::Mono)
+                    ->alignEnd()
+                    ->formatStateUsing(fn (int|float|null $state): string => $state !== null && (int) $state !== 0 ? number_format((float) $state) : '—')
+                    ->tooltip(fn (int|float|null $state): ?string => $state !== null && (int) $state !== 0 ? number_format((float) $state).' fpm' : null)
+                    ->color(fn (int|float|null $state): ?string => match (true) {
+                        $state === null || (int) $state === 0 => 'gray',
+                        $state > 0, $state <= -400            => 'danger',
+                        $state <= -250                        => 'warning',
+                        $state > -150                         => 'success',
+                        default                               => null,
+                    }),
+
+                TextColumn::make('state')
+                    ->label(__('common.state'))
+                    ->badge()
+                    ->sortable(),
+
                 TextColumn::make('submitted_at')
-                    ->hidden(),
+                    ->label(__('pireps.filed'))
+                    ->fontFamily(FontFamily::Mono)
+                    ->alignEnd()
+                    ->dateTime('j M H:i')
+                    ->dateTimeTooltip()
+                    ->sortable(),
             ])
             ->paginated([25])
             ->defaultPaginationPageOption(25)
@@ -129,10 +180,12 @@ class PirepsTable
             ->recordActions([
                 AcceptAction::make(),
                 RejectAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

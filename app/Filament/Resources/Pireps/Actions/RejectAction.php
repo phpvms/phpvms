@@ -7,7 +7,6 @@ use App\Models\Pirep;
 use App\Services\PirepService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Support\Icons\Heroicon;
 
 class RejectAction
 {
@@ -15,7 +14,7 @@ class RejectAction
     {
         return Action::make('reject')
             ->color('danger')
-            ->icon(Heroicon::XCircle)
+            ->icon('tabler-circle-x')
             ->label(__('common.reject'))
             ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
             ->action(function (Pirep $record): void {

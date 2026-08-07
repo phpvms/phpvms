@@ -7,7 +7,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class RankForm
 {
@@ -53,24 +52,24 @@ class RankForm
 
                                 Toggle::make('auto_approve_acars')
                                     ->label(__('filament.rank_auto_approve_acars'))
-                                    ->offIcon(Heroicon::XCircle)
+                                    ->offIcon('tabler-x')
                                     ->offColor('danger')
-                                    ->onIcon(Heroicon::CheckCircle)
+                                    ->onIcon('tabler-check')
                                     ->onColor('success'),
 
                                 Toggle::make('auto_approve_manual')
                                     ->label(__('filament.rank_auto_approve_manual'))
-                                    ->offIcon(Heroicon::XCircle)
+                                    ->offIcon('tabler-x')
                                     ->offColor('danger')
-                                    ->onIcon(Heroicon::CheckCircle)
+                                    ->onIcon('tabler-check')
                                     ->onColor('success'),
 
                                 Toggle::make('auto_promote')
                                     ->label(__('filament.rank_auto_promote'))
                                     ->helperText(__('filament.rank_auto_promote_hint'))
-                                    ->offIcon(Heroicon::XCircle)
+                                    ->offIcon('tabler-x')
                                     ->offColor('danger')
-                                    ->onIcon(Heroicon::CheckCircle)
+                                    ->onIcon('tabler-check')
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()

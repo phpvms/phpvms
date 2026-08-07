@@ -40,8 +40,8 @@ class OAuthClientsTable
                 IconColumn::make('revoked')
                     ->label(__('oauth.revoked'))
                     ->boolean()
-                    ->trueIcon('heroicon-o-x-circle')
-                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueIcon('tabler-circle-x')
+                    ->falseIcon('tabler-circle-check')
                     ->trueColor('danger')
                     ->falseColor('success'),
 

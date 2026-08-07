@@ -10,7 +10,6 @@ use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use Spatie\Activitylog\Models\Activity;
@@ -24,7 +23,7 @@ class ActivityLogResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-news';
 
     #[Override]
     public static function form(Schema $schema): Schema

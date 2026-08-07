@@ -12,7 +12,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -67,7 +66,7 @@ class FilesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle)
+                    ->icon('tabler-circle-plus')
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];
@@ -81,13 +80,13 @@ class FilesRelationManager extends RelationManager
             ])
             ->recordActions([
                 Action::make('download')
-                    ->icon(Heroicon::Link)
+                    ->icon('tabler-link')
                     ->label(__('common.link_to_file'))
                     ->action(fn (File $record) => Storage::disk($record->disk)->download($record->path, Str::kebab($record->name)))
                     ->visible(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
                 Action::make('view_file')
-                    ->icon(Heroicon::Link)
+                    ->icon('tabler-link')
                     ->label(__('common.link_to_file'))
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
                     ->hidden(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
@@ -111,7 +110,7 @@ class FilesRelationManager extends RelationManager
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()->icon(Heroicon::OutlinedPlusCircle)
+                CreateAction::make()->icon('tabler-circle-plus')
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];

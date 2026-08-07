@@ -10,7 +10,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use League\ISO3166\ISO3166;
 
 class AirportForm
@@ -112,9 +111,9 @@ class AirportForm
 
                         Toggle::make('hub')
                             ->label(__('airports.hub'))
-                            ->offIcon(Heroicon::XCircle)
+                            ->offIcon('tabler-x')
                             ->offColor('danger')
-                            ->onIcon(Heroicon::CheckCircle)
+                            ->onIcon('tabler-check')
                             ->onColor('success'),
                     ])
                     ->columnSpanFull()

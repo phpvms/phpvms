@@ -9,7 +9,6 @@ use App\Models\Invite;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 
@@ -17,7 +16,7 @@ class InviteResource extends Resource
 {
     protected static ?string $model = Invite::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-mail';
 
     protected static bool $shouldRegisterNavigation = false;
 

@@ -9,7 +9,6 @@ use App\Filament\Resources\Users\Actions\UserFieldsAction;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListUsers extends ListRecords
@@ -21,7 +20,7 @@ class ListUsers extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
             UserFieldsAction::make(),
             InvitesAction::make(),
         ];

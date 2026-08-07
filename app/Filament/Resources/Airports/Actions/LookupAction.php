@@ -7,7 +7,6 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Support\Icons\Heroicon;
 
 class LookupAction
 {
@@ -15,7 +14,7 @@ class LookupAction
     {
         return Action::make('lookup')
             ->label(__('airports.lookup'))
-            ->icon(Heroicon::OutlinedMagnifyingGlass)
+            ->icon('tabler-search')
             ->extraAttributes(['id' => 'airport-icao-lookup'])
             ->action(function (Get $get, Set $set): void {
                 $airport = app(AirportService::class)->lookupAirport($get('icao'));

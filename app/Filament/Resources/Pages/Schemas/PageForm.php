@@ -10,7 +10,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class PageForm
 {
@@ -45,16 +44,16 @@ class PageForm
                             ->schema([
                                 Toggle::make('public')
                                     ->label(__('common.public'))
-                                    ->offIcon(Heroicon::XCircle)
+                                    ->offIcon('tabler-x')
                                     ->offColor('danger')
-                                    ->onIcon(Heroicon::CheckCircle)
+                                    ->onIcon('tabler-check')
                                     ->onColor('success'),
 
                                 Toggle::make('enabled')
                                     ->label(__('common.enabled'))
-                                    ->offIcon(Heroicon::XCircle)
+                                    ->offIcon('tabler-x')
                                     ->offColor('danger')
-                                    ->onIcon(Heroicon::CheckCircle)
+                                    ->onIcon('tabler-check')
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()
@@ -81,9 +80,9 @@ class PageForm
 
                         Toggle::make('new_window')
                             ->label(__('filament.should_open_in_new_tab'))
-                            ->offIcon(Heroicon::XCircle)
+                            ->offIcon('tabler-x')
                             ->offColor('danger')
-                            ->onIcon(Heroicon::CheckCircle)
+                            ->onIcon('tabler-check')
                             ->onColor('success')
                             ->visibleJs(<<<'JS'
                                     $get('type') == '1'

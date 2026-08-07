@@ -7,7 +7,6 @@ namespace App\Filament\Resources\SimBriefAirframes\Pages;
 use App\Filament\Resources\SimBriefAirframes\SimBriefAirframeResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ManageSimBriefAirframes extends ManageRecords
@@ -19,7 +18,7 @@ class ManageSimBriefAirframes extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon('tabler-circle-plus'),
         ];
     }
 }
