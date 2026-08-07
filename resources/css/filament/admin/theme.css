@@ -610,6 +610,12 @@
  * Plus white-button pattern: plain field, gray ring, colored glyph). The
  * bg/border/text come from the shared rule above; only the tints live here,
  * on tokens so they flip with the mode. */
+/* Neutral hero buttons: muted glyph, not raw ink. The semantic tints below
+ * and the primary override win over this by specificity. */
+.fi-header .fi-btn .fi-icon {
+  color: var(--ink-3);
+}
+
 .fi-header .fi-btn.fi-color-danger .fi-icon {
   color: var(--bad);
 }
@@ -624,6 +630,10 @@
 
 .fi-header .fi-btn.fi-color-info .fi-icon {
   color: var(--info);
+}
+
+.fi-header .fi-btn.fi-color-primary .fi-icon {
+  color: #fff;
 }
 
 /* Primary action on the hero, keyed off the accent. The band's gradient

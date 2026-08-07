@@ -88,5 +88,9 @@ class ExportAction extends Action
         $this->icon(TablerIcon::FileDownload);
 
         $this->groupedIcon(TablerIcon::FileDownload);
+
+        // Neutral like the vendor ImportAction's defaultColor('gray') —
+        // primary fill is reserved for Create-style CTAs.
+        $this->defaultColor('gray');
     }
 }
