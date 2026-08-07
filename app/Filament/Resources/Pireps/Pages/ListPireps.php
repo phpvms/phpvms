@@ -12,6 +12,7 @@ use App\Support\Units\Time;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Override;
 use Throwable;
 
@@ -89,57 +90,78 @@ class ListPireps extends ListRecords
      */
     public function getPreviewData(): array
     {
-        $chipVariant = fn (?string $color): string => match ($color) {
-            'success' => 'chip--ok',
-            'warning' => 'chip--warn',
-            'danger'  => 'chip--bad',
-            'info'    => 'chip--info',
-            default   => 'chip--mute',
-        };
-
         return $this->getTableRecords()
-            ->mapWithKeys(function (Pirep $record) use ($chipVariant): array {
-                $filed = $record->submitted_at
-                    ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
-                    : null;
-
-                $aircraft = $record->aircraft
-                    ? trim($record->aircraft->registration.' · '.($record->aircraft->name ?? ''), ' ·')
-                    : null;
-
-                $blockTime = $record->flight_time
-                    ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) $record->flight_time)))
-                    : null;
-
-                $source = filled($record->source_name)
-                    ? $record->source?->getLabel().' · '.$record->source_name
-                    : $record->source?->getLabel();
-
-                return [
-                    (string) $record->getKey() => array_filter([
-                        'ident'    => $record->ident,
-                        'sub'      => implode(' · ', array_filter([$record->user?->name, $filed])),
-                        'state'    => $record->state->getLabel(),
-                        'chip'     => $chipVariant($record->state->getColor()),
-                        'route'    => $record->dpt_airport_id.' → '.$record->arr_airport_id,
-                        'aircraft' => $aircraft,
-                        'block'    => $blockTime,
-                        'distance' => $record->distance
-                            ? number_format((float) $record->distance->local()).' '.setting('units.distance')
-                            : null,
-                        'landing' => $record->landing_rate !== null && (int) $record->landing_rate !== 0
-                            ? number_format((float) $record->landing_rate).' fpm'
-                            : null,
-                        'fuel' => $record->fuel_used
-                            ? number_format((float) $record->fuel_used->local()).' '.setting('units.fuel')
-                            : null,
-                        'source' => $source,
-                        'type'   => $record->flight_type?->getLabel(),
-                        'url'    => PirepResource::getUrl('view', ['record' => $record]),
-                    ], fn (?string $value): bool => filled($value)),
-                ];
-            })
+            ->mapWithKeys(fn (Pirep $record): array => [
+                (string) $record->getKey() => $this->previewRow($record),
+            ])
             ->all();
+    }
+
+    /**
+     * One cached preview row. The key rides on updated_at, so the payload is
+     * built once while the report sits pending and regenerates on any state
+     * change (accept/reject touch the row) — no invalidation hooks, old
+     * entries just age out. Locale is in the key because the state and
+     * flight-type labels are translated.
+     *
+     * @return array<string, string>
+     */
+    private function previewRow(Pirep $record): array
+    {
+        $key = sprintf(
+            'pirep:preview:%s:%s:%s',
+            $record->getKey(),
+            $record->updated_at?->getTimestamp() ?? 0,
+            app()->getLocale(),
+        );
+
+        return Cache::remember($key, now()->addDay(), function () use ($record): array {
+            $filed = $record->submitted_at
+                ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
+                : null;
+
+            $aircraft = $record->aircraft
+                ? trim($record->aircraft->registration.' · '.($record->aircraft->name ?? ''), ' ·')
+                : null;
+
+            $blockTime = $record->flight_time
+                ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) $record->flight_time)))
+                : null;
+
+            $source = filled($record->source_name)
+                ? $record->source?->getLabel().' · '.$record->source_name
+                : $record->source?->getLabel();
+
+            $chip = match ($record->state->getColor()) {
+                'success' => 'chip--ok',
+                'warning' => 'chip--warn',
+                'danger'  => 'chip--bad',
+                'info'    => 'chip--info',
+                default   => 'chip--mute',
+            };
+
+            return array_filter([
+                'ident'    => $record->ident,
+                'sub'      => implode(' · ', array_filter([$record->user?->name, $filed])),
+                'state'    => $record->state->getLabel(),
+                'chip'     => $chip,
+                'route'    => $record->dpt_airport_id.' → '.$record->arr_airport_id,
+                'aircraft' => $aircraft,
+                'block'    => $blockTime,
+                'distance' => $record->distance
+                    ? number_format((float) $record->distance->local()).' '.setting('units.distance')
+                    : null,
+                'landing' => $record->landing_rate !== null && (int) $record->landing_rate !== 0
+                    ? number_format((float) $record->landing_rate).' fpm'
+                    : null,
+                'fuel' => $record->fuel_used
+                    ? number_format((float) $record->fuel_used->local()).' '.setting('units.fuel')
+                    : null,
+                'source' => $source,
+                'type'   => $record->flight_type?->getLabel(),
+                'url'    => PirepResource::getUrl('view', ['record' => $record]),
+            ], fn (?string $value): bool => filled($value));
+        });
     }
 
     /**
