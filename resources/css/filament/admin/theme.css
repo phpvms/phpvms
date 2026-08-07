@@ -2279,6 +2279,13 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
 }
 
+/* Header glyph (one Tabler icon per panel head). self-center because the
+ * title flexbox is baseline-aligned for the <em> counts. */
+.panel__title svg {
+  @apply size-3.5 self-center text-(--ink-3);
+  stroke-width: 1.75;
+}
+
 .panel__title em {
   @apply not-italic font-mono text-[11px] tracking-normal normal-case text-(--ink-4);
 }

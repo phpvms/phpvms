@@ -20,7 +20,7 @@
 @else
     @if ($flight)
         <div class="panel__head rounded-none">
-            <h2 class="panel__title">Flight <em>as dispatched</em></h2>
+            <h2 class="panel__title">@svg('tabler-plane') Flight <em>as dispatched</em></h2>
         </div>
         <div class="readout">
             @if (filled($flight['callsign'] ?? null))
@@ -55,7 +55,7 @@
 
     @if ($aircraft)
         <div class="panel__head border-t border-line rounded-none">
-            <h2 class="panel__title">Aircraft</h2>
+            <h2 class="panel__title">@svg('tabler-plane-tilt') Aircraft</h2>
         </div>
         <div class="readout">
             @if (filled($aircraft['registration'] ?? null))
@@ -92,7 +92,7 @@
 
     @if ($simbrief)
         <div class="panel__head border-t border-line rounded-none">
-            <h2 class="panel__title">SimBrief plan</h2>
+            <h2 class="panel__title">@svg('tabler-route') SimBrief plan</h2>
         </div>
         <div class="readout">
             @if (filled($simbrief['general']['route_distance'] ?? null))

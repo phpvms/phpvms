@@ -67,7 +67,7 @@
     @endif
 
     <div class="panel__head border-t border-line rounded-none">
-        <h3 class="panel__title">Report</h3>
+        <h3 class="panel__title">@svg('tabler-file-text') Report</h3>
     </div>
     <dl class="dl">
         @if (filled($sourceLabel))
@@ -93,7 +93,7 @@
 
     @if ($record->fields && $record->fields->isNotEmpty())
         <div class="panel__head border-t border-line rounded-none">
-            <h3 class="panel__title">{{ __('pireps.fields') }}</h3>
+            <h3 class="panel__title">@svg('tabler-list-details') {{ __('pireps.fields') }}</h3>
         </div>
         <dl class="dl">
             @foreach ($record->fields as $field)

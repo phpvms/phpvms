@@ -33,7 +33,7 @@
 
 @if ($record->fares->isNotEmpty())
     <div class="panel__head rounded-none">
-        <h2 class="panel__title">{{ trans_choice('pireps.fare', 2) }}</h2>
+        <h2 class="panel__title">@svg('tabler-ticket') {{ trans_choice('pireps.fare', 2) }}</h2>
     </div>
     <div class="table-wrap">
         <table class="tbl">
@@ -67,7 +67,7 @@
 @endif
 
 <div class="panel__head border-t border-line rounded-none">
-    <h2 class="panel__title">Journal transactions <em>{{ $record->transactions->count() }}</em></h2>
+    <h2 class="panel__title">@svg('tabler-receipt') Journal transactions <em>{{ $record->transactions->count() }}</em></h2>
     <div class="panel__tools">
         <button type="button" class="ghost-btn" wire:click="recalculateFinances">
             @svg('tabler-refresh') {{ __('filament.recalculate_finances') }}
