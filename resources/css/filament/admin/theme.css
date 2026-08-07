@@ -586,32 +586,21 @@
   stroke-width: 1.75;
 }
 
-/* Hero buttons are white in BOTH modes — they sit on the colored hero fill,
- * not the canvas — so text and border use literal light-mode inks, and the
- * action's intent lives in the icon tint (Tailwind Plus white-button
- * pattern: white field, gray ring, colored glyph). */
-.fi-header .fi-btn {
-  background-color: #fff;
-  border-color: rgb(0 0 0 / 12%);
-  color: #14171b;
-}
-
-.fi-header .fi-btn:hover {
-  background-color: #f1f3f5;
-  border-color: rgb(0 0 0 / 22%);
-  color: #14171b;
-}
-
+/* Hero buttons are neutral fields — white in light mode, surface-dark in
+ * dark mode — and the action's intent lives in the icon tint (Tailwind
+ * Plus white-button pattern: plain field, gray ring, colored glyph). The
+ * bg/border/text come from the shared rule above; only the tints live here,
+ * on tokens so they flip with the mode. */
 .fi-header .fi-btn.fi-color-danger .fi-icon {
-  color: #a5201a;
+  color: var(--bad);
 }
 
 .fi-header .fi-btn.fi-color-success .fi-icon {
-  color: #14713f;
+  color: var(--ok);
 }
 
 .fi-header .fi-btn.fi-color-warning .fi-icon {
-  color: #8a5208;
+  color: var(--warn);
 }
 
 .fi-header .fi-btn.fi-color-primary .fi-icon {
