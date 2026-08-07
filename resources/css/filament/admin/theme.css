@@ -2388,6 +2388,109 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 /* ---------------------------------------------------------------------------
+ * InlineMultiSelect (app/Filament/Forms/Components/InlineMultiSelect.php):
+ * dense pill-less multi-select. Trigger reads "B737, B738, B739 +2" over a
+ * dotted rule (the Preline underline-input homage); the panel is a
+ * searchable checklist — check glyph, label, right-aligned mono meta.
+ * ------------------------------------------------------------------------- */
+.ims {
+  @apply relative;
+}
+
+.ims__trigger {
+  @apply flex h-6.75 w-full items-center justify-between gap-2 bg-transparent px-0 text-start text-[12.5px] text-(--ink);
+  border-bottom: 1px dotted var(--line-strong);
+}
+
+.ims__trigger:focus-visible {
+  @apply outline-none;
+  border-bottom: 1px solid var(--primary-600);
+}
+
+.ims__trigger--empty {
+  @apply text-(--ink-4);
+}
+
+.ims__trigger svg {
+  @apply size-3.5 flex-none text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.ims__trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.ims__panel {
+  @apply absolute inset-x-0 top-full z-30 mt-1 min-w-56 overflow-hidden rounded-lg border border-(--line-strong) bg-(--surface);
+  box-shadow:
+    0 12px 30px -12px rgb(14 18 24 / 38%),
+    0 3px 8px -3px rgb(14 18 24 / 20%);
+}
+
+.ims__search {
+  @apply flex items-center gap-1.5 border-b border-b-(--line-soft) py-1.5 px-2.5;
+}
+
+.ims__search svg {
+  @apply size-3.5 flex-none text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.ims__search input {
+  @apply w-full border-0 bg-transparent p-0 text-[12.5px] text-(--ink) outline-none;
+}
+
+.ims__search input::placeholder {
+  @apply text-(--ink-4);
+}
+
+.ims__list {
+  @apply m-0 max-h-64 list-none overflow-y-auto p-1;
+}
+
+.ims__list [role="option"] {
+  @apply flex w-full items-center gap-2 rounded-md bg-transparent py-1.25 px-1.75 text-start text-[12.5px] text-(--ink-2);
+}
+
+.ims__list [role="option"]:hover,
+.ims__list [role="option"]:focus-visible {
+  @apply bg-(--surface-2) text-(--ink) outline-none;
+}
+
+.ims__list [role="option"][aria-selected="true"] {
+  @apply text-(--ink);
+}
+
+.ims__check {
+  @apply flex size-3.5 flex-none items-center text-(--primary-600) opacity-0;
+}
+
+.ims__check svg {
+  @apply size-3.5;
+  stroke-width: 2.25;
+}
+
+.ims__list [role="option"][aria-selected="true"] .ims__check {
+  @apply opacity-100;
+}
+
+.ims__label {
+  @apply min-w-0 flex-1 truncate;
+}
+
+.ims__meta {
+  @apply flex-none font-mono text-[11px] text-(--ink-4);
+}
+
+.ims__group {
+  @apply py-1 px-1.75 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-4);
+}
+
+.ims__empty {
+  @apply py-2 text-center text-[12px] text-(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
  * Autosave tick (autosave-indicator.js): transient check flashed inside a
  * field after AutosavesFields persists it. Appended to .fi-input-wrp (a
  * flex row, so it slots in as a suffix) or absolutely pinned when the field
