@@ -1146,8 +1146,11 @@
 .fi-sidebar-group .fi-dropdown-panel {
   /* floating-ui lands the panel at x≈58, overlapping the 76px rail; 22px
    * shifts it flush beside the rail with the mockup's small gap. (measured
-   * against the live app at 1440px) */
-  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden ms-5.5;
+   * against the live app at 1440px)
+   * -mt-2.25 tops it out with the rail row: the float reference is the
+   * icon-sized .fi-dropdown box, which sits 9px below the row top (the
+   * trigger's padding), so right-start alone aligns to the icon. */
+  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden ms-5.5 -mt-2.25;
   box-shadow:
     0 12px 30px -12px rgb(14 18 24 / 38%),
     0 3px 8px -3px rgb(14 18 24 / 20%);
