@@ -43,12 +43,10 @@ class PirepsTable
                     ->label(trans_choice('common.flight', 1))
                     ->fontFamily(FontFamily::Mono)
                     ->url(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record]))
-                    ->searchable(['flight_number'])
                     ->sortable(['flight_number']),
 
                 TextColumn::make('user.name')
                     ->label(trans_choice('common.pilot', 1))
-                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('route')
@@ -100,7 +98,6 @@ class PirepsTable
             ->paginated([25])
             ->defaultPaginationPageOption(25)
             ->defaultSort('submitted_at', 'desc')
-            ->searchable()
             ->filters([
                 SelectFilter::make('state')
                     ->label(__('common.state'))
