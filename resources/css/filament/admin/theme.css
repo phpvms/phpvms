@@ -626,19 +626,47 @@
   color: var(--info);
 }
 
-/* Primary action on the hero: an accent fill here would be accent-on-accent
- * (no contrast against the band), so the primary button inverts instead —
- * an accent-tinted ink field that flips with the mode: near-black on the
- * light hero, near-white on the dark one. Icon rides currentColor. */
+/* Primary action on the hero, keyed off the accent. The band's gradient
+ * pins its own lightness (stops ≈.5/.47/.46 light, ≈.34/.30/.27 dark — see
+ * the .fi-header @supports block above) and only its hue follows the
+ * accent, so pinning the button's L guarantees contrast for any accent the
+ * picker picks: a deep accent field on the light band, the accent's own
+ * mid lightness on the dark one. White text clears 4.5:1 at both L values. */
 .fi-header .fi-btn.fi-color-primary {
-  background-color: color-mix(in oklab, var(--ink) 86%, var(--primary-600));
+  background-color: color-mix(in oklab, var(--primary-600) 55%, black);
   border-color: transparent;
-  color: var(--surface);
+  color: #fff;
 }
 
 .fi-header .fi-btn.fi-color-primary:hover {
-  background-color: color-mix(in oklab, var(--ink) 72%, var(--primary-600));
-  color: var(--surface);
+  background-color: color-mix(in oklab, var(--primary-600) 45%, black);
+  color: #fff;
+}
+
+.dark .fi-header .fi-btn.fi-color-primary {
+  background-color: var(--primary-600);
+}
+
+.dark .fi-header .fi-btn.fi-color-primary:hover {
+  background-color: color-mix(in oklab, var(--primary-600) 88%, white);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .fi-header .fi-btn.fi-color-primary {
+    background-color: oklch(from var(--primary-600) 0.3 0.13 h);
+  }
+
+  .fi-header .fi-btn.fi-color-primary:hover {
+    background-color: oklch(from var(--primary-600) 0.26 0.13 h);
+  }
+
+  .dark .fi-header .fi-btn.fi-color-primary {
+    background-color: oklch(from var(--primary-600) 0.55 0.15 h);
+  }
+
+  .dark .fi-header .fi-btn.fi-color-primary:hover {
+    background-color: oklch(from var(--primary-600) 0.6 0.15 h);
+  }
 }
 
 /* ---------------------------------------------------------------------------
