@@ -17,7 +17,7 @@ class AcceptAction
             ->color('success')
             ->icon(TablerIcon::CircleCheck)
             ->label(__('common.accept'))
-            ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::REJECTED))
+            ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {
                 $pirep = app(PirepService::class)->changeState($record, PirepState::ACCEPTED);
                 if ($pirep->state === PirepState::ACCEPTED) {

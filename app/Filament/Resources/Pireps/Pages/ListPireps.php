@@ -8,6 +8,7 @@ use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\Actions\PirepFieldsAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Pirep;
+use App\Support\Units\Time;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,12 @@ use Throwable;
 class ListPireps extends ListRecords
 {
     protected static string $resource = PirepResource::class;
+
+    /**
+     * Custom view: wraps the table and the hover-preview context panel in
+     * the mockup's .with-context split (table + 350px sticky aside).
+     */
+    protected string $view = 'filament.pireps.pages.list-pireps';
 
     /**
      * The dashboard activity calendar deep-links here with
@@ -70,6 +77,69 @@ class ListPireps extends ListRecords
         return [
             PirepFieldsAction::make(),
         ];
+    }
+
+    /**
+     * Per-row payload for the hover preview panel, keyed by record key.
+     * Only the current page's records are included, and the blade re-embeds
+     * this on every Livewire render so pagination/filtering keep it fresh.
+     * Rows omit empty fields; the panel renders whatever is present.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function getPreviewData(): array
+    {
+        $chipVariant = fn (?string $color): string => match ($color) {
+            'success' => 'chip--ok',
+            'warning' => 'chip--warn',
+            'danger'  => 'chip--bad',
+            'info'    => 'chip--info',
+            default   => 'chip--mute',
+        };
+
+        return $this->getTableRecords()
+            ->mapWithKeys(function (Pirep $record) use ($chipVariant): array {
+                $filed = $record->submitted_at
+                    ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
+                    : null;
+
+                $aircraft = $record->aircraft
+                    ? trim($record->aircraft->registration.' · '.($record->aircraft->name ?? ''), ' ·')
+                    : null;
+
+                $blockTime = $record->flight_time
+                    ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) $record->flight_time)))
+                    : null;
+
+                $source = filled($record->source_name)
+                    ? $record->source?->getLabel().' · '.$record->source_name
+                    : $record->source?->getLabel();
+
+                return [
+                    (string) $record->getKey() => array_filter([
+                        'ident'    => $record->ident,
+                        'sub'      => implode(' · ', array_filter([$record->user?->name, $filed])),
+                        'state'    => $record->state->getLabel(),
+                        'chip'     => $chipVariant($record->state->getColor()),
+                        'route'    => $record->dpt_airport_id.' → '.$record->arr_airport_id,
+                        'aircraft' => $aircraft,
+                        'block'    => $blockTime,
+                        'distance' => $record->distance
+                            ? number_format((float) $record->distance->local()).' '.setting('units.distance')
+                            : null,
+                        'landing' => $record->landing_rate !== null && (int) $record->landing_rate !== 0
+                            ? number_format((float) $record->landing_rate).' fpm'
+                            : null,
+                        'fuel' => $record->fuel_used
+                            ? number_format((float) $record->fuel_used->local()).' '.setting('units.fuel')
+                            : null,
+                        'source' => $source,
+                        'type'   => $record->flight_type?->getLabel(),
+                        'url'    => PirepResource::getUrl('view', ['record' => $record]),
+                    ], fn (?string $value): bool => filled($value)),
+                ];
+            })
+            ->all();
     }
 
     /**

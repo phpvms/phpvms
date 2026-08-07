@@ -32,6 +32,7 @@ return [
     'airport'         => 'Airport',
     'subfleet'        => 'Subfleet',
     'distance'        => 'Distance',
+    'source'          => 'Source',
     'fuel'            => 'Fuel',
     'metar'           => 'METAR',
     'hour'            => 'Hour|Hours',

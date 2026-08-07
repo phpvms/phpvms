@@ -3,8 +3,6 @@
 namespace App\Filament\Resources\Pireps\Tables;
 
 use App\Enums\PirepState;
-use App\Filament\Resources\Pireps\Actions\AcceptAction;
-use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use App\Models\Airport;
 use App\Models\Pirep;
@@ -178,8 +176,6 @@ class PirepsTable
             ->filtersFormColumns(2)
             ->persistFiltersInSession()
             ->recordActions([
-                AcceptAction::make(),
-                RejectAction::make(),
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),

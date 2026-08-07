@@ -488,6 +488,18 @@
   @apply bg-(--surface-2);
 }
 
+/* Preview-selected row (PIREP list hover preview) — accent-tinted with an
+ * inset left bar, per the mockup's tr[aria-selected] (theme.css:1349-1355;
+ * the mockup's --accent-soft is derived here from the panel accent). After
+ * the hover rule so selection wins while hovered. */
+.fi-ta-row[aria-selected="true"] .fi-ta-cell {
+  background-color: color-mix(in oklab, var(--primary-600) 9%, var(--surface));
+}
+
+.fi-ta-row[aria-selected="true"] .fi-ta-cell:first-child {
+  box-shadow: inset 2px 0 0 var(--primary-600);
+}
+
 /* ---------------------------------------------------------------------------
  * Status chips (mockup .chip, theme.css:1378-1410).
  *

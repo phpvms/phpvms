@@ -17,7 +17,7 @@ class RejectAction
             ->color('danger')
             ->icon(TablerIcon::CircleX)
             ->label(__('common.reject'))
-            ->visible(fn (Pirep $record): bool => ($record->state === PirepState::PENDING || $record->state === PirepState::ACCEPTED))
+            ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {
                 $pirep = app(PirepService::class)->changeState($record, PirepState::REJECTED);
                 if ($pirep->state === PirepState::REJECTED) {
