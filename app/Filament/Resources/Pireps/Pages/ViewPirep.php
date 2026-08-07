@@ -10,6 +10,8 @@ use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
@@ -17,6 +19,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\IconPosition;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -177,16 +180,30 @@ class ViewPirep extends ViewRecord
         // no-op
     }
 
+    /**
+     * Order is deliberate: destructive first (left-most, away from the
+     * primary flow), then Edit, then the state decision as a dropdown
+     * button on the right (Tailwind Plus dropdown pattern).
+     */
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            AcceptAction::make(),
-            RejectAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->icon(TablerIcon::Trash),
             ForceDeleteAction::make(),
             RestoreAction::make(),
+            EditAction::make()
+                ->icon(TablerIcon::Edit),
+            ActionGroup::make([
+                AcceptAction::make(),
+                RejectAction::make(),
+            ])
+                ->label(__('common.status'))
+                ->icon(TablerIcon::ChevronDown)
+                ->iconPosition(IconPosition::After)
+                ->button()
+                ->color('gray'),
         ];
     }
 

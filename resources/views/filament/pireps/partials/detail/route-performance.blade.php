@@ -461,8 +461,11 @@
 @endif
 
 {{-- Notes --}}
+@php
+    $noteCount = ($record->comments?->count() ?? 0) + (filled($record->notes) ? 1 : 0);
+@endphp
 <div class="panel__head border-t border-line rounded-none">
-    <h2 class="panel__title">Notes</h2>
+    <h2 class="panel__title">Notes @if ($noteCount > 0)<em>{{ $noteCount }}</em>@endif</h2>
 </div>
 @livewire(
     \App\Livewire\Filament\PirepCommentThread::class,

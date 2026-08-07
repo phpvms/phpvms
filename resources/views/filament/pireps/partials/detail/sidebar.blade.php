@@ -30,16 +30,21 @@
         <div class="context__head">
             <div>
                 <div class="context__eyebrow">Pilot</div>
-                <div class="context__title">
-                    @if ($userUrl)
-                        <a href="{{ $userUrl }}">{{ $pilot->name }}</a>
-                    @else
-                        {{ $pilot->name }}
-                    @endif
-                </div>
-                <div class="context__sub">
-                    <span class="id">{{ $pilot->ident }}</span>
-                    @if ($pilot->rank) · {{ $pilot->rank->name }}@endif
+                <div class="context__person">
+                    <img class="context__avatar" src="{{ $pilot->resolveAvatarUrl() }}" alt="" />
+                    <div>
+                        <div class="context__title">
+                            @if ($userUrl)
+                                <a href="{{ $userUrl }}">{{ $pilot->name }}</a>
+                            @else
+                                {{ $pilot->name }}
+                            @endif
+                        </div>
+                        <div class="context__sub">
+                            <span class="id">{{ $pilot->ident }}</span>
+                            @if ($pilot->rank) · {{ $pilot->rank->name }}@endif
+                        </div>
+                    </div>
                 </div>
             </div>
             @if ($pilot->state)
