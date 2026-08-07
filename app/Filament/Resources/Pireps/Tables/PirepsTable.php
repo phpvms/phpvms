@@ -98,6 +98,9 @@ class PirepsTable
             ->paginated([25])
             ->defaultPaginationPageOption(25)
             ->defaultSort('submitted_at', 'desc')
+            // Row click opens the report, not the edit form (Filament's
+            // default recordUrl prefers the edit page when one exists).
+            ->recordUrl(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record]))
             ->filters([
                 SelectFilter::make('state')
                     ->label(__('common.state'))
