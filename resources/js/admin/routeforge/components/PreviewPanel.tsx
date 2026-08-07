@@ -149,8 +149,8 @@ export function PreviewPanel() {
   return (
     <div class="flex flex-col gap-3">
       {/* Header */}
-      <header class="flex flex-wrap items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-900/40">
-        <div class="text-sm text-gray-700 dark:text-gray-200">
+      <header class="flex flex-wrap items-center justify-between gap-2 rounded border border-(--line) bg-(--surface-2) px-3 py-2">
+        <div class="text-sm text-(--ink-2)">
           <span class="font-semibold">{rowCount}</span>{" "}
           {t(rowCount === 1 ? "preview.row_singular" : "preview.row_plural")}
           {report !== null && (
@@ -174,7 +174,7 @@ export function PreviewPanel() {
         </div>
         <button
           type="button"
-          class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600"
+          class="fi-btn fi-color-primary"
           disabled={!canGenerate}
           title={generateBlockedReason ?? undefined}
           onClick={handleGenerate}
@@ -185,7 +185,7 @@ export function PreviewPanel() {
 
       {/* Generate-blocked hint */}
       {!canGenerate && (
-        <div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+        <div class="rounded border border-(--warn-line) bg-(--warn-soft) px-3 py-2 text-sm text-(--warn)">
           {generateBlockedReason}
         </div>
       )}
@@ -194,14 +194,14 @@ export function PreviewPanel() {
           authoritative gate, so Create stays clickable; this just tells the
           user RowLintIcon is unreliable until the next debounce lands. */}
       {lintErrMsg !== null && rowCount > 0 && (
-        <div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+        <div class="rounded border border-(--warn-line) bg-(--warn-soft) px-3 py-2 text-sm text-(--warn)">
           {lintErrMsg}
         </div>
       )}
 
       {/* Error banner */}
       {state.kind === "error" && (
-        <div class="flex items-center justify-between rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-200">
+        <div class="flex items-center justify-between rounded border border-(--bad-line) bg-(--bad-soft) px-3 py-2 text-sm text-(--bad)">
           <span>{state.message}</span>
           <button
             type="button"
@@ -217,8 +217,8 @@ export function PreviewPanel() {
       <RowTable />
 
       {/* Footer */}
-      <footer class="flex flex-wrap items-center justify-between gap-3 rounded border border-gray-200 px-3 py-3 dark:border-gray-700">
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+      <footer class="flex flex-wrap items-center justify-between gap-3 rounded border border-(--line) px-3 py-3">
+        <label class="inline-flex items-center gap-2 text-sm text-(--ink-2)">
           <input
             type="checkbox"
             class="h-4 w-4"
@@ -235,7 +235,7 @@ export function PreviewPanel() {
         </label>
         <button
           type="button"
-          class="rounded bg-primary-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600"
+          class="fi-btn fi-color-primary"
           disabled={!canCreate}
           onClick={handleCreate}
         >
@@ -291,9 +291,9 @@ function LintCountButton({ tone, count, disabled, onClick }: LintCountButtonProp
   const noun = tone === "error" ? "error" : "warning";
   const activeColor =
     tone === "error"
-      ? "text-red-600 hover:text-red-700 underline-offset-2 hover:underline dark:text-red-400"
-      : "text-yellow-700 hover:text-yellow-800 underline-offset-2 hover:underline dark:text-yellow-300";
-  const mutedColor = "text-gray-500 dark:text-gray-400";
+      ? "text-(--bad) underline-offset-2 hover:underline"
+      : "text-(--warn) underline-offset-2 hover:underline";
+  const mutedColor = "text-(--ink-3)";
   return (
     <button
       type="button"

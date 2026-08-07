@@ -44,31 +44,18 @@ export function DirtyWarningDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="rf-dirty-title"
-        class="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800"
+        class="w-full max-w-md rounded-lg bg-(--surface) p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2
-          id="rf-dirty-title"
-          class="mb-2 text-base font-semibold text-gray-900 dark:text-gray-100"
-        >
+        <h2 id="rf-dirty-title" class="mb-2 text-base font-semibold text-(--ink)">
           {t("dirty.title")}
         </h2>
-        <p class="mb-4 text-sm text-gray-600 dark:text-gray-300">
-          {t("dirty.body", { count: editedCount })}
-        </p>
+        <p class="mb-4 text-sm text-(--ink-2)">{t("dirty.body", { count: editedCount })}</p>
         <div class="flex justify-end gap-2">
-          <button
-            type="button"
-            class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            onClick={handleCancel}
-          >
+          <button type="button" class="fi-btn fi-color-gray" onClick={handleCancel}>
             {t("dirty.cancel")}
           </button>
-          <button
-            type="button"
-            class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700"
-            onClick={handleConfirm}
-          >
+          <button type="button" class="fi-btn fi-color-primary" onClick={handleConfirm}>
             {t("dirty.confirm")}
           </button>
         </div>

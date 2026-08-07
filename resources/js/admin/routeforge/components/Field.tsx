@@ -55,19 +55,13 @@ export type FieldProps = {
  * resources/css/filament/admin/theme.css.
  */
 const INPUT_BASE =
-  "block w-full appearance-none rounded-lg border-none bg-white px-3 py-1.5 text-sm leading-6 " +
-  "text-gray-950 placeholder:text-gray-400 shadow-sm transition duration-75 " +
-  "focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 " +
-  "dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 " +
-  "dark:disabled:bg-transparent dark:disabled:text-gray-400";
+  "block w-full appearance-none rounded-lg border-none bg-(--surface) px-3 py-1.5 text-sm leading-6 " +
+  "text-(--ink) placeholder:text-(--ink-4) shadow-sm transition duration-75 " +
+  "focus:outline-none disabled:cursor-not-allowed disabled:bg-(--surface-2) disabled:text-(--ink-3)";
 
-export const INPUT_CLASS =
-  `${INPUT_BASE} ring-1 ring-gray-950/10 focus:ring-2 focus:ring-primary-600 ` +
-  "dark:ring-white/20 dark:focus:ring-primary-500";
+export const INPUT_CLASS = `${INPUT_BASE} ring-1 ring-(--line-strong) focus:ring-2 focus:ring-primary-600`;
 
-export const INPUT_CLASS_ERROR =
-  `${INPUT_BASE} ring-1 ring-danger-600 focus:ring-2 focus:ring-danger-600 ` +
-  "dark:ring-danger-500 dark:focus:ring-danger-500";
+export const INPUT_CLASS_ERROR = `${INPUT_BASE} ring-1 ring-(--bad) focus:ring-2 focus:ring-(--bad)`;
 
 /**
  * Selects need Filament's `select.fi-select-input` on top, which supplies the
@@ -92,18 +86,18 @@ export function Field({
   helpAriaLabel,
 }: FieldProps) {
   const helpIconClass =
-    "inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
+    "inline-flex h-4 w-4 items-center justify-center rounded-full bg-(--mute-soft) text-[10px] font-bold text-(--mute) hover:bg-(--mute-line) focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   return (
     <div class="mb-3">
       <label
         htmlFor={htmlFor}
-        class="mb-1 flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300"
+        class="mb-1 flex items-center gap-1 text-sm font-medium text-(--ink-2)"
       >
         <span>
           {label}
           {required === true && (
-            <span class="ml-0.5 text-red-600 dark:text-red-400" aria-label="required">
+            <span class="ml-0.5 text-(--bad)" aria-label="required">
               *
             </span>
           )}
@@ -135,10 +129,10 @@ export function Field({
       </label>
       {children}
       {hint !== undefined && (error === undefined || error === null || error === "") && (
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
+        <p class="mt-1 text-xs text-(--ink-3)">{hint}</p>
       )}
       {error !== undefined && error !== null && error !== "" && (
-        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p class="mt-1 text-xs text-(--bad)">{error}</p>
       )}
     </div>
   );

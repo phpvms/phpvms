@@ -83,12 +83,12 @@ export function Tooltip({ text, children }: TooltipProps) {
       {open && (
         <span
           role="tooltip"
-          class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-xs -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs leading-snug text-white shadow-lg dark:bg-gray-700"
+          class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-xs -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs leading-snug text-white shadow-lg"
         >
           {text}
           <span
             aria-hidden="true"
-            class="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"
+            class="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-gray-900"
           />
         </span>
       )}

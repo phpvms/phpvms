@@ -57,9 +57,7 @@ export function ReturnFlightsToggle() {
     <div class="mb-3">
       <label
         class={`inline-flex items-center gap-2 text-sm ${
-          returnsForced
-            ? "cursor-not-allowed text-gray-500 dark:text-gray-400"
-            : "cursor-pointer text-gray-700 dark:text-gray-300"
+          returnsForced ? "cursor-not-allowed text-(--ink-3)" : "cursor-pointer text-(--ink-2)"
         }`}
       >
         <input
@@ -71,7 +69,7 @@ export function ReturnFlightsToggle() {
         />
         <span class="font-medium">Create return flights</span>
       </label>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-xs text-(--ink-3)">
         {returnsLockedReason ?? "Auto-paired outbound + return legs for every route."}
       </p>
     </div>

@@ -45,21 +45,18 @@ export function CommitSuccessRedirect({ result }: CommitSuccessRedirectProps) {
   }, [redirectUrl]);
 
   return (
-    <div class="rounded-lg border border-green-300 bg-green-50 p-6 text-center dark:border-green-700 dark:bg-green-900/20">
+    <div class="rounded-lg border border-(--ok-line) bg-(--ok-soft) p-6 text-center">
       <div class="mb-2 text-3xl" aria-hidden="true">
         ✓
       </div>
-      <h2 class="mb-1 text-base font-semibold text-green-900 dark:text-green-100">
+      <h2 class="mb-1 text-base font-semibold text-(--ok)">
         {t("commit.success", {
           count: result.created_count,
           batch_id: result.batch_id,
         })}
       </h2>
-      <p class="text-sm text-gray-700 dark:text-gray-300">
-        <a
-          class="font-medium text-primary-600 underline hover:text-primary-700 dark:text-primary-400"
-          href={redirectUrl}
-        >
+      <p class="text-sm text-(--ink-2)">
+        <a class="font-medium text-primary-600 underline hover:opacity-80" href={redirectUrl}>
           {t("commit.go_now")}
         </a>
       </p>

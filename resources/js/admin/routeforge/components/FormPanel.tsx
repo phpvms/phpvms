@@ -90,11 +90,15 @@ export function FormPanel() {
 
 function SectionShell({ title, children }: { title: string; children: ComponentChildren }) {
   return (
-    <section class="rounded border border-gray-200 p-4 dark:border-gray-700">
-      <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        {title}
-      </h3>
-      {children}
+    <section class="panel">
+      {/* This head is the top of the card (no subtabs/strip above it, unlike
+          every PIREP-view usage), so it needs its own top radius — .panel
+          has no overflow-hidden, so an un-rounded head would poke square
+          corners past the card's 6px border-radius. */}
+      <div class="panel__head rounded-t-[5px]">
+        <h3 class="panel__title">{title}</h3>
+      </div>
+      <div class="panel__body">{children}</div>
     </section>
   );
 }
