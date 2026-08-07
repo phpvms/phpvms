@@ -1,5 +1,4 @@
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
-@import "@tabler/icons-webfont/dist/tabler-icons.min.css";
 
 /* Tailwind content scanning. Without these, utility classes used in Filament
  * resources and Blade views are never generated. */
