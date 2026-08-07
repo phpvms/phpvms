@@ -193,8 +193,12 @@ class ViewPirep extends ViewRecord
                 ->icon(TablerIcon::Trash),
             ForceDeleteAction::make(),
             RestoreAction::make(),
+            /* Default EditAction color is primary, which takes the hero's
+             * inverted-ink fill — too loud next to Delete/Status. Neutral
+             * field, intent in the icon tint, like its neighbours. */
             EditAction::make()
-                ->icon(TablerIcon::Edit),
+                ->icon(TablerIcon::Edit)
+                ->color('info'),
             ActionGroup::make([
                 AcceptAction::make(),
                 RejectAction::make(),

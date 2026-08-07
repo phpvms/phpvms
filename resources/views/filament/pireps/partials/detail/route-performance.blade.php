@@ -185,9 +185,10 @@
      IAS / exact touchdown sim-time aren't captured per-landing today (only
      the discrete PirepEvent log has timestamps, not a touchdown marker) so
      this reads landing_rate + the scorecard's g-force/pitch/roll instead. --}}
+{{-- Section always renders — empty charts still get their header, the
+     readout shows dashes until data exists. --}}
 @php $landing = $performance['landing'] ?? null; @endphp
-@if ($record->landing_rate || $landing)
-    @php
+@php
         $landingRate = $record->landing_rate !== null ? (float) $record->landing_rate : null;
         $rateClass = match (true) {
             $landingRate === null || (int) $landingRate === 0 => '',
@@ -234,12 +235,11 @@
             <dd><span class="chip chip--{{ $rateClass === 'rate--hard' ? 'bad' : ($rateClass === 'rate--firm' ? 'warn' : 'ok') }} chip--plain">{{ $bandLabel }}</span></dd>
         </div>
     </div>
-@endif
 
-{{-- Landing analysis: runway plan-views + scorecard polar. Only rendered
-     when buildLandingBlock() produced a payload with a runway on either
-     end. --}}
-@if ($landing && (filled($landing['departure']['runway'] ?? null) || filled($landing['arrival']['runway'] ?? null)))
+{{-- Landing analysis: runway plan-views + scorecard polar. Renders whenever
+     buildLandingBlock() produced a payload — tiles inside show their empty
+     states when the payload is missing pieces. --}}
+@if ($landing)
     <div class="panel__head border-t border-line rounded-none">
         <h2 class="panel__title">Landing analysis</h2>
     </div>
@@ -361,47 +361,8 @@
                 </div>
             </div>
 
-            {{-- Row 2: paired attitude indicators (takeoff + touchdown). --}}
-            <div class="landing-attitude-row">
-                <div class="rw-panel rw-panel-attitude">
-                    <div class="rw-panel-head">
-                        <span class="rw-side">Takeoff</span>
-                        <span class="rw-id">Attitude</span>
-                    </div>
-                    <div class="rw-diagram attitude-diagram attitude-no-data">
-                        <svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                            <defs>
-                                <clipPath id="ai-clip-to-{{ $record->id }}">
-                                    <rect x="0" y="0" width="200" height="100" rx="6"/>
-                                </clipPath>
-                                <pattern id="ai-no-data-{{ $record->id }}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                    <line x1="0" y1="0" x2="0" y2="8" stroke="#374151" stroke-width="1" opacity="0.5"/>
-                                </pattern>
-                            </defs>
-                            <g clip-path="url(#ai-clip-to-{{ $record->id }})">
-                                <rect x="0" y="0" width="200" height="100" fill="#1f2937"/>
-                                <rect x="0" y="0" width="200" height="100" fill="url(#ai-no-data-{{ $record->id }})"/>
-                                <text x="100" y="54" text-anchor="middle"
-                                      font-family="var(--font-mono-display), monospace"
-                                      font-size="9" font-weight="500"
-                                      letter-spacing="0.15em"
-                                      fill="#9ca3af">NO ATTITUDE DATA</text>
-                            </g>
-                        </svg>
-                    </div>
-                    <div class="rw-facts">
-                        <div class="fact-inline">
-                            <span class="k">Pitch</span>
-                            <span class="v">—</span>
-                        </div>
-                        <div class="fact-inline">
-                            <span class="k">Roll</span>
-                            <span class="v">—</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="rw-panel rw-panel-attitude">
+            {{-- Touchdown attitude indicator. --}}
+            <div class="rw-panel rw-panel-attitude">
                     <div class="rw-panel-head">
                         <span class="rw-side">Touchdown</span>
                         <span class="rw-id">Attitude</span>
@@ -454,7 +415,6 @@
                             </div>
                         @endif
                     </div>
-                </div>
             </div>
         </div>
     </div>

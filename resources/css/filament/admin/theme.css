@@ -603,6 +603,10 @@
   color: var(--warn);
 }
 
+.fi-header .fi-btn.fi-color-info .fi-icon {
+  color: var(--info);
+}
+
 /* Primary action on the hero: an accent fill here would be accent-on-accent
  * (no contrast against the band), so the primary button inverts instead —
  * an accent-tinted ink field that flips with the mode: near-black on the
@@ -1923,8 +1927,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * indicators render as compact tiles inside .panel__body. Tile heads echo
  * .panel__head at reduced scale; facts echo .readout's dt/dd typography.
  * ------------------------------------------------------------------------- */
-.landing-grid,
-.landing-attitude-row {
+.landing-grid {
   @apply flex flex-col gap-2.5;
 }
 
