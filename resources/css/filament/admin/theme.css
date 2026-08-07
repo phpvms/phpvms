@@ -552,8 +552,15 @@
 
 .fi-ta-header-toolbar .fi-input-wrp,
 .fi-ta-header-toolbar .fi-icon-btn {
-  @apply w-6.75 h-6.75 border border-(--line-strong) rounded-lg bg-(--surface) shadow-none;
+  @apply w-6.75 h-6.75 m-0 border border-(--line-strong) rounded-lg bg-(--surface) shadow-none;
   --tw-ring-shadow: 0 0 #0000;
+}
+
+/* The vendor anchors an icon-btn's count badge (filter count, etc.) to its
+ * own 36px `-m-2` box; the 27px console box above moves that anchor off the
+ * corner. Re-centre the badge on the button's actual top-right corner. */
+.fi-ta-header-toolbar .fi-icon-btn > .fi-icon-btn-badge-ctn {
+  @apply top-0;
 }
 
 .fi-ta-header-toolbar .fi-input-wrp {

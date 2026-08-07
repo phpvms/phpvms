@@ -33,6 +33,7 @@ return [
     'subfleet'        => 'Subfleet',
     'distance'        => 'Distance',
     'source'          => 'Source',
+    'filters'         => 'Filters',
     'fuel'            => 'Fuel',
     'metar'           => 'METAR',
     'hour'            => 'Hour|Hours',

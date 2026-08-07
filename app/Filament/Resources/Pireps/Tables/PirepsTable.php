@@ -172,9 +172,18 @@ class PirepsTable
                             fn (Builder $query): Builder => $query->where('block_off_time', '<=', $data['to']),
                         )),
             ])
-            ->filtersLayout(FiltersLayout::Modal)
-            ->filtersFormColumns(2)
+            // No funnel/dropdown: the quick bar below and the always-visible
+            // filters card in the page's context column are the filter UI.
+            ->filtersLayout(FiltersLayout::Hidden)
+            ->deferFilters(false)
+            ->filtersFormColumns(1)
             ->persistFiltersInSession()
+            // Mockup's inline quick-filter bar (pireps.html:426-465), top of
+            // the table panel: state + airline selects bound straight onto
+            // tableFilters, and the page-of-total count.
+            ->header(fn (Table $table) => view('filament.pireps.partials.list-filter-bar', [
+                'records' => $table->getLivewire()->getTableRecords(),
+            ]))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),

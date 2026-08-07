@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'airline_information'              => 'Airline Information',
+    'showing_of'                       => 'Showing :current of :total',
     'airport_information'              => 'Airport Information',
     'awards_information'               => 'Awards Information',
     'awards_description'               => "These are the awards that pilots can earn. Each award is assigned an award class, which will be run whenever a pilot's stats are changed, including after a PIREP is accepted.",

@@ -65,7 +65,8 @@
             {{ $this->table }}
         </div>
 
-        <aside class="panel context" aria-label="{{ __('pireps.selected_report') }}" x-cloak x-show="row">
+        <aside class="context flex min-w-0 flex-col gap-3.5">
+        <section class="panel" aria-label="{{ __('pireps.selected_report') }}" x-cloak x-show="row">
             <template x-if="row">
                 <div>
                     <div class="context__head">
@@ -100,6 +101,19 @@
                     </div>
                 </div>
             </template>
+        </section>
+
+        {{-- Full filter set, always visible — replaces the funnel dropdown
+             (the table runs FiltersLayout::Hidden). Same tableFilters state
+             the quick bar above the table binds to. --}}
+        <section class="panel" aria-label="{{ __('common.filters') }}">
+            <div class="panel__head rounded-t-[5px]">
+                <h3 class="panel__title">{{ __('common.filters') }}</h3>
+            </div>
+            <div class="panel__body">
+                {{ $this->getTableFiltersForm() }}
+            </div>
+        </section>
         </aside>
     </div>
 </x-filament-panels::page>
