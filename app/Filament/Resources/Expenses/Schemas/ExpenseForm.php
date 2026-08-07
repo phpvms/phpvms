@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Expenses\Schemas;
 
 use App\Enums\ExpenseType;
 use App\Enums\FlightType;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -56,16 +57,16 @@ class ExpenseForm
                         ->label(__('common.multiplier'))
                         ->inline()
                         ->onColor('success')
-                        ->onIcon('tabler-check')
+                        ->onIcon(TablerIcon::Check)
                         ->offColor('danger')
-                        ->offIcon('tabler-x'),
+                        ->offIcon(TablerIcon::X),
 
                     Toggle::make('active')
                         ->inline()
                         ->onColor('success')
-                        ->onIcon('tabler-check')
+                        ->onIcon(TablerIcon::Check)
                         ->offColor('danger')
-                        ->offIcon('tabler-x'),
+                        ->offIcon(TablerIcon::X),
                 ])
                     ->columnSpanFull()
                     ->columns(2),

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Airlines\Schemas;
 
 use App\Models\Airline;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -61,18 +62,18 @@ class AirlineForm
                             ->label(label: __('common.active'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon('tabler-check')
+                            ->onIcon(TablerIcon::Check)
                             ->offColor('danger')
-                            ->offIcon('tabler-x'),
+                            ->offIcon(TablerIcon::X),
 
                         Toggle::make('low_cost')
                             ->label(__('filament.airline_low_cost'))
                             ->helperText(__('filament.airline_low_cost_hint'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon('tabler-check')
+                            ->onIcon(TablerIcon::Check)
                             ->offColor('danger')
-                            ->offIcon('tabler-x'),
+                            ->offIcon(TablerIcon::X),
                     ])
                     ->columnSpanFull()
                     ->columns(3),

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Fares\Schemas;
 
 use App\Enums\FareType;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -78,9 +79,9 @@ class FareForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon('tabler-x')
+                            ->offIcon(TablerIcon::X)
                             ->offColor('danger')
-                            ->onIcon('tabler-check')
+                            ->onIcon(TablerIcon::Check)
                             ->onColor('success'),
                     ])
                     ->columnSpanFull()

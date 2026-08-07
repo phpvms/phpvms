@@ -4,6 +4,7 @@ namespace App\Filament\Actions;
 
 use App\Enums\ImportExportType;
 use App\Services\ImportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Forms\Components\FileUpload;
@@ -110,8 +111,8 @@ class ImportAction extends Action
 
         $this->modalSubmitActionLabel('Import');
 
-        $this->icon('tabler-file-upload');
+        $this->icon(TablerIcon::FileUpload);
 
-        $this->groupedIcon('tabler-file-upload');
+        $this->groupedIcon(TablerIcon::FileUpload);
     }
 }

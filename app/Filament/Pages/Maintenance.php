@@ -11,6 +11,7 @@ use App\Services\Installer\SeederService;
 use App\Services\KvpService;
 use App\Services\VersionService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -40,7 +41,7 @@ class Maintenance extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-tool';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Tool;
 
     // protected string $view = 'filament.pages.maintenance';
 
@@ -104,7 +105,7 @@ class Maintenance extends Page
     {
         return Action::make('checkForPhpVMSUpdates')
             ->label(__('filament.maintenance_check_update'))
-            ->icon('tabler-refresh')
+            ->icon(TablerIcon::Refresh)
             ->action(function (): void {
                 app(VersionService::class)->isNewVersionAvailable();
 
@@ -168,7 +169,7 @@ class Maintenance extends Page
     public function clearCache(): Action
     {
         return Action::make('clearCache')
-            ->icon('tabler-trash')
+            ->icon(TablerIcon::Trash)
             ->color('danger')
             ->label(__('filament.maintenance_clear_cache'))
             ->action(function (): void {
@@ -216,7 +217,7 @@ class Maintenance extends Page
     {
         return Action::make('flushFailedJobs')
             ->color('danger')
-            ->icon('tabler-trash')
+            ->icon(TablerIcon::Trash)
             ->label(__('filament.maintenance_flush_failed_jobs'))
             ->action(function (): void {
                 if (function_exists('proc_open')) {
@@ -235,7 +236,7 @@ class Maintenance extends Page
     public function resyncAllSeeds(): Action
     {
         return Action::make('resyncAllSeeds')
-            ->icon('tabler-database')
+            ->icon(TablerIcon::Database)
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
             ->action(function (): void {
@@ -251,7 +252,7 @@ class Maintenance extends Page
     public function optimizeApp(): Action
     {
         return Action::make('optimizeApp')
-            ->icon('tabler-tool')
+            ->icon(TablerIcon::Tool)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function (): void {
                 if (function_exists('proc_open')) {
@@ -275,7 +276,7 @@ class Maintenance extends Page
     public function archivePirepFlights(): Action
     {
         return Action::make('archivePirepFlights')
-            ->icon('tabler-archive')
+            ->icon(TablerIcon::Archive)
             ->label(__('filament.maintenance_archive_pirep_flights'))
             ->requiresConfirmation()
             ->modalDescription(__('filament.maintenance_archive_pirep_flights_confirm'))
@@ -295,7 +296,7 @@ class Maintenance extends Page
             ->isUpgradePending();
 
         return Action::make('updateDatabase')
-            ->icon('tabler-refresh')
+            ->icon(TablerIcon::Refresh)
             ->color('success')
             ->extraAttributes(['style' => 'text-align: center;'])
             ->label($upgradePending ? __('filament.maintenance_update_database') : __('filament.maintenance_database_is_up_to_date'))

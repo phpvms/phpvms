@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\News\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -30,9 +31,9 @@ class NewsForm
                     ->dehydrated(false)
                     ->default(false)
                     ->onColor('success')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->offColor('danger')
-                    ->offIcon('tabler-x'),
+                    ->offIcon(TablerIcon::X),
             ]);
     }
 }

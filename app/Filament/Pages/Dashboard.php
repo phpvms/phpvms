@@ -11,6 +11,7 @@ use App\Filament\Widgets\StatsStripWidget;
 use App\Http\Middleware\UpdatePending;
 use App\Models\User;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Pages\Dashboard as FilamentDashboard;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -25,7 +26,7 @@ class Dashboard extends FilamentDashboard
 
     protected static string|array $routeMiddleware = [UpdatePending::class];
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-dashboard';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Dashboard;
 
     /**
      * Stats strip full-width first, then a 2-1 split (calendar + a stacked
@@ -85,7 +86,7 @@ class Dashboard extends FilamentDashboard
         $segments = [];
 
         if (filled($user->country)) {
-            $segments[] = ['flag' => public_asset('/assets/global/flags/4x3/'.Str::lower($user->country).'.svg')];
+            $segments[] = ['flag' => asset('/assets/global/flags/4x3/'.Str::lower($user->country).'.svg')];
         }
 
         if (filled($user->rank?->name)) {

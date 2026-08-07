@@ -8,6 +8,7 @@ use App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Filament\Resources\ActivityLogs\Pages\ViewActivityLog;
 use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -23,7 +24,7 @@ class ActivityLogResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-news';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::News;
 
     #[Override]
     public static function form(Schema $schema): Schema

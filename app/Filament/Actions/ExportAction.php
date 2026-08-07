@@ -10,6 +10,7 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Services\ExportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -84,8 +85,8 @@ class ExportAction extends Action
 
         $this->successNotificationTitle('Data exported successfully');
 
-        $this->icon('tabler-file-download');
+        $this->icon(TablerIcon::FileDownload);
 
-        $this->groupedIcon('tabler-file-download');
+        $this->groupedIcon(TablerIcon::FileDownload);
     }
 }

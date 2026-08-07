@@ -11,6 +11,7 @@ use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
@@ -46,7 +47,7 @@ class Addons extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-puzzle';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Puzzle;
 
     protected string $view = 'addon-manager::filament.pages.addons';
 
@@ -529,7 +530,7 @@ class Addons extends Page
     {
         return Action::make('delete')
             ->label(__('filament-actions::delete.single.label'))
-            ->icon('tabler-trash')
+            ->icon(TablerIcon::Trash)
             ->color('danger')
             ->requiresConfirmation()
             ->schema([

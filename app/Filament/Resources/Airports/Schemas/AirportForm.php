@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Airports\Schemas;
 
 use App\Filament\Resources\Airports\Actions\LookupAction;
 use App\Support\Timezonelist;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -111,9 +112,9 @@ class AirportForm
 
                         Toggle::make('hub')
                             ->label(__('airports.hub'))
-                            ->offIcon('tabler-x')
+                            ->offIcon(TablerIcon::X)
                             ->offColor('danger')
-                            ->onIcon('tabler-check')
+                            ->onIcon(TablerIcon::Check)
                             ->onColor('success'),
                     ])
                     ->columnSpanFull()

@@ -13,6 +13,7 @@ use App\Models\Aircraft;
 use App\Models\Pirep;
 use App\Models\User;
 use Carbon\Carbon;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Widgets\Widget;
 use Override;
 
@@ -36,7 +37,7 @@ class RequiresActionWidget extends Widget
         foreach (Pirep::query()->where('state', PirepState::PENDING)->with(['user:id,name', 'airline:id,icao,iata'])->oldest('submitted_at')->limit(self::LIMIT)->get() as $pirep) {
             $rows[] = [
                 'flag'    => 'warn',
-                'icon'    => 'tabler-clock',
+                'icon'    => TablerIcon::Clock,
                 'strong'  => "{$pirep->ident} awaiting review",
                 'sub'     => "{$pirep->user?->name} · {$pirep->dpt_airport_id} → {$pirep->arr_airport_id}",
                 'when'    => $this->age($pirep->submitted_at),
@@ -48,7 +49,7 @@ class RequiresActionWidget extends Widget
         foreach (User::pending()->oldest('created_at')->limit(self::LIMIT)->get() as $user) {
             $rows[] = [
                 'flag'    => 'info',
-                'icon'    => 'tabler-user-plus',
+                'icon'    => TablerIcon::UserPlus,
                 'strong'  => "{$user->name} awaiting approval",
                 'sub'     => $user->email,
                 'when'    => $this->age($user->created_at),
@@ -60,7 +61,7 @@ class RequiresActionWidget extends Widget
         foreach (Aircraft::query()->where('status', AircraftStatus::MAINTENANCE)->with('subfleet:id,name')->limit(self::LIMIT)->get() as $aircraft) {
             $rows[] = [
                 'flag'    => 'maint',
-                'icon'    => 'tabler-tool',
+                'icon'    => TablerIcon::Tool,
                 'strong'  => "{$aircraft->registration} in maintenance",
                 'sub'     => $aircraft->subfleet?->name,
                 'when'    => '—',

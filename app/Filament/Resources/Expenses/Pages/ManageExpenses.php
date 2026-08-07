@@ -8,6 +8,7 @@ use App\Filament\Actions\ImportAction as OldImportAction;
 use App\Filament\Exports\ExpenseExporter;
 use App\Filament\Imports\ExpenseImporter;
 use App\Filament\Resources\Expenses\ExpenseResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
@@ -37,7 +38,7 @@ class ManageExpenses extends ManageRecords
                 ->exporter(ExpenseExporter::class),
 
             CreateAction::make()
-                ->icon('tabler-circle-plus'),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }

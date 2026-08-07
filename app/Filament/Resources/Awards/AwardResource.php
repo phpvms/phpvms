@@ -11,6 +11,7 @@ use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\Awards\Tables\AwardsTable;
 use App\Models\Award;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -27,7 +28,7 @@ class AwardResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-award';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Award;
 
     protected static ?string $recordTitleAttribute = 'name';
 

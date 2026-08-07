@@ -8,6 +8,7 @@ use App\Filament\Resources\SimBriefAirframes\Schemas\SimBriefAirframeForm;
 use App\Filament\Resources\SimBriefAirframes\Tables\SimBriefAirframesTable;
 use App\Models\SimBriefAirframe;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -24,7 +25,7 @@ class SimBriefAirframeResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-copy';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Copy;
 
     #[Override]
     public static function form(Schema $schema): Schema

@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Pages\Page;
 use Override;
 use UnitEnum;
@@ -30,7 +31,7 @@ class RouteForge extends Page
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-stack';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Stack;
 
     protected string $view = 'filament.pages.route-forge';
 

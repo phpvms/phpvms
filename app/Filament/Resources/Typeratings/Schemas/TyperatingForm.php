@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Typeratings\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -31,9 +32,9 @@ class TyperatingForm
 
                     Toggle::make('active')
                         ->label(__('common.active'))
-                        ->offIcon('tabler-x')
+                        ->offIcon(TablerIcon::X)
                         ->offColor('danger')
-                        ->onIcon('tabler-check')
+                        ->onIcon(TablerIcon::Check)
                         ->onColor('success'),
                 ])
                     ->columnSpanFull()

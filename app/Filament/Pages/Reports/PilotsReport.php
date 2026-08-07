@@ -6,6 +6,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Filament\Widgets\PilotHoursChart;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Override;
 
 /**
@@ -15,7 +16,7 @@ class PilotsReport extends BaseReportPage
 {
     protected static ?string $slug = 'pilots';
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-users';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Users;
 
     protected static ?int $navigationSort = 2;
 

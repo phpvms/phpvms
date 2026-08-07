@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PirepFields\Schemas;
 
 use App\Enums\PirepFieldSource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -33,9 +34,9 @@ class PirepFieldForm
                 Toggle::make('required')
                     ->label(__('common.required'))
                     ->inline(false)
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
             ]);
     }

@@ -11,6 +11,7 @@ use App\Filament\Resources\Pireps\Schemas\PirepForm;
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
 use App\Models\Pirep;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -29,7 +30,7 @@ class PirepResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-clipboard-list';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ClipboardList;
 
     public static function getNavigationBadge(): ?string
     {

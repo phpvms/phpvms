@@ -8,6 +8,7 @@ use App\Filament\Resources\Expenses\Schemas\ExpenseForm;
 use App\Filament\Resources\Expenses\Tables\ExpensesTable;
 use App\Models\Expense;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -22,7 +23,7 @@ class ExpenseResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-cash';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Cash;
 
     protected static ?string $recordTitleAttribute = 'name';
 

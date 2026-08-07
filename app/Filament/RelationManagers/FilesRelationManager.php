@@ -3,6 +3,7 @@
 namespace App\Filament\RelationManagers;
 
 use App\Models\File;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -66,7 +67,7 @@ class FilesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon('tabler-circle-plus')
+                    ->icon(TablerIcon::CirclePlus)
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];
@@ -80,13 +81,13 @@ class FilesRelationManager extends RelationManager
             ])
             ->recordActions([
                 Action::make('download')
-                    ->icon('tabler-link')
+                    ->icon(TablerIcon::Link)
                     ->label(__('common.link_to_file'))
                     ->action(fn (File $record) => Storage::disk($record->disk)->download($record->path, Str::kebab($record->name)))
                     ->visible(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
                 Action::make('view_file')
-                    ->icon('tabler-link')
+                    ->icon(TablerIcon::Link)
                     ->label(__('common.link_to_file'))
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
                     ->hidden(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
@@ -110,7 +111,7 @@ class FilesRelationManager extends RelationManager
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()->icon('tabler-circle-plus')
+                CreateAction::make()->icon(TablerIcon::CirclePlus)
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];

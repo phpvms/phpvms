@@ -10,7 +10,7 @@
         <div class="queue">
             @forelse ($rows as $row)
                 <a class="queue__item" href="{{ $row['url'] }}">
-                    <span class="queue__flag queue__flag--{{ $row['flag'] }}">@svg($row['icon'])</span>
+                    <span class="queue__flag queue__flag--{{ $row['flag'] }}"><x-filament::icon :icon="$row['icon']" /></span>
                     <span class="queue__text">
                         <strong>{{ $row['strong'] }}</strong>
                         <span>{{ $row['sub'] }}</span>

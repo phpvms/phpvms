@@ -10,6 +10,7 @@ use App\Filament\Resources\Fares\Schemas\FareForm;
 use App\Filament\Resources\Fares\Tables\FaresTable;
 use App\Models\Fare;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -26,7 +27,7 @@ class FareResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-presentation-analytics';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::PresentationAnalytics;
 
     protected static ?string $recordTitleAttribute = 'name';
 

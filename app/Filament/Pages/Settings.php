@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -47,7 +48,7 @@ class Settings extends Page
 
     protected static ?int $navigationSort = 9;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-settings';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
 
     public ?array $data = [];
 
@@ -191,9 +192,9 @@ class Settings extends Page
                             return Toggle::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
-                                ->offIcon('tabler-x')
+                                ->offIcon(TablerIcon::X)
                                 ->offColor('danger')
-                                ->onIcon('tabler-check')
+                                ->onIcon(TablerIcon::Check)
                                 ->onColor('success');
                         }
 

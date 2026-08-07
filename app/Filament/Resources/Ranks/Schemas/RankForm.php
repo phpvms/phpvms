@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Ranks\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
@@ -52,24 +53,24 @@ class RankForm
 
                                 Toggle::make('auto_approve_acars')
                                     ->label(__('filament.rank_auto_approve_acars'))
-                                    ->offIcon('tabler-x')
+                                    ->offIcon(TablerIcon::X)
                                     ->offColor('danger')
-                                    ->onIcon('tabler-check')
+                                    ->onIcon(TablerIcon::Check)
                                     ->onColor('success'),
 
                                 Toggle::make('auto_approve_manual')
                                     ->label(__('filament.rank_auto_approve_manual'))
-                                    ->offIcon('tabler-x')
+                                    ->offIcon(TablerIcon::X)
                                     ->offColor('danger')
-                                    ->onIcon('tabler-check')
+                                    ->onIcon(TablerIcon::Check)
                                     ->onColor('success'),
 
                                 Toggle::make('auto_promote')
                                     ->label(__('filament.rank_auto_promote'))
                                     ->helperText(__('filament.rank_auto_promote_hint'))
-                                    ->offIcon('tabler-x')
+                                    ->offIcon(TablerIcon::X)
                                     ->offColor('danger')
-                                    ->onIcon('tabler-check')
+                                    ->onIcon(TablerIcon::Check)
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()

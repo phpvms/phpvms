@@ -7,6 +7,7 @@ namespace App\Filament\Pages\Reports;
 use App\Filament\Widgets\AircraftUtilizationChart;
 use App\Filament\Widgets\FleetUtilizationTable;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Override;
 
 /**
@@ -17,7 +18,7 @@ class AircraftReport extends BaseReportPage
 {
     protected static ?string $slug = 'aircraft';
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-globe';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Globe;
 
     protected static ?int $navigationSort = 3;
 

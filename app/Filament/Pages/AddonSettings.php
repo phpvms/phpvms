@@ -11,6 +11,7 @@ use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Services\AddonSettingService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -51,7 +52,7 @@ class AddonSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-settings';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
 
     protected static ?int $navigationSort = 99;
 
@@ -214,9 +215,9 @@ class AddonSettings extends Page
             return Toggle::make($setting->key)
                 ->label($setting->name)
                 ->helperText($setting->description)
-                ->offIcon('tabler-x')
+                ->offIcon(TablerIcon::X)
                 ->offColor('danger')
-                ->onIcon('tabler-check')
+                ->onIcon(TablerIcon::Check)
                 ->onColor('success');
         }
 

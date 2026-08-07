@@ -6,6 +6,7 @@ namespace App\Filament\Clusters;
 
 use App\Enums\NavigationGroup;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Clusters\Cluster;
 use Override;
 use UnitEnum;
@@ -20,7 +21,7 @@ class Reports extends Cluster
 
     protected static ?int $navigationSort = 6;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-report';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Report;
 
     #[Override]
     public static function getNavigationLabel(): string

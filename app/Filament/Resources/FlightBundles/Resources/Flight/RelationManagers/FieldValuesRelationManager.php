@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\RelationManagers;
 
 use App\Models\Flight;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -56,7 +57,7 @@ class FieldValuesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon('tabler-circle-plus')
+                    ->icon(TablerIcon::CirclePlus)
                     ->mutateDataUsing(function (array $data): array {
                         /** @var Flight $flight */
                         $flight = $this->getOwnerRecord();

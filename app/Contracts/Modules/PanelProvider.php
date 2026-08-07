@@ -7,6 +7,7 @@ namespace App\Contracts\Modules;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\AddonSettings;
 use App\Providers\Filament\BasePanelProvider;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
@@ -59,13 +60,13 @@ abstract class PanelProvider extends BasePanelProvider
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
-                    ->icon('tabler-plane'),
+                    ->icon(TablerIcon::Plane),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
-                    ->icon('tabler-settings'),
+                    ->icon(TablerIcon::Settings),
                 EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
-                    ->icon('tabler-terminal'),
+                    ->icon(TablerIcon::Terminal),
             ])
             ->pages([
                 Dashboard::class,

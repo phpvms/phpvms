@@ -7,6 +7,7 @@ namespace App\Providers\Filament;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -112,9 +113,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             )
             // Tabler equivalents for a few ubiquitous chrome glyphs.
             ->icons([
-                PanelsIconAlias::GLOBAL_SEARCH_FIELD                       => 'tabler-search',
-                PanelsIconAlias::TOPBAR_OPEN_DATABASE_NOTIFICATIONS_BUTTON => 'tabler-bell',
-                TablesIconAlias::ACTIONS_FILTER                            => 'tabler-filter',
+                PanelsIconAlias::GLOBAL_SEARCH_FIELD                       => TablerIcon::Search,
+                PanelsIconAlias::TOPBAR_OPEN_DATABASE_NOTIFICATIONS_BUTTON => TablerIcon::Bell,
+                TablesIconAlias::ACTIONS_FILTER                            => TablerIcon::Filter,
             ])
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))

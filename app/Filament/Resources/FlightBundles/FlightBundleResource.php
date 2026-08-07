@@ -12,6 +12,7 @@ use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Filament\Resources\FlightBundles\Tables\FlightBundlesTable;
 use App\Models\FlightBundle;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -30,7 +31,7 @@ class FlightBundleResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-map';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Map;
 
     protected static ?string $slug = 'flights';
 

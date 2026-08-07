@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Enums\PageType;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -44,16 +45,16 @@ class PageForm
                             ->schema([
                                 Toggle::make('public')
                                     ->label(__('common.public'))
-                                    ->offIcon('tabler-x')
+                                    ->offIcon(TablerIcon::X)
                                     ->offColor('danger')
-                                    ->onIcon('tabler-check')
+                                    ->onIcon(TablerIcon::Check)
                                     ->onColor('success'),
 
                                 Toggle::make('enabled')
                                     ->label(__('common.enabled'))
-                                    ->offIcon('tabler-x')
+                                    ->offIcon(TablerIcon::X)
                                     ->offColor('danger')
-                                    ->onIcon('tabler-check')
+                                    ->onIcon(TablerIcon::Check)
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()
@@ -80,9 +81,9 @@ class PageForm
 
                         Toggle::make('new_window')
                             ->label(__('filament.should_open_in_new_tab'))
-                            ->offIcon('tabler-x')
+                            ->offIcon(TablerIcon::X)
                             ->offColor('danger')
-                            ->onIcon('tabler-check')
+                            ->onIcon(TablerIcon::Check)
                             ->onColor('success')
                             ->visibleJs(<<<'JS'
                                     $get('type') == '1'

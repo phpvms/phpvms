@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserFields\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -23,30 +24,30 @@ class UserFieldForm
 
                 Toggle::make('required')
                     ->label(__('common.required'))
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
 
                 Toggle::make('show_on_registration')
                     ->label(__('filament.user_field_show_on_registration'))
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
 
                 Toggle::make('private')
                     ->label(__('filament.user_field_private'))
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
 
                 Toggle::make('active')
                     ->label(__('common.active'))
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
             ]);
     }

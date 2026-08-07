@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\PirepFields\Pages;
 
 use App\Filament\Resources\PirepFields\PirepFieldResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Override;
@@ -18,7 +19,7 @@ class ManagePirepFields extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->icon('tabler-circle-plus'),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }

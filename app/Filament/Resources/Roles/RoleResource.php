@@ -14,6 +14,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\PermissionRegistry;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -24,7 +25,7 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-shield-check';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ShieldCheck;
 
     protected static string|UnitEnum|null $navigationGroup = EnumsNavigationGroup::Pilots;
 

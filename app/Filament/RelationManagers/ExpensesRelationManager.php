@@ -5,6 +5,7 @@ namespace App\Filament\RelationManagers;
 use App\Enums\ExpenseType;
 use App\Models\Aircraft;
 use App\Models\Subfleet;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -67,7 +68,7 @@ class ExpensesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon('tabler-circle-plus')
+                    ->icon(TablerIcon::CirclePlus)
                     ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {
@@ -90,7 +91,7 @@ class ExpensesRelationManager extends RelationManager
             ])
             ->emptyStateActions([
                 CreateAction::make()
-                    ->icon('tabler-circle-plus')
+                    ->icon(TablerIcon::CirclePlus)
                     ->mutateDataUsing(function (array $data, RelationManager $livewire): array {
                         $ownerRecord = $livewire->getOwnerRecord();
                         if ($ownerRecord instanceof Subfleet) {

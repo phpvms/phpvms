@@ -10,6 +10,7 @@ use App\Filament\Imports\AirportImporter;
 use App\Filament\Resources\Airports\AirportResource;
 use App\Models\Airport;
 use App\Services\AirportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
@@ -50,11 +51,11 @@ class ListAirports extends ListRecords
                 ->exporter(AirportExporter::class),
 
             CreateAction::make()
-                ->icon('tabler-circle-plus'),
+                ->icon(TablerIcon::CirclePlus),
 
             Action::make('bulkAdd')
                 ->label(__('airports.bulk_add'))
-                ->icon('tabler-stack')
+                ->icon(TablerIcon::Stack)
                 ->modalHeading(__('airports.bulk_add'))
                 ->modalWidth(Width::TwoExtraLarge)
                 ->modalSubmitAction(false)

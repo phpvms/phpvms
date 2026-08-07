@@ -9,6 +9,7 @@ use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Support\Days;
 use Carbon\Carbon;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -38,9 +39,9 @@ class FlightForm
                             Toggle::make('enabled')
                                 ->inline()
                                 ->label(__('common.enabled'))
-                                ->offIcon('tabler-x')
+                                ->offIcon(TablerIcon::X)
                                 ->offColor('danger')
-                                ->onIcon('tabler-check')
+                                ->onIcon(TablerIcon::Check)
                                 ->onColor('success')
                                 ->default(true),
                         ])

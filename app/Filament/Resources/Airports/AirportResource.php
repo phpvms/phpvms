@@ -10,6 +10,7 @@ use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Filament\Resources\Airports\Tables\AirportsTable;
 use App\Models\Airport;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -28,7 +29,7 @@ class AirportResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = 'tabler-map-pin';
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::MapPin;
 
     #[Override]
     public static function form(Schema $schema): Schema

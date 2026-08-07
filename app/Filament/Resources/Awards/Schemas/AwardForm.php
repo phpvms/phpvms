@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Awards\Schemas;
 
 use App\Services\AwardService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -67,9 +68,9 @@ class AwardForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon(icon: 'tabler-x')
+                            ->offIcon(icon: TablerIcon::X)
                             ->offColor('danger')
-                            ->onIcon(icon: 'tabler-check')
+                            ->onIcon(icon: TablerIcon::Check)
                             ->onColor('success')
                             ->default(true),
                     ])

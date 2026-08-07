@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -51,28 +52,28 @@ class AdminPanelProvider extends BasePanelProvider
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
-                    ->icon('tabler-plane'),
+                    ->icon(TablerIcon::Plane),
                 EnumsNavigationGroup::Planning->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
-                    ->icon('tabler-calendar-time'),
+                    ->icon(TablerIcon::CalendarTime),
                 EnumsNavigationGroup::Fleet->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
-                    ->icon('tabler-box'),
+                    ->icon(TablerIcon::Box),
                 EnumsNavigationGroup::Pilots->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
-                    ->icon('tabler-users'),
+                    ->icon(TablerIcon::Users),
                 EnumsNavigationGroup::Finance->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
-                    ->icon('tabler-cash'),
+                    ->icon(TablerIcon::Cash),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
-                    ->icon('tabler-settings'),
+                    ->icon(TablerIcon::Settings),
                 EnumsNavigationGroup::AddOns->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::AddOns->getLabel())
-                    ->icon('tabler-puzzle'),
+                    ->icon(TablerIcon::Puzzle),
                 EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
-                    ->icon('tabler-terminal'),
+                    ->icon(TablerIcon::Terminal),
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
@@ -81,7 +82,7 @@ class AdminPanelProvider extends BasePanelProvider
                     ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
                     ->group(EnumsNavigationGroup::System)
                     ->sort(3)
-                    ->icon('tabler-file-text')
+                    ->icon(TablerIcon::FileText)
                     ->label(fn (): string => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])

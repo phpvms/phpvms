@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Invites\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -43,9 +44,9 @@ class InviteForm
                     ->label(__('invites.email_link'))
                     ->helperText(__('filament.invite_email_link_hint'))
                     ->disabled(fn (Get $get): bool => $get('email') === null || $get('email') === '')
-                    ->offIcon('tabler-x')
+                    ->offIcon(TablerIcon::X)
                     ->offColor('danger')
-                    ->onIcon('tabler-check')
+                    ->onIcon(TablerIcon::Check)
                     ->onColor('success'),
             ])
             ->columns();
