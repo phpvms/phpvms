@@ -31,6 +31,7 @@ import Storage from "./storage";
 import "./rail-nav";
 import "./theme-picker";
 import "./utc-clock";
+import "./autosave-indicator";
 
 window.axios = axios;
 

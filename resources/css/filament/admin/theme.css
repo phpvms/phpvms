@@ -1,4 +1,5 @@
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
+@import "@tabler/icons-webfont/dist/tabler-icons.min.css";
 
 /* Tailwind content scanning. Without these, utility classes used in Filament
  * resources and Blade views are never generated. */
@@ -463,6 +464,96 @@
 
 .fi-header-actions-ctn .fi-ac {
   @apply gap-1.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Report header filters (Reports pages) — the period and airline pickers ride
+ * in the hero's actions slot, so their triggers are glassy-on-fill rather than
+ * the bordered .fi-btn used on surface. The dropdown panels themselves are
+ * ordinary surface, so they use the normal ink/line tokens.
+ * ------------------------------------------------------------------------- */
+.fi-report-filters {
+  @apply flex items-center gap-1.5;
+}
+
+.fi-report-filter-trigger {
+  @apply flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12.5px] text-white whitespace-nowrap;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background-color: rgb(255 255 255 / 12%);
+  transition: background-color 100ms;
+}
+
+.fi-report-filter-trigger:hover {
+  background-color: rgb(255 255 255 / 20%);
+}
+
+.fi-report-filter-trigger-icon {
+  @apply w-3.5 h-3.5;
+  color: rgb(255 255 255 / 75%);
+}
+
+.fi-report-filter-trigger-caret {
+  @apply w-3.5 h-3.5;
+  color: rgb(255 255 255 / 60%);
+}
+
+.fi-report-picker {
+  @apply flex flex-col gap-1.5 p-2.5;
+}
+
+.fi-report-picker-label {
+  @apply text-[11px] uppercase tracking-wide text-(--ink-3);
+}
+
+.fi-report-picker-range {
+  @apply flex items-center gap-1.5;
+}
+
+.fi-report-picker-range input {
+  @apply w-full h-7 px-2 rounded-md text-[12.5px] text-(--ink) bg-(--surface) border border-(--line-strong);
+}
+
+.fi-report-picker-apply {
+  @apply w-full justify-center;
+}
+
+/* Quick ranges read as a vertical menu, not chips — Grafana's layout, and it
+ * keeps long localized labels ("Year to date") from wrapping. */
+.fi-report-picker-quick {
+  @apply flex flex-col;
+}
+
+.fi-report-picker-quick button {
+  @apply w-full text-left h-7 px-2 rounded-md text-[12.5px] text-(--ink-2);
+  transition:
+    background-color 100ms,
+    color 100ms;
+}
+
+.fi-report-picker-quick button:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.fi-report-picker-quick button[aria-pressed="true"] {
+  @apply text-(--primary-600);
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+  font-weight: 550;
+}
+
+.fi-report-picker-airlines {
+  @apply flex flex-col max-h-64 overflow-y-auto;
+}
+
+.fi-report-picker-airlines label {
+  @apply flex items-center gap-2 h-7 px-2 rounded-md text-[12.5px] text-(--ink-2) cursor-pointer;
+}
+
+.fi-report-picker-airlines label:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.fi-report-picker-airlines input {
+  @apply w-3.5 h-3.5 rounded-sm border-(--line-strong) text-(--primary-600);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2294,6 +2385,50 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 .panel__title svg {
   @apply size-3.5 self-center text-(--ink-3);
   stroke-width: 1.75;
+}
+
+/* ---------------------------------------------------------------------------
+ * Autosave tick (autosave-indicator.js): transient check flashed inside a
+ * field after AutosavesFields persists it. Appended to .fi-input-wrp (a
+ * flex row, so it slots in as a suffix) or absolutely pinned when the field
+ * has no input wrapper (uploads, pickers). Removes itself on animationend.
+ * ------------------------------------------------------------------------- */
+.autosave-tick {
+  @apply relative flex items-center pe-2 text-(--ok);
+  animation: autosave-tick 1.6s ease forwards;
+}
+
+.autosave-tick svg {
+  @apply size-3.5;
+  stroke-width: 2.25;
+}
+
+.fi-fo-field:has(> .autosave-tick) {
+  @apply relative;
+}
+
+.fi-fo-field > .autosave-tick {
+  @apply absolute top-1 end-1 pe-0;
+}
+
+@keyframes autosave-tick {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  78% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 .panel__title em {

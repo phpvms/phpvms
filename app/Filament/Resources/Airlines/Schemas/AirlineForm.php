@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Airlines\Schemas;
 
+use App\Filament\Concerns\AutosavesFields;
 use App\Models\Airline;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -21,11 +21,6 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class AirlineForm
 {
-    /**
-     * Re-entry guard for the upload hook (see logoUpload).
-     */
-    private static bool $storingLogo = false;
-
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -145,27 +140,14 @@ class AirlineForm
                 ];
             })
             ->live()
-            ->afterStateUpdated(function (FileUpload $component, ?Airline $record): void {
-                // saveUploadedFiles() ends by firing this same hook again, so
-                // guard the re-entry ourselves rather than relying on Filament
-                // de-duplicating the second call.
-                if (self::$storingLogo) {
-                    return;
-                }
-
-                self::$storingLogo = true;
-
-                try {
-                    // A live update fires while the state is still a temporary
-                    // upload; saving the component moves the file onto the disk
-                    // and rewrites the state to its final path.
-                    $component->saveUploadedFiles();
-
-                    $logo = $component->getState();
-
-                    self::persist($record, is_string($logo) ? $logo : null);
-                } finally {
-                    self::$storingLogo = false;
+            ->afterStateUpdated(function (FileUpload $component, $livewire): void {
+                // Edit page autosaves through the shared AutosavesFields trait
+                // (its getState() dehydration moves the upload onto the disk,
+                // and its re-entrancy guard absorbs the refire that triggers).
+                // The Create page has no record yet — the logo rides the
+                // normal form submit there.
+                if (in_array(AutosavesFields::class, class_uses_recursive($livewire), true)) {
+                    $livewire->runAutosave($component);
                 }
             });
     }
@@ -188,11 +170,10 @@ class AirlineForm
 
     /**
      * Write the logo straight to the record so an upload does not wait on the
-     * form being submitted. Skipped when the value has not actually changed,
-     * which is also what stops the re-entrant call that saving the upload
-     * component triggers on itself.
+     * form being submitted. Skipped when the value has not actually changed.
+     * Called from EditAirline's persistAutosavedField (the trait notifies).
      */
-    private static function persist(?Airline $record, ?string $logo): void
+    public static function persistLogo(?Airline $record, ?string $logo): void
     {
         $logo = blank($logo) ? null : $logo;
 
@@ -211,10 +192,5 @@ class AirlineForm
         if (filled($previous) && str_starts_with((string) $previous, Airline::LOGO_DIRECTORY.'/')) {
             Storage::disk(config('filesystems.public_files'))->delete($previous);
         }
-
-        Notification::make()
-            ->title(__('filament.airline_logo_saved'))
-            ->success()
-            ->send();
     }
 }
