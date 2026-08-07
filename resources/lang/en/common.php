@@ -34,6 +34,7 @@ return [
     'distance'        => 'Distance',
     'source'          => 'Source',
     'filters'         => 'Filters',
+    'saved'           => 'Saved',
     'fuel'            => 'Fuel',
     'metar'           => 'METAR',
     'hour'            => 'Hour|Hours',
