@@ -661,6 +661,17 @@
   @apply sticky top-0 text-(--ink-3) bg-(--surface-2) border-b border-b-(--line-strong) whitespace-nowrap;
 }
 
+/* Filament does not put .fi-ta-header-cell on every cell in the header row: the
+ * bulk-select th is .fi-ta-cell.fi-ta-selection-cell — the same class its body
+ * cells carry, which is why this has to key off thead rather than the class —
+ * and the actions th is .fi-ta-actions-header-cell, which the vendor styles not
+ * at all. Both were left transparent, breaking the strip at each end. Painting
+ * through thead also keeps them sticky with the rest of the header instead of
+ * scrolling out from under it, and covers any header cell Filament adds later. */
+.fi-ta-table thead th {
+  @apply sticky top-0 bg-(--surface-2) border-b border-b-(--line-strong);
+}
+
 .fi-ta-cell {
   @apply px-2.5 text-(--ink-2) border-b border-b-(--line-soft);
 }
