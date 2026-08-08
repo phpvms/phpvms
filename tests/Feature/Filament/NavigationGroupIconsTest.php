@@ -6,6 +6,7 @@ use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationManager;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function (): void {
@@ -49,8 +50,10 @@ it('gives every labelled admin navigation group an icon in every locale', functi
 })->with(['en', 'fr']);
 
 it('renders the same group icons regardless of locale', function (): void {
+    // Mirrors NavigationGroup::getIcon(); icons are TablerIcon enum cases since
+    // the heroicons swap, and enum cases compare identically across locales.
     $iconsFor = fn (string $locale): array => array_values(array_map(
-        fn (NavigationGroup $group): ?string => $group->getIcon(),
+        fn (NavigationGroup $group): string|BackedEnum|Htmlable|null => $group->getIcon(),
         array_filter(
             navigationGroupsForLocale($locale),
             fn (NavigationGroup $group): bool => filled($group->getLabel()),
