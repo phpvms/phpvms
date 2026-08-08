@@ -87,6 +87,14 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => view('filament.auth.login-hero')->render(),
             )
+            // Resolves the sidebar's collapse state from localStorage before the
+            // rail paints, so it does not blink out while Alpine boots. Must stay
+            // ahead of the clock: it wants to run as early inside the <aside> as
+            // possible.
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_START,
+                fn (): string => view('filament.shared.sidebar-state')->render(),
+            )
             // UTC clock, pinned to the head of the module rail.
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_START,

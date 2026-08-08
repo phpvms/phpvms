@@ -14,6 +14,42 @@
   display: none !important;
 }
 
+/* …except the sidebar, which must not vanish while Alpine boots.
+ *
+ * Filament cloaks .fi-main-sidebar because only localStorage knows whether it
+ * is open (stores/sidebar.js persists isOpen/isOpenDesktop). Stock Filament has
+ * no [x-cloak] rule, so there it stays painted; under the rule above the whole
+ * rail went display:none and popped back in on every full page load.
+ *
+ * filament/shared/sidebar-state.blade.php settles .fi-sidebar-open from that
+ * same localStorage while the <aside> is still parsing, so keeping the sidebar
+ * visible here paints the final state rather than a guess. The two rules below
+ * stand in for the x-show bindings on the group rows, which have not run yet
+ * and would otherwise show the expanded button and the rail flyout at once.
+ *
+ * Everything is scoped to [x-cloak]: Alpine strips that attribute on init, so
+ * these stop applying exactly when it starts driving inline display itself —
+ * no permanent !important fighting a binding. */
+.fi-main-sidebar[x-cloak] {
+  display: flex !important;
+}
+
+/* x-show="$store.sidebar.isOpen" on .fi-sidebar-group-btn, and
+ * x-show="… : ! $hasDropdown" on the items list — collapsed, a group that owns
+ * a flyout shows neither. :has() keeps ungrouped items (Dashboard) visible,
+ * since those render no dropdown. */
+.fi-main-sidebar[x-cloak]:not(.fi-sidebar-open) .fi-sidebar-group-btn,
+.fi-main-sidebar[x-cloak]:not(.fi-sidebar-open)
+  .fi-sidebar-group:has(> .fi-dropdown)
+  .fi-sidebar-group-items {
+  display: none !important;
+}
+
+/* x-show="! $store.sidebar.isOpen" on the rail flyout. */
+.fi-main-sidebar[x-cloak].fi-sidebar-open .fi-sidebar-group > .fi-dropdown {
+  display: none !important;
+}
+
 /* Leaflet's internal panes/controls carry z-index up to 1000; without a
  * stacking context on the container they escape and paint over rail
  * flyouts and dropdowns. Isolate so they compete only inside the map. */
