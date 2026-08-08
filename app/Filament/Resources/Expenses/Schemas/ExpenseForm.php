@@ -4,12 +4,12 @@ namespace App\Filament\Resources\Expenses\Schemas;
 
 use App\Enums\ExpenseType;
 use App\Enums\FlightType;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class ExpenseForm
 {
@@ -57,16 +57,16 @@ class ExpenseForm
                         ->label(__('common.multiplier'))
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(Heroicon::CheckCircle)
+                        ->onIcon(TablerIcon::Check)
                         ->offColor('danger')
-                        ->offIcon(Heroicon::XCircle),
+                        ->offIcon(TablerIcon::X),
 
                     Toggle::make('active')
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(Heroicon::CheckCircle)
+                        ->onIcon(TablerIcon::Check)
                         ->offColor('danger')
-                        ->offIcon(Heroicon::XCircle),
+                        ->offIcon(TablerIcon::X),
                 ])
                     ->columnSpanFull()
                     ->columns(2),

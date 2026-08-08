@@ -213,16 +213,13 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
               const a = airportCache.value[icao];
               const display = a !== undefined && a.name !== "" ? `${icao} — ${a.name}` : icao;
               return (
-                <span
-                  key={icao}
-                  class="inline-flex items-center gap-1 rounded bg-primary-100 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-900/40 dark:text-primary-200"
-                >
+                <span key={icao} class="chip chip--info chip--plain">
                   <span class="font-mono">{display}</span>
                   {!disabled && (
                     <button
                       type="button"
                       aria-label={`Remove ${icao}`}
-                      class="text-primary-600 hover:text-red-600 dark:text-primary-300 dark:hover:text-red-400"
+                      class="hover:text-(--bad)"
                       onClick={() => removeAirport(icao)}
                     >
                       ×
@@ -287,12 +284,12 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
             }}
           />
           {open && (
-            <div class="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+            <div class="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded border border-(--line-strong) bg-(--surface) shadow-lg">
               {loading && results.length === 0 && (
-                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">Loading…</div>
+                <div class="px-3 py-2 text-xs text-(--ink-3)">Loading…</div>
               )}
               {!loading && visibleResults.length === 0 && (
-                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                <div class="px-3 py-2 text-xs text-(--ink-3)">
                   {query.trim() === "" ? "No airports available." : "No matches."}
                 </div>
               )}
@@ -301,7 +298,7 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
                 return (
                   <label
                     key={a.id}
-                    class="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                    class="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-(--surface-2)"
                   >
                     <input
                       type="checkbox"
@@ -310,17 +307,11 @@ export function AirportPicker({ mode, disabled = false, hint: hintOverride }: Ai
                       onChange={() => toggleAirport(a.id)}
                     />
                     <span class="font-mono">{a.id}</span>
-                    {a.name !== "" && (
-                      <span class="text-gray-600 dark:text-gray-400">{a.name}</span>
-                    )}
+                    {a.name !== "" && <span class="text-(--ink-3)">{a.name}</span>}
                     {a.country !== null && (
-                      <span class="text-xs text-gray-400 dark:text-gray-500">· {a.country}</span>
+                      <span class="text-xs text-(--ink-4)">· {a.country}</span>
                     )}
-                    {a.hub && (
-                      <span class="ml-auto rounded bg-primary-200 px-1 text-[10px] text-primary-800 dark:bg-primary-800 dark:text-primary-100">
-                        HUB
-                      </span>
-                    )}
+                    {a.hub && <span class="ml-auto chip chip--info chip--plain">HUB</span>}
                   </label>
                 );
               })}

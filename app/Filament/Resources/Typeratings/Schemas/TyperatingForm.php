@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\Typeratings\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class TyperatingForm
 {
@@ -32,9 +32,9 @@ class TyperatingForm
 
                     Toggle::make('active')
                         ->label(__('common.active'))
-                        ->offIcon(Heroicon::XCircle)
+                        ->offIcon(TablerIcon::X)
                         ->offColor('danger')
-                        ->onIcon(Heroicon::CheckCircle)
+                        ->onIcon(TablerIcon::Check)
                         ->onColor('success'),
                 ])
                     ->columnSpanFull()

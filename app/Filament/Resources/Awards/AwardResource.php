@@ -11,9 +11,9 @@ use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\Awards\Tables\AwardsTable;
 use App\Models\Award;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -24,11 +24,11 @@ class AwardResource extends Resource
 {
     protected static ?string $model = Award::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Pilots;
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Award;
 
     protected static ?string $recordTitleAttribute = 'name';
 

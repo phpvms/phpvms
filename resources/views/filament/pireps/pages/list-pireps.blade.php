@@ -1,110 +1,119 @@
-@php
-    use App\Enums\PirepState;
-
-    /** @var \Filament\Resources\Pages\ListRecords $this */
-    $records = $this->getTableRecords();
-    $currentState = data_get($this->tableFilters, 'state.value');
-
-    // State pills replace the old tabs. Each one drives the `state` SelectFilter.
-    $statePills = [
-        ['key' => null,                          'label' => __('filament-tables::table.filters.multi_select.placeholder'), 'color' => 'gray'],
-        ['key' => PirepState::PENDING->value,    'label' => PirepState::PENDING->getLabel(),  'color' => 'warning'],
-        ['key' => PirepState::ACCEPTED->value,   'label' => PirepState::ACCEPTED->getLabel(), 'color' => 'success'],
-        ['key' => PirepState::REJECTED->value,   'label' => PirepState::REJECTED->getLabel(), 'color' => 'danger'],
-    ];
-
-    // "More filters" modal — replicates the Filament filters dialog wired
-    // to FiltersLayout::Modal. We render the trigger + modal manually because
-    // our custom page doesn't include EmbeddedTable (which normally hosts it).
-    $table = $this->getTable();
-    $filtersTriggerAction = $table->getFiltersTriggerAction();
-    $activeFiltersCount = $table->getActiveFiltersCount();
-    $filtersForm = $this->getTableFiltersForm();
-    $filtersApplyAction = $table->getFiltersApplyAction();
-@endphp
-
+{{--
+    PIREP list with the mockup's hover preview (pireps.html:652-735): the
+    table and a sticky 350px context aside share the .with-context grid.
+    Hovering a row for 500ms selects it — the panel and the accent row
+    highlight follow. The payload rides in a JSON <script> so Livewire
+    morphs (pagination, filters) refresh it without re-initing Alpine.
+--}}
 <x-filament-panels::page>
-    <div class="fi-pirep-list">
-        {{-- Toolbar: search + state pills + filters trigger --}}
-        <div class="fi-pirep-toolbar">
-            <div class="fi-pirep-toolbar-search">
-                <x-filament-tables::search-field
-                    :placeholder="__('filament-tables::table.fields.search.placeholder')"
-                />
-            </div>
+    <div
+        class="with-context"
+        x-data="{
+            selected: null,
+            timer: null,
+            get records() {
+                try {
+                    return JSON.parse(this.$refs.payload.textContent);
+                } catch {
+                    return {};
+                }
+            },
+            get row() {
+                return this.selected ? (this.records[this.selected] ?? null) : null;
+            },
+            init() {
+                this.$nextTick(() => this.select(Object.keys(this.records)[0] ?? null));
 
-            <div class="fi-pirep-toolbar-pills" role="tablist" aria-label="{{ __('common.state') }}">
-                @foreach ($statePills as $pill)
-                    @php
-                        $isActive = (string) ($currentState ?? '') === (string) ($pill['key'] ?? '');
-                    @endphp
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected="{{ $isActive ? 'true' : 'false' }}"
-                        wire:click="$set('tableFilters.state.value', @js($pill['key']))"
-                        @class([
-                            'fi-pirep-pill',
-                            'fi-pirep-pill-active' => $isActive,
-                            'fi-pirep-pill-' . $pill['color'],
-                        ])
-                    >
-                        {{ $pill['label'] }}
-                    </button>
-                @endforeach
-            </div>
+                const wrap = this.$refs.tableWrap;
 
-            <div class="fi-pirep-toolbar-filters">
-                <x-filament::modal
-                    :heading="__('filament-tables::table.filters.heading')"
-                    :wire:key="$this->getId() . '.table.filters'"
-                    :footer-actions="[$filtersApplyAction->close()]"
-                    class="fi-ta-filters-modal"
-                    width="lg"
-                >
-                    <x-slot name="trigger">
-                        {{ $filtersTriggerAction->badge($activeFiltersCount) }}
-                    </x-slot>
+                wrap.addEventListener('mouseover', (event) => {
+                    const tr = event.target.closest('.fi-ta-row');
+                    if (! tr || ! wrap.contains(tr)) {
+                        return;
+                    }
 
-                    {{ $filtersForm }}
-                </x-filament::modal>
-            </div>
+                    // wire:key is '{component}.table.records.{key}'.
+                    const key = (tr.getAttribute('wire:key') ?? '').split('.records.').pop();
+                    if (! key || key === this.selected) {
+                        clearTimeout(this.timer);
+                        return;
+                    }
+
+                    clearTimeout(this.timer);
+                    this.timer = setTimeout(() => this.select(key), 500);
+                });
+
+                wrap.addEventListener('mouseleave', () => clearTimeout(this.timer));
+            },
+            select(key) {
+                this.selected = key;
+
+                this.$refs.tableWrap.querySelectorAll('.fi-ta-row[aria-selected]')
+                    .forEach((row) => row.removeAttribute('aria-selected'));
+
+                if (key) {
+                    this.$refs.tableWrap
+                        .querySelector(`.fi-ta-row[wire\\:key$='.records.${CSS.escape(key)}']`)
+                        ?.setAttribute('aria-selected', 'true');
+                }
+            },
+        }"
+    >
+        <script type="application/json" x-ref="payload">{!! json_encode($this->getPreviewData(), JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) !!}</script>
+
+        <div class="min-w-0" x-ref="tableWrap">
+            {{ $this->table }}
         </div>
 
-        {{-- Card list --}}
-        @if (! $records || (method_exists($records, 'isEmpty') && $records->isEmpty()) || (! method_exists($records, 'isEmpty') && count($records) === 0))
-            <div class="fi-pirep-empty">
-                <p class="fi-pirep-empty-heading">
-                    {{ __('filament-tables::table.empty.heading.default', ['model' => trans_choice('common.pirep', 2)]) }}
-                </p>
-            </div>
-        @else
-            <div class="fi-pirep-card-list">
-                @foreach ($records as $record)
-                    @php
-                        $recordKey = $this->getTableRecordKey($record);
-                    @endphp
-                    <article
-                        wire:key="pirep-card-{{ $recordKey }}"
-                        class="fi-pirep-card"
-                    >
-                        @include('filament.pireps.partials.row', ['record' => $record, 'recordKey' => $recordKey])
-                    </article>
-                @endforeach
-            </div>
+        <aside class="context flex min-w-0 flex-col gap-3.5">
+        <section class="panel" aria-label="{{ __('pireps.selected_report') }}" x-cloak x-show="row">
+            <template x-if="row">
+                <div>
+                    <div class="context__head">
+                        <div>
+                            <div class="context__eyebrow">{{ __('pireps.flight_report') }}</div>
+                            <div class="context__title" x-text="row.ident"></div>
+                            <div class="context__sub" x-text="row.sub"></div>
+                        </div>
+                        <span class="chip" :class="row.chip" x-text="row.state"></span>
+                    </div>
 
-            {{-- Pagination --}}
-            @if ($records instanceof \Illuminate\Contracts\Pagination\Paginator)
-                <div class="fi-pirep-pagination">
-                    <x-filament::pagination :paginator="$records" />
+                    <dl class="dl">
+                        <template x-for="[label, field] in [
+                            ['{{ __('flights.route') }}', 'route'],
+                            ['{{ trans_choice('common.aircraft', 1) }}', 'aircraft'],
+                            ['{{ __('pireps.block') }}', 'block'],
+                            ['{{ __('common.distance') }}', 'distance'],
+                            ['{{ __('pireps.landing') }}', 'landing'],
+                            ['{{ __('pireps.fuel_used') }}', 'fuel'],
+                            ['{{ __('common.source') }}', 'source'],
+                            ['{{ __('flights.flighttype') }}', 'type'],
+                        ]" :key="field">
+                            <div x-show="row[field]">
+                                <dt x-text="label"></dt>
+                                <dd><span class="id" x-text="row[field]"></span></dd>
+                            </div>
+                        </template>
+                    </dl>
+
+                    <div class="context__actions">
+                        <a class="fi-btn fi-color-gray" :href="row.url">{{ __('pireps.full_report') }}</a>
+                    </div>
                 </div>
-            @endif
-        @endif
-    </div>
+            </template>
+        </section>
 
-    {{-- Render action modals (view/accept/reject/etc).
-         The default page layout skips this for HasTable components because
-         the table container normally renders modals itself. Since this page
-         replaces the table container with custom cards, we render them here. --}}
-    <x-filament-actions::modals />
+        {{-- Full filter set, always visible — replaces the funnel dropdown
+             (the table runs FiltersLayout::Hidden). Same tableFilters state
+             the quick bar above the table binds to. --}}
+        <section class="panel" aria-label="{{ __('common.filters') }}">
+            <div class="panel__head rounded-t-[5px]">
+                <h3 class="panel__title">@svg('tabler-filter') {{ __('common.filters') }}</h3>
+            </div>
+            <div class="panel__body">
+                {{ $this->getTableFiltersForm() }}
+            </div>
+        </section>
+        </aside>
+    </div>
 </x-filament-panels::page>

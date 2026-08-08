@@ -729,7 +729,7 @@ class Metar implements ArrayAccess
 
         $this->set_result_value('wind_direction_varies', false, true);
 
-        if (!($found[1] === '///' && $found[2] === '//')) {
+        if ($found[1] !== '///' || $found[2] !== '//') {
             $unit = $found[5];
             // Speed
             $this->set_result_value('wind_speed', $this->convert_speed($found[2], $unit));

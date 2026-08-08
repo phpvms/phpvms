@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Awards\Schemas;
 
 use App\Services\AwardService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -11,7 +12,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class AwardForm
 {
@@ -68,9 +68,9 @@ class AwardForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon(icon: Heroicon::XCircle)
+                            ->offIcon(icon: TablerIcon::X)
                             ->offColor('danger')
-                            ->onIcon(icon: Heroicon::CheckCircle)
+                            ->onIcon(icon: TablerIcon::Check)
                             ->onColor('success')
                             ->default(true),
                     ])

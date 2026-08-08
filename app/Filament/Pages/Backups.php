@@ -7,7 +7,7 @@ namespace App\Filament\Pages;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use BackedEnum;
-use Filament\Support\Icons\Heroicon;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Override;
 use ShuvroRoy\FilamentSpatieLaravelBackup\Pages\Backups as BaseBackups;
 use UnitEnum;
@@ -16,14 +16,14 @@ class Backups extends BaseBackups
 {
     use AuthorizesAccess;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Database;
 
     protected static ?int $navigationSort = 4;
 
     #[Override]
     public static function getNavigationGroup(): UnitEnum
     {
-        return NavigationGroup::Developers;
+        return NavigationGroup::System;
     }
 
     /**

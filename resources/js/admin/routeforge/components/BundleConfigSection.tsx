@@ -274,20 +274,18 @@ function BundlePicker({
           }}
         />
         {open && (
-          <div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+          <div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-(--line-strong) bg-(--surface) shadow-lg">
             {searchError !== null && (
-              <div class="px-3 py-2 text-xs text-red-600 dark:text-red-400">{searchError}</div>
+              <div class="px-3 py-2 text-xs text-(--bad)">{searchError}</div>
             )}
             {filtered.length === 0 && query.trim() !== "" && searchError === null && (
-              <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
-                {t("bundle.no_matches")}
-              </div>
+              <div class="px-3 py-2 text-xs text-(--ink-3)">{t("bundle.no_matches")}</div>
             )}
             {filtered.map((bundle) => (
               <button
                 key={bundle.id}
                 type="button"
-                class="block w-full px-3 py-1.5 text-left text-sm hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                class="block w-full px-3 py-1.5 text-left text-sm hover:bg-(--surface-2)"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   onSelectExisting(bundle);
@@ -295,9 +293,9 @@ function BundlePicker({
                   setOpen(false);
                 }}
               >
-                <div class="font-medium text-gray-900 dark:text-gray-100">{bundle.name}</div>
+                <div class="font-medium text-(--ink)">{bundle.name}</div>
                 {(bundle.start_date !== null || bundle.end_date !== null) && (
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <div class="text-xs text-(--ink-3)">
                     {bundle.start_date ?? "…"} → {bundle.end_date ?? "…"}
                   </div>
                 )}
@@ -307,7 +305,7 @@ function BundlePicker({
         )}
       </div>
       {showCreateHint && (
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p class="mt-1 text-xs text-(--ink-3)">
           {t("bundle.create_new_hint", { name: query.trim() })}
         </p>
       )}
@@ -378,37 +376,33 @@ function ExistingBundleSummary({
 
   return (
     <Field label={t("bundle.picker_label")}>
-      <div class="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+      <div class="rounded border border-(--line) bg-(--surface-2) p-3">
         <div class="mb-2 flex items-start justify-between gap-2">
           <div>
-            <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <p class="text-xs font-medium uppercase tracking-wide text-(--ink-3)">
               {t("bundle.existing_label")}
             </p>
-            <p class="text-base font-semibold text-gray-900 dark:text-gray-100">{name}</p>
+            <p class="text-base font-semibold text-(--ink)">{name}</p>
           </div>
           <button
             type="button"
-            class="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
+            class="text-xs font-medium text-primary-600 hover:opacity-80"
             onClick={onChange}
           >
             {t("bundle.change_selection")}
           </button>
         </div>
         <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-          <dt class="font-medium text-gray-500 dark:text-gray-400">
-            {t("bundle.field_description")}
-          </dt>
-          <dd class="text-gray-700 dark:text-gray-200">
+          <dt class="font-medium text-(--ink-3)">{t("bundle.field_description")}</dt>
+          <dd class="text-(--ink-2)">
             {description !== null && description !== "" ? description : empty}
           </dd>
-          <dt class="font-medium text-gray-500 dark:text-gray-400">
-            {t("bundle.field_start_date")}
-          </dt>
-          <dd class="font-mono text-gray-700 dark:text-gray-200">{startDate ?? empty}</dd>
-          <dt class="font-medium text-gray-500 dark:text-gray-400">{t("bundle.field_end_date")}</dt>
-          <dd class="font-mono text-gray-700 dark:text-gray-200">{endDate ?? empty}</dd>
-          <dt class="font-medium text-gray-500 dark:text-gray-400">{t("bundle.field_enabled")}</dt>
-          <dd class="text-gray-700 dark:text-gray-200">{enabled ? yes : no}</dd>
+          <dt class="font-medium text-(--ink-3)">{t("bundle.field_start_date")}</dt>
+          <dd class="font-mono text-(--ink-2)">{startDate ?? empty}</dd>
+          <dt class="font-medium text-(--ink-3)">{t("bundle.field_end_date")}</dt>
+          <dd class="font-mono text-(--ink-2)">{endDate ?? empty}</dd>
+          <dt class="font-medium text-(--ink-3)">{t("bundle.field_enabled")}</dt>
+          <dd class="text-(--ink-2)">{enabled ? yes : no}</dd>
         </dl>
       </div>
     </Field>
@@ -460,11 +454,11 @@ function NewBundleFields({ b, patch }: NewBundleFieldsProps) {
       </Field>
 
       <div class="mb-3">
-        <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-(--ink-2)">
           <input type="checkbox" class="h-4 w-4" checked={b.enabled} onChange={changeEnabled} />
           <span class="font-medium">Activate this Flight Bundle on save</span>
         </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p class="mt-1 text-xs text-(--ink-3)">
           When checked, flights are visible to pilots immediately after commit. Leave unchecked to
           commit as a draft bundle.
         </p>

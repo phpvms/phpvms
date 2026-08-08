@@ -8,6 +8,7 @@ use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
 use App\Models\Airline;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -18,7 +19,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Override;
 use UnitEnum;
@@ -28,11 +28,11 @@ class Finances extends Page
     use AuthorizesAccess;
     use HasFiltersForm;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Finance;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ChartBar;
 
     #[Override]
     public static function getNavigationLabel(): string

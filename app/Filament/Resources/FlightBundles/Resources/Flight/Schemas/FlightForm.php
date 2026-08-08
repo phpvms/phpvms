@@ -9,6 +9,7 @@ use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Support\Days;
 use Carbon\Carbon;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -21,7 +22,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\HtmlString;
 
 class FlightForm
@@ -39,9 +39,9 @@ class FlightForm
                             Toggle::make('enabled')
                                 ->inline()
                                 ->label(__('common.enabled'))
-                                ->offIcon(Heroicon::XCircle)
+                                ->offIcon(TablerIcon::X)
                                 ->offColor('danger')
-                                ->onIcon(Heroicon::CheckCircle)
+                                ->onIcon(TablerIcon::Check)
                                 ->onColor('success')
                                 ->default(true),
                         ])

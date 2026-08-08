@@ -54,11 +54,11 @@ const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 // 4-column grid: checkbox · # · two-line content · lint icon.
 const GRID_COLS = "grid grid-cols-[auto_2.5rem_1fr_auto] items-start gap-x-3";
 
-const HEADER_CLS = `${GRID_COLS} sticky top-0 z-10 border-b border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300`;
-const ROW_CLS = `${GRID_COLS} border-b border-gray-100 px-3 py-1.5 text-sm last:border-b-0 dark:border-gray-800`;
+const HEADER_CLS = `${GRID_COLS} sticky top-0 z-10 border-b border-(--line) bg-(--surface-2) px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-(--ink-3)`;
+const ROW_CLS = `${GRID_COLS} border-b border-(--line-soft) px-3 py-1.5 text-sm last:border-b-0`;
 
 const CLICKABLE_CELL =
-  "rounded px-1 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:hover:bg-gray-800 dark:focus:bg-gray-800";
+  "rounded px-1 text-left hover:bg-(--surface-2) focus:bg-(--surface-2) focus:outline-none focus:ring-1 focus:ring-primary-500";
 
 export function RowTable() {
   const list = rows.value;
@@ -66,7 +66,7 @@ export function RowTable() {
 
   if (list.length === 0) {
     return (
-      <div class="rounded border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400">
+      <div class="rounded border border-dashed border-(--line-strong) bg-(--surface-2) px-6 py-12 text-center text-sm text-(--ink-3)">
         No rows yet. Click <span class="font-medium">Generate</span> to materialize from the form
         above.
       </div>
@@ -158,7 +158,7 @@ export function RowTable() {
     <div
       role="grid"
       aria-rowcount={list.length + 1}
-      class="max-h-[60vh] overflow-auto rounded border border-gray-200 dark:border-gray-700"
+      class="max-h-[60vh] overflow-auto rounded border border-(--line)"
     >
       {/* Header */}
       <div role="row" aria-rowindex={1} class={HEADER_CLS}>
@@ -221,17 +221,13 @@ function RowItem({
     row.arr_day_shift === 0 ? row.arrival_time : `${row.arrival_time} +${row.arr_day_shift}d`;
   const dayLabel = formatDaysMask(row.days_mask);
   const directionBadge =
-    row.direction === "return" ? (
-      <span class="ml-1 rounded bg-gray-200 px-1 text-[10px] font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-        RET
-      </span>
-    ) : null;
+    row.direction === "return" ? <span class="ml-1 chip chip--mute chip--plain">RET</span> : null;
 
   return (
     <div
       role="row"
       aria-rowindex={row.index + 2}
-      class={`${ROW_CLS} ${row.edited ? "bg-yellow-50/40 dark:bg-yellow-900/10" : ""}`}
+      class={`${ROW_CLS} ${row.edited ? "bg-(--warn-soft)" : ""}`}
     >
       {/* Col 1: checkbox */}
       <div role="gridcell" class="pt-0.5">
@@ -244,7 +240,7 @@ function RowItem({
       </div>
 
       {/* Col 2: row number */}
-      <div role="gridcell" class="pt-0.5 text-xs text-gray-500 dark:text-gray-400">
+      <div role="gridcell" class="pt-0.5 text-xs text-(--ink-3)">
         {row.index + 1}
       </div>
 
@@ -267,7 +263,7 @@ function RowItem({
               <button
                 type="button"
                 onClick={() => onStartEdit("flight_number")}
-                class={`${CLICKABLE_CELL} font-medium text-gray-900 dark:text-gray-100`}
+                class={`${CLICKABLE_CELL} font-medium text-(--ink)`}
                 aria-label={`Edit flight number (currently ${row.flight_number})`}
               >
                 {row.flight_number}
@@ -275,7 +271,7 @@ function RowItem({
             )}
             {(editing === "route_leg" || row.route_leg !== null) && (
               <>
-                <span aria-hidden="true" class="text-xs text-gray-400 dark:text-gray-500">
+                <span aria-hidden="true" class="text-xs text-(--ink-4)">
                   /L.
                 </span>
                 {editing === "route_leg" ? (
@@ -288,7 +284,7 @@ function RowItem({
                   <button
                     type="button"
                     onClick={() => onStartEdit("route_leg")}
-                    class={`${CLICKABLE_CELL} text-sm text-gray-700 dark:text-gray-200`}
+                    class={`${CLICKABLE_CELL} text-sm text-(--ink-2)`}
                     aria-label={`Edit route leg (currently ${row.route_leg ?? "none"})`}
                   >
                     {row.route_leg}
@@ -297,20 +293,18 @@ function RowItem({
               </>
             )}
           </span>
-          <span class="font-mono text-xs text-gray-700 dark:text-gray-200">
+          <span class="font-mono text-xs text-(--ink-2)">
             {row.dpt_airport_id}
-            <span class="px-1 text-gray-400">→</span>
+            <span class="px-1 text-(--ink-4)">→</span>
             {row.arr_airport_id}
           </span>
           {directionBadge}
         </div>
 
         {/* Line 2: schedule + distance + days */}
-        <div class="flex flex-wrap items-baseline gap-x-3 font-mono text-xs text-gray-500 dark:text-gray-400">
+        <div class="flex flex-wrap items-baseline gap-x-3 font-mono text-xs text-(--ink-3)">
           <span class="inline-flex items-baseline gap-1">
-            <span class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
-              Dpt
-            </span>
+            <span class="text-[10px] uppercase tracking-wide text-(--ink-4)">Dpt</span>
             {editing === "departure_time" ? (
               <DepartureTimeEditor
                 initial={row.departure_time}
@@ -329,9 +323,7 @@ function RowItem({
             )}
           </span>
           <span class="inline-flex items-baseline gap-1">
-            <span class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
-              Arr
-            </span>
+            <span class="text-[10px] uppercase tracking-wide text-(--ink-4)">Arr</span>
             <span>{arrLabel}</span>
           </span>
           <span aria-hidden="true">·</span>
@@ -382,7 +374,7 @@ function FlightNumberEditor({ initial, onCommit, onCancel }: FlightNumberEditorP
           onCancel();
         }
       }}
-      class="w-20 rounded border border-primary-500 bg-white px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-900 dark:text-gray-100"
+      class="w-20 rounded border border-primary-500 bg-(--surface) px-1 py-0.5 text-sm text-(--ink) focus:outline-none focus:ring-1 focus:ring-primary-500"
     />
   );
 }
@@ -423,7 +415,7 @@ function RouteLegEditor({ initial, onCommit, onCancel }: RouteLegEditorProps) {
           onCancel();
         }
       }}
-      class="w-14 rounded border border-primary-500 bg-white px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-900 dark:text-gray-100"
+      class="w-14 rounded border border-primary-500 bg-(--surface) px-1 py-0.5 text-sm text-(--ink) focus:outline-none focus:ring-1 focus:ring-primary-500"
     />
   );
 }
@@ -458,7 +450,7 @@ function DepartureTimeEditor({ initial, onCommit, onCancel }: DepartureTimeEdito
           onCancel();
         }
       }}
-      class="rounded border border-primary-500 bg-white px-1 py-0.5 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-900 dark:text-gray-100"
+      class="rounded border border-primary-500 bg-(--surface) px-1 py-0.5 font-mono text-xs text-(--ink) focus:outline-none focus:ring-1 focus:ring-primary-500"
     />
   );
 }

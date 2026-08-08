@@ -29,19 +29,19 @@ class LandingRateChart extends Widget
         $filters = $this->pageFilters ?? [
             'start_date' => null,
             'end_date'   => null,
-            'airline_id' => null,
+            'airlines'   => [],
         ];
 
         $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->subDays(13)->startOfDay();
         $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
-        $airline_id = $filters['airline_id'];
+        $airlines = $filters['airlines'];
 
         $data = Trend::query(
             Pirep::query()
                 ->where('landing_rate', '!=', 0)
                 ->when(
-                    filled($airline_id),
-                    fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+                    filled($airlines),
+                    fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
                 )
         )
             ->between(start: $start_date, end: $end_date)

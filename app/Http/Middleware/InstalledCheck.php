@@ -7,7 +7,6 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Middleware;
-use App\Filament\System\Installer;
 use App\Models\User;
 use Closure;
 use Exception;

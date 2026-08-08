@@ -6,8 +6,13 @@
 all_files=$(git diff --cached --name-only --diff-filter=AMCR)
 # Get PHP files only (excluding .blade.php)
 php_files=$(echo "$all_files" | grep "\.php$" | grep -v "\.blade\.php$")
-# Get files for oxlint (including .blade.php)
-oxlint_files=$(echo "$all_files" | grep -E "\.(js|jsx|ts|tsx|css|scss|json|html|vue|yaml|yml|md|blade\.php)$")
+# Get files for oxlint (including .blade.php). oxlint ignores what it cannot
+# parse and still exits 0, so an over-broad list here is harmless.
+oxlint_files=$(echo "$all_files" | grep -E "\.(js|jsx|ts|tsx|mjs|cjs|mts|cts|css|scss|json|html|vue|yaml|yml|md|blade\.php)$")
+# oxfmt is stricter: it only handles the JS family plus json/md/yaml, and exits
+# with "Expected at least one target file" when the list holds nothing it can
+# format -- which is every css-, html- or blade-only commit.
+oxfmt_files=$(echo "$all_files" | grep -E "\.(js|jsx|ts|tsx|mjs|cjs|mts|cts|json|yaml|yml|md)$")
 
 # Detect PHP binary
 PHP_BINARY=$(command -v php)
@@ -21,10 +26,14 @@ if [ -x "$PHP_BINARY" ]; then
         git add $php_files
     fi
     if [ -n "$oxlint_files" ]; then
-        echo "Running oxlint and oxfmt..."
+        echo "Running oxlint..."
         npm run lint -- $oxlint_files
-        npm run fmt -- $oxlint_files
         git add $oxlint_files
+    fi
+    if [ -n "$oxfmt_files" ]; then
+        echo "Running oxfmt..."
+        npm run fmt -- $oxfmt_files
+        git add $oxfmt_files
     fi
 else
     # Detect Docker binary
@@ -45,10 +54,14 @@ else
             git add $php_files
         fi
         if [ -n "$oxlint_files" ]; then
-            echo "Running oxlint and oxfmt..."
+            echo "Running oxlint..."
             ./vendor/bin/sail npm run lint -- $oxlint_files
-            ./vendor/bin/sail npm run fmt -- $oxlint_files
             git add $oxlint_files
+        fi
+        if [ -n "$oxfmt_files" ]; then
+            echo "Running oxfmt..."
+            ./vendor/bin/sail npm run fmt -- $oxfmt_files
+            git add $oxfmt_files
         fi
     else
         echo "Skipping pre-commit hooks (no PHP or running Sail detected)."

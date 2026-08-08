@@ -34,9 +34,7 @@ export function RowLintIcon({ rowIndex }: RowLintIconProps) {
   }
 
   const hasError = issues.some((i) => i.severity === "error");
-  const colourClass = hasError
-    ? "text-red-600 dark:text-red-400"
-    : "text-yellow-600 dark:text-yellow-400";
+  const colourClass = hasError ? "text-(--bad)" : "text-(--warn)";
   const glyph = hasError ? "⚠" : "⚡";
   const summary = hasError
     ? `${issues.filter((i) => i.severity === "error").length} error(s)`
@@ -49,18 +47,12 @@ export function RowLintIcon({ rowIndex }: RowLintIconProps) {
       </span>
       <span
         role="tooltip"
-        class="invisible absolute right-0 top-full z-20 mt-1 w-64 rounded bg-gray-900 p-2 text-xs text-white shadow-lg group-hover:visible group-focus-within:visible dark:bg-gray-100 dark:text-gray-900"
+        class="invisible absolute right-0 top-full z-20 mt-1 w-64 rounded bg-gray-900 p-2 text-xs text-white shadow-lg group-hover:visible group-focus-within:visible"
       >
         {issues.map((i, idx) => (
           <div key={`${i.rule}-${idx}`} class="mb-1 last:mb-0">
             <span class="font-mono font-bold">{i.rule}</span>{" "}
-            <span
-              class={
-                i.severity === "error"
-                  ? "text-red-300 dark:text-red-700"
-                  : "text-yellow-300 dark:text-yellow-700"
-              }
-            >
+            <span class={i.severity === "error" ? "text-red-300" : "text-yellow-300"}>
               ({i.severity})
             </span>
             <div>{i.message}</div>

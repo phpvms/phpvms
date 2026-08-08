@@ -28,7 +28,7 @@ class PirepStateChart extends Widget
         $filters = $this->pageFilters ?? [
             'start_date' => null,
             'end_date'   => null,
-            'airline_id' => null,
+            'airlines'   => [],
         ];
 
         $query = Pirep::query()
@@ -43,8 +43,8 @@ class PirepStateChart extends Widget
                 ),
             )
             ->when(
-                filled($filters['airline_id']),
-                fn (Builder $query): Builder => $query->where('airline_id', $filters['airline_id']),
+                filled($filters['airlines']),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $filters['airlines']),
             );
 
         $counts = $query

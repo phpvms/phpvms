@@ -1,46 +1,37 @@
-<x-filament::dropdown
-    placement="bottom-end"
-    width="flags-only"
-    maxHeight="max-content"
-    teleport
-    class="fi-dropdown fi-user-menu"
-    data-nosnippet="true"
->
-    <x-slot name="trigger">
-        <div
-        class="flex items-center justify-center w-10 h-[35px] rounded-lg ring-2 ring-inset ring-gray-200 hover:ring-gray-300 dark:ring-gray-500 hover:dark:ring-gray-400"
-            x-tooltip="{
-                content: @js($getLabel(app()->getLocale())),
-                theme: $store.theme,
-                placement: 'bottom'
-            }"
-        >
-            <img
-                src="{{ $getFlag(app()->getLocale()) }}"
-                class="h-full w-full object-cover object-center rounded-md"
-                alt="{{ $getLabel(app()->getLocale()) }}"
-                />
-        </div>
-    </x-slot>
+{{--
+    Locale switcher, rendered inside the user menu dropdown right after the
+    profile block (PanelsRenderHook::USER_MENU_PROFILE_AFTER — see
+    LanguageSwitcherPlugin). A single "Language" row opens a nested dropdown
+    of locale links, the active one omitted. Nesting works because the user
+    menu is UserMenuPosition::Sidebar (AdminPanelProvider), so it never
+    teleports — the submenu panel stays inside .fi-user-menu, and its
+    mousedown listener is scoped to its own trigger, not this row, so opening
+    it doesn't toggle the parent menu shut.
+--}}
+<x-filament::dropdown.list>
+    <x-filament::dropdown placement="right-start" :offset="4" width="none">
+        <x-slot name="trigger">
+            <button type="button" class="fi-dropdown-list-item w-full">
+                <div class="fi-dropdown-list-item-image" style="background-image: url('{{ $getFlag($currentLocale) }}')"></div>
 
-    <x-filament::dropdown.list @class(array: ['!border-t-0 space-y-1 !p-2.5'])>
-        @foreach ($locales as $locale)
-            @if (!app()->isLocale($locale))
-                <a
-                    href="{{ route('frontend.lang.switch', ['lang' => $locale]) }}"
-                    class="flex items-center w-full justify-start space-x-2 rtl:space-x-reverse p-1 transition-colors duration-75 rounded-md outline-none fi-dropdown-list-item whitespace-nowrap disabled:pointer-events-none disabled:opacity-70 fi-dropdown-list-item-color-gray hover:bg-gray-950/5 focus:bg-gray-950/5 dark:hover:bg-white/5 dark:focus:bg-white/5"
-                >
-                    <img
-                        src="{{ $getFlag($locale) }}"
-                        class="object-cover object-center rounded-lg w-7 h-7"
-                        alt="{{ $getLabel($locale) }}"
-                    />
+                <span class="fi-dropdown-list-item-label">{{ $getLabel($currentLocale) }}</span>
 
-                    <span class="text-sm font-medium text-gray-600 hover:bg-transparent dark:text-gray-200">
+                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronRight" class="fi-icon h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+            </button>
+        </x-slot>
+
+        <x-filament::dropdown.list>
+            @foreach ($locales as $locale)
+                @if (!app()->isLocale($locale))
+                    <x-filament::dropdown.list.item
+                        tag="a"
+                        :href="route('frontend.lang.switch', ['lang' => $locale])"
+                        :image="$getFlag($locale)"
+                    >
                         {{ $getLabel($locale) }}
-                    </span>
-                </a>
-            @endif
-        @endforeach
-    </x-filament::dropdown.list>
-</x-filament::dropdown>
+                    </x-filament::dropdown.list.item>
+                @endif
+            @endforeach
+        </x-filament::dropdown.list>
+    </x-filament::dropdown>
+</x-filament::dropdown.list>

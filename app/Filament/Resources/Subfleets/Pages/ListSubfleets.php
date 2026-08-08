@@ -8,11 +8,11 @@ use App\Filament\Actions\ImportAction as OldImportAction;
 use App\Filament\Exports\SubfleetExporter;
 use App\Filament\Imports\SubfleetImporter;
 use App\Filament\Resources\Subfleets\SubfleetResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListSubfleets extends ListRecords
@@ -38,7 +38,7 @@ class ListSubfleets extends ListRecords
                 ->exporter(SubfleetExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }

@@ -10,9 +10,9 @@ use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Filament\Resources\Airports\Tables\AirportsTable;
 use App\Models\Airport;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,11 +25,11 @@ class AirportResource extends Resource
 {
     protected static ?string $model = Airport::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Planning;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::MapPin;
 
     #[Override]
     public static function form(Schema $schema): Schema

@@ -96,7 +96,7 @@ class GeoService extends Service
         $filter_points = [$dep_icao, $arr_icao, 'SID', 'STAR'];
 
         /** @var Collection<int, Acars> $split_route */
-        $split_route = collect(explode(' ', (string) $route))->transform(function ($point) {
+        $split_route = collect(explode(' ', (string) $route))->transform(function ($point): false|string {
             if ($point === '' || $point === '0') {
                 return false;
             }

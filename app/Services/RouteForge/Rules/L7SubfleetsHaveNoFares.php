@@ -46,7 +46,6 @@ final class L7SubfleetsHaveNoFares implements LintRule
                 ruleId: self::ID,
                 severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l7_no_fares'),
-                rowIndex: null,
                 details: [
                     'subfleet_count' => $ctx->selectedSubfleets->count(),
                 ],

@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -26,7 +27,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
-use Filament\Support\Icons\Heroicon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -46,9 +46,9 @@ class Settings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
 
     public ?array $data = [];
 
@@ -192,9 +192,9 @@ class Settings extends Page
                             return Toggle::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
-                                ->offIcon(Heroicon::XCircle)
+                                ->offIcon(TablerIcon::X)
                                 ->offColor('danger')
-                                ->onIcon(Heroicon::CheckCircle)
+                                ->onIcon(TablerIcon::Check)
                                 ->onColor('success');
                         }
 

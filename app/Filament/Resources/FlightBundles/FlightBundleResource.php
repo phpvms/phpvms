@@ -7,14 +7,13 @@ use App\Filament\Resources\FlightBundles\Pages\CreateFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\ListFlightBundles;
 use App\Filament\Resources\FlightBundles\RelationManagers\FlightsRelationManager;
-use App\Filament\Resources\FlightBundles\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Filament\Resources\FlightBundles\Tables\FlightBundlesTable;
 use App\Models\FlightBundle;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,11 +26,11 @@ class FlightBundleResource extends Resource
 {
     protected static ?string $model = FlightBundle::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Planning;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Map;
 
     protected static ?string $slug = 'flights';
 
@@ -52,7 +51,6 @@ class FlightBundleResource extends Resource
     {
         return [
             FlightsRelationManager::class,
-            SubfleetsRelationManager::class,
         ];
     }
 

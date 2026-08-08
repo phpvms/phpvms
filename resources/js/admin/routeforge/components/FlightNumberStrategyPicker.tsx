@@ -30,7 +30,7 @@
 
 import { form } from "../state/store";
 import type { FlightNumberStrategy } from "../state/types";
-import { Field, INPUT_CLASS } from "./Field";
+import { Field, INPUT_CLASS, SELECT_CLASS } from "./Field";
 
 type StrategyKind = FlightNumberStrategy["kind"];
 
@@ -119,7 +119,7 @@ export function FlightNumberStrategyPicker() {
       >
         <select
           id="rf-fn-strategy"
-          class={INPUT_CLASS}
+          class={SELECT_CLASS}
           value={strat.kind}
           onChange={handleKindChange}
         >

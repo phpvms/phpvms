@@ -68,14 +68,14 @@ export function LintReportDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="rf-lint-title"
-        class="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl dark:bg-gray-800"
+        class="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-lg bg-(--surface) shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <header class="border-b border-gray-200 px-5 py-3 dark:border-gray-700">
-          <h2 id="rf-lint-title" class="text-base font-semibold text-gray-900 dark:text-gray-100">
+        <header class="border-b border-(--line) px-5 py-3">
+          <h2 id="rf-lint-title" class="text-base font-semibold text-(--ink)">
             {title}
           </h2>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+          <p class="mt-1 text-sm text-(--ink-3)">{subtitle}</p>
         </header>
         <div class="flex-1 overflow-auto px-5 py-3">
           <IssueSection
@@ -96,23 +96,17 @@ export function LintReportDialog({
           {report.errors.length === 0 &&
             report.warnings.length === 0 &&
             report.info.length === 0 && (
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {t("lint_dialog_extra.no_issues")}
-              </p>
+              <p class="text-sm text-(--ink-3)">{t("lint_dialog_extra.no_issues")}</p>
             )}
         </div>
-        <footer class="flex justify-end gap-2 border-t border-gray-200 px-5 py-3 dark:border-gray-700">
-          <button
-            type="button"
-            class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            onClick={onCancel}
-          >
+        <footer class="flex justify-end gap-2 border-t border-(--line) px-5 py-3">
+          <button type="button" class="fi-btn fi-color-gray" onClick={onCancel}>
             {readOnly === true ? t("lint_dialog_extra.close") : t("lint_dialog.cancel")}
           </button>
           {readOnly !== true && (
             <button
               type="button"
-              class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600"
+              class="fi-btn fi-color-primary"
               disabled={hasErrors || busy}
               onClick={onProceed}
             >
@@ -137,16 +131,16 @@ function IssueSection({ title, severity, issues }: IssueSectionProps) {
   }
   const tone =
     severity === "error"
-      ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
+      ? "border-(--bad-line) bg-(--bad-soft)"
       : severity === "warning"
-        ? "border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20"
-        : "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20";
+        ? "border-(--warn-line) bg-(--warn-soft)"
+        : "border-(--info-line) bg-(--info-soft)";
   const dot =
-    severity === "error" ? "bg-red-500" : severity === "warning" ? "bg-yellow-500" : "bg-blue-500";
+    severity === "error" ? "bg-(--bad)" : severity === "warning" ? "bg-(--warn)" : "bg-(--info)";
 
   return (
     <section class={`mb-3 rounded border ${tone}`}>
-      <h3 class="border-b border-current/20 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+      <h3 class="border-b border-current/20 px-3 py-2 text-sm font-semibold text-(--ink-2)">
         {title} ({issues.length})
       </h3>
       <ul class="divide-y divide-current/10">
@@ -155,16 +149,14 @@ function IssueSection({ title, severity, issues }: IssueSectionProps) {
             <span class={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${dot}`} aria-hidden="true" />
             <div class="flex-1">
               <div class="flex items-center gap-2">
-                <span class="font-mono text-xs font-bold text-gray-700 dark:text-gray-300">
-                  {issue.rule}
-                </span>
+                <span class="font-mono text-xs font-bold text-(--ink-2)">{issue.rule}</span>
                 {issue.row_index !== null && (
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                  <span class="text-xs text-(--ink-3)">
                     {t("lint_dialog_extra.row")} {issue.row_index + 1}
                   </span>
                 )}
               </div>
-              <div class="text-gray-800 dark:text-gray-100">{issue.message}</div>
+              <div class="text-(--ink)">{issue.message}</div>
             </div>
           </li>
         ))}

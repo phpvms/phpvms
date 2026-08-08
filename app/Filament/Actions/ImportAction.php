@@ -4,6 +4,7 @@ namespace App\Filament\Actions;
 
 use App\Enums\ImportExportType;
 use App\Services\ImportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Forms\Components\FileUpload;
@@ -28,6 +29,10 @@ class ImportAction extends Action
         $this->label('Import from CSV');
 
         $this->visible(!config('phpvms.use_queued_filament_imports'));
+
+        // Neutral like the vendor ImportAction's defaultColor('gray') —
+        // primary fill is reserved for Create-style CTAs.
+        $this->defaultColor('gray');
 
         $this->schema(function (array $arguments): array {
             $schema = [
@@ -110,8 +115,8 @@ class ImportAction extends Action
 
         $this->modalSubmitActionLabel('Import');
 
-        $this->icon('heroicon-o-document-arrow-up');
+        $this->icon(TablerIcon::FileUpload);
 
-        $this->groupedIcon('heroicon-m-document-arrow-up');
+        $this->groupedIcon(TablerIcon::FileUpload);
     }
 }

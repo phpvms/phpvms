@@ -11,6 +11,7 @@ use App\Models\Addon;
 use App\Models\AddonSetting;
 use App\Services\AddonSettingService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -27,7 +28,6 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -52,7 +52,7 @@ class AddonSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
 
     protected static ?int $navigationSort = 99;
 
@@ -215,9 +215,9 @@ class AddonSettings extends Page
             return Toggle::make($setting->key)
                 ->label($setting->name)
                 ->helperText($setting->description)
-                ->offIcon(Heroicon::XCircle)
+                ->offIcon(TablerIcon::X)
                 ->offColor('danger')
-                ->onIcon(Heroicon::CheckCircle)
+                ->onIcon(TablerIcon::Check)
                 ->onColor('success');
         }
 

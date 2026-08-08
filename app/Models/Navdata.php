@@ -61,7 +61,7 @@ class Navdata extends Model
     public function id(): Attribute
     {
         return Attribute::make(
-            set: fn ($id) => strtoupper((string) $id)
+            set: fn ($id): string => strtoupper((string) $id)
         );
     }
 

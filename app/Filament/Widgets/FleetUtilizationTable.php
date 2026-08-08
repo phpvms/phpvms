@@ -8,8 +8,8 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Reports\AircraftReport;
 use App\Models\Subfleet;
 use App\Services\ExportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -68,7 +68,7 @@ class FleetUtilizationTable extends TableWidget
             ->headerActions([
                 Action::make('exportCsv')
                     ->label(__('filament.reports_fleet_export'))
-                    ->icon(Heroicon::OutlinedArrowDownTray)
+                    ->icon(TablerIcon::Download)
                     ->action(fn (): BinaryFileResponse => $this->exportCsv()),
             ])
             ->paginated([10, 25, 50]);
@@ -82,12 +82,12 @@ class FleetUtilizationTable extends TableWidget
      */
     private function baseQuery(): Builder
     {
-        $airline_id = $this->pageFilters['airline_id'] ?? null;
+        $airlines = $this->pageFilters['airlines'] ?? [];
 
         return Subfleet::query()
             ->when(
-                filled($airline_id),
-                fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+                filled($airlines),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
             )
             ->withCount('aircraft')
             ->withSum('aircraft', 'flight_time')

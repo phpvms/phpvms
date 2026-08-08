@@ -1,75 +1,107 @@
 @php
+    use App\Filament\Resources\Users\UserResource;
+    use App\Support\Units\Time;
+
     /** @var \App\Models\Pirep $record */
     $pilot = $record->user;
+
+    $userUrl = $pilot ? UserResource::getUrl('edit', ['record' => $pilot]) : null;
+
+    // Filament badge colors -> console chip variants.
+    $chipVariant = fn (?string $color): string => match ($color) {
+        'success' => 'chip--ok',
+        'warning' => 'chip--warn',
+        'danger'  => 'chip--bad',
+        'info'    => 'chip--info',
+        default   => 'chip--mute',
+    };
+
+    $sourceLabel = filled($record->source_name)
+        ? $record->source?->getLabel().' · '.$record->source_name
+        : $record->source?->getLabel();
+
+    $fmtHM = fn (?int $minutes): ?string => $minutes !== null
+        ? sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts($minutes)))
+        : null;
 @endphp
 
-<aside class="fi-pirep-detail-v2-sidebar">
-    {{-- Pilot --}}
+<aside class="panel context" aria-label="Report context">
     @if ($pilot)
-        <div class="fi-pirep-detail-v2-card">
-            <div class="fi-pirep-detail-v2-card-head">
-                <h3>Pilot</h3>
-            </div>
-            <div class="fi-pirep-detail-v2-card-body flush">
-                <div class="fi-pirep-detail-v2-facts stacked">
-                    @if ($pilot->rank)
-                        <div class="fact"><span class="k">Rank</span><span class="v">{{ $pilot->rank->name }}</span></div>
-                    @endif
-                    <div class="fact"><span class="k">Total Hours</span><span class="v">{{ number_format((float) ($pilot->flight_time / 60), 1) }}</span></div>
-                    @if ($pilot->home_airport_id)
-                        <div class="fact"><span class="k">Home Airport</span><span class="v mono">{{ $pilot->home_airport_id }}</span></div>
-                    @endif
+        <div class="context__head">
+            <div>
+                <div class="context__eyebrow">Pilot</div>
+                <div class="context__person">
+                    <img class="context__avatar" src="{{ $pilot->resolveAvatarUrl() }}" alt="" />
+                    <div>
+                        <div class="context__title">
+                            @if ($userUrl)
+                                <a href="{{ $userUrl }}">{{ $pilot->name }}</a>
+                            @else
+                                {{ $pilot->name }}
+                            @endif
+                        </div>
+                        <div class="context__sub">
+                            <span class="id">{{ $pilot->ident }}</span>
+                            @if ($pilot->rank) · {{ $pilot->rank->name }}@endif
+                        </div>
+                    </div>
                 </div>
             </div>
+            @if ($pilot->state)
+                <span class="chip {{ $chipVariant($pilot->state->getColor()) }} chip--plain">{{ $pilot->state->getLabel() }}</span>
+            @endif
         </div>
+
+        <dl class="dl">
+            <div>
+                <dt>Career hours</dt>
+                <dd><span class="id">{{ number_format((float) ($pilot->flight_time / 60), 1) }}</span></dd>
+            </div>
+            @if ($pilot->home_airport_id)
+                <div>
+                    <dt>Home base</dt>
+                    <dd><span class="id">{{ $pilot->home_airport_id }}</span></dd>
+                </div>
+            @endif
+        </dl>
     @endif
 
-    {{-- Flight metadata --}}
-    <div class="fi-pirep-detail-v2-card">
-        <div class="fi-pirep-detail-v2-card-head">
-            <h3>Flight</h3>
-        </div>
-        <div class="fi-pirep-detail-v2-card-body flush">
-            <div class="fi-pirep-detail-v2-facts stacked">
-                @if ($record->flight_type)
-                    <div class="fact"><span class="k">Flight Type</span><span class="v">{{ $record->flight_type->getLabel() }}</span></div>
-                @endif
-                @if (filled($record->route_code))
-                    <div class="fact"><span class="k">Route Code</span><span class="v">{{ $record->route_code }}</span></div>
-                @endif
-                @if ($record->block_fuel)
-                    <div class="fact"><span class="k">Block Fuel</span><span class="v">{{ number_format((float) $record->block_fuel->local()) }} {{ setting('units.fuel') }}</span></div>
-                @endif
-                @if ($record->planned_flight_time)
-                    <div class="fact"><span class="k">Planned Time</span><span class="v">{{ \App\Support\Units\Time::minutesToTimeString((int) $record->planned_flight_time) }}</span></div>
-                @endif
-                @if ($record->planned_distance)
-                    <div class="fact"><span class="k">Planned Dist</span><span class="v">{{ number_format((float) $record->planned_distance->local()) }} {{ setting('units.distance') }}</span></div>
-                @endif
-                @if ($record->submitted_at)
-                    <div class="fact"><span class="k">Submitted</span><span class="v mono">{{ $record->submitted_at->format('d M H:i') }}Z</span></div>
-                @endif
-                <div class="fact"><span class="k">ID</span><span class="v mono">{{ \Illuminate\Support\Str::limit($record->id, 12, '…') }}</span></div>
-            </div>
-        </div>
+    <div class="panel__head border-t border-line rounded-none">
+        <h3 class="panel__title">@svg('tabler-file-text') Report</h3>
     </div>
+    <dl class="dl">
+        @if (filled($sourceLabel))
+            <div><dt>Source</dt><dd>{{ $sourceLabel }}</dd></div>
+        @endif
+        @if (filled($record->route_code))
+            <div><dt>Route code</dt><dd><span class="id">{{ $record->route_code }}</span></dd></div>
+        @endif
+        @if ($fmtHM($record->planned_flight_time))
+            <div><dt>Planned time</dt><dd><span class="id">{{ $fmtHM($record->planned_flight_time) }}</span></dd></div>
+        @endif
+        @if ($record->planned_distance)
+            <div><dt>Planned dist</dt><dd><span class="id">{{ number_format((float) $record->planned_distance->local()) }}</span> {{ setting('units.distance') }}</dd></div>
+        @endif
+        @if ($record->block_fuel)
+            <div><dt>Block fuel</dt><dd><span class="id">{{ number_format((float) $record->block_fuel->local()) }}</span> {{ setting('units.fuel') }}</dd></div>
+        @endif
+        @if ($record->submitted_at)
+            <div><dt>Submitted</dt><dd><span class="id">{{ $record->submitted_at->format('j M H:i') }}Z</span></dd></div>
+        @endif
+        <div><dt>Report ID</dt><dd><span class="id">{{ \Illuminate\Support\Str::limit($record->id, 12, '…') }}</span></dd></div>
+    </dl>
 
-    {{-- PIREP custom fields --}}
     @if ($record->fields && $record->fields->isNotEmpty())
-        <div class="fi-pirep-detail-v2-card">
-            <div class="fi-pirep-detail-v2-card-head">
-                <h3>{{ __('pireps.fields') }}</h3>
-            </div>
-            <div class="fi-pirep-detail-v2-card-body flush">
-                <div class="fi-pirep-detail-v2-facts stacked">
-                    @foreach ($record->fields as $field)
-                        <div class="fact">
-                            <span class="k">{{ $field->name }}</span>
-                            <span class="v">{{ filled($field->value) ? $field->value : '—' }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <div class="panel__head border-t border-line rounded-none">
+            <h3 class="panel__title">@svg('tabler-list-details') {{ __('pireps.fields') }}</h3>
         </div>
+        <dl class="dl">
+            @foreach ($record->fields as $field)
+                <div>
+                    <dt>{{ $field->name }}</dt>
+                    <dd>{{ filled($field->value) ? $field->value : '—' }}</dd>
+                </div>
+            @endforeach
+        </dl>
     @endif
 </aside>

@@ -20,7 +20,7 @@ import { useState } from "preact/hooks";
 import { t } from "../lib/i18n";
 import { form } from "../state/store";
 import type { FlightNumberStrategy, Topology } from "../state/types";
-import { Field, INPUT_CLASS } from "./Field";
+import { Field, SELECT_CLASS } from "./Field";
 import { HelpModal, type HelpModalItem } from "./HelpModal";
 
 const TOPOLOGY_ORDER: Topology[] = ["hub_spokes", "spokes_hub", "hub_and_spokes", "mesh", "tour"];
@@ -102,7 +102,7 @@ export function TopologyPicker() {
         onHelpClick={() => setHelpOpen(true)}
         helpAriaLabel="About topologies"
       >
-        <select id="rf-topology" class={INPUT_CLASS} value={f.topology} onChange={handleChange}>
+        <select id="rf-topology" class={SELECT_CLASS} value={f.topology} onChange={handleChange}>
           {TOPOLOGY_ORDER.map((topo) => (
             <option key={topo} value={topo}>
               {t(`topology_options.${topo}`)}

@@ -165,7 +165,7 @@ class SetVisibleFlights extends Listener
             return false;
         }
 
-        return !($end instanceof Carbon && $now->gt($end));
+        return !$end instanceof Carbon || !$now->gt($end);
     }
 
     /**

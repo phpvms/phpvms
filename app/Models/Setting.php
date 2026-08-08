@@ -93,7 +93,7 @@ class Setting extends Model
     public function key(): Attribute
     {
         return Attribute::make(
-            set: fn ($key) => strtolower((string) $key)
+            set: fn ($key): string => strtolower((string) $key)
         );
     }
 

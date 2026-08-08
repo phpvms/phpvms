@@ -67,7 +67,7 @@ it('shows delete action for the seeded Default bundle', function (): void {
         ->assertTableActionVisible('delete', $defaultBundle);
 });
 
-it('enabled toggle is editable on the seeded Default bundle edit page', function (): void {
+it('enabled is editable on the seeded Default bundle through the edit-details slideover', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
@@ -76,7 +76,12 @@ it('enabled toggle is editable on the seeded Default bundle edit page', function
 
     expect($default)->not->toBeNull();
 
+    // assertSuccessful() comes last: Testable carries `@mixin TestResponse`, so
+    // every link after it is typed against TestResponse rather than Testable.
     Livewire::test(EditFlightBundle::class, ['record' => $default->getRouteKey()])
-        ->assertSuccessful()
-        ->assertFormFieldExists('enabled');
+        ->callAction('edit', ['enabled' => false])
+        ->assertHasNoActionErrors()
+        ->assertSuccessful();
+
+    expect($default->fresh()->enabled)->toBeFalse();
 });

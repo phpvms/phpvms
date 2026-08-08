@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\FlightBundles\Pages;
 
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListFlightBundles extends ListRecords
@@ -18,7 +18,7 @@ class ListFlightBundles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->icon(Heroicon::OutlinedPlusCircle),
+            CreateAction::make()->icon(TablerIcon::CirclePlus),
         ];
     }
 }

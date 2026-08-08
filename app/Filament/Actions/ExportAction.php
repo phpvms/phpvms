@@ -10,6 +10,7 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\Subfleet;
 use App\Services\ExportService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -84,8 +85,12 @@ class ExportAction extends Action
 
         $this->successNotificationTitle('Data exported successfully');
 
-        $this->icon('heroicon-o-document-arrow-down');
+        $this->icon(TablerIcon::FileDownload);
 
-        $this->groupedIcon('heroicon-m-document-arrow-down');
+        $this->groupedIcon(TablerIcon::FileDownload);
+
+        // Neutral like the vendor ImportAction's defaultColor('gray') —
+        // primary fill is reserved for Create-style CTAs.
+        $this->defaultColor('gray');
     }
 }

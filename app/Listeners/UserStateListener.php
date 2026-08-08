@@ -6,8 +6,6 @@ use App\Contracts\Listener;
 use App\Enums\UserState;
 use App\Events\PirepFiled;
 use App\Events\UserStateChanged;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UserStateListener extends Listener // implements ShouldQueue
 {

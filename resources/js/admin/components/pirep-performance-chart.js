@@ -18,6 +18,21 @@ import "chartjs-adapter-date-fns";
 
 Chart.register(annotationPlugin);
 
+/**
+ * Read a console theme token (e.g. `--primary-600`, `--ok`) as a literal
+ * hex string, falling back to the given default when the variable isn't
+ * set (SSR/tests) or resolves empty. Unlike resources/js/admin/dashboard's
+ * resolveColor(), no getComputedStyle() probe is needed here — every token
+ * this file reads (--primary-600, --ok/--warn/--bad/--info, --line/--ink-3)
+ * is defined in theme.css as a literal hex, not a color-mix() expression,
+ * so the custom property's own value is already a usable hex/rgba string.
+ */
+function cssVar(name, fallback) {
+  if (typeof document === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 // Phase shading keyed off ACARS sample `status` (PirepPhase enum value).
 // Codes that don't appear here render unshaded — keeps unknown / SCH from
 // painting the whole chart gray. Labels come from the server payload
@@ -60,25 +75,25 @@ const PHASE_COLORS = {
 const SERIES = {
   altitude: {
     label: "Altitude",
-    color: "#067ec1",
+    color: cssVar("--primary-600", "#067ec1"),
     unit: "ft",
     pick: (s) => s.series.altitude.data,
   },
   speed: {
     label: "Ground speed",
-    color: "#14b8a6",
+    color: cssVar("--info", "#14b8a6"),
     unit: "kt",
     pick: (s) => s.series.speed.gs,
   },
   fuel: {
     label: "Fuel remaining",
-    color: "#f59e0b",
+    color: cssVar("--warn", "#f59e0b"),
     unit: "lbs",
     pick: (s) => s.series.fuel.data,
   },
   vs: {
     label: "Vertical speed",
-    color: "#8b5cf6",
+    color: cssVar("--bad", "#8b5cf6"),
     unit: "fpm",
     pick: (s) => s.series.vs.data,
   },
@@ -145,7 +160,7 @@ export default function pirepPerformanceChart(payload) {
             content: phase.label,
             position: { x: "start", y: "start" },
             font: { family: "Geist Mono", size: 9, weight: "500" },
-            color: "#6b7280",
+            color: cssVar("--ink-3", "#6b7280"),
             backgroundColor: "transparent",
             padding: { top: 4, left: 6 },
           },
@@ -223,12 +238,15 @@ export default function pirepPerformanceChart(payload) {
               type: "time",
               time: { unit: "minute" },
               grid: { display: false },
-              ticks: { color: "#9ba3af", font: { family: "Geist Mono", size: 10 } },
+              ticks: {
+                color: cssVar("--ink-3", "#9ba3af"),
+                font: { family: "Geist Mono", size: 10 },
+              },
             },
             y: {
-              grid: { color: "#eef1f4", drawTicks: false },
+              grid: { color: cssVar("--line", "#eef1f4"), drawTicks: false },
               ticks: {
-                color: "#9ba3af",
+                color: cssVar("--ink-3", "#9ba3af"),
                 font: { family: "Geist Mono", size: 10 },
                 callback: (v) =>
                   cfg.unit === "ft" ? (v / 1000).toFixed(0) + "k" : v.toLocaleString(),

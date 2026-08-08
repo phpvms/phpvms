@@ -1,2464 +1,2922 @@
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
 
-/* Google Fonts injected via Filament render hook (AppServiceProvider::boot).
- * Family names mirror the docs (custom.css lines 24-47):
- *   - Geist          (body sans-serif)
- *   - Encode Sans    (display/headings)
- *   - Geist Mono     (monospace, code blocks)
- *   - JetBrains Mono (small-caps style labels — sidebar groups, TOC headers) */
-
+/* Tailwind content scanning. Without these, utility classes used in Filament
+ * resources and Blade views are never generated. */
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/livewire/**/*';
 @source '../../../../resources/js/admin/routeforge/**/*';
+@source '../../../../../acars-plugin/resources/js/sop-planner/src/**/*';
 
-/* Alpine x-cloak — hides elements until Alpine initializes */
+/* Alpine x-cloak. Used by 24 Filament vendor views, defined by none of them —
+ * without this rule, elements flash before Alpine initializes. */
 [x-cloak] {
   display: none !important;
 }
 
-/* Filament's --font-family is set by ->font('Geist', provider: GoogleFontProvider::class)
- * in each panel provider, which writes the value into an inline <style> tag via
- * vendor/filament/filament/resources/views/components/layout/base.blade.php.
- * That declaration wins over CSS :root rules, so we configure it through Filament's
- * API rather than overriding it here. */
-
-/* Tailwind v4 theme tokens — declared once, both panels use them */
-@theme {
-  --font-sans:
-    "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Encode Sans", system-ui, -apple-system, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* Small-caps style label font — sidebar group labels, mirrors docs TOC header
-   * (custom.css:204-216). Distinct from --font-mono which is for code blocks. */
-  --font-mono-display: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* Primary palette derived from #067ec1 (docs --ifm-color-primary) */
-  --color-primary-50: #e6f3fb;
-  --color-primary-100: #cce7f6;
-  --color-primary-200: #99cfee;
-  --color-primary-300: #66b7e5;
-  --color-primary-400: #339fdc;
-  --color-primary-500: #067ec1;
-  --color-primary-600: #056ba4;
-  --color-primary-700: #045887;
-  --color-primary-800: #034669;
-  --color-primary-900: #02334c;
-  --color-primary-950: #01202f;
-}
-
-/* Dark-mode surfaces — match docs (GitHub-inspired) */
-.dark {
-  --color-gray-900: #0d1117;
-  --color-gray-800: #161b22;
-}
-
-/* ============================================================================
- * Shared brand styling — applies to both admin and system panels.
- * Selector `body[class*="fi-panel-"]` matches `.fi-panel-admin` + `.fi-panel-system`.
- * ============================================================================ */
-
-/* Panel body */
-body[class*="fi-panel-"] {
-  background: #ffffff;
-  font-family: var(--font-sans), serif;
-}
-
-.dark body[class*="fi-panel-"] {
-  background: #0d1117;
-}
-
-/* Topbar — match docs navbar (white, 60px, no shadow) */
-body[class*="fi-panel-"] .fi-topbar {
-  background: #ffffff;
-  box-shadow: none;
-  height: 60px;
-}
-
-.dark body[class*="fi-panel-"] .fi-topbar {
-  background: #0d1117;
-  border-bottom-color: rgb(255 255 255 / 8%);
-}
-
-/* Heading scale — Encode Sans, docs proportions.
- * Base letter-spacing for section headings.
- * Hero h1 needs tighter tracking (-0.02em per docs .lp-hero-title); higher-specificity
- * selector below restores it for any <h1> inside a <header> element.
- * Color matches the "phpvms" wordmark in the brand component (filament/shared/brand.blade.php). */
-body[class*="fi-panel-"] h1,
-body[class*="fi-panel-"] h2,
-body[class*="fi-panel-"] h3 {
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.01em;
-  color: #444950;
-}
-
-.dark body[class*="fi-panel-"] h1,
-.dark body[class*="fi-panel-"] h2,
-.dark body[class*="fi-panel-"] h3 {
-  color: #e3e3e3;
-}
-
-body[class*="fi-panel-"] header h1 {
-  letter-spacing: -0.02em;
-}
-
-/* Code blocks — Geist Mono, no ligatures (migration stream, log viewer, etc.) */
-body[class*="fi-panel-"] code,
-body[class*="fi-panel-"] pre {
-  font-family: var(--font-mono), monospace;
-  font-variant-ligatures: none;
-}
-
-/* Solid primary buttons — match docs .lp-btn-primary background (shade 500 =
- * #067ec1, the docs --ifm-color-primary). Filament defaults to shade 600
- * (#056ba4) and writes the colour via an inline style attribute, so we need
- * !important to override the inline value. Hover darkens to shade 600 to
- * mirror docs .lp-btn-primary:hover (--ifm-color-primary-darker). Outlined
- * buttons keep the framework default.
+/* …except the sidebar, which must not vanish while Alpine boots.
  *
- * Icons inside the button render via `.fi-icon` which reads `--text` (inline
- * style written by Filament). We target it directly to force white. */
-body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
-  background-color: var(--color-primary-500) !important;
-  color: var(--color-white) !important;
-}
-body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
-  color: var(--color-white) !important;
-}
-body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
-  background-color: var(--color-primary-600) !important;
-  color: var(--color-white) !important;
-}
-.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) {
-  background-color: var(--color-primary-500) !important;
-  color: var(--color-white) !important;
-}
-.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
-  color: var(--color-white) !important;
-}
-.dark body[class*="fi-panel-"] .fi-btn.fi-color-primary:not(.fi-outlined):hover {
-  background-color: var(--color-primary-600) !important;
-  color: var(--color-white) !important;
-}
-
-/* ============================================================================
- * Bottom-right atmospheric dot grid — ported from docs/src/css/custom.css:2388
- * (html.docs-wrapper::after). Two-layer dot field (24px + 72px spacing) with
- * radial-ellipse mask anchored at bottom-right so it fades smoothly into the
- * rest of the page. z-index: -1 + pointer-events: none — nothing interactive
- * is affected.
- * ============================================================================ */
-body[class*="fi-panel-"]::after {
-  content: "";
-  position: fixed;
-  pointer-events: none;
-  z-index: -1;
-  bottom: 0;
-  right: 0;
-  width: 560px;
-  height: 460px;
-  background-image:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-500) 20%, transparent) 1px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-500) 9%, transparent) 1px,
-      transparent 1.5px
-    );
-  background-size:
-    24px 24px,
-    72px 72px;
-  background-position:
-    0 0,
-    12px 12px;
-  -webkit-mask-image: radial-gradient(
-    ellipse at bottom right,
-    black 0%,
-    black 25%,
-    transparent 75%
-  );
-  mask-image: radial-gradient(ellipse at bottom right, black 0%, black 25%, transparent 75%);
-}
-
-/* Dark mode: bump alpha (32% / 14%) using the lighter primary shade
- * so the dots stay legible against #0d1117. */
-.dark body[class*="fi-panel-"]::after {
-  background-image:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-400) 32%, transparent) 1px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--color-primary-400) 14%, transparent) 1px,
-      transparent 1.5px
-    );
-}
-
-/* Mobile: shrink the corner texture so it doesn't dominate small viewports. */
-@media (max-width: 720px) {
-  body[class*="fi-panel-"]::after {
-    width: 280px;
-    height: 220px;
-  }
-}
-
-/* ============================================================================
- * Admin panel — sidebar styling.
+ * Filament cloaks .fi-main-sidebar because only localStorage knows whether it
+ * is open (stores/sidebar.js persists isOpen/isOpenDesktop). Stock Filament has
+ * no [x-cloak] rule, so there it stays painted; under the rule above the whole
+ * rail went display:none and popped back in on every full page load.
  *
- * Mirrors the docs site sidebar (docs/src/css/custom.css:530-697):
- *   - Group label  → JetBrains Mono uppercase 0.75rem, gray-500
- *   - Nav item     → 0.875rem (14px) weight 400, gray-600
- *   - Active item  → weight 600, near-black
+ * filament/shared/sidebar-state.blade.php settles .fi-sidebar-open from that
+ * same localStorage while the sidebar root is still parsing, so keeping it
+ * visible here paints the final state rather than a guess. The two rules below
+ * stand in for the x-show bindings on the group rows, which have not run yet
+ * and would otherwise show the expanded button and the rail flyout at once.
  *
- * Vertical separator removed — surface alone defines the boundary.
- * ============================================================================ */
-
-.fi-panel-admin .fi-sidebar {
-  background: #ffffff;
-  border-right: 0;
+ * Everything is scoped to [x-cloak]: Alpine strips that attribute on init, so
+ * these stop applying exactly when it starts driving inline display itself —
+ * no permanent !important fighting a binding. */
+.fi-main-sidebar[x-cloak] {
+  display: flex !important;
 }
 
-.dark .fi-panel-admin .fi-sidebar {
-  background: #0d1117;
-  border-right: 0;
-}
-
-/* Sidebar nav scrollbar: thin, and only visible on hover. */
-.fi-panel-admin .fi-sidebar-nav {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 150ms ease;
-}
-
-.fi-panel-admin .fi-sidebar-nav:hover {
-  scrollbar-color: #d1d5dc transparent;
-}
-
-.dark .fi-panel-admin .fi-sidebar-nav:hover {
-  scrollbar-color: #364153 transparent;
-}
-
-/* Group label (docs custom.css:537-545) */
-.fi-panel-admin .fi-sidebar-group-label {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.75rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6a7282;
-}
-
-.dark .fi-panel-admin .fi-sidebar-group-label {
-  color: #99a1af;
-}
-
-/* Nav item label — matches docs sidebar (custom.css:666-673): 0.875rem / 14px,
- * weight 400 default, weight 600 when active.
- * !important is required because Filament's source uses `@apply text-sm` which
- * generates a Tailwind utility that wins on cascade order despite our higher
- * specificity (utility classes get hoisted in Tailwind v4 builds). */
-.fi-panel-admin .fi-sidebar-item-label {
-  font-size: 0.875rem !important;
-  line-height: 1.25rem !important;
-  font-weight: 400 !important;
-  color: #4a5565;
-}
-
-.dark .fi-panel-admin .fi-sidebar-item-label {
-  color: #d1d5dc;
-}
-
-/* Active item — bold + darker (docs custom.css:681-686) */
-.fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
-  font-weight: 600 !important;
-  color: #030712;
-}
-
-.dark .fi-panel-admin .fi-sidebar-item.fi-active .fi-sidebar-item-label {
-  color: #ffffff;
-}
-
-/* Button padding to match docs (6px 12px). Filament default is p-2 (8px). */
-.fi-panel-admin .fi-sidebar-item-btn {
-  padding: 6px 12px;
-}
-
-/* ============================================================================
- * Sidebar collapse toggle relocation.
- *
- * Filament renders desktop collapse buttons inside the topbar Livewire
- * component (.fi-topbar-collapse-sidebar-btn-ctn wraps both expand and
- * collapse variants). SidebarCollapseTogglePlugin renders a replacement
- * at the bottom of the sidebar via SIDEBAR_FOOTER. Hide the topbar
- * variants to avoid duplication.
- * ============================================================================ */
-
-.fi-panel-admin .fi-topbar-collapse-sidebar-btn-ctn,
-.fi-panel-admin .fi-topbar-open-collapse-sidebar-btn,
-.fi-panel-admin .fi-topbar-close-collapse-sidebar-btn,
-.fi-panel-admin .fi-layout-sidebar-toggle-btn-ctn {
+/* x-show="$store.sidebar.isOpen" on .fi-sidebar-group-btn, and
+ * x-show="… : ! $hasDropdown" on the items list — collapsed, a group that owns
+ * a flyout shows neither. :has() keeps ungrouped items (Dashboard) visible,
+ * since those render no dropdown. */
+.fi-main-sidebar[x-cloak]:not(.fi-sidebar-open) .fi-sidebar-group-btn,
+.fi-main-sidebar[x-cloak]:not(.fi-sidebar-open)
+  .fi-sidebar-group:has(> .fi-dropdown)
+  .fi-sidebar-group-items {
   display: none !important;
 }
 
-.fi-panel-admin .fi-sidebar-collapse-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0.5rem 0.75rem;
+/* x-show="! $store.sidebar.isOpen" on the rail flyout. */
+.fi-main-sidebar[x-cloak].fi-sidebar-open .fi-sidebar-group > .fi-dropdown {
+  display: none !important;
 }
 
-/* Main content gutter — Filament default is px-4 / md:px-6 / lg:px-8.
- * Halved here to tighten the gap between sidebar and main body. */
-.fi-panel-admin .fi-main {
-  padding-left: 0.5rem !important;
-  padding-right: 0.5rem !important;
-  overflow: visible !important;
+/* Leaflet's internal panes/controls carry z-index up to 1000; without a
+ * stacking context on the container they escape and paint over rail
+ * flyouts and dropdowns. Isolate so they compete only inside the map. */
+.leaflet-container {
+  isolation: isolate;
 }
 
-@media (min-width: 768px) {
-  .fi-panel-admin .fi-main {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+/* ---------------------------------------------------------------------------
+ * Theme tokens.
+ *
+ * Filament's compiled CSS resolves through Tailwind theme variables rather
+ * than baked values, so retuning these reaches every form, table, modal and
+ * dropdown without touching a single fi-* selector. RouteForge's Preact
+ * components read the same variables, so they follow along.
+ *
+ * Deliberately NOT overridden: --spacing. It drives 50 `width` and 46 `height`
+ * declarations as well as padding, so scaling it shrinks icons and shifts
+ * positioned elements. Density is handled per-selector instead.
+ * ------------------------------------------------------------------------- */
+@theme {
+  /* Corners. Filament ships 12px panels / 8px controls; the console is 6/4. */
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+
+  /* Type scale. --text-sm is the workhorse: table cells, buttons, inputs. */
+  --text-xs: 11px;
+  --text-xs--line-height: 15px;
+  --text-sm: 12.5px;
+  --text-sm--line-height: 17px;
+  --text-3xl: 21px;
+  --text-3xl--line-height: 26px;
+
+  /* Monospace for flight numbers, ICAO codes, registrations. The Bunny Fonts
+   * stylesheet already registers Geist Mono; referencing it here makes the
+   * browser actually fetch it. */
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+ * Console tokens (light mode only — dark set is a separate pass).
+ *
+ * Values ported from mockups/admin-console-v2/theme.css:92-131. --canvas
+ * swaps the mockup's --brand for the panel's own accent (--primary-600), so
+ * it re-derives itself if the theme picker changes the accent.
+ * ------------------------------------------------------------------------- */
+:root {
+  --canvas-base: #eceef1;
+  --canvas: color-mix(in oklab, var(--primary-600) 4%, var(--canvas-base));
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --sunken: #f1f3f5;
+
+  --line: #d9dee4;
+  --line-soft: #e8ebef;
+  --line-strong: #c2cad3;
+
+  --ink: #14171b;
+  --ink-2: #495460;
+  --ink-3: #5d6774;
+  --ink-4: #6e7883;
+
+  /* Operational state. Fixed hues shared with the status chips below. */
+  --ok: #14713f;
+  --ok-soft: #e3f2e9;
+  --ok-line: #a9d7bd;
+  --warn: #8a5208;
+  --warn-soft: #fbefdc;
+  --warn-line: #e5c288;
+  --bad: #a5201a;
+  --bad-soft: #fae8e7;
+  --bad-line: #ecb3ae;
+  --info: #0a6ba8;
+  --info-soft: #e4eff8;
+  --info-line: #a8cbe6;
+  --mute: #55606c;
+  --mute-soft: #eaedf1;
+  --mute-line: #cdd4dc;
+}
+
+/* ---------------------------------------------------------------------------
+ * Console tokens — dark. Values ported verbatim from
+ * mockups/admin-console-v2/theme.css:144-186 (Filament's own dark-mode
+ * mechanism sets `.dark` on <html>, same class the mockup keys off). --canvas
+ * needs no entry here — it re-derives from --canvas-base at the point it's
+ * used (see the light block above), so it follows this automatically.
+ * ------------------------------------------------------------------------- */
+.dark {
+  --canvas-base: #0d1014;
+  --surface: #171b20;
+  --surface-2: #1d2228;
+  --sunken: #14181c;
+
+  --line: #2a3038;
+  --line-soft: #23282f;
+  --line-strong: #363e48;
+
+  --ink: #e9eef4;
+  --ink-2: #b3bdc9;
+  --ink-3: #8e99a6;
+  --ink-4: #78828f;
+
+  --ok: #5cc78d;
+  --ok-soft: #12281d;
+  --ok-line: #23543a;
+  --warn: #e0a44a;
+  --warn-soft: #2a2010;
+  --warn-line: #59431a;
+  --bad: #f08a82;
+  --bad-soft: #2c1614;
+  --bad-line: #5e2b26;
+  --info: #6bb6ea;
+  --info-soft: #10222f;
+  --info-line: #204a68;
+  --mute: #97a2b0;
+  --mute-soft: #1e232a;
+  --mute-line: #333b45;
+}
+
+/* ---------------------------------------------------------------------------
+ * Density.
+ *
+ * The vertical rhythm the tokens can't reach. Filament puts a table row's
+ * vertical padding on the column content wrapper (.fi-ta-text and friends),
+ * not on the cell — .fi-ta-cell itself is `p-0`.
+ * ------------------------------------------------------------------------- */
+
+/* Rows: 57px -> 30px.
+ *
+ * The cell stays at Filament's own `p-0` — some of its `:has()` variants add
+ * py-4, and those would otherwise stack on top of the wrapper's padding.
+ * The wrapper's `leading-6` is hardcoded in the column CSS, so it ignores
+ * --text-sm--line-height and has to be set here too. */
+.fi-ta-cell {
+  @apply py-0;
+}
+
+.fi-ta-cell
+  :is(
+    .fi-ta-text,
+    .fi-ta-icon,
+    .fi-ta-image,
+    .fi-ta-color,
+    .fi-ta-toggle,
+    .fi-ta-select,
+    .fi-ta-text-input,
+    .fi-ta-checkbox
+  ) {
+  @apply py-1.5 leading-[18px];
+}
+
+/* Icon columns render at IconSize::Large (24px), which alone makes the row
+ * 36px. Scoped to table cells so form and button icons keep their size. */
+.fi-ta-cell .fi-ta-icon svg {
+  @apply w-4 h-4;
+}
+
+/* Column headings read as labels, not as content. */
+.fi-ta-header-cell {
+  @apply py-1.75 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.07em];
+}
+
+/* Buttons: 36px -> 28px. */
+.fi-btn {
+  @apply py-1.25;
+}
+
+/* ---------------------------------------------------------------------------
+ * Shell.
+ *
+ * Off-white canvas with white panels on top, so panels read as surfaces
+ * rather than as floating cards on white. Values from the v2 mockup's
+ * console2 canvas.
+ * ------------------------------------------------------------------------- */
+.fi-main-ctn,
+.fi-body {
+  @apply bg-(--canvas);
+}
+
+/* The console's base type: 13px on a 1.45 rhythm (mockup body). Filament
+ * sizes most components via the text tokens above; this catches everything
+ * that just inherits. */
+.fi-body {
+  @apply text-[13px] leading-[1.45];
+}
+
+/* Topbar: 64px -> 44px, graphite beside the rail, and the one place the
+ * accent crosses the full width. Height and min-height are both set by
+ * Filament; the 2px border sits inside the 44px (border-box). */
+.fi-topbar {
+  @apply h-11 min-h-11 bg-[#22272e] border-b-2 border-b-(--primary-600) gap-3.5 items-stretch;
+  padding-inline: 0 12px;
+}
+
+/* The start slot holds the brand button and the workspace navigator. Stretch
+ * them to the bar so tab underlines land on the bar's bottom edge. */
+.fi-topbar-start {
+  @apply flex-1 min-w-0 items-stretch gap-3.5;
+}
+
+/* The end slot's tools (search, bells, avatar) stay centred, not stretched. */
+.fi-topbar-end {
+  @apply items-center;
+}
+
+/* The vendor logo and its home link — the brand button (panel switcher)
+ * replaces them. Scoped to the topbar so the login page keeps its logo. */
+.fi-topbar-start > a:has(> .fi-logo),
+.fi-topbar-start > .fi-logo {
+  @apply hidden;
+}
+
+/* The console rail does not collapse or expand — hide the vendor's desktop
+ * collapse chevrons. The mobile drawer buttons are separate and unaffected. */
+.fi-topbar-collapse-sidebar-btn-ctn {
+  @apply hidden;
+}
+
+/* Sidebar nav items: 40px -> 30px. */
+.fi-sidebar-item-btn {
+  @apply py-1.25;
+}
+
+/* Rules, not floating cards (mockup .panel, theme.css:1247-1249): ONE flat
+ * box — the ROOT carries a 1px --line border, 6px radius, surface fill, no
+ * shadow/ring — so the section header is enclosed by the same border and
+ * nothing reads as lifted. Filament's `shadow-sm ring-1` + larger radius on
+ * the root plus a border on the inner content wrapper is what made panels
+ * look soft. */
+.fi-ta-ctn,
+.fi-section:not(.fi-section-not-contained) {
+  @apply bg-(--surface) border border-(--line) rounded-xl shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-section:not(.fi-section-not-contained) > .fi-section-content-ctn {
+  @apply border-0 shadow-none bg-transparent;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* Section bodies: 24px -> 12px. */
+.fi-section-content {
+  @apply p-3;
+}
+
+/* ---------------------------------------------------------------------------
+ * Section head (mockup .panel__head/.panel__title/.panel__tools,
+ * theme.css:1247-1266). Filament's `.fi-section-header` is the panel__head
+ * equivalent; `-heading`/`-description` are the title/prose split.
+ * ------------------------------------------------------------------------- */
+.fi-section-has-header > .fi-section-header {
+  @apply items-center justify-between border-b border-b-(--line) bg-(--surface-2);
+  padding: 9px 12px 8px;
+  /* Inner radius nests inside the root's 6px border (6 - 1px). */
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.fi-section-header-heading {
+  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+}
+
+.fi-section-header-heading em {
+  @apply not-italic font-mono text-[11px] text-(--ink-4);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.fi-section-header-description {
+  @apply text-[12px] text-(--ink-3);
+  text-transform: none;
+}
+
+.fi-section-header-after-ctn {
+  @apply gap-1;
+}
+
+/* ---------------------------------------------------------------------------
+ * Tab strips (vendor .fi-tabs): the schema Tabs component and the
+ * relation-manager tab bar on resource edit pages. Console underline tabs
+ * mirroring the PIREP view's .subtabs — quiet row over a hairline, 2px
+ * accent underline on the active tab — replacing the vendor pill look.
+ * RM tables themselves need nothing: they render the same .fi-ta-* classes
+ * the global table skin already covers.
+ * ------------------------------------------------------------------------- */
+.fi-tabs {
+  @apply gap-1 rounded-none border-b border-b-(--line) p-0 shadow-none;
+  background: transparent;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-tabs .fi-tabs-item {
+  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[12.5px] font-medium text-(--ink-3);
+  /* Sits on the nav's 1px rule; the active underline replaces it. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.fi-tabs .fi-tabs-item:hover {
+  @apply bg-transparent text-(--ink);
+}
+
+.fi-tabs .fi-tabs-item.fi-active {
+  @apply bg-transparent text-(--ink);
+  border-bottom-color: var(--primary-600);
+}
+
+.fi-tabs .fi-tabs-item .fi-icon {
+  @apply size-3.5 text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.fi-tabs .fi-tabs-item.fi-active .fi-icon {
+  color: var(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
+ * Workspace & page header. 16px padding around the page, a 14px gap between
+ * the header and whatever comes below it. Filament splits its own 32px
+ * padding across .fi-main (inline) and .fi-page-header-main-ctn (block) —
+ * folded into one spot here. The header itself is the in-flow "Hero fill"
+ * block defined below. Only the light-mode treatment is ported — dark mode
+ * is a separate pass (see the console tokens comment).
+ * ------------------------------------------------------------------------- */
+.fi-main {
+  @apply p-4;
+}
+
+.fi-page {
+  @apply flex flex-col gap-3.5;
+}
+
+.fi-page-header-main-ctn {
+  /* Vendor puts a 32px flex gap between the header band and the page body;
+   * the console rhythm is 14px everywhere. */
+  @apply p-0 gap-3.5;
+}
+
+/* Hero fill (mockup's "Hero fill"/solid header, theme.css:533-591) with the
+ * Flux analytics hero's background character (flux.dashboardpack.com/analytics:
+ * to-right-bottom oklch gradient, 20px white dot grid at ~10%). The fill is
+ * darkened toward ink per the mockup's contrast note so inverted type clears
+ * 4.5:1; the gradient derives its hues from the accent (relative color
+ * syntax) so the theme picker retints it, with the flat mix as fallback. */
+.fi-header {
+  /* Text block anchors to the TOP so the heading sits at the same y whether
+   * or not a subheading/metrics row renders below it; actions keep their
+   * bottom-right anchor via align-self below. */
+  /* Uniform height whether or not a subheading/metrics row is present —
+   * sized to the tallest case (eyebrow + 21px title + metrics ≈ 107.5px). */
+  @apply relative items-start overflow-hidden rounded-xl min-h-27;
+  padding: 14px 18px 17px 22px;
+  border: 1px solid color-mix(in oklab, var(--primary-600) 55%, black);
+  background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent);
+}
+
+/* Flux's hue travel (+30 → -25 around the accent) with lightness clamped so
+ * the 84%-white secondary text clears 4.5:1 on every stop (browser-measured
+ * 5.36 / 5.13 / 4.86 — Flux's own L .55/.6 fails at 3.35). */
+@supports (color: oklch(from red l c h)) {
+  .fi-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.5 0.24 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.47 0.22 h) 50%,
+      oklch(from var(--primary-600) 0.46 0.18 calc(h - 25)) 100%
+    );
   }
 }
 
-@media (min-width: 1024px) {
-  .fi-panel-admin .fi-main {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+/* Dark mode. The fallback background-color above mixes toward --ink, which
+ * flips to near-white in dark (see the dark token block) — 78% primary +
+ * 22% white would LIGHTEN the fill instead of darkening it, so dark mixes
+ * toward a fixed near-black instead (mockup's dark[data-header=solid]
+ * treatment, theme.css:552-557). The gradient itself doesn't reference --ink
+ * (fixed L stops), but its L values are lowered here to read as a dark hero
+ * rather than the light gradient's mid-tones; darker background only helps
+ * the white/84%-white text's contrast, never hurts it. */
+.dark .fi-header {
+  border-color: color-mix(in oklab, var(--primary-600) 40%, black);
+  background-color: color-mix(in oklab, var(--primary-600) 58%, #0a0e13);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .dark .fi-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.34 0.2 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.3 0.18 h) 50%,
+      oklch(from var(--primary-600) 0.27 0.15 calc(h - 25)) 100%
+    );
   }
 }
 
-/* Sidebar item icons — Filament renders these at IconSize::Large (24px), which
- * is oversized next to the 14px label. Shrink to 16px for visual balance.
- * !important required to defeat Tailwind utility hoisting (same reason as the
- * label sizing above). */
-.fi-panel-admin .fi-sidebar-item-icon {
-  width: 1rem !important;
-  height: 1rem !important;
-}
-
-/* ============================================================================
- * Modals — remove the 1px outer ring and halve internal padding.
- *
- * Filament source (vendor/.../modal.css):
- *   - .fi-modal-window has `ring-1 ring-gray-950/5 dark:ring-white/10`
- *   - .fi-modal-content has `py-6` (vertical) + `px-6` (horizontal via separate rules)
- *   - .fi-modal-header has `px-6 pt-6`, footer `pb-6 px-6`
- *
- * !important needed to defeat utility hoisting. Scoped to admin panel; system
- * panel installer wizard doesn't use modals.
- * ============================================================================ */
-
-.fi-panel-admin .fi-modal-window {
-  --tw-ring-shadow: 0 0 #0000 !important;
-  box-shadow: var(--tw-shadow, 0 0 #0000) !important;
-}
-
-.fi-panel-admin .fi-modal-header {
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-  padding-top: 0.75rem !important;
-}
-
-.fi-panel-admin .fi-modal-content {
-  padding-top: 0.75rem !important;
-  padding-bottom: 0.75rem !important;
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-}
-
-.fi-panel-admin .fi-modal-footer {
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-  padding-bottom: 0.75rem !important;
-}
-
-/* ============================================================================
- * PIREPs feed-style row layout.
- *
- * Replaces the flat 9-column PIREP table with a per-row "activity log" card.
- * The Filament Table column is a Layout\View pointing at
- * resources/views/filament/pireps/row.blade.php; everything below styles that
- * partial.
- *
- * Visual hierarchy:
- *   [avatar] [ident · pilot · aircraft]                    [state badge]
- *           [filed-when · source]
- *   ┌──────────────────────────────────────────┐
- *   │  KJFK ──────────────────────→ EGLL       │
- *   │  22:14Z                        05:26Z    │
- *   └──────────────────────────────────────────┘
- *   [⏱ time] [📏 dist] [⭐ score] [📉 landing]   [accept] [reject] [⋯]
- * ============================================================================ */
-
-/* Layout mode: contentGrid() in PirepsTable.php makes Filament render rows
- * as cards in a single-column grid (one card per record). Our partial is the
- * card body — no <table>, no <td>, no fight with stack-vs-cell rules. */
-.fi-panel-admin .fi-pirep-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  padding: 0.25rem 0;
-  width: 100%;
-}
-
-.fi-panel-admin .fi-pirep-row-head {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.fi-panel-admin .fi-pirep-avatar {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 9999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.fi-panel-admin .fi-pirep-row-title {
-  color: var(--color-gray-900);
-  font-size: 0.9375rem;
-  line-height: 1.25;
-}
-
-.dark .fi-panel-admin .fi-pirep-row-title {
-  color: var(--color-gray-100);
-}
-
-.fi-panel-admin .fi-pirep-ident {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: inherit;
-  text-decoration: none;
-  transition: color 120ms ease;
-}
-
-.fi-panel-admin .fi-pirep-ident:hover {
-  color: var(--color-primary-600);
-}
-
-.dark .fi-panel-admin .fi-pirep-ident:hover {
-  color: var(--color-primary-400);
-}
-
-.fi-panel-admin .fi-pirep-pilot-link {
-  color: var(--color-primary-600);
-  text-decoration: none;
-}
-
-.fi-panel-admin .fi-pirep-pilot-link:hover {
-  text-decoration: underline;
-}
-
-.dark .fi-panel-admin .fi-pirep-pilot-link {
-  color: var(--color-primary-400);
-}
-
-.fi-panel-admin .fi-pirep-meta {
-  color: var(--color-gray-500);
-  font-size: 0.75rem;
-}
-
-.dark .fi-panel-admin .fi-pirep-meta {
-  color: var(--color-gray-400);
-}
-
-.fi-panel-admin .fi-pirep-submeta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  margin-top: 0.125rem;
-}
-
-/* Combined route + stats row.
- * On desktop: route fixed ~33%, stats fill remaining ~67% as a grid.
- * On narrow viewports (<768px): stats wrap below route. */
-.fi-panel-admin .fi-pirep-row-line {
-  display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
-}
-
-@media (max-width: 767px) {
-  .fi-panel-admin .fi-pirep-row-line {
-    flex-wrap: wrap;
-  }
-}
-
-/* Route visualization — full-width by default; the list-row variant
- * (inside .fi-pirep-row-line) overrides to ~33% so the stat grid fills the rest. */
-.fi-panel-admin .fi-pirep-route {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  background: var(--color-gray-50);
-  padding: 0.625rem 0.875rem;
-  border-radius: 0.375rem;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* Inside the list-row flex container: constrain to ~1/3, defeat stat-grid push-back. */
-.fi-panel-admin .fi-pirep-row-line > .fi-pirep-route {
-  width: calc(33.333% - 0.25rem);
-  flex-shrink: 0;
-}
-
-.dark .fi-panel-admin .fi-pirep-route {
-  background: var(--color-gray-800);
-}
-
-.fi-panel-admin .fi-pirep-route-endpoint {
-  text-align: center;
-  min-width: 4rem;
-}
-
-.fi-panel-admin .fi-pirep-route-icao {
-  font-weight: 700;
-  color: var(--color-gray-900);
-  font-size: 0.875rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.dark .fi-panel-admin .fi-pirep-route-icao {
-  color: var(--color-gray-100);
-}
-
-.fi-panel-admin .fi-pirep-route-time {
-  color: var(--color-gray-500);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.dark .fi-panel-admin .fi-pirep-route-time {
-  color: var(--color-gray-400);
-}
-
-.fi-panel-admin .fi-pirep-route-bar {
-  flex: 1;
-  height: 2px;
-  background: var(--color-primary-500);
-  position: relative;
-}
-
-.fi-panel-admin .fi-pirep-route-bar::after {
+/* Flux's dot-grid overlay, verbatim: 1px white dots, 20px grid, 10% layer. */
+.fi-header::after {
+  @apply absolute inset-0 pointer-events-none opacity-10;
   content: "";
-  position: absolute;
+  background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.fi-header-heading {
+  @apply text-[21px] font-semibold tracking-[-0.02em] leading-[1.2] text-white;
+}
+
+/* Breadcrumbs -> eyebrow (mockup .page-head__eyebrow, theme.css:1064-1078).
+ * Re-enabled panel-wide; the band reveals it above the h1. These are
+ * unlayered, so they beat the vendor's layered `hidden sm:block` outright. */
+.fi-header .fi-breadcrumbs {
+  @apply block mb-0.75;
+}
+
+/* Pages without breadcrumbs (Dashboard) reserve the eyebrow's 20px
+ * (17px row + 3px gap) so the heading sits at the same y on every page. */
+.fi-header:not(:has(.fi-breadcrumbs)) .fi-header-heading {
+  @apply mt-5;
+}
+
+.fi-breadcrumbs-list {
+  @apply gap-0;
+}
+
+.fi-breadcrumbs-item {
+  @apply gap-1;
+}
+
+/* Inverted onto the hero fill (mockup solid: secondary text is white mixed
+ * back toward the accent, never gray — theme.css:565-578). */
+.fi-breadcrumbs-item-label {
+  @apply text-[10.5px] font-semibold tracking-[0.13em] uppercase;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+.fi-breadcrumbs-item-separator {
+  @apply w-2.5 h-2.5;
+  color: color-mix(in oklab, white 56%, var(--primary-600));
+}
+
+.fi-header-subheading {
+  /* Sublines can carry a state chip beside text (PIREP view) — keep a gap
+   * between inline children without affecting single-child sublines. */
+  @apply mt-0.5 text-[12.5px] flex items-center gap-2;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+/* Subheading metrics (mockup .head-metrics, theme.css:1082-1112). Renders
+ * inside .fi-header-subheading's <p> as <span class="head-metrics"> — the
+ * inline counts replacing the PIREP stat cards. */
+.fi-header-subheading .head-metrics {
+  @apply flex items-baseline flex-wrap mt-1.5;
+}
+
+.head-metrics > span {
+  @apply flex items-baseline gap-1.5 px-3.5 border-l border-l-(--line);
+}
+
+.head-metrics > span:first-child {
+  @apply pl-0 border-l-0;
+}
+
+.head-metrics b {
+  @apply font-mono text-[15px] font-semibold tabular-nums;
+}
+
+.head-metrics em {
+  @apply not-italic text-[12px];
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+/* On the hero fill every count is white (mockup solid's `.page-head b`,
+ * theme.css:571-574, overrides the m-* hues) and separators go translucent. */
+.head-metrics > span {
+  border-left-color: rgb(255 255 255 / 30%);
+}
+
+.head-metrics b {
+  @apply text-white;
+}
+
+.fi-header-actions-ctn {
+  @apply self-end;
+}
+
+.fi-header-actions-ctn .fi-ac {
+  @apply gap-1.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Report header filters (Reports pages) — the period and airline pickers ride
+ * in the hero's actions slot, so their triggers are glassy-on-fill rather than
+ * the bordered .fi-btn used on surface. The dropdown panels themselves are
+ * ordinary surface, so they use the normal ink/line tokens.
+ * ------------------------------------------------------------------------- */
+.fi-report-filters {
+  @apply flex items-center gap-1.5;
+}
+
+.fi-report-filter-trigger {
+  @apply flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12.5px] text-white whitespace-nowrap;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background-color: rgb(255 255 255 / 12%);
+  transition: background-color 100ms;
+}
+
+.fi-report-filter-trigger:hover {
+  background-color: rgb(255 255 255 / 20%);
+}
+
+.fi-report-filter-trigger-icon {
+  @apply w-3.5 h-3.5;
+  color: rgb(255 255 255 / 75%);
+}
+
+.fi-report-filter-trigger-caret {
+  @apply w-3.5 h-3.5;
+  color: rgb(255 255 255 / 60%);
+}
+
+.fi-report-picker {
+  @apply flex flex-col gap-1.5 p-2.5;
+}
+
+.fi-report-picker-label {
+  @apply text-[11px] uppercase tracking-wide text-(--ink-3);
+}
+
+.fi-report-picker-range {
+  @apply flex items-center gap-1.5;
+}
+
+.fi-report-picker-range input {
+  @apply w-full h-7 px-2 rounded-md text-[12.5px] text-(--ink) bg-(--surface) border border-(--line-strong);
+}
+
+.fi-report-picker-apply {
+  @apply w-full justify-center;
+}
+
+/* Quick ranges read as a vertical menu, not chips — Grafana's layout, and it
+ * keeps long localized labels ("Year to date") from wrapping. */
+.fi-report-picker-quick {
+  @apply flex flex-col;
+}
+
+.fi-report-picker-quick button {
+  @apply w-full text-left h-7 px-2 rounded-md text-[12.5px] text-(--ink-2);
+  transition:
+    background-color 100ms,
+    color 100ms;
+}
+
+.fi-report-picker-quick button:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.fi-report-picker-quick button[aria-pressed="true"] {
+  @apply text-(--primary-600);
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+  font-weight: 550;
+}
+
+.fi-report-picker-airlines {
+  @apply flex flex-col max-h-64 overflow-y-auto;
+}
+
+.fi-report-picker-airlines label {
+  @apply flex items-center gap-2 h-7 px-2 rounded-md text-[12.5px] text-(--ink-2) cursor-pointer;
+}
+
+.fi-report-picker-airlines label:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.fi-report-picker-airlines input {
+  @apply w-3.5 h-3.5 rounded-sm border-(--line-strong) text-(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
+ * Table skin (mockup .tbl, theme.css:1247-1375).
+ *
+ * .fi-ta-ctn's surface/border/radius are already reconciled above (~line
+ * 205); this covers what it doesn't: header-cell color, body-cell rules and
+ * hover. Padding-block for both stays owned by the density system.
+ * ------------------------------------------------------------------------- */
+
+/* Table heading bar — rendered when a table carries ->heading(), which is
+ * every relation manager. Same band as .fi-section-header above so a card
+ * reads identically whether its header comes from a schema Section or its
+ * own table. */
+.fi-ta-header {
+  @apply flex items-center justify-between gap-3 border-b border-b-(--line) bg-(--surface-2);
+  padding: 9px 12px 8px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.fi-ta-header-heading {
+  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+}
+
+.fi-ta-header-description {
+  @apply text-[11.5px] text-(--ink-3);
+}
+
+.fi-ta-header-cell {
+  @apply sticky top-0 text-(--ink-3) bg-(--surface-2) border-b border-b-(--line-strong) whitespace-nowrap;
+}
+
+/* Filament does not put .fi-ta-header-cell on every cell in the header row: the
+ * bulk-select th is .fi-ta-cell.fi-ta-selection-cell — the same class its body
+ * cells carry, which is why this has to key off thead rather than the class —
+ * and the actions th is .fi-ta-actions-header-cell, which the vendor styles not
+ * at all. Both were left transparent, breaking the strip at each end. Painting
+ * through thead also keeps them sticky with the rest of the header instead of
+ * scrolling out from under it, and covers any header cell Filament adds later. */
+.fi-ta-table thead th {
+  @apply sticky top-0 bg-(--surface-2) border-b border-b-(--line-strong);
+}
+
+.fi-ta-cell {
+  @apply px-2.5 text-(--ink-2) border-b border-b-(--line-soft);
+}
+
+.fi-ta-row:last-child .fi-ta-cell {
+  @apply border-b-0;
+}
+
+.fi-ta-row:hover .fi-ta-cell {
+  @apply bg-(--surface-2);
+}
+
+/* Preview-selected row (PIREP list hover preview) — accent-tinted with an
+ * inset left bar, per the mockup's tr[aria-selected] (theme.css:1349-1355;
+ * the mockup's --accent-soft is derived here from the panel accent). After
+ * the hover rule so selection wins while hovered. */
+.fi-ta-row[aria-selected="true"] .fi-ta-cell {
+  background-color: color-mix(in oklab, var(--primary-600) 9%, var(--surface));
+}
+
+.fi-ta-row[aria-selected="true"] .fi-ta-cell:first-child {
+  box-shadow: inset 2px 0 0 var(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
+ * Status chips (mockup .chip, theme.css:1378-1410).
+ *
+ * Filament's pill badges become bordered chips with a square state dot.
+ * Global — .fi-color-primary keeps its own vendor colours and just picks up
+ * the border/dot, which reads fine on a role badge in the header actions.
+ * padding-block drops 1px to net the same ~19px box once the 1px border is
+ * added (line-height 15px + 2*1px padding + 2*1px border = 19px, measured
+ * against the live fi-size-sm badge).
+ * ------------------------------------------------------------------------- */
+.fi-badge {
+  @apply gap-1.5 py-0.25 border border-transparent;
+}
+
+.fi-badge::before {
+  @apply w-1.25 h-1.25 rounded-[1px];
+  content: "";
+  flex: none;
+  background-color: currentColor;
+}
+
+.fi-badge.fi-color-success {
+  @apply text-(--ok) bg-(--ok-soft) border-(--ok-line);
+}
+
+.fi-badge.fi-color-warning {
+  @apply text-(--warn) bg-(--warn-soft) border-(--warn-line);
+}
+
+.fi-badge.fi-color-danger {
+  @apply text-(--bad) bg-(--bad-soft) border-(--bad-line);
+}
+
+.fi-badge.fi-color-info {
+  @apply text-(--info) bg-(--info-soft) border-(--info-line);
+}
+
+.fi-badge.fi-color-gray {
+  @apply text-(--mute) bg-(--mute-soft) border-(--mute-line);
+}
+
+/* ---------------------------------------------------------------------------
+ * Table toolbar (mockup .filters, theme.css:1600-1630).
+ * ------------------------------------------------------------------------- */
+.fi-ta-header-toolbar {
+  @apply py-2 px-3 bg-(--surface-2) border-b border-b-(--line);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.fi-ta-header-toolbar .fi-input-wrp,
+.fi-ta-header-toolbar .fi-icon-btn {
+  @apply w-6.75 h-6.75 m-0 border border-(--line-strong) rounded-lg bg-(--surface) shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* The vendor anchors an icon-btn's count badge (filter count, etc.) to its
+ * own 36px `-m-2` box; the 27px console box above moves that anchor off the
+ * corner. Re-centre the badge on the button's actual top-right corner. */
+.fi-ta-header-toolbar .fi-icon-btn > .fi-icon-btn-badge-ctn {
+  @apply top-0;
+}
+
+/* 27px is a floor for fields, not a cap. A searchable select wraps its value
+ * (.fi-select-input-value-ctn is text-wrap:wrap/word-break:break-word), and a
+ * two-line airport label has to grow the field rather than spill out of it —
+ * which a fixed h-6.75 can never do. Flex sizes the row from its content, so
+ * min-h keeps single-line fields at exactly the 27px the icon buttons use while
+ * letting taller content push the box open. .fi-icon-btn keeps its fixed square
+ * via the rule above. */
+.fi-ta-header-toolbar .fi-input-wrp {
+  @apply w-auto h-auto min-h-6.75;
+}
+
+/* The vendor gives .fi-input `padding-block: --spacing*1.5` (6px each side) and
+ * pins `--tw-leading: --spacing*6` (24px), so its content wants 36px inside the
+ * 25px the wrapper above leaves: the value renders low and clips. That 24px also
+ * overrides the theme's --text-sm--line-height, which is why setting only a font
+ * size here never moved it.
+ *
+ * h-full is the part that actually centres it. .fi-input is not a flex child of
+ * .fi-input-wrp -- the vendor nests it in .fi-input-wrp-content-ctn (see
+ * support/…/components/input/wrapper.blade.php), and that ctn carries only
+ * `min-width:0; flex:1`. So align-items:stretch sizes the *ctn* to 25px while the
+ * input keeps height:auto and collapses to its own ~17px at the top. Filling the
+ * ctn hands the input the full 25px, which an <input> centres its value in, and
+ * makes the whole field clickable. Parent heights are untouched.
+ *
+ * Selects carry byte-identical vendor sizing and need the same treatment, and
+ * not only in the toolbar proper: the filters panel is a *descendant* of
+ * .fi-ta-header-toolbar (.fi-ta-filters-dropdown > panel > .fi-ta-filters), so
+ * every filter field inherits the 27px wrapper too.
+ *
+ * The child combinators are load-bearing. A searchable select renders its own
+ * search box as a bare .fi-input inside its dropdown panel, still within this
+ * toolbar but *not* inside a height-capped .fi-input-wrp -- matching it on
+ * descendant would strip that box's padding and squash it. Only the control
+ * sitting directly in a capped wrapper should be compensated.
+ *
+ * Block padding only: a select's inline-end padding clears its chevron. */
+.fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-input,
+.fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-select-input {
+  @apply h-full py-0 text-[12.5px] leading-none;
+}
+
+/* A searchable select is not a form control at all: .fi-select-input is a div
+ * wrapping button.fi-select-input-btn, and the button is what shows the value.
+ * It carries min-height:calc(--spacing*9) = 36px, a floor h-full cannot get
+ * under, so that has to be released before it will sit in the 25px box. Its
+ * .fi-select-input-value-ctn is already display:flex/items-center, so the label
+ * centres itself once the button matches the wrapper.
+ *
+ * Padding stays symmetric and small rather than zeroed: it is what centres a
+ * single line inside the 27px floor, and what keeps two wrapped lines from
+ * touching the border once the field grows. 1.35 leading gives the second line
+ * room — leading-none would jam the two together. */
+.fi-ta-header-toolbar .fi-select-input-btn {
+  @apply h-full min-h-0 py-1 leading-[1.35];
+}
+
+/* …and h-full above only resolves against a definite height, which the two
+ * elements between .fi-select-input and that button do not have: the blade
+ * renders a bare <div x-ref="select"> (forms/…/components/select.blade.php:219)
+ * and select.js injects .fi-select-input-ctn inside it, both height:auto. The
+ * percentage therefore fell back to auto and the button collapsed to its own
+ * ~12.5px at the top of the 25px box. Pass the height through so it lands, and
+ * the button's own flex/items-center value container centres the label.
+ *
+ * min-h-0 matters as much as h-full here: the vendor puts the SAME 36px floor
+ * on div[x-ref="select"] that it puts on the button (`.fi-select-input
+ * div[x-ref=select]{min-height:calc(--spacing*9)}`), so releasing only the
+ * button left this wrapper holding the field open at 36px and dragging the
+ * h-full button back up with it. Those two are the only min-height floors in
+ * the select subtree. */
+.fi-ta-header-toolbar .fi-select-input > [x-ref="select"],
+.fi-ta-header-toolbar .fi-select-input .fi-select-input-ctn {
+  @apply h-full min-h-0;
+}
+
+.fi-ta-header-toolbar .fi-icon-btn svg {
+  @apply w-3.5 h-3.5;
+  stroke-width: 1.75;
+}
+
+/* ---------------------------------------------------------------------------
+ * Pagination footer (mockup .panel__foot, theme.css:1280-1282).
+ * ------------------------------------------------------------------------- */
+.fi-pagination {
+  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-[12px] text-(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+ * Controls (mockup .btn/.btn--primary, theme.css:1119-1145).
+ *
+ * Scoped to header actions and pagination prev/next only — a global .fi-btn
+ * restyle is a separate call (form/modal blast radius is much bigger).
+ * ------------------------------------------------------------------------- */
+.fi-header .fi-btn,
+.fi-pagination .fi-btn,
+.strip__edit .fi-btn {
+  @apply h-7 px-2.5 text-[12.5px] border border-(--line-strong) bg-(--surface) text-(--ink-2) shadow-none;
+}
+
+.fi-header .fi-btn:hover,
+.fi-pagination .fi-btn:hover,
+.strip__edit .fi-btn:hover {
+  @apply bg-(--surface-2) border-(--ink-4) text-(--ink);
+}
+
+.fi-header .fi-btn .fi-icon,
+.fi-pagination .fi-btn .fi-icon,
+.strip__edit .fi-btn .fi-icon {
+  @apply w-3.5 h-3.5;
+  stroke-width: 1.75;
+}
+
+/* Hero buttons are neutral fields — white in light mode, surface-dark in
+ * dark mode — and the action's intent lives in the icon tint (Tailwind
+ * Plus white-button pattern: plain field, gray ring, colored glyph). The
+ * bg/border/text come from the shared rule above; only the tints live here,
+ * on tokens so they flip with the mode. */
+/* Neutral hero buttons: muted glyph, not raw ink. The semantic tints below
+ * and the primary override win over this by specificity. */
+.fi-header .fi-btn .fi-icon,
+.strip__edit .fi-btn .fi-icon {
+  color: var(--ink-3);
+}
+
+.fi-header .fi-btn.fi-color-danger .fi-icon {
+  color: var(--bad);
+}
+
+.fi-header .fi-btn.fi-color-success .fi-icon {
+  color: var(--ok);
+}
+
+.fi-header .fi-btn.fi-color-warning .fi-icon {
+  color: var(--warn);
+}
+
+.fi-header .fi-btn.fi-color-info .fi-icon {
+  color: var(--info);
+}
+
+.fi-header .fi-btn.fi-color-primary .fi-icon {
+  color: #fff;
+}
+
+/* Primary action on the hero, keyed off the accent. The band's gradient
+ * pins its own lightness (stops ≈.5/.47/.46 light, ≈.34/.30/.27 dark — see
+ * the .fi-header @supports block above) and only its hue follows the
+ * accent, so pinning the button's L guarantees contrast for any accent the
+ * picker picks: a deep accent field on the light band, the accent's own
+ * mid lightness on the dark one. White text clears 4.5:1 at both L values. */
+.fi-header .fi-btn.fi-color-primary {
+  background-color: color-mix(in oklab, var(--primary-600) 55%, black);
+  border-color: transparent;
+  color: #fff;
+}
+
+.fi-header .fi-btn.fi-color-primary:hover {
+  background-color: color-mix(in oklab, var(--primary-600) 45%, black);
+  color: #fff;
+}
+
+.dark .fi-header .fi-btn.fi-color-primary {
+  background-color: var(--primary-600);
+}
+
+.dark .fi-header .fi-btn.fi-color-primary:hover {
+  background-color: color-mix(in oklab, var(--primary-600) 88%, white);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .fi-header .fi-btn.fi-color-primary {
+    background-color: oklch(from var(--primary-600) 0.3 0.13 h);
+  }
+
+  .fi-header .fi-btn.fi-color-primary:hover {
+    background-color: oklch(from var(--primary-600) 0.26 0.13 h);
+  }
+
+  .dark .fi-header .fi-btn.fi-color-primary {
+    background-color: oklch(from var(--primary-600) 0.55 0.15 h);
+  }
+
+  .dark .fi-header .fi-btn.fi-color-primary:hover {
+    background-color: oklch(from var(--primary-600) 0.6 0.15 h);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Rail clock (resources/views/filament/shared/rail-clock.blade.php).
+ *
+ * Ticked by resources/js/admin/utc-clock.js. Sits at the head of the rail,
+ * the same 44px height as the topbar so the two chrome bands align — no rule
+ * under it, the rail reads as one column top to bottom.
+ * ------------------------------------------------------------------------- */
+.fi-rail-clock {
+  @apply flex flex-col items-center justify-center h-11;
+}
+
+.fi-rail-clock time {
+  @apply font-mono text-[12px] leading-none tracking-[-0.01em];
+  font-weight: 550;
+  color: #e8edf3;
+}
+
+.fi-rail-clock-sec {
+  color: #8f9daf;
+}
+
+.fi-rail-clock-zone {
+  @apply mt-0.75 text-[8.5px] font-semibold uppercase tracking-[0.14em];
+  color: #8f9daf;
+}
+
+/* ---------------------------------------------------------------------------
+ * Module rail.
+ *
+ * Filament's own collapsed sidebar, made graphite. Giving the navigation
+ * groups icons (AdminPanelProvider) makes the collapsed state render the
+ * group icon with its items in a flyout — the console's rail and hover menu,
+ * without custom markup.
+ * ------------------------------------------------------------------------- */
+.fi-sidebar {
+  @apply bg-[#1b1f24];
+  /* Mockup's rail border mixes 30% toward black, not a flat gray. */
+  border-right: 1px solid color-mix(in oklab, #1b1f24 70%, black);
+}
+
+.fi-sidebar .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-group-btn {
+  color: #8f9daf;
+}
+
+.fi-sidebar .fi-sidebar-item-btn .fi-icon,
+.fi-sidebar .fi-sidebar-group-btn .fi-icon {
+  color: #8f9daf;
+  /* Rail tier: 18px, 1.75-2 stroke (24-grid units). */
+  stroke-width: 1.875;
+}
+
+/* The label carries its own gray-700, which is unreadable on graphite. */
+.fi-sidebar .fi-sidebar-item-label {
+  color: #8f9daf;
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover,
+.fi-sidebar .fi-sidebar-group-btn:hover {
+  @apply bg-[#2c333c] text-white;
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-group-btn:hover .fi-sidebar-group-label {
+  @apply text-white;
+}
+
+/* Hover mirrors the .fi-active treatment below: same panel tint and label
+ * white, plus the icon picks up the accent-lit mix the workspace-chip icon
+ * uses (line ~315) instead of staying flat gray. */
+.fi-sidebar .fi-sidebar-item-btn:hover .fi-icon,
+.fi-sidebar .fi-sidebar-group-btn:hover .fi-icon {
+  color: color-mix(in oklab, var(--primary-600) 58%, white);
+}
+
+/* Grouped-item connector lines and dots ship as gray-300/400 — light rules
+ * meant for a white sidebar. */
+.fi-sidebar
+  :is(
+    .fi-sidebar-item-grouped-border-part-not-first,
+    .fi-sidebar-item-grouped-border-part-not-last
+  ) {
+  @apply bg-[#333b45];
+}
+
+.fi-sidebar .fi-sidebar-item-grouped-border-part {
+  @apply bg-[#4a5563];
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label {
+  @apply bg-[#2c333c] text-white;
+}
+
+/* Group labels read as section rules in the expanded state. */
+.fi-sidebar .fi-sidebar-group-label {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em];
+  color: #8f9daf;
+}
+
+/* ---------------------------------------------------------------------------
+ * Workspace navigator (resources/views/filament/shared/workspace-nav.blade.php).
+ * ------------------------------------------------------------------------- */
+.fi-workspace-nav {
+  @apply flex items-stretch gap-3.5 min-w-0 flex-1;
+}
+
+.fi-workspace-nav-module {
+  @apply flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.06em];
+  flex: none;
+  padding-inline: 2px 16px;
+  border-inline-end: 1px solid #333b45;
+  color: #e8edf3;
+}
+
+/* The module icon is the accent's lit variant — legible on graphite. */
+.fi-workspace-nav-module svg {
+  @apply w-4 h-4;
+  stroke-width: 1.75;
+  color: color-mix(in oklab, var(--primary-600) 58%, white);
+}
+
+.fi-workspace-nav-tabs {
+  @apply flex items-stretch overflow-x-auto min-w-0;
+  scrollbar-width: none;
+}
+
+.fi-workspace-nav-tabs::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.fi-workspace-nav-tab {
+  @apply flex items-center gap-1.75 px-3.5 text-[12.5px] whitespace-nowrap border-b-2 border-b-transparent;
+  flex: none;
+  color: #8f9daf;
+  transition:
+    background-color 100ms,
+    color 100ms;
+}
+
+.fi-workspace-nav-tab svg {
+  @apply w-4 h-4 opacity-85;
+  stroke-width: 1.75;
+}
+
+.fi-workspace-nav-tab:hover {
+  @apply bg-[#2c333c];
+  color: #e8edf3;
+}
+
+/* Selection is the only thing that takes the accent. */
+.fi-workspace-nav-tab[aria-current="page"] {
+  @apply text-white bg-[#2c333c] border-b-(--primary-600);
+}
+
+.fi-workspace-nav-tab-badge {
+  @apply font-mono text-[10.5px] px-1 rounded-[2px] bg-[#333b45];
+  color: #e8edf3;
+}
+
+.fi-workspace-nav-tab[aria-current="page"] .fi-workspace-nav-tab-badge {
+  @apply bg-(--primary-600) text-white;
+}
+
+/* ---------------------------------------------------------------------------
+ * Brand switcher (resources/views/filament/plugins/panel-switcher.blade.php).
+ *
+ * The console's brand button: mark, product name and current panel, doubling
+ * as the panel switcher. The dropdown panel is the mockup's brandmenu: a
+ * 250px surface with an eyebrow label and dense ruled rows.
+ * ------------------------------------------------------------------------- */
+.fi-brand-switcher {
+  @apply flex items-stretch;
+  flex: none;
+  order: -1;
+}
+
+/* The brand leads the bar; the vendor's sidebar-collapse button follows it. */
+.fi-topbar-start > .fi-brandbtn {
+  order: -1;
+}
+
+.fi-brand-switcher .fi-dropdown-trigger {
+  @apply flex items-stretch;
+}
+
+.fi-brandbtn {
+  @apply flex items-center gap-2.5;
+  padding-inline: 10px 12px;
+  border-inline-end: 1px solid #333b45;
+  color: #e8edf3;
+  transition: background-color 100ms;
+}
+
+.fi-brandbtn:hover {
+  @apply bg-[#2c333c];
+}
+
+.fi-brandbtn-mark {
+  @apply grid w-6.75 h-6.75 rounded-[5px] bg-(--primary-600) text-white;
+  place-items: center;
+  flex: none;
+}
+
+.fi-brandbtn-mark svg {
+  @apply w-4.25 h-4.25;
+}
+
+.fi-brandbtn-text {
+  @apply grid leading-[1.25];
+  text-align: start;
+}
+
+.fi-brandbtn-name {
+  @apply text-[12.5px] font-semibold tracking-[-0.01em];
+}
+
+.fi-brandbtn-panel {
+  @apply text-[10px] font-medium uppercase tracking-[0.07em];
+  color: #8f9daf;
+}
+
+.fi-brandbtn-chev {
+  @apply w-3.5 h-3.5;
+  color: #8f9daf;
+  flex: none;
+}
+
+.fi-brand-switcher .fi-dropdown-panel {
+  @apply w-62.5 p-0 border border-(--line-strong) rounded-xl overflow-hidden;
+  box-shadow:
+    0 10px 26px -10px rgb(14 18 24 / 32%),
+    0 3px 8px -3px rgb(14 18 24 / 18%);
+}
+
+.fi-brandmenu-label {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3) bg-(--surface-2) border-b border-b-(--line);
+  padding: 7px 11px 6px;
+}
+
+.fi-brandmenu-item {
+  @apply grid gap-2.5 items-center w-full py-1.75 px-2.75 border-b border-b-(--line-soft);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  transition: background-color 100ms;
+}
+
+.fi-brandmenu-item:last-child {
+  @apply border-b-0;
+}
+
+.fi-brandmenu-item:hover {
+  @apply bg-(--surface-2);
+}
+
+/* Selection is the only thing that takes the accent. */
+.fi-brandmenu-item[aria-current="true"] {
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+}
+
+.fi-brandmenu-item-mark {
+  @apply grid w-6 h-6 rounded-lg bg-(--primary-600) text-white text-[10px] font-semibold;
+  place-items: center;
+}
+
+.fi-brandmenu-item-mark img {
+  @apply w-4 h-4;
+  /* logo.svg ships brand-blue; the swatch is brand-blue too. */
+  filter: brightness(0) invert(1);
+}
+
+.fi-brandmenu-item-text strong {
+  @apply block text-[12.5px] text-(--ink);
+  font-weight: 550;
+}
+
+.fi-brandmenu-item-text span {
+  @apply block text-[11px] text-(--ink-3);
+}
+
+.fi-brandmenu-check {
+  @apply w-3.75 h-3.75 text-(--primary-600);
+}
+
+.fi-brandmenu-foot {
+  @apply flex items-center gap-1.5 py-1.75 px-2.75 bg-(--surface-2) border-t border-t-(--line-soft) text-[11.5px] text-(--ink-3);
+}
+
+.fi-brandmenu-foot:hover {
+  @apply bg-(--sunken);
+}
+
+.fi-brandmenu-foot .fi-icon {
+  @apply w-3.5 h-3.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Topbar tools.
+ *
+ * Filament's own topbar controls (sidebar collapse, notifications, user
+ * menu) now sit on graphite.
+ * ------------------------------------------------------------------------- */
+.fi-topbar .fi-icon-btn {
+  @apply w-7 h-7 rounded-lg;
+  color: #8f9daf;
+}
+
+.fi-topbar .fi-icon-btn svg {
+  @apply w-4 h-4;
+  stroke-width: 1.75;
+}
+
+.fi-topbar .fi-icon-btn:hover {
+  @apply bg-[#2c333c];
+  color: #e8edf3;
+}
+
+/* Global search: slim dark box, matching the icon buttons either side. */
+.fi-topbar .fi-global-search-field {
+  @apply w-52.5;
+}
+
+.fi-topbar .fi-global-search-field .fi-input-wrp {
+  @apply h-7 rounded-lg shadow-none;
+  background-color: color-mix(in oklab, #1b1f24 75%, black);
+  border: 1px solid #333b45;
+}
+
+.fi-topbar .fi-global-search-field .fi-input-wrp:focus-within {
+  @apply shadow-none;
+}
+
+/* Same nesting and the same fix as the toolbar search above. */
+.fi-topbar .fi-global-search-field .fi-input {
+  @apply h-full py-0 text-[12px] leading-none;
+  color: #e8edf3;
+}
+
+.fi-topbar .fi-global-search-field .fi-input::placeholder {
+  color: color-mix(in oklab, #8f9daf 88%, white);
+}
+
+.fi-topbar .fi-global-search-field .fi-input-wrp-prefix .fi-icon {
+  @apply w-3.5 h-3.5;
+  color: #8f9daf;
+}
+
+/* Tool order: search, theme switcher, refresh, notifications. Source order
+ * (theme picker registered on GLOBAL_SEARCH_BEFORE, refresh on
+ * GLOBAL_SEARCH_AFTER — see AdminPanelProvider / ClearCachesPlugin) puts the
+ * theme picker ahead of search, so `order` corrects it. The refresh button's
+ * livewire root div carries no class of its own — `:has()` reaches it via
+ * the icon-button's fi-clear-caches-btn class instead. */
+.fi-topbar-end > .fi-global-search-ctn {
+  order: 1;
+}
+
+.fi-topbar-end > .fi-theme-picker {
+  order: 2;
+}
+
+.fi-topbar-end > div:has(> .fi-clear-caches-btn) {
+  order: 3;
+}
+
+.fi-topbar-end > .fi-no-database {
+  order: 4;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rail labels.
+ *
+ * Collapsed, Filament renders the module icon alone and puts the label in a
+ * tooltip, so there is no text node to style. But the group <li> already
+ * carries data-group-label (group.blade.php:17), so the label can be drawn
+ * under the icon with attr() — no published vendor views.
+ * ------------------------------------------------------------------------- */
+/* The nav list ships a 28px vendor gap (Tailwind gap-7) between groups —
+ * measured in the live rail, it's what makes the collapsed state read as
+ * loosely stacked icons instead of one rhythm. Zeroed here so item padding
+ * (below) is the only spacing. The list also reserves scrollbar-gutter space
+ * on its right, which shifts every icon ~8px left of the rail's centerline;
+ * collapsed content is well under the viewport height, so nothing scrolls
+ * and the reservation is pure misalignment. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
+  /* Full rail width so the row hit targets span edge to edge. The vendor
+   * pairs a -8px inline margin with the nav padding zeroed above — reset
+   * both or the rows hang 8px off the rail's left edge. */
+  @apply gap-0 w-full mx-0;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
+  /* Vendor 24px side padding shrinks the rows to 27px — zeroed so the
+   * full-row hit targets and hover paint span the rail edge to edge. */
+  /* The full-row hit target makes the group <li> position:relative, which
+   * moves the flyout panel's containing block INSIDE this scroll container —
+   * so the vendor's overflow clipped every flyout at the rail edge (they
+   * escaped before only because their containing block was the fixed
+   * .fi-sidebar, an ancestor of the clipper). Both axes must be visible:
+   * one non-visible axis forces the other to compute auto.
+   * ponytail: rail loses its own scrollbar — fine until a viewport shorter
+   * than ~8 groups; revisit with a flyout teleport if that ever matters. */
+  @apply px-0 overflow-visible;
+  scrollbar-gutter: auto;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
+  @apply flex flex-col items-center gap-1 pt-2.25 pb-2;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group::after {
+  /* Wrap rather than ellipsis — "Operations" does not fit a 76px rail on one
+   * line, and a truncated module name is worse than a two-line one. */
+  @apply block text-[10px] leading-[1.2] tracking-[0.02em] text-center max-w-full px-0.5;
+  content: attr(data-group-label);
+  color: #8f9daf;
+  word-break: keep-all;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group.fi-active::after {
+  color: #e8edf3;
+}
+
+/* Filament also wraps ungrouped items (Dashboard) in a `.fi-sidebar-group`
+ * li with an empty data-group-label, purely for layout parity with real
+ * groups. Without this, its padding/gap above double up with the ungrouped
+ * item's own padding below and it renders taller than every named group. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group[data-group-label=""] {
+  @apply gap-0 p-0;
+}
+
+/* Short module names on the rail only — the flyout header and workspace chip
+ * keep the full names, like the mockup. English labels only; other locales
+ * fall back to the full attr() label. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group[data-group-label="Operations"]::after {
+  content: "Ops";
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group[data-group-label="Planning"]::after {
+  content: "Plan";
+}
+
+/* Full-row hit target. The trigger button (which carries rail-nav.js's
+ * click-to-navigate and the hover flyout) was icon-sized (18px), so only a
+ * precise click on the glyph worked. The li keeps a fixed 18px spacer (the
+ * .fi-dropdown wrapper) so the flex column doesn't collapse, and the button
+ * overlays the whole row absolutely — icon area AND label are clickable.
+ * The button's own padding re-creates the icon's resting position. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group {
+  @apply relative;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown {
+  @apply w-4.5 h-4.5;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {
+  @apply absolute inset-0 z-1 w-full items-start justify-center bg-transparent rounded-[0px];
+  padding: 9px 0 0;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn .fi-icon {
+  @apply w-4.5 h-4.5;
+  /* Rail tier: 18px, 1.75-2 stroke — the trigger btn isn't covered by the
+   * .fi-sidebar-group-btn stroke rule above. */
+  stroke-width: 1.875;
+}
+
+/* Hover paints the row (the li, behind the ::after label) instead of the
+ * button — the button now overlays the label, so a bg on it would hide the
+ * text. Same #2c333c + accent-lit icon treatment as the expanded rail. */
+.fi-sidebar:not(.fi-sidebar-open)
+  .fi-sidebar-group:has(.fi-sidebar-group-dropdown-trigger-btn:hover) {
+  @apply bg-[#2c333c];
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn:hover {
+  @apply bg-transparent;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn:hover .fi-icon {
+  color: color-mix(in oklab, var(--primary-600) 58%, white);
+}
+
+.fi-sidebar:not(.fi-sidebar-open)
+  .fi-sidebar-group:has(.fi-sidebar-group-dropdown-trigger-btn:hover)::after {
+  @apply text-white;
+}
+
+/* Ungrouped items (Dashboard) have no data-group-label, but their label span
+ * is in the DOM — Alpine just hides it inline when collapsed. Override that
+ * and stack it under the icon so the whole rail is consistent. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn {
+  /* Module panels list UNGROUPED pages as rail items; long labels otherwise
+   * grow the button past the rail (97px buttons in a 75px rail — "wide when
+   * active" highlight). Clamp to the rail and let labels wrap. */
+  @apply flex-col gap-1 pt-2.25 pb-2 w-full max-w-full overflow-hidden;
+}
+
+/* The per-group items list is content-sized and overflows the rail when
+ * ungrouped module pages render inline — clamp it to its group. */
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-items {
+  @apply w-full max-w-full;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn .fi-icon {
+  @apply w-4.5 h-4.5;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-label {
+  @apply text-[10px] leading-[1.2] tracking-[0.02em] text-center;
+  display: block !important;
+  word-break: keep-all;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rail flyout.
+ *
+ * The module dropdown, styled as the mockup's railmenu: a surface panel with
+ * a label header, dense ruled rows, and the accent reserved for the current
+ * page. Filament already renders getChildItems() here as divided lists, so
+ * sub-navigation flows in without markup changes.
+ * ------------------------------------------------------------------------- */
+.fi-sidebar-group .fi-dropdown-panel {
+  /* floating-ui lands the panel at x≈58, overlapping the 76px rail; 22px
+   * shifts it flush beside the rail with the mockup's small gap. (measured
+   * against the live app at 1440px)
+   * -mt-2.25 tops it out with the rail row: the float reference is the
+   * icon-sized .fi-dropdown box, which sits 9px below the row top (the
+   * trigger's padding), so right-start alone aligns to the icon. */
+  @apply border border-(--line-strong) rounded-xl p-0 overflow-hidden ms-5.5 -mt-2.25;
+  box-shadow:
+    0 12px 30px -12px rgb(14 18 24 / 38%),
+    0 3px 8px -3px rgb(14 18 24 / 20%);
+}
+
+.fi-sidebar-group .fi-dropdown-header {
+  @apply bg-(--surface-2) border-b border-b-(--line) py-1.75 px-2.75 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3) rounded-[0px];
+}
+
+/* The mockup's flyout rows carry no icons — label and count only. */
+.fi-sidebar-group .fi-dropdown-list-item .fi-icon {
+  @apply hidden;
+}
+
+.fi-sidebar-group .fi-dropdown-list {
+  @apply p-0;
+}
+
+.fi-sidebar-group .fi-dropdown-list-item {
+  @apply py-1.5 px-2.75 text-[12.5px] rounded-[0px] border-b border-b-(--line-soft);
+}
+
+.fi-sidebar-group .fi-dropdown-list > .fi-dropdown-list-item:last-child {
+  @apply border-b-0;
+}
+
+/* Selection is the only thing that takes the accent. */
+.fi-sidebar-group .fi-dropdown-list-item.fi-color-primary {
+  box-shadow: inset 2px 0 0 var(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
+ * Rail foot (account trigger).
+ *
+ * The user menu now renders in the sidebar footer (`->userMenu(position:
+ * Sidebar)` in AdminPanelProvider) instead of the topbar. Styled as the
+ * mockup's rail__foot/rail__avatar: a ruled-off strip holding a small square
+ * avatar, centered in the 76px rail. The name and chevron the vendor trigger
+ * also renders are hidden — there's no room for them collapsed.
+ * ------------------------------------------------------------------------- */
+.fi-sidebar-footer {
+  @apply m-0 py-2 px-0;
+  border-top: 1px solid #333b45;
+}
+
+.fi-sidebar .fi-user-menu-trigger .fi-avatar {
+  @apply w-6.5 h-6.5 rounded-lg;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-user-menu-trigger-text,
+.fi-sidebar:not(.fi-sidebar-open) .fi-user-menu-trigger .fi-icon {
+  @apply hidden;
+}
+
+/* The topbar theme picker owns appearance; hide Filament's own light/dark/
+ * system switcher row in the user menu (hiding the wrapping list too, so no
+ * empty divider is left behind). Panel ->darkMode() stays enabled so
+ * dark-mode.js keeps running the topbar picker. */
+.fi-user-menu .fi-dropdown-list:has(> .fi-theme-switcher) {
+  @apply hidden;
+}
+
+/* Language switcher (resources/views/filament/plugins/language-switcher.blade.php),
+ * a plain dropdown.list of locale links inside the user menu. The vendor
+ * list-item image defaults to 20px; flags read better small. */
+.fi-user-menu .fi-dropdown-list-item-image {
+  @apply w-3.5 h-3.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Theme picker (resources/views/filament/plugins/theme-picker.blade.php).
+ *
+ * Brand colour, appearance and density. Same panel treatment as the brand
+ * switcher and rail flyout above: bordered surface, shadow, ruled groups.
+ * Ported from mockups/admin-console-v2/theme.css:1944-2054 and its
+ * `.segmented` control, trimmed to fi-picker-* classes and three sections —
+ * canvas, page header, glass headers and the "what this writes" output are
+ * intentionally left out.
+ * ------------------------------------------------------------------------- */
+.fi-theme-picker .fi-dropdown-panel {
+  @apply w-72 p-0 border border-(--line-strong) rounded-xl overflow-hidden;
+  box-shadow:
+    0 12px 30px -12px rgb(14 18 24 / 38%),
+    0 3px 8px -3px rgb(14 18 24 / 20%);
+}
+
+.fi-picker-group {
+  @apply py-2.5 px-3 border-b border-b-(--line-soft);
+}
+
+.fi-picker-group:last-child {
+  @apply border-b-0;
+}
+
+.fi-picker-label {
+  @apply block mb-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.fi-picker-swatches {
+  @apply grid grid-cols-8 gap-1.5;
+}
+
+.fi-picker-swatch {
+  @apply w-full rounded-md;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in oklab, currentColor 45%, transparent);
+  transition: transform 100ms;
+}
+
+.fi-picker-swatch:hover {
+  transform: scale(1.1);
+}
+
+.fi-picker-swatch[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 1.5px var(--surface),
+    0 0 0 3px currentColor;
+}
+
+.fi-picker-hex {
+  @apply flex items-center gap-1.5 mt-2.5;
+}
+
+.fi-picker-hex input[type="color"] {
+  @apply w-7 h-7 p-0 border border-(--line-strong) rounded-md bg-(--surface) cursor-pointer;
+}
+
+.fi-picker-hex input[type="text"] {
+  @apply flex-1 h-7 px-2 border border-(--line-strong) rounded-md bg-(--surface) text-[12px] text-(--ink) outline-none;
+  font-family: ui-monospace, monospace;
+}
+
+.fi-picker-hex input[type="text"]:focus {
+  @apply border-(--primary-600);
+}
+
+.fi-picker-hint {
+  @apply text-[11.5px] leading-[1.4] text-(--ink-3);
+  margin: 6px 0 0;
+}
+
+.fi-picker-segmented {
+  @apply inline-flex rounded-md overflow-hidden border border-(--line-strong) bg-(--surface);
+}
+
+.fi-picker-segmented button {
+  @apply h-6.5 px-2.5 text-[12px] text-(--ink-3);
+  border-inline-end: 1px solid var(--line-soft);
+  transition: background-color 100ms;
+}
+
+.fi-picker-segmented button:last-child {
+  border-inline-end: 0;
+}
+
+.fi-picker-segmented button:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.fi-picker-segmented button[aria-pressed="true"] {
+  @apply text-(--primary-600);
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+  font-weight: 550;
+}
+
+/* Comfortable density — the picker's second notch. */
+html[data-density="comfortable"]
+  .fi-ta-cell
+  :is(
+    .fi-ta-text,
+    .fi-ta-icon,
+    .fi-ta-image,
+    .fi-ta-color,
+    .fi-ta-toggle,
+    .fi-ta-select,
+    .fi-ta-text-input,
+    .fi-ta-checkbox
+  ) {
+  @apply py-2.5;
+}
+
+html[data-density="comfortable"] .fi-body {
+  @apply text-[13.5px];
+}
+
+/* Comfortable reaches the console surfaces too, not just table rows —
+ * otherwise the toggle reads as a no-op on pages without a data table. */
+html[data-density="comfortable"] .fi-section-content {
+  @apply p-4;
+}
+
+html[data-density="comfortable"] .queue__item {
+  @apply py-3;
+}
+
+html[data-density="comfortable"] .strip__cell {
+  @apply pt-3.75 pb-3.5;
+}
+
+html[data-density="comfortable"] .fi-sidebar-item-btn {
+  @apply py-2;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rail / topbar seam.
+ *
+ * Filament stacks a full-width topbar above the layout, so the rail starts
+ * below it. The console runs the rail the full height with the topbar beside
+ * it. Desktop only — below lg the sidebar is a drawer and must stay as-is.
+ *
+ * Filament hardcodes the old 4rem topbar height into the sidebar's sticky
+ * offset (sidebar.css:75) and the main container's min-height (layout.css:36),
+ * so both need correcting to the 44px bar above.
+ * ------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  /* One width that follows the collapse state, so the offsets below track it
+   * without needing to know which state we are in. */
+  .fi-body {
+    --rail-w: var(--collapsed-sidebar-width);
+  }
+
+  .fi-body:has(.fi-sidebar-open) {
+    --rail-w: var(--sidebar-width);
+  }
+
+  .fi-sidebar {
+    @apply fixed top-0;
+    height: 100dvh;
+  }
+
+  /* Ungrouped items (Dashboard) squash to 8px wide in the narrow rail, while
+   * group icons hold 24px. */
+  .fi-sidebar .fi-sidebar-item-btn .fi-icon {
+    @apply shrink-0;
+  }
+
+  /* Collapsed, Filament renders 88px while --collapsed-sidebar-width says
+   * 4.5rem/72px. The offsets below trust the variable, so pin the width to it
+   * and keep the two in agreement. */
+  .fi-body:not(:has(.fi-sidebar-open)) .fi-sidebar {
+    width: var(--collapsed-sidebar-width);
+  }
+
+  .fi-topbar-ctn,
+  .fi-layout {
+    margin-inline-start: var(--rail-w);
+  }
+
+  /* .fi-layout is w-full, so the margin above would otherwise add to 100%
+   * and push the content off the right edge. */
+  .fi-layout {
+    @apply w-auto;
+  }
+
+  .fi-main-ctn {
+    min-height: calc(100dvh - 44px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Icon weight tiers — empty states: 24-32px at the lighter 1.5 stroke.
+ * (Rail/topnav/button tiers live on their own rules above.)
+ * ------------------------------------------------------------------------- */
+.fi-empty-state-icon-bg .fi-icon {
+  @apply w-7 h-7;
+  stroke-width: 1.5;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dashboard tokens — maintenance amber, distinct from --warn (mockup
+ * theme.css:126-128). Own :root block so this section stays purely additive.
+ * ------------------------------------------------------------------------- */
+:root {
+  --maint: #8c4407;
+  --maint-soft: #fbebdd;
+  --maint-line: #e8bd92;
+}
+
+/* Dark. The mockup has no --maint entry (it's a live-only addition, see
+ * above) — derived with the same hue-preserving lighten the mockup used for
+ * --ok/--warn/--bad/--info (roughly +0.30 lightness, -0.18 saturation in
+ * HSL), so it keeps reading as "distinct from --warn" in dark too. */
+.dark {
+  --maint: #e2904a;
+  --maint-soft: #2a1d10;
+  --maint-line: #63401c;
+}
+
+/* ---------------------------------------------------------------------------
+ * Stats strip — App\Filament\Widgets\StatsStripWidget, five-cell operating
+ * figures, one bordered strip with rules between (mockup index.html:471-514,
+ * classes theme.css:1167-1233). No <x-filament::section> wrapper.
+ * ------------------------------------------------------------------------- */
+.strip {
+  @apply grid grid-cols-5 bg-(--surface) border border-(--line) rounded-xl;
+}
+
+.strip__cell {
+  @apply grid gap-x-2.75 border-r border-r-(--line-soft);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  padding: 12px 14px 11px;
+}
+
+.strip__cell:last-child {
+  @apply border-r-0;
+}
+
+.strip__icon {
+  @apply grid w-7.5 h-7.5 rounded-md bg-(--sunken) border border-(--line-soft) text-(--ink-2);
+  grid-row: span 3;
+  place-items: center;
+}
+
+.strip__icon svg {
+  @apply w-4.25 h-4.25;
+}
+
+/* Category tints mark what's being measured, never whether it's good — they
+ * hold still while the numbers move. */
+.strip__icon--blue {
+  @apply text-(--info) bg-(--info-soft) border-(--info-line);
+}
+
+.strip__icon--teal {
+  color: #0e7676;
+  background: color-mix(in oklab, #0e7676 11%, var(--surface));
+  border-color: color-mix(in oklab, #0e7676 32%, var(--surface));
+}
+
+.strip__icon--violet {
+  color: #5b3fc4;
+  background: color-mix(in oklab, #5b3fc4 11%, var(--surface));
+  border-color: color-mix(in oklab, #5b3fc4 32%, var(--surface));
+}
+
+.strip__icon--rose {
+  color: #a83358;
+  background: color-mix(in oklab, #a83358 11%, var(--surface));
+  border-color: color-mix(in oklab, #a83358 32%, var(--surface));
+}
+
+/* Dark. These three hues aren't part of the mockup's token set (the strip
+ * only ships blue/amber there) — --surface already darkens the mixed
+ * background/border automatically, but the literal icon color needs its own
+ * lighten or it reads near-black on a dark chip, same hue-preserving
+ * transform as the --maint dark derivation above. */
+.dark .strip__icon--teal {
+  color: #6ddfdf;
+  background: color-mix(in oklab, #6ddfdf 11%, var(--surface));
+  border-color: color-mix(in oklab, #6ddfdf 32%, var(--surface));
+}
+
+.dark .strip__icon--violet {
+  color: #9284c8;
+  background: color-mix(in oklab, #9284c8 11%, var(--surface));
+  border-color: color-mix(in oklab, #9284c8 32%, var(--surface));
+}
+
+.dark .strip__icon--rose {
+  color: #c88399;
+  background: color-mix(in oklab, #c88399 11%, var(--surface));
+  border-color: color-mix(in oklab, #c88399 32%, var(--surface));
+}
+
+.strip__icon--amber {
+  @apply text-(--maint) bg-(--maint-soft) border-(--maint-line);
+}
+
+.strip__label {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.strip__value {
+  @apply mt-0.25 text-[23px] font-semibold tracking-[-0.01em] tabular-nums leading-[1.12];
+}
+
+.strip__value small {
+  @apply ml-0.5 text-[11px] font-medium text-(--ink-3);
+  letter-spacing: normal;
+}
+
+.strip__note {
+  @apply flex items-center gap-1 mt-0.5 text-[11.5px] text-(--ink-3);
+}
+
+.strip__note svg {
+  @apply w-3 h-3;
+}
+
+.strip__note--warn {
+  @apply text-(--warn);
+}
+
+.strip__note--ok {
+  @apply text-(--ok);
+}
+
+@media (max-width: 1240px) {
+  .strip {
+    @apply grid-cols-3;
+  }
+
+  .strip__cell:nth-child(3) {
+    @apply border-r-0;
+  }
+
+  .strip__cell:nth-child(-n + 3) {
+    @apply border-b border-b-(--line-soft);
+  }
+}
+
+@media (max-width: 720px) {
+  .strip {
+    @apply grid-cols-2;
+  }
+
+  .strip__cell:nth-child(n) {
+    @apply border-r border-r-(--line-soft) border-b border-b-(--line-soft);
+  }
+
+  .strip__cell:nth-child(2n) {
+    @apply border-r-0;
+  }
+
+  /* Five cells in a two-column grid leaves a hole — the last one takes the row. */
+  .strip__cell:last-child {
+    @apply border-r-0 border-b-0;
+    grid-column: 1 / -1;
+  }
+}
+
+/* Four-cell variant (bundle summary strip on EditFlightBundle). Declared
+ * after the .strip media rules so its column counts win at every width. */
+.strip--4 {
+  @apply grid-cols-4;
+}
+
+@media (max-width: 1240px) {
+  .strip--4 {
+    @apply grid-cols-2;
+  }
+
+  .strip--4 .strip__cell:nth-child(-n + 2) {
+    @apply border-b border-b-(--line-soft);
+  }
+
+  .strip--4 .strip__cell:nth-child(2n) {
+    @apply border-r-0;
+  }
+
+  .strip--4 .strip__cell:last-child {
+    grid-column: auto;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Branded drawer (Tailwind Plus "drawer with branded header"): the header
+ * band is the page hero's design — same to-right-bottom oklch gradient, dot
+ * grid, and inset highlight as .fi-header above — but with the chroma pulled
+ * down (~0.24→0.17 across the stops) so it reads as the hero's quieter
+ * sibling, not a second hero. Lightness stops are identical to the hero's,
+ * so the white/84%-white text keeps the same measured contrast. Opt-in per
+ * action via ->extraModalWindowAttributes(['class' => 'drawer-branded']).
+ * ------------------------------------------------------------------------- */
+.drawer-branded .fi-modal-header {
+  @apply relative overflow-hidden border-b-0;
+  background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent);
+}
+
+.dark .drawer-branded .fi-modal-header {
+  background-color: color-mix(in oklab, var(--primary-600) 58%, #0a0e13);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .drawer-branded .fi-modal-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.5 0.17 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.47 0.15 h) 50%,
+      oklch(from var(--primary-600) 0.46 0.12 calc(h - 25)) 100%
+    );
+  }
+
+  .dark .drawer-branded .fi-modal-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.34 0.14 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.3 0.12 h) 50%,
+      oklch(from var(--primary-600) 0.27 0.1 calc(h - 25)) 100%
+    );
+  }
+}
+
+/* The hero's dot grid, verbatim. */
+.drawer-branded .fi-modal-header::after {
+  @apply absolute inset-0 pointer-events-none opacity-10;
+  content: "";
+  background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.drawer-branded .fi-modal-heading {
+  color: #fff;
+}
+
+/* Secondary text inverted onto the band: white mixed back toward the
+ * accent, never gray — same recipe as .fi-header-subheading. */
+.drawer-branded .fi-modal-description {
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+/* The vendor renders the X as the header's first flex child, which indents
+ * the title. Pin it to the top-right corner instead (Tailwind Plus drawer
+ * layout) so the text block starts at the header's own left padding; the
+ * header reserves end-padding so long titles never run under it. */
+.drawer-branded .fi-modal-header {
+  @apply pe-12;
+}
+
+.drawer-branded .fi-modal-close-btn {
+  @apply absolute top-3 end-3 z-1;
+  color: color-mix(in oklab, white 75%, var(--primary-600));
+}
+
+.drawer-branded .fi-modal-close-btn:hover {
+  color: #fff;
+}
+
+/* A field that closes a form (the bundle drawer's Enabled toggle) gets a
+ * rule above it, echoing the modal footer's own top border. Applied via
+ * ->extraFieldWrapperAttributes(['class' => 'field-rule-above']). */
+.field-rule-above {
+  @apply border-t border-t-(--line) pt-4;
+}
+
+/* Inside the drawer the rule bleeds to the panel edges like the footer's
+ * border — counter the .fi-modal-content px-6 and pad it back. */
+.drawer-branded .field-rule-above {
+  @apply -mx-6 px-6;
+}
+
+/* Edit-details trigger pinned to the strip's last card. Its button skin is
+ * the console button proper — the .strip__edit selector rides the shared
+ * .fi-header/.fi-pagination .fi-btn rules above, no copy here. */
+.strip__cell--edit {
+  @apply relative;
+}
+
+.strip__edit {
+  @apply absolute top-2 right-2;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dashboard 2-1 split — ActivityCalendarWidget (left) + Requires
+ * action/Landing quality stack (right). Applied via ->extraAttributes() in
+ * App\Filament\Pages\Dashboard::content() (mockup theme.css:1298-1305).
+ * Same specificity as Tailwind's compiled grid-cols-* utility, but wins
+ * because those utilities live in an unlayered-losing @layer while this rule
+ * doesn't — same mechanism .fi-section already relies on above.
+ * ------------------------------------------------------------------------- */
+/* The mockup's workspace rhythm is one 14px gap everywhere (gap-3.5).
+ * Filament's schema grids default to 24px and .fi-page-content itself to
+ * 32px — tightened for page-level content only; grids INSIDE sections
+ * (form layouts) keep vendor spacing. */
+.fi-page-content {
+  @apply gap-3.5;
+}
+
+.fi-page-content .fi-grid:not(.fi-section *) {
+  @apply gap-3.5;
+}
+
+/* Filament renders extraAttributes on the schema-component WRAPPER, with the
+ * real `.fi-grid` element one level down — so the wrapper goes transparent
+ * (display: contents) and the template lands on the inner grid. The
+ * calendar's `columnSpan: full` wrapper is pinned back to one track, or it
+ * pushes the right-hand stack to the next row. */
+.split {
+  @apply contents;
+}
+
+.split--2-1 > .fi-grid {
+  @apply grid gap-3.5 items-stretch;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+}
+
+.split--2-1 > .fi-grid > * {
+  grid-column: auto / span 1;
+}
+
+/* Both split children fill the row height; the chart's section grows and
+ * centres its aspect-locked SVG in any leftover space. */
+.split--2-1 > .fi-grid > * > .fi-section,
+.split--2-1 > .fi-grid .fi-wi > .fi-section {
+  @apply h-full flex flex-col;
+}
+
+.split--2-1 > .fi-grid .fi-section-content-ctn {
+  @apply flex-1;
+}
+
+.split--2-1 > .fi-grid .fi-section-content {
+  @apply h-full flex flex-col justify-center;
+}
+
+@media (max-width: 900px) {
+  .split--2-1 > .fi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Section footer (mockup .panel__foot, theme.css:1240-1242). Filament's
+ * `<x-filament::section :footer="...">` renders `.fi-section-footer` with no
+ * styling of its own. */
+.fi-section-footer {
+  @apply py-1.75 px-3 border-t border-t-(--line-soft) text-(--ink-3) text-[11px];
+}
+
+/* Requires-action queue renders flush against its section (mockup
+ * .panel__body--flush) — the rows carry their own padding. */
+.fi-section:has(.queue) .fi-section-content {
+  @apply p-0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Requires-action queue — App\Filament\Widgets\RequiresActionWidget (mockup
+ * index.html:608-666, classes theme.css:1430-1483).
+ * ------------------------------------------------------------------------- */
+.queue {
+  @apply flex flex-col;
+}
+
+.queue__item {
+  @apply grid items-center gap-2.5 w-full py-2.25 px-3 text-left border-b border-b-(--line-soft);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  transition: background-color 100ms;
+}
+
+.queue__item:last-child {
+  @apply border-b-0;
+}
+
+.queue__item:hover {
+  @apply bg-(--surface-2);
+}
+
+.queue__flag {
+  @apply grid w-6.5 h-6.5 rounded-md border border-transparent;
+  place-items: center;
+}
+
+.queue__flag svg {
+  @apply w-3.5 h-3.5;
+}
+
+.queue__flag--warn {
+  @apply text-(--warn) bg-(--warn-soft) border-(--warn-line);
+}
+
+.queue__flag--maint {
+  @apply text-(--maint) bg-(--maint-soft) border-(--maint-line);
+}
+
+.queue__flag--info {
+  @apply text-(--info) bg-(--info-soft) border-(--info-line);
+}
+
+.queue__flag--mute {
+  @apply text-(--mute) bg-(--mute-soft) border-(--mute-line);
+}
+
+.queue__text {
+  @apply min-w-0;
+}
+
+.queue__text > strong {
+  @apply block overflow-hidden text-ellipsis text-[12.5px] text-(--ink);
+  font-weight: 550;
+}
+
+.queue__text > span {
+  @apply block overflow-hidden text-ellipsis text-[11.5px] text-(--ink-3);
+}
+
+.queue__when {
+  @apply whitespace-nowrap font-mono text-[11px] text-(--ink-4);
+}
+
+/* Identifiers and landing rates — flight numbers, ICAO codes, registrations
+ * (mockup .id/.rate, theme.css:700-712, 1412-1428). */
+.id {
+  @apply font-mono tabular-nums text-[0.92em] tracking-[0.01em];
+}
+
+.rate {
+  @apply font-mono tabular-nums text-[12.5px];
+  font-weight: 550;
+}
+
+.rate--good {
+  @apply text-(--ink);
+}
+
+.rate--firm {
+  @apply text-(--warn);
+}
+
+.rate--hard {
+  @apply text-(--bad);
+}
+
+/* ---------------------------------------------------------------------------
+ * Dashboard welcome subheading — App\Filament\Pages\Dashboard::getSubheading()
+ * (country flag + rank + role). Inherits .fi-header-subheading's white-mix
+ * colour; only the flag needs its own sizing.
+ * ------------------------------------------------------------------------- */
+.welcome-meta {
+  @apply inline-flex items-center gap-1.5;
+}
+
+.welcome-meta__flag {
+  @apply w-3.75 h-2.75 rounded-[1px];
+  vertical-align: -1px;
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — in-page tabs (mockup .subtabs/.subtab, theme.css:1633-1658).
+ * ------------------------------------------------------------------------- */
+.subtabs {
+  @apply flex items-stretch overflow-x-auto border-b border-b-(--line) bg-(--surface-2);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.subtab {
+  @apply inline-flex items-center gap-1.5 text-[12.5px] whitespace-nowrap text-(--ink-3) border-b-2 border-b-transparent border-r border-r-(--line-soft);
+  padding: 9px 13px 8px;
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.subtab svg {
+  @apply w-3.5 h-3.5;
+}
+
+.subtab:hover {
+  @apply bg-(--surface) text-(--ink);
+}
+
+.subtab[aria-selected="true"] {
+  @apply bg-(--surface) text-(--ink) border-b-(--primary-600);
+  font-weight: 550;
+}
+
+.subtab em {
+  @apply not-italic font-mono text-[11px] text-(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — split layout with a sticky context rail (mockup .with-context/
+ * .context, theme.css:1311-1318, responsive collapse theme.css:2080-2088).
+ *
+ * top: 58px = the 44px topbar plus the page's 14px section gap, same value
+ * the mockup uses for its own (taller) chrome.
+ * ------------------------------------------------------------------------- */
+.with-context {
+  @apply grid gap-3.5;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 350px;
+}
+
+.context {
+  @apply sticky top-14.5;
+}
+
+@media (max-width: 1080px) {
+  .with-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .context {
+    @apply static;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — route bar (mockup .route-bar family, theme.css:1687-1730).
+ * ------------------------------------------------------------------------- */
+.route-bar {
+  @apply grid gap-4 items-center p-3 border-b border-b-(--line) bg-(--surface-2);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.route-bar__end {
+  @apply min-w-0;
+}
+
+.route-bar__end--arr {
+  @apply text-right;
+}
+
+.route-bar__icao {
+  @apply font-mono text-[19px] font-semibold tracking-[-0.025em] leading-[1.25] text-(--ink);
+}
+
+.route-bar__name {
+  @apply text-[11.5px] text-(--ink-3) truncate;
+}
+
+.route-bar__time {
+  @apply font-mono text-[11.5px] text-(--ink-2) mt-0.5;
+}
+
+.route-bar__mid {
+  @apply grid gap-0.75 min-w-37.5;
+  justify-items: center;
+}
+
+.route-bar__leg {
+  @apply w-full h-0.25 relative bg-(--line-strong);
+}
+
+.route-bar__leg::after {
+  @apply absolute;
+  content: "";
   right: -1px;
   top: -3px;
-  width: 0;
-  height: 0;
-  border-left: 7px solid var(--color-primary-500);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--line-strong);
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
 }
 
-/* Stat boxes — inline with the route in .fi-pirep-row-line.
- * Equal-width grid children fill remaining row space next to the route box.
- * Uses the existing fi-pirep-chip-* color classes for background + text. */
-.fi-panel-admin .fi-pirep-stat-grid {
-  flex: 1 1 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
-  gap: 0.5rem;
-  min-width: 0;
+.route-bar__figures {
+  @apply font-mono text-[11.5px] text-(--ink-2) whitespace-nowrap;
 }
 
-.fi-panel-admin .fi-pirep-stat-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.25;
-  white-space: nowrap;
-  text-align: center;
+/* Route string (mockup .route-string, theme.css:1732-1739). */
+.route-string {
+  @apply py-2 px-3 border-b border-b-(--line-soft) font-mono text-[11.5px] text-(--ink-2) bg-(--sunken);
+  overflow-wrap: break-word;
 }
 
-/* Legacy chip row — kept for additional information variants */
-.fi-panel-admin .fi-pirep-stats {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.route-string b {
+  @apply text-(--ink);
+  font-weight: 550;
 }
 
-.fi-panel-admin .fi-pirep-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.1875rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.25;
+/* ---------------------------------------------------------------------------
+ * PIREP view — phase legend (mockup .phase-legend family, theme.css:1742-1761).
+ * ------------------------------------------------------------------------- */
+.phase-legend {
+  @apply flex flex-wrap gap-1 py-2.5 px-3 border-t border-t-(--line-soft);
 }
 
-.fi-panel-admin .fi-pirep-chip-neutral {
-  background: var(--color-gray-100);
-  color: var(--color-gray-700);
+.phase-legend__item {
+  @apply grid gap-0.25 rounded-md border border-(--line-soft) bg-(--surface-2) min-w-22;
+  padding: 5px 9px 6px;
 }
 
-.dark .fi-panel-admin .fi-pirep-chip-neutral {
-  background: var(--color-gray-800);
-  color: var(--color-gray-300);
+.phase-legend__label {
+  @apply flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-(--ink-3);
 }
 
-.fi-panel-admin .fi-pirep-chip-good {
-  background: rgb(209 250 229);
-  color: rgb(6 95 70);
+.phase-legend__swatch {
+  @apply w-1.75 h-1.75 rounded-[1px];
 }
 
-.dark .fi-panel-admin .fi-pirep-chip-good {
-  background: rgb(6 95 70 / 25%);
-  color: rgb(110 231 183);
+.phase-legend__value {
+  @apply font-mono text-[13px] tabular-nums text-(--ink);
+  font-weight: 550;
 }
 
-.fi-panel-admin .fi-pirep-chip-warn {
-  background: rgb(254 243 199);
-  color: rgb(146 64 14);
+/* ---------------------------------------------------------------------------
+ * PIREP view — read-out grid (mockup .readout, theme.css:1764-1779).
+ * ------------------------------------------------------------------------- */
+.readout {
+  @apply grid border-t border-t-(--line-soft);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
 }
 
-.dark .fi-panel-admin .fi-pirep-chip-warn {
-  background: rgb(146 64 14 / 25%);
-  color: rgb(252 211 77);
+.readout > div {
+  @apply py-1.75 px-3 border-r border-r-(--line-soft) border-b border-b-(--line-soft) min-w-0;
 }
 
-.fi-panel-admin .fi-pirep-chip-bad {
-  background: rgb(254 226 226);
-  color: rgb(153 27 27);
+.readout dt {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.06em] text-(--ink-3);
 }
 
-.dark .fi-panel-admin .fi-pirep-chip-bad {
-  background: rgb(153 27 27 / 25%);
-  color: rgb(252 165 165);
+.readout dd {
+  @apply m-0 text-[12.5px] text-(--ink) truncate;
 }
 
-/* Row separator — 5px diagonal hatch in primary blue, between cards only.
- * Custom list page renders rows as <article class="fi-pirep-card"> inside
- * .fi-pirep-card-list. Paint the separator on each card's bottom edge except
- * the last one. */
-.fi-panel-admin .fi-pirep-card {
-  position: relative;
+/* ---------------------------------------------------------------------------
+ * PIREP view — landing-analysis instrument tiles. Post-mockup feature (no
+ * mockup counterpart): runway plan-views, scorecard polar and attitude
+ * indicators render as compact tiles inside .panel__body. Tile heads echo
+ * .panel__head at reduced scale; facts echo .readout's dt/dd typography.
+ * ------------------------------------------------------------------------- */
+.landing-grid {
+  @apply flex flex-col gap-2.5;
 }
 
-/* Hatch separator — visual divider that sits in the 7px gap between cards.
- *
- * Why ::after instead of border-bottom-image?
- *   - border-image ignores border-radius (rounded corners would be lost)
- *   - this is "stuff between siblings", not a card property
- *   - ::after gives independent control of width/opacity/position
- *
- * Inset by 0.625rem on each side to align with the card's border-radius
- * (same value as .fi-pirep-card border-radius) so the hatch sits within
- * the visual edge of the curved corners. Centered in the 7px gap. */
-.fi-panel-admin .fi-pirep-card-list .fi-pirep-card:not(:last-child)::after {
+.rw-panel {
+  @apply flex min-w-0 flex-col overflow-hidden rounded-lg border border-(--line) bg-(--surface);
+}
+
+.rw-panel-head {
+  @apply flex flex-none items-center justify-between gap-2 border-b border-b-(--line-soft) bg-(--surface-2) py-1.25 px-2.5;
+}
+
+.rw-side {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.rw-id {
+  @apply font-mono text-[11px] text-(--ink-2);
+}
+
+.rw-diagram {
+  @apply bg-(--sunken) p-2;
+}
+
+/* Full-width stacked cards: cap the diagram height so the 2:1 viewBox
+ * doesn't balloon — runways stretch (preserveAspectRatio none), attitude
+ * horizons crop like a real instrument (slice). */
+.rw-diagram svg {
+  @apply block h-auto max-h-40 w-full rounded-[3px];
+}
+
+.scorecard-chart {
+  @apply relative flex-1 p-2;
+  min-height: 180px;
+}
+
+/* mt-auto pins the facts strip to the tile foot so short tiles in the same
+ * row keep their feet aligned. */
+.rw-facts {
+  @apply mt-auto flex flex-wrap gap-x-4 gap-y-1 border-t border-t-(--line-soft) py-1.5 px-2.5;
+}
+
+.fact-inline {
+  @apply flex items-baseline gap-1.5;
+}
+
+.fact-inline .k {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.06em] text-(--ink-4);
+}
+
+.fact-inline .v {
+  @apply font-mono text-[11.5px] tabular-nums text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * PIREP view — activity log row + phase tag (mockup theme.css:1781-1789).
+ * The first cell just needs its own color/font; row height and cell padding
+ * stay owned by the table it renders in (.fi-ta-cell density rules above) —
+ * this doesn't set its own height.
+ * ------------------------------------------------------------------------- */
+.log-row td:first-child {
+  @apply font-mono text-(--ink-3);
+}
+
+.phase-tag {
+  @apply inline-flex items-center h-4.25 py-0 px-1.25 rounded-[2px] border font-mono text-[10px] tracking-[0.03em];
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw state chips (mockup .chip, theme.css:1378-1410). .fi-badge above covers
+ * Filament's own badges; the PIREP view's raw markup (phase tags, context
+ * panel status) uses these directly instead of a badge component, so both
+ * need the same palette.
+ * ------------------------------------------------------------------------- */
+.chip {
+  @apply inline-flex items-center gap-1.5 h-4.75 py-0 px-1.5 rounded-[2px] border text-[11px] whitespace-nowrap;
+  font-weight: 550;
+}
+
+.chip::before {
+  @apply w-1.25 h-1.25 rounded-[1px];
   content: "";
-  position: absolute;
-  left: 0.625rem;
-  right: 0.625rem;
-  bottom: -6px;
-  height: 5px;
-  background-image: repeating-linear-gradient(
-    45deg,
-    var(--color-primary-500) 0,
-    var(--color-primary-500) 3px,
-    transparent 3px,
-    transparent 6px
-  );
-  pointer-events: none;
-  opacity: 0.5;
+  flex: none;
+  background-color: currentColor;
 }
 
-/* ============================================================================
- * System panel — installer wizard styles (scoped — wizard not used in admin).
- * ============================================================================ */
-
-/* Wizard stepper — primary fill, Encode Sans labels */
-.fi-panel-system .fi-sc-wizard-header {
-  font-family: var(--font-display), serif;
+.chip--plain::before {
+  @apply hidden;
 }
 
-.fi-panel-system .fi-sc-wizard-header-step-icon-ctn {
-  width: 36px;
-  height: 36px;
-  border-radius: 9999px;
+.chip--ok {
+  @apply text-(--ok) bg-(--ok-soft) border-(--ok-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step-number {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
+.chip--warn {
+  @apply text-(--warn) bg-(--warn-soft) border-(--warn-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn {
-  background: var(--color-primary-500);
-  border-color: var(--color-primary-500);
-  color: #ffffff;
+.chip--bad {
+  @apply text-(--bad) bg-(--bad-soft) border-(--bad-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-number {
-  color: #ffffff;
+.chip--info {
+  @apply text-(--info) bg-(--info-soft) border-(--info-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step-label {
-  font-family: var(--font-display), ui-sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.005em;
+.chip--maint {
+  @apply text-(--maint) bg-(--maint-soft) border-(--maint-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step-separator {
-  color: var(--color-gray-200);
+.chip--mute {
+  @apply text-(--mute) bg-(--mute-soft) border-(--mute-line);
 }
 
-.fi-panel-system .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-separator {
-  color: var(--color-primary-500);
+/* ---------------------------------------------------------------------------
+ * PIREP view — definition list (mockup .dl, theme.css:1565-1593).
+ * ------------------------------------------------------------------------- */
+.dl {
+  @apply grid;
+  grid-template-columns: 104px minmax(0, 1fr);
 }
 
-/* ============================================================================
- * PIREP list page — custom standalone card layout (Option C).
- *
- * The ListPireps page uses a custom $view that renders pireps as cards
- * directly via $this->getTableRecords(), bypassing EmbeddedTable. No
- * .fi-ta-record / .fi-ta-record-content cell wrapper exists — the partial
- * owns the entire card surface.
- *
- * DOM shape:
- *   .fi-pirep-list
- *     .fi-pirep-toolbar (search + state pills + filters trigger)
- *     .fi-pirep-card-list
- *       <article class="fi-pirep-card">
- *         .fi-pirep-row (header + route + stats)
- *     .fi-pirep-pagination
- * ============================================================================ */
-
-/* Page wrapper */
-.fi-panel-admin .fi-pirep-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.dl > div {
+  @apply contents;
 }
 
-/* Toolbar — search left, state pills center, filters trigger right */
-.fi-panel-admin .fi-pirep-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+.dl dt,
+.dl dd {
+  @apply flex items-center min-h-7.25 m-0 py-1.5 px-3 border-b border-b-(--line-soft) text-[12.5px];
+  gap: 0.34em;
 }
 
-.fi-panel-admin .fi-pirep-toolbar-search {
-  flex: 1 1 14rem;
-  min-width: 14rem;
+.dl dt {
+  @apply bg-(--surface-2) border-r border-r-(--line-soft) text-(--ink-3) text-[11.5px];
 }
 
-.fi-panel-admin .fi-pirep-toolbar-search .fi-input-wrp {
-  width: 100%;
+.dl dd {
+  @apply text-(--ink);
 }
 
-.fi-panel-admin .fi-pirep-toolbar-pills {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: var(--color-gray-100);
-  padding: 0.25rem;
-  border-radius: 0.5rem;
+.dl > div:last-child dt,
+.dl > div:last-child dd {
+  @apply border-b-0;
 }
 
-.dark .fi-panel-admin .fi-pirep-toolbar-pills {
-  background: var(--color-gray-800);
-}
-
-.fi-panel-admin .fi-pirep-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-gray-600);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-  line-height: 1.25;
-}
-
-.fi-panel-admin .fi-pirep-pill:hover {
-  color: var(--color-gray-900);
-}
-
-.dark .fi-panel-admin .fi-pirep-pill {
-  color: var(--color-gray-400);
-}
-
-.dark .fi-panel-admin .fi-pirep-pill:hover {
-  color: var(--color-gray-100);
-}
-
-.fi-panel-admin .fi-pirep-pill-active {
-  background: #ffffff;
-  color: var(--color-gray-900);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
-}
-
-.dark .fi-panel-admin .fi-pirep-pill-active {
-  background: var(--color-gray-700);
-  color: var(--color-gray-50);
-}
-
-/* Color-coded active state pills */
-.fi-panel-admin .fi-pirep-pill-warning.fi-pirep-pill-active {
-  color: rgb(146 64 14);
-}
-.dark .fi-panel-admin .fi-pirep-pill-warning.fi-pirep-pill-active {
-  color: rgb(252 211 77);
-}
-.fi-panel-admin .fi-pirep-pill-success.fi-pirep-pill-active {
-  color: rgb(6 95 70);
-}
-.dark .fi-panel-admin .fi-pirep-pill-success.fi-pirep-pill-active {
-  color: rgb(110 231 183);
-}
-.fi-panel-admin .fi-pirep-pill-danger.fi-pirep-pill-active {
-  color: rgb(153 27 27);
-}
-.dark .fi-panel-admin .fi-pirep-pill-danger.fi-pirep-pill-active {
-  color: rgb(252 165 165);
-}
-
-.fi-panel-admin .fi-pirep-toolbar-filters {
-  margin-left: auto;
-}
-
-/* Card list — vertical stack of articles with 7px gap between cards. */
-.fi-panel-admin .fi-pirep-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-/* Individual card */
-.fi-panel-admin .fi-pirep-card {
-  background: #ffffff;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 0.625rem;
-  padding: 0.875rem 1rem;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.fi-panel-admin .fi-pirep-card:hover {
-  border-color: var(--color-gray-300);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 4%);
-}
-
-.dark .fi-panel-admin .fi-pirep-card {
-  background: var(--color-gray-900);
-  border-color: var(--color-gray-700);
-}
-
-.dark .fi-panel-admin .fi-pirep-card:hover {
-  border-color: var(--color-gray-600);
-}
-
-/* Header row layout adjustments for actions on the right */
-.fi-panel-admin .fi-pirep-row-head-text {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.fi-panel-admin .fi-pirep-row-head-right {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
-.fi-panel-admin .fi-pirep-row-actions {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-/* Ensure each action button has its own breathing room — Filament's default
- * Action button has tight horizontal padding. Bump it for visual separation. */
-.fi-panel-admin .fi-pirep-row-actions > .fi-btn {
-  padding-left: 0.875rem;
-  padding-right: 0.875rem;
-}
-
-/* View PIREP button — no background, icon-only style like the ellipsis trigger */
-.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-
-.fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
-  background: var(--color-gray-100);
-}
-
-.dark .fi-panel-admin .fi-pirep-row-actions > .fi-btn.fi-btn-color-info:hover {
-  background: var(--color-gray-800);
-}
-
-.fi-panel-admin .fi-pirep-row-actions-trigger {
-  width: 2rem;
-  height: 2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.375rem;
-  color: var(--color-gray-500);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-}
-
-.fi-panel-admin .fi-pirep-row-actions-trigger:hover {
-  background: var(--color-gray-100);
-  color: var(--color-gray-900);
-}
-
-.dark .fi-panel-admin .fi-pirep-row-actions-trigger:hover {
-  background: var(--color-gray-800);
-  color: var(--color-gray-100);
-}
-
-/* Empty state */
-.fi-panel-admin .fi-pirep-empty {
-  padding: 3rem 1rem;
-  text-align: center;
-  background: var(--color-gray-50);
-  border-radius: 0.5rem;
-  border: 1px dashed var(--color-gray-300);
-}
-
-.dark .fi-panel-admin .fi-pirep-empty {
-  background: var(--color-gray-800);
-  border-color: var(--color-gray-700);
-}
-
-.fi-panel-admin .fi-pirep-empty-heading {
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-
-.dark .fi-panel-admin .fi-pirep-empty-heading {
-  color: var(--color-gray-300);
-}
-
-/* Pagination wrapper */
-.fi-panel-admin .fi-pirep-pagination {
-  padding-top: 0.5rem;
-}
-
-/* Mobile: stack actions below content */
-@media (max-width: 640px) {
-  .fi-panel-admin .fi-pirep-row-head {
-    flex-wrap: wrap;
-  }
-  .fi-panel-admin .fi-pirep-row-head-right {
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-  }
-}
-/* ============================================================================
- * PIREP detail v2 — single-page Stripe-style layout.
- *
- * Scope: every selector lives under .fi-pirep-detail-v2.
- * Tokens reused: --color-primary-*, --color-gray-*, font families.
- * ============================================================================ */
-
-.fi-panel-admin .fi-pirep-detail-v2 {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow: visible;
-}
-
-/* HEADER + HERO */
-.fi-panel-admin .fi-pirep-detail-v2-hero {
-  background: #fff;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-hero {
-  background: var(--color-gray-900);
-  border-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-main {
-  padding: 1.5rem 1.75rem 1.25rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-left {
-  display: flex;
-  gap: 1rem;
-  min-width: 0;
-  flex: 1;
-}
-.fi-panel-admin .fi-pirep-detail-v2-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 9999px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(6, 126, 193, 0.25);
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-title {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: var(--color-gray-900);
-  line-height: 1.1;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-hero-title .ident {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-title .route {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--color-gray-500);
-  font-weight: 500;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-title .route .arrow {
-  color: var(--color-gray-400);
-  margin: 0 0.25rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-meta {
-  color: var(--color-gray-500);
-  font-size: 0.8125rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-meta a {
-  color: var(--color-primary-600);
-  text-decoration: none;
-  font-weight: 500;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-meta a:hover {
-  text-decoration: underline;
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-meta .dot {
-  color: var(--color-gray-300);
-}
-.fi-panel-admin .fi-pirep-detail-v2-hero-right {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-/* STAT STRIP */
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  border-top: 1px solid var(--color-gray-100);
-  background: linear-gradient(to bottom, #fafbfc, #fff);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
-  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
-  padding: 1rem 1.25rem;
-  border-right: 1px solid var(--color-gray-100);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
-  border-right-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell:last-child {
-  border-right: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .lbl {
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
-  font-family: var(--font-display);
-  font-size: 1.375rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val .unit {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-gray-500);
-  margin-left: 0.15rem;
-  letter-spacing: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
-  color: rgb(4 120 87);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
-  color: rgb(180 83 9);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
-  color: rgb(185 28 28);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.good {
-  color: rgb(110 231 183);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.warn {
-  color: rgb(252 211 77);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .val.bad {
-  color: rgb(252 165 165);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: var(--color-gray-500);
-}
-.fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
-  color: rgb(4 120 87);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-stat-strip .delta.good {
-  color: rgb(110 231 183);
-}
-
-/* MAIN TABS (Flight / Flight Log / Finances) */
-.fi-panel-admin .fi-pirep-detail-v2-main-tabs {
-  display: flex;
-  gap: 0.125rem;
-  padding: 0;
-  background: #fafbfc;
-  border-bottom: 1px solid var(--color-gray-100);
-  border-radius: 0.5rem 0.5rem 0 0;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-main-tabs {
-  background: var(--color-gray-800);
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-tab-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-main-tab {
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--color-gray-500);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 120ms ease;
-}
-.fi-panel-admin .fi-pirep-detail-v2-main-tab:hover {
-  color: var(--color-gray-900);
-}
-.fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
-  color: var(--color-gray-900);
-  border-bottom-color: var(--color-primary-500);
-  background: transparent;
-  box-shadow: none;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-main-tab.active {
-  color: var(--color-gray-50);
-  border-bottom-color: var(--color-primary-400);
-}
-.fi-panel-admin .fi-pirep-tab-icon {
-  width: 1.125rem;
-  height: 1.125rem;
-  flex-shrink: 0;
-}
-
-/* FLIGHT LOG TIMELINE */
-.fi-panel-admin .fi-pirep-detail-v2-flight-log {
-  display: flex;
-  flex-direction: column;
-}
-.fi-panel-admin .fi-pirep-flight-log-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  margin-bottom: 0.5rem;
-}
-.fi-panel-admin .fi-pirep-flight-log-header .count {
-  font-size: 0.75rem;
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-flight-log-sort-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  background: #fff;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  cursor: pointer;
-  transition: all 120ms ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn {
-  background: var(--color-gray-800);
-  border-color: var(--color-gray-600);
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
-  color: var(--color-gray-900);
-  border-color: var(--color-gray-300);
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-sort-btn:hover {
-  color: var(--color-gray-50);
-  border-color: var(--color-gray-500);
-}
-.fi-panel-admin .fi-pirep-flight-log-sort-btn svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-.fi-panel-admin .fi-pirep-flight-log-grid-head {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  padding: 0.4rem 0.75rem;
-  background: var(--color-gray-100);
-  border-radius: 0.5rem 0.5rem 0 0;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-grid-head {
-  background: var(--color-gray-800);
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-flight-log-grid-body {
-  background: #fff;
-  border-radius: 0 0 0.5rem 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-grid-body {
-  background: var(--color-gray-900);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-.fi-panel-admin .fi-pirep-flight-log-row {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-gray-100);
-  align-items: center;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-row {
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-flight-log-row:last-child {
-  border-bottom: none;
-}
-.fi-panel-admin .fi-pirep-flight-log-time {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-}
-.fi-panel-admin .fi-pirep-flight-log-time .time {
-  color: var(--color-gray-900);
-  font-weight: 500;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-time .time {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-flight-log-time .data {
-  color: var(--color-gray-400);
-  margin-top: 0.125rem;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-time .data {
-  color: var(--color-gray-500);
-}
-.fi-panel-admin .fi-pirep-flight-log-event {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.fi-panel-admin .fi-pirep-flight-log-event .msg {
-  font-weight: 500;
-  color: var(--color-gray-900);
-  font-size: 0.8125rem;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-event .msg {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-flight-log-badge {
-  display: inline-block;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-/* Flight-log row phase tints + zebra striping.
- *
- * The row's background derives from two sources, in this order (later wins):
- *   1. base row (transparent — lets grid-body bg show through)
- *   2. zebra (every odd row gets a faint tint)
- *   3. phase tint (climb / land — overrides zebra for emphasis)
- *
- * Light and dark mode both defined so the row stays readable when the panel
- * is toggled. Phase tints are intentionally subtle in dark mode — the row
- * text stays gray-50 from the base rule above.
- */
-.fi-panel-admin .fi-pirep-flight-log-row--zebra {
-  background: #fafbfc;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-row--zebra {
-  background: rgb(255 255 255 / 0.025);
-}
-.fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
-  background: #fefce8;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-climb {
-  background: rgb(250 204 21 / 0.06);
-}
-.fi-panel-admin .fi-pirep-flight-log-row--phase-land {
-  background: #fef2f2;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-row--phase-land {
-  background: rgb(248 113 113 / 0.08);
-}
-
-/* Phase badges — pill color reflects the phase bucket. Light variants
- * use saturated pastel; dark variants use translucent tint with bright
- * text so the badge reads against the dark row background.
- */
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
-  background: #ecfdf5;
-  color: #065f46;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-ground {
-  background: rgb(16 185 129 / 0.15);
-  color: #6ee7b7;
-}
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
-  background: #fef3c7;
-  color: #92400e;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-climb {
-  background: rgb(245 158 11 / 0.18);
-  color: #fcd34d;
-}
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
-  background: #eff6ff;
-  color: #1e40af;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-cruise {
-  background: rgb(59 130 246 / 0.18);
-  color: #93c5fd;
-}
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
-  background: #f3e8ff;
-  color: #6b21a8;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-descent {
-  background: rgb(139 92 246 / 0.18);
-  color: #c4b5fd;
-}
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
-  background: #fef2f2;
-  color: #991b1b;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-land {
-  background: rgb(239 68 68 / 0.18);
-  color: #fca5a5;
-}
-.fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
-  background: #f3f4f6;
-  color: #374151;
-}
-.dark .fi-panel-admin .fi-pirep-flight-log-badge--phase-neutral {
-  background: rgb(156 163 175 / 0.15);
-  color: var(--color-gray-300);
-}
-
-/* LAYOUT GRID */
-.fi-panel-admin .fi-pirep-detail-v2-layout {
-  display: grid;
-  grid-template-columns: 1fr 306px;
-  gap: 1rem;
+/* ---------------------------------------------------------------------------
+ * PIREP view — context panel head/actions (mockup .context__*,
+ * theme.css:1547-1563, 1595-1597). Same 6px-outer/5px-inset relationship as
+ * .fi-section-has-header above — the context panel is a bordered panel too.
+ * ------------------------------------------------------------------------- */
+.context__head {
+  @apply grid gap-2.5 border-b border-b-(--line) bg-(--surface-2);
   align-items: start;
-  overflow: visible;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 11px 12px 10px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
-.fi-panel-admin .fi-pirep-detail-v2-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  min-width: 0;
+
+/* Avatar + name/ident row under the eyebrow. */
+.context__person {
+  @apply flex min-w-0 items-center gap-2.5;
 }
-.fi-panel-admin .fi-pirep-detail-v2-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+
+/* Pilot avatar beside the name — square-with-border like the rail avatar
+ * (mockup .rail__avatar, theme.css:840), sized up for the context head. */
+.context__avatar {
+  @apply block size-8 flex-none rounded-lg border border-(--line) bg-(--sunken) object-cover;
 }
-@media (max-width: 1024px) {
-  .fi-panel-admin .fi-pirep-detail-v2-layout {
-    grid-template-columns: 1fr;
+
+.context__eyebrow {
+  @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.context__title {
+  @apply mt-0.5 font-mono text-[16px] font-semibold tracking-[-0.025em] text-(--ink);
+}
+
+.context__sub {
+  @apply mt-0.75 text-[12px] text-(--ink-3);
+}
+
+.context__actions {
+  @apply flex flex-wrap gap-1.5 py-2.5 px-3 border-t border-t-(--line) bg-(--surface-2);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw filter bar (mockup .filters/.field/.result-count, theme.css:1600-1630).
+ * `.fi-ta-header-toolbar` above covers Filament's own table toolbar; the
+ * PIREP view's raw markup uses these directly instead.
+ * ------------------------------------------------------------------------- */
+.filters {
+  @apply flex items-center gap-2 flex-wrap py-2 px-3 border-b border-b-(--line) bg-(--surface-2);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.field {
+  @apply inline-flex items-center gap-1.5 h-6.75 py-0 px-2 rounded-md border border-(--line-strong) bg-(--surface) text-(--ink-2) text-[12.5px];
+}
+
+.field svg {
+  @apply w-3.5 h-3.5 text-(--ink-4);
+}
+
+.field select,
+.field input {
+  @apply border-0 bg-transparent p-0 outline-none text-(--ink);
+  font: inherit;
+}
+
+.filters__spacer {
+  @apply flex-1;
+}
+
+.result-count {
+  @apply text-[12px] text-(--ink-3);
+}
+
+.result-count b {
+  @apply font-mono text-(--ink-2);
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw segmented control (mockup .segmented, theme.css:1145-1164) — chart
+ * series / sort toggles inside a panel head. Distinct from the theme picker's
+ * `.fi-picker-segmented` above; same accent formula for consistency.
+ * ------------------------------------------------------------------------- */
+.segmented {
+  @apply inline-flex rounded-md overflow-hidden border border-(--line-strong) bg-(--surface);
+}
+
+.segmented button {
+  @apply h-6.5 py-0 px-2.5 text-[12px] text-(--ink-3) border-r border-r-(--line);
+  transition:
+    background-color 100ms,
+    color 100ms;
+}
+
+.segmented button:last-child {
+  @apply border-r-0;
+}
+
+.segmented button:hover {
+  @apply bg-(--surface-2) text-(--ink);
+}
+
+.segmented button[aria-pressed="true"] {
+  @apply text-(--primary-600);
+  background-color: color-mix(in oklab, var(--primary-600) 13%, var(--surface));
+  font-weight: 550;
+}
+
+/* ---------------------------------------------------------------------------
+ * Ghost button (mockup .ghost-btn, theme.css:1284-1295) — panel-tool icon
+ * buttons (export, refresh) that don't warrant a bordered .fi-btn.
+ * ------------------------------------------------------------------------- */
+.ghost-btn {
+  @apply inline-flex items-center gap-1.5 h-6 py-0 px-1.75 rounded-md text-(--ink-3) text-[12px];
+  transition:
+    color 100ms,
+    background-color 100ms;
+}
+
+.ghost-btn svg {
+  @apply w-3.5 h-3.5;
+}
+
+.ghost-btn:hover {
+  @apply bg-(--sunken) text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Raw panel family (mockup .panel/.panel__head/.panel__title/.panel__tools/
+ * .panel__body/--flush/--centred/.panel__foot, theme.css:1247-1282).
+ * `.fi-section-*` above cover Filament's own `<x-filament::section>`; the
+ * PIREP view's tabbed panel and context sidebar use these raw classes.
+ *
+ * .panel__head deliberately sets no top radius: the mockup's `rounded-t-md`
+ * is overridden with `rounded-none` at every live site (subtabs or
+ * .context__head occupy the panel top), and an unlayered radius here would
+ * beat that layered utility.
+ * ------------------------------------------------------------------------- */
+.panel {
+  @apply flex min-w-0 flex-col rounded-xl border border-(--line) bg-(--surface);
+}
+
+.panel__head {
+  @apply flex flex-none items-center justify-between gap-3 border-b border-b-(--line) bg-(--surface-2) px-3 pt-2.25 pb-2;
+  /* Sequent heads add `border-t` in blade; colour that edge here — the
+   * mockup's `border-line` colour utility doesn't exist in this build. */
+  border-top-color: var(--line);
+}
+
+.panel__title {
+  @apply flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+}
+
+/* Header glyph (one Tabler icon per panel head). self-center because the
+ * title flexbox is baseline-aligned for the <em> counts. */
+.panel__title svg {
+  @apply size-3.5 self-center text-(--ink-3);
+  stroke-width: 1.75;
+}
+
+/* ---------------------------------------------------------------------------
+ * InlineMultiSelect (app/Filament/Forms/Components/InlineMultiSelect.php):
+ * dense pill-less multi-select. Trigger reads "B737, B738, B739 +2" over a
+ * dotted rule (the Preline underline-input homage); the panel is a
+ * searchable checklist — check glyph, label, right-aligned mono meta.
+ * ------------------------------------------------------------------------- */
+.ims {
+  @apply relative;
+}
+
+.ims__trigger {
+  @apply flex h-6.75 w-full items-center justify-between gap-2 bg-transparent px-0 text-start text-[12.5px] text-(--ink);
+  border-bottom: 1px dotted var(--line-strong);
+}
+
+.ims__trigger:focus-visible {
+  @apply outline-none;
+  border-bottom: 1px solid var(--primary-600);
+}
+
+.ims__trigger--empty {
+  @apply text-(--ink-4);
+}
+
+.ims__trigger svg {
+  @apply size-3.5 flex-none text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.ims__trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.ims__panel {
+  @apply absolute inset-x-0 top-full z-30 mt-1 min-w-56 overflow-hidden rounded-lg border border-(--line-strong) bg-(--surface);
+  box-shadow:
+    0 12px 30px -12px rgb(14 18 24 / 38%),
+    0 3px 8px -3px rgb(14 18 24 / 20%);
+}
+
+.ims__search {
+  @apply flex items-center gap-1.5 border-b border-b-(--line-soft) py-1.5 px-2.5;
+}
+
+.ims__search svg {
+  @apply size-3.5 flex-none text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.ims__search input {
+  @apply w-full border-0 bg-transparent p-0 text-[12.5px] text-(--ink) outline-none;
+}
+
+.ims__search input::placeholder {
+  @apply text-(--ink-4);
+}
+
+.ims__list {
+  @apply m-0 max-h-64 list-none overflow-y-auto p-1;
+}
+
+.ims__list [role="option"] {
+  @apply flex w-full items-center gap-2 rounded-md bg-transparent py-1.25 px-1.75 text-start text-[12.5px] text-(--ink-2);
+}
+
+.ims__list [role="option"]:hover,
+.ims__list [role="option"]:focus-visible {
+  @apply bg-(--surface-2) text-(--ink) outline-none;
+}
+
+.ims__list [role="option"][aria-selected="true"] {
+  @apply text-(--ink);
+}
+
+.ims__check {
+  @apply flex size-3.5 flex-none items-center text-(--primary-600) opacity-0;
+}
+
+.ims__check svg {
+  @apply size-3.5;
+  stroke-width: 2.25;
+}
+
+.ims__list [role="option"][aria-selected="true"] .ims__check {
+  @apply opacity-100;
+}
+
+.ims__label {
+  @apply min-w-0 flex-1 truncate;
+}
+
+.ims__meta {
+  @apply flex-none font-mono text-[11px] text-(--ink-4);
+}
+
+.ims__group {
+  @apply py-1 px-1.75 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-4);
+}
+
+.ims__empty {
+  @apply py-2 text-center text-[12px] text-(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+ * Autosave tick (autosave-indicator.js): transient check flashed inside a
+ * field after AutosavesFields persists it. Appended to .fi-input-wrp (a
+ * flex row, so it slots in as a suffix) or absolutely pinned when the field
+ * has no input wrapper (uploads, pickers). Removes itself on animationend.
+ * ------------------------------------------------------------------------- */
+.autosave-tick {
+  @apply relative flex items-center pe-2 text-(--ok);
+  animation: autosave-tick 1.6s ease forwards;
+}
+
+.autosave-tick svg {
+  @apply size-3.5;
+  stroke-width: 2.25;
+}
+
+.fi-fo-field:has(> .autosave-tick) {
+  @apply relative;
+}
+
+.fi-fo-field > .autosave-tick {
+  @apply absolute top-1 end-1 pe-0;
+}
+
+@keyframes autosave-tick {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
   }
-  .fi-panel-admin .fi-pirep-detail-v2-stat-strip {
-    grid-template-columns: repeat(3, 1fr);
+
+  18% {
+    opacity: 1;
+    transform: scale(1);
   }
-  .fi-panel-admin .fi-pirep-detail-v2-stat-strip .cell {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-gray-100);
+
+  78% {
+    opacity: 1;
   }
-}
 
-/* CARD */
-.fi-panel-admin .fi-pirep-detail-v2-card {
-  background: #fff;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  margin-bottom: 0.625rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-card {
-  background: var(--color-gray-900);
-  border-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-head {
-  padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid var(--color-gray-100);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-card-head {
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  letter-spacing: -0.005em;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-card-head h3 {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-head .actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-head .link {
-  color: var(--color-primary-600);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-head .link:hover {
-  text-decoration: underline;
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-body {
-  padding: 1.25rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-card-body.flush {
-  padding: 0;
-}
-
-/* ROUTE BAR (under the map) */
-.fi-panel-admin .fi-pirep-detail-v2-route-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  background: linear-gradient(to bottom, #fafbfc, #fff);
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar {
-  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.left {
-  text-align: left;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .end.right {
-  text-align: right;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-  letter-spacing: -0.025em;
-  font-variant-numeric: tabular-nums;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-route-bar .icao {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .name {
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  margin-top: 0.15rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .time {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  margin-top: 0.25rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .mid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  min-width: 140px;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .line {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  background: linear-gradient(to right, rgb(16 185 129), var(--color-primary-500));
-  border-radius: 1px;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before,
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
-  content: "";
-  position: absolute;
-  top: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::before {
-  left: -4px;
-  background: rgb(16 185 129);
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .line::after {
-  right: -4px;
-  background: var(--color-primary-500);
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .duration {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-bar .distance {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: var(--color-gray-400);
-}
-
-/* PERFORMANCE TABS + CHART */
-.fi-panel-admin .fi-pirep-detail-v2-perf {
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf {
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
-  display: flex;
-  gap: 0.125rem;
-  padding: 0.5rem 0.75rem;
-  background: #fafbfc;
-  border-bottom: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tabs {
-  background: var(--color-gray-800);
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab {
-  padding: 0.4rem 0.75rem;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-gray-500);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 120ms ease;
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab:hover {
-  color: var(--color-gray-900);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
-  background: #fff;
-  color: var(--color-gray-900);
-  border-color: var(--color-gray-200);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf .perf-tab.active {
-  background: var(--color-gray-900);
-  color: var(--color-gray-50);
-  border-color: var(--color-gray-600);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .extra {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-right: 0.25rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .extra .lbl {
-  font-size: 0.6875rem;
-  color: var(--color-gray-500);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf .chart-wrap {
-  padding: 1rem 1.25rem 1.25rem;
-}
-
-/* PHASE TIMING SUMMARY — reuses the hero stat-strip styling. Override grid
- * to 4 columns instead of 6 and let the existing .cell rules carry label,
- * value, and divider styling. */
-.fi-panel-admin .fi-pirep-detail-v2-perf-summary {
-  grid-template-columns: repeat(4, 1fr);
-}
-@media (max-width: 768px) {
-  .fi-panel-admin .fi-pirep-detail-v2-perf-summary {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* PERFORMANCE EMPTY STUB */
-.fi-panel-admin .fi-pirep-detail-v2-perf-empty {
-  padding: 2.5rem 1.25rem;
-  text-align: center;
-  background: linear-gradient(to bottom, #fafbfc, #fff);
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty {
-  background: linear-gradient(to bottom, var(--color-gray-800), var(--color-gray-900));
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 9999px;
-  background: var(--color-gray-100);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-gray-400);
-  margin-bottom: 0.75rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon {
-  background: var(--color-gray-800);
-  color: var(--color-gray-500);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf-empty .icon svg {
-  width: 26px;
-  height: 26px;
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--color-gray-700);
-  margin: 0 0 0.25rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-perf-empty h4 {
-  color: var(--color-gray-200);
-}
-.fi-panel-admin .fi-pirep-detail-v2-perf-empty p {
-  font-size: 0.8125rem;
-  color: var(--color-gray-500);
-  margin: 0 auto;
-  max-width: 380px;
-  line-height: 1.55;
-}
-
-/* PROSE + ROUTE STRING */
-.fi-panel-admin .fi-pirep-detail-v2-prose {
-  color: var(--color-gray-700);
-  line-height: 1.65;
-  font-size: 0.875rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-prose {
-  color: var(--color-gray-300);
-}
-.fi-panel-admin .fi-pirep-detail-v2-prose p {
-  margin: 0 0 0.75rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-prose p:last-child {
-  margin: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-route-str {
-  margin: 0;
-  background: #fafbfc;
-  border: 1px solid var(--color-gray-100);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--color-gray-700);
-  overflow-x: auto;
-  line-height: 1.6;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-route-str {
-  background: var(--color-gray-800);
-  border-color: var(--color-gray-700);
-  color: var(--color-gray-300);
-}
-
-/* FACTS LIST (sidebar) */
-.fi-panel-admin .fi-pirep-detail-v2-facts {
-  display: flex;
-  flex-direction: column;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts .fact {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.625rem 1.25rem;
-  border-bottom: 1px solid var(--color-gray-100);
-  font-size: 0.8125rem;
-  gap: 1rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact {
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts .fact:last-child {
-  border-bottom: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts .fact .k {
-  color: var(--color-gray-500);
-  font-weight: 500;
-  white-space: nowrap;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
-  color: var(--color-gray-900);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  text-align: right;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-facts .fact .v {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts .fact .v.mono {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-}
-
-/* Stacked variant — used by the PIREP custom-fields card.
- * Field name renders on top in the small-caps mono label style shared with
- * sidebar group labels (.fi-sidebar-group-label), value below in the standard
- * fact-value style. Mirrors a `<dl>` definition list visually. */
-.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact {
-  display: block;
-  padding: 0.75rem 1.25rem;
-  gap: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact:last-child {
-  padding-bottom: 1rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
-  display: block;
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.75rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6a7282;
-  white-space: normal;
-  margin-bottom: 0.125rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .k {
-  color: #99a1af;
-}
-.fi-panel-admin .fi-pirep-detail-v2-facts.stacked .fact .v {
-  display: block;
-  text-align: left;
-  width: auto;
-  max-width: 100%;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  min-width: 0;
-}
-
-/* LANDING ANALYSIS — runway plan-views + scorecard polar.
- * Three-column grid: departure rwy / arrival rwy / scorecard.
- * Collapses to a single column under 768px. */
-.fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1.25rem;
-}
-/* Row 2 of the landing grid: two attitude indicators spanning the full
- * width. Sized to match runway panels by sharing the same diagram
- * aspect-ratio / facts pattern. */
-.fi-panel-admin .fi-pirep-detail-v2-landing .landing-attitude-row {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-top: 0.5rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  min-width: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.75rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6a7282;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-side {
-  color: #99a1af;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--color-gray-700);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
-  color: var(--color-gray-300);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-panel-head .rw-id {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
-  width: 100%;
-  aspect-ratio: 200 / 100;
-  border-radius: 0.5rem;
-  background: #f3f4f6;
-  padding: 0.5rem;
-  overflow: hidden;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .attitude-diagram {
-  background: transparent;
-  padding: 0;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram {
-  background: var(--color-gray-800);
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-diagram svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .rw-facts {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.8125rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.75rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6a7282;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .k {
-  color: #99a1af;
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
-  color: var(--color-gray-900);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-landing .fact-inline .v {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-landing .scorecard-chart {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  /* Radar chart needs square-ish aspect for labels to fit. */
-  min-height: 240px;
-}
-@media (max-width: 768px) {
-  .fi-panel-admin .fi-pirep-detail-v2-landing .landing-grid {
-    grid-template-columns: 1fr;
+  100% {
+    opacity: 0;
   }
 }
 
-/* NOTES & COMMENTS — chat-style thread.
- * Pilot note pinned on top, rendered as the first row with a "Pilot note"
- * tag. Each row: circular initials avatar, message bubble with the message
- * on top and small meta (author · time) underneath. Read-only — no compose
- * box is rendered. */
-.fi-panel-admin .fi-pirep-detail-v2-chat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.panel__title em {
+  @apply not-italic font-mono text-[11px] tracking-normal normal-case text-(--ink-4);
 }
-.fi-panel-admin .fi-pirep-detail-v2-chat-row {
-  display: grid;
-  grid-template-columns: 2rem 1fr;
-  gap: 0.75rem;
-  align-items: start;
+
+.panel__tools {
+  @apply flex items-center gap-1;
 }
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
+
+.panel__body {
+  @apply p-3;
 }
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .bubble {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+
+.panel__body--flush {
+  @apply p-0;
 }
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--color-gray-900);
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .message {
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: baseline;
-  font-size: 0.6875rem;
-  color: var(--color-gray-500);
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  letter-spacing: 0.04em;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta {
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
-  font-weight: 600;
-  color: var(--color-gray-700);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .who {
-  color: var(--color-gray-200);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .dot {
-  opacity: 0.6;
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
-  text-transform: uppercase;
-  font-size: 0.625rem;
-  letter-spacing: 0.08em;
-  padding: 0.05rem 0.35rem;
-  border-radius: 0.25rem;
-  background: var(--color-primary-50, rgba(59, 130, 246, 0.1));
-  color: var(--color-primary-700, #1d4ed8);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-row .meta .tag {
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--color-primary-300, #93c5fd);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-row.pilot-note .message {
-  font-weight: 500;
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-empty {
-  font-size: 0.8125rem;
-  color: var(--color-gray-500);
-  padding: 0.5rem 0;
-}
-/* Compose box: textarea + submit. Sits flush below the thread, separated
- * by a hairline divider. Pure form controls — leans on Filament's .fi-input
- * + .fi-btn primitives so it tracks the admin theme automatically. */
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-gray-100);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose {
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
-  width: 100%;
-  resize: vertical;
-  min-height: 2.75rem;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-gray-200);
-  background: #fff;
-  color: var(--color-gray-900);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input {
-  background: var(--color-gray-900);
-  border-color: var(--color-gray-700);
-  color: var(--color-gray-50);
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose textarea.fi-input:focus {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: -1px;
-  border-color: transparent;
-}
-/* Single-line row: textarea grows, submit button stays at fixed size on the
- * right. Textarea defaults to one row but is vertically resizable; the
- * button is centered against the initial line. */
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row textarea.fi-input {
+
+.panel__body--centred {
+  @apply grid overflow-x-auto;
+  align-content: center;
   flex: 1 1 auto;
-  min-width: 0;
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-compose-row .fi-btn {
-  flex: 0 0 auto;
-  align-self: stretch;
-}
-.fi-panel-admin .fi-pirep-detail-v2-chat-error {
-  font-size: 0.75rem;
-  color: var(--color-danger-600, #dc2626);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-chat-error {
-  color: var(--color-danger-400, #f87171);
 }
 
-/* Net row — full-width footer beneath the transactions table inside the
- * finance card. Larger mono amount + small uppercase label, color flips
- * green/red on sign of the net. */
-.fi-panel-admin .fi-pirep-net-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.875rem 1.25rem;
-  background: #fafbfc;
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-net-row {
-  background: var(--color-gray-800);
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-net-row .lbl {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-gray-500);
-}
-.dark .fi-panel-admin .fi-pirep-net-row .lbl {
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-net-row .amt {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-.fi-panel-admin .fi-pirep-net-row.positive .amt {
-  color: rgb(4 120 87);
-}
-.fi-panel-admin .fi-pirep-net-row.negative .amt {
-  color: rgb(185 28 28);
-}
-.dark .fi-panel-admin .fi-pirep-net-row.positive .amt {
-  color: rgb(110 231 183);
-}
-.dark .fi-panel-admin .fi-pirep-net-row.negative .amt {
-  color: rgb(252 165 165);
+.panel__foot {
+  @apply flex items-center justify-between gap-2.5 py-1.75 px-3 border-t border-t-(--line-soft) text-(--ink-3) text-[11px];
 }
 
-/* Page footer — sits below the layout grid with a fixed gap. Muted grey,
- * small mono caps so it reads as a chrome element, not content. */
-.fi-panel-admin .fi-pirep-detail-v2-footer {
-  margin-top: 50px;
-  padding: 1rem 0;
-  text-align: center;
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-gray-500);
-}
-.dark .fi-panel-admin .fi-pirep-detail-v2-footer {
-  color: var(--color-gray-400);
+/* Strong identifier variant (mockup .id--strong, theme.css:706-709) —
+ * extends .id above (theme.css:2065-2072). */
+.id--strong {
+  @apply text-(--ink);
+  font-weight: 550;
 }
 
-/* EMBEDDED RELATION MANAGERS — tighten chrome inside our cards */
-.fi-panel-admin .fi-pirep-detail-v2 .fi-ta {
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-}
-.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-header-ctn {
-  display: none;
-}
-.fi-panel-admin .fi-pirep-detail-v2 .fi-ta-footer-ctn {
-  background: transparent;
+/* ---------------------------------------------------------------------------
+ * Raw data table (mockup .tbl, theme.css:1321-1375) — for hand-rolled tables
+ * inside custom blades (PIREP view flight log / finances), where Filament's
+ * .fi-ta-* skin doesn't apply. Same visual system as the Filament tables:
+ * sticky uppercase heads, 30px rows, hover, no zebra.
+ * ------------------------------------------------------------------------- */
+.table-wrap {
+  @apply overflow-x-auto;
 }
 
-/* ============================================================================
- * FINANCE CARD — combined summary + fares + transactions (demo layout).
- * ============================================================================ */
-
-/* Summary row — three equal cells: revenue / expenses / net */
-.fi-panel-admin .fi-pirep-fin-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-bottom: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-fin-summary {
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-fin-cell {
-  padding: 1rem 1.25rem;
-  border-right: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-fin-cell {
-  border-right-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-fin-cell:last-child {
-  border-right: 0;
-}
-.fi-panel-admin .fi-pirep-fin-lbl {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.25rem;
-}
-.dark .fi-panel-admin .fi-pirep-fin-lbl {
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-fin-val {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 1.25rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-/* Summary row credit/debit colors */
-.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
-  color: rgb(4 120 87);
-}
-.fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
-  color: rgb(185 28 28);
-}
-.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.credit {
-  color: rgb(110 231 183);
-}
-.dark .fi-panel-admin .fi-pirep-fin-summary .fi-pirep-fin-val.debit {
-  color: rgb(252 165 165);
-}
-/* Table cell credit/debit colors — scoped to table to beat tbody td color */
-.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
-  color: rgb(4 120 87);
-}
-.fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
-  color: rgb(185 28 28);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.credit {
-  color: rgb(110 231 183);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table .fi-pirep-fin-val.debit {
-  color: rgb(252 165 165);
-}
-/* Direct td credit/debit coloring — beats tbody td color rule */
-.fi-panel-admin .fi-pirep-fin-table tbody td.credit {
-  color: rgb(4 120 87);
-}
-.fi-panel-admin .fi-pirep-fin-table tbody td.debit {
-  color: rgb(185 28 28);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table tbody td.credit {
-  color: rgb(110 231 183);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table tbody td.debit {
-  color: rgb(252 165 165);
+.tbl {
+  @apply w-full border-collapse text-[12.5px];
 }
 
-/* Section titles — fares / transactions headers */
-.fi-panel-admin .fi-pirep-fin-section-title {
-  padding: 0.75rem 1.25rem;
-  background: #fafbfc;
-  border-bottom: 1px solid var(--color-gray-100);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.dark .fi-panel-admin .fi-pirep-fin-section-title {
-  background: var(--color-gray-800);
-  border-bottom-color: var(--color-gray-700);
-}
-.fi-pirep-fin-section-title + .fi-pirep-fin-table {
-  border-top: 0;
+.tbl thead th {
+  @apply sticky top-0 bg-(--surface-2) text-left whitespace-nowrap py-1.75 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3) border-b border-b-(--line-strong);
 }
 
-/* Original Flight card — empty state when no archive row exists */
-.fi-panel-admin .fi-pirep-detail-v2-empty-note {
-  padding: 1.25rem;
-  font-size: 0.8125rem;
-  color: var(--color-gray-500);
+.tbl tbody td {
+  @apply py-1.5 px-2.5 border-b border-b-(--line-soft) text-(--ink-2) whitespace-nowrap align-middle;
 }
 
-/* Finance tables — clean table matching demo */
-.fi-panel-admin .fi-pirep-fin-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-top: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table {
-  border-top-color: var(--color-gray-700);
-}
-.fi-panel-admin .fi-pirep-fin-table thead th {
-  padding: 0.625rem 1.25rem;
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-gray-500);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  text-align: left;
-  background: #fafbfc;
-  border-bottom: 1px solid var(--color-gray-100);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table thead th {
-  background: var(--color-gray-800);
-  border-bottom-color: var(--color-gray-700);
-  color: var(--color-gray-400);
-}
-.fi-panel-admin .fi-pirep-fin-table tbody td {
-  padding: 0.625rem 1.25rem;
-  font-size: 0.8125rem;
-  color: var(--color-gray-900);
-  border-bottom: 1px solid var(--color-gray-50);
-  vertical-align: middle;
-}
-.dark .fi-panel-admin .fi-pirep-fin-table tbody td {
-  color: var(--color-gray-300);
-  border-bottom-color: var(--color-gray-800);
-}
-.fi-panel-admin .fi-pirep-fin-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-.fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
-  background: var(--color-gray-50);
-}
-.dark .fi-panel-admin .fi-pirep-fin-table tbody tr:hover td {
-  background: var(--color-gray-800);
+html[data-density="comfortable"] .tbl tbody td {
+  @apply py-2.5;
 }
 
-/* Value cells */
-.fi-panel-admin .fi-pirep-fin-value {
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
-.fi-panel-admin .fi-pirep-fin-money {
-  font-family: var(--font-mono), ui-monospace, monospace;
-}
-.fi-panel-admin .fi-pirep-fin-ta-right {
-  text-align: right;
-}
-.fi-panel-admin .fi-pirep-fin-table th.fi-pirep-fin-ta-right,
-.fi-panel-admin .fi-pirep-fin-table td.fi-pirep-fin-ta-right {
-  text-align: right;
+.tbl tbody tr:last-child td {
+  @apply border-b-0;
 }
 
-/* Recalculate button — micro-btn style from demo */
-.fi-panel-admin .fi-pirep-finance-recalculate-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--color-gray-600);
-  background: var(--color-gray-100);
-  border: 1px solid var(--color-gray-200);
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: all 120ms ease;
-  line-height: 1.25;
-}
-.fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
-  background: var(--color-gray-200);
-  color: var(--color-gray-900);
-}
-.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn {
-  background: var(--color-gray-800);
-  border-color: var(--color-gray-700);
-  color: var(--color-gray-300);
-}
-.dark .fi-panel-admin .fi-pirep-finance-recalculate-btn:hover {
-  background: var(--color-gray-700);
-  color: var(--color-gray-50);
+.tbl tbody tr:hover td {
+  @apply bg-(--surface-2);
 }
 
-/* Mobile: stack summary cells */
-@media (max-width: 640px) {
-  .fi-panel-admin .fi-pirep-fin-summary {
-    grid-template-columns: 1fr;
-  }
-  .fi-panel-admin .fi-pirep-fin-cell {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-gray-100);
-  }
-  .dark .fi-panel-admin .fi-pirep-fin-cell {
-    border-bottom-color: var(--color-gray-700);
-  }
-  .fi-panel-admin .fi-pirep-fin-cell:last-child {
-    border-bottom: 0;
-  }
-  .fi-panel-admin .fi-pirep-fin-table thead th,
-  .fi-panel-admin .fi-pirep-fin-table tbody td {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
-  }
+.tbl .r,
+.tbl th.r {
+  @apply text-right;
 }
 
-/* Money amounts — JetBrains Mono for fares/transactions in PIREP admin */
-.fi-panel-admin .fi-pirep-money-mono {
-  font-family: var(--font-mono-display), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
+.tbl__group td {
+  @apply bg-(--sunken) text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3) border-t border-t-(--line) border-b border-b-(--line) h-6.5;
 }
 
-/* Flight edit (EditFlight) — the anchors #subfleets, #fields, #fares and the
- * form section ids #flight-information, #scheduling, #route, #remarks exist
- * only on this page. Drop the divider under each card heading so the heading
- * reads as part of the card: the RM tables put it on .fi-ta-header, the form
- * Sections put it as border-t on .fi-section-content-ctn. */
-.fi-panel-admin #subfleets .fi-ta-header,
-.fi-panel-admin #fields .fi-ta-header,
-.fi-panel-admin #fares .fi-ta-header,
-.fi-panel-admin #flight-information .fi-section-content-ctn,
-.fi-panel-admin #scheduling .fi-section-content-ctn,
-.fi-panel-admin #route .fi-section-content-ctn,
-.fi-panel-admin #remarks .fi-section-content-ctn {
-  border-bottom: 0;
-  border-top: 0;
+.tbl__primary {
+  @apply text-(--ink);
+  font-weight: 550;
 }
 
-/* Dashboard chart links (bars, row labels, calendar cells) get a visible
- * focus ring for keyboard users — SVG shapes don't inherit :focus styling. */
-.fi-panel-admin [data-dashboard-chart] [tabindex]:focus {
-  outline: 2px solid var(--primary-500);
-  outline-offset: 1px;
+.tbl a.tbl__primary:hover {
+  @apply text-(--primary-600) underline;
+  text-underline-offset: 2px;
 }

@@ -34,7 +34,7 @@ final class LanguageSwitcherPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->renderHook(
-            PanelsRenderHook::USER_MENU_BEFORE,
+            PanelsRenderHook::USER_MENU_PROFILE_AFTER,
             fn (): View => $this->getLanguageSwitcherView()
         );
 

@@ -85,7 +85,6 @@ it('does not fire when no event is selected', function (): void {
     expect(new L8EventDatesOutsideWindow()->check(RF::ctx(
         rows: [RF::row()],
         bundle: l8Bundle('2026-08-01', '2026-08-31'),
-        event: null,
     )))->toBe([]);
 });
 

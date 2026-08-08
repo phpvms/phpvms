@@ -64,7 +64,6 @@ final class L8EventDatesOutsideWindow implements LintRule
                 message: __('filament.routeforge.lint.l8_event_dates_outside_window', [
                     'event' => $event->name,
                 ]),
-                rowIndex: null,
                 details: [
                     'event_id'          => $event->id,
                     'event_start_date'  => $eventStart->toDateString(),

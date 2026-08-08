@@ -8,7 +8,7 @@
             >
                 <x-slot name="trigger">
                     <x-filament::icon-button
-                        icon="heroicon-o-arrows-pointing-out"
+                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ArrowsMaximize"
                         :label="__('filament.dashboard.expand_chart')"
                         color="gray"
                         size="sm"

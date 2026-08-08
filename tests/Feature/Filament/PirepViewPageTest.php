@@ -15,7 +15,7 @@ test('admin view-pirep page renders detail layout', function (): void {
     $this->actingAs($admin)
         ->get(PirepResource::getUrl('view', ['record' => $pirep]))
         ->assertSuccessful()
-        ->assertSee('fi-pirep-detail', false)
+        ->assertSee('subtabs', false)
         ->assertSee($pirep->dpt_airport_id)
         ->assertSee($pirep->arr_airport_id)
         ->assertSee($pirep->ident);

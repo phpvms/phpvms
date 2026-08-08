@@ -8,11 +8,11 @@ use App\Filament\Actions\ImportAction as OldImportAction;
 use App\Filament\Exports\FareExporter;
 use App\Filament\Imports\FareImporter;
 use App\Filament\Resources\Fares\FareResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListFares extends ListRecords
@@ -38,7 +38,7 @@ class ListFares extends ListRecords
                 ->exporter(FareExporter::class),
 
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }
