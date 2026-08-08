@@ -22,7 +22,7 @@
  * rail went display:none and popped back in on every full page load.
  *
  * filament/shared/sidebar-state.blade.php settles .fi-sidebar-open from that
- * same localStorage while the <aside> is still parsing, so keeping the sidebar
+ * same localStorage while the sidebar root is still parsing, so keeping it
  * visible here paints the final state rather than a guess. The two rules below
  * stand in for the x-show bindings on the group rows, which have not run yet
  * and would otherwise show the expanded button and the rail flyout at once.

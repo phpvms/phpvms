@@ -12,8 +12,11 @@
     drives both rail width and the content margin), so the first paint is
     already the final state rather than a guess that snaps.
 
-    Runs during parsing, immediately after the <aside> opens
+    Runs during parsing, immediately after the sidebar root opens
     (PanelsRenderHook::SIDEBAR_START), which is why currentScript can reach it.
+    Matched on .fi-main-sidebar rather than the tag: Filament 5.7 changed that
+    root from <aside> to <div id="fi-main-sidebar">, and the class is what has
+    stayed stable.
     Filament uses the same trick further down its own sidebar view to pre-hide
     collapsed groups -- "Alpine.js loads too slow".
 
