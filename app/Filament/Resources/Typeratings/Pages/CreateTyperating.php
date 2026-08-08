@@ -15,6 +15,8 @@ class CreateTyperating extends CreateRecord
 
     protected static string $resource = TyperatingResource::class;
 
+    protected static bool $canCreateAnother = false;
+
     #[Override]
     protected function getFormActions(): array
     {
