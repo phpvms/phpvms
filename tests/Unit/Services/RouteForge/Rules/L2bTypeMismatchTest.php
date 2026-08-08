@@ -71,7 +71,6 @@ it('does not fire when no flight_type is set', function (): void {
     expect(new L2bTypeMismatch()->check(RF::ctx(
         rows: [RF::row()],
         selectedSubfleets: $subfleets,
-        flightType: null,
     )))->toBe([]);
 });
 

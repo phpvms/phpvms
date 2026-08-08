@@ -39,7 +39,6 @@ final class L9BatchOver50 implements LintRule
                     'count'     => $count,
                     'threshold' => $threshold,
                 ]),
-                rowIndex: null,
                 details: [
                     'row_count' => $count,
                     'threshold' => $threshold,

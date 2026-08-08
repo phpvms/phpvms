@@ -43,7 +43,7 @@ abstract class BaseReportPage extends Page
      * period/airline selection carries over between Flights, Pilots and
      * Aircraft.
      */
-    private const SESSION_KEY = 'reports_filters';
+    private const string SESSION_KEY = 'reports_filters';
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Reports;
 

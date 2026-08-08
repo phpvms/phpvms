@@ -112,6 +112,7 @@ class MigrationService extends Service
             if ($resolved === false) {
                 continue;
             }
+
             if (realpath(dirname((string) $subDir)) !== $realBase) {
                 continue;
             }

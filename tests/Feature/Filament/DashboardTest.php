@@ -25,8 +25,8 @@ test('admin dashboard renders the welcome heading and the new widgets', function
     $this->get(Dashboard::getUrl())
         ->assertSuccessful()
         ->assertSee('Welcome back, Jordan Rivera')
-        ->assertSee('App\Filament\Widgets\StatsStripWidget', false)
-        ->assertSee('App\Filament\Widgets\RequiresActionWidget', false);
+        ->assertSee(StatsStripWidget::class, false)
+        ->assertSee(RequiresActionWidget::class, false);
 
     livewire(StatsStripWidget::class)
         ->assertSee(__('filament.dashboard.reports_filed'))

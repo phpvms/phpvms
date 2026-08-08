@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
+use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use RectorLaravel\Rector\Class_\AppendsPropertyToAppendsAttributeRector;
 use RectorLaravel\Rector\Class_\FillablePropertyToFillableAttributeRector;
 use RectorLaravel\Rector\Class_\GuardedPropertyToGuardedAttributeRector;
@@ -34,6 +35,13 @@ return RectorConfig::configure()
     ->withSkip([
         RemoveUselessVarTagRector::class => [
             __DIR__.'/app/Http/Resources/SimBriefResource.php',
+        ],
+        // This test names module classes as plain strings on purpose -- it only
+        // exercises namespace parsing, so no addon has to be installed. Rewriting
+        // them to ::class breaks a fresh checkout, where modules/.gitignore means
+        // the addon directory is absent and PHPStan reports class.notFound.
+        StringClassNameToClassConstantRector::class => [
+            __DIR__.'/tests/Feature/Permissions/PermissionRegistryTest.php',
         ],
         FillablePropertyToFillableAttributeRector::class,
         TablePropertyToTableAttributeRector::class,

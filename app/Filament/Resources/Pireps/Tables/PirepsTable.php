@@ -25,6 +25,8 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -181,7 +183,7 @@ class PirepsTable
             // Mockup's inline quick-filter bar (pireps.html:426-465), top of
             // the table panel: state + airline selects bound straight onto
             // tableFilters, and the page-of-total count.
-            ->header(fn (Table $table) => view('filament.pireps.partials.list-filter-bar', [
+            ->header(fn (Table $table): Factory|View => view('filament.pireps.partials.list-filter-bar', [
                 'records' => $table->getLivewire()->getTableRecords(),
             ]))
             ->recordActions([

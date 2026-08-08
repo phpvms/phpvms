@@ -87,7 +87,7 @@ class RequiresActionWidget extends Widget
      */
     private function age(?Carbon $timestamp): string
     {
-        if ($timestamp === null) {
+        if (!$timestamp instanceof Carbon) {
             return '—';
         }
 

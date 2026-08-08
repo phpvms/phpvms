@@ -105,7 +105,7 @@ class ViewPirep extends ViewRecord
             $filed = filled($filed) ? $filed.' via '.$sourceLabel : 'via '.$sourceLabel;
         }
 
-        $parts = array_filter([$record->user?->name, $filed], fn (?string $part): bool => filled($part));
+        $parts = array_filter([$record->user?->name, $filed], filled(...));
 
         /* State chip rides the subline (mockup puts it beside the actions) so
          * the report's state is visible without opening a tab. */

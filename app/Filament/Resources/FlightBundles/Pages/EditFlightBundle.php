@@ -108,7 +108,7 @@ class EditFlightBundle extends EditRecord
 
         $window = ($record->start_date === null && $record->end_date === null)
             ? __('filament.bundles.window_always')
-            : self::formatWindowDate($record->start_date).' → '.self::formatWindowDate($record->end_date);
+            : $this->formatWindowDate($record->start_date).' → '.$this->formatWindowDate($record->end_date);
 
         return [
             [
@@ -145,9 +145,9 @@ class EditFlightBundle extends EditRecord
     }
 
     /** The window is open-ended on either side; a dash marks the open end. */
-    private static function formatWindowDate(?Carbon $date): string
+    private function formatWindowDate(?Carbon $date): string
     {
-        if ($date === null) {
+        if (!$date instanceof Carbon) {
             return '—';
         }
 

@@ -82,7 +82,11 @@ class Installer extends Page
     public static function canAccess(): bool
     {
         try {
-            return !(Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists());
+            if (!Schema::hasTable('users')) {
+                return true;
+            }
+
+            return !User::query()->withoutGlobalScopes()->exists();
         } catch (QueryException) {
             // DB unreachable/not yet migrated — treat as not installed so the
             // installer can run.

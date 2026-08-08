@@ -56,7 +56,6 @@ final class L1AircraftCapacity implements LintRule
                     'needed'   => $threshold,
                     'rows'     => $rowCount,
                 ]),
-                rowIndex: null,
                 details: [
                     'selected_aircraft_count' => $selectedAircraftCount,
                     'row_count'               => $rowCount,

@@ -160,7 +160,7 @@ class ListPireps extends ListRecords
                 'source' => $source,
                 'type'   => $record->flight_type->getLabel(),
                 'url'    => PirepResource::getUrl('view', ['record' => $record]),
-            ], fn (?string $value): bool => filled($value));
+            ], filled(...));
         });
     }
 

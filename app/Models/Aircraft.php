@@ -182,7 +182,7 @@ class Aircraft extends Model
     public function icao(): Attribute
     {
         return Attribute::make(
-            set: fn ($value) => strtoupper((string) $value)
+            set: fn ($value): string => strtoupper((string) $value)
         );
     }
 

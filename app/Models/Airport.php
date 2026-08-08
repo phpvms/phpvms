@@ -169,7 +169,7 @@ class Airport extends Model
     public function iata(): Attribute
     {
         return Attribute::make(
-            set: fn ($iata) => strtoupper((string) $iata)
+            set: fn ($iata): string => strtoupper((string) $iata)
         );
     }
 

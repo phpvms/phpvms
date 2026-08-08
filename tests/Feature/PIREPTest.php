@@ -2,19 +2,16 @@
 
 use App\Enums\AcarsType;
 use App\Enums\PirepFieldSource;
-use App\Enums\PirepPhase;
 use App\Enums\PirepState;
 use App\Enums\UserState;
 use App\Models\Acars;
 use App\Models\Aircraft;
-use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\Rank;
-use App\Models\Subfleet;
 use App\Models\User;
 use App\Notifications\Messages\Broadcast\PirepDiverted;
 use App\Notifications\Messages\Broadcast\PirepStatusChanged;
@@ -27,10 +24,7 @@ use App\Services\PirepService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
 use Database\Seeders\RolesPermissionsSeeder;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Schema;
 
 use function Pest\Laravel\seed;
 

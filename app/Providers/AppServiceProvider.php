@@ -91,13 +91,13 @@ class AppServiceProvider extends ServiceProvider
         // Vendor ImportAction ships defaultColor('gray') but its ExportAction
         // sibling doesn't, so uncolored export buttons would fall back to
         // primary and fill dark on the hero band.
-        ExportAction::configureUsing(static fn (ExportAction $action) => $action->defaultColor('gray'));
+        ExportAction::configureUsing(static fn (ExportAction $action): ExportAction => $action->defaultColor('gray'));
 
         // Every date-bearing picker carries a calendar glyph at the right
         // edge of the field (mockup flight-edit.html's native date inputs).
         // Resolved at render time because TimePicker flips hasDate() off
         // only after this configuration runs.
-        DateTimePicker::configureUsing(static fn (DateTimePicker $picker) => $picker
+        DateTimePicker::configureUsing(static fn (DateTimePicker $picker): DateTimePicker => $picker
             ->suffixIcon(static fn (DateTimePicker $component): ?TablerIcon => $component->hasDate() ? TablerIcon::Calendar : null));
 
         // The SettingService memo is request-scoped via config/octane.php 'flush',

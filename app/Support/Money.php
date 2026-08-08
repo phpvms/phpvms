@@ -157,8 +157,7 @@ class Money implements Stringable
     }
 
     /**
-     * @param  mixed $percent
-     * @return $this
+     * @param mixed $percent
      *
      * @throws OutOfBoundsException
      * @throws InvalidArgumentException
