@@ -748,8 +748,15 @@
   @apply top-0;
 }
 
+/* 27px is a floor for fields, not a cap. A searchable select wraps its value
+ * (.fi-select-input-value-ctn is text-wrap:wrap/word-break:break-word), and a
+ * two-line airport label has to grow the field rather than spill out of it —
+ * which a fixed h-6.75 can never do. Flex sizes the row from its content, so
+ * min-h keeps single-line fields at exactly the 27px the icon buttons use while
+ * letting taller content push the box open. .fi-icon-btn keeps its fixed square
+ * via the rule above. */
 .fi-ta-header-toolbar .fi-input-wrp {
-  @apply w-auto;
+  @apply w-auto h-auto min-h-6.75;
 }
 
 /* The vendor gives .fi-input `padding-block: --spacing*1.5` (6px each side) and
@@ -764,9 +771,57 @@
  * `min-width:0; flex:1`. So align-items:stretch sizes the *ctn* to 25px while the
  * input keeps height:auto and collapses to its own ~17px at the top. Filling the
  * ctn hands the input the full 25px, which an <input> centres its value in, and
- * makes the whole field clickable. Parent heights are untouched. */
-.fi-ta-header-toolbar .fi-input {
+ * makes the whole field clickable. Parent heights are untouched.
+ *
+ * Selects carry byte-identical vendor sizing and need the same treatment, and
+ * not only in the toolbar proper: the filters panel is a *descendant* of
+ * .fi-ta-header-toolbar (.fi-ta-filters-dropdown > panel > .fi-ta-filters), so
+ * every filter field inherits the 27px wrapper too.
+ *
+ * The child combinators are load-bearing. A searchable select renders its own
+ * search box as a bare .fi-input inside its dropdown panel, still within this
+ * toolbar but *not* inside a height-capped .fi-input-wrp -- matching it on
+ * descendant would strip that box's padding and squash it. Only the control
+ * sitting directly in a capped wrapper should be compensated.
+ *
+ * Block padding only: a select's inline-end padding clears its chevron. */
+.fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-input,
+.fi-ta-header-toolbar .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-select-input {
   @apply h-full py-0 text-[12.5px] leading-none;
+}
+
+/* A searchable select is not a form control at all: .fi-select-input is a div
+ * wrapping button.fi-select-input-btn, and the button is what shows the value.
+ * It carries min-height:calc(--spacing*9) = 36px, a floor h-full cannot get
+ * under, so that has to be released before it will sit in the 25px box. Its
+ * .fi-select-input-value-ctn is already display:flex/items-center, so the label
+ * centres itself once the button matches the wrapper.
+ *
+ * Padding stays symmetric and small rather than zeroed: it is what centres a
+ * single line inside the 27px floor, and what keeps two wrapped lines from
+ * touching the border once the field grows. 1.35 leading gives the second line
+ * room — leading-none would jam the two together. */
+.fi-ta-header-toolbar .fi-select-input-btn {
+  @apply h-full min-h-0 py-1 leading-[1.35];
+}
+
+/* …and h-full above only resolves against a definite height, which the two
+ * elements between .fi-select-input and that button do not have: the blade
+ * renders a bare <div x-ref="select"> (forms/…/components/select.blade.php:219)
+ * and select.js injects .fi-select-input-ctn inside it, both height:auto. The
+ * percentage therefore fell back to auto and the button collapsed to its own
+ * ~12.5px at the top of the 25px box. Pass the height through so it lands, and
+ * the button's own flex/items-center value container centres the label.
+ *
+ * min-h-0 matters as much as h-full here: the vendor puts the SAME 36px floor
+ * on div[x-ref="select"] that it puts on the button (`.fi-select-input
+ * div[x-ref=select]{min-height:calc(--spacing*9)}`), so releasing only the
+ * button left this wrapper holding the field open at 36px and dragging the
+ * h-full button back up with it. Those two are the only min-height floors in
+ * the select subtree. */
+.fi-ta-header-toolbar .fi-select-input > [x-ref="select"],
+.fi-ta-header-toolbar .fi-select-input .fi-select-input-ctn {
+  @apply h-full min-h-0;
 }
 
 .fi-ta-header-toolbar .fi-icon-btn svg {
