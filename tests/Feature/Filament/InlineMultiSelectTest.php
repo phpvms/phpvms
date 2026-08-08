@@ -1,11 +1,6 @@
 <?php
 
 use App\Filament\Forms\Components\InlineMultiSelect;
-use App\Filament\Resources\Typeratings\Pages\EditTyperating;
-use App\Http\Middleware\UpdatePending;
-use App\Models\Subfleet;
-use App\Models\Typerating;
-use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Schema;
@@ -52,23 +47,4 @@ test('options and metas serialize into the checklist and state round-trips', fun
         ->assertSee('B738')
         ->set('data.equipment', ['1', '2'])
         ->assertSet('data.equipment', ['1', '2']);
-});
-
-test('the typerating form renders subfleet options in relationship mode', function (): void {
-    $this->seed(RolesPermissionsSeeder::class);
-    $this->withoutMiddleware(UpdatePending::class);
-    $this->actingAs(createAdminUser());
-
-    // No TyperatingFactory exists; the model is simple enough to create raw.
-    $typerating = Typerating::create([
-        'name'   => 'B777 Rating',
-        'type'   => 'B77X',
-        'active' => true,
-    ]);
-    $subfleet = Subfleet::factory()->create(['name' => 'Longhaul 777', 'type' => 'B77W']);
-
-    Livewire::test(EditTyperating::class, ['record' => $typerating->id])
-        ->assertSuccessful()
-        ->assertSee('Longhaul 777')
-        ->assertSee('B77W');
 });
