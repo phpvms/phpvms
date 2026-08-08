@@ -36,7 +36,9 @@ use App\Services\SettingService;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\ExportAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
@@ -90,6 +92,13 @@ class AppServiceProvider extends ServiceProvider
         // sibling doesn't, so uncolored export buttons would fall back to
         // primary and fill dark on the hero band.
         ExportAction::configureUsing(static fn (ExportAction $action) => $action->defaultColor('gray'));
+
+        // Every date-bearing picker carries a calendar glyph at the right
+        // edge of the field (mockup flight-edit.html's native date inputs).
+        // Resolved at render time because TimePicker flips hasDate() off
+        // only after this configuration runs.
+        DateTimePicker::configureUsing(static fn (DateTimePicker $picker) => $picker
+            ->suffixIcon(static fn (DateTimePicker $component): ?TablerIcon => $component->hasDate() ? TablerIcon::Calendar : null));
 
         // The SettingService memo is request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo
