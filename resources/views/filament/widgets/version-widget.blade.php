@@ -19,7 +19,7 @@
             <x-filament::link
                 color="gray"
                 href="https://docs.phpvms.net"
-                :icon="\Filament\Support\Icons\Heroicon::BookOpen"
+                :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Book"
                 :icon-alias="\Filament\View\PanelsIconAlias::WIDGETS_FILAMENT_INFO_OPEN_DOCUMENTATION_BUTTON"
                 rel="noopener noreferrer"
                 target="_blank"

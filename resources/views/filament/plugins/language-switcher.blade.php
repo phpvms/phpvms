@@ -16,7 +16,7 @@
 
                 <span class="fi-dropdown-list-item-label">{{ $getLabel($currentLocale) }}</span>
 
-                <x-filament::icon icon="heroicon-m-chevron-right" class="fi-icon h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronRight" class="fi-icon h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
             </button>
         </x-slot>
 

@@ -47,7 +47,7 @@
         <span class="fi-brandbtn-panel">{{ $panelLabel($current) }}</span>
     </span>
     @if ($withChevron)
-        <x-filament::icon icon="heroicon-m-chevron-down" class="fi-brandbtn-chev" />
+        <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronDown" class="fi-brandbtn-chev" />
     @endif
 @endcapture
 
@@ -84,14 +84,14 @@
                     <span>{{ $isAdmin ? 'Core phpvms' : '/'.$panel->getPath() }}</span>
                 </span>
                 @if ($isCurrent)
-                    <x-filament::icon icon="heroicon-m-check" class="fi-brandmenu-check" />
+                    <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Check" class="fi-brandmenu-check" />
                 @endif
             </a>
         @endforeach
 
         @if ($addonsUrl !== null)
             <a class="fi-brandmenu-foot" href="{{ $addonsUrl }}">
-                <x-filament::icon icon="heroicon-o-puzzle-piece" />
+                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Puzzle" />
                 {{ __('common.manage_addons') }}
             </a>
         @endif

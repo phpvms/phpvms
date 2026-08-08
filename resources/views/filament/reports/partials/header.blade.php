@@ -35,7 +35,7 @@
                     />
                     <span>{{ $this->getPeriodLabel() }}</span>
                     <x-filament::icon
-                        icon="heroicon-m-chevron-down"
+                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronDown"
                         class="fi-report-filter-trigger-caret"
                     />
                 </button>
@@ -99,7 +99,7 @@
                     />
                     <span>{{ $this->getAirlinesLabel() }}</span>
                     <x-filament::icon
-                        icon="heroicon-m-chevron-down"
+                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronDown"
                         class="fi-report-filter-trigger-caret"
                     />
                 </button>

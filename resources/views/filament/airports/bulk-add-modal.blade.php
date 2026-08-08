@@ -36,7 +36,7 @@
         </div>
 
         <x-filament::button
-            icon="heroicon-o-plus"
+            :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Plus"
             wire:click="addBulkAirports"
             wire:loading.attr="disabled"
             wire:target="addBulkAirports"
@@ -68,17 +68,17 @@
                                             @break
                                         @case('updated')
                                             <span title="{{ __('common.updated') }}">
-                                                <x-filament::icon icon="heroicon-m-arrow-path" class="h-4 w-4 text-warning-500" />
+                                                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Refresh" class="h-4 w-4 text-warning-500" />
                                             </span>
                                             @break
                                         @case('error')
                                             <span title="{{ __('airports.no_airport_found', ['icao' => $row['icao']]) }}">
-                                                <x-filament::icon icon="heroicon-m-exclamation-circle" class="h-4 w-4 text-danger-500" />
+                                                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ExclamationCircle" class="h-4 w-4 text-danger-500" />
                                             </span>
                                             @break
                                         @default
                                             <span title="{{ __('common.added') }}">
-                                                <x-filament::icon icon="heroicon-m-check-circle" class="h-4 w-4 text-success-500" />
+                                                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::CircleCheck" class="h-4 w-4 text-success-500" />
                                             </span>
                                     @endswitch
                                 </span>
