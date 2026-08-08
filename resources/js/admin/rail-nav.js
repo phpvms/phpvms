@@ -11,7 +11,9 @@
  *      flyout panel doesn't close it.
  *   2. Clicking the trigger button navigates straight to the group's first
  *      item instead of toggling the flyout (the flyout is still reachable
- *      by hovering).
+ *      by hovering). That jump goes through Livewire.navigate when the item
+ *      itself carries wire:navigate, so the shortcut behaves like clicking the
+ *      item rather than forcing a document load past the panel's ->spa().
  *
  * Everything is delegated on `document` rather than bound per-element, so it
  * keeps working after Livewire SPA navigation (`->spa()`) without needing to
@@ -49,9 +51,21 @@ function alpineDropdown(root) {
   return root && window.Alpine ? window.Alpine.$data(root) : null;
 }
 
+function firstItem(group) {
+  return group.querySelector(".fi-dropdown-panel a.fi-dropdown-list-item[href]");
+}
+
 function firstItemUrl(group) {
-  const item = group.querySelector(".fi-dropdown-panel a.fi-dropdown-list-item[href]");
-  return item?.getAttribute("href") || null;
+  return firstItem(group)?.getAttribute("href") || null;
+}
+
+// Whether Filament rendered this item for SPA navigation. `->spa()` puts
+// `wire:navigate` on the anchor -- `wire:navigate.hover` when prefetching is
+// enabled (see BasePanelProvider: `->spa(hasPrefetching: ...)`) -- and omits it
+// entirely when the panel is not an SPA. Reading it off the element keeps this
+// shortcut on whatever the panel is configured for instead of hardcoding one.
+function navigatesInPlace(item) {
+  return Array.from(item.attributes).some((attr) => attr.name.startsWith("wire:navigate"));
 }
 
 // Alpine's x-tooltip (Tippy) on the trigger button shows the same label as
@@ -189,7 +203,8 @@ document.addEventListener("click", (event) => {
   }
 
   const group = trigger.closest("li.fi-sidebar-group");
-  const url = group && firstItemUrl(group);
+  const item = group && firstItem(group);
+  const url = item?.getAttribute("href");
   if (!url) {
     return;
   }
@@ -198,7 +213,27 @@ document.addEventListener("click", (event) => {
 
   if (event.ctrlKey || event.metaKey) {
     window.open(url, "_blank");
-  } else {
-    window.location.assign(url);
+
+    return;
   }
+
+  if (!navigatesInPlace(item) || !window.Livewire?.navigate) {
+    window.location.assign(url);
+
+    return;
+  }
+
+  // Livewire.navigate is the programmatic form of clicking a wire:navigate
+  // link, so the shortcut lands on the same page the flyout item would have.
+  // Nothing reloads any more, which means this module's own state survives the
+  // swap and has to be cleared by hand -- the flyout element about to be
+  // replaced would otherwise stay in openGroup and the next hover would talk to
+  // a detached node.
+  window.clearTimeout(openTimer);
+  window.clearTimeout(closeTimer);
+  if (openGroup) {
+    closeFlyout(openGroup);
+  }
+
+  window.Livewire.navigate(url);
 });
