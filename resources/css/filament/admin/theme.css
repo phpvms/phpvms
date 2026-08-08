@@ -716,8 +716,21 @@
   @apply w-auto;
 }
 
+/* The vendor gives .fi-input `padding-block: --spacing*1.5` (6px each side) and
+ * pins `--tw-leading: --spacing*6` (24px), so its content wants 36px inside the
+ * 25px the wrapper above leaves: the value renders low and clips. That 24px also
+ * overrides the theme's --text-sm--line-height, which is why setting only a font
+ * size here never moved it.
+ *
+ * h-full is the part that actually centres it. .fi-input is not a flex child of
+ * .fi-input-wrp -- the vendor nests it in .fi-input-wrp-content-ctn (see
+ * support/…/components/input/wrapper.blade.php), and that ctn carries only
+ * `min-width:0; flex:1`. So align-items:stretch sizes the *ctn* to 25px while the
+ * input keeps height:auto and collapses to its own ~17px at the top. Filling the
+ * ctn hands the input the full 25px, which an <input> centres its value in, and
+ * makes the whole field clickable. Parent heights are untouched. */
 .fi-ta-header-toolbar .fi-input {
-  @apply text-[12.5px];
+  @apply h-full py-0 text-[12.5px] leading-none;
 }
 
 .fi-ta-header-toolbar .fi-icon-btn svg {
@@ -1163,8 +1176,9 @@
   @apply shadow-none;
 }
 
+/* Same nesting and the same fix as the toolbar search above. */
 .fi-topbar .fi-global-search-field .fi-input {
-  @apply text-[12px];
+  @apply h-full py-0 text-[12px] leading-none;
   color: #e8edf3;
 }
 
