@@ -15,6 +15,11 @@ use Livewire\Livewire;
 /**
  * Harness component: a bare Livewire form using the trait, persisting into
  * a public array so the test can observe what was saved.
+ *
+ * `$form` is materialised by InteractsWithSchemas at runtime; Filament's own
+ * pages declare it the same way (see Filament\Resources\Pages\EditRecord).
+ *
+ * @property-read Schema $form
  */
 class AutosaveHarness extends Component implements HasForms
 {

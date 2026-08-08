@@ -95,15 +95,36 @@ class InlineMultiSelect extends Select
         $metas = $this->getOptionMetas();
         $groups = $this->getOptionGroups();
 
-        return collect($this->getOptions())
-            ->map(fn ($label, $value): array => [
+        $items = [];
+
+        foreach ($this->getOptions() as $value => $label) {
+            // Stock Select nests grouped options one level deep, keyed by the
+            // group label. Flatten those into the same list the checklist
+            // renders; ->optionGroups() covers the un-nested case below.
+            if (is_array($label)) {
+                foreach ($label as $groupedValue => $groupedLabel) {
+                    $items[] = [
+                        'value' => (string) $groupedValue,
+                        'label' => $groupedLabel,
+                        'meta'  => isset($metas[$groupedValue]) ? (string) $metas[$groupedValue] : null,
+                        'group' => (string) $value,
+                    ];
+                }
+
+                continue;
+            }
+
+            $items[] = [
                 'value' => (string) $value,
-                'label' => (string) $label,
+                'label' => $label,
                 'meta'  => isset($metas[$value]) ? (string) $metas[$value] : null,
                 'group' => isset($groups[$value]) ? (string) $groups[$value] : null,
-            ])
-            ->sortBy(fn (array $item): string => $item['group'] ?? '', SORT_NATURAL)
-            ->values()
-            ->all();
+            ];
+        }
+
+        // Stable since PHP 8, so options keep their declared order within a group.
+        usort($items, fn (array $a, array $b): int => strnatcmp($a['group'] ?? '', $b['group'] ?? ''));
+
+        return $items;
     }
 }

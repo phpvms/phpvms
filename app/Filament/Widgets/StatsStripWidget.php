@@ -75,7 +75,7 @@ class StatsStripWidget extends Widget
             'pilotsFlying'     => $pilotsFlying,
             'activePilots'     => $activePilots,
             'topPilotName'     => $topPilot?->user?->name,
-            'topPilotLegs'     => $topPilot?->legs,
+            'topPilotLegs'     => $topPilot !== null ? (int) $topPilot->getAttribute('legs') : null,
             'tailsActive'      => $tailsActive,
             'tailsTotal'       => $tailsTotal,
             'tailsMaintenance' => $tailsMaintenance,

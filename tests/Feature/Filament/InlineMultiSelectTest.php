@@ -7,6 +7,12 @@ use Filament\Schemas\Schema;
 use Livewire\Component;
 use Livewire\Livewire;
 
+/**
+ * `$form` is materialised by InteractsWithSchemas at runtime; Filament's own
+ * pages declare it the same way (see Filament\Resources\Pages\EditRecord).
+ *
+ * @property-read Schema $form
+ */
 class InlineMultiSelectHarness extends Component implements HasForms
 {
     use InteractsWithForms;
@@ -47,4 +53,21 @@ test('options and metas serialize into the checklist and state round-trips', fun
         ->assertSee('B738')
         ->set('data.equipment', ['1', '2'])
         ->assertSet('data.equipment', ['1', '2']);
+});
+
+test('options nested under a group label flatten into the checklist', function (): void {
+    $items = InlineMultiSelect::make('equipment')
+        ->options([
+            'Boeing' => ['1' => 'B737-800', '2' => 'B747-400'],
+            'Airbus' => ['3' => 'A320'],
+        ])
+        ->optionMetas(['3' => 'A320'])
+        ->getItems();
+
+    // Sorted by group, declaration order kept inside each one.
+    expect($items)->toBe([
+        ['value' => '3', 'label' => 'A320', 'meta' => 'A320', 'group' => 'Airbus'],
+        ['value' => '1', 'label' => 'B737-800', 'meta' => null, 'group' => 'Boeing'],
+        ['value' => '2', 'label' => 'B747-400', 'meta' => null, 'group' => 'Boeing'],
+    ]);
 });

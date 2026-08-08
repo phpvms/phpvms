@@ -158,7 +158,7 @@ class ListPireps extends ListRecords
                     ? number_format((float) $record->fuel_used->local()).' '.setting('units.fuel')
                     : null,
                 'source' => $source,
-                'type'   => $record->flight_type?->getLabel(),
+                'type'   => $record->flight_type->getLabel(),
                 'url'    => PirepResource::getUrl('view', ['record' => $record]),
             ], fn (?string $value): bool => filled($value));
         });

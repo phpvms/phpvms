@@ -76,10 +76,12 @@ it('enabled is editable on the seeded Default bundle through the edit-details sl
 
     expect($default)->not->toBeNull();
 
+    // assertSuccessful() comes last: Testable carries `@mixin TestResponse`, so
+    // every link after it is typed against TestResponse rather than Testable.
     Livewire::test(EditFlightBundle::class, ['record' => $default->getRouteKey()])
-        ->assertSuccessful()
         ->callAction('edit', ['enabled' => false])
-        ->assertHasNoActionErrors();
+        ->assertHasNoActionErrors()
+        ->assertSuccessful();
 
     expect($default->fresh()->enabled)->toBeFalse();
 });

@@ -7,8 +7,6 @@ use App\Models\Pirep;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Facades\Cache;
 
-use function Pest\Livewire\livewire;
-
 test('preview rows are cached while pending and refresh when the state changes', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $this->withoutMiddleware(UpdatePending::class);
@@ -19,7 +17,7 @@ test('preview rows are cached while pending and refresh when the state changes',
         'submitted_at' => now(),
     ]);
 
-    $data = livewire(ListPireps::class)->instance()->getPreviewData();
+    $data = livewireInstance(ListPireps::class)->getPreviewData();
     $key = sprintf(
         'pirep:preview:%s:%s:%s',
         $pirep->id,
@@ -35,7 +33,7 @@ test('preview rows are cached while pending and refresh when the state changes',
     $this->travel(2)->seconds();
     $pirep->update(['state' => PirepState::ACCEPTED]);
 
-    $fresh = livewire(ListPireps::class)->instance()->getPreviewData();
+    $fresh = livewireInstance(ListPireps::class)->getPreviewData();
 
     expect($fresh[$pirep->id]['state'])->toBe(PirepState::ACCEPTED->getLabel())
         ->and($fresh[$pirep->id]['chip'])->toBe('chip--ok');
