@@ -174,11 +174,16 @@ return [
     'login_heading'                             => 'Welcome back',
     'login_subtitle'                            => 'Sign in to manage your virtual airline.',
     'bundles'                                   => [
-        'label'                  => 'Flight Bundle',
-        'nav_label'              => 'Flight Bundles',
-        'sections'               => ['details' => 'Bundle Details'],
-        'default_enabled_locked' => 'The default bundle cannot be disabled.',
-        'fields'                 => [
+        'label'                    => 'Flight Bundle',
+        'nav_label'                => 'Flight Bundles',
+        'sections'                 => ['details' => 'Bundle Details'],
+        'default_enabled_locked'   => 'The default bundle cannot be disabled.',
+        'edit_details'             => 'Edit details',
+        'edit_details_description' => "The bundle's name, status, schedule window and default subfleets.",
+        'window'                   => 'Window',
+        'window_always'            => 'Always active',
+        'no_description'           => 'No description',
+        'fields'                   => [
             'name'              => 'Name',
             'description'       => 'Description',
             'enabled'           => 'Enabled',

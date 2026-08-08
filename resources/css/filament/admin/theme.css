@@ -739,17 +739,20 @@
  * restyle is a separate call (form/modal blast radius is much bigger).
  * ------------------------------------------------------------------------- */
 .fi-header .fi-btn,
-.fi-pagination .fi-btn {
+.fi-pagination .fi-btn,
+.strip__edit .fi-btn {
   @apply h-7 px-2.5 text-[12.5px] border border-(--line-strong) bg-(--surface) text-(--ink-2) shadow-none;
 }
 
 .fi-header .fi-btn:hover,
-.fi-pagination .fi-btn:hover {
+.fi-pagination .fi-btn:hover,
+.strip__edit .fi-btn:hover {
   @apply bg-(--surface-2) border-(--ink-4) text-(--ink);
 }
 
 .fi-header .fi-btn .fi-icon,
-.fi-pagination .fi-btn .fi-icon {
+.fi-pagination .fi-btn .fi-icon,
+.strip__edit .fi-btn .fi-icon {
   @apply w-3.5 h-3.5;
   stroke-width: 1.75;
 }
@@ -761,7 +764,8 @@
  * on tokens so they flip with the mode. */
 /* Neutral hero buttons: muted glyph, not raw ink. The semantic tints below
  * and the primary override win over this by specificity. */
-.fi-header .fi-btn .fi-icon {
+.fi-header .fi-btn .fi-icon,
+.strip__edit .fi-btn .fi-icon {
   color: var(--ink-3);
 }
 
@@ -1787,6 +1791,129 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
     @apply border-r-0 border-b-0;
     grid-column: 1 / -1;
   }
+}
+
+/* Four-cell variant (bundle summary strip on EditFlightBundle). Declared
+ * after the .strip media rules so its column counts win at every width. */
+.strip--4 {
+  @apply grid-cols-4;
+}
+
+@media (max-width: 1240px) {
+  .strip--4 {
+    @apply grid-cols-2;
+  }
+
+  .strip--4 .strip__cell:nth-child(-n + 2) {
+    @apply border-b border-b-(--line-soft);
+  }
+
+  .strip--4 .strip__cell:nth-child(2n) {
+    @apply border-r-0;
+  }
+
+  .strip--4 .strip__cell:last-child {
+    grid-column: auto;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Branded drawer (Tailwind Plus "drawer with branded header"): the header
+ * band is the page hero's design — same to-right-bottom oklch gradient, dot
+ * grid, and inset highlight as .fi-header above — but with the chroma pulled
+ * down (~0.24→0.17 across the stops) so it reads as the hero's quieter
+ * sibling, not a second hero. Lightness stops are identical to the hero's,
+ * so the white/84%-white text keeps the same measured contrast. Opt-in per
+ * action via ->extraModalWindowAttributes(['class' => 'drawer-branded']).
+ * ------------------------------------------------------------------------- */
+.drawer-branded .fi-modal-header {
+  @apply relative overflow-hidden border-b-0;
+  background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent);
+}
+
+.dark .drawer-branded .fi-modal-header {
+  background-color: color-mix(in oklab, var(--primary-600) 58%, #0a0e13);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .drawer-branded .fi-modal-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.5 0.17 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.47 0.15 h) 50%,
+      oklch(from var(--primary-600) 0.46 0.12 calc(h - 25)) 100%
+    );
+  }
+
+  .dark .drawer-branded .fi-modal-header {
+    background-image: linear-gradient(
+      to right bottom,
+      oklch(from var(--primary-600) 0.34 0.14 calc(h + 30)) 0%,
+      oklch(from var(--primary-600) 0.3 0.12 h) 50%,
+      oklch(from var(--primary-600) 0.27 0.1 calc(h - 25)) 100%
+    );
+  }
+}
+
+/* The hero's dot grid, verbatim. */
+.drawer-branded .fi-modal-header::after {
+  @apply absolute inset-0 pointer-events-none opacity-10;
+  content: "";
+  background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.drawer-branded .fi-modal-heading {
+  color: #fff;
+}
+
+/* Secondary text inverted onto the band: white mixed back toward the
+ * accent, never gray — same recipe as .fi-header-subheading. */
+.drawer-branded .fi-modal-description {
+  color: color-mix(in oklab, white 84%, var(--primary-600));
+}
+
+/* The vendor renders the X as the header's first flex child, which indents
+ * the title. Pin it to the top-right corner instead (Tailwind Plus drawer
+ * layout) so the text block starts at the header's own left padding; the
+ * header reserves end-padding so long titles never run under it. */
+.drawer-branded .fi-modal-header {
+  @apply pe-12;
+}
+
+.drawer-branded .fi-modal-close-btn {
+  @apply absolute top-3 end-3 z-1;
+  color: color-mix(in oklab, white 75%, var(--primary-600));
+}
+
+.drawer-branded .fi-modal-close-btn:hover {
+  color: #fff;
+}
+
+/* A field that closes a form (the bundle drawer's Enabled toggle) gets a
+ * rule above it, echoing the modal footer's own top border. Applied via
+ * ->extraFieldWrapperAttributes(['class' => 'field-rule-above']). */
+.field-rule-above {
+  @apply border-t border-t-(--line) pt-4;
+}
+
+/* Inside the drawer the rule bleeds to the panel edges like the footer's
+ * border — counter the .fi-modal-content px-6 and pad it back. */
+.drawer-branded .field-rule-above {
+  @apply -mx-6 px-6;
+}
+
+/* Edit-details trigger pinned to the strip's last card. Its button skin is
+ * the console button proper — the .strip__edit selector rides the shared
+ * .fi-header/.fi-pagination .fi-btn rules above, no copy here. */
+.strip__cell--edit {
+  @apply relative;
+}
+
+.strip__edit {
+  @apply absolute top-2 right-2;
 }
 
 /* ---------------------------------------------------------------------------

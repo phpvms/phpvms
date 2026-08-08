@@ -30,7 +30,7 @@ return [
     'aircraft'        => 'Aircraft',
     'airline'         => 'Airline',
     'airport'         => 'Airport',
-    'subfleet'        => 'Subfleet',
+    'subfleet'        => 'Subfleet|Subfleets',
     'distance'        => 'Distance',
     'source'          => 'Source',
     'filters'         => 'Filters',
