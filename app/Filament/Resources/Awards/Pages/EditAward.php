@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Awards\AwardResource;
+use App\Filament\Resources\Awards\Schemas\AwardForm;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -37,6 +38,8 @@ class EditAward extends EditRecord
     #[Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        $data = AwardForm::injectTypeIntoFillData($data);
+
         if (array_key_exists('image_url', $data) && str_starts_with((string) $data['image_url'], 'awards/')) {
             $data['image_file'] = $data['image_url'];
             unset($data['image_url']);
@@ -48,6 +51,8 @@ class EditAward extends EditRecord
     #[Override]
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $data = AwardForm::mutateTypeFields($data);
+
         if (!empty($data['image_file'])) {
             $data['image_url'] = $data['image_file'];
         }

@@ -8,12 +8,19 @@ import preact from "@preact/preset-vite";
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    preact(),
+    // reactAliasesEnabled: false — rqb-core (resources/js/rqb/) bundles a
+    // genuine React runtime (react-querybuilder needs it), not Preact. The
+    // default preact() config aliases the bare `react`/`react-dom` specifiers
+    // to preact/compat project-wide, which would silently swap out the real
+    // React we `bun add`ed. Safe to disable: nothing else in resources/js
+    // imports "react"/"react-dom" directly (they import "preact" instead).
+    preact({ reactAliasesEnabled: false }),
     laravel({
       input: [
         "resources/css/filament/admin/theme.css",
         "resources/js/admin/app.js",
         "resources/js/admin/routeforge/main.tsx",
+        "resources/js/rqb/main.tsx",
         "resources/js/entrypoint.js",
         "resources/js/frontend/app.js",
         // "public/assets/global/js/jquery.js",

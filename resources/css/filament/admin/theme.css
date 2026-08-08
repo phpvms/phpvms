@@ -2021,6 +2021,134 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply -mx-6 px-6;
 }
 
+/* ---------------------------------------------------------------------------
+ * Fare override map (filament/fares/override-map.blade.php): base card,
+ * then the override layers left→right in application order, joined by
+ * dotted guides — the cascade drawn as columns with lines. Lives in the
+ * "Overrides" row-action modal on the Fares list.
+ * ------------------------------------------------------------------------- */
+.fare-map {
+  @apply flex items-start gap-7 text-[12.5px];
+}
+
+.fare-map__base {
+  @apply w-52 shrink-0 rounded-lg border border-(--line) bg-(--surface-2) p-3;
+}
+
+.fare-map__eyebrow {
+  @apply mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.fare-map__hint {
+  @apply ml-1 font-normal normal-case tracking-normal text-(--ink-4);
+}
+
+.fare-map__title {
+  @apply flex items-baseline gap-1.5 text-[13px];
+}
+
+.fare-map__facts {
+  @apply mt-2 grid gap-y-0.75;
+}
+
+.fare-map__facts div {
+  @apply flex items-baseline justify-between gap-3;
+}
+
+.fare-map__facts dt {
+  @apply text-(--ink-3);
+}
+
+.fare-map__facts dd {
+  @apply font-mono text-(--ink);
+}
+
+.fare-map__col {
+  @apply relative flex min-w-0 flex-1 flex-col gap-2;
+}
+
+/* Dotted guide rail down the column's left edge, with a stub into each
+ * node — the "lines" of the map, kept in the flex gap. */
+.fare-map__col::before {
+  @apply absolute -left-4 top-3 bottom-3 border-l border-dotted border-(--line-strong) content-[''];
+}
+
+.fare-map__node {
+  @apply relative rounded-lg border border-(--line) bg-(--surface) px-3 py-2;
+}
+
+.fare-map__node::before {
+  @apply absolute -left-4 top-1/2 w-4 border-t border-dotted border-(--line-strong) content-[''];
+}
+
+.fare-map__node-title {
+  @apply flex items-baseline justify-between gap-2;
+}
+
+.fare-map__chips {
+  @apply mt-1.5 flex flex-wrap gap-1;
+}
+
+.fare-map__chip {
+  @apply inline-flex items-center gap-1 rounded border border-(--line-strong) bg-(--surface-2) px-1.5 py-0.5 font-mono text-[11px] text-(--ink-2);
+}
+
+.fare-map__chip b {
+  @apply font-semibold text-(--ink);
+}
+
+.fare-map__chip i {
+  @apply not-italic text-(--ink-3);
+}
+
+.fare-map__quiet {
+  @apply text-[11.5px] text-(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+ * Fare price probe (filament/fares/probe-results.blade.php): resolved
+ * fares per subfleet for one flight, provenance badge per value.
+ * ------------------------------------------------------------------------- */
+.fare-probe {
+  @apply grid gap-4 text-[12.5px];
+}
+
+.fare-probe__meta {
+  @apply flex flex-wrap items-baseline gap-x-3 gap-y-1 text-(--ink-3);
+}
+
+.fare-probe__group-title {
+  @apply mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.fare-probe__table {
+  @apply w-full rounded-lg border border-(--line);
+}
+
+.fare-probe__table th {
+  @apply border-b border-(--line) bg-(--surface-2) px-3 py-1.5 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
+}
+
+.fare-probe__table td {
+  @apply border-b border-(--line-soft) px-3 py-1.5 align-top;
+}
+
+.fare-probe__table tr:last-child td {
+  @apply border-b-0;
+}
+
+.fare-probe__src {
+  @apply ml-1 inline-flex rounded border px-1 py-px align-middle font-mono text-[9.5px] font-semibold tracking-[0.05em];
+}
+
+.fare-probe__formula {
+  @apply mt-0.5 font-mono text-[11px] text-(--ink-4);
+}
+
+.fare-probe__quiet {
+  @apply text-[11.5px] text-(--ink-4);
+}
+
 /* Edit-details trigger pinned to the strip's last card. Its button skin is
  * the console button proper — the .strip__edit selector rides the shared
  * .fi-header/.fi-pagination .fi-btn rules above, no copy here. */

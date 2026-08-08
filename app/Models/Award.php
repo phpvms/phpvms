@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\AwardTrigger;
 use Database\Factories\AwardFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,20 +15,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 
 /**
  * The Award model
  *
- * @property int         $id
- * @property string      $name
- * @property string|null $description
- * @property string|null $image_url
- * @property string|null $ref_model_type
- * @property string|null $ref_model_params
- * @property int|null    $active
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
+ * @property int               $id
+ * @property string            $name
+ * @property string|null       $description
+ * @property string|null       $image_url
+ * @property string|null       $ref_model_type
+ * @property string|null       $ref_model_params
+ * @property array|null        $conditions
+ * @property AwardTrigger|null $trigger
+ * @property int|null          $active
+ * @property Carbon|null       $created_at
+ * @property Carbon|null       $updated_at
+ * @property Carbon|null       $deleted_at
  * @property-read mixed $image
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
@@ -69,6 +73,8 @@ class Award extends Model
         'image_url',
         'ref_model_type',
         'ref_model_params',
+        'conditions',
+        'trigger',
         'active',
     ];
 
@@ -88,6 +94,24 @@ class Award extends Model
         'active',
         'created_at',
     ];
+
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'conditions' => 'array',
+            'trigger'    => AwardTrigger::class,
+        ];
+    }
+
+    /**
+     * True when this award's criteria are a rules-based condition tree,
+     * rather than the legacy ref_model_type class path.
+     */
+    public function isRulesBased(): bool
+    {
+        return $this->conditions !== null;
+    }
 
     /**
      * Get the referring object

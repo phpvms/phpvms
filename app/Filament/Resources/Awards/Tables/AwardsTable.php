@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Awards\Tables;
 
+use App\Models\Award;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -34,6 +35,16 @@ class AwardsTable
                 ImageColumn::make('image_url')
                     ->label(__('common.image'))
                     ->imageHeight(100),
+
+                TextColumn::make('type')
+                    ->label(__('filament.award_type'))
+                    ->state(fn (Award $record): string => $record->isRulesBased() ? __('filament.award_type_rules') : __('filament.award_type_legacy'))
+                    ->badge()
+                    ->color(fn (Award $record): string => $record->isRulesBased() ? 'success' : 'gray'),
+
+                TextColumn::make('trigger')
+                    ->label(__('filament.award_trigger'))
+                    ->placeholder('—'),
 
                 IconColumn::make('active')
                     ->label(__('common.active'))
