@@ -82,12 +82,12 @@ class FleetUtilizationTable extends TableWidget
      */
     private function baseQuery(): Builder
     {
-        $airline_id = $this->pageFilters['airline_id'] ?? null;
+        $airlines = $this->pageFilters['airlines'] ?? [];
 
         return Subfleet::query()
             ->when(
-                filled($airline_id),
-                fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+                filled($airlines),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
             )
             ->withCount('aircraft')
             ->withSum('aircraft', 'flight_time')

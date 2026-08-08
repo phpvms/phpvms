@@ -35,19 +35,19 @@ class AircraftUtilizationChart extends Widget
         $filters = $this->pageFilters ?? [
             'start_date' => null,
             'end_date'   => null,
-            'airline_id' => null,
+            'airlines'   => [],
         ];
 
         $start_date = $filters['start_date'] !== null ? Carbon::parse($filters['start_date'])->startOfDay() : now()->startOfYear();
         $end_date = $filters['end_date'] !== null ? Carbon::parse($filters['end_date'])->endOfDay() : now();
-        $airline_id = $filters['airline_id'];
+        $airlines = $filters['airlines'];
 
         $aircraft = Pirep::query()
             ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED])
             ->whereBetween('submitted_at', [$start_date, $end_date])
             ->when(
-                filled($airline_id),
-                fn (Builder $query): Builder => $query->where('airline_id', $airline_id),
+                filled($airlines),
+                fn (Builder $query): Builder => $query->whereIn('airline_id', $airlines),
             )
             ->selectRaw('aircraft_id, SUM(flight_time) as total_minutes')
             ->groupBy('aircraft_id')

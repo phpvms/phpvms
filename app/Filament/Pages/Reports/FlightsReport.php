@@ -19,7 +19,7 @@ use Override;
  */
 class FlightsReport extends BaseReportPage
 {
-    protected static ?string $slug = 'flights';
+    protected static ?string $slug = 'reports/flights';
 
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::Plane;
 
