@@ -13,6 +13,7 @@ enum NavigationGroup: string implements HasLabel
     case Planning = 'Planning';
     case Fleet = 'Fleet';
     case Pilots = 'Pilots';
+    case Reports = 'Reports';
     case Finance = 'Finance';
     case Config = 'Config';
     case AddOns = 'Add-Ons';
@@ -26,6 +27,7 @@ enum NavigationGroup: string implements HasLabel
             self::Planning   => __('filament.planning'),
             self::Fleet      => __('filament.fleet'),
             self::Pilots     => __('filament.pilots'),
+            self::Reports    => __('filament.reports'),
             self::Finance    => __('filament.finance'),
             self::AddOns     => __('filament.addons'),
             self::System     => __('filament.system'),

@@ -27,6 +27,8 @@ class OAuthClientResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
+    protected static ?int $navigationSort = 3;
+
     #[Override]
     public static function form(Schema $schema): Schema
     {

@@ -62,6 +62,9 @@ class AdminPanelProvider extends BasePanelProvider
                 EnumsNavigationGroup::Pilots->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
                     ->icon(TablerIcon::Users),
+                EnumsNavigationGroup::Reports->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Reports->getLabel())
+                    ->icon(TablerIcon::Report),
                 EnumsNavigationGroup::Finance->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
                     ->icon(TablerIcon::Cash),

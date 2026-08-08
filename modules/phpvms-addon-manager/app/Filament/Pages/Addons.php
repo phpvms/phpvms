@@ -43,7 +43,7 @@ class Addons extends Page
 {
     use AuthorizesAccess;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::AddOns;
 
     protected static ?int $navigationSort = 1;
 

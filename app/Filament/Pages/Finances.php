@@ -30,7 +30,7 @@ class Finances extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Finance;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::ChartBar;
 

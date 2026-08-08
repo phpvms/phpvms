@@ -25,7 +25,7 @@ class FareResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Finance;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::PresentationAnalytics;
 

@@ -46,7 +46,7 @@ class Settings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
 

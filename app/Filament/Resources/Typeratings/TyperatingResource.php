@@ -20,9 +20,9 @@ use UnitEnum;
 
 class TyperatingResource extends Resource
 {
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Fleet;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Pilots;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::Rocket;
 
