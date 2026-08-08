@@ -36,6 +36,7 @@ use App\Services\SettingService;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Filament\Actions\ExportAction;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
@@ -78,6 +79,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Global Filament component defaults. Registered here rather than in a
+        // panel's bootUsing() because provider boot writes to the base
+        // ComponentManager that every request's scoped clone inherits from —
+        // bootUsing() registrations land in one request's scope and can miss
+        // Livewire update requests.
+        //
+        // Vendor ImportAction ships defaultColor('gray') but its ExportAction
+        // sibling doesn't, so uncolored export buttons would fall back to
+        // primary and fill dark on the hero band.
+        ExportAction::configureUsing(static fn (ExportAction $action) => $action->defaultColor('gray'));
 
         // The SettingService memo is request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo

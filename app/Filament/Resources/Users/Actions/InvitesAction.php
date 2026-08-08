@@ -13,6 +13,7 @@ class InvitesAction
     {
         return Action::make('invites')
             ->label(__('common.invite'))
+            ->color('gray')
             ->icon(TablerIcon::Mail)
             ->url(InviteResource::getUrl())
             ->visible(fn (): bool => auth()->user()?->can('view-any', arguments: Invite::class) && setting('general.invite_only_registrations', false));

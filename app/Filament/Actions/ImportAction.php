@@ -30,6 +30,10 @@ class ImportAction extends Action
 
         $this->visible(!config('phpvms.use_queued_filament_imports'));
 
+        // Neutral like the vendor ImportAction's defaultColor('gray') —
+        // primary fill is reserved for Create-style CTAs.
+        $this->defaultColor('gray');
+
         $this->schema(function (array $arguments): array {
             $schema = [
                 FileUpload::make('importFile')->acceptedFileTypes(['text/csv'])->disk('local')->directory('import'),

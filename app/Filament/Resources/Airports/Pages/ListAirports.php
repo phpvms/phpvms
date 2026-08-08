@@ -55,6 +55,7 @@ class ListAirports extends ListRecords
 
             Action::make('bulkAdd')
                 ->label(__('airports.bulk_add'))
+                ->color('gray')
                 ->icon(TablerIcon::Stack)
                 ->modalHeading(__('airports.bulk_add'))
                 ->modalWidth(Width::TwoExtraLarge)

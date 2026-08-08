@@ -13,6 +13,7 @@ class UserFieldsAction
     {
         return Action::make('userfields')
             ->label(trans_choice('common.user_field', 2))
+            ->color('gray')
             ->icon(TablerIcon::ClipboardList)
             ->url(UserFieldResource::getUrl())
             ->visible(fn (): bool => auth()->user()?->can('view-any', UserField::class));
