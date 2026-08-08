@@ -292,6 +292,45 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * Tab strips (vendor .fi-tabs): the schema Tabs component and the
+ * relation-manager tab bar on resource edit pages. Console underline tabs
+ * mirroring the PIREP view's .subtabs — quiet row over a hairline, 2px
+ * accent underline on the active tab — replacing the vendor pill look.
+ * RM tables themselves need nothing: they render the same .fi-ta-* classes
+ * the global table skin already covers.
+ * ------------------------------------------------------------------------- */
+.fi-tabs {
+  @apply gap-1 rounded-none border-b border-b-(--line) p-0 shadow-none;
+  background: transparent;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-tabs .fi-tabs-item {
+  @apply rounded-none bg-transparent py-1.75 px-2.5 text-[12.5px] font-medium text-(--ink-3);
+  /* Sits on the nav's 1px rule; the active underline replaces it. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.fi-tabs .fi-tabs-item:hover {
+  @apply bg-transparent text-(--ink);
+}
+
+.fi-tabs .fi-tabs-item.fi-active {
+  @apply bg-transparent text-(--ink);
+  border-bottom-color: var(--primary-600);
+}
+
+.fi-tabs .fi-tabs-item .fi-icon {
+  @apply size-3.5 text-(--ink-4);
+  stroke-width: 1.75;
+}
+
+.fi-tabs .fi-tabs-item.fi-active .fi-icon {
+  color: var(--primary-600);
+}
+
+/* ---------------------------------------------------------------------------
  * Workspace & page header. 16px padding around the page, a 14px gap between
  * the header and whatever comes below it. Filament splits its own 32px
  * padding across .fi-main (inline) and .fi-page-header-main-ctn (block) —
@@ -562,6 +601,26 @@
  * 205); this covers what it doesn't: header-cell color, body-cell rules and
  * hover. Padding-block for both stays owned by the density system.
  * ------------------------------------------------------------------------- */
+
+/* Table heading bar — rendered when a table carries ->heading(), which is
+ * every relation manager. Same band as .fi-section-header above so a card
+ * reads identically whether its header comes from a schema Section or its
+ * own table. */
+.fi-ta-header {
+  @apply flex items-center justify-between gap-3 border-b border-b-(--line) bg-(--surface-2);
+  padding: 9px 12px 8px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.fi-ta-header-heading {
+  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+}
+
+.fi-ta-header-description {
+  @apply text-[11.5px] text-(--ink-3);
+}
+
 .fi-ta-header-cell {
   @apply sticky top-0 text-(--ink-3) bg-(--surface-2) border-b border-b-(--line-strong) whitespace-nowrap;
 }
