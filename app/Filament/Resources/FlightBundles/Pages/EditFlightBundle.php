@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FlightBundles\Pages;
 
+use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
+use App\Models\Aircraft;
 use App\Models\FlightBundle;
+use Carbon\Carbon;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Str;
 use Override;
 
 /**
  * Identity → workspace → tucked-away settings: a read-only summary strip
  * (status, flight and subfleet summations, window) sits above the schedules
  * table that is the page's real workload, and the bundle's own fields are
- * edited only through the slideover opened from the strip's last card.
+ * edited only through the drawer opened from the strip's last card.
  */
 class EditFlightBundle extends EditRecord
 {
@@ -40,9 +42,8 @@ class EditFlightBundle extends EditRecord
     }
 
     /**
-     * Keep the page's own form empty so mounting doesn't hydrate the resource
-     * form (and its subfleet option queries) for fields that never render —
-     * the slideover builds its own schema.
+     * No page-level form — the table below is the page's content, and the
+     * fields live in the Edit drawer.
      */
     #[Override]
     public function form(Schema $schema): Schema
@@ -51,38 +52,34 @@ class EditFlightBundle extends EditRecord
     }
 
     #[Override]
+    protected function getFormActions(): array
+    {
+        return [];
+    }
+
+    #[Override]
     public function content(Schema $schema): Schema
     {
         return $schema->components([
-            View::make('filament.resources.flight-bundle.summary-strip')
-                ->viewData(['record' => $this->getRecord()]),
+            View::make('filament.shared.summary-strip')
+                ->viewData([
+                    'cards'         => $this->summaryCards(),
+                    'hasEditAction' => true,
+                    'ariaLabel'     => __('filament.bundles.sections.details'),
+                ]),
             $this->getRelationManagersContentComponent(),
         ]);
     }
 
-    /**
-     * The Edit-details trigger rendered inside the summary strip's last card.
-     * The drawer is the Tailwind Plus branded-header pattern: md width,
-     * accent header (styled via .drawer-branded in the admin theme), flat
-     * fields with no section card.
-     */
+    /** The Edit trigger rendered inside the summary strip's last card. */
     public function editAction(): Action
     {
-        return EditAction::make()
-            ->label(__('common.edit'))
-            ->icon(TablerIcon::Pencil)
-            ->color('gray')
-            ->slideOver()
-            ->modalWidth(Width::Medium)
+        return EditDetailsAction::make(FlightBundleForm::fields())
             ->modalHeading(__('filament.bundles.edit_details'))
             ->modalDescription(__('filament.bundles.edit_details_description'))
-            ->extraModalWindowAttributes(['class' => 'drawer-branded'])
             ->extraModalFooterActions([
                 DeleteAction::make(),
-            ])
-            ->schema(fn (Schema $schema): Schema => $schema
-                ->components(FlightBundleForm::fields())
-                ->columns(1));
+            ]);
     }
 
     #[Override]
@@ -92,5 +89,68 @@ class EditFlightBundle extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    /**
+     * @return array<int, array{icon: TablerIcon, tint: string|null, label: string, value: string, note: string}>
+     */
+    protected function summaryCards(): array
+    {
+        /** @var FlightBundle $record */
+        $record = $this->getRecord();
+
+        $flightsTotal = $record->flights()->count();
+        $flightsEnabled = $record->flights()->where('enabled', true)->count();
+        $subfleetCount = $record->subfleets()->count();
+        $tailCount = Aircraft::query()
+            ->whereIn('subfleet_id', $record->subfleets()->select('subfleets.id'))
+            ->count();
+
+        $window = ($record->start_date === null && $record->end_date === null)
+            ? __('filament.bundles.window_always')
+            : self::formatWindowDate($record->start_date).' → '.self::formatWindowDate($record->end_date);
+
+        return [
+            [
+                'icon'  => TablerIcon::Power,
+                'tint'  => null,
+                'label' => __('common.status'),
+                'value' => $record->enabled ? __('common.enabled') : __('common.disabled'),
+                'note'  => $record->visible ? 'Visible to pilots' : 'Hidden from pilots',
+            ],
+            [
+                'icon'  => TablerIcon::Plane,
+                'tint'  => 'blue',
+                'label' => trans_choice('common.flight', 2),
+                'value' => number_format($flightsTotal),
+                'note'  => $flightsEnabled.' enabled · '.($flightsTotal - $flightsEnabled).' disabled',
+            ],
+            [
+                'icon'  => TablerIcon::Stack2,
+                'tint'  => 'teal',
+                'label' => trans_choice('common.subfleet', 2),
+                'value' => number_format($subfleetCount),
+                'note'  => $tailCount.' '.Str::plural('tail', $tailCount),
+            ],
+            [
+                'icon'  => TablerIcon::CalendarEvent,
+                'tint'  => 'violet',
+                'label' => __('filament.bundles.window'),
+                'value' => $window,
+                'note'  => filled($record->description)
+                    ? Str::limit($record->description, 60)
+                    : __('filament.bundles.no_description'),
+            ],
+        ];
+    }
+
+    /** The window is open-ended on either side; a dash marks the open end. */
+    private static function formatWindowDate(?Carbon $date): string
+    {
+        if ($date === null) {
+            return '—';
+        }
+
+        return $date->year === now()->year ? $date->format('j M') : $date->format('j M Y');
     }
 }
