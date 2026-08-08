@@ -5,7 +5,10 @@
     $logSort = $this->logSort;
 
     $fmtTime = fn (?\Illuminate\Support\Carbon $dt): string => $dt?->format('H:i:s') ?? '—';
-    $fmtAlt = fn (?float $v): string => $v !== null ? number_format((int) $v) : '—';
+    // altitude_msl is stored in the internal unit (config phpvms.internal_units.altitude
+    // = feet) and never converted, so the unit is spelled out rather than read from
+    // setting('units.altitude') -- that would relabel feet as metres without converting.
+    $fmtAlt = fn (?float $v): string => $v !== null ? number_format((int) $v) . ' ft' : '—';
 
     // Strip redundant ACARS client metadata from log messages.
     $cleanLog = fn (?string $log): string => $log === null
