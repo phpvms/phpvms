@@ -30,6 +30,9 @@ class AirportForm
                             ->string()
                             ->length(4)
                             ->columnSpan(2)
+                            ->extraInputAttributes([
+                                'x-on:keydown.enter.prevent' => "document.getElementById('airport-icao-lookup')?.click()",
+                            ])
                             ->hintAction(LookupAction::make()),
 
                         TextInput::make('iata')

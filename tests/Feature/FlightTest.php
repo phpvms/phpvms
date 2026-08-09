@@ -43,7 +43,7 @@ test('duplicate flight', function (): void {
     // same flight but diff airline shouldn't be a dupe
     $new_airline = Airline::factory()->create();
     $flight_dupe = new Flight([
-        'airline_id'     => $new_airline->airline_id,
+        'airline_id'     => $new_airline->id,
         'flight_number'  => $flight->flight_number,
         'route_code'     => $flight->route_code,
         'route_leg'      => $flight->route_leg,

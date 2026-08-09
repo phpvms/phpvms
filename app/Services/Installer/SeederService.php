@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Installer;
 
+use App\Addons\AddonAutoLoader;
 use App\Addons\AddonRegistry;
+use App\Addons\Models\AddonManifest;
+use App\Addons\Support\ManifestParser;
 use App\Contracts\Service;
 use App\Models\Addon;
 use App\Models\Kvp;
@@ -12,11 +15,16 @@ use Carbon\Carbon;
 use Database\Seeders\BaseDataSeeder;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class SeederService extends Service
 {
     public function __construct(
         private readonly AddonRegistry $addonRegistry,
+        private readonly AddonAutoLoader $autoLoader,
+        private readonly ManifestParser $manifestParser,
     ) {}
 
     /**
@@ -36,15 +44,35 @@ class SeederService extends Service
     }
 
     /**
-     * See if there are any seeds that are out of sync
+     * See if there are any seeds that are out of sync (core or addon).
      */
     public function seedsPending(): bool
     {
-        if (new SettingsSeeder()->settingsPending()) {
+        if ($this->coreSeedsPending()) {
             return true;
         }
 
         return $this->addonSeedsPending();
+    }
+
+    /**
+     * Whether the core (non-addon) seeds are out of sync.
+     *
+     * Kept separate from addon seeds so the panel's update-pending gate can key
+     * on core state alone: a broken addon whose seeder can never succeed must
+     * not hold the whole panel in an update-redirect loop.
+     */
+    public function coreSeedsPending(): bool
+    {
+        // Before the core migration that creates `settings` has run, querying it
+        // would throw. Treat a missing table as core-pending so callers such as
+        // UpdatePending redirect to /system/update instead of erroring — mirrors
+        // the addons-table guard in MigrationService.
+        if (!Schema::hasTable('settings')) {
+            return true;
+        }
+
+        return new SettingsSeeder()->settingsPending();
     }
 
     /**
@@ -58,14 +86,60 @@ class SeederService extends Service
     public function seedAddons(): void
     {
         foreach ($this->addonRegistry->enabled() as $addon) {
+            // An addon enabled in the DB but absent on disk (deleted files, a
+            // broken symlink) must not be loaded. Skip it rather than resolve a
+            // phantom path.
+            if (!is_dir($addon->getPath())) {
+                Log::warning(sprintf(
+                    'Addon "%s" is enabled but its path does not exist on disk; skipping its seeders: %s',
+                    $addon->getName(),
+                    $addon->getPath(),
+                ));
+
+                continue;
+            }
+
             $files = $this->addonSeederFiles($addon);
 
             if ($files === []) {
                 continue;
             }
 
-            foreach ($files as $file) {
-                $this->runSeederFile($file);
+            // Register the addon's own PSR-4 namespace + autoload files before
+            // running its seeders. seedAddons() iterates the DB enabled() set,
+            // which can include an addon that is missing from (or stale in) the
+            // boot cache — so AddonServiceProvider::register() never registered
+            // its namespace and a seeder referencing the addon's own models would
+            // throw class-not-found. Registering from the manifest here makes
+            // seeding self-sufficient regardless of boot-cache state.
+            $manifest = $this->manifestParser->parse($addon->getPath());
+
+            if ($manifest instanceof AddonManifest) {
+                $this->autoLoader->registerClasses($manifest);
+            }
+
+            // Isolate each addon: a faulty seeder (missing model, bad SQL) must
+            // never abort the core install or the seeders of other addons.
+            try {
+                foreach ($files as $file) {
+                    $this->runSeederFile($file);
+                }
+            } catch (Throwable $throwable) {
+                // Fold the exception's own message into the log message (not just
+                // the context) so it is visible wherever the message alone is
+                // rendered — e.g. Laravel Pail's header box shows the message and
+                // exception class, but not the context array. Collapsed to one
+                // line: QueryException messages embed the raw SQL and often carry
+                // newlines from the underlying PDO driver message, and Pail's
+                // bordered box wraps multi-line text badly. The context still
+                // carries the full $throwable for the file log's stack trace.
+                Log::error(sprintf(
+                    'Addon "%s" seeder failed; continuing: %s',
+                    $addon->getName(),
+                    preg_replace('/\s+/', ' ', trim($throwable->getMessage())),
+                ), ['exception' => $throwable]);
+
+                continue;
             }
 
             Kvp::updateOrCreate(
@@ -78,11 +152,20 @@ class SeederService extends Service
     /**
      * Remove every seed marker for an addon (all versions), so a later reinstall
      * re-runs its seeders. Called when uninstalling an addon with table removal.
+     *
+     * Keyed on registry_id (falling back to namespace), not the display name: the
+     * name is nullable, non-unique and mutable, so an addon rebrand would leave
+     * this unable to find its own markers.
+     *
+     * Safe to interpolate into a LIKE pattern: seedMarkerIdentity() runs the
+     * identity through keyed_str(), which leaves only letters, digits and the
+     * `-` delimiter — no backslash (whose LIKE-escape meaning differs across
+     * MySQL, Postgres and sqlite) and no `%` or `_` wildcards.
      */
     public function clearAddonSeedMarkers(Addon $addon): void
     {
         Kvp::query()
-            ->where('key', 'like', 'addon_seeded:'.$addon->getName().':%')
+            ->where('key', 'like', 'addon_seeded:'.$this->seedMarkerIdentity($addon).':%')
             ->delete();
     }
 
@@ -179,9 +262,38 @@ class SeederService extends Service
     /**
      * KVP marker key for an addon's seed state, versioned so an addon update
      * re-runs its seeders.
+     *
+     * Keyed on registry_id, falling back to namespace, not the display name: the
+     * name is nullable, non-unique and mutable, so an addon rebrand would move
+     * it, stranding the marker and leaving addonSeedsPending() permanently true.
+     * A bare registry_id would collide bundled addons that declare none (Awards,
+     * Sample both resolve to null) on addon_seeded::base, so namespace — unique
+     * and always present — is the fallback.
      */
     private function seedMarkerKey(Addon $addon): string
     {
-        return 'addon_seeded:'.$addon->getName().':'.($addon->version ?? 'base');
+        return 'addon_seeded:'.$this->seedMarkerIdentity($addon).':'.($addon->version ?? 'base');
+    }
+
+    /**
+     * The stable identity segment of an addon's seed marker.
+     *
+     * Uses filled() rather than ?? so an empty-string registry_id — which the
+     * backfill tolerates and Addon::isLegacy() already treats as absent — falls
+     * back to namespace instead of collapsing every such addon onto
+     * `addon_seeded::{version}`.
+     *
+     * keyed_str() then slugifies it the same way AddonRegistry::safeName() and
+     * PermissionRegistry::moduleKey() key off an addon, so `phpvms/acars` and
+     * `Modules\Sample` become `phpvms-acars` and `modules-sample`. Keeping the
+     * separator as `-` (rather than dropping it, as Str::slug would) preserves
+     * the segment boundary, so `Modules\Sample` cannot collide with a different
+     * addon named `ModulesSample`.
+     */
+    private function seedMarkerIdentity(Addon $addon): string
+    {
+        $identity = filled($addon->registry_id) ? (string) $addon->registry_id : (string) $addon->namespace;
+
+        return keyed_str(strtolower($identity));
     }
 }

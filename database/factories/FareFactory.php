@@ -11,7 +11,7 @@ use App\Enums\FareType;
 use App\Models\Fare;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Fare>
+ * @extends Factory<Fare>
  */
 class FareFactory extends Factory
 {

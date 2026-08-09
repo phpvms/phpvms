@@ -224,6 +224,23 @@ class GeoService extends Service
             ]);
         }
 
+        // Breadcrumbs and the live position move at different cadences, so the
+        // trail can end minutes behind the marker. Appending closes that gap - a
+        // real reported point, not an interpolated one.
+        $live = $pirep->position;
+        $last = $actual_route->last();
+
+        if ($live !== null
+            && ($last === null
+                || (float) $last->lat !== (float) $live->lat
+                || (float) $last->lon !== (float) $live->lon)
+        ) {
+            $route->addPoint($live->lat, $live->lon, [
+                'pirep_id' => $pirep->id,
+                'alt'      => $live->altitude,
+            ]);
+        }
+
         return [
             // If there is a position update from ACARS, show where it is
             // Otherwise, just assume it's at the arrival airport currently
@@ -371,5 +388,25 @@ class GeoService extends Service
             'actual_route_points' => $actual->getPoints(),
             'actual_route_line'   => $actual->getLine(),
         ];
+    }
+
+    /**
+     * Build a GeoJSON line for a PIREP's archived SimBrief route — used to
+     * redraw the originally planned route from the `pirep_archive` blob when
+     * the live Flight/Acars route data is gone.
+     *
+     * @param array<int, array{ident?: ?string, type?: ?string, pos_lat?: mixed, pos_long?: mixed}> $navlog
+     */
+    public function archivedRouteLine(array $navlog): FeatureCollection
+    {
+        $geo = new GeoJson();
+
+        foreach ($navlog as $fix) {
+            $geo->addPoint($fix['pos_lat'] ?? null, $fix['pos_long'] ?? null, [
+                'name' => $fix['ident'] ?? null,
+            ]);
+        }
+
+        return $geo->getLine();
     }
 }

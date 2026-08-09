@@ -7,6 +7,7 @@ use App\Filament\Resources\FlightBundles\Pages\CreateFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\ListFlightBundles;
 use App\Filament\Resources\FlightBundles\RelationManagers\FlightsRelationManager;
+use App\Filament\Resources\FlightBundles\RelationManagers\SubfleetsRelationManager;
 use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Filament\Resources\FlightBundles\Tables\FlightBundlesTable;
 use App\Models\FlightBundle;
@@ -51,6 +52,7 @@ class FlightBundleResource extends Resource
     {
         return [
             FlightsRelationManager::class,
+            SubfleetsRelationManager::class,
         ];
     }
 

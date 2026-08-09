@@ -65,7 +65,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Fare extends Model
 {
+    /** @use HasFactory<FareFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
 

@@ -16,6 +16,7 @@ class LookupAction
         return Action::make('lookup')
             ->label(__('airports.lookup'))
             ->icon(Heroicon::OutlinedMagnifyingGlass)
+            ->extraAttributes(['id' => 'airport-icao-lookup'])
             ->action(function (Get $get, Set $set): void {
                 $airport = app(AirportService::class)->lookupAirport($get('icao'));
 

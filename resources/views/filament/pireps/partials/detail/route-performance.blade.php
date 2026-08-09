@@ -56,9 +56,11 @@
                             planned_route_line:  @js($mapFeatures['planned_rte_line'] ?? null),
                             actual_route_line:   @js($mapFeatures['actual_route_line'] ?? null),
                             actual_route_points: @js($mapFeatures['actual_route_points'] ?? null),
+                            archived_route_line: @js($mapFeatures['archived_rte_line'] ?? null),
                             flown_route_color: '#067ec1',
                             circle_color: '#056093',
                             flightplan_route_color: '#8B008B',
+                            archived_route_color: '#9ca3af',
                             leafletOptions: { scrollWheelZoom: false },
                         });
                     }

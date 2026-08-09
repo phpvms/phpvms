@@ -23,7 +23,7 @@
                         <div class="d-flex flex-row center-align"
                             style="font-size: 1.4rem; line-height: 1.4rem; font-weight: 600; text-align: center">
                             @if (optional($flight->airline)->logo)
-                                <img src="{{ $flight->airline->logo }}" alt="{{ $flight->airline->name }}"
+                                <img src="{{ $flight->airline->logo_url }}" alt="{{ $flight->airline->name }}"
                                     style="max-width: 80px; width: 100%; height: auto;" />
                             @else
                                 {{ $flight->airline->name }}:

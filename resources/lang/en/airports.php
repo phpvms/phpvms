@@ -22,6 +22,7 @@ return [
     'hub'                         => 'Hub',
     'only_hubs'                   => 'Only Hubs',
 
+    'bulk_add'          => 'Bulk Add',
     'lookup'            => 'Lookup',
     'lookup_successful' => 'Lookup Successful',
     'lookup_failed'     => 'Lookup Failed',

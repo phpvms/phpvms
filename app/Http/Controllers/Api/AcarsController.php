@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\Controller;
 use App\Enums\AcarsType;
+use App\Enums\PirepState;
 use App\Events\AcarsUpdate;
 use App\Exceptions\PirepCancelled;
 use App\Exceptions\PirepNotFound;
@@ -14,7 +15,10 @@ use App\Http\Resources\AcarsRouteResource;
 use App\Http\Resources\PirepResource;
 use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepEvent;
+use App\Models\PirepPosition;
 use App\Services\GeoService;
+use App\Services\Pirep\EventClassifier;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\QueryException;
@@ -64,9 +68,8 @@ class AcarsController extends Controller
      */
     public function live_flights()
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get()->filter(
-            fn (Pirep $pirep): bool => $pirep->position !== null
-        );
+        // No filtering: the join is the whole membership test.
+        $pireps = Pirep::onLiveMap()->get();
 
         return PirepResource::collection($pireps);
     }
@@ -76,7 +79,7 @@ class AcarsController extends Controller
      */
     public function pireps_geojson(Request $request): JsonResponse
     {
-        $pireps = Pirep::activeFlights(setting('acars.live_time'))->get();
+        $pireps = Pirep::onLiveMap()->get();
         $positions = $this->geoSvc->getFeatureForLiveFlights($pireps);
 
         return response()->json([
@@ -135,6 +138,8 @@ class AcarsController extends Controller
         );*/
 
         $count = 0;
+        $latest = null;
+        $latestAt = null;
         $positions = $request->post('positions');
         foreach ($positions as $position) {
             $position['pirep_id'] = $id;
@@ -169,16 +174,29 @@ class AcarsController extends Controller
             }
 
             try {
-                DB::transaction(function () use ($position): void {
+                $written = null;
+
+                DB::transaction(function () use ($position, &$written): void {
                     if (!empty($position['id'])) {
                         Acars::updateOrInsert(
                             ['id' => $position['id']],
                             $position
                         );
+
+                        $written = new Acars($position);
                     } else {
-                        Acars::create($position);
+                        $written = Acars::create($position);
                     }
                 });
+
+                // Newest by collection time, not by position in the array: a
+                // batch can carry its points in any order.
+                $collectedAt = $position['created_at'] ?? Carbon::now('UTC');
+
+                if ($latestAt === null || $collectedAt->greaterThanOrEqualTo($latestAt)) {
+                    $latest = $written;
+                    $latestAt = $collectedAt;
+                }
 
                 $count++;
             } catch (QueryException $ex) {
@@ -187,16 +205,55 @@ class AcarsController extends Controller
         }
 
         // Change the PIREP status if it's as SCHEDULED before
-        /*if ($pirep->status === PirepStatus::INITIATED) {
-            $pirep->status = PirepStatus::AIRBORNE;
+        /*if ($pirep->status === PirepPhase::INITIATED) {
+            $pirep->status = PirepPhase::AIRBORNE;
         }*/
 
         $pirep->save();
 
-        // Post a new update for this ACARS position
-        event(new AcarsUpdate($pirep, $pirep->position));
+        $this->syncPosition($pirep, $latest);
+
+        // Still the acars row, not the position row - this event's payload is unchanged.
+        event(new AcarsUpdate($pirep, $latest));
 
         return $this->message($count.' positions added', $count);
+    }
+
+    /**
+     * Upsert the position row from the newest point the batch carried.
+     *
+     * Only IN_PROGRESS and PENDING get a row. PENDING because filing happens while a
+     * client may still be posting the tail of the flight. Refused batches still write
+     * their `acars` rows.
+     */
+    private function syncPosition(Pirep $pirep, ?Acars $latest): void
+    {
+        if (!$latest instanceof Acars
+            || !in_array($pirep->state, [PirepState::IN_PROGRESS, PirepState::PENDING], true)
+        ) {
+            return;
+        }
+
+        PirepPosition::updateOrCreate(
+            ['pirep_id' => $pirep->id],
+            [
+                'user_id' => $pirep->user_id,
+                // Off the PIREP, not `acars`.`status` - a different column entirely.
+                'phase'        => $pirep->status->value,
+                'lat'          => $latest->lat ?? 0,
+                'lon'          => $latest->lon ?? 0,
+                'heading'      => $latest->heading ?? 0,
+                'distance'     => $latest->distance?->internal(2) ?? 0,
+                'altitude_agl' => $latest->altitude_agl ?? 0,
+                'altitude_msl' => $latest->altitude_msl ?? 0,
+                'vs'           => $latest->vs ?? 0,
+                'gs'           => $latest->gs ?? 0,
+                'ias'          => $latest->ias ?? 0,
+                // On the PIREP: `acars` has neither, and its `fuel` is fuel remaining.
+                'flight_time' => $pirep->flight_time ?? 0,
+                'fuel_used'   => $pirep->fuel_used?->internal(2) ?? 0,
+            ]
+        );
     }
 
     /**
@@ -220,7 +277,6 @@ class AcarsController extends Controller
         $logs = $request->post('logs');
         foreach ($logs as $log) {
             $log['pirep_id'] = $id;
-            $log['type'] = AcarsType::LOG;
 
             if (isset($log['sim_time'])) {
                 $log['sim_time'] = Carbon::createFromTimeString($log['sim_time']);
@@ -230,16 +286,26 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
+            // A client-supplied id is the per-pirep upsert key, not the row's
+            // primary key — leaving it in would set the PK and turn a repost
+            // into a duplicate-key error instead of an update.
+            $log['client_event_id'] = $log['id'] ?? null;
+            unset($log['id']);
+
+            $log = array_merge($log, EventClassifier::classify($log['log']));
+
             try {
                 DB::transaction(function () use ($log): void {
-                    if (isset($log['id'])) {
-                        Acars::updateOrInsert(
-                            ['id' => $log['id']],
-                            $log
-                        );
-                    } else {
-                        Acars::create($log);
+                    if ($log['client_event_id'] === null) {
+                        PirepEvent::create($log);
+
+                        return;
                     }
+
+                    PirepEvent::updateOrCreate([
+                        'pirep_id'        => $log['pirep_id'],
+                        'client_event_id' => $log['client_event_id'],
+                    ], $log);
                 });
 
                 $count++;
@@ -272,7 +338,6 @@ class AcarsController extends Controller
         $logs = $request->post('events');
         foreach ($logs as $log) {
             $log['pirep_id'] = $id;
-            $log['type'] = AcarsType::LOG;
             $log['log'] = $log['event'];
 
             if (isset($log['sim_time'])) {
@@ -283,16 +348,26 @@ class AcarsController extends Controller
                 $log['created_at'] = Carbon::createFromTimeString($log['created_at']);
             }
 
+            // A client-supplied id is the per-pirep upsert key, not the row's
+            // primary key — leaving it in would set the PK and turn a repost
+            // into a duplicate-key error instead of an update.
+            $log['client_event_id'] = $log['id'] ?? null;
+            unset($log['id']);
+
+            $log = array_merge($log, EventClassifier::classify($log['log']));
+
             try {
                 DB::transaction(function () use ($log): void {
-                    if (isset($log['id'])) {
-                        Acars::updateOrInsert(
-                            ['id' => $log['id']],
-                            $log
-                        );
-                    } else {
-                        Acars::create($log);
+                    if ($log['client_event_id'] === null) {
+                        PirepEvent::create($log);
+
+                        return;
                     }
+
+                    PirepEvent::updateOrCreate([
+                        'pirep_id'        => $log['pirep_id'],
+                        'client_event_id' => $log['client_event_id'],
+                    ], $log);
                 });
 
                 $count++;

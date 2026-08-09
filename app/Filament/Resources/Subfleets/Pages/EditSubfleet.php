@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Pages;
 
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\File;
 use App\Models\Subfleet;
@@ -14,7 +15,15 @@ use Override;
 
 class EditSubfleet extends EditRecord
 {
+    use ReversePrimaryButtons;
+
     protected static string $resource = SubfleetResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array

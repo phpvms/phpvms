@@ -13,6 +13,7 @@ use App\Models\SimBrief;
 use App\Models\Subfleet;
 use App\Models\User;
 use App\Services\SimBriefService;
+use App\Support\Dto\SimBriefOfp\SimBriefOfpTlr;
 use App\Support\Utils;
 use Carbon\Carbon;
 
@@ -71,6 +72,18 @@ function downloadOfp(User $user, $flight, $aircraft, array $fares): ?SimBrief
 
     return app(SimBriefService::class)->downloadOfp($user, 'static_id', Utils::generateNewId(), $flight->id, $aircraft->id, $fares);
 }
+
+test('parses an OFP with an empty TLR takeoff/landing section', function (): void {
+    // SimBrief omits the takeoff/landing report for some airframes and routes,
+    // returning empty nodes. The DTO must tolerate that instead of failing to
+    // construct the required takeoff/landing sub-objects.
+    $tlr = SimBriefOfpTlr::from(['takeoff' => [], 'landing' => []]);
+
+    expect($tlr->takeoff)->toBeNull()
+        ->and($tlr->landing)->toBeNull();
+
+    expect(fn (): SimBriefOfpTlr => SimBriefOfpTlr::from([]))->not->toThrow(Exception::class);
+});
 
 test('read simbrief', function (): void {
     $userinfo = createUserData();

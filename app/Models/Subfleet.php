@@ -54,7 +54,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $activities_count
  * @property-read Collection<int, Aircraft> $aircraft
  * @property-read int|null $aircraft_count
+ * @property-read int|null $aircraft_sum_flight_time
  * @property-read Airline|null $airline
+ * @property-read Collection<int, FlightBundle> $bundles
+ * @property-read int|null $bundles_count
  * @property-read Collection<int, Expense> $expenses
  * @property-read int|null $expenses_count
  * @property-read Collection<int, Fare> $fares
@@ -102,7 +105,10 @@ class Subfleet extends Model
 {
     use ExpensableTrait;
     use FilesTrait;
+
+    /** @use HasFactory<SubfleetFactory> */
     use HasFactory;
+
     use LogsActivity;
     use SoftDeletes;
     use Sortable;
@@ -177,6 +183,7 @@ class Subfleet extends Model
         return $this->home();
     }
 
+    /** @return BelongsToMany<Fare, $this> */
     public function fares(): BelongsToMany
     {
         return $this->belongsToMany(Fare::class, 'subfleet_fare')->withPivot(
@@ -194,6 +201,15 @@ class Subfleet extends Model
         return $this->belongsToMany(Flight::class, 'flight_subfleet');
     }
 
+    /**
+     * Bundles that offer this subfleet as a default to their flights.
+     */
+    public function bundles(): BelongsToMany
+    {
+        return $this->belongsToMany(FlightBundle::class, 'bundle_subfleet', 'subfleet_id', 'bundle_id');
+    }
+
+    /** @return BelongsToMany<Rank, $this> */
     public function ranks(): BelongsToMany
     {
         return $this->belongsToMany(Rank::class, 'subfleet_rank')

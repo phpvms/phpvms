@@ -17,9 +17,7 @@
                     <div class="col-sm-4">
                       <label for="type">Type</label>
                       <input type="text" class="form-control" value="{{ $aircraft->icao }}" maxlength="4" disabled>
-                      @if(filled($aircraft->simbrief_type))
-                        <input type="hidden" name="type" value="{{ $aircraft->simbrief_type }}">
-                      @elseif(filled($aircraft->subfleet->simbrief_type))
+                      @if(filled($aircraft->subfleet->simbrief_type))
                         <input type="hidden" name="type" value="{{ $aircraft->subfleet->simbrief_type }}">
                       @else
                         <input type="hidden" name="type" value="{{ $aircraft->icao }}">

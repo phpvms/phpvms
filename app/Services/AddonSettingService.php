@@ -171,15 +171,21 @@ class AddonSettingService extends Service
             return null;
         }
 
-        $query = Addon::query();
-
+        // Same fallback as AddonSettingSyncService::resolveAddonId(): a manifest
+        // can declare a registry_id that the addon's row does not carry yet —
+        // create_addons_table seeds the column null and only the
+        // backfill_addon_registry_ids data migration fills it. Without falling
+        // through to the unique namespace, every addon_setting() read for that
+        // addon silently returns its default.
         if ($entry->registryId !== null) {
-            $query->where('registry_id', $entry->registryId);
-        } else {
-            $query->where('namespace', $entry->namespace);
+            $resolved = Addon::query()->where('registry_id', $entry->registryId)->value('id');
+
+            if ($resolved !== null) {
+                return (int) $resolved;
+            }
         }
 
-        $resolved = $query->value('id');
+        $resolved = Addon::query()->where('namespace', $entry->namespace)->value('id');
 
         return $resolved === null ? null : (int) $resolved;
     }

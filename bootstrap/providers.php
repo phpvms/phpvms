@@ -6,6 +6,7 @@ use App\Providers\AddonServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\SystemPanelProvider;
+use App\Providers\PassportServiceProvider;
 use App\Providers\SkylightServiceProvider;
 use App\Providers\TypeScriptTransformerServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
@@ -21,6 +22,7 @@ return [
     SkylightServiceProvider::class,
 
     AddonServiceProvider::class,
+    PassportServiceProvider::class,
     AdminPanelProvider::class,
     SystemPanelProvider::class,
 

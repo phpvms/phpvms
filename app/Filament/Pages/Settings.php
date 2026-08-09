@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
@@ -41,8 +42,17 @@ class Settings extends Page
 {
     use AuthorizesAccess;
     use InteractsWithFormActions;
+    use ReversePrimaryButtons;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+
+    protected static ?int $navigationSort = 9;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
+
+    public ?array $data = [];
+
+    public string $previousUrl;
 
     /**
      * Settings exposes an `edit` ability gating the save action, on top of the
@@ -54,14 +64,6 @@ class Settings extends Page
     {
         return [Ability::View, Ability::Edit];
     }
-
-    protected static ?int $navigationSort = 6;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
-
-    public ?array $data = [];
-
-    public string $previousUrl;
 
     public function mount(): void
     {
@@ -138,10 +140,10 @@ class Settings extends Page
 
     public function getFormActionsComponents(): Actions
     {
-        return Actions::make([
+        return Actions::make($this->reversePrimaryButtons([
             $this->getSaveFormAction(),
             $this->getCancelFormAction(),
-        ]);
+        ]));
     }
 
     protected function getSaveFormAction(): Action

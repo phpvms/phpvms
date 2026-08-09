@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Addons\AddonAutoLoader;
 use App\Filament\Pages\AddonSettings;
 use App\Models\Addon;
 use App\Models\AddonSetting;
@@ -21,6 +22,14 @@ function sampleSettingsPanel(): Panel
 
 beforeEach(function (): void {
     $this->artisan('phpvms:addons-prime')->assertSuccessful();
+
+    // Priming only writes the boot cache; it does not touch the class loader.
+    // Modules\Sample lives in a directory the root psr-4 map does not cover, so
+    // its namespace is only resolvable once the addon loader has registered it —
+    // and that must happen before the first Modules\Sample\* lookup, since
+    // Composer's ClassLoader memoises misses in $missingClasses.
+    app(AddonAutoLoader::class)->register(app());
+
     app(AddonSettingSyncService::class)->sync();
 });
 
@@ -28,7 +37,7 @@ it('registers the shared AddonSettings page on an addon panel', function (): voi
     $panel = sampleSettingsPanel();
 
     expect($panel->getPages())->toContain(AddonSettings::class);
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('resolves the owning addon from the panel id', function (): void {
     $service = app(AddonSettingService::class);
@@ -36,7 +45,7 @@ it('resolves the owning addon from the panel id', function (): void {
     expect($service->resolveAddon('sample'))->not->toBeNull()
         ->and($service->resolveAddon('sample')->namespace)->toBe('Modules\\Sample')
         ->and($service->resolveAddon('admin'))->toBeNull();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('grants page access within the addon panel but not on the core panel', function (): void {
     $this->actingAs(User::factory()->create());
@@ -46,7 +55,7 @@ it('grants page access within the addon panel but not on the core panel', functi
 
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     expect(AddonSettings::canAccess())->toBeFalse();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('scopes settings to the owning addon only', function (): void {
     $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
@@ -59,7 +68,7 @@ it('scopes settings to the owning addon only', function (): void {
 
     expect($scoped)->toHaveCount(5)
         ->and($scoped->pluck('addon_id')->unique()->all())->toBe([$sample->id]);
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('contributes the edit:addon-settings permission to the registry', function (): void {
     expect(app(PermissionRegistry::class)->all())->toContain('edit:addon-settings');

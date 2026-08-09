@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
@@ -14,7 +15,15 @@ use Override;
 
 class EditPirep extends EditRecord
 {
+    use ReversePrimaryButtons;
+
     protected static string $resource = PirepResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array

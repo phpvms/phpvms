@@ -228,6 +228,21 @@ body[class*="fi-panel-"]::after {
   border-right: 0;
 }
 
+/* Sidebar nav scrollbar: thin, and only visible on hover. */
+.fi-panel-admin .fi-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 150ms ease;
+}
+
+.fi-panel-admin .fi-sidebar-nav:hover {
+  scrollbar-color: #d1d5dc transparent;
+}
+
+.dark .fi-panel-admin .fi-sidebar-nav:hover {
+  scrollbar-color: #364153 transparent;
+}
+
 /* Group label (docs custom.css:537-545) */
 .fi-panel-admin .fi-sidebar-group-label {
   font-family: var(--font-mono-display), ui-monospace, monospace;
@@ -2298,6 +2313,13 @@ body[class*="fi-panel-"]::after {
   border-top: 0;
 }
 
+/* Original Flight card — empty state when no archive row exists */
+.fi-panel-admin .fi-pirep-detail-v2-empty-note {
+  padding: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+}
+
 /* Finance tables — clean table matching demo */
 .fi-panel-admin .fi-pirep-fin-table {
   width: 100%;
@@ -2416,4 +2438,27 @@ body[class*="fi-panel-"]::after {
 .fi-panel-admin .fi-pirep-money-mono {
   font-family: var(--font-mono-display), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* Flight edit (EditFlight) — the anchors #subfleets, #fields, #fares and the
+ * form section ids #flight-information, #scheduling, #route, #remarks exist
+ * only on this page. Drop the divider under each card heading so the heading
+ * reads as part of the card: the RM tables put it on .fi-ta-header, the form
+ * Sections put it as border-t on .fi-section-content-ctn. */
+.fi-panel-admin #subfleets .fi-ta-header,
+.fi-panel-admin #fields .fi-ta-header,
+.fi-panel-admin #fares .fi-ta-header,
+.fi-panel-admin #flight-information .fi-section-content-ctn,
+.fi-panel-admin #scheduling .fi-section-content-ctn,
+.fi-panel-admin #route .fi-section-content-ctn,
+.fi-panel-admin #remarks .fi-section-content-ctn {
+  border-bottom: 0;
+  border-top: 0;
+}
+
+/* Dashboard chart links (bars, row labels, calendar cells) get a visible
+ * focus ring for keyboard users — SVG shapes don't inherit :focus styling. */
+.fi-panel-admin [data-dashboard-chart] [tabindex]:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 1px;
 }

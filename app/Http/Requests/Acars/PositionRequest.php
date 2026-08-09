@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Requests\Acars;
 
 use App\Contracts\FormRequest;
+use App\Enums\PirepPhase;
 use App\Models\Pirep;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Override;
 
 class PositionRequest extends FormRequest
@@ -30,6 +32,7 @@ class PositionRequest extends FormRequest
             'positions.*.lat'          => 'required|numeric',
             'positions.*.lon'          => 'required|numeric',
             'positions.*.status'       => 'sometimes',
+            'positions.*.phase'        => ['sometimes', 'nullable', Rule::enum(PirepPhase::class)],
             'positions.*.altitude'     => 'sometimes|numeric',
             'positions.*.altitude_agl' => 'sometimes|numeric',
             'positions.*.altitude_msl' => 'sometimes|numeric',
@@ -40,7 +43,7 @@ class PositionRequest extends FormRequest
             'positions.*.autopilot'    => 'sometimes',
             'positions.*.fuel'         => 'sometimes|numeric',
             'positions.*.fuel_flow'    => 'sometimes|numeric',
-            'positions.*.log'          => 'sometimes|nullable',
+            'positions.*.log'          => 'sometimes|nullable|string|max:1000',
             'positions.*.sim_time'     => 'sometimes|date',
             'positions.*.created_at'   => 'sometimes|date',
         ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Services\PermissionRegistry;
+use Composer\Autoload\ClassLoader;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -72,10 +73,43 @@ class GeneratePolicies extends Command
         }
 
         if (str_starts_with($class, 'Modules\\')) {
-            return base_path('modules/'.str_replace('\\', '/', Str::after($class, 'Modules\\')).'.php');
+            return $this->modulePathForClass($class);
         }
 
         return null;
+    }
+
+    /**
+     * Resolve a module class to its file path via the registered Composer
+     * PSR-4 prefixes, honouring the most specific (longest) match. Modules do
+     * not share a single layout: some map Modules\Foo\ to modules/Foo/app,
+     * while others fall back to the Modules\ => modules root. Hardcoding
+     * modules/<class> would drop the app/ segment for the former and write the
+     * policy to the module root instead of app/Policies.
+     */
+    protected function modulePathForClass(string $class): ?string
+    {
+        /** @var ClassLoader $loader */
+        $loader = require base_path('vendor/autoload.php');
+
+        $bestPrefix = null;
+        $bestDir = null;
+
+        foreach ($loader->getPrefixesPsr4() as $prefix => $directories) {
+            if (str_starts_with($class, $prefix) && ($bestPrefix === null || strlen($prefix) > strlen($bestPrefix))) {
+                $bestPrefix = $prefix;
+                $bestDir = $directories[0];
+            }
+        }
+
+        if ($bestPrefix === null || $bestDir === null) {
+            return null;
+        }
+
+        $dir = realpath($bestDir) ?: $bestDir;
+        $relative = str_replace('\\', '/', Str::after($class, $bestPrefix));
+
+        return rtrim($dir, '/').'/'.$relative.'.php';
     }
 
     protected function stub(string $policyClass, string $subject): string

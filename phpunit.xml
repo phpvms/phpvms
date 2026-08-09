@@ -31,6 +31,18 @@
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>
         <env name="BROADCAST_CONNECTION" value="null" force="true"/>
         <env name="CACHE_STORE" value="array" force="true"/>
+        <!-- Pin the addon-manager registry cache to the (array) test store too,
+             so it stays flushable/isolated instead of falling back to file. -->
+        <env name="ADDON_REGISTRY_CACHE_STORE" value="array" force="true"/>
+        <!-- Both blocks are required. Laravel resolves env() through a repository
+             that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
+             shell variables into $_SERVER, so an exported DB_CONNECTION silently
+             redirects the whole suite at a real database. <env force> alone does
+             not stop it; the <server> entries do. Same reason APP_ENV above is
+             declared twice. -->
+        <server name="DB_CONNECTION" value="sqlite" force="true"/>
+        <server name="DB_DATABASE" value=":memory:" force="true"/>
+        <server name="DB_URL" value="" force="true"/>
         <env name="DB_CONNECTION" value="sqlite" force="true"/>
         <env name="DB_DATABASE" value=":memory:" force="true"/>
         <env name="DB_URL" value="" force="true"/>

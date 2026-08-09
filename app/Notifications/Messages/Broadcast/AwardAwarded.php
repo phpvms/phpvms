@@ -3,61 +3,52 @@
 namespace App\Notifications\Messages\Broadcast;
 
 use App\Contracts\Notification;
-use App\Models\Award;
-use App\Models\User;
 use App\Models\UserAward;
-use App\Notifications\Channels\Discord\DiscordMessage;
+use App\Notifications\Concerns\BuildsDiscordEmbeds;
+use App\Notifications\DiscordEmbedColor;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbed;
+use Arthurpar06\DiscordNotifier\Embeds\DiscordEmbedAuthor;
+use Arthurpar06\DiscordNotifier\Messages\DiscordMessage;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class AwardAwarded extends Notification implements ShouldQueue
 {
+    use BuildsDiscordEmbeds;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct(private readonly UserAward $userAward)
-    {
-        parent::__construct();
-    }
+    public function __construct(private readonly UserAward $userAward) {}
 
     public function via($notifiable): array
     {
-        return ['discord_webhook'];
+        return ['discord'];
     }
 
     /**
-     * Send a Discord notification
+     * Send a Discord notification. The destination comes from the notifiable,
+     * so this only builds content.
      */
-    public function toDiscordChannel(UserAward $userAward): ?DiscordMessage
+    public function toDiscord($notifiable): DiscordMessage
     {
-        $award = Award::where('id', $userAward->award_id)->first();
+        $award = $this->userAward->award;
+        $user = $this->userAward->user;
 
-        $user = User::where('id', $userAward->user_id)->first();
+        $user_avatar = $this->discordAvatarUrl($user);
 
-        $title = 'Received award '.$award->name;
-        // $fields = $this->createFields($user);
-
-        // User avatar, somehow $pirep->user->resolveAvatarUrl() is not being accepted by Discord as thumbnail
-        $user_avatar = empty($user->avatar)
-            ? $user->gravatar(256)
-            : $user->avatar->url;
-
-        $dm = new DiscordMessage();
-
-        return $dm
-            ->webhook(setting('notifications.discord_public_webhook_url'))
-            ->success()
-            ->title($title)
-            ->description(
-                $user->discord_id
-                    ? 'Awarded by <@'.$user->discord_id.'>'
-                    : ''
-            )
-            ->thumbnail(['url' => $user_avatar])
-            ->image(['url' => $award->image_url])
-            ->author([
-                'name' => $user->ident.' - '.$user->name_private,
-                'url'  => route('frontend.profile.show', [$user->id]),
-            ]);
+        return DiscordMessage::make()->embed(
+            DiscordEmbed::make()
+                ->color(DiscordEmbedColor::Success->value)
+                ->title(__('notifications.discord.award_received', ['award' => $award->name]))
+                ->description($user->discord_id
+                    ? __('notifications.discord.awarded_to', ['mention' => '<@'.$user->discord_id.'>'])
+                    : null)
+                ->thumbnail($user_avatar)
+                ->image($award->image_url)
+                ->author(DiscordEmbedAuthor::make($user->ident.' - '.$user->name_private)
+                    ->url(route('frontend.profile.show', [$user->id])))
+                ->timestamp(now())
+        );
     }
 
     /**

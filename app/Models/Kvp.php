@@ -27,6 +27,11 @@ class Kvp extends Model
 {
     public $table = 'kvp';
 
+    // The kvp table is keyed by `key` (there is no `id` column). Without this,
+    // Eloquent's update path targets a nonexistent `id` (`where "id" is null`),
+    // so updateOrCreate() fatals with 42703 whenever a key already exists.
+    protected $primaryKey = 'key';
+
     protected $keyType = 'string';
 
     public $fillable = [

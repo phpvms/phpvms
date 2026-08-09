@@ -12,7 +12,6 @@ return [
     'next'                              => 'Étape suivante',
     'back'                              => 'Étape précédente',
     'finish'                            => 'Installation',
-    'output'                            => 'Sortie de la console',
     'already_installed'                 => 'phpvms est déjà installé.',
     'install_completed'                 => 'Installation de phpvms terminée avec succès.',
     'complete_setup'                    => 'Terminer la configuration',

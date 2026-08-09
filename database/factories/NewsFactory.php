@@ -11,7 +11,7 @@ use App\Models\News;
 use App\Models\User;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<News>
+ * @extends Factory<News>
  */
 class NewsFactory extends Factory
 {

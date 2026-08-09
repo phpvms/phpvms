@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Database\Factories\AddonSettingFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
  */
 class AddonSetting extends Model
 {
+    /** @use HasFactory<AddonSettingFactory> */
     use HasFactory;
 
     public $table = 'addon_settings';

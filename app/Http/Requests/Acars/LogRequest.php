@@ -24,7 +24,7 @@ class LogRequest extends FormRequest
     {
         return [
             'logs'              => 'required|array',
-            'logs.*.log'        => 'required',
+            'logs.*.log'        => 'required|string|max:1000',
             'logs.*.lat'        => 'sometimes|numeric',
             'logs.*.lon'        => 'sometimes|numeric',
             'logs.*.created_at' => 'sometimes|date',

@@ -81,7 +81,7 @@ class AirportService extends Service
             return $airport;
         }
 
-        $response = Http::get('https://api.phpvms.net/v1/airports/'.$icao);
+        $response = Http::get(config('phpvms.api_url').'/v1/airports/'.$icao);
 
         if (!$response->successful()) {
             return [];

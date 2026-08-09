@@ -14,7 +14,13 @@ trait JournalTrait
     public static function bootJournalTrait(): void
     {
         static::created(function ($model): void {
-            $model->initJournal(setting('units.currency'));
+            // The default on initJournal() cannot cover this: an explicit
+            // argument always beats a declared default, and setting() returns
+            // null for a key it cannot read. During install the first airline
+            // is created before units.currency necessarily exists, so passing
+            // the bare lookup hands a null to a string parameter. Every other
+            // caller of this setting already names the fallback.
+            $model->initJournal(setting('units.currency', 'USD'));
         });
     }
 
@@ -43,6 +49,12 @@ trait JournalTrait
             $this->journal()->save($journal);
 
             $journal->refresh();
+
+            // The `!$this->journal` guard above lazy-loaded the relation and cached
+            // it as null. Saving through the relation does not update that cache, so
+            // without this the model keeps returning null for ->journal until it is
+            // reloaded from the database. Reflect the freshly-created journal here.
+            $this->setRelation('journal', $journal);
 
             return $journal;
         }

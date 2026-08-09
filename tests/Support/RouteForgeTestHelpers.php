@@ -50,7 +50,7 @@ final class RouteForgeTestHelpers
         ?FlightType $flightType = null,
     ): LintContext {
         $lintRows = [];
-        foreach (array_values($rows) as $index => $row) {
+        foreach ($rows as $index => $row) {
             $lintRows[] = $row instanceof LintRow
                 ? $row
                 : LintRow::fromArray($index, $row);

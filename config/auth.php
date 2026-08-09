@@ -44,6 +44,15 @@ return [
             'driver'   => 'session',
             'provider' => 'users',
         ],
+
+        // OAuth2 guard backing the API. Passport resolves the bearer token and
+        // its scopes; the api.auth middleware (App\Http\Middleware\ApiAuth)
+        // consults this guard first and falls back to the legacy api_key lookup
+        // for backward compatibility.
+        'api' => [
+            'driver'   => 'passport',
+            'provider' => 'users',
+        ],
     ],
 
     /*

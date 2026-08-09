@@ -203,7 +203,7 @@ class PirepController extends Controller
         $with = [
             'acars_logs',
             'field_values', // the `fields` accessor (custom PIREP fields) needs this loaded
-
+            'events',
             'aircraft'    => fn ($query) => $query->withTrashed()->with(['airline' => fn ($query) => $query->withTrashed()]),
             'airline'     => fn ($query) => $query->withTrashed()->with('journal'),
             'arr_airport' => fn ($query) => $query->withTrashed(),

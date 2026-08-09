@@ -19,6 +19,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Public Files Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk that publicly-served uploads (award/branding images and generic
+    | file attachments) are stored on, referenced app-wide as
+    | config('filesystems.public_files'). The modern-structure refactor (#2207)
+    | dropped this key while callers still expect it, so it resolved to null and
+    | silently wrote to the private 'local' disk with broken URLs. Defaults to
+    | the local 'public' disk; point it at s3/r2 to serve public files from the
+    | cloud.
+    |
+    */
+
+    'public_files' => env('FILESYSTEM_PUBLIC_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

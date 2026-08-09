@@ -78,8 +78,9 @@ it('can retrieve news', function (): void {
 
     $response->assertSuccessful();
 
-    expect($response)->assertJsonCount(1, 'data')
-        ->and($response->json('data'))->toEqual($expected);
+    $response->assertJsonCount(1, 'data');
+
+    expect($response->json('data'))->toEqual($expected);
 });
 
 it('can retrieve airlines', function (): void {

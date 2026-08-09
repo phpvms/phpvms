@@ -134,7 +134,7 @@ and being mindful of the rivets bindings
         center: ['{{ $center[0] }}', '{{ $center[1] }}'],
         zoom: '{{ $zoom }}',
         aircraft_icon: '{!! public_asset('/assets/img/acars/aircraft.png') !!}',
-        refresh_interval: {{ setting('acars.update_interval', 60) }},
+        refresh_interval: {{ setting('livemap.update_interval', 60) }},
         units: '{{ setting('units.distance') }}',
         flown_route_color: '#067ec1',
         leafletOptions: {

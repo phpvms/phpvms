@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\Pireps\Pages;
 
-use App\Enums\AcarsType;
 use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
-use App\Models\Acars;
 use App\Models\Pirep;
+use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
@@ -102,16 +101,15 @@ class ViewPirep extends ViewRecord
     }
 
     /**
-     * Computed getter for LOG entries. Queries acars rows where type = LOG
-     * and log is not null, ordered by the current $logSort direction.
+     * Computed getter for the Flight Log entries. Queries pirep_events rows
+     * with a non-null log string, ordered by the current $logSort direction.
      *
-     * @return Collection<int, Acars>
+     * @return Collection<int, PirepEvent>
      */
     public function getLogEntriesProperty(): Collection
     {
-        return Acars::query()
+        return PirepEvent::query()
             ->where('pirep_id', $this->record->id)
-            ->where('type', AcarsType::LOG)
             ->whereNotNull('log')
             ->orderBy('created_at', $this->logSort)
             ->get();
@@ -181,6 +179,7 @@ class ViewPirep extends ViewRecord
             'fares.pirep',
             'field_values.pirep',
             'field_values',
+            'metadata',
         ]);
 
         // GeoService returns FeatureCollection value objects; convert to plain
@@ -199,6 +198,22 @@ class ViewPirep extends ViewRecord
                 'error'    => $throwable->getMessage(),
             ]);
             $this->mapFeatures = [];
+        }
+
+        // Archived planned route (from the pirep_archive SimBrief navlog),
+        // drawn as a distinct line from the live planned/actual routes above.
+        // Same fail-soft contract as the map build.
+        try {
+            $navlog = $this->record->metadata->navlog ?? [];
+            if ($navlog !== []) {
+                $archivedLine = app(GeoService::class)->archivedRouteLine($navlog);
+                $this->mapFeatures['archived_rte_line'] = json_decode((string) json_encode($archivedLine), true) ?? [];
+            }
+        } catch (Throwable $throwable) {
+            Log::warning('PIREP archived route build failed', [
+                'pirep_id' => $this->record->id,
+                'error'    => $throwable->getMessage(),
+            ]);
         }
 
         // Build chart payload (null when no ACARS data). Same fail-soft

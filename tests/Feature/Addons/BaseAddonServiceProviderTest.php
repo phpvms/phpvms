@@ -34,7 +34,7 @@ function registerFixturePsr4(): void
     $loader = null;
 
     foreach (spl_autoload_functions() as $entry) {
-        if (is_array($entry) && isset($entry[0]) && $entry[0] instanceof ClassLoader) {
+        if (is_array($entry) && $entry[0] instanceof ClassLoader) {
             $loader = $entry[0];
 
             break;

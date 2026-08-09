@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Enums\UserState;
 use App\Events\UserStateChanged;
 use App\Events\UserStatsChanged;
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
 use App\Filament\Resources\Users\Actions\VerifyEmailAction;
 use App\Filament\Resources\Users\UserResource;
@@ -18,11 +19,19 @@ use Override;
 
 class EditUser extends EditRecord
 {
+    use ReversePrimaryButtons;
+
     private ?UserState $oldState = null;
 
     private ?int $oldRankId = null;
 
     protected static string $resource = UserResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array

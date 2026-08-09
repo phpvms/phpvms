@@ -55,6 +55,7 @@ use Override;
 #[WithoutIncrementing]
 class SimBrief extends Model
 {
+    /** @use HasFactory<SimBriefFactory> */
     use HasFactory;
 
     public $table = 'simbrief';
@@ -79,6 +80,9 @@ class SimBrief extends Model
             }
 
             $ofp = Storage::json($this->attributes['ofp_json_path']);
+            if ($ofp === null) {
+                return null;
+            }
 
             return SimBriefOfp::from($ofp);
         });
@@ -91,8 +95,13 @@ class SimBrief extends Model
     {
         return Attribute::make(get: function (): Collection {
             $images = collect();
-            $base_url = $this->ofp->images->directory;
-            foreach ($this->ofp->images->map as $image) {
+            $ofp = $this->ofp;
+            if ($ofp === null) {
+                return $images;
+            }
+
+            $base_url = $ofp->images->directory;
+            foreach ($ofp->images->map as $image) {
                 $images->push([
                     'name' => $image->name,
                     'url'  => $base_url.$image->link,
@@ -110,9 +119,14 @@ class SimBrief extends Model
     {
         return Attribute::make(get: function (): Collection {
             $flightplans = collect();
-            $base_url = $this->ofp->fms_downloads->directory;
+            $ofp = $this->ofp;
+            if ($ofp === null) {
+                return $flightplans;
+            }
 
-            foreach ($this->ofp->fms_downloads->files as $file) {
+            $base_url = $ofp->fms_downloads->directory;
+
+            foreach ($ofp->fms_downloads->files as $file) {
                 $flightplans->push([
                     'name' => $file->name,
                     'url'  => $base_url.$file->link,

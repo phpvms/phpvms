@@ -25,6 +25,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View as ViewComponent;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
@@ -49,6 +50,12 @@ class Installer extends Page
 {
     protected static ?string $slug = 'install';
 
+    /**
+     * How long the migration step waits before moving itself on. Long enough to
+     * hit Pause if the log needs a read, short enough not to feel stalled.
+     */
+    private const int AUTO_ADVANCE_SECONDS = 5;
+
     public string $stream = 'console_output';
 
     public ?array $user = null;
@@ -60,6 +67,28 @@ class Installer extends Page
     public string $migrationOutput = '';
 
     private ?array $cachedRequirementsData = null;
+
+    /**
+     * Hard gate on the installer route. Once the wizard has created the initial
+     * admin user the app is installed, so the installer must be completely
+     * inaccessible — Filament aborts the route with a 403 before the page is
+     * ever mounted, so migrations/seeders can never be re-triggered.
+     *
+     * Before that point (a fresh or partially-completed install) the page stays
+     * reachable so the operator can finish setup: the `users` table may not
+     * exist yet, or exists but holds no rows.
+     */
+    #[Override]
+    public static function canAccess(): bool
+    {
+        try {
+            return !(Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists());
+        } catch (QueryException) {
+            // DB unreachable/not yet migrated — treat as not installed so the
+            // installer can run.
+            return true;
+        }
+    }
 
     /**
      * Called whenever the component is loaded
@@ -142,6 +171,36 @@ class Installer extends Page
             ])
                 ->startOnStep(fn (): int => $this->computeStartStep())
                 ->persistStepInQueryString()
+                ->nextAction(fn (Action $action): Action => $action
+                    ->label(new HtmlString(
+                        Blade::render(
+                            <<<'BLADE'
+                            {{ __('filament-schemas::components.wizard.actions.next_step.label') }}<span
+                                x-cloak
+                                x-show="$store.installerAutoAdvance?.active"
+                                x-text="` (${$store.installerAutoAdvance?.remaining})`"
+                            ></span>
+                            BLADE
+                        )
+                    ))
+                    ->extraAttributes(['data-installer-next' => 'true']))
+                // The wizard's only backwards step would be onto an already-run
+                // migration log, so the slot carries the countdown's Pause
+                // control instead of a Back button. `.stop` keeps the click from
+                // reaching the footer wrapper, which would otherwise step back.
+                ->previousAction(fn (Action $action): Action => $action
+                    ->label(new HtmlString(
+                        Blade::render(
+                            <<<'BLADE'
+                            <span x-text="$store.installerAutoAdvance?.paused ? @js(__('installer.resume')) : @js(__('installer.pause'))">{{ __('installer.pause') }}</span>
+                            BLADE
+                        )
+                    ))
+                    ->extraAttributes([
+                        'x-cloak'         => true,
+                        'x-show'          => '$store.installerAutoAdvance?.active',
+                        'x-on:click.stop' => '$store.installerAutoAdvance.toggle()',
+                    ]))
                 ->submitAction(
                     new HtmlString(
                         Blade::render(
@@ -254,11 +313,37 @@ class Installer extends Page
             }
         );
 
+        // Generate Passport's OAuth2 signing keys if they aren't already
+        // provided (env) or present on disk, so the API works out of the box.
+        //
+        // Runs in-process, after streaming has begun. An uncaught throw here would
+        // try to render an error response after output was already flushed, which
+        // fatals with "headers already sent". Contain it: stream the failure and
+        // let the install finish — the keys can be regenerated later if needed.
+        try {
+            app(InstallerService::class)->ensurePassportKeys();
+        } catch (Throwable $throwable) {
+            Log::error('Passport key generation failed during install', ['exception' => $throwable]);
+            $message = __('installer.passport_keys_failed').PHP_EOL;
+            $output .= $message;
+            $this->stream(content: $message, to: $this->stream);
+        }
+
         $output .= __('installer.migrations_completed').PHP_EOL;
         $this->stream(
             content: __('installer.migrations_completed').PHP_EOL,
             to: $this->stream
         );
+
+        // Only hand the step over to the countdown once there is genuinely
+        // nothing left to run — otherwise it would advance into the step's own
+        // validation, which halts on pending migrations.
+        if (count(app(MigrationService::class)->migrationsAvailable()) === 0) {
+            $this->dispatch(
+                'installer-migrations-complete',
+                seconds: self::AUTO_ADVANCE_SECONDS
+            );
+        }
 
         return $this->migrationOutput = $output;
     }
@@ -458,9 +543,14 @@ class Installer extends Page
             ->schema([
                 StreamEntry::make('output')
                     ->state(fn (): string => $this->migrationOutput)
-                    ->label(__('installer.output'))
+                    ->hiddenLabel()
                     ->viewData([
                         'stream' => $this->stream,
+                    ]),
+
+                ViewComponent::make('filament.installer.auto-advance')
+                    ->viewData([
+                        'seconds' => self::AUTO_ADVANCE_SECONDS,
                     ]),
             ])
             ->afterValidation(function (): void {

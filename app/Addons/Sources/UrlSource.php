@@ -16,6 +16,7 @@ class UrlSource implements AddonSource
 {
     public function __construct(
         private readonly string $url,
+        private readonly ?string $expectedSha256 = null,
     ) {}
 
     public function fetch(string $stagingDir): string
@@ -64,10 +65,19 @@ class UrlSource implements AddonSource
             throw new AddonInstallException(sprintf('Downloaded file is not a valid zip archive: %s', $this->url));
         }
 
-        // TODO (MVP): verify a checksum/signature on the downloaded archive before
-        // extraction. Without it a MITM/compromised host can ship arbitrary code
-        // that runs on the next boot. Require a sha256 in the install payload and
-        // assert hash_equals() here.
+        // Verify the artifact checksum from the signed mint response before
+        // extraction. Without it a MITM/compromised host could ship arbitrary
+        // code that runs on the next boot.
+        if ($this->expectedSha256 !== null) {
+            $actual = hash_file('sha256', $tmpZip);
+
+            if (!hash_equals(strtolower($this->expectedSha256), (string) $actual)) {
+                File::delete($tmpZip);
+
+                throw new AddonInstallException(sprintf('Checksum mismatch for the downloaded archive: %s', $this->url));
+            }
+        }
+
         $root = new ZipSource($tmpZip)->fetch($stagingDir);
 
         File::delete($tmpZip);

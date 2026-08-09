@@ -21,7 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Kyslik\ColumnSortable\Sortable;
+use LogicException;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -36,38 +39,40 @@ use UnitEnum;
  * @property int               $airline_id
  * @property int               $flight_number
  * @property string|null       $callsign
- * @property string|null       $route_code
- * @property int|null          $route_leg
- * @property string            $dpt_airport_id
- * @property string            $arr_airport_id
- * @property string|null       $alt_airport_id
- * @property string|null       $dpt_time
- * @property string|null       $arr_time
- * @property Carbon|null       $departure_time
- * @property Carbon|null       $arrival_time
- * @property int|null          $level
- * @property mixed|null        $distance
- * @property int|null          $flight_time
- * @property FlightType        $flight_type
- * @property float|null        $load_factor
- * @property float|null        $load_factor_variance
- * @property string|null       $route
- * @property float|null        $pilot_pay
- * @property string|null       $notes
- * @property int|null          $scheduled
- * @property int|null          $days
- * @property Carbon|null       $start_date
- * @property Carbon|null       $end_date
- * @property bool              $has_bid
- * @property bool              $enabled
- * @property bool              $visible
- * @property int|null          $event_id
- * @property int|null          $user_id
- * @property Carbon|null       $created_at
- * @property Carbon|null       $updated_at
- * @property Carbon|null       $deleted_at
- * @property string|null       $owner_type
- * @property string|null       $owner_id
+ * @property-read string|null  $route_code
+ * @property-write mixed        $route_code
+ * @property-read int|null     $route_leg
+ * @property-write mixed        $route_leg
+ * @property string|null $dpt_airport_id
+ * @property string|null $arr_airport_id
+ * @property string|null $alt_airport_id
+ * @property string|null $dpt_time
+ * @property string|null $arr_time
+ * @property Carbon|null $departure_time
+ * @property Carbon|null $arrival_time
+ * @property int|null    $level
+ * @property mixed|null  $distance
+ * @property int|null    $flight_time
+ * @property FlightType  $flight_type
+ * @property float|null  $load_factor
+ * @property float|null  $load_factor_variance
+ * @property string|null $route
+ * @property float|null  $pilot_pay
+ * @property string|null $notes
+ * @property int|null    $scheduled
+ * @property int|null    $days
+ * @property Carbon|null $start_date
+ * @property Carbon|null $end_date
+ * @property bool        $has_bid
+ * @property bool        $enabled
+ * @property bool        $visible
+ * @property int|null    $event_id
+ * @property int|null    $user_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property string|null $owner_type
+ * @property string|null $owner_id
  * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read Airline|null $airline
@@ -148,7 +153,9 @@ use UnitEnum;
 #[WithoutIncrementing]
 class Flight extends Model
 {
+    /** @use HasFactory<FlightFactory> */
     use HasFactory;
+
     use HasNanoIds;
     use LogsActivity;
     use SoftDeletes;
@@ -253,7 +260,7 @@ class Flight extends Model
      * Return all of the flights on any given day(s) of the week
      * Search using bitmasks
      *
-     * @param  Days[]          $days List of the enumerated values
+     * @param  int[]           $days List of Days::* bitmask constants
      * @return Builder<Flight>
      */
     public static function findByDays(array $days): Builder
@@ -416,7 +423,7 @@ class Flight extends Model
      * the legacy "leg zero or empty" sentinel) from `'0'` (string), both of
      * which we collapse, from a real string `'abc'` that we preserve.
      *
-     * Backed enums (e.g. `PirepStatus::DIVERTED` set on `route_code` by the
+     * Backed enums (e.g. `PirepPhase::DIVERTED` set on `route_code` by the
      * diversion handler) are coerced via their backing `->value`. Pure unit
      * enums fall back to their `->name`. This keeps legacy callers working
      * without forcing them to pre-stringify enum values.
@@ -526,6 +533,11 @@ class Flight extends Model
         return $this->hasMany(FlightFieldValue::class, 'flight_id', 'id');
     }
 
+    public function bids(): HasMany
+    {
+        return $this->hasMany(Bid::class, 'flight_id');
+    }
+
     public function simbrief(): BelongsTo
     {
         return $this->belongsTo(SimBrief::class, 'id', 'flight_id');
@@ -539,32 +551,116 @@ class Flight extends Model
     /**
      * Resolve the subfleets shown for this flight given a user.
      *
-     * Pinned subfleets win. If none are pinned, fall back to:
-     *   - airline subfleets when `flights.only_company_aircraft` is on
-     *   - all user-allowed subfleets otherwise
+     * Ordering rule: eligibility first, access second. Which rung applies is
+     * decided by configuration alone, before any user filtering:
+     *
+     *   1. the flight's own `flight_subfleet` pins, if it has any LIVE ones;
+     *   2. otherwise its bundle's `bundle_subfleet` defaults, if any are LIVE;
+     *   3. otherwise the fallback — airline subfleets when
+     *      `flights.only_company_aircraft` is on, all subfleets otherwise.
+     *
+     * The rungs replace, they do not union: a flight with its own pins ignores
+     * its bundle entirely. The winning rung is then narrowed by access, and a
+     * rung narrowed to nothing stays empty — it does not drop to a lower rung.
+     * Filtering by access first would let a restricted flight fall through and
+     * offer the user the entire fleet they can fly.
+     *
+     * The bundle's `enabled` and `deleted_at` are deliberately NOT consulted.
+     * Eligibility is configuration, not publication, and publication is mostly
+     * handled upstream by `flights.visible`. That upstream is not airtight —
+     * RecomputeBundleVisibility is queued, nothing observes a flight moving
+     * between bundles, and mass updates bypass observers — so a flight can be
+     * visible while its bundle is disabled. In that window this choice still
+     * shows the bundle's configured subfleets, which is a narrowing; consulting
+     * the bundle's state instead would WIDEN those flights to the whole fleet,
+     * which is the dangerous direction. Assignments must also survive for
+     * restore, and rung 1 likewise ignores the flight's own enabled state.
      *
      * User access constraints (rank / type rating) are applied throughout.
      * Use this in single-flight controllers; list endpoints use the
      * `withAccessibleSubfleets` scope which skips the fallback.
+     *
+     * @param  array<int, string>        $with
+     * @return Collection<int, Subfleet>
+     *
+     * @throws LogicException when the model was hydrated without `bundle_id`
      */
     public function accessibleSubfleetsFor(User $user, array $with = []): Collection
     {
-        $pinned = Subfleet::query()
+        // A partially-hydrated model (Flight::select('id')->first()) leaves
+        // bundle_id null, which makes rung 2 vacuously false and silently
+        // WIDENS the result to the whole fleet. Fail loudly instead.
+        if (!array_key_exists('bundle_id', $this->attributes)) {
+            throw new LogicException(
+                'accessibleSubfleetsFor() requires bundle_id; this Flight was hydrated without it.'
+            );
+        }
+
+        // "Live" means the referenced subfleet is not soft-deleted. The join
+        // onto `subfleets` is what enforces it, and it matters: soft-deleting a
+        // subfleet leaves its pivot rows in place (nothing detaches them — see
+        // SubfleetObserver) while the outer SoftDeletes scope hides it from the
+        // result. Counting those dead rows as configuration would suppress the
+        // rung below and leave the flight resolving to nothing for every pilot.
+        $hasLivePins = function ($sub): void {
+            $sub->select(DB::raw(1))
+                ->from('flight_subfleet')
+                ->join('subfleets as pinned_subfleets', 'pinned_subfleets.id', '=', 'flight_subfleet.subfleet_id')
+                ->whereNull('pinned_subfleets.deleted_at')
+                ->where('flight_subfleet.flight_id', $this->id);
+        };
+
+        $hasLiveBundleDefaults = function ($sub): void {
+            $sub->select(DB::raw(1))
+                ->from('bundle_subfleet')
+                ->join('subfleets as bundled_subfleets', 'bundled_subfleets.id', '=', 'bundle_subfleet.subfleet_id')
+                ->whereNull('bundled_subfleets.deleted_at')
+                ->where('bundle_subfleet.bundle_id', $this->bundle_id);
+        };
+
+        // Nested rather than three flat OR branches so each "is this rung
+        // configured?" gate is written — and planned — exactly once, and so the
+        // shape mirrors the cascade it implements.
+        return Subfleet::query()
             ->allowedFor($user)
-            ->whereHas('flights', fn ($q) => $q->whereKey($this->id))
             ->with($with)
+            ->where(function (Builder $query) use ($hasLivePins, $hasLiveBundleDefaults): void {
+                // Rung 1 — this flight's own pins. No liveness join needed here:
+                // the correlation to `subfleets.id` already rides the outer
+                // SoftDeletes scope. That holds because this method builds the
+                // query itself; copying this closure somewhere that uses
+                // withTrashed() would need the join back.
+                $query->whereExists(function ($sub): void {
+                    $sub->select(DB::raw(1))
+                        ->from('flight_subfleet')
+                        ->whereColumn('flight_subfleet.subfleet_id', 'subfleets.id')
+                        ->where('flight_subfleet.flight_id', $this->id);
+                });
+
+                $query->orWhere(function (Builder $unpinned) use ($hasLivePins, $hasLiveBundleDefaults): void {
+                    $unpinned->whereNotExists($hasLivePins)
+                        ->where(function (Builder $inner) use ($hasLiveBundleDefaults): void {
+                            // Rung 2 — the bundle's defaults.
+                            $inner->whereExists(function ($sub): void {
+                                $sub->select(DB::raw(1))
+                                    ->from('bundle_subfleet')
+                                    ->whereColumn('bundle_subfleet.subfleet_id', 'subfleets.id')
+                                    ->where('bundle_subfleet.bundle_id', $this->bundle_id);
+                            });
+
+                            // Rung 3 — fallback, when the bundle configures
+                            // nothing live either.
+                            $inner->orWhere(function (Builder $fallback) use ($hasLiveBundleDefaults): void {
+                                $fallback->whereNotExists($hasLiveBundleDefaults);
+
+                                if (setting('flights.only_company_aircraft', false)) {
+                                    $fallback->where('subfleets.airline_id', $this->airline_id);
+                                }
+                            });
+                        });
+                });
+            })
             ->get();
-
-        if ($pinned->isNotEmpty()) {
-            return $pinned;
-        }
-
-        $fallback = Subfleet::query()->allowedFor($user)->with($with);
-        if (setting('flights.only_company_aircraft', false)) {
-            $fallback->where('airline_id', $this->airline_id);
-        }
-
-        return $fallback->get();
     }
 
     public function user(): BelongsTo
@@ -708,11 +804,34 @@ class Flight extends Model
     }
 
     /**
-     * Eager-load subfleets, their aircraft, and their fares constrained to the
-     * user's access policy. No flight context is passed to the aircraft scope
-     * here — airport restriction is a per-flight concern handled by
-     * single-flight callers via `Aircraft::allowedFor($user, $flight)`. Rank,
-     * type-rating, and bid-block constraints still apply.
+     * List-view counterpart to `accessibleSubfleetsFor`: resolve every flight's
+     * subfleets in a constant number of queries and leave the answer on
+     * `$flight->subfleets`, so consumers keep reading the relation they always
+     * read.
+     *
+     * Implements rungs 1 and 2 only — the flight's own live pins, else its
+     * bundle's defaults. Rung 3, the fallback to the airline's or the entire
+     * fleet, is deliberately omitted: it is unbounded, and a list page would
+     * materialise it once per flight. A flight that reaches rung 3 shows nothing
+     * here and resolves properly on its own page.
+     *
+     * Rung 2 is also capped, at `phpvms.subfleets.inherited_list_limit` per
+     * bundle, ordered by id so the same N come back every request. The inherited
+     * set here can therefore be a subset of what `accessibleSubfleetsFor`
+     * returns for the same flight. A list row is a summary; the flight page is
+     * the authority. A bundle the cap actually trims logs one debug line per
+     * request — the trimmed rows are the highest ids, so what disappears is
+     * whatever an admin most recently added.
+     *
+     * Which rung applies is decided by configuration BEFORE access filtering.
+     * The has-pins probe deliberately skips `allowedFor`, so a flight whose pins
+     * the user cannot fly resolves to nothing rather than sliding onto its
+     * bundle and offering aircraft the flight never listed.
+     *
+     * No flight context is passed to the aircraft scope here — airport
+     * restriction is a per-flight concern handled by single-flight callers via
+     * `Aircraft::allowedFor($user, $flight)`. Rank, type-rating, and bid-block
+     * constraints still apply.
      *
      * `fares` is eager-loaded because callers commonly run the result through
      * `FareService::getReconciledFaresForFlight()`, which reads
@@ -722,12 +841,146 @@ class Flight extends Model
     #[Scope]
     protected function withAccessibleSubfleets(Builder $query, User $user): Builder
     {
-        return $query->with([
-            'subfleets' => fn ($sq) => $sq->allowedFor($user)->with([
-                'aircraft' => fn ($aq) => $aq->allowedFor($user),
-                'aircraft.bid',
-                'fares',
-            ]),
-        ]);
+        $nested = [
+            'aircraft' => fn ($aq) => $aq->allowedFor($user),
+            'aircraft.bid',
+            'fares',
+        ];
+
+        // `limit(0)` on the eager load below compiles to `row_num <= 0` and
+        // matches nothing, so an unusable setting would switch rung 2 off
+        // site-wide instead of falling back. A config cache built before this
+        // release has no key at all and `PHPVMS_INHERITED_SUBFLEET_LIMIT=` in
+        // .env reads back as '' — both cast to 0, as does a literal 0. Hence
+        // the named default, and the floor for a negative.
+        $inheritedLimit = max(1, (int) config('phpvms.subfleets.inherited_list_limit', 25) ?: 25);
+
+        // Whether the caller already asked for the bundle. The eager load
+        // added below is this scope's own working state and gets dropped
+        // again afterQuery, but only when the caller was not relying on it.
+        $callerLoadsBundle = array_key_exists('bundle', $query->getEagerLoads());
+
+        return $query
+            // Liveness rides the relation's own SoftDeletes scope: a pin left
+            // dangling by a soft-deleted subfleet (nothing detaches the pivot —
+            // see SubfleetObserver) is not configuration and must not suppress
+            // the rung below.
+            ->withExists('subfleets as has_live_pins')
+            ->with([
+                // Publication state is not eligibility, matching
+                // accessibleSubfleetsFor. Without withTrashed a soft-deleted
+                // bundle would resolve to null here and quietly strip its
+                // flights of the subfleets they are still configured with.
+                //
+                // The count is a correlated subselect on the same bundle query
+                // — no extra round trip — and is the only way to tell a bundle
+                // that fits under the cap from one the cap silently trimmed,
+                // since the capped load below can only ever hand back
+                // `$inheritedLimit` rows. It carries the same `allowedFor`
+                // constraint, so it counts what the pilot could have seen, not
+                // what the bundle holds.
+                'bundle' => fn ($bq) => $bq->withTrashed()
+                    ->withCount(['subfleets' => fn ($cq) => $cq->allowedFor($user)]),
+                'bundle.subfleets' => fn ($sq) => $sq->allowedFor($user)
+                    ->with($nested)
+                    ->orderBy('subfleets.id')
+                    ->limit($inheritedLimit),
+                'subfleets' => fn ($sq) => $sq->allowedFor($user)->with($nested),
+            ])
+            ->afterQuery(function ($results) use ($callerLoadsBundle, $inheritedLimit) {
+                // One hydrated Bundle backs every flight pointing at it, so a
+                // page of 100 flights on one over-capped bundle has to report
+                // that bundle once, not 100 times.
+                $seenBundles = [];
+
+                foreach ($results as $flight) {
+                    // afterQuery also fires for pluck(), whose collection holds
+                    // scalars rather than models. The probe check keeps this
+                    // idempotent: a builder the scope was applied to twice runs
+                    // this twice, and a second pass reading an already-consumed
+                    // probe would take every pinned flight for an inheriting one
+                    // and blank it.
+                    if (!$flight instanceof self) {
+                        continue;
+                    }
+
+                    if (!array_key_exists('has_live_pins', $flight->getAttributes())) {
+                        continue;
+                    }
+
+                    $inherits = !$flight->getAttribute('has_live_pins');
+                    $bundle = $flight->relationLoaded('bundle') ? $flight->getRelation('bundle') : null;
+
+                    // The probe is always this scope's own working state, and
+                    // so is the bundle unless the caller eager-loaded it
+                    // first. FlightResource leans on parent::toArray, which
+                    // serialises every loaded attribute and relation, so
+                    // leaving them on would change the API response shape.
+                    // Unsetting a bundle the caller asked for is worse: with
+                    // preventLazyLoading() on, their next read of it throws.
+                    unset($flight['has_live_pins']);
+
+                    if (!$callerLoadsBundle) {
+                        $flight->unsetRelation('bundle');
+                    }
+
+                    // The count rides the same bundle row and is this scope's
+                    // own working state, so it is stripped for the same reason
+                    // the probe is: a bundle the caller eager-loaded would
+                    // otherwise serialise it. Stripping it also makes a second
+                    // application of this scope read 0 and stay quiet, so the
+                    // once-per-bundle guarantee survives a doubled scope.
+                    if ($bundle !== null && !array_key_exists($bundle->getKey(), $seenBundles)) {
+                        $seenBundles[$bundle->getKey()] = true;
+
+                        $accessible = (int) $bundle->getAttribute('subfleets_count');
+                        unset($bundle['subfleets_count']);
+
+                        // The trimmed rows are the highest ids — the subfleet
+                        // an admin just added and is now hunting for. Silence
+                        // makes that look like a permissions bug.
+                        if ($accessible > $inheritedLimit) {
+                            Log::debug(
+                                'Flight list: bundle '.$bundle->getKey().' has '.$accessible
+                                .' accessible subfleets, showing the first '.$inheritedLimit
+                                .' (phpvms.subfleets.inherited_list_limit)'
+                            );
+                        }
+                    }
+
+                    if (!$inherits) {
+                        continue;
+                    }
+
+                    // Every flight in a bundle shares one hydrated Bundle, so
+                    // handing them its Subfleet and Fare instances verbatim
+                    // would let FareService::getReconciledFaresForFlight() —
+                    // which replaces `$subfleet->fares` and mutates the Fare
+                    // models in place — reconcile one flight's overrides into
+                    // its neighbours on the same page.
+                    $pivots = $flight->subfleets();
+
+                    $flight->setRelation('subfleets', $bundle?->subfleets->map(function (Subfleet $subfleet) use ($flight, $pivots): Subfleet {
+                        $copy = clone $subfleet;
+                        $copy->setRelation('fares', $subfleet->fares->map(fn (Fare $fare): Fare => clone $fare));
+
+                        // These arrive carrying their `bundle_subfleet` pivot,
+                        // which SubfleetResource would serialise — publishing
+                        // bundle ids and dropping the `flight_id` every subfleet
+                        // row on this endpoint has always had. Restate it as the
+                        // pivot the relation being populated describes. No such
+                        // row exists in `flight_subfleet`; the pairing does, and
+                        // that is what a pivot on `$flight->subfleets` means.
+                        $copy->setRelation('pivot', $pivots->newExistingPivot([
+                            'flight_id'   => $flight->getKey(),
+                            'subfleet_id' => $subfleet->getKey(),
+                        ]));
+
+                        return $copy;
+                    }) ?? new Collection());
+                }
+
+                return $results;
+            });
     }
 }

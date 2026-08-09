@@ -7,6 +7,7 @@ use App\Casts\FuelCast;
 use App\Contracts\Model;
 use App\Enums\AcarsType;
 use App\Enums\NavaidType;
+use App\Enums\PirepPhase;
 use App\Traits\HasNanoIds;
 use Database\Factories\AcarsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -22,6 +23,7 @@ use Override;
  * @property string          $id
  * @property string          $pirep_id
  * @property AcarsType       $type
+ * @property PirepPhase|null $phase
  * @property NavaidType|null $nav_type
  * @property int             $order
  * @property string|null     $name
@@ -43,7 +45,6 @@ use Override;
  * @property string|null     $sim_time
  * @property Carbon|null     $created_at
  * @property Carbon|null     $updated_at
- * @property string|null     $source
  * @property float           $altitude
  * @property-read Pirep|null $pirep
  *
@@ -74,9 +75,9 @@ use Override;
  * @method static Builder<static>|Acars whereName($value)
  * @method static Builder<static>|Acars whereNavType($value)
  * @method static Builder<static>|Acars whereOrder($value)
+ * @method static Builder<static>|Acars wherePhase($value)
  * @method static Builder<static>|Acars wherePirepId($value)
  * @method static Builder<static>|Acars whereSimTime($value)
- * @method static Builder<static>|Acars whereSource($value)
  * @method static Builder<static>|Acars whereStatus($value)
  * @method static Builder<static>|Acars whereTransponder($value)
  * @method static Builder<static>|Acars whereType($value)
@@ -88,7 +89,9 @@ use Override;
 #[WithoutIncrementing]
 class Acars extends Model
 {
+    /** @use HasFactory<AcarsFactory> */
     use HasFactory;
+
     use HasNanoIds;
 
     public $table = 'acars';
@@ -97,6 +100,10 @@ class Acars extends Model
         'id',
         'pirep_id',
         'type',
+        // The flight phase this row was recorded in, a PirepPhase code.
+        // `status` holds the same code for anything still reading the old
+        // column.
+        'phase',
         'nav_type',
         'order',
         'name',
@@ -106,6 +113,7 @@ class Acars extends Model
         'lon',
         'distance',
         'heading',
+        'heading_mag',
         'altitude',
         'altitude_agl',
         'altitude_msl',
@@ -114,9 +122,25 @@ class Acars extends Model
         'ias',
         'transponder',
         'autopilot',
+        // Cast but never fillable, so `create()` silently dropped it while the
+        // query-builder update path wrote it — fuel went unrecorded on insert.
+        'fuel',
         'fuel_flow',
+        'pitch',
+        'bank',
+        'on_ground',
+        'gear_up',
+        'g_force',
+        'throttle_pct',
+        'flaps',
+        'beacon_lights',
+        'nav_lights',
+        'strobe_lights',
+        'landing_lights',
+        'logo_lights',
+        'taxi_lights',
+        'wing_lights',
         'sim_time',
-        'source',
         'created_at',
         'updated_at',
     ];
@@ -128,12 +152,14 @@ class Acars extends Model
     {
         return [
             'type'         => AcarsType::class,
+            'phase'        => PirepPhase::class,
             'order'        => 'integer',
             'nav_type'     => NavaidType::class,
             'lat'          => 'float',
             'lon'          => 'float',
             'distance'     => DistanceCast::class,
             'heading'      => 'integer',
+            'heading_mag'  => 'integer',
             'altitude_agl' => 'float',
             'altitude_msl' => 'float',
             'vs'           => 'float',
@@ -142,6 +168,22 @@ class Acars extends Model
             'transponder'  => 'integer',
             'fuel'         => FuelCast::class,
             'fuel_flow'    => 'float',
+            'pitch'        => 'float',
+            'bank'         => 'float',
+            'on_ground'    => 'boolean',
+            'gear_up'      => 'boolean',
+            'g_force'      => 'float',
+            'throttle_pct' => 'float',
+            'flaps'        => 'integer',
+            // Nullable booleans on purpose: null distinguishes "not recorded"
+            // (the field is switched off in Data Config) from a real "off".
+            'beacon_lights'  => 'boolean',
+            'nav_lights'     => 'boolean',
+            'strobe_lights'  => 'boolean',
+            'landing_lights' => 'boolean',
+            'logo_lights'    => 'boolean',
+            'taxi_lights'    => 'boolean',
+            'wing_lights'    => 'boolean',
         ];
     }
 

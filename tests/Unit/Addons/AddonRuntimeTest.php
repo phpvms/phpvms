@@ -37,24 +37,29 @@ function makeAddonBootCache(array $overrides = []): AddonBootCache
 // Setup / teardown
 // ---------------------------------------------------------------------------
 
+// BootCache reads config('addons.paths.boot_cache'), which tests/Pest.php
+// redirects to a unique temp file per test. Clean up THAT path — never the real
+// base_path('bootstrap/cache/addons.php'): it is a single file shared by every
+// test (and parallel worker), so deleting it here makes later tests boot without
+// the addon registry (ComponentNotFound / CommandNotFound cascades).
 beforeEach(function (): void {
-    $path = base_path('bootstrap/cache/addons.php');
+    $path = config('addons.paths.boot_cache');
     if (file_exists($path)) {
         unlink($path);
     }
 
-    foreach (glob(base_path('bootstrap/cache/addons.php.tmp*')) ?: [] as $tmp) {
+    foreach (glob($path.'.tmp*') ?: [] as $tmp) {
         @unlink($tmp);
     }
 });
 
 afterEach(function (): void {
-    $path = base_path('bootstrap/cache/addons.php');
+    $path = config('addons.paths.boot_cache');
     if (file_exists($path)) {
         unlink($path);
     }
 
-    foreach (glob(base_path('bootstrap/cache/addons.php.tmp*')) ?: [] as $tmp) {
+    foreach (glob($path.'.tmp*') ?: [] as $tmp) {
         @unlink($tmp);
     }
 });
@@ -184,11 +189,14 @@ it('hostile registryId round-trips unchanged through write()/read()', function (
 // No leftover temp files
 // ---------------------------------------------------------------------------
 
-it('leaves no leftover temp files in bootstrap/cache after write()', function (): void {
+it('leaves no leftover temp files after write()', function (): void {
     $runtime = new BootCache();
     $runtime->write([makeAddonBootCache()]);
 
-    $tmpFiles = glob(base_path('bootstrap/cache/addons.php.tmp*')) ?: [];
+    // write() creates its temp file next to the configured boot cache path, so
+    // glob that path — not the hard-coded bootstrap/cache location, which the
+    // per-test config redirect no longer points at.
+    $tmpFiles = glob(config('addons.paths.boot_cache').'.tmp*') ?: [];
 
     expect($tmpFiles)->toBeEmpty();
 });

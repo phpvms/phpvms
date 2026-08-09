@@ -14,19 +14,23 @@ export default defineConfig({
         "resources/css/filament/admin/theme.css",
         "resources/js/apps/admin/app.js",
         "resources/js/apps/admin/routeforge/main.tsx",
-        // "resources/js/apps/seven/app.js",
+        "resources/js/apps/seven/entrypoint.js",
+        "resources/js/apps/seven/app.js",
         // "public/assets/global/js/jquery.js",
         // "public/assets/global/js/simbrief.apiv1.js",
       ],
       refresh: [...refreshPaths, "app/Filament/**", "modules/**/**"],
     }),
   ],
-  // server: {
-  //   hmr: {
-  //     host: "localhost",
-  //   },
-  //   watch: {
-  //     usePolling: true,
-  //   },
-  // },
+  server: {
+    watch: {
+      // Never watch dependency or runtime-churn dirs. Critically, a linked
+      // module (e.g. phpvms-vacentral) carries a `vendor/phpvms/phpvms`
+      // symlink back to the project root, so following it would make the
+      // root's storage/ writes (logs, sessions, debugbar — written on every
+      // request) look like `modules/**` changes and trigger an endless
+      // full-reload loop that makes the installer page unusable.
+      ignored: ["**/vendor/**", "**/storage/**"],
+    },
+  },
 });

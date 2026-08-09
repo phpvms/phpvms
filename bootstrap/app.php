@@ -7,6 +7,7 @@ use App\Exceptions\Converters\SymfonyException;
 use App\Exceptions\Converters\ValidationException;
 use App\Exceptions\Unauthenticated;
 use App\Http\Middleware\ApiAuth;
+use App\Http\Middleware\CheckApiScope;
 use App\Http\Middleware\DisableActivityLoggingByDefault;
 use App\Http\Middleware\InstalledCheck;
 use App\Http\Middleware\SetActiveLanguage;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
@@ -50,11 +52,29 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'api.auth'           => ApiAuth::class,
+            'scope'              => CheckApiScope::class,
+            'scopes'             => CheckApiScope::class,
             'update_pending'     => UpdatePending::class,
             'role'               => RoleMiddleware::class,
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+    })
+    ->booted(function (): void {
+        // Trust the reverse proxy (e.g. Caddy/nginx) that terminates TLS so
+        // Request::isSecure() honours X-Forwarded-Proto and generated URLs use
+        // https. Configured here (not in withMiddleware) because config is not
+        // yet bound when the middleware closure runs, and trustProxies(at:) does
+        // not accept a Closure. See config/http.php 'trusted_proxies'.
+        $proxies = config('http.trusted_proxies');
+        TrustProxies::at($proxies === '*' ? '*' : explode(',', $proxies));
+        TrustProxies::withHeaders(
+            Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO |
+            Request::HEADER_X_FORWARDED_AWS_ELB
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontReport([

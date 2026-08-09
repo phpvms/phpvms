@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\FlightType;
 use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
+use App\Models\SimBriefAirframe;
 use App\Models\Subfleet;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Support\Collection;
@@ -51,6 +52,27 @@ it('persists capability values through the cast', function (): void {
     $rawJson = DB::table('subfleets')->where('id', $subfleet->id)->value('route_types');
     expect(json_decode((string) $rawJson, true))
         ->toMatchArray([FlightType::SCHED_PAX->value, FlightType::CHARTER_PAX_ONLY->value]);
+});
+
+it('persists the simbrief airframe_id selected from the airframes table', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $subfleet = Subfleet::factory()->create();
+
+    SimBriefAirframe::create([
+        'icao'        => 'B738',
+        'name'        => 'iniBuilds (MSFS) - 737-800',
+        'airframe_id' => '3_1677576294832',
+    ]);
+
+    Livewire::test(EditSubfleet::class, ['record' => $subfleet->id])
+        ->set('data.simbrief_type', '3_1677576294832')
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect($subfleet->refresh()->simbrief_type)->toBe('3_1677576294832');
 });
 
 it('persists empty route_types selection as empty collection', function (): void {

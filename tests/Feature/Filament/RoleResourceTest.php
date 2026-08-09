@@ -9,6 +9,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\Filament\RolePolicy;
+use App\Services\PermissionRegistry;
 use Livewire\Livewire;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -35,11 +36,53 @@ it('creates a role with the selected matrix permissions', function (): void {
     expect($role->hasPermissionTo('delete:airline'))->toBeFalse();
 });
 
+it('classifies a registered API scope into its own group, out of the scope tabs', function (): void {
+    app(PermissionRegistry::class)->registerApiScope('x:test-scope', 'API', 'Test API Scope');
+
+    $apiNames = collect(RoleResource::apiPermissionGroups())
+        ->flatMap(static fn (array $group): array => array_column($group['permissions'], 'name'));
+    $scopeNames = collect(RoleResource::scopePermissionGroups())
+        ->flatMap(static fn (array $group): array => array_column($group['permissions'], 'name'));
+
+    expect($apiNames)->toContain('x:test-scope')
+        ->and($scopeNames)->not->toContain('x:test-scope');
+});
+
+it('renders the API Scopes tab and round-trips an API scope selection', function (): void {
+    app(PermissionRegistry::class)->registerApiScope('x:test-scope', 'API', 'Test API Scope');
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    Livewire::test(CreateRole::class)
+        ->assertSee('API Scopes')
+        ->assertSee('Test API Scope')
+        ->set('data.name', 'Dispatcher')
+        ->set('data.permissions.custom_API', ['x:test-scope'])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Role::where('name', 'Dispatcher')->first()?->hasPermissionTo('x:test-scope'))->toBeTrue();
+});
+
+it('shows an empty-state in the API Scopes tab when no API scopes are registered', function (): void {
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    // Fresh registry (the singleton accumulates scopes across tests in-process);
+    // core-only means no provider registered an API scope, so the tab takes its
+    // empty-state branch (the hint itself renders on tab activation).
+    app()->forgetInstance(PermissionRegistry::class);
+    expect(RoleResource::apiPermissionGroups())->toBe([]);
+
+    Livewire::test(CreateRole::class)->assertSee('API Scopes');
+});
+
 it('recreates a registry permission missing from the database when saving', function (): void {
     $admin = createAdminUser();
     $this->actingAs($admin);
 
-    $role = Role::create(['name' => 'Dispatcher', 'guard_name' => 'web']);
+    $role = Role::factory()->create(['name' => 'Dispatcher', 'guard_name' => 'web']);
 
     // Simulate the web matrix offering a permission the console sync never
     // persisted (e.g. a module access permission only visible in web context).
@@ -59,7 +102,7 @@ it('drops permission names that are not in the registry', function (): void {
     $admin = createAdminUser();
     $this->actingAs($admin);
 
-    $role = Role::create(['name' => 'Dispatcher', 'guard_name' => 'web']);
+    $role = Role::factory()->create(['name' => 'Dispatcher', 'guard_name' => 'web']);
 
     RoleResource::syncRolePermissions($role, ['view:airline', 'bogus:permission']);
 
@@ -71,7 +114,7 @@ it('reflects the current grants in the matrix when editing', function (): void {
     $admin = createAdminUser();
     $this->actingAs($admin);
 
-    $role = Role::create(['name' => 'Moderator', 'guard_name' => 'web']);
+    $role = Role::factory()->create(['name' => 'Moderator', 'guard_name' => 'web']);
     $role->givePermissionTo('delete:user');
 
     Livewire::test(EditRole::class, ['record' => $role->id])

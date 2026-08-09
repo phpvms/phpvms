@@ -32,7 +32,9 @@ use Override;
 #[WithoutTimestamps]
 class FlightField extends Model
 {
+    /** @use HasFactory<FlightFieldFactory> */
     use HasFactory;
+
     use HasSlug;
 
     public $table = 'flight_fields';

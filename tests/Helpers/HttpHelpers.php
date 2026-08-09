@@ -7,6 +7,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Carbon;
+use Laravel\Passport\Passport;
 
 /**
  * Read a file from the data directory
@@ -74,9 +75,26 @@ function transformData(array &$data): array
 }
 
 /**
- * Authenticate as the given user for the api
+ * Authenticate as the given user for the api using the legacy api_key
  */
 function apiAs(User $user): void
 {
     test()->withHeader('Authorization', $user->api_key);
+}
+
+/**
+ * Authenticate as the given user via a Passport OAuth token carrying the given
+ * scopes. Defaults to the wildcard scope (full access). Use this to exercise
+ * scope-protected routes without going through the full OAuth flow.
+ *
+ * @param list<string> $scopes
+ */
+function apiAsToken(User $user, array $scopes = ['*']): void
+{
+    Passport::actingAs($user, $scopes);
+
+    // ApiAuth only consults the Passport guard when a bearer token is present.
+    // Passport::actingAs stubs the guard, so the token value is irrelevant —
+    // this header just makes the request take the Passport path.
+    test()->withHeader('Authorization', 'Bearer pest-token');
 }

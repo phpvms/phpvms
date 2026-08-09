@@ -56,19 +56,14 @@ users:
     opt_in: 0
     toc_accepted: 1
 
+# Only the super-admin role is seeded by default (RolesPermissionsSeeder); no
+# default "user"/pilot role exists anymore, so the sample data assigns just the
+# super-admin (role_id 1) to the admin user. Assigning a nonexistent role_id 2
+# here would raise a foreign-key violation during the demo install.
 model_has_roles:
   - role_id: 1
     model_type: App\Models\User
     model_id: 1
-  - role_id: 2
-    model_type: App\Models\User
-    model_id: 1
-  - role_id: 2
-    model_type: App\Models\User
-    model_id: 2
-  - role_id: 2
-    model_type: App\Models\User
-    model_id: 3
 
 user_fields:
   - id: 1

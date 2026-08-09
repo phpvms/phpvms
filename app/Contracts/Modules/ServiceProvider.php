@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Modules;
 
+use App\Support\RegistersApiScopes;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -35,6 +36,8 @@ use ReflectionNamedType;
  */
 abstract class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
+    use RegistersApiScopes;
+
     /**
      * A boot method is required, even if it doesn't do anything.
      * https://laravel.com/docs/7.x/providers#the-boot-method

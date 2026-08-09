@@ -10,7 +10,7 @@ use App\Contracts\Factory;
 use App\Models\Role;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<Role>
+ * @extends Factory<Role>
  */
 class RoleFactory extends Factory
 {

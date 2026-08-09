@@ -22,6 +22,7 @@ public/js/app
 # esbuild output for Filament AlpineComponents (built by `node bin/build.js`).
 # Built in CI; not committed.
 resources/js/dist
+storage/framework/testing/
 storage/*.key
 storage/settings.json
 storage/*.sqlite
@@ -116,3 +117,5 @@ modules_statuses.json
 frankenphp
 
 frankenphp-worker.php
+public/vendor/**
+public/css/phpvms/**

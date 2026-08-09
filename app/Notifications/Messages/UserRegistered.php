@@ -19,7 +19,6 @@ class UserRegistered extends Notification implements ShouldQueue
     public function __construct(
         private readonly User $user
     ) {
-        parent::__construct();
 
         $this->setMailable(
             'Welcome to '.config('app.name').'!',

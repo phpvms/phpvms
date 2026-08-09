@@ -24,7 +24,7 @@ class EventRequest extends FormRequest
     {
         return [
             'events'              => 'required|array',
-            'events.*.event'      => 'required',
+            'events.*.event'      => 'required|string|max:1000',
             'events.*.lat'        => 'sometimes|numeric',
             'events.*.lon'        => 'sometimes|numeric',
             'events.*.created_at' => 'sometimes|date',

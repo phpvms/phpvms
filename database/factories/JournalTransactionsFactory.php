@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace Database\Factories;
@@ -11,7 +13,7 @@ use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<JournalTransaction>
+ * @extends Factory<JournalTransaction>
  */
 class JournalTransactionsFactory extends Factory
 {

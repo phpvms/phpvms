@@ -106,6 +106,12 @@ class YamlDatabaseService extends Service
             }
 
             $this->resetPostgresSequence($table, $id_column);
+
+            // Raw writes here bypass SettingService::store(), so drop the
+            // per-request memo to keep same-request reads coherent.
+            if ($table === 'settings') {
+                app(SettingService::class)->clearMemo();
+            }
         }
 
         return $imported;

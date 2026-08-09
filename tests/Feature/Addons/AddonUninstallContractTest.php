@@ -29,6 +29,11 @@ beforeEach(function (): void {
         ],
     ]));
 
+    // A valid addon requires composer.json alongside module.json.
+    File::put($this->addonPath.'/composer.json', json_encode([
+        'autoload' => ['psr-4' => ['Modules\\FixtureContract\\' => 'app/']],
+    ]));
+
     // Migration with a deliberately no-op down(): proves uninstall drops the
     // table via the declared contract, not via the migration's down().
     File::put($migrationDir.'/2099_01_01_000000_create_fixture_contract_things_table.php', <<<'PHP'
@@ -56,10 +61,11 @@ beforeEach(function (): void {
         PHP);
 
     Addon::factory()->create([
-        'name'    => 'FixtureContract',
-        'version' => '1.0.0',
-        'path'    => $this->addonPath,
-        'enabled' => false,
+        'name'      => 'FixtureContract',
+        'namespace' => 'Modules\\FixtureContract',
+        'version'   => '1.0.0',
+        'path'      => $this->addonPath,
+        'enabled'   => false,
     ]);
 
     Artisan::call('migrate', [
@@ -80,13 +86,13 @@ afterEach(function (): void {
 it('drops declared tables on uninstall even when down() is a no-op', function (): void {
     expect(Schema::hasTable('fixture_contract_things'))->toBeTrue();
 
-    Kvp::updateOrCreate(['key' => 'addon_seeded:FixtureContract:1.0.0'], ['value' => '1']);
+    Kvp::updateOrCreate(['key' => 'addon_seeded:modules-fixturecontract:1.0.0'], ['value' => '1']);
 
     $this->registry->delete('FixtureContract', true);
 
     expect(Schema::hasTable('fixture_contract_things'))->toBeFalse()
         ->and(DB::table('migrations')->where('migration', 'like', '%create_fixture_contract_things_table')->exists())->toBeFalse()
-        ->and(Kvp::where('key', 'addon_seeded:FixtureContract:1.0.0')->exists())->toBeFalse()
+        ->and(Kvp::where('key', 'addon_seeded:modules-fixturecontract:1.0.0')->exists())->toBeFalse()
         ->and(Addon::query()->where('name', 'FixtureContract')->exists())->toBeFalse();
 });
 

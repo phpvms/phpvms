@@ -6,9 +6,6 @@ use App\Addons\Support\BootCache;
 use App\Models\Addon;
 use App\Providers\AddonServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
-use App\Providers\ModulesServiceProvider;
-
-// imported only for the negative "absent from providers.php" assertion below
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Task 6: Cutover — nwidart loader retired, addon engine is live
@@ -17,7 +14,10 @@ use App\Providers\ModulesServiceProvider;
 it('ModulesServiceProvider is NOT in bootstrap/providers.php', function (): void {
     $providers = require base_path('bootstrap/providers.php');
 
-    expect(array_search(ModulesServiceProvider::class, $providers, true))
+    // String literal, not ::class -- the class was deleted in the addons
+    // refactor, which is exactly what this test asserts. Referencing it as
+    // ::class would make the test depend on the thing it says must not exist.
+    expect(array_search('App\Providers\ModulesServiceProvider', $providers, true))
         ->toBeFalse('ModulesServiceProvider must be removed from providers list');
 });
 

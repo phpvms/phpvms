@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Schemas;
 
 use App\Enums\AircraftStatus;
 use App\Models\Airport;
+use App\Models\SimBriefAirframe;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -27,9 +28,29 @@ class AircraftForm
                             ->required()
                             ->string(),
 
-                        TextInput::make('icao')
+                        Select::make('icao')
                             ->label('ICAO')
-                            ->string(),
+                            ->searchable()
+                            ->native(false)
+                            ->getSearchResultsUsing(fn (string $search): array => SimBriefAirframe::query()
+                                ->where(function ($query) use ($search): void {
+                                    $query->where('icao', 'like', sprintf('%%%s%%', $search))
+                                        ->orWhere('name', 'like', sprintf('%%%s%%', $search));
+                                })
+                                ->orderBy('icao')
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn (SimBriefAirframe $airframe): array => [$airframe->icao => $airframe->icao.' - '.$airframe->name])
+                                ->all())
+                            ->getOptionLabelUsing(function (?string $value): ?string {
+                                if (blank($value)) {
+                                    return null;
+                                }
+
+                                $name = SimBriefAirframe::where('icao', $value)->value('name');
+
+                                return filled($name) ? $value.' - '.$name : $value;
+                            }),
 
                         Select::make('status')
                             ->label(__('common.status'))
@@ -61,10 +82,6 @@ class AircraftForm
 
                         TextInput::make('fin')
                             ->label('FIN')
-                            ->string(),
-
-                        TextInput::make('simbrief_type')
-                            ->label(__('common.simbrief_airframe_id'))
                             ->string(),
 
                         TextInput::make('hex_code')

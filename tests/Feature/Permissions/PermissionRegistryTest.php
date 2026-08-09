@@ -6,7 +6,6 @@ use App\Addons\Models\AddonBootCache;
 use App\Addons\Support\BootCache;
 use App\Models\User;
 use App\Services\PermissionRegistry;
-use Modules\VMSAcars\Models\Rule;
 
 it('exposes three abilities per resource subject', function (): void {
     $registry = app(PermissionRegistry::class);
@@ -71,7 +70,7 @@ it('attributes app classes to the core scope and module classes to their module'
     expect($registry->moduleOf(User::class))->toBeNull();
     // Plain class strings — moduleOf() only inspects the namespace, so no real
     // addon needs to be installed.
-    expect($registry->moduleOf(Rule::class))->toBe('VMSAcars');
+    expect($registry->moduleOf('Modules\\VMSAcars\\Models\\Rule'))->toBe('VMSAcars');
     expect($registry->moduleOf('Modules\\Awards\\Filament\\Pages\\Foo'))->toBe('Awards');
 
     expect($registry->moduleKey('VMSAcars'))->toBe('vmsacars');
@@ -136,4 +135,33 @@ it('lets modules register custom permissions at runtime', function (): void {
     $group = collect($registry->grouped())->firstWhere('key', 'custom:Reports');
     expect($group)->not->toBeNull();
     expect($group['permissions'][0]['name'])->toBe('export-data');
+});
+
+it('is resolved as a singleton so registrations accumulate across callers', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->registerApiScope('x:first', 'API');
+
+    // Resolving again must return the SAME instance, not a fresh one, or the
+    // second registration below would be lost to a separate object.
+    $again = app(PermissionRegistry::class);
+    $again->registerApiScope('x:second', 'API');
+
+    expect($registry)->toBe($again);
+    expect(app(PermissionRegistry::class)->apiScopes())->toContain('x:first', 'x:second');
+});
+
+it('registers an API scope as both a permission and an API scope', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->registerApiScope('x:test', 'API', 'Test Scope');
+
+    expect($registry->all())->toContain('x:test');
+    expect($registry->apiScopes())->toContain('x:test');
+});
+
+it('does not treat a plain registered permission as an API scope', function (): void {
+    $registry = app(PermissionRegistry::class);
+    $registry->register('plain-permission', 'Custom');
+
+    expect($registry->all())->toContain('plain-permission');
+    expect($registry->apiScopes())->not->toContain('plain-permission');
 });

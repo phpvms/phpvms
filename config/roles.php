@@ -45,6 +45,11 @@ return [
     'custom_permissions' => [
         'Developers' => [
             'view-logs' => 'View Logs',
+            // The addons/modules area is now served by the bundled addon-manager
+            // module page (getPermissionKey 'modules'), but the permission is core:
+            // the admin menu and roles reference `view:modules` whether or not the
+            // module is loaded, so declare it here instead of depending on discovery.
+            'view:modules' => 'View Addons',
         ],
         // Backup action permissions are contributed by the Backups page so they
         // appear in the same group as its `view` permission.

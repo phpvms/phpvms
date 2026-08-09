@@ -26,6 +26,7 @@
     "ext-bcmath": "*",
     "ext-pdo": "*",
     "ext-intl": "*",
+    "ext-sodium": "*",
     "ext-zip": "*",
     "fisharebest/ext-calendar": "^2.5",
     "symfony/polyfill-iconv": "*",
@@ -96,7 +97,9 @@
     "laravel/octane": "^2.17",
     "spatie/laravel-permission": "^8.0",
     "inertiajs/inertia-laravel": "*",
-    "spatie/laravel-typescript-transformer": "*"
+    "spatie/laravel-typescript-transformer": "*",
+    "laravel/passport": "^13.7",
+    "arthurpar06/laravel-discord-notifier": "^0.2"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
@@ -108,17 +111,19 @@
     "rector/rector": "^2.4.2",
     "driftingly/rector-laravel": "^2.3",
     "laravel/pail": "^1.2.6",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-type-coverage": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.1",
-    "pestphp/pest-plugin-livewire": "^4.0",
-    "pestphp/pest-plugin-arch": "^4.0.2",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-type-coverage": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
+    "pestphp/pest-plugin-livewire": "^5.0",
+    "pestphp/pest-plugin-arch": "^5.0",
     "barryvdh/laravel-ide-helper": "^3.7.0",
     "larastan/larastan": "^3.9.6",
     "fruitcake/laravel-debugbar": "^4.2.8",
-    "laravel/boost": "^2.0",
+    "laravel/boost": "^2.4",
     "laravel/tinker": "^3.0",
-    "carthage-software/mago": "^1.29.0"
+    "carthage-software/mago": "^1.29.0",
+    "pestphp/pest-plugin-phpstan": "^5.0",
+    "pestphp/pest-plugin-agent": "^5.0"
   },
   "autoload": {
     "files": [
@@ -186,6 +191,8 @@
       "git diff --exit-code resources/js/apps/fe-vue/src/types/generated.d.ts"
     ],
     "test:arch": "pest --filter=arch",
+    "test:mysql": "bin/test-db.sh mysql",
+    "test:pgsql": "bin/test-db.sh pgsql",
     "test:type-coverage": "pest --type-coverage",
     "test:unit": "pest --parallel --coverage",
     "tests": "composer run test",
@@ -201,13 +208,15 @@
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
       "@php artisan key:generate",
       "@php artisan migrate --force",
+      "@php artisan passport:keys --force",
       "pnpm install --ignore-scripts",
       "pnpm run build",
       "@php artisan filament:assets"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
+      "@php artisan optimize:clear",
+      "pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0 --port 7474\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
     ]
   },
   "config": {

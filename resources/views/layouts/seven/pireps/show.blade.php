@@ -177,15 +177,15 @@
         <span>@lang('common.status')</span>
         @php
         $statusClass = 'bg-info';
-        if ($pirep->status === PirepStatus::SCHEDULED) {
+        if ($pirep->status === PirepPhase::SCHEDULED) {
           $statusClass = 'bg-secondary';
-        } elseif ($pirep->status === PirepStatus::ENROUTE) {
+        } elseif ($pirep->status === PirepPhase::ENROUTE) {
           $statusClass = 'bg-primary';
-        } elseif ($pirep->status === PirepStatus::ARRIVED) {
+        } elseif ($pirep->status === PirepPhase::ARRIVED) {
           $statusClass = 'bg-success';
-        } elseif ($pirep->status === PirepStatus::CANCELLED) {
+        } elseif ($pirep->status === PirepPhase::CANCELLED) {
           $statusClass = 'bg-danger';
-        } elseif ($pirep->status === PirepStatus::DIVERTED) {
+        } elseif ($pirep->status === PirepPhase::DIVERTED) {
           $statusClass = 'bg-warning';
         }
         @endphp
@@ -267,7 +267,7 @@
     </div>
   </div>
 
-  @if(count($pirep->acars_logs) > 0)
+  @if(count($pirep->events) > 0)
     <div class="separator"></div>
     <div class="row">
       <div class="col-12">
@@ -276,7 +276,7 @@
       <div class="col-12">
         <table class="table table-hover table-condensed" id="users-table">
           <tbody>
-          @foreach($pirep->acars_logs->sortBy('created_at') as $log)
+          @foreach($pirep->events as $log)
             <tr>
               <td nowrap="true">{{ show_datetime($log->created_at) }}</td>
               <td>{{ $log->log }}</td>

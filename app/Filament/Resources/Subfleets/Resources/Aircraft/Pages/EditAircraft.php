@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 
+use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Models\Aircraft;
 use App\Models\File;
@@ -14,7 +15,15 @@ use Override;
 
 class EditAircraft extends EditRecord
 {
+    use ReversePrimaryButtons;
+
     protected static string $resource = AircraftResource::class;
+
+    #[Override]
+    protected function getFormActions(): array
+    {
+        return $this->reversePrimaryButtons(parent::getFormActions());
+    }
 
     #[Override]
     protected function getHeaderActions(): array

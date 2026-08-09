@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\Service;
+use App\Enums\PirepPhase;
 use App\Enums\PirepState;
-use App\Enums\PirepStatus;
 use App\Exceptions\DuplicateFlight;
 use App\Models\Bid;
 use App\Models\Flight;
@@ -269,14 +269,14 @@ class FlightService extends Service
     public function removeExpiredRepositionFlights(): void
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, Flight> $flights */
-        $flights = Flight::where('route_code', PirepStatus::DIVERTED)->get();
+        $flights = Flight::where('route_code', PirepPhase::DIVERTED)->get();
 
         foreach ($flights as $flight) {
             $diverted_pirep = Pirep::with('aircraft')
                 ->where([
                     'user_id'        => $flight->user_id,
                     'arr_airport_id' => $flight->dpt_airport_id,
-                    'status'         => PirepStatus::DIVERTED,
+                    'status'         => PirepPhase::DIVERTED,
                     'state'          => PirepState::ACCEPTED,
                 ])
                 ->orderBy('submitted_at', 'desc')

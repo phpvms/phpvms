@@ -16,7 +16,6 @@ class NewsAdded extends Notification implements ShouldQueue
     public function __construct(
         private readonly News $news
     ) {
-        parent::__construct();
 
         $this->setMailable(
             $news->subject,

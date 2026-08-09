@@ -20,8 +20,9 @@ class ManifestParser
     /**
      * Parse a module directory's manifest files into a typed ManifestData.
      *
-     * Returns null when module.json is absent or contains invalid JSON so the
-     * caller can skip-and-log rather than crashing boot (D-15).
+     * Returns null when module.json OR composer.json is absent or contains
+     * invalid JSON (both are required) so the caller can skip-and-log rather
+     * than crashing boot (D-15).
      */
     public function parse(string $addonPath): ?AddonManifest
     {
@@ -38,14 +39,19 @@ class ManifestParser
             return null;
         }
 
-        // Decode composer.json once; passed to helpers to avoid triple re-read.
+        // A valid addon MUST ship both module.json and composer.json. The
+        // composer.json is authoritative for the PSR-4 namespace + autoload path,
+        // so an addon without it is not loadable — skip it (D-07).
         $composerPath = $addonPath.'/composer.json';
-        $composerData = file_exists($composerPath)
-            ? (json_decode((string) file_get_contents($composerPath), true) ?? [])
-            : [];
+
+        if (!file_exists($composerPath)) {
+            return null;
+        }
+
+        $composerData = json_decode((string) file_get_contents($composerPath), true);
 
         if (!is_array($composerData)) {
-            $composerData = [];
+            return null;
         }
 
         $schema_version = $data['schema_version'] ?? 1;

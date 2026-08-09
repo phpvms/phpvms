@@ -18,7 +18,6 @@ class InviteLink extends Notification
     public function __construct(
         private readonly Invite $invite
     ) {
-        parent::__construct();
 
         $this->setMailable(
             'You have been invited to join '.config('app.name'),

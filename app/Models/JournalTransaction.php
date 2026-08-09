@@ -9,6 +9,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Observers\JournalTransactionObserver;
+use Database\Factories\JournalTransactionsFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Builder;
@@ -56,6 +57,7 @@ use Override;
 #[WithoutIncrementing]
 class JournalTransaction extends Model
 {
+    /** @use HasFactory<JournalTransactionsFactory> */
     use HasFactory;
 
     protected $table = 'journal_transactions';

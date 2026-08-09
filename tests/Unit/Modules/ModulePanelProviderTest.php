@@ -14,7 +14,7 @@ it('configures id, path, brand and the panel switcher from the base contract', f
     expect($panel->getId())->toBe('sample')
         ->and($panel->getPath())->toBe('admin/sample')
         ->and($panel->hasPlugin('panel-switcher'))->toBeTrue();
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it("discovers the module's own Filament resources", function (): void {
     $provider = new SampleAdminPanelProvider(app());
@@ -23,4 +23,4 @@ it("discovers the module's own Filament resources", function (): void {
     $panel->register();
 
     expect($panel->getResources())->toContain(SampleResource::class);
-});
+})->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');

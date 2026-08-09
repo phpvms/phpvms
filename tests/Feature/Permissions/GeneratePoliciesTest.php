@@ -2,7 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\GeneratePolicies;
+use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\File;
+
+/**
+ * Invoke the protected modulePathForClass resolver on a fresh command.
+ */
+function resolveModulePath(string $class): ?string
+{
+    $command = new GeneratePolicies();
+    $method = (new ReflectionMethod($command, 'modulePathForClass'));
+
+    return $method->invoke($command, $class);
+}
 
 it('generates a thin policy for a resource model that lacks one', function (): void {
     $path = app_path('Policies/Filament/FlightBundlePolicy.php');
@@ -39,4 +52,21 @@ it('regenerates a valid stub with --force', function (): void {
     $content = File::get(app_path('Policies/Filament/AwardPolicy.php'));
     expect($content)->toContain('extends BasePolicy');
     expect($content)->toContain("\$subject = 'award'");
+});
+
+it('resolves a module policy path via the most specific PSR-4 prefix', function (): void {
+    /** @var ClassLoader $loader */
+    $loader = require base_path('vendor/autoload.php');
+
+    // A module that maps its namespace to an app/ subdirectory must keep the
+    // app/ segment; the generic Modules\ => modules fallback must not win.
+    $loader->addPsr4('Modules\\Foo\\', base_path('modules/Foo/app'));
+
+    try {
+        $path = resolveModulePath('Modules\\Foo\\Policies\\Filament\\BarPolicy');
+
+        expect($path)->toEndWith('modules/Foo/app/Policies/Filament/BarPolicy.php');
+    } finally {
+        $loader->setPsr4('Modules\\Foo\\', []);
+    }
 });

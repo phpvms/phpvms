@@ -10,10 +10,7 @@ use App\Events\CronNightly;
 use App\Events\CronThirtyMinute;
 use App\Events\CronWeekly;
 use App\Services\CronService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
-
-Log::setDefaultDriver('cron_daily');
 
 Schedule::call(static function (): void {
     event(new CronFiveMinute());

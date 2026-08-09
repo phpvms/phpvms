@@ -40,7 +40,9 @@ use Kyslik\ColumnSortable\Sortable;
  */
 class News extends Model
 {
+    /** @use HasFactory<NewsFactory> */
     use HasFactory;
+
     use Notifiable;
     use Sortable;
 

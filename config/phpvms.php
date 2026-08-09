@@ -16,6 +16,22 @@ return [
     'installed' => env('PHPVMS_INSTALLED', false),
 
     /*
+     * Base URL for the hosted phpVMS API (airport lookups, etc).
+     */
+    'api_url' => env('PHPVMS_API_URL', 'https://api.phpvms.net'),
+
+    /*
+     * The site's own language, for anything addressed to everyone rather than
+     * to a visitor — Discord channel announcements, for instance.
+     *
+     * Reads the same APP_LOCALE as config('app.locale'), but nothing writes to
+     * it: App::setLocale() (which SetActiveLanguage calls on every request)
+     * overwrites config('app.locale') with the visitor's language, so that key
+     * cannot answer "what language is this site in?".
+     */
+    'default_locale' => env('APP_LOCALE', 'en'),
+
+    /*
      * Avatar resize settings
      * feel free to edit the following lines.
      * Both parameters are in px.
@@ -67,16 +83,6 @@ return [
      * URL for fetching SimBrief OFP
      */
     'simbrief_ofp_url' => 'https://www.simbrief.com/api/xml.fetcher.php',
-
-    /*
-     * Your vaCentral API key
-     */
-    'vacentral_api_key' => env('VACENTRAL_API_KEY', ''),
-
-    /*
-     * vaCentral API URL. You likely don't need to change this
-     */
-    'vacentral_api_url' => 'https://api.vacentral.net',
 
     /*
      * Misc Settings
@@ -171,6 +177,29 @@ return [
     'pagination' => [
         'limit' => env('PHPVMS_PAGINATION_LIMIT', 50),
         'max'   => env('PHPVMS_PAGINATION_MAX', 100),
+    ],
+
+    /*
+     * Subfleet resolution limits.
+     *
+     * `inherited_list_limit` caps how many bundle-inherited subfleets the
+     * `Flight::withAccessibleSubfleets()` list scope loads per bundle.
+     *
+     * It bounds hydrated PHP objects, not queries — the scope runs a constant
+     * number of queries whatever this is set to, and however many distinct
+     * bundles a page spans. What scales is the per-flight copy the scope makes
+     * of its bundle's subfleets (needed so one flight's fare overrides cannot
+     * leak onto another on the same page): roughly `page size x limit` Subfleet
+     * models, plus their fares. Page size is capped by `pagination.max` above,
+     * so at the default 25 a full 100-flight page tops out around 2,500.
+     *
+     * A bundle trimmed by this cap logs one `debug` line per request naming the
+     * bundle, its accessible subfleet count and the cap. Single-flight
+     * resolution (`Flight::accessibleSubfleetsFor()`) is not capped, so a list
+     * row can show fewer subfleets than the flight's own page.
+     */
+    'subfleets' => [
+        'inherited_list_limit' => env('PHPVMS_INHERITED_SUBFLEET_LIMIT', 25),
     ],
 
     /**
