@@ -134,8 +134,8 @@ test('no constraint queries a relationship', function (array $constraints): void
 
     expect($constraints)->not->toBeEmpty();
 })->with([
-    'users'  => UserConstraints::make(...),
-    'pireps' => PirepConstraints::make(...),
+    'users'  => fn (): array => UserConstraints::make(),
+    'pireps' => fn (): array => PirepConstraints::make(),
 ]);
 
 /*

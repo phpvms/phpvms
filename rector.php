@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
@@ -42,6 +43,13 @@ return RectorConfig::configure()
         // the addon directory is absent and PHPStan reports class.notFound.
         StringClassNameToClassConstantRector::class => [
             __DIR__.'/tests/Feature/Permissions/PermissionRegistryTest.php',
+        ],
+        // Pest binds dataset closures to the test-case instance; a first-class
+        // callable of a static method is a static closure and cannot be bound
+        // ("Cannot bind an instance to a static closure"), so datasets must
+        // stay as arrow functions.
+        ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
+            __DIR__.'/tests',
         ],
         FillablePropertyToFillableAttributeRector::class,
         TablePropertyToTableAttributeRector::class,
