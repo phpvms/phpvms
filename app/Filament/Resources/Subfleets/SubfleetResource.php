@@ -99,7 +99,7 @@ class SubfleetResource extends Resource
     #[Override]
     public static function getModelLabel(): string
     {
-        return __('common.subfleet');
+        return trans_choice('common.subfleet', 1);
     }
 
     #[Override]

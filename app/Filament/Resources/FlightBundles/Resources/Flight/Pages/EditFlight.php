@@ -129,7 +129,7 @@ class EditFlight extends EditRecord
             ['id' => 'flight-information', 'label' => __('filament.flight_information'), 'count' => null],
             ['id' => 'scheduling', 'label' => __('filament.scheduling'), 'count' => null],
             ['id' => 'route', 'label' => __('flights.route'), 'count' => null],
-            ['id' => 'subfleets', 'label' => __('common.subfleet'), 'count' => $record->subfleets()->count()],
+            ['id' => 'subfleets', 'label' => trans_choice('common.subfleet', 1), 'count' => $record->subfleets()->count()],
             ['id' => 'fields', 'label' => trans_choice('common.field', 2), 'count' => $record->field_values()->count()],
             ['id' => 'fares', 'label' => trans_choice('pireps.fare', 2), 'count' => $record->fares()->count()],
         ];

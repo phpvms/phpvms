@@ -66,13 +66,13 @@ class SubfleetsRelationManager extends RelationManager
     #[Override]
     protected static function getModelLabel(): string
     {
-        return __('common.subfleet');
+        return trans_choice('common.subfleet', 1);
     }
 
     #[Override]
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return str(__('common.subfleet'))
+        return str(trans_choice('common.subfleet', 1))
             ->plural()
             ->toString();
     }

@@ -27,7 +27,7 @@ return [
     'arrival'         => 'Varış',
     'aircraft'        => 'Uçak',
     'airline'         => 'Havayolu',
-    'subfleet'        => 'Filo',
+    'subfleet'        => 'Filo|Filolar',
     'distance'        => 'Mesafe',
     'fuel'            => 'Yakıt',
     'metar'           => 'METAR',

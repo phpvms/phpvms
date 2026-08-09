@@ -41,7 +41,7 @@ class FleetUtilizationTable extends TableWidget
             ->heading(__('filament.reports_fleet_heading'))
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('common.subfleet'))
+                    ->label(trans_choice('common.subfleet', 1))
                     ->sortable()
                     ->searchable(),
 
@@ -109,7 +109,7 @@ class FleetUtilizationTable extends TableWidget
 
         $writer = app(ExportService::class)->openCsv($path);
         $writer->insertOne([
-            __('common.subfleet'),
+            trans_choice('common.subfleet', 1),
             __('common.type'),
             __('common.aircraft'),
             __('filament.reports_fleet_total_hours'),
