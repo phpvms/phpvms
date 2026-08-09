@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -26,12 +27,12 @@ use Override;
  * @property string|null       $image_url
  * @property string|null       $ref_model_type
  * @property string|null       $ref_model_params
- * @property array|null        $conditions
  * @property AwardTrigger|null $trigger
- * @property int|null          $active
- * @property Carbon|null       $created_at
- * @property Carbon|null       $updated_at
- * @property Carbon|null       $deleted_at
+ * @property-read AwardRule|null $rule
+ * @property int|null    $active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read mixed $image
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
@@ -73,7 +74,6 @@ class Award extends Model
         'image_url',
         'ref_model_type',
         'ref_model_params',
-        'conditions',
         'trigger',
         'active',
     ];
@@ -99,9 +99,14 @@ class Award extends Model
     protected function casts(): array
     {
         return [
-            'conditions' => 'array',
-            'trigger'    => AwardTrigger::class,
+            'trigger' => AwardTrigger::class,
         ];
+    }
+
+    /** @return HasOne<AwardRule, $this> */
+    public function rule(): HasOne
+    {
+        return $this->hasOne(AwardRule::class);
     }
 
     /**
@@ -110,7 +115,25 @@ class Award extends Model
      */
     public function isRulesBased(): bool
     {
-        return $this->conditions !== null;
+        return $this->rule !== null;
+    }
+
+    /**
+     * Upserts or removes this award's ruleset row. A null tree — legacy
+     * award, or criteria cleared — deletes the row.
+     */
+    public function saveConditionsTree(?array $tree): void
+    {
+        if ($tree === null) {
+            $this->rule()->delete();
+            $this->unsetRelation('rule');
+
+            return;
+        }
+
+        $rule = $this->rule()->updateOrCreate([], ['conditions' => $tree]);
+        $rule->syncSnippetsFromConditions();
+        $this->setRelation('rule', $rule);
     }
 
     /**

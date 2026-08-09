@@ -38,20 +38,23 @@ class AwardFactory extends Factory
     }
 
     /**
-     * A rules-based award: conditions is an RQB tree, no legacy ref_model_type.
+     * A rules-based award: an AwardRule row holds the conditions tree, no
+     * legacy ref_model_type.
      */
     public function rules(?array $conditions = null, AwardTrigger $trigger = AwardTrigger::Pirep): static
     {
-        return $this->state(fn (array $attributes): array => [
-            'ref_model_type'   => null,
-            'ref_model_params' => null,
-            'conditions'       => $conditions ?? [
-                'combinator' => 'and',
-                'rules'      => [
-                    ['field' => 'flight_time', 'operator' => '>=', 'value' => 100],
-                ],
-            ],
-            'trigger' => $trigger,
-        ]);
+        $tree = $conditions ?? [
+            'r1' => ['type' => 'flight_time', 'data' => ['operator' => 'isMin', 'settings' => ['number' => 100]]],
+        ];
+
+        return $this
+            ->state(fn (array $attributes): array => [
+                'ref_model_type'   => null,
+                'ref_model_params' => null,
+                'trigger'          => $trigger,
+            ])
+            ->afterCreating(function (Award $award) use ($tree): void {
+                $award->saveConditionsTree($tree);
+            });
     }
 }

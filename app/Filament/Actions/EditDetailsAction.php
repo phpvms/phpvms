@@ -7,8 +7,6 @@ namespace App\Filament\Actions;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Schema;
-use Filament\Support\Enums\Width;
 
 /**
  * The branded settings drawer for summary-strip pages (Tailwind Plus
@@ -27,15 +25,12 @@ class EditDetailsAction
      */
     public static function make(array $fields): EditAction
     {
-        return EditAction::make()
-            ->label(__('common.edit'))
-            ->icon(TablerIcon::Pencil)
-            ->color('gray')
-            ->slideOver()
-            ->modalWidth(Width::Medium)
-            ->extraModalWindowAttributes(['class' => 'drawer-branded'])
-            ->schema(fn (Schema $schema): Schema => $schema
-                ->components($fields)
-                ->columns(1));
+        return Drawer::configure(
+            EditAction::make()
+                ->label(__('common.edit'))
+                ->icon(TablerIcon::Pencil)
+                ->color('gray'),
+            $fields,
+        );
     }
 }
