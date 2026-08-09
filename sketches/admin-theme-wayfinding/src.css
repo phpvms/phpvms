@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+  @custom-variant dark (&:where(.dark, .dark *));
+
+  @theme {
+    --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+    --color-ground: #f4f4f2;
+    --color-slab: #ffffff;
+    --color-ink: #16181a;
+    --color-ink-2: #565c62;
+    --color-ink-3: #6f767d;
+    --color-hairline: #e2e3e0;
+    --color-field: #ffffff;
+    --color-ghost: #f0f0ee;
+    --color-go: #14854f;
+    --color-caution: #b97a00;
+    --color-stop: #c81e1e;
+
+    /* active signal palette (overridden by data-palette) */
+    --color-accent: var(--accent);
+    --color-accent-ink: var(--accent-ink);
+    --color-accent-soft: var(--accent-soft);
+  }
+
+  /* night terminal: every token flips, no dark: variants needed below */
+  .dark {
+    --color-ground: #0f1113;
+    --color-slab: #16191c;
+    --color-ink: #edeff1;
+    --color-ink-2: #a8b0b7;
+    --color-ink-3: #7d868d;
+    --color-hairline: #2a2f33;
+    --color-field: #101315;
+    --color-ghost: #1e2226;
+    --color-go: #34c77b;
+    --color-caution: #e5a812;
+    --color-stop: #f0564d;
+  }
+
+  /* ── palettes: accent field + its text + soft focus tint ─────────── */
+  :root, :root[data-palette="ink"] {
+    --accent: #16181a; --accent-ink: #ffffff; --accent-soft: #ececea;
+  }
+  .dark, .dark[data-palette="ink"] {
+    --accent: #edeff1; --accent-ink: #16181a; --accent-soft: #2a2f33;
+  }
+  :root[data-palette="orange"] { --accent: #ff4f00; --accent-ink: #16181a; --accent-soft: #ffe7db; }
+  .dark[data-palette="orange"]  { --accent: #ff5c14; --accent-ink: #16181a; --accent-soft: #3a1c0a; }
+  :root[data-palette="blue"]   { --accent: #1c6ff2; --accent-ink: #ffffff; --accent-soft: #e3edfd; }
+  .dark[data-palette="blue"]    { --accent: #4d8dff; --accent-ink: #10141c; --accent-soft: #16233c; }
+  :root[data-palette="green"]  { --accent: #0c845e; --accent-ink: #ffffff; --accent-soft: #e0f2ec; }
+  .dark[data-palette="green"]   { --accent: #2fb384; --accent-ink: #10141c; --accent-soft: #12291f; }
+  :root[data-palette="red"]    { --accent: #d92d20; --accent-ink: #ffffff; --accent-soft: #fde6e4; }
+  .dark[data-palette="red"]     { --accent: #f0564d; --accent-ink: #16181a; --accent-soft: #391716; }
+  :root[data-palette="magenta"] { --accent: #b5179e; --accent-ink: #ffffff; --accent-soft: #fae6f5; }
+  .dark[data-palette="magenta"] { --accent: #d544bd; --accent-ink: #16181a; --accent-soft: #33152c; }
+
+  html { -webkit-font-smoothing: antialiased; }
+  body { font-variant-numeric: tabular-nums; }
+
+  /* ── repeated primitives (@apply keeps markup honest) ────────────── */
+  .slab {
+    @apply bg-slab border-[1.5px] border-ink;
+  }
+  .sign {
+    @apply flex w-full items-center gap-2 border-[1.5px] border-ink bg-slab px-[11px] py-2 mb-[5px]
+           text-[13.5px] font-bold tracking-[0.01em] text-ink no-underline
+           transition-colors duration-150;
+  }
+  .sign:hover { @apply bg-ghost; }
+  .sign .arrow { @apply ml-auto font-extrabold text-ink-3 transition-transform duration-200 ease-out; }
+  .sign:hover .arrow { @apply translate-x-[3px] text-ink; }
+  .sign.active { @apply bg-accent text-accent-ink border-accent; }
+  .sign.active .arrow { @apply text-accent-ink; }
+
+  /* palette switch sweeps the whole UI in one coordinated color move */
+  .sign, .stat-hot, .chip, .avatar, .swatch, .btn, .tab, #demoToggle, .accent-bar {
+    transition: background-color 240ms ease-out, color 240ms ease-out, border-color 240ms ease-out;
+  }
+
+  .mono-label {
+    @apply font-mono text-[10px] font-semibold tracking-[0.12em] uppercase text-ink-2;
+  }
+  .panel-head {
+    @apply flex items-center justify-between px-4 py-[11px] border-b-[1.5px] border-ink;
+  }
+  .panel-title { @apply font-extrabold text-[15px] tracking-[-0.01em]; }
+  .panel-meta { @apply font-mono text-[9.5px] tracking-[0.1em] uppercase text-ink-3; }
+
+  .chip {
+    @apply inline-block font-mono text-[9.5px] font-bold tracking-[0.08em] uppercase px-2 py-[3px];
+  }
+  .chip-live { background: var(--accent); color: var(--accent-ink); }
+  .chip-sched { @apply bg-ink text-slab; }
+  .chip-hold { @apply border-[1.5px] border-caution text-caution; }
+
+  .input {
+    @apply w-full appearance-none rounded-none border-[1.5px] border-ink bg-field
+           px-[10px] py-2 text-[13.5px] font-medium text-ink outline-none
+           transition-colors duration-150;
+  }
+  .input::placeholder { @apply text-ink-3; }
+  .input:focus { background: var(--accent-soft); }
+  .input:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .input:disabled { @apply border-dashed border-ink-3 text-ink-3; background: var(--color-ground); }
+  select.input {
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink) 50%), linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 30px;
+  }
+
+  .btn {
+    @apply border-[1.5px] border-ink px-[18px] py-[9px] text-[13.5px] font-bold tracking-[0.01em]
+           cursor-pointer transition-colors duration-150;
+  }
+  .btn-primary { @apply bg-ink text-slab; }
+  .btn-primary:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-ink); }
+  .btn-ghost { @apply bg-slab text-ink; }
+  .btn-ghost:hover { @apply bg-ghost; }
+  .btn:focus-visible, .sign:focus-visible, .input:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  /* toggle state is CSS-driven so palette switches recolor a live toggle */
+  #demoToggle { background: var(--color-field); border-color: var(--color-ink); }
+  #demoToggle .knob { transform: translateX(0); background: var(--color-ink-3); }
+  #demoToggle[aria-checked="true"] { background: var(--accent); border-color: var(--accent-ink); }
+  #demoToggle[aria-checked="true"] .knob { transform: translateX(20px); background: var(--accent-ink); }
+
+  /* palette swatches */
+  .swatch {
+    @apply w-[18px] h-[18px] border-[1.5px] border-ink cursor-pointer p-0;
+    background: var(--sw);
+  }
+  .swatch[aria-pressed="true"] { outline: 2px solid var(--color-ink); outline-offset: 2px; }

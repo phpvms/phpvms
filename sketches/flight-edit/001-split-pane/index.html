@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variant 1 — Split Pane · Flight Edit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a2530;
+    --muted: #64748b;
+    --primary: #067ec1;
+    --primary-weak: #e6f3fb;
+    --danger: #dc2626;
+    --ok: #16a34a;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.06);
+  }
+  body {
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ---------- sidebar ---------- */
+  .sidebar {
+    width: 240px; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 16px 12px; flex-shrink: 0; position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 4px 8px 16px; font-size: 15px; }
+  .logo-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--primary); display: inline-block; }
+  .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 12px 8px 4px; font-weight: 500; }
+  .nav-item { padding: 6px 8px; border-radius: 6px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .nav-item.active { background: var(--primary-weak); color: var(--primary); font-weight: 500; }
+  .nav-item .count { margin-left: auto; background: var(--bg); border-radius: 999px; padding: 0 7px; font-size: 12px; color: var(--muted); }
+
+  /* ---------- main ---------- */
+  .main { flex: 1; padding: 24px 32px; min-width: 0; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .page-head h1 { font-size: 22px; font-weight: 650; letter-spacing: -.01em; }
+  .head-actions { display: flex; gap: 8px; }
+  .btn { padding: 7px 14px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
+  .btn:hover { background: var(--bg); }
+  .btn-danger { color: var(--danger); }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #056ba3; }
+
+  /* ---------- split layout ---------- */
+  .split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-head h2 { font-size: 14px; font-weight: 600; }
+  .card-head .badge { font-size: 12px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 999px; }
+  .card-body { padding: 16px; }
+
+  /* ---------- form grid ---------- */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .field label .req { color: var(--danger); }
+  .input {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); font-size: 13px; color: var(--text); width: 100%;
+  }
+  .input:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: var(--primary); }
+  .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  .span-full { grid-column: 1 / -1; }
+  .hint { font-size: 11px; color: var(--muted); }
+
+  /* ---------- right rail ---------- */
+  .rail { display: flex; flex-direction: column; gap: 20px; }
+  .rail .card-head { cursor: pointer; }
+  .rail .card-head:hover { background: var(--bg); }
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .table td { padding: 9px 10px; border-bottom: 1px solid var(--bg); }
+  .table tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; font-size: 12px; }
+  .attach { color: var(--primary); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .empty { padding: 18px 10px; text-align: center; color: var(--muted); font-size: 13px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ok); background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 9px; border-radius: 999px; font-weight: 500; }
+
+  /* ---------- actions ---------- */
+  .form-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--surface); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+
+  /* collapse behavior */
+  .rail .card-body.collapsed { display: none; }
+  .chev { transition: transform .15s ease; }
+  .rail .card-head[data-open="false"] .chev { transform: rotate(-90deg); }
+
+  @media (max-width: 1100px) {
+    .split { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-mark"></span> phpvms</div>
+    <div class="nav-label">Operations</div>
+    <div class="nav-item">✈ PIREPs <span class="count">2</span></div>
+    <div class="nav-item active">▤ Flights</div>
+    <div class="nav-item">⤳ RouteForge</div>
+    <div class="nav-item">◉ News</div>
+    <div class="nav-item">⛁ Fleet</div>
+    <div class="nav-item">👥 Users</div>
+    <div class="nav-item">₿ Fares</div>
+    <div class="nav-item">$ Finances</div>
+    <div class="nav-item">▤ Reports</div>
+    <div class="nav-label">Config</div>
+    <div class="nav-item">◈ Airlines</div>
+    <div class="nav-item">◎ Airports</div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb">Flights / Default / AP2131</div>
+    <div class="page-head">
+      <h1>Edit AP2131</h1>
+      <div class="head-actions">
+        <button class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+
+    <div class="split">
+      <!-- ============ LEFT: THE FORM ============ -->
+      <div class="card">
+        <div class="card-head"><h2>Flight Information</h2><span class="status-pill">● Enabled</span></div>
+        <div class="card-body">
+          <div class="grid-3">
+            <div class="field span-full">
+              <label>Airline <span class="req">*</span></label>
+              <select class="input select"><option>Alamo Pacific Airways (ALP)</option></select>
+            </div>
+            <div class="field">
+              <label>Flight Type <span class="req">*</span></label>
+              <select class="input select"><option>Passenger (Scheduled)</option></select>
+            </div>
+            <div class="field">
+              <label>Callsign</label>
+              <input class="input" value="ALP2131">
+            </div>
+            <div class="field">
+              <label>Flight Number <span class="req">*</span></label>
+              <input class="input" value="2131">
+            </div>
+            <div class="field">
+              <label>Route Code</label>
+              <input class="input" placeholder="—">
+            </div>
+            <div class="field">
+              <label>Route Leg</label>
+              <input class="input" placeholder="—">
+            </div>
+            <div class="field">
+              <label>Flight Time <span class="req">*</span></label>
+              <input class="input" value="01:50">
+            </div>
+            <div class="field">
+              <label>Pilot Pay</label>
+              <input class="input" placeholder="—">
+              <span class="hint">Fixed amount for this flight.</span>
+            </div>
+            <div class="field">
+              <label>Load Factor</label>
+              <input class="input" placeholder="—">
+            </div>
+            <div class="field">
+              <label>Load Factor Variance</label>
+              <input class="input" placeholder="—">
+            </div>
+          </div>
+        </div>
+
+        <div class="card-head" style="border-top: 1px solid var(--border); cursor:pointer" data-sec="schedule" onclick="this.nextElementSibling.classList.toggle('collapsed')">
+          <h2>Scheduling</h2><span class="chev" style="color:var(--muted)">⌄</span>
+        </div>
+        <div class="card-body collapsed" id="schedule">
+          <div class="grid-3">
+            <div class="field"><label>Start Date</label><input class="input" value="2026-01-01"></div>
+            <div class="field"><label>End Date</label><input class="input" value="2026-12-31"></div>
+            <div class="field"><label>Days</label><select class="input select"><option>Mon · Wed · Fri</option></select></div>
+            <div class="field"><label>Departure Time</label><input class="input" value="06:25"></div>
+            <div class="field"><label>Arrival Time</label><input class="input" value="08:15"></div>
+          </div>
+        </div>
+
+        <div class="card-head" style="border-top: 1px solid var(--border); cursor:pointer" data-sec="route" onclick="this.nextElementSibling.classList.toggle('collapsed')">
+          <h2>Route</h2><span class="chev" style="color:var(--muted)">⌄</span>
+        </div>
+        <div class="card-body collapsed" id="route">
+          <div class="grid-2">
+            <div class="field"><label>Departure Airport <span class="req">*</span></label>
+              <select class="input select"><option>KATL — Hartsfield-Jackson Atlanta</option></select></div>
+            <div class="field"><label>Arrival Airport <span class="req">*</span></label>
+              <select class="input select"><option>KAUS — Austin-Bergstrom</option></select></div>
+            <div class="field span-full"><label>Route</label><input class="input" value="KATL SID KATL1 ROKKR TNP OTITO STAR KAUS"></div>
+            <div class="field"><label>Alternate</label><select class="input select"><option>—</option></select></div>
+            <div class="field"><label>Level (ft)</label><input class="input" value="37000"></div>
+            <div class="field"><label>Distance (nmi)</label><input class="input" value="690"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn">Cancel</button>
+          <button class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+
+      <!-- ============ RIGHT: RELATED DATA RAIL ============ -->
+      <div class="rail">
+        <div class="card">
+          <div class="card-head" data-open="true" onclick="toggle(this)">
+            <h2>Subfleets</h2><span class="badge">2</span><span class="chev" style="color:var(--muted)">⌄</span>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <tr><th>Type</th><th>Name</th><th></th></tr>
+              <tr><td><span class="tag">B738</span></td><td>Boeing 737-800</td><td><span class="attach">Detach</span></td></tr>
+              <tr><td><span class="tag">A320</span></td><td>Airbus A320</td><td><span class="attach">Detach</span></td></tr>
+            </table>
+            <button class="btn" style="width:100%; margin-top:10px;">+ Attach</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head" data-open="true" onclick="toggle(this)">
+            <h2>Fields</h2><span class="badge">0</span><span class="chev" style="color:var(--muted)">⌄</span>
+          </div>
+          <div class="card-body"><div class="empty">No custom fields for this flight.</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head" data-open="true" onclick="toggle(this)">
+            <h2>Fares</h2><span class="badge">0</span><span class="chev" style="color:var(--muted)">⌄</span>
+          </div>
+          <div class="card-body"><div class="empty">No fares attached yet.</div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggle(head) {
+  const body = head.nextElementSibling;
+  const open = head.dataset.open === "true";
+  head.dataset.open = String(!open);
+  body.classList.toggle("collapsed", open);
+}
+</script>
+</body>
+</html>

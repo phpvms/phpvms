@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variant 4 — Hybrid (Identity Bar + Sticky Section Nav) · Flight Edit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a2530;
+    --muted: #64748b;
+    --primary: #067ec1;
+    --primary-weak: #e6f3fb;
+    --danger: #dc2626;
+    --ok: #16a34a;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.06);
+  }
+  body {
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased;
+    line-height: 1.5; font-size: 14px;
+  }
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ---------- sidebar ---------- */
+  .sidebar {
+    width: 240px; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 16px 12px; flex-shrink: 0; position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 4px 8px 16px; font-size: 15px; }
+  .logo-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--primary); }
+  .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 12px 8px 4px; font-weight: 500; }
+  .nav-item { padding: 6px 8px; border-radius: 6px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .nav-item.active { background: var(--primary-weak); color: var(--primary); font-weight: 500; }
+  .nav-item .count { margin-left: auto; background: var(--bg); border-radius: 999px; padding: 0 7px; font-size: 12px; }
+
+  .main { flex: 1; padding: 20px 32px 32px; min-width: 0; }
+  .breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+  /* ---------- identity strip (from card grid) ---------- */
+  .identity {
+    display: flex; align-items: center; gap: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    padding: 12px 18px; margin-bottom: 20px;
+  }
+  .ident-code { font-size: 17px; font-weight: 700; letter-spacing: .01em; }
+  .ident-route { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+  .ident-route .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--primary); }
+  .ident-meta { margin-left: auto; display: flex; gap: 18px; color: var(--muted); font-size: 13px; }
+  .ident-meta b { color: var(--text); font-weight: 600; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ok); background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 9px; border-radius: 999px; font-weight: 500; }
+  .btn { padding: 6px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
+  .btn:hover { background: var(--bg); }
+  .btn-danger { color: var(--danger); }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #056ba3; }
+
+  /* ---------- layout: sticky section nav + stacked sections ---------- */
+  .layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; }
+
+  .secnav { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 2px; }
+  .secnav a {
+    padding: 6px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .secnav a:hover { background: var(--surface); color: var(--text); }
+  .secnav a .n { font-size: 11px; color: #94a3b8; width: 16px; }
+  .secnav a .cnt { margin-left: auto; font-size: 11px; background: var(--bg); border-radius: 999px; padding: 0 6px; color: var(--muted); }
+  .secnav a.active { background: var(--surface); color: var(--primary); font-weight: 500; box-shadow: var(--shadow); border: 1px solid var(--border); }
+
+  .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; scroll-margin-top: 16px; }
+  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .card-head h2 { font-size: 14px; font-weight: 600; }
+  .card-head .sub { font-size: 12px; color: var(--muted); }
+  .card-head .badge { margin-left: auto; font-size: 12px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 999px; }
+  .card-body { padding: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .field label .req { color: var(--danger); }
+  .input { padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); font-size: 13px; width: 100%; }
+  .input:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: var(--primary); }
+  .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  .span-full { grid-column: 1 / -1; }
+  .hint { font-size: 11px; color: var(--muted); }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .table td { padding: 9px 12px; border-bottom: 1px solid var(--bg); }
+  .table tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; font-size: 12px; }
+  .attach { color: var(--primary); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .empty { padding: 14px 12px; color: var(--muted); font-size: 13px; }
+
+  .actionbar { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .secnav { display: none; }
+    .sidebar { display: none; }
+    .ident-meta { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-mark"></span> phpvms</div>
+    <div class="nav-label">Operations</div>
+    <div class="nav-item">✈ PIREPs <span class="count">2</span></div>
+    <div class="nav-item active">▤ Flights</div>
+    <div class="nav-item">⤳ RouteForge</div>
+    <div class="nav-item">◉ News</div>
+    <div class="nav-item">⛁ Fleet</div>
+    <div class="nav-item">👥 Users</div>
+    <div class="nav-item">₿ Fares</div>
+    <div class="nav-item">$ Finances</div>
+    <div class="nav-item">▤ Reports</div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb">Flights / Default / AP2131</div>
+
+    <!-- identity strip replaces the page heading -->
+    <div class="identity">
+      <span class="ident-code">AP2131</span>
+      <span class="ident-route"><span class="dot"></span> KATL → KAUS</span>
+      <span class="status-pill">● Enabled</span>
+      <span class="ident-meta">
+        <span>Flight time <b>01:50</b></span>
+        <span>Distance <b>690 nmi</b></span>
+        <span>Level <b>FL370</b></span>
+        <span>Subfleets <b>2</b></span>
+      </span>
+      <button class="btn btn-danger">Delete</button>
+    </div>
+
+    <div class="layout">
+      <!-- sticky section nav -->
+      <nav class="secnav">
+        <a href="#sec-info" class="active"><span class="n">1</span> Flight</a>
+        <a href="#sec-schedule"><span class="n">2</span> Schedule</a>
+        <a href="#sec-route"><span class="n">3</span> Route</a>
+        <a href="#sec-subfleets"><span class="n">4</span> Subfleets <span class="cnt">2</span></a>
+        <a href="#sec-fields"><span class="n">5</span> Fields</a>
+        <a href="#sec-fares"><span class="n">6</span> Fares</a>
+      </nav>
+
+      <div class="stack">
+        <!-- Flight info -->
+        <div class="card" id="sec-info">
+          <div class="card-head"><h2>Flight Information</h2><span class="badge" style="margin-left:auto;">Edited 2m ago</span></div>
+          <div class="card-body">
+            <div class="grid-3">
+              <div class="field span-full">
+                <label>Airline <span class="req">*</span></label>
+                <select class="input select"><option>Alamo Pacific Airways (ALP)</option></select>
+              </div>
+              <div class="field"><label>Flight Type <span class="req">*</span></label><select class="input select"><option>Passenger (Scheduled)</option></select></div>
+              <div class="field"><label>Callsign</label><input class="input" value="ALP2131"></div>
+              <div class="field"><label>Flight Number <span class="req">*</span></label><input class="input" value="2131"></div>
+              <div class="field"><label>Route Code</label><input class="input" placeholder="—"></div>
+              <div class="field"><label>Route Leg</label><input class="input" placeholder="—"></div>
+              <div class="field"><label>Flight Time <span class="req">*</span></label><input class="input" value="01:50"></div>
+              <div class="field"><label>Pilot Pay</label><input class="input" placeholder="—"><span class="hint">Fixed amount.</span></div>
+              <div class="field"><label>Load Factor</label><input class="input" placeholder="—"></div>
+              <div class="field"><label>Load Factor Variance</label><input class="input" placeholder="—"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="card" id="sec-schedule">
+          <div class="card-head"><h2>Scheduling</h2></div>
+          <div class="card-body">
+            <div class="grid-3">
+              <div class="field"><label>Start Date</label><input class="input" value="2026-01-01"></div>
+              <div class="field"><label>End Date</label><input class="input" value="2026-12-31"></div>
+              <div class="field"><label>Days</label><select class="input select"><option>Mon · Wed · Fri</option></select></div>
+              <div class="field"><label>Departure Time</label><input class="input" value="06:25"></div>
+              <div class="field"><label>Arrival Time</label><input class="input" value="08:15"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route -->
+        <div class="card" id="sec-route">
+          <div class="card-head"><h2>Route</h2></div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div class="field"><label>Departure <span class="req">*</span></label><select class="input select"><option>KATL — Hartsfield-Jackson Atlanta</option></select></div>
+              <div class="field"><label>Arrival <span class="req">*</span></label><select class="input select"><option>KAUS — Austin-Bergstrom</option></select></div>
+              <div class="field span-full"><label>Route</label><input class="input" value="KATL SID KATL1 ROKKR TNP OTITO STAR KAUS"></div>
+              <div class="field"><label>Alternate</label><select class="input select"><option>—</option></select></div>
+              <div class="field"><label>Level (ft)</label><input class="input" value="37000"></div>
+              <div class="field"><label>Distance (nmi)</label><input class="input" value="690"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subfleets -->
+        <div class="card" id="sec-subfleets">
+          <div class="card-head"><h2>Subfleets</h2><span class="sub">Aircraft types allowed on this flight</span><span class="badge">2</span></div>
+          <div class="card-body">
+            <table class="table">
+              <tr><th>Type</th><th>Name</th><th></th></tr>
+              <tr><td><span class="tag">B738</span></td><td>Boeing 737-800</td><td><span class="attach">Detach</span></td></tr>
+              <tr><td><span class="tag">A320</span></td><td>Airbus A320</td><td><span class="attach">Detach</span></td></tr>
+            </table>
+            <button class="btn" style="margin-top:10px;">+ Attach</button>
+          </div>
+        </div>
+
+        <!-- Fields -->
+        <div class="card" id="sec-fields">
+          <div class="card-head"><h2>Fields</h2><span class="badge">0</span></div>
+          <div class="card-body"><div class="empty">No custom fields for this flight.</div></div>
+        </div>
+
+        <!-- Fares -->
+        <div class="card" id="sec-fares">
+          <div class="card-head"><h2>Fares</h2><span class="badge">0</span></div>
+          <div class="card-body"><div class="empty">No fares attached yet.</div></div>
+        </div>
+
+        <div class="actionbar">
+          <button class="btn">Cancel</button>
+          <button class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// scrollspy for the sticky section nav
+const links = [...document.querySelectorAll('.secnav a')];
+const cards = [...document.querySelectorAll('.card[id]')];
+const spy = () => {
+  const pos = window.scrollY + 80;
+  let current = cards[0]?.id;
+  for (const c of cards) { if (c.offsetTop <= pos) current = c.id; }
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current));
+};
+window.addEventListener('scroll', spy, { passive: true });
+spy();
+</script>
+</body>
+</html>
