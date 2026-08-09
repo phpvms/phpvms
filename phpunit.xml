@@ -40,6 +40,13 @@
              redirects the whole suite at a real database. <env force> alone does
              not stop it; the <server> entries do. Same reason APP_ENV above is
              declared twice. -->
+        <!-- A cached bootstrap/cache/config.php (written by `artisan optimize`,
+             which the updater runs) is loaded verbatim at boot and BYPASSES all
+             of the env forcing below, pointing the whole suite at the real
+             dev database. Pin the cache lookup to a path that never exists so
+             tests always resolve config from files + these env values. -->
+        <server name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
         <server name="DB_CONNECTION" value="sqlite" force="true"/>
         <server name="DB_DATABASE" value=":memory:" force="true"/>
         <server name="DB_URL" value="" force="true"/>
