@@ -1702,6 +1702,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
     --rail-w: var(--sidebar-width);
   }
 
+  /* Panels without a rail at all (the system panel's installer/updater run
+   * with navigation(false)) — no rail, no offset. */
+  .fi-body:not(.fi-body-has-navigation) {
+    --rail-w: 0px;
+  }
+
   .fi-sidebar {
     @apply fixed top-0;
     height: 100dvh;
@@ -2019,6 +2025,29 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * border — counter the .fi-modal-content px-6 and pad it back. */
 .drawer-branded .field-rule-above {
   @apply -mx-6 px-6;
+}
+
+/* Drawer footers run [extras…] [Cancel] [Save] (Drawer::configure), pinned to
+ * the end of the row; the last extra is tagged so destructive actions stay
+ * stranded on the left. */
+.drawer-branded .fi-modal-footer-actions {
+  @apply justify-end;
+}
+
+.drawer-branded .fi-modal-footer-actions > .drawer-footer-start {
+  margin-inline-end: auto;
+}
+
+/* A rich editor whose toolbar is noise until you mean to use it: hidden at
+ * rest, revealed on hover or once the editor has focus. Opt in per field via
+ * ->extraAttributes(['class' => 'rich-editor-hover-toolbar']). */
+.rich-editor-hover-toolbar .fi-fo-rich-editor-toolbar {
+  @apply hidden;
+}
+
+.rich-editor-hover-toolbar:hover .fi-fo-rich-editor-toolbar,
+.rich-editor-hover-toolbar:focus-within .fi-fo-rich-editor-toolbar {
+  @apply flex;
 }
 
 /* ---------------------------------------------------------------------------

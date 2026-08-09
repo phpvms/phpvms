@@ -7,12 +7,14 @@ namespace App\Providers\Filament;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Http\Middleware\SetActiveLanguage;
 use Filament\Enums\ThemeMode;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -51,6 +53,17 @@ class SystemPanelProvider extends PanelProvider
             ->plugins([
                 LanguageSwitcherPlugin::make(),
             ])
+            // The console brand button, in its static single-panel form — no
+            // switcher dropdown, so an install/update in progress offers no
+            // way to wander off to another panel. Replaces the vendor logo,
+            // which the admin theme hides.
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_LOGO_AFTER,
+                fn (): View => view('filament.plugins.panel-switcher', [
+                    'panels'  => [],
+                    'current' => Filament::getCurrentOrDefaultPanel(),
+                ]),
+            )
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('phpvms')
             ->font('Geist')
