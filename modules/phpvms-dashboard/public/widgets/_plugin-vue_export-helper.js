@@ -1,9 +1,8 @@
-const s = (t, r) => {
-  const o = t.__vccOpts || t;
-  for (const [c, e] of r)
-    o[c] = e;
-  return o;
+//#region \0plugin-vue:export-helper
+var e = (e, t) => {
+	let n = e.__vccOpts || e;
+	for (let [e, r] of t) n[e] = r;
+	return n;
 };
-export {
-  s as _
-};
+//#endregion
+export { e as t };

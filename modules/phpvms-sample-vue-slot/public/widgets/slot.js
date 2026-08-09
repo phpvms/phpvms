@@ -1,55 +1,54 @@
-(function(){"use strict";try{if(typeof document<"u"){var e=document.createElement("style");e.appendChild(document.createTextNode(".sbs[data-v-76ac3e5b]:hover{border-color:var(--pv-accent, #4f8cff);color:var(--pv-accent, #4f8cff)}.sbs-ident[data-v-76ac3e5b]{opacity:.85}")),document.head.appendChild(e)}}catch(c){console.error("vite-plugin-css-injected-by-js",c)}})();
-import { defineComponent as i, computed as p, ref as d, openBlock as u, createElementBlock as f, normalizeStyle as v, createElementVNode as c, toDisplayString as r } from "vue";
-const m = ["data-connected", "title"], _ = { "aria-hidden": "true" }, g = {
-  class: "sbs-ident",
-  style: { fontFamily: "var(--pv-font-mono, ui-monospace, monospace)" }
-}, S = /* @__PURE__ */ i({
-  __name: "SampleBidsSlot",
-  props: {
-    bid: {},
-    flight: {}
-  },
-  setup(n) {
-    const o = n, t = p(() => {
-      const a = o.flight ?? {};
-      return a.callsign ?? a.ident ?? a.flightId ?? "—";
-    }), e = d(!1);
-    function s() {
-      e.value = !e.value;
-    }
-    return (a, l) => (u(), f("button", {
-      type: "button",
-      class: "sbs",
-      "data-connected": e.value ? "true" : "false",
-      title: e.value ? `ACARS connected — ${t.value}` : `Connect ACARS for ${t.value}`,
-      style: v({
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "5px",
-        padding: "2px 8px",
-        fontSize: "11px",
-        lineHeight: "1.4",
-        fontWeight: "500",
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-        borderRadius: "var(--pv-radius-sm, 6px)",
-        border: `1px solid ${e.value ? "var(--pv-accent, #4f8cff)" : "var(--pv-line, #2a2f3a)"}`,
-        color: e.value ? "var(--pv-accent, #4f8cff)" : "var(--pv-ink-dim, #8a94a6)",
-        background: e.value ? "var(--pv-accent-soft, rgba(79, 140, 255, 0.12))" : "transparent"
-      }),
-      onClick: s
-    }, [
-      c("span", _, r(e.value ? "◉" : "◯"), 1),
-      l[0] || (l[0] = c("span", null, "ACARS", -1)),
-      c("span", g, r(t.value), 1)
-    ], 12, m));
-  }
-}), b = (n, o) => {
-  const t = n.__vccOpts || n;
-  for (const [e, s] of o)
-    t[e] = s;
-  return t;
-}, h = /* @__PURE__ */ b(S, [["__scopeId", "data-v-76ac3e5b"]]);
-export {
-  h as default
-};
+(function(){try{if(typeof document<`u`){var e=document.createElement(`style`);e.appendChild(document.createTextNode(`.sbs[data-v-597a1596]:hover{border-color:var(--pv-accent,#4f8cff);color:var(--pv-accent,#4f8cff)}.sbs-ident[data-v-597a1596]{opacity:.85}/*$vite$:1*/`)),document.head.appendChild(e)}}catch(e){console.error(`vite-plugin-css-injected-by-js`,e)}})();
+import { computed as e, createElementBlock as t, createElementVNode as n, defineComponent as r, normalizeStyle as i, openBlock as a, ref as o, toDisplayString as s } from "vue";
+//#region ../../../../modules/phpvms-sample-vue-slot/ui/SampleBidsSlot.vue?vue&type=script&setup=true&lang.ts
+var c = ["data-connected", "title"], l = { "aria-hidden": "true" }, u = {
+	class: "sbs-ident",
+	style: { fontFamily: "var(--pv-font-mono, ui-monospace, monospace)" }
+}, d = /*#__PURE__*/ ((e, t) => {
+	let n = e.__vccOpts || e;
+	for (let [e, r] of t) n[e] = r;
+	return n;
+})(/* @__PURE__ */ r({
+	__name: "SampleBidsSlot",
+	props: {
+		bid: {},
+		flight: {}
+	},
+	setup(r) {
+		let d = r, f = e(() => {
+			let e = d.flight ?? {};
+			return e.callsign ?? e.ident ?? e.flightId ?? "—";
+		}), p = o(!1);
+		function m() {
+			p.value = !p.value;
+		}
+		return (e, r) => (a(), t("button", {
+			type: "button",
+			class: "sbs",
+			"data-connected": p.value ? "true" : "false",
+			title: p.value ? `ACARS connected — ${f.value}` : `Connect ACARS for ${f.value}`,
+			style: i({
+				display: "inline-flex",
+				alignItems: "center",
+				gap: "5px",
+				padding: "2px 8px",
+				fontSize: "11px",
+				lineHeight: "1.4",
+				fontWeight: "500",
+				cursor: "pointer",
+				whiteSpace: "nowrap",
+				borderRadius: "var(--pv-radius-sm, 6px)",
+				border: `1px solid ${p.value ? "var(--pv-accent, #4f8cff)" : "var(--pv-line, #2a2f3a)"}`,
+				color: p.value ? "var(--pv-accent, #4f8cff)" : "var(--pv-ink-dim, #8a94a6)",
+				background: p.value ? "var(--pv-accent-soft, rgba(79, 140, 255, 0.12))" : "transparent"
+			}),
+			onClick: m
+		}, [
+			n("span", l, s(p.value ? "◉" : "◯"), 1),
+			r[0] ||= n("span", null, "ACARS", -1),
+			n("span", u, s(f.value), 1)
+		], 12, c));
+	}
+}), [["__scopeId", "data-v-597a1596"]]);
+//#endregion
+export { d as default };
