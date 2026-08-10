@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\Theme\ActiveThemeService;
 use App\Support\Skylight\Facades\Skylight;
+use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Inertia\Middleware;
@@ -22,6 +24,8 @@ use Override;
  */
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(private readonly ActiveThemeService $themes) {}
+
     /**
      * The Inertia root template. A DEDICATED name ('spa') that resolves to the
      * skylight theme's spa.blade.php — deliberately NOT 'app', so it doesn't
@@ -38,8 +42,11 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         $manifest = public_path('build/skylight/manifest.json');
+        $manifestVersion = is_file($manifest) ? (string) filemtime($manifest) : parent::version($request);
+        $themeName = Theme::get() ?: 'skylight';
+        $themeVersion = $this->themes->revision($themeName)?->revision;
 
-        return is_file($manifest) ? (string) filemtime($manifest) : parent::version($request);
+        return hash('sha256', ($manifestVersion ?? '').'|'.($themeVersion ?? ''));
     }
 
     /**
@@ -52,11 +59,14 @@ class HandleInertiaRequests extends Middleware
     {
         /** @var User|null $user */
         $user = $request->user();
+        $themeName = Theme::get() ?: 'skylight';
 
         return [
             ...parent::share($request),
 
             'appName' => config('app.name'),
+
+            'theme' => $this->themes->revision($themeName)?->document,
 
             // i18n for the SPA — laravel-vue-i18n consumes this. The current
             // locale (resolved by SetActiveLanguage) plus a flat "group.key" =>

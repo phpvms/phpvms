@@ -17,7 +17,9 @@ available before Vue mounts and there is no supported published-theme path.
    migration slices.
 3. Add the phpVMS-owned, versioned public theme document. It imports raw JSON
    exported by nuxt-ui-themes.com, normalizes it into the phpVMS document, and
-   supplies defaults for phpVMS and curated component settings.
+   supplies defaults for phpVMS and curated component settings. Version 1 is
+   the first phpVMS theme document version; other document versions are
+   unsupported until a later schema introduces an explicit migration.
 4. Resolve validated component settings into `UTheme` `props` and `ui` values.
    Continuous values become CSS variables; finite choices map to compiled
    source values. Runtime theme JSON cannot contain arbitrary Tailwind classes
@@ -61,9 +63,9 @@ available before Vue mounts and there is no supported published-theme path.
    `PvApp`, application CSS, generic-control use sites, component tests, and
    browser tests.
 2. Backend: a published-theme model and migration, normalization and CSS
-   generation services, publication storage, theme administration/import
-   endpoints, `HandleInertiaRequests`, and
-   `resources/views/layouts/skylight/spa.blade.php`.
+   generation services, the publication service boundary, publication storage,
+   `HandleInertiaRequests`, and `resources/views/layouts/skylight/spa.blade.php`.
+   The future Branding editor and its admin routes are deferred.
 3. Public contract: phpVMS defines the versioned JSON schema, `--pv-*` tokens,
    and `.pv-*` hooks. Nuxt UI internals and generated markup are not public
    theme APIs.

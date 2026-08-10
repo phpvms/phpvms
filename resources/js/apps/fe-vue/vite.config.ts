@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
+import ui from "@nuxt/ui/vite";
 import { phpTypescriptTransform } from "./dev/php-typescript-transform";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,6 +21,8 @@ const REPO_ROOT = resolve(WORKSPACE_ROOT, "..", "..", "..", "..");
 const LAYOUTS_DIR = resolve(REPO_ROOT, "resources", "views", "layouts", THEME_NAME);
 // Web-served asset root: repo-root/public/build/<theme>/ (browser loads from here).
 const PUBLIC_BUILD_DIR = resolve(REPO_ROOT, "public", "build", THEME_NAME);
+const APP_CSS = resolve(WORKSPACE_ROOT, "src", "app", "app.css");
+const SPA_ENTRY = resolve(WORKSPACE_ROOT, "src", "app", "main.ts");
 
 // Single shared Vue: the browser-native ESM production build. Published verbatim
 // to <asset base>/vendor/vue.js and pointed at by the shell's import-map so that
@@ -139,6 +142,44 @@ function writeHotFile(): import("vite").Plugin {
   };
 }
 
+/** Include app and component CSS in one blocking production stylesheet. */
+function bundleApplicationCss(): import("vite").Plugin {
+  return {
+    name: "bundle-application-css",
+    apply: "build",
+    enforce: "pre",
+    transform(code, id) {
+      if (id === SPA_ENTRY) {
+        return `import ${JSON.stringify(APP_CSS)};\n${code}`;
+      }
+    },
+    generateBundle: {
+      order: "post",
+      handler(_options, bundle) {
+        const manifestAsset = bundle[".vite/manifest.json"];
+        if (manifestAsset?.type !== "asset") {
+          throw new Error("Vite manifest was not generated");
+        }
+
+        const manifest = JSON.parse(String(manifestAsset.source)) as Record<
+          string,
+          { file: string; css?: string[] }
+        >;
+        const entry = manifest["src/app/main.ts"];
+        const stylesheet = manifest["style.css"];
+        if (!entry || !stylesheet) {
+          throw new Error(
+            "Application entry or bundled stylesheet is missing from the Vite manifest",
+          );
+        }
+
+        entry.css = [stylesheet.file];
+        manifestAsset.source = JSON.stringify(manifest, null, 2);
+      },
+    },
+  };
+}
+
 export default defineConfig(({ command }) => ({
   root: WORKSPACE_ROOT,
 
@@ -155,9 +196,11 @@ export default defineConfig(({ command }) => ({
 
   plugins: [
     vue(),
+    ui({ router: "inertia", dts: false }),
     tailwindcss(),
     // Dev-only: regenerate SPA types from PHP DTOs on change (no-op on build).
     phpTypescriptTransform({ repoRoot: REPO_ROOT }),
+    bundleApplicationCss(),
     publishToLayouts(),
     writeHotFile(),
   ],
@@ -169,9 +212,10 @@ export default defineConfig(({ command }) => ({
     // This creates dist/.vite/manifest.json; we copy it flat as manifest.json
     // alongside assets so theme.json "manifest": "manifest.json" resolves.
     manifest: true,
+    cssCodeSplit: false,
     rollupOptions: {
       input: {
-        spa: resolve(WORKSPACE_ROOT, "src/app/main.ts"),
+        spa: SPA_ENTRY,
       },
       // Externalize Vue: the host's (and its bundled deps') bare `import 'vue'`
       // statements are left as-is in the output instead of bundling a second copy.

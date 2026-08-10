@@ -20,12 +20,19 @@ use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
 use App\Http\Controllers\Frontend\WeatherController;
+use App\Http\Controllers\ThemeAssetController;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('theme-assets/{themeName}/{revision}/{asset}', ThemeAssetController::class)
+    ->where('themeName', '[A-Za-z0-9][A-Za-z0-9._-]*')
+    ->where('revision', '[a-f0-9]{64}')
+    ->where('asset', 'theme\\.css|custom\\.css')
+    ->name('theme-assets.show');
 
 Route::group([
     'prefix'     => '',

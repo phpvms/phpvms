@@ -22,7 +22,7 @@ function addWidget(id: string) {
     <h2 class="h2">{{ $t("common.dashboard") }}</h2>
     <div class="tools">
       <div v-if="editing" ref="addMenu" class="addwrap">
-        <button
+        <UButton
           type="button"
           class="btn"
           :disabled="!availableWidgets.length"
@@ -32,7 +32,7 @@ function addWidget(id: string) {
             <path d="M12 5v14M5 12h14" />
           </svg>
           {{ $t("ui.add_widget") }}
-        </button>
+        </UButton>
         <div v-if="addMenuOpen" class="menu">
           <div v-if="!availableWidgets.length" class="menu-empty">
             {{ $t("ui.all_widgets_placed") }}
@@ -49,17 +49,17 @@ function addWidget(id: string) {
           </button>
         </div>
       </div>
-      <button v-if="editing" type="button" class="btn ghost" @click="emit('reset')">
+      <UButton v-if="editing" type="button" class="btn ghost" @click="emit('reset')">
         {{ $t("ui.reset") }}
-      </button>
-      <button
+      </UButton>
+      <UButton
         type="button"
         class="btn"
         :class="{ primary: editing }"
         @click="emit('toggleEditing')"
       >
         {{ editing ? $t("ui.done") : $t("ui.customize") }}
-      </button>
+      </UButton>
     </div>
   </div>
 </template>
@@ -82,39 +82,44 @@ function addWidget(id: string) {
     align-items: center;
     gap: 8px;
   }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 32px;
-    padding: 0 12px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--pv-ink);
-    background: var(--pv-panel);
-    border: 1px solid var(--pv-line);
-    border-radius: var(--pv-radius-md);
-    cursor: pointer;
-  }
-  .btn:hover {
-    background: var(--pv-hover);
-  }
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .btn .i {
-    width: 15px;
-    height: 15px;
-  }
-  .btn.primary {
-    background: var(--pv-accent);
-    border-color: var(--pv-accent);
-    color: #fff;
-  }
-  .btn.ghost {
-    color: var(--pv-ink-dim);
-  }
+}
+
+/* Nuxt UI button utilities outrank the component layer. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pv-ink);
+  background: var(--pv-panel);
+  border: 1px solid var(--pv-line);
+  border-radius: var(--pv-radius-md);
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--pv-hover);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn .i {
+  width: 15px;
+  height: 15px;
+}
+.btn.primary {
+  background: var(--pv-accent);
+  border-color: var(--pv-accent);
+  color: #fff;
+}
+.btn.ghost {
+  color: var(--pv-ink-dim);
+}
+
+@layer components {
   .addwrap {
     position: relative;
   }

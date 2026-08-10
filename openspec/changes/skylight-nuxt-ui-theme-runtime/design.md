@@ -43,6 +43,9 @@ existing lockfile change are part of its implementation.
 5. Replacing every pre-contract generic control or redesigning the pilot
    frontend in this first slice. New and refactored generic controls follow the
    Nuxt UI ownership rule immediately.
+6. Building the future Branding editor or its admin routes. Its interaction,
+   preview, import, publication, history, and rollback mechanics require a
+   separate accepted design.
 
 ## Decisions
 
@@ -79,12 +82,15 @@ The persisted document has an explicit `version` and separate namespaces:
 `phpvms` stores domain tokens/settings. The normalizer accepts either this
 versioned document or raw JSON exported by nuxt-ui-themes.com. Raw input is
 placed under `nuxtUi.theme`; absent phpVMS and component fields receive
-versioned defaults. Future document versions require explicit migrations.
+versioned defaults. Version 1 is the first phpVMS theme document version, so no
+older phpVMS document exists to migrate. Every other document version is
+unsupported. A later schema version must add its explicit migration from
+version 1 when that later version is introduced.
 
 The parser validates object shape, known component setting identifiers, value
 ranges, supported palette/font/token fields, and custom CSS size. It rejects
-unknown or newer document versions, unknown executable content, and any
-arbitrary Tailwind-class or unrestricted slot-class input. Invalid input
+every document version other than version 1, unknown executable content, and
+any arbitrary Tailwind-class or unrestricted slot-class input. Invalid input
 reports field-level errors and never changes the published theme.
 
 Core import and preview are transient operations: they return a normalized
@@ -209,9 +215,8 @@ two-Vue limitation for external addons.
 ## Migration Plan
 
 1. Add the globally renderer-scoped data model, schema, transient normalizer
-   and preview path, CSS renderer, public publication
-   service, admin import/publish path, and backend tests without changing the
-   active frontend output.
+   and preview service, CSS renderer, validated publication service boundary,
+   and backend tests without changing the active frontend output.
 2. Add Nuxt UI at the existing Vite/Vue seams and introduce typed theme parsing
    and resolution with frontend tests.
 3. Change the Blade and Inertia paths to consume a published revision and
@@ -224,10 +229,13 @@ two-Vue limitation for external addons.
    selects the prior published revision and retains prior immutable assets;
    code rollback leaves the fallback application tokens usable.
 
-## Open Questions
+## Resolved administration boundary
 
-1. Confirm the exact supported raw-export fields from the target
-   nuxt-ui-themes.com release while implementing the normalizer; do not infer
-   fields beyond a captured fixture.
-2. Confirm the admin authorization and UI location for import, preview, and
-   publish before adding routes or Filament resources.
+1. A future Filament page is named Branding and appears in the Config group
+   immediately after Settings.
+2. Page access uses `view:branding`. Mutating actions use `edit:branding`.
+3. This change stops at the validated service boundary. It adds no Branding
+   page or admin routes.
+4. The editor interaction model, preview surface, Theme Builder handoff,
+   publication confirmation, revision history, rollback, and custom-CSS
+   editing mechanics are deferred to a later OpenSpec change.

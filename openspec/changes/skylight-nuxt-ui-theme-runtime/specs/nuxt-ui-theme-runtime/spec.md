@@ -5,27 +5,23 @@
 phpVMS SHALL own a versioned public runtime-theme document. It SHALL accept a
 valid phpVMS document or raw JSON exported by nuxt-ui-themes.com. The importer
 MUST normalize raw builder JSON into `nuxtUi.theme`, provide versioned defaults
-for `nuxtUi.components` and `phpvms`, and migrate supported older document
-versions. Import and preview MUST remain transient and MUST NOT create a stored
-draft or change the active publication. Only publish creates durable revision
-data.
+for `nuxtUi.components` and `phpvms`, and produce version 1 as the first phpVMS
+theme document version. Import and preview MUST remain transient and MUST NOT
+create a stored draft or change the active publication. Only publish creates
+durable revision data. Every document version other than version 1 MUST be
+rejected until a later schema explicitly defines its migration from version 1.
 
 #### Scenario: Raw Theme Builder import
 
-- **WHEN** an administrator imports a valid raw Nuxt UI Theme Builder export
+- **WHEN** a valid raw Nuxt UI Theme Builder export is submitted for transient
+  import
 - **THEN** phpVMS returns a valid normalized versioned document with the raw
   theme under `nuxtUi.theme` and default phpVMS/component settings without
   persisting it or changing the active publication
 
-#### Scenario: Supported older document version
+#### Scenario: Unsupported document version
 
-- **WHEN** phpVMS receives a supported older document version
-- **THEN** it applies the explicit migration to the current version before the
-  document can be previewed or published
-
-#### Scenario: Unknown or newer document version
-
-- **WHEN** phpVMS receives an unknown or newer document version
+- **WHEN** phpVMS receives any document version other than version 1
 - **THEN** validation rejects it with a version error and leaves the active
   publication unchanged
 
@@ -81,7 +77,8 @@ MUST require an explicit schema change.
 
 #### Scenario: Roll back publication
 
-- **WHEN** an authorized administrator selects a prior complete revision
+- **WHEN** a prior complete revision is selected through the publication
+  service for rollback
 - **THEN** phpVMS atomically makes that revision active without rewriting its
   immutable assets
 
@@ -137,8 +134,8 @@ active theme revision changes.
 
 #### Scenario: Published revision refreshes an open client
 
-- **WHEN** an administrator publishes a new runtime-theme revision and an open
-  client performs a subsequent Inertia visit
+- **WHEN** a new runtime-theme revision is published and an open client performs
+  a subsequent Inertia visit
 - **THEN** the changed asset version forces a document reload that uses the new
   stylesheet URLs and matching normalized theme document
 

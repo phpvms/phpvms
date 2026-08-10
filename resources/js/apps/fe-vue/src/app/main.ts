@@ -2,12 +2,14 @@
 import { createApp, type DefineComponent } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { i18nVue } from "laravel-vue-i18n";
+import ui from "@nuxt/ui/vue-plugin";
+import {
+  initialThemeDocument,
+  resolveTheme,
+  ThemeContextKey,
+  type ThemeInertiaProps,
+} from "@/shared/theme";
 import PvApp from "./PvApp.vue";
-
-// Tailwind v4 + canonical --pv-* tokens + shadcn bridge (imports lib/tokens.css).
-import "./app.css";
-// MapLibre GL base styles for the Nav Display globe.
-import "maplibre-gl/dist/maplibre-gl.css";
 
 /**
  * Theme entry point. Bootstraps the Inertia + Vue app.
@@ -19,7 +21,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
  */
 const pages = import.meta.glob<{ default: DefineComponent }>("../pages/**/*.vue");
 
-createInertiaApp({
+createInertiaApp<ThemeInertiaProps & Record<string, unknown>>({
   resolve: async (name: string) => {
     const importer = pages[`../pages/${name}.vue`];
     if (!importer) {
@@ -42,16 +44,20 @@ createInertiaApp({
     // the Laravel lang files). We ship only the active locale's flat message map,
     // so `resolve` returns it for that lang and {} otherwise. Locale changes go
     // through the server cookie flow + a full reload, so a boot snapshot is fine.
-    const shared = (props as { initialPage: { props: Record<string, unknown> } }).initialPage.props;
+    const shared = props.initialPage.props;
     const i18n = (shared.i18n as
       | { locale: string; messages: Record<string, string> }
       | undefined) ?? {
       locale: "en",
       messages: {},
     };
+    const document = initialThemeDocument(shared.theme);
+    const theme = { document, resolved: resolveTheme(document) };
 
     createApp(App, props as unknown as Record<string, unknown>)
       .use(plugin)
+      .use(ui)
+      .provide(ThemeContextKey, theme)
       .use(i18nVue, {
         lang: i18n.locale,
         fallbackLang: "en",

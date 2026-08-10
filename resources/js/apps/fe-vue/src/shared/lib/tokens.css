@@ -7,7 +7,7 @@
  * Replaces the earlier EFIS look; the EFIS display font (Space Grotesk) is kept
  * defined below so it remains available.
  *
- * Override a `--pv-*` at :root to reskin shadcn + Tailwind utilities + the shell
+ * Override a `--pv-*` at :root to reskin domain components + the shell
  * together with NO rebuild.
  */
 
@@ -56,7 +56,7 @@
   --pv-shadow-panel: none;
   --pv-shadow-chrome: none;
 
-  /* ── Legacy semantic aliases (shadcn bridge in app.css) ───────── */
+  /* ── Legacy semantic aliases used by existing domain components ─ */
   --pv-color-page: var(--pv-bg);
   --pv-color-surface: var(--pv-panel);
   --pv-color-surface-alt: var(--pv-panel-inset);

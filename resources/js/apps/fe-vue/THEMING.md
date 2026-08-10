@@ -91,11 +91,56 @@ The phpVMS theme is versioned. It contains the upstream builder configuration wi
 }
 ```
 
-1. The example shows the intended ownership and nesting. The validated schema is authoritative once implemented.
+1. The example shows the intended ownership and nesting. The validated schema is authoritative.
 2. The importer must accept raw JSON copied from the upstream Nuxt UI Theme Builder.
 3. A raw upstream theme is normalized into `nuxtUi.theme`. Missing phpVMS and component settings receive defaults.
-4. The phpVMS builder imports and exports the complete versioned document.
+4. The normalized document is the complete versioned document an external builder may persist and export.
 5. A theme schema change requires an explicit version and migration path.
+
+## Builder integration contract
+
+The core and `themes.phpvms.net` communicate through the versioned phpVMS
+document. The builder is external to this repository. It owns its local drafts,
+editor, hosting, and deployment.
+
+The core preview service accepts a raw JSON string or a decoded JSON object:
+
+```ts
+type PreviewInput = string | Record<string, unknown>;
+
+type PreviewResult = {
+  document: PhpVmsThemeDocument;
+  diagnostics: [];
+  css: string;
+  resolvedInput: {
+    components: PhpVmsThemeDocument["nuxtUi"]["components"];
+    phpvms: PhpVmsThemeDocument["phpvms"];
+  };
+  targets: {
+    routes: ["dashboard", "profile", "pirep-detail"];
+    components: ["button", "input", "dashboard-toolbar", "pirep-summary"];
+  };
+};
+```
+
+1. A raw Nuxt UI Theme Builder export is normalized into `nuxtUi.theme`. The
+   core supplies versioned defaults for `nuxtUi.components` and `phpvms`.
+2. `document` is the normalized version-1 phpVMS document. `diagnostics` is an
+   empty list on success. `css` is the generated runtime stylesheet.
+   `resolvedInput.components` and `resolvedInput.phpvms` are exactly the
+   matching normalized document objects. They are not the internal resolved
+   `UTheme` props or slot configuration.
+3. `targets` contains stable preview identifiers. Its route identifiers are
+   not Laravel route names or live IDs.
+4. Preview is transient. It does not save a draft, write an asset, activate a
+   publication, or define an HTTP route in this repository.
+5. Invalid input throws Laravel `ValidationException`. Its field-error map has
+   string field keys and arrays of message strings. Invalid JSON and a non-object
+   use `$`; an unsupported document version uses `version`; schema failures use
+   the schema property path.
+6. The builder must submit only supported schema fields and curated identifiers.
+   It must not send Tailwind classes, unrestricted Nuxt UI slot-class objects,
+   or executable content as theme settings.
 
 ## Nuxt UI component settings
 
@@ -151,12 +196,12 @@ Example:
 
 ```css
 @layer components {
-  .pv-pirep-header {
+  .pv-pirep-summary {
     display: flex;
-    gap: var(--pv-space-section);
-    padding: var(--pv-panel-padding);
-    background: var(--pv-surface);
-    color: var(--pv-text);
+    gap: 8px;
+    padding: 12px;
+    background: var(--pv-panel);
+    color: var(--pv-ink);
   }
 }
 ```
@@ -166,10 +211,11 @@ Example:
 1. Publishing a theme must generate `theme.css` through the backend.
 2. It contains browser-ready `:root` and `.dark` declarations.
 3. It defines the complete required `--ui-*` values and the phpVMS `--pv-*` values.
-4. It may define runtime font faces or font variables when the selected font contract requires them.
-5. It does not contain component layouts or copies of Vue component styles.
-6. It does not contain Tailwind build directives such as `@theme` or source imports.
-7. Publishing should replace the generated file atomically and change its cache version.
+4. Application CSS statically emits every curated Tailwind palette variable that generated theme values may reference.
+5. It may define runtime font faces or font variables when the selected font contract requires them.
+6. It does not contain component layouts or copies of Vue component styles.
+7. It does not contain Tailwind build directives such as `@theme` or source imports.
+8. Publishing should replace the generated file atomically and change its cache version.
 
 ### Optional `custom.css`
 
@@ -184,24 +230,73 @@ Example:
 Stylesheets are loaded in this order before the application is painted:
 
 ```html
-<link rel="stylesheet" href="/build/app.css" />
-<link rel="stylesheet" href="/theme/theme.css?v=VERSION" />
-<link rel="stylesheet" href="/theme/custom.css?v=VERSION" />
+<link rel="stylesheet" href="/build/skylight/assets/style-HASH.css" />
+<link rel="stylesheet" href="/theme-assets/skylight/REVISION/theme.css" />
+<link rel="stylesheet" href="/theme-assets/skylight/REVISION/custom.css" />
 ```
 
-1. The generated theme stylesheet is the initial source of runtime token values.
-2. The frontend must not wait until Vue mounts to apply the saved palette, font, radius, or phpVMS tokens.
-3. The resolved `UTheme` object supplies component defaults during the first Vue render.
-4. Live preview may inject unsaved values in memory. Published frontend pages use the generated stylesheet.
+1. The first link contains global and component application CSS.
+2. The generated theme stylesheet is the initial source of runtime token values.
+3. The frontend must not wait until Vue mounts to apply the saved palette, font, radius, or phpVMS tokens.
+4. The resolved `UTheme` object supplies component defaults during the first Vue render.
+5. Live preview may inject unsaved values in memory. Published frontend pages use the generated stylesheet.
 
 ## phpVMS variables and hooks
 
 1. `--pv-*` variables are a primary public theme API for phpVMS-owned components.
 2. `.pv-*` classes are stable selector hooks for advanced custom CSS.
 3. Stable hooks should identify meaningful application concepts, not every nested element.
-4. Examples include `.pv-app`, `.pv-header`, `.pv-navigation`, `.pv-page`, `.pv-dashboard`, `.pv-pirep-header`, `.pv-flight-number`, and `.pv-airport`.
+4. Examples include `.pv-layout`, `.pv-navigation`, `.pv-region-header`, `.pv-region-main`, `.pv-dashboard`, `.pv-dashboard-toolbar`, `.pv-pirep-summary`, and `.pv-pirep-detail`.
 5. Internal helper classes may remain private. They are not part of the compatibility contract.
 6. A meaningful Nuxt UI control inside a domain workflow may receive a stable hook such as `.pv-pirep-accept-button`. This does not require a wrapper component.
+
+### Supported variables
+
+Published `theme.css` supplies the documented values below for `:root` and
+`.dark`. Application CSS may provide fallback values when no theme has been
+published. The legacy `--pv-color-*` aliases remain supported while components
+use the semantic variables in the first two groups.
+
+| Group                     | Variables                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surfaces and text         | `--pv-bg`, `--pv-panel`, `--pv-panel-inset`, `--pv-hover`, `--pv-line`, `--pv-line-strong`, `--pv-ink`, `--pv-ink-dim`, `--pv-ink-faint`, `--pv-track`                                                                                                                                                                                                |
+| Brand and status          | `--pv-accent`, `--pv-accent-soft`, `--pv-cyan`, `--pv-green`, `--pv-amber`, `--pv-red`                                                                                                                                                                                                                                                                |
+| Typography                | `--pv-font-body`, `--pv-font-mono`, `--pv-font-display`, `--pv-type-scale`                                                                                                                                                                                                                                                                            |
+| Shape and elevation       | `--pv-radius-sm`, `--pv-radius-md`, `--pv-radius-lg`, `--pv-radius-xl`, `--pv-radius-full`, `--pv-shadow-panel`, `--pv-shadow-chrome`                                                                                                                                                                                                                 |
+| Shell layout              | `--pv-nav-width`, `--pv-header-height`, `--pv-aside-width`, `--pv-container-width`                                                                                                                                                                                                                                                                    |
+| Dashboard and diagnostics | `--pv-globe-sea`, `--pv-globe-land`, `--pv-globe-coast`, `--pv-slot-error-bg`, `--pv-slot-error-border`, `--pv-slot-error-text`                                                                                                                                                                                                                       |
+| Legacy aliases            | `--pv-color-page`, `--pv-color-surface`, `--pv-color-surface-alt`, `--pv-color-surface-raised`, `--pv-color-border`, `--pv-color-text`, `--pv-color-text-muted`, `--pv-color-primary`, `--pv-color-primary-text`, `--pv-color-info`, `--pv-color-success`, `--pv-color-warning`, `--pv-color-error`, `--pv-font-family-base`, `--pv-font-family-mono` |
+| Foundation shade scale    | `--pv-ink-50`, `--pv-ink-100`, `--pv-ink-150`, `--pv-ink-200`, `--pv-ink-300`, `--pv-ink-400`, `--pv-ink-500`, `--pv-ink-600`, `--pv-ink-700`, `--pv-ink-800`, `--pv-ink-850`, `--pv-ink-900`, `--pv-ink-950`                                                                                                                                         |
+
+Themes should use the semantic variables above before depending on individual
+foundation shades.
+
+### Supported hooks
+
+| Hook                    | Meaning                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `.pv-layout`            | Persistent application shell                                                                            |
+| `.pv-navigation`        | Navigation rail                                                                                         |
+| `.pv-region-header`     | Application header region                                                                               |
+| `.pv-region-main`       | Primary page region                                                                                     |
+| `.pv-dashboard`         | Dashboard workspace                                                                                     |
+| `.pv-dashboard-toolbar` | Dashboard title and Customize-mode toolbar, including Add widget, Reset, and Customize or Done controls |
+| `.pv-dashboard-pilot`   | Dashboard pilot summary                                                                                 |
+| `.pv-dashboard-board`   | Dashboard widget board                                                                                  |
+| `.pv-profile`           | Pilot profile page                                                                                      |
+| `.pv-pirep-detail`      | PIREP detail view                                                                                       |
+| `.pv-pirep-summary`     | PIREP summary                                                                                           |
+| `.pv-pirep-content`     | PIREP content region                                                                                    |
+| `.pv-pirep-details`     | PIREP details sidebar                                                                                   |
+
+Target these hooks from `custom.css`. Do not target Nuxt UI generated markup,
+data attributes, or internal class names. For example:
+
+```css
+.pv-dashboard-toolbar {
+  --pv-accent: #006db0;
+}
+```
 
 ## Domain components
 
@@ -220,6 +315,22 @@ Stylesheets are loaded in this order before the application is painted:
 4. Component contracts should use explicit props, events, and slots so an ejected replacement can preserve integration behavior.
 5. Styles needed by an ejected component should be colocated with it or imported explicitly.
 6. A later contributor guide must document the supported eject and build workflow once those commands exist.
+
+### Source-level ejection contract
+
+1. Ejection replaces one focused domain component in a customized frontend
+   distribution. It is not a runtime theme feature and requires a frontend
+   build.
+2. A replacement preserves the original component's documented typed props,
+   emitted events, slots, and accessibility contract at its integration point.
+3. The replacement owns its markup and behavior. It imports or colocates the
+   styles it requires and may use documented `--pv-*` variables and `.pv-*`
+   hooks.
+4. Generic controls inside the replacement use Nuxt UI directly. A replacement
+   must not add phpVMS wrappers around generic controls only for styling.
+5. The component remains focused. Replacing a dashboard widget, PIREP summary,
+   route display, or similar domain component must not require copying the page
+   route, persistent application shell, or unrelated domain components.
 
 ## Decision guide
 

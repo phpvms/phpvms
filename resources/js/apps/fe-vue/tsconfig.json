@@ -10,6 +10,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
+    "resolveJsonModule": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
