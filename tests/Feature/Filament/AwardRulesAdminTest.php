@@ -92,7 +92,7 @@ it('creates an award without criteria', function (): void {
     expect($award->ref_model_type)->toBeNull();
 });
 
-it('edits award info, type and trigger through the summary-strip drawer', function (): void {
+it('edits award info, type and trigger through the overview drawer', function (): void {
     $award = Award::factory()->create(['name' => 'Old Name', 'active' => true]);
 
     Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])

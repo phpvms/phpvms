@@ -23,8 +23,12 @@ class CreateFlight extends CreateRecord
     #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $flt_time = Carbon::parse($data['flight_time']);
-        $data['flight_time'] = $flt_time->hour * 60 + $flt_time->minute;
+        // flight_time is not on the form any more; only convert it when a
+        // caller actually supplied one.
+        if (isset($data['flight_time'])) {
+            $flt_time = Carbon::parse($data['flight_time']);
+            $data['flight_time'] = $flt_time->hour * 60 + $flt_time->minute;
+        }
 
         return $data;
     }

@@ -1,6 +1,6 @@
 {{--
     Five-cell operating-figures strip (mockup pirep.html:493-541, classes
-    theme.css .strip / .strip__*, same pattern as
+    theme.css .overview / .overview__*, same pattern as
     resources/views/filament/widgets/dashboard/stats-strip.blade.php).
     Filament's native page header (getHeading/getSubheading) renders the
     ident/reg/route + pilot/filed line above this — no custom avatar hero.
@@ -48,13 +48,13 @@
         : null;
 @endphp
 
-<section class="strip" aria-label="Flight figures">
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--blue">@svg('tabler-clock')</span>
-        <span class="strip__label">{{ __('pireps.flight_time') }}</span>
-        <span class="strip__value">{{ sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) ($record->flight_time ?? 0)))) }}</span>
+<section class="overview" aria-label="Flight figures">
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--blue">@svg('tabler-clock')</span>
+        <span class="overview__label">{{ __('pireps.flight_time') }}</span>
+        <span class="overview__value">{{ sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) ($record->flight_time ?? 0)))) }}</span>
         @if ($timeDelta !== null)
-            <span class="strip__note {{ $timeDelta <= 0 ? 'strip__note--ok' : '' }}">
+            <span class="overview__note {{ $timeDelta <= 0 ? 'overview__note--ok' : '' }}">
                 @if ($timeDelta <= 0)
                     @svg('tabler-check') On plan
                 @else
@@ -62,41 +62,41 @@
                 @endif
             </span>
         @else
-            <span class="strip__note">—</span>
+            <span class="overview__note">—</span>
         @endif
     </div>
 
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--teal">@svg('tabler-ruler-measure')</span>
-        <span class="strip__label">{{ __('common.distance') }}</span>
-        <span class="strip__value">
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--teal">@svg('tabler-ruler-measure')</span>
+        <span class="overview__label">{{ __('common.distance') }}</span>
+        <span class="overview__value">
             @if ($record->distance){{ number_format((float) $record->distance->local()) }}<small>{{ $unitDistance }}</small>@else —@endif
         </span>
-        <span class="strip__note">{{ $distancePlanned ? number_format((float) $distancePlanned).' planned' : '—' }}</span>
+        <span class="overview__note">{{ $distancePlanned ? number_format((float) $distancePlanned).' planned' : '—' }}</span>
     </div>
 
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--violet">@svg('tabler-gauge')</span>
-        <span class="strip__label">{{ __('pireps.score') }}</span>
-        <span class="strip__value">{{ $record->score ?? '—' }}<small>/100</small></span>
-        <span class="strip__note">out of 100</span>
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--violet">@svg('tabler-gauge')</span>
+        <span class="overview__label">{{ __('pireps.score') }}</span>
+        <span class="overview__value">{{ $record->score ?? '—' }}<small>/100</small></span>
+        <span class="overview__note">out of 100</span>
     </div>
 
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--rose">@svg('tabler-plane-arrival')</span>
-        <span class="strip__label">{{ __('pireps.landing_rate') }}</span>
-        <span class="strip__value">
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--rose">@svg('tabler-plane-arrival')</span>
+        <span class="overview__label">{{ __('pireps.landing_rate') }}</span>
+        <span class="overview__value">
             @if ($landingRate)<span class="rate {{ $rateClass }}">{{ number_format($landingRate) }}</span><small>fpm</small>@else —@endif
         </span>
-        <span class="strip__note">{{ $landingNote }}</span>
+        <span class="overview__note">{{ $landingNote }}</span>
     </div>
 
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--amber">@svg('tabler-gas-station')</span>
-        <span class="strip__label">{{ __('pireps.fuel_used') }}</span>
-        <span class="strip__value">
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--amber">@svg('tabler-gas-station')</span>
+        <span class="overview__label">{{ __('pireps.fuel_used') }}</span>
+        <span class="overview__value">
             @if ($record->fuel_used){{ number_format((float) $record->fuel_used->local()) }}<small>{{ $unitFuel }}</small>@else —@endif
         </span>
-        <span class="strip__note">{{ $fuelRemaining !== null ? number_format($fuelRemaining).' remaining' : '—' }}</span>
+        <span class="overview__note">{{ $fuelRemaining !== null ? number_format($fuelRemaining).' remaining' : '—' }}</span>
     </div>
 </section>

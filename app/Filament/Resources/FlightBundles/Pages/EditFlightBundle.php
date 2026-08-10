@@ -23,10 +23,10 @@ use Illuminate\Support\Str;
 use Override;
 
 /**
- * Identity → workspace → tucked-away settings: a read-only summary strip
+ * Identity → workspace → tucked-away settings: a read-only overview
  * (status, flight and subfleet summations, window) sits above the schedules
  * table that is the page's real workload, and the bundle's own fields are
- * edited only through the drawer opened from the strip's last card.
+ * edited only through the drawer opened from the overview's last card.
  */
 class EditFlightBundle extends EditRecord
 {
@@ -61,17 +61,17 @@ class EditFlightBundle extends EditRecord
     public function content(Schema $schema): Schema
     {
         return $schema->components([
-            View::make('filament.shared.summary-strip')
+            View::make('components.admin.overview')
                 ->viewData([
-                    'cards'         => $this->summaryCards(),
-                    'hasEditAction' => true,
-                    'ariaLabel'     => __('filament.bundles.sections.details'),
+                    'cards'      => $this->summaryCards(),
+                    'ariaLabel'  => __('filament.bundles.sections.details'),
+                    'editAction' => $this->editAction,
                 ]),
             $this->getRelationManagersContentComponent(),
         ]);
     }
 
-    /** The Edit trigger rendered inside the summary strip's last card. */
+    /** The Edit trigger rendered inside the overview's last card. */
     public function editAction(): Action
     {
         return EditDetailsAction::make(FlightBundleForm::fields())

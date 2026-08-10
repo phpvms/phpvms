@@ -40,7 +40,10 @@ test('view-pirep page renders the original flight card from the archive after fl
 
     $admin = createAdminUser();
     $pirep = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
-    app(PirepService::class)->file($pirep);
+    $pirepSvc = app(PirepService::class);
+    $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
+
     $pirep->refresh();
 
     $flight = $pirep->flight;

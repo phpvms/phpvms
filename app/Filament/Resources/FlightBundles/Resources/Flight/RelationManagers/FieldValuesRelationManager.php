@@ -55,6 +55,9 @@ class FieldValuesRelationManager extends RelationManager
             ->filters([
                 //
             ])
+            ->emptyStateIcon(TablerIcon::Columns)
+            ->emptyStateHeading(__('filament.flights.fields_empty_heading'))
+            ->emptyStateDescription(__('filament.flights.fields_empty_description'))
             ->headerActions([
                 CreateAction::make()
                     ->icon(TablerIcon::CirclePlus)

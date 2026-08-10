@@ -14,7 +14,7 @@ use Filament\Support\Enums\Width;
  * The branded drawer chrome shared by every slide-over editor (Tailwind Plus
  * "drawer with branded header": accent header styled via .drawer-branded in
  * the admin theme, flat single-column fields). Wraps any action — the
- * summary-strip Edit drawers and the fact editor both route through here.
+ * overview Edit drawers and the fact editor both route through here.
  */
 class Drawer
 {

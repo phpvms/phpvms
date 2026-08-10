@@ -59,7 +59,12 @@
 
 {{-- Map (lazy-loaded Leaflet + phpvms admin maps) --}}
 @if ($hasRouteMap)
+    {{-- wire:ignore: Leaflet owns this subtree. Any Livewire re-render of the
+         page (accepting/rejecting the PIREP, a header action) would otherwise
+         morph the tiles away, and Alpine's init() won't re-run on the
+         surviving element to rebuild it. --}}
     <div
+        wire:ignore
         class="route-map"
         x-data="{
             async init() {

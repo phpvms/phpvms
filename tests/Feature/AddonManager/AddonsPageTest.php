@@ -16,6 +16,7 @@ use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\AddonManager\Filament\Pages\Addons as AddonsPage;
 use Modules\AddonManager\Jobs\InstallAddonJob;
+use Modules\AddonManager\Services\RegistryClient;
 
 /**
  * A three-package catalog: one installed with an update (acars), one installable
@@ -122,6 +123,8 @@ it('renders for an authorized admin and lists the catalog', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
+        // The page lands on Installed; the catalog lives on the registry tab.
+        ->set('activeTab', 'browse')
         ->assertSuccessful()
         ->assertSee('vmsACARS')
         ->assertSee('SkyBank Finance')
@@ -154,6 +157,7 @@ it('searches the listing by name', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'browse')
         ->set('search', 'skybank')
         ->assertSee('SkyBank Finance')
         ->assertDontSee('WeatherDeck');
@@ -163,6 +167,7 @@ it('filters the listing by category', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'browse')
         ->set('category', 'Finance')
         ->assertSee('SkyBank Finance')
         ->assertDontSee('vmsACARS');
@@ -172,6 +177,7 @@ it('disables the install action for an incompatible addon', function (): void {
     fakeDefaultCatalog();
 
     Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'browse')
         ->call('select', 'weather/deck')
         ->assertActionDisabled('install');
 });
@@ -193,6 +199,7 @@ it('disables install for a catalog entry that carries no installable version', f
     ]]], 200)]);
 
     Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'browse')
         ->call('select', 'empty/pkg')
         ->assertActionDisabled('install');
 });
@@ -244,6 +251,7 @@ it('dispatches the install job when a queue worker will process it', function ()
     Bus::fake();
 
     Livewire::test(AddonsPage::class)
+        ->set('activeTab', 'browse')
         ->call('select', 'skyops/skybank')
         ->callAction('install', ['run_migrations' => true]);
 
@@ -253,4 +261,107 @@ it('dispatches the install job when a queue worker will process it', function ()
             && $job->version === '1.0.3'
             && $job->runMigrations,
     );
+});
+
+/**
+ * Official add-ons lead the shelf. The flag is provenance only — it never
+ * changes what can be installed, just what a browsing operator meets first.
+ */
+it('sorts official addons above the rest while browsing', function (): void {
+    // skybank sorts first alphabetically; the official flag has to beat that.
+    Http::fake(['*' => Http::response(['data' => [
+        ['registryId' => 'skyops/skybank', 'name' => 'SkyBank Finance', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.3'],
+        ['registryId' => 'phpvms/acars', 'name' => 'vmsACARS', 'official' => true, 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '2.2.0'],
+    ]], 200)]);
+
+    $page = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'));
+
+    expect($page->listing()->pluck('name')->all())->toBe(['vmsACARS', 'SkyBank Finance']);
+});
+
+it('drops the official weighting once a search is typed', function (): void {
+    // Both match "a"; with the shelf weighting gone they fall back to name order,
+    // so the community package leads. A lookup ranks by match, not by publisher.
+    Http::fake(['*' => Http::response(['data' => [
+        ['registryId' => 'skyops/skybank', 'name' => 'Bank', 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '1.0.3'],
+        ['registryId' => 'phpvms/acars', 'name' => 'Charts', 'official' => true, 'versions' => ['php' => '8.0', 'phpvms' => '1.0'], 'version' => '2.2.0'],
+    ]], 200)]);
+
+    $page = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse')->set('search', 'a'));
+
+    expect($page->listing()->pluck('name')->all())->toBe(['Bank', 'Charts']);
+});
+
+it('pages the listing ten at a time', function (): void {
+    Http::fake(['*' => Http::response(['data' => collect(range(1, 14))
+        ->map(fn (int $n): array => [
+            'registryId' => 'vendor/pkg'.str_pad((string) $n, 2, '0', STR_PAD_LEFT),
+            'name'       => 'Package '.str_pad((string) $n, 2, '0', STR_PAD_LEFT),
+            'versions'   => ['php' => '8.0', 'phpvms' => '1.0'],
+            'version'    => '1.0.0',
+        ])->all()], 200)]);
+
+    $component = Livewire::test(AddonsPage::class)->set('activeTab', 'browse');
+    $page = addonsPageInstance($component);
+
+    expect($page->listing())->toHaveCount(14)
+        ->and($page->paginator()->count())->toBe(10)
+        ->and($page->paginator()->firstItem())->toBe(1);
+
+    $component->set('page', 2);
+
+    expect(addonsPageInstance($component)->paginator()->count())->toBe(4);
+});
+
+it('returns to the first page when a filter narrows the listing', function (): void {
+    fakeDefaultCatalog();
+
+    $component = Livewire::test(AddonsPage::class)
+        ->set('page', 3)
+        ->set('search', 'skybank');
+
+    expect(addonsPageInstance($component)->page)->toBe(1);
+});
+
+it('splits installed addons by enable state', function (): void {
+    fakeDefaultCatalog();
+    Addon::query()->where('registry_id', 'phpvms/acars')->update(['enabled' => false]);
+
+    $component = Livewire::test(AddonsPage::class)->set('activeTab', 'installed');
+
+    expect(addonsPageInstance($component)->stateCounts())
+        ->toMatchArray(['all' => 1, 'enabled' => 0, 'disabled' => 1]);
+
+    $component->set('state', 'enabled');
+    expect(addonsPageInstance($component)->listing())->toHaveCount(0);
+
+    $component->set('state', 'disabled');
+    expect(addonsPageInstance($component)->listing()->pluck('name')->all())->toBe(['vmsACARS']);
+});
+
+/**
+ * Registry down and the cached catalog has aged out. The list still works off
+ * that cache, so the page says so where the counts are read rather than in a
+ * toast that has already gone.
+ */
+it('warns on the page when the catalog it is showing is stale', function (): void {
+    // One fake, sequenced: Http::fake() appends and the first match wins, so a
+    // second fake('*') here would be shadowed by the first and never serve 500.
+    Http::fake(['*' => Http::sequence()
+        ->push(['data' => fakeCatalogPackages()], 200)
+        ->push('', 500)]);
+
+    app(RegistryClient::class)->catalog();
+
+    // Past the freshness window (and the refresh throttle), so rendering the
+    // page re-fetches, fails, and serves the cached entries flagged stale.
+    $this->travel((int) config('addon-manager.catalog_ttl') + 120)->seconds();
+
+    $component = Livewire::test(AddonsPage::class);
+
+    expect(addonsPageInstance($component)->catalogState()['stale'])->toBeTrue();
+
+    $component
+        ->assertSee(__('addon-manager::addons.showing_cached_catalog'))
+        ->assertSee('vmsACARS');
 });

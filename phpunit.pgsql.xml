@@ -49,6 +49,13 @@
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>
         <env name="BROADCAST_CONNECTION" value="null" force="true"/>
         <env name="CACHE_STORE" value="array" force="true"/>
+        <!-- A cached bootstrap/cache/config.php (written by `artisan optimize`,
+             which the updater runs) is loaded verbatim at boot and BYPASSES all
+             of the env forcing below, pointing the whole suite at the real
+             dev database. Pin the cache lookup to a path that never exists so
+             tests always resolve config from files + these env values. -->
+        <server name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
         <!-- Both blocks are required. Laravel resolves env() through a repository
              that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
              shell variables into $_SERVER, so an exported DB_CONNECTION silently

@@ -352,7 +352,6 @@ class PirepService extends Service
 
         $this->updateCustomFields($pirep->id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
-        $this->pirepArchiveSvc->save($pirep);
 
         return $pirep;
     }
@@ -479,6 +478,11 @@ class PirepService extends Service
         event(new PirepFiled($pirep));
 
         $pirep->refresh();
+
+        // Snapshot the flight/aircraft/simbrief here rather than in file(),
+        // which only the ACARS API calls — the frontend files a PIREP with
+        // create() + submit(), so archiving there missed every manual PIREP.
+        $this->pirepArchiveSvc->save($pirep);
 
         // Figure out what pirep state should be, if nothing provided yet.
         if ($pirep->state != PirepState::ACCEPTED && $pirep->state != PirepState::REJECTED) {

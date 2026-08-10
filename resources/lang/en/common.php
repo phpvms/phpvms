@@ -101,6 +101,8 @@ return [
     'in_lbs'                => 'In lbs',
     'in_nautical_miles'     => 'In nmi',
     'in_feet_per_minute'    => 'In ft/min',
+    'feet_short'            => 'ft',
+    'nautical_miles_short'  => 'nm',
     'amount'                => 'Amount',
     'type'                  => 'Type',
     'award'                 => 'Award',

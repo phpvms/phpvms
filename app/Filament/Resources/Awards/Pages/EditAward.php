@@ -28,9 +28,9 @@ use Override;
 
 /**
  * Same identity → workspace split as the flight-bundle edit page: a read-only
- * summary strip (status, award type, recipients) sits above the criteria
+ * overview (status, award type, recipients) sits above the criteria
  * workspace, and the award's identity, type and trigger are edited only
- * through the drawer opened from the strip's last card.
+ * through the drawer opened from the overview's last card.
  *
  * The page form is the criteria builder. Its tree lives on the AwardRule row
  * rather than an awards column, so it is filled and saved by hand here.
@@ -47,18 +47,18 @@ class EditAward extends EditRecord
     public function content(Schema $schema): Schema
     {
         return $schema->components([
-            View::make('filament.shared.summary-strip')
+            View::make('components.admin.overview')
                 ->viewData([
-                    'cards'         => $this->summaryCards(),
-                    'hasEditAction' => true,
-                    'ariaLabel'     => __('filament.awards_information'),
+                    'cards'      => $this->summaryCards(),
+                    'ariaLabel'  => __('filament.awards_information'),
+                    'editAction' => $this->editAction,
                 ]),
             $this->getFormContentComponent(),
             $this->getRelationManagersContentComponent(),
         ]);
     }
 
-    /** The Edit trigger rendered inside the summary strip's last card. */
+    /** The Edit trigger rendered inside the overview's last card. */
     public function editAction(): Action
     {
         return EditDetailsAction::make([

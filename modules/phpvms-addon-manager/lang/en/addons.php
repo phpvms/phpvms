@@ -7,10 +7,50 @@ return [
     'browse_registry' => 'Browse registry',
     'updates'         => 'Updates',
     'installed_tab'   => 'Installed',
+    'registry_tab'    => 'Registry',
     'all_categories'  => 'All categories',
-    'search_addons'   => 'Search :count addons…',
+    'search_addons'   => 'Search :count add-ons by name or publisher…',
     'no_addons_found' => 'No addons found.',
     'select_an_addon' => 'Select an addon to see its details.',
+
+    // Enable-state tabs within the active tab
+    'state_all'      => 'All',
+    'state_enabled'  => 'Enabled',
+    'state_disabled' => 'Disabled',
+
+    // Page header
+    'heading'               => 'Add-ons',
+    'metric_listed'         => 'Listed',
+    'metric_updates'        => 'Update available|Updates available',
+    'metric_disabled'       => 'Disabled',
+    'check_updates'         => 'Check for updates',
+    'no_results_title'      => 'Nothing matches those filters',
+    'no_results_hint'       => 'Clear the search or pick a different category to see the rest of the catalog.',
+    'nothing_selected'      => 'Pick an add-on',
+    'nothing_selected_hint' => 'Choose one from the list to see what it requires, what it changed and where it came from.',
+
+    // Detail register
+    'official'         => 'Official',
+    'official_hint'    => 'Official add-on',
+    'website'          => 'Website',
+    'changelog'        => 'Changelog',
+    'changelog_inline' => 'opens in a panel',
+    'compatible'       => 'Compatible',
+    'version'          => 'Version',
+    'released'         => 'Released',
+    // Register labels. The lowercase `installed`/`latest`/`requires` keys
+    // above are inline words in sentences; these are column headings.
+    'label_installed' => 'Installed',
+    'label_latest'    => 'Latest',
+    'label_requires'  => 'Requires',
+    'label_size'      => 'Size',
+    'enable'          => 'Enable',
+    'disable'         => 'Disable',
+    'remove'          => 'Remove',
+    'verify_note'     => "Downloads are checked against the publisher's SHA-256 and a signature from :host before anything is written to disk.",
+    'showing_range'   => 'Showing :from–:to of :total',
+    'previous'        => 'Previous',
+    'next'            => 'Next',
 
     // Sync status
     'not_synced'     => 'Registry not synced yet',
@@ -26,6 +66,7 @@ return [
     'installed'        => 'installed',
     'disabled'         => 'disabled',
     'bundled'          => 'bundled with phpVMS',
+    'bundled_short'    => 'Bundled',
     'requires'         => 'requires',
     'latest'           => 'latest',
     'channel'          => 'channel',

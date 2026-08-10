@@ -290,9 +290,24 @@
   --tw-ring-shadow: 0 0 #0000;
 }
 
-/* Section bodies: 24px -> 12px. */
+/* Section bodies: 24px -> 12px. The grid gap goes with it — vendor spaces
+ * form rows 24px apart where the mockup's .form-grid is `gap-x-3.5 gap-y-3`
+ * (14px column, 12px row, admin-console-v2/theme.css:1795-1798). Halving the
+ * row gap is what makes a section read as one dense block rather than a list
+ * of far-apart rows. */
 .fi-section-content {
-  @apply p-3;
+  /* Published so the full-bleed children below can cancel exactly as much
+   * padding as is actually applied — the density picker changes this, and a
+   * hardcoded -12px leaves a 4px sliver at comfortable. */
+  --section-pad: 12px;
+
+  @apply gap-x-3.5 gap-y-3;
+  padding: var(--section-pad);
+}
+
+/* Label to control: the mockup's .fld is `gap-1` (4px); vendor uses 8px. */
+.fi-fo-field-content-col {
+  @apply gap-1;
 }
 
 /* ---------------------------------------------------------------------------
@@ -309,7 +324,177 @@
 }
 
 .fi-section-header-heading {
-  @apply text-[11px] font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  @apply text-xs font-semibold uppercase tracking-[0.055em] text-(--ink-2);
+  /* Vendor sets its own line-height on the h3, which survives `text-xs` and
+   * makes the band 9px taller than the .panel__head it has to match. */
+  line-height: var(--text-xs--line-height);
+}
+
+/* The head glyph, matching .panel__title svg (theme.css:3000) — vendor ships
+ * it at 20px. */
+.fi-section-header .fi-icon,
+.fi-section-header .fi-icon svg {
+  @apply size-3.5 self-center text-(--ink-3);
+  stroke-width: 1.75;
+}
+
+/* A collapsible section's toggle is a 36px icon button, and on a centre-aligned
+ * row it — not the 15px title — is what sets the head's height, standing it
+ * 42px tall against the 34px .panel__head it mirrors. 16px lands the row on 34
+ * (9 + 16 + 8 + 1). The whole header stays the click target, so shrinking the
+ * button does not shrink the affordance. */
+.fi-section-header > .fi-icon-btn {
+  @apply size-4;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sequent inner section (mockup's second `.panel__head` inside one panel —
+ * "Notes · briefing" under flight information, TOUCHDOWN/NOTES on the PIREP
+ * view). A nested `.fi-section` would otherwise draw a second card inside the
+ * first; this strips the card and full-bleeds the head band back out through
+ * the parent's 12px content padding, so it reads as a divider with a title.
+ * ------------------------------------------------------------------------- */
+/* A Section nested in another Section's body. `.fi-sc-section` is the schema
+ * wrapper Filament puts around a Section component; the card itself is the
+ * `.fi-section` inside it. Scoping to a descendant of `.fi-section-content`
+ * is what makes this "nested" — a top-level Section's wrapper never sits
+ * inside another section's body, and relation-manager cards live in the page
+ * content rather than a section, so neither is caught.
+ *
+ * The margins bleed the band back out through the parent's 12px content
+ * padding and the 24px grid row-gap above it, so it butts against the content
+ * it follows. That assumes a sequent section comes after something, which is
+ * what a head band means — one used as a section's first child would ride up
+ * over the section head. */
+.fi-section-content .fi-sc-section {
+  /* The sides cancel the section's own padding, whatever the density picker
+   * has set it to, so the band reaches the card edge. The top keeps the grid's
+   * row-gap: the row above ends in helper text, and pulling the band up onto
+   * it leaves the two touching. The bottom is only cancelled on the last row,
+   * where the band's body would otherwise float above the card's padding — a
+   * mid-card band keeps its 0 so the next row's gap still separates them. */
+  margin: 0 calc(var(--section-pad) * -1) 0;
+}
+
+.fi-section-content > .fi-grid-col:last-child .fi-sc-section {
+  margin-bottom: calc(var(--section-pad) * -1);
+}
+
+.fi-section-content .fi-sc-section > .fi-section {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-section-content .fi-sc-section > .fi-section > .fi-section-header {
+  @apply rounded-none border-t border-t-(--line);
+}
+
+.fi-section-content .fi-sc-section > .fi-section > .fi-section-content-ctn > .fi-section-content {
+  @apply p-3;
+}
+
+/* A band that has to sit flush at the top of a Filament section body, the way
+ * .route-bar does at the top of the PIREP view's panel. Cancels the section's
+ * 12px content padding on three sides; its own border-b becomes the divider. */
+.route-bar--bleed {
+  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Form field labels and helper text (mockup .fld__label/.fld__hint,
+ * admin-console-v2/theme.css:1812-1823). Vendor leaves both at its own
+ * near-black oklch defaults at 12.5px — the only place in the panel still
+ * painting text outside the ink scale.
+ * ------------------------------------------------------------------------- */
+.fi-fo-field-label {
+  @apply text-[11.5px] text-(--ink-2);
+  font-weight: 550;
+}
+
+/* Helper text renders as a schema Text component below the control; scope to
+ * the field column so standalone Text components elsewhere keep their size. */
+.fi-fo-field-content-col .fi-sc-text {
+  @apply text-[11px] leading-snug text-(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+ * Form control height: 32px against the vendor's 36px (mockup .inp is 30px;
+ * 32 is the console's chosen middle). Same mechanism the table-toolbar rules
+ * below document at length — the vendor pins `padding-block: 6px` and
+ * `--tw-leading: 24px` on .fi-input, so 6+24+6 = 36 and a font-size alone
+ * never moves it. Both have to be released.
+ *
+ * min-h, not h: a searchable select wraps a long option label and has to grow
+ * rather than spill. Scoped to the field column so table filters and the
+ * topbar search keep the sizes their own (more specific) rules give them, and
+ * so a select's in-dropdown search box — a bare .fi-input outside any capped
+ * wrapper — is left alone. Textareas are excluded for the same reason: h-full
+ * against an auto-height wrapper has nothing to resolve against.
+ * ------------------------------------------------------------------------- */
+.fi-fo-field-content-col .fi-input-wrp {
+  @apply h-auto min-h-8;
+}
+
+/* Any <input> sitting directly in a capped wrapper — date and time pickers
+ * render theirs without the .fi-input class, so matching on that misses them.
+ * The child chain still excludes a select's in-dropdown search box, which is a
+ * bare .fi-input outside any .fi-input-wrp-content-ctn. */
+.fi-fo-field-content-col .fi-input-wrp > .fi-input-wrp-content-ctn > input {
+  /* px-2 is the mockup's .inp padding; block padding goes so h-full centres. */
+  @apply h-full px-2 py-0 leading-none;
+}
+
+.fi-fo-field-content-col .fi-input-wrp > .fi-input-wrp-content-ctn > .fi-select-input {
+  /* No inline padding here: a select's inline-end padding clears its chevron. */
+  @apply h-full py-0 leading-none;
+}
+
+/* .fi-select-input is a div wrapping button.fi-select-input-btn, and the button
+ * carries min-height:36px — a floor h-full cannot get under. The vendor puts a
+ * *second* 36px floor on an unclassed div between the two, so both have to go
+ * or the field stays 36 while the button inside it shrinks to 25. */
+/* h-full only resolves against a parent that has a height, and every link in
+ * this chain is content-sized by default — so the button ends up 25px inside a
+ * 32px wrapper, anchored top, and the value reads high. Fill the whole chain,
+ * then let the button's own flex centre the value. Block padding goes with it;
+ * the inline padding stays because it is what clears the chevron. */
+.fi-fo-field-content-col .fi-select-input,
+.fi-fo-field-content-col .fi-select-input > div,
+.fi-fo-field-content-col .fi-select-input-ctn,
+.fi-fo-field-content-col .fi-select-input-btn {
+  @apply h-full min-h-0;
+}
+
+.fi-fo-field-content-col .fi-select-input-btn {
+  @apply items-center py-0 leading-none;
+}
+
+/* A date/time picker's height comes from its trigger button — the three
+ * <input>s it renders are all zero-height, so capping inputs never reaches it. */
+.fi-fo-field-content-col .fi-fo-date-time-picker-trigger {
+  @apply h-8;
+}
+
+/* ---------------------------------------------------------------------------
+ * Text affixes on inputs (mockup .inp-unit): the unit rides inside the
+ * control, muted and mono, so the number keeps its column. Vendor draws it as
+ * a bordered cell in near-black instead, which reads as a second field.
+ * ------------------------------------------------------------------------- */
+.fi-input-wrp-suffix-has-label,
+.fi-input-wrp-prefix-has-label {
+  @apply border-0 px-2 font-mono text-[11px] text-(--ink-4);
+}
+
+/* Steppers double the visual weight of a unit-bearing field and the console
+ * never uses them; the value is typed. */
+.fi-input-wrp input[type="number"]::-webkit-inner-spin-button,
+.fi-input-wrp input[type="number"]::-webkit-outer-spin-button {
+  @apply appearance-none;
+  margin: 0;
+}
+
+.fi-input-wrp input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .fi-section-header-heading em {
@@ -400,7 +585,11 @@
    * bottom-right anchor via align-self below. */
   /* Uniform height whether or not a subheading/metrics row is present —
    * sized to the tallest case (eyebrow + 21px title + metrics ≈ 107.5px). */
-  @apply relative items-start overflow-hidden rounded-xl min-h-27;
+  /* NOT overflow-hidden: header actions render their dropdown panel inline
+   * (x-float .flip, no teleport), so a clipping ancestor here both flips the
+   * panel upward and cuts it off. The dot-grid ::after clips itself to the
+   * radius instead. */
+  @apply relative items-start rounded-xl min-h-27;
   padding: 14px 18px 17px 22px;
   border: 1px solid color-mix(in oklab, var(--primary-600) 55%, black);
   background-color: color-mix(in oklab, var(--primary-600) 78%, var(--ink));
@@ -450,6 +639,7 @@
 .fi-header::after {
   @apply absolute inset-0 pointer-events-none opacity-10;
   content: "";
+  border-radius: inherit;
   background-image: radial-gradient(rgb(255 255 255 / 0.8) 1px, transparent 1px);
   background-size: 20px 20px;
 }
@@ -491,10 +681,27 @@
   color: color-mix(in oklab, white 56%, var(--primary-600));
 }
 
+/* The text column sizes to its content by default, which pins the subheading's
+ * right-hand content to the middle of the band. Letting it grow is what puts
+ * the figures in the bottom-right corner, beside the actions slot. */
+.fi-header > :first-child {
+  @apply min-w-0 flex-1;
+}
+
+/* Vendor caps the subline at a 672px prose measure, which keeps the figures
+ * marooned mid-band. Released only for the two-part subline
+ * (filament/shared/hero-subheading.blade.php), so ordinary prose sublines
+ * elsewhere keep their measure. */
+.fi-header-subheading:has(.hero-sub__figures) {
+  @apply max-w-none;
+}
+
 .fi-header-subheading {
   /* Sublines can carry a state chip beside text (PIREP view) — keep a gap
-   * between inline children without affecting single-child sublines. */
-  @apply mt-0.5 text-[12.5px] flex items-center gap-2;
+   * between inline children without affecting single-child sublines. The
+   * space-between only bites when there are two children (the flight edit
+   * page's descriptor + figures); a single-child subline is unaffected. */
+  @apply mt-0.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[12.5px];
   color: color-mix(in oklab, white 84%, var(--primary-600));
 }
 
@@ -530,6 +737,27 @@
 
 .head-metrics b {
   @apply text-white;
+}
+
+/* Hero subheading, right-hand group (mockup .page-head__actions): state chip
+ * and inline figures on one wrapping row. Distinct from .head-metrics above
+ * because the chip rides in the row here rather than sitting above it.
+ * Inverted onto the hero fill, same as the metrics it sits beside. */
+.fi-header-subheading .hero-sub__figures {
+  @apply flex flex-wrap items-center gap-x-3.5 gap-y-1;
+}
+
+.fi-header-subheading .hero-sub__meta {
+  @apply min-w-0;
+}
+
+.fi-header-subheading .hero-sub__figures b {
+  @apply font-mono text-[15px] font-semibold tabular-nums text-white;
+}
+
+.fi-header-subheading .hero-sub__figures em {
+  @apply ml-1.5 text-[12px] not-italic;
+  color: color-mix(in oklab, white 84%, var(--primary-600));
 }
 
 .fi-header-actions-ctn {
@@ -855,19 +1083,19 @@
  * ------------------------------------------------------------------------- */
 .fi-header .fi-btn,
 .fi-pagination .fi-btn,
-.strip__edit .fi-btn {
+.overview__edit .fi-btn {
   @apply h-7 px-2.5 text-[12.5px] border border-(--line-strong) bg-(--surface) text-(--ink-2) shadow-none;
 }
 
 .fi-header .fi-btn:hover,
 .fi-pagination .fi-btn:hover,
-.strip__edit .fi-btn:hover {
+.overview__edit .fi-btn:hover {
   @apply bg-(--surface-2) border-(--ink-4) text-(--ink);
 }
 
 .fi-header .fi-btn .fi-icon,
 .fi-pagination .fi-btn .fi-icon,
-.strip__edit .fi-btn .fi-icon {
+.overview__edit .fi-btn .fi-icon {
   @apply w-3.5 h-3.5;
   stroke-width: 1.75;
 }
@@ -880,7 +1108,7 @@
 /* Neutral hero buttons: muted glyph, not raw ink. The semantic tints below
  * and the primary override win over this by specificity. */
 .fi-header .fi-btn .fi-icon,
-.strip__edit .fi-btn .fi-icon {
+.overview__edit .fi-btn .fi-icon {
   color: var(--ink-3);
 }
 
@@ -1665,14 +1893,14 @@ html[data-density="comfortable"] .fi-body {
 /* Comfortable reaches the console surfaces too, not just table rows —
  * otherwise the toggle reads as a no-op on pages without a data table. */
 html[data-density="comfortable"] .fi-section-content {
-  @apply p-4;
+  --section-pad: 16px;
 }
 
 html[data-density="comfortable"] .queue__item {
   @apply py-3;
 }
 
-html[data-density="comfortable"] .strip__cell {
+html[data-density="comfortable"] .overview__cell {
   @apply pt-3.75 pb-3.5;
 }
 
@@ -1776,50 +2004,50 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * figures, one bordered strip with rules between (mockup index.html:471-514,
  * classes theme.css:1167-1233). No <x-filament::section> wrapper.
  * ------------------------------------------------------------------------- */
-.strip {
+.overview {
   @apply grid grid-cols-5 bg-(--surface) border border-(--line) rounded-xl;
 }
 
-.strip__cell {
+.overview__cell {
   @apply grid gap-x-2.75 border-r border-r-(--line-soft);
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   padding: 12px 14px 11px;
 }
 
-.strip__cell:last-child {
+.overview__cell:last-child {
   @apply border-r-0;
 }
 
-.strip__icon {
+.overview__icon {
   @apply grid w-7.5 h-7.5 rounded-md bg-(--sunken) border border-(--line-soft) text-(--ink-2);
   grid-row: span 3;
   place-items: center;
 }
 
-.strip__icon svg {
+.overview__icon svg {
   @apply w-4.25 h-4.25;
 }
 
 /* Category tints mark what's being measured, never whether it's good — they
  * hold still while the numbers move. */
-.strip__icon--blue {
+.overview__icon--blue {
   @apply text-(--info) bg-(--info-soft) border-(--info-line);
 }
 
-.strip__icon--teal {
+.overview__icon--teal {
   color: #0e7676;
   background: color-mix(in oklab, #0e7676 11%, var(--surface));
   border-color: color-mix(in oklab, #0e7676 32%, var(--surface));
 }
 
-.strip__icon--violet {
+.overview__icon--violet {
   color: #5b3fc4;
   background: color-mix(in oklab, #5b3fc4 11%, var(--surface));
   border-color: color-mix(in oklab, #5b3fc4 32%, var(--surface));
 }
 
-.strip__icon--rose {
+.overview__icon--rose {
   color: #a83358;
   background: color-mix(in oklab, #a83358 11%, var(--surface));
   border-color: color-mix(in oklab, #a83358 32%, var(--surface));
@@ -1830,111 +2058,118 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
  * background/border automatically, but the literal icon color needs its own
  * lighten or it reads near-black on a dark chip, same hue-preserving
  * transform as the --maint dark derivation above. */
-.dark .strip__icon--teal {
+.dark .overview__icon--teal {
   color: #6ddfdf;
   background: color-mix(in oklab, #6ddfdf 11%, var(--surface));
   border-color: color-mix(in oklab, #6ddfdf 32%, var(--surface));
 }
 
-.dark .strip__icon--violet {
+.dark .overview__icon--violet {
   color: #9284c8;
   background: color-mix(in oklab, #9284c8 11%, var(--surface));
   border-color: color-mix(in oklab, #9284c8 32%, var(--surface));
 }
 
-.dark .strip__icon--rose {
+.dark .overview__icon--rose {
   color: #c88399;
   background: color-mix(in oklab, #c88399 11%, var(--surface));
   border-color: color-mix(in oklab, #c88399 32%, var(--surface));
 }
 
-.strip__icon--amber {
+.overview__icon--amber {
   @apply text-(--maint) bg-(--maint-soft) border-(--maint-line);
 }
 
-.strip__label {
+.overview__label {
   @apply text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
 }
 
-.strip__value {
+.overview__value {
   @apply mt-0.25 text-[23px] font-semibold tracking-[-0.01em] tabular-nums leading-[1.12];
 }
 
-.strip__value small {
+.overview__value small {
   @apply ml-0.5 text-[11px] font-medium text-(--ink-3);
   letter-spacing: normal;
 }
 
-.strip__note {
+.overview__note {
   @apply flex items-center gap-1 mt-0.5 text-[11.5px] text-(--ink-3);
 }
 
-.strip__note svg {
+.overview__note svg {
   @apply w-3 h-3;
 }
 
-.strip__note--warn {
+.overview__note--warn {
   @apply text-(--warn);
 }
 
-.strip__note--ok {
+.overview__note--ok {
   @apply text-(--ok);
 }
 
 @media (max-width: 1240px) {
-  .strip {
+  .overview {
     @apply grid-cols-3;
   }
 
-  .strip__cell:nth-child(3) {
+  .overview__cell:nth-child(3) {
     @apply border-r-0;
   }
 
-  .strip__cell:nth-child(-n + 3) {
+  .overview__cell:nth-child(-n + 3) {
     @apply border-b border-b-(--line-soft);
   }
 }
 
 @media (max-width: 720px) {
-  .strip {
+  .overview {
     @apply grid-cols-2;
   }
 
-  .strip__cell:nth-child(n) {
+  .overview__cell:nth-child(n) {
     @apply border-r border-r-(--line-soft) border-b border-b-(--line-soft);
   }
 
-  .strip__cell:nth-child(2n) {
+  .overview__cell:nth-child(2n) {
     @apply border-r-0;
   }
 
   /* Five cells in a two-column grid leaves a hole — the last one takes the row. */
-  .strip__cell:last-child {
+  .overview__cell:last-child {
     @apply border-r-0 border-b-0;
     grid-column: 1 / -1;
   }
 }
 
-/* Four-cell variant (bundle summary strip on EditFlightBundle). Declared
- * after the .strip media rules so its column counts win at every width. */
-.strip--4 {
+/* Four-cell variant (bundle overview on EditFlightBundle). Declared
+ * after the .overview media rules so its column counts win at every width. */
+/* The strip's column count has to follow its card count, or a 3-card strip
+ * leaves two of the five default columns empty and the cards stop filling the
+ * band. */
+.overview--3 {
+  @apply grid-cols-3;
+}
+
+.overview--4 {
   @apply grid-cols-4;
 }
 
 @media (max-width: 1240px) {
-  .strip--4 {
+  .overview--4 {
     @apply grid-cols-2;
   }
 
-  .strip--4 .strip__cell:nth-child(-n + 2) {
+  .overview--4 .overview__cell:nth-child(-n + 2) {
     @apply border-b border-b-(--line-soft);
   }
 
-  .strip--4 .strip__cell:nth-child(2n) {
+  .overview--4 .overview__cell:nth-child(2n) {
     @apply border-r-0;
   }
 
-  .strip--4 .strip__cell:last-child {
+  .overview--4 .overview__cell:last-child {
     grid-column: auto;
   }
 }
@@ -2179,13 +2414,13 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 /* Edit-details trigger pinned to the strip's last card. Its button skin is
- * the console button proper — the .strip__edit selector rides the shared
+ * the console button proper — the .overview__edit selector rides the shared
  * .fi-header/.fi-pagination .fi-btn rules above, no copy here. */
-.strip__cell--edit {
+.overview__cell--edit {
   @apply relative;
 }
 
-.strip__edit {
+.overview__edit {
   @apply absolute top-2 right-2;
 }
 
@@ -3076,4 +3311,366 @@ html[data-density="comfortable"] .tbl tbody td {
 .tbl a.tbl__primary:hover {
   @apply text-(--primary-600) underline;
   text-underline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Flight edit — heading detail + section jump bar (mockup admin-console-v2/
+ * flight-edit.html .page-head/.secnav). The ident/route and figures ride in
+ * the shared hero band (.fi-header); only the jump bar lives in the page body,
+ * because the band scrolls away and the jump bar must not.
+ *
+ * top: 58px matches the PIREP view's .context rail — 44px topbar plus the
+ * 14px section gap.
+ * ------------------------------------------------------------------------- */
+.fi-header-heading-sep {
+  @apply font-normal;
+  color: color-mix(in oklab, white 56%, var(--primary-600));
+}
+
+.fi-header-heading-route {
+  @apply text-[0.8em];
+  color: color-mix(in oklab, white 88%, var(--primary-600));
+}
+
+.secnav {
+  @apply sticky z-20 flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
+  top: 58px;
+}
+
+.secnav__links {
+  @apply flex min-w-0 flex-1 items-stretch overflow-x-auto;
+}
+
+/* The jump bar reuses .subtab, but sits in a rounded bar rather than a card
+ * edge, so the trailing divider on the last link would float. */
+.secnav__links .subtab:last-child {
+  @apply border-r-0;
+}
+
+.secnav__switch {
+  @apply h-6.5 max-w-56 shrink-0 rounded border border-(--line) bg-(--surface) py-0 pl-2 pr-6 text-[12px] text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Operating-days picker (mockup .daypick) — Filament ToggleButtons in grouped
+ * mode, narrowed to seven equal two-letter cells.
+ * ------------------------------------------------------------------------- */
+.daypick .fi-btn-group-btn {
+  @apply min-w-10 justify-center px-2 font-mono text-[12px];
+}
+
+/* Filament tints every option with the field colour and leans on its own
+ * :checked rule for selection; in grouped mode that reads as "all seven
+ * selected". Mute the unchecked ones back to a plain surface cell, which is
+ * what the mockup's aria-pressed="false" day looks like. */
+.daypick .fi-fo-toggle-buttons-input:not(:checked) + .fi-btn-group-btn {
+  @apply bg-(--surface) text-(--ink-3);
+}
+
+.daypick .fi-fo-toggle-buttons-input:not(:checked) + .fi-btn-group-btn:hover {
+  @apply bg-(--sunken) text-(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Add-on catalog (mockups/admin-console-v2/addons.html).
+ *
+ * Lives in the core theme rather than the module because this is the only file
+ * with a Tailwind build: `@source` does not scan modules/, so utilities written
+ * in a module Blade view would never compile. Everything the add-on view needs
+ * is therefore a named class here, and the view uses no bare utilities.
+ * ------------------------------------------------------------------------- */
+
+/* A degraded-but-working state, stated where the counts are read. Not a toast:
+ * the operator needs it while deciding whether to trust the list. */
+.notice {
+  @apply grid items-center gap-3 rounded-xl border px-3 py-2.5;
+  @apply border-(--warn-line) bg-(--warn-soft) text-(--warn);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.notice svg {
+  @apply size-4.5 flex-none;
+}
+
+.notice__text > strong {
+  @apply block text-[12.5px];
+  font-weight: 550;
+}
+
+.notice__text > span {
+  @apply block text-[11.5px] opacity-85;
+}
+
+/* List left, detail right. 430px and "whatever is left" is not a ratio the
+ * 12-column grid can express, so the Grid is declared with one column and the
+ * real template lands here. Declared after the vendor grid utilities, so it
+ * wins on order at equal specificity. */
+/* extraAttributes() lands on the Grid component's WRAPPER, not on the grid
+ * element itself, so the template has to reach one level in. */
+.catalog > .fi-grid {
+  align-items: start;
+  grid-template-columns: minmax(0, 430px) minmax(0, 1fr);
+}
+
+/* The detail is the shorter half, so it stays put while a long list runs past. */
+.catalog__detail {
+  @apply sticky top-[58px];
+}
+
+/* Full-bleed through the section's own padding, same trick as .route-bar--bleed
+ * above: derived from --section-pad so it stays exact when the density picker
+ * moves it, never a hardcoded 12px. */
+.addon-list {
+  @apply flex flex-col;
+  margin-inline: calc(var(--section-pad) * -1);
+}
+
+/* The pagination bar closes the list card, so it takes the bottom bleed the
+ * list would otherwise need. */
+.addon-list + .panel__foot {
+  margin: 0 calc(var(--section-pad) * -1) calc(var(--section-pad) * -1);
+}
+
+.addon-row {
+  @apply grid w-full items-start gap-2.5 px-3 py-2.5 text-left;
+  @apply border-b border-b-(--line-soft) transition-colors duration-100;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.addon-row:last-child {
+  @apply border-b-0;
+}
+
+.addon-row:hover {
+  @apply bg-(--surface-2);
+}
+
+.addon-row[aria-current="true"] {
+  background-color: color-mix(in oklab, var(--primary-600) 9%, var(--surface));
+  box-shadow: inset 2px 0 0 var(--primary-600);
+}
+
+/* Disabled add-ons stay listed and stay actionable — dimmed, not hidden, so
+ * "why is that not running" has an answer on this screen. */
+.addon-row--dim .addon-tile,
+.addon-row--dim .addon-row__name {
+  @apply opacity-60;
+}
+
+/* Monogram plate. Its tint comes from the shared .overview__icon--* classes and
+ * marks the add-on's CATEGORY — which holds still — never its state. An add-on
+ * with no category keeps the neutral plate. */
+.addon-tile {
+  @apply grid size-7.5 flex-none place-items-center rounded-lg border;
+  @apply font-mono text-[12px] tracking-tight uppercase;
+  font-weight: 550;
+}
+
+/* Zero specificity, so a tint class alongside wins regardless of which of the
+ * two this stylesheet happens to declare last. */
+:where(.addon-tile) {
+  @apply border-(--line-soft) bg-(--sunken) text-(--ink-2);
+}
+
+.addon-tile img {
+  @apply size-full rounded-[3px] object-cover;
+}
+
+.addon-tile--lg {
+  @apply size-10.5 rounded-xl text-[16px];
+}
+
+.addon-row__body {
+  @apply min-w-0;
+}
+
+.addon-row__top {
+  @apply flex items-center justify-between gap-2;
+}
+
+.addon-row__title {
+  @apply flex min-w-0 items-center gap-1.5;
+}
+
+.addon-row__name {
+  @apply truncate text-[13px] text-(--ink);
+  font-weight: 550;
+}
+
+/* Provenance, not state — so it stays in ink and lets the sort order carry most
+ * of the signal. The chips keep colour for what is actually happening. */
+.official {
+  @apply size-3 flex-none text-(--ink-3);
+}
+
+.addon-hero__name .official {
+  @apply mr-1 inline-block size-3.5 align-baseline;
+}
+
+.addon-row__desc {
+  @apply mt-px block truncate text-[11.5px] text-(--ink-3);
+}
+
+.addon-row__meta {
+  @apply mt-[3px] flex items-center gap-1 truncate text-[11px] text-(--ink-4);
+}
+
+.addon-row__progress {
+  @apply mt-1.5 grid gap-1;
+}
+
+/* Install progress. The bar replaces the row's meta line rather than opening a
+ * modal over the list. */
+.dist__track {
+  @apply h-2.25 overflow-hidden rounded-[2px] border border-(--line-soft) bg-(--sunken);
+}
+
+.dist__fill {
+  @apply h-full rounded-[1px] transition-[width] duration-300;
+  background-color: var(--primary-600);
+}
+
+/* A band flush at the top of the detail section's body — the section supplies
+ * the card, so this only draws the band and its closing rule. */
+.addon-hero {
+  @apply grid items-start gap-3 px-3.5 pt-3.5 pb-3;
+  @apply border-b border-b-(--line) bg-(--surface-2);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
+}
+
+.addon-hero__name {
+  @apply text-[17px] leading-tight font-semibold tracking-tight text-(--ink);
+}
+
+.addon-hero__id {
+  @apply mt-1 flex flex-wrap items-center gap-1 text-[11.5px] text-(--ink-3);
+}
+
+.addon-hero__actions {
+  @apply flex flex-wrap items-center justify-end gap-1.5;
+}
+
+.addon-lede {
+  @apply border-b border-b-(--line-soft) px-3.5 py-3 text-[12.5px] text-(--ink-2);
+  max-width: 72ch;
+}
+
+.dl__link {
+  @apply inline-flex items-center gap-1 text-(--primary-600);
+}
+
+.dl__link svg {
+  @apply size-3 text-(--ink-4);
+}
+
+/* Leading icon, no arrow: this one opens in place, and an external-link glyph
+ * would promise a trip off the page. */
+.dl__link--inline svg {
+  @apply size-3.5;
+}
+
+.dl__link:hover {
+  @apply underline underline-offset-2;
+}
+
+/* The one thing an operator should read before running someone else's code.
+ * Closes the detail section, so it bleeds to the card edge on three sides. */
+.verify {
+  @apply flex items-start gap-2 border-t border-t-(--line-soft) px-3.5 py-2.5;
+  @apply text-[11.5px] text-(--ink-3);
+  margin: 0 calc(var(--section-pad) * -1) calc(var(--section-pad) * -1);
+}
+
+.verify svg {
+  @apply mt-px size-4.25 flex-none text-(--ok);
+}
+
+/* A search box is not a filter chip: it takes the leftover row so it reads as
+ * the thing you type into, and its magnifier stays put while the field grows. */
+.field--search {
+  @apply h-7.5 min-w-35 flex-1;
+}
+
+.field--search input {
+  @apply w-full;
+}
+
+.field:focus-within {
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-600) 20%, transparent);
+}
+
+/* Tab row + search row, flush at the top of the list section's body. */
+.addon-toolbar {
+  margin: calc(var(--section-pad) * -1) calc(var(--section-pad) * -1) 0;
+}
+
+/* A control parked at the far end of a tab row — a scope filter belongs with
+ * the tabs, not stealing width from the search box on the row below. */
+.subtabs__aside {
+  @apply ml-auto flex items-center px-2;
+}
+
+/* Only the first bar in a panel wears the rounded top edge. */
+.subtabs + .filters {
+  @apply rounded-none;
+}
+
+.empty {
+  @apply grid justify-items-center gap-1.5 px-4 py-6.5 text-center;
+}
+
+.empty svg {
+  @apply size-5.5 text-(--ink-4);
+}
+
+.empty strong {
+  @apply text-[13px] text-(--ink-2);
+  font-weight: 550;
+}
+
+.empty span {
+  @apply max-w-[34ch] text-xs text-(--ink-3);
+}
+
+@media (max-width: 1400px) {
+  /* The column is too narrow for tabs and a filter on one line. Wrapping drops
+   * the filter to its own row; scrolling would just half-hide it. */
+  .addon-toolbar .subtabs {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .addon-toolbar .subtabs__aside {
+    width: 100%;
+    justify-content: flex-end;
+    padding: 6px 8px;
+    border-top: 1px solid var(--line-soft);
+  }
+}
+
+/* Below the Grid's own stacking breakpoint the detail follows the list rather
+ * than sticking to a viewport it no longer shares. */
+/* One column, and the detail follows the row it belongs to rather than sticking
+ * to a viewport it no longer shares. */
+@media (max-width: 1279px) {
+  .catalog > .fi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog__detail {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .notice {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .notice .fi-btn {
+    grid-column: 2;
+    justify-self: start;
+  }
 }

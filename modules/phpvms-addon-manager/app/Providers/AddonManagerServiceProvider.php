@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\AddonManager\Providers;
 
 use App\Contracts\Modules\ServiceProvider;
-use Filament\Support\Assets\Css;
-use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Console\Scheduling\Schedule;
 use Override;
 
@@ -25,11 +23,10 @@ class AddonManagerServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        // The Addons page's scoped stylesheet (plain CSS, not a Tailwind build).
-        // Published to public/ by `php artisan filament:assets`.
-        FilamentAsset::register([
-            Css::make('addon-manager-addons', __DIR__.'/../../resources/css/addons.css'),
-        ], package: 'phpvms/addon-manager');
+        // No stylesheet is registered here. The Addons page's classes live in
+        // resources/css/filament/admin/theme.css, because that is the only file
+        // with a Tailwind build — its `@source` globs do not reach modules/, so
+        // anything written here could never compile.
 
         $this->app->afterResolving(Schedule::class, function (Schedule $schedule): void {
             $event = $schedule->command('addons:check-updates')->withoutOverlapping();

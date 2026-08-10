@@ -18,6 +18,7 @@ class SubfleetForm
         return $schema
             ->components([
                 Section::make(__('filament.subfleet_information'))
+                    ->id('subfleet-information')
                     ->description(__('filament.subfleet_description'))
                     ->schema([
                         Select::make('airline_id')
@@ -80,13 +81,13 @@ class SubfleetForm
                             ->native(false),
 
                         TextInput::make('cost_block_hour')
-                            ->label('common.cost_per_hour')
+                            ->label(__('common.cost_per_hour'))
                             ->minValue(0)
                             ->numeric()
                             ->step(0.01),
 
                         TextInput::make('cost_delay_minute')
-                            ->label('common.cost_delay_per_minute')
+                            ->label(__('common.cost_delay_per_minute'))
                             ->minValue(0)
                             ->numeric()
                             ->step(0.01),
@@ -101,6 +102,7 @@ class SubfleetForm
                     ->columns(3),
 
                 Section::make(__('filament.subfleets.sections.operational_capability'))
+                    ->id('operational-capability')
                     ->schema([
                         TextInput::make('cruise_speed')
                             ->label(__('filament.subfleets.fields.cruise_speed'))

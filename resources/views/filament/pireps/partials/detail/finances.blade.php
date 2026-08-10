@@ -10,24 +10,24 @@
     $marginPct = $totalRevenue > 0 ? round(($netCents / $totalRevenue) * 100) : null;
 @endphp
 
-<div class="strip [grid-template-columns:repeat(3,minmax(0,1fr))]" aria-label="Finance figures">
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--blue">@svg('tabler-cash')</span>
-        <span class="strip__label">{{ __('common.revenue') }}</span>
-        <span class="strip__value">{{ $fmtMoney($totalRevenue) }}</span>
-        <span class="strip__note">{{ trans_choice('pireps.fare', 2) }}</span>
+<div class="overview [grid-template-columns:repeat(3,minmax(0,1fr))]" aria-label="Finance figures">
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--blue">@svg('tabler-cash')</span>
+        <span class="overview__label">{{ __('common.revenue') }}</span>
+        <span class="overview__value">{{ $fmtMoney($totalRevenue) }}</span>
+        <span class="overview__note">{{ trans_choice('pireps.fare', 2) }}</span>
     </div>
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--amber">@svg('tabler-gas-station')</span>
-        <span class="strip__label">{{ __('common.expenses') }}</span>
-        <span class="strip__value">{{ $fmtMoney($totalExpenses) }}</span>
-        <span class="strip__note">{{ trans_choice('pireps.transaction', 2) }}</span>
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--amber">@svg('tabler-gas-station')</span>
+        <span class="overview__label">{{ __('common.expenses') }}</span>
+        <span class="overview__value">{{ $fmtMoney($totalExpenses) }}</span>
+        <span class="overview__note">{{ trans_choice('pireps.transaction', 2) }}</span>
     </div>
-    <div class="strip__cell">
-        <span class="strip__icon strip__icon--teal">@svg('tabler-gauge')</span>
-        <span class="strip__label">{{ __('common.net') }}</span>
-        <span class="strip__value {{ $netCents >= 0 ? 'text-ok' : 'text-bad' }}">{{ $fmtMoney($netCents) }}</span>
-        <span class="strip__note">{{ $marginPct !== null ? $marginPct.'% margin' : '—' }}</span>
+    <div class="overview__cell">
+        <span class="overview__icon overview__icon--teal">@svg('tabler-gauge')</span>
+        <span class="overview__label">{{ __('common.net') }}</span>
+        <span class="overview__value {{ $netCents >= 0 ? 'text-ok' : 'text-bad' }}">{{ $fmtMoney($netCents) }}</span>
+        <span class="overview__note">{{ $marginPct !== null ? $marginPct.'% margin' : '—' }}</span>
     </div>
 </div>
 
