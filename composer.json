@@ -133,6 +133,7 @@
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
+      "Modules\\SampleVueWidget\\": "modules/phpvms-sample-vue-widget/",
       "Modules\\": "modules/"
     }
   },

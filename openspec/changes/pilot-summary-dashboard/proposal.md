@@ -8,7 +8,7 @@ The dashboard has a fixed pilot header, but it does not expose the full pilot su
 2. Use only `section#profile` of `mockups/b-workspace.html` as the dashboard presentation authority.
 3. Expose pilot status, transfer time, absolute rank hours, pilot score, on-time percentage, and average landing rate through `DashboardData` and `RankProgressData`.
 4. Keep identity in the shared authenticated-user props defined by `skylight-pilot-shell`. Do not add a second dashboard-only identity projection.
-5. Source stored values from `User` and `journal`. Source pilot score and average landing rate from accepted PIREPs. Keep on-time percentage nullable until phpVMS has an authoritative definition and data source.
+5. Source stored values from `User` and `journal`. Source pilot score and average landing rate from accepted PIREPs. Calculate on-time percentage from scheduled operations using the standard arrival rule: actual block-on earlier than scheduled arrival plus 15 minutes.
 6. Add one shared awards presentation based on `section#awards` of `mockups/a-operations-console.html`. Use it on Profile and any other pilot surface that displays awards. Do not place awards inside the fixed dashboard summary.
 7. Add responsive, theme, accessibility, empty-state, and realistic-data coverage for the summary and awards.
 

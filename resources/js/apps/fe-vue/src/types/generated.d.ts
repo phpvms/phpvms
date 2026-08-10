@@ -1,6 +1,13 @@
 declare namespace App {
 namespace Http {
 namespace Data {
+export type ActiveSectorData = {
+pirepId: string,
+ident: string,
+departureIcao: string,
+arrivalIcao: string,
+state: string,
+};
 export type ActivityEventData = {
 id: string,
 type: string,
@@ -17,6 +24,12 @@ export type AircraftRefData = {
 id: number,
 registration: string | null,
 name: string | null,
+};
+export type AirlineIdentityData = {
+name: string,
+icao: string,
+iata: string | null,
+logo: string | null,
 };
 export type AirlineRefData = {
 icao: string,
@@ -56,12 +69,22 @@ id: number,
 name: string,
 flights: number,
 flightTimeMinutes: string,
+transferTimeMinutes: string,
+state: App.Http.Data.StateBadgeData,
 onLeave: boolean,
 balance: App.Http.Data.BalanceData | null,
 currentAirport: string | null,
 lastPirep: App.Http.Data.LastPirepData | null,
 rank: App.Http.Data.RankProgressData | null,
+pilotScore: number | null,
+onTimePercentage: number | null,
+averageLandingRate: number | null,
 route: App.Http.Data.RouteData,
+};
+export type DutyStateData = {
+state: string,
+label: string,
+color: string,
 };
 export type FlightData = {
 id: string,
@@ -96,6 +119,11 @@ dpt_airport: App.Http.Data.AirportPointData | null,
 arr_airport: App.Http.Data.AirportPointData | null,
 aircraft: App.Http.Data.AircraftRefData | null,
 comments: App.Http.Data.PirepCommentData[],
+};
+export type PilotChromeData = {
+activeSector: App.Http.Data.ActiveSectorData | null,
+duty: App.Http.Data.DutyStateData,
+station: App.Http.Data.WeatherStationData | null,
 };
 export type PirepCommentData = {
 id: number,
@@ -193,6 +221,9 @@ export type RankProgressData = {
 from: string,
 to: string | null,
 pct: number,
+currentHours: number,
+targetHours: number | null,
+hoursRemaining: number | null,
 };
 export type RouteData = {
 from: App.Http.Data.RoutePointData | null,
@@ -215,6 +246,10 @@ type: string,
 export type UserFieldData = {
 name: string,
 value: string | null,
+};
+export type WeatherStationData = {
+icao: string,
+timezone: string | null,
 };
 }
 }

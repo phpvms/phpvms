@@ -92,7 +92,7 @@ const {
     height: 100dvh;
     min-width: 0;
     grid-template-columns: var(--pv-nav-width, 68px) 1fr;
-    grid-template-rows: var(--pv-header-height, 48px) 1fr;
+    grid-template-rows: max-content minmax(0, 1fr);
     grid-template-areas:
       "nav header"
       "nav main";
@@ -105,7 +105,7 @@ const {
       "nav main aside";
   }
   .pv-layout.has-footer {
-    grid-template-rows: var(--pv-header-height, 48px) 1fr auto;
+    grid-template-rows: max-content minmax(0, 1fr) auto;
     grid-template-areas:
       "nav header"
       "nav main"
@@ -131,6 +131,7 @@ const {
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
+    min-height: var(--pv-header-height, 48px);
   }
   .pv-region-main {
     grid-area: main;
@@ -173,27 +174,27 @@ const {
     .pv-layout.has-footer,
     .pv-layout.has-aside.has-footer {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: var(--pv-header-height, 56px) minmax(0, 1fr);
+      grid-template-rows: max-content minmax(0, 1fr);
       grid-template-areas:
         "header"
         "main";
     }
     .pv-layout.has-aside {
-      grid-template-rows: var(--pv-header-height, 56px) minmax(0, 1fr) auto;
+      grid-template-rows: max-content minmax(0, 1fr) auto;
       grid-template-areas:
         "header"
         "main"
         "aside";
     }
     .pv-layout.has-footer {
-      grid-template-rows: var(--pv-header-height, 56px) minmax(0, 1fr) auto;
+      grid-template-rows: max-content minmax(0, 1fr) auto;
       grid-template-areas:
         "header"
         "main"
         "footer";
     }
     .pv-layout.has-aside.has-footer {
-      grid-template-rows: var(--pv-header-height, 56px) minmax(0, 1fr) auto auto;
+      grid-template-rows: max-content minmax(0, 1fr) auto auto;
       grid-template-areas:
         "header"
         "main"

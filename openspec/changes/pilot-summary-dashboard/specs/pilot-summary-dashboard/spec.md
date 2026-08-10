@@ -100,9 +100,39 @@ The summary SHALL follow `section#profile` of `mockups/b-workspace.html` for its
 - **WHEN** status and rank progress render
 - **THEN** both have readable text and accessible state or progress semantics without relying on color alone
 
-### Requirement: Nullable on-time percentage is honest
+### Requirement: On-time percentage uses scheduled arrival
 
-The dashboard payload SHALL allow `onTimePercentage` to be null until phpVMS defines an authoritative on-time rule and reliable schedule source. The UI SHALL distinguish unavailable from zero percent.
+The system SHALL snapshot a scheduled arrival timestamp when a PIREP is created from a scheduled flight. It SHALL calculate pilot on-time percentage from accepted scheduled PIREPs. An operation SHALL be on time when actual block-on occurs less than 15 minutes after scheduled arrival. The UI SHALL distinguish unavailable from zero percent.
+
+#### Scenario: Scheduled arrival is snapshotted
+
+- **WHEN** a PIREP is created from a scheduled flight
+- **THEN** the PIREP stores an immutable UTC scheduled-arrival timestamp derived from the service date, structured schedule, and airport timezones
+
+#### Scenario: Flight schedule changes later
+
+- **WHEN** the source flight's schedule is edited after the PIREP is created
+- **THEN** the PIREP's scheduled-arrival timestamp and historical on-time result do not change
+
+#### Scenario: Arrival is on time
+
+- **WHEN** an accepted scheduled PIREP blocks on earlier than scheduled arrival plus 15 minutes
+- **THEN** it counts as an on-time operation
+
+#### Scenario: Arrival is late
+
+- **WHEN** an accepted scheduled PIREP blocks on at or after scheduled arrival plus 15 minutes
+- **THEN** it counts as a late operation
+
+#### Scenario: Accepted operation is diverted
+
+- **WHEN** an accepted scheduled PIREP is marked diverted
+- **THEN** it counts as a late operation
+
+#### Scenario: Unscheduled operation is excluded
+
+- **WHEN** a manual or legacy PIREP has no scheduled-arrival snapshot
+- **THEN** it is excluded from both the on-time count and denominator
 
 #### Scenario: On-time is unavailable
 

@@ -72,6 +72,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property PirepState       $state
  * @property PirepPhase       $status
  * @property mixed|null       $submitted_at
+ * @property Carbon|null      $scheduled_arrival_at
  * @property mixed|null       $block_off_time
  * @property mixed|null       $block_on_time
  * @property Carbon|null      $created_at
@@ -233,6 +234,15 @@ class Pirep extends Model
         'notes'          => 'nullable',
         'route'          => 'nullable',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (self $pirep): void {
+            if ($pirep->isDirty('scheduled_arrival_at')) {
+                $pirep->scheduled_arrival_at = $pirep->getOriginal('scheduled_arrival_at');
+            }
+        });
+    }
 
     public $sortable = [
         'user_id',
@@ -600,29 +610,30 @@ class Pirep extends Model
     protected function casts(): array
     {
         return [
-            'user_id'             => 'integer',
-            'airline_id'          => 'integer',
-            'aircraft_id'         => 'integer',
-            'event_id'            => 'integer',
-            'level'               => 'integer',
-            'distance'            => DistanceCast::class,
-            'planned_distance'    => DistanceCast::class,
-            'block_time'          => 'integer',
-            'block_off_time'      => CarbonCast::class,
-            'block_on_time'       => CarbonCast::class,
-            'flight_time'         => 'integer',
-            'flight_type'         => FlightType::class,
-            'planned_flight_time' => 'integer',
-            'zfw'                 => 'float',
-            'block_fuel'          => FuelCast::class,
-            'fuel_used'           => FuelCast::class,
-            'landing_rate'        => 'float',
-            'score'               => 'integer',
-            'source'              => PirepSource::class,
-            'sim_type'            => SimType::class,
-            'state'               => PirepState::class,
-            'status'              => PirepPhase::class,
-            'submitted_at'        => CarbonCast::class,
+            'user_id'              => 'integer',
+            'airline_id'           => 'integer',
+            'aircraft_id'          => 'integer',
+            'event_id'             => 'integer',
+            'level'                => 'integer',
+            'distance'             => DistanceCast::class,
+            'planned_distance'     => DistanceCast::class,
+            'block_time'           => 'integer',
+            'block_off_time'       => CarbonCast::class,
+            'block_on_time'        => CarbonCast::class,
+            'scheduled_arrival_at' => 'datetime',
+            'flight_time'          => 'integer',
+            'flight_type'          => FlightType::class,
+            'planned_flight_time'  => 'integer',
+            'zfw'                  => 'float',
+            'block_fuel'           => FuelCast::class,
+            'fuel_used'            => FuelCast::class,
+            'landing_rate'         => 'float',
+            'score'                => 'integer',
+            'source'               => PirepSource::class,
+            'sim_type'             => SimType::class,
+            'state'                => PirepState::class,
+            'status'               => PirepPhase::class,
+            'submitted_at'         => CarbonCast::class,
         ];
     }
 

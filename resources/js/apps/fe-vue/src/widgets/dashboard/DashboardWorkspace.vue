@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import type { AppUser } from "@/app/shell/useAppChrome";
 import DashboardBoard from "./DashboardBoard.vue";
 import DashboardPilotHeader from "./DashboardPilotHeader.vue";
 import DashboardToolbar from "./DashboardToolbar.vue";
 import { useDashboardLayout } from "./useDashboardLayout";
 
-const page = usePage();
-const name = computed(() => (page.props.name as string) ?? "Pilot");
-const rank = computed(() => page.props.rank as { from: string } | null);
-const station = computed(() => (page.props.currentAirport as string | null) ?? null);
-const onLeave = computed(() => Boolean(page.props.onLeave));
+type DashboardPageProps = App.Http.Data.DashboardData &
+  Record<string, unknown> & {
+    auth?: { user: AppUser | null };
+  };
+
+const page = usePage<DashboardPageProps>();
+const user = computed(() => page.props.auth?.user ?? null);
+const name = computed(() => user.value?.name ?? "Pilot");
 const initials = computed(() =>
   name.value
     .split(" ")
@@ -19,13 +23,14 @@ const initials = computed(() =>
     .join("")
     .toUpperCase(),
 );
+const dashboard = computed<App.Http.Data.DashboardData>(() => page.props);
 const { layout, editing, availableToAdd, addWidget, removeWidget, resetLayout, toggleEdit } =
   useDashboardLayout();
 </script>
 
 <template>
   <div class="pv-dashboard">
-    <DashboardPilotHeader :initials :name :on-leave="onLeave" :rank :station />
+    <DashboardPilotHeader :dashboard :initials :user />
     <DashboardToolbar
       :available-widgets="availableToAdd"
       :editing

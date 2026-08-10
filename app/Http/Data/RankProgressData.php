@@ -15,5 +15,8 @@ final class RankProgressData extends Data
         public string $from,
         public ?string $to,
         public int $pct,
+        public float $currentHours,
+        public ?float $targetHours,
+        public ?float $hoursRemaining,
     ) {}
 }

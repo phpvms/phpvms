@@ -29,6 +29,8 @@ use Throwable;
  *   "conditions": "Few Clouds",    // or null
  *   "temperature": "22 °C",        // or null
  *   "wind": "270° at 10 kt",       // or null
+ *   "observedAt": "Sun, 10 Aug 2026 12:00:00 +0000", // or null
+ *   "isStale": false,
  *   "units": { "altitude": "ft", "distance": "nm", "temperature": "c" }
  * }
  *
@@ -60,7 +62,7 @@ class WeatherController extends Controller
     {
         $icao = strtoupper(trim($icao));
 
-        if ($icao === '' || ! preg_match('/^[A-Z0-9]{3,4}$/', $icao)) {
+        if ($icao === '' || !preg_match('/^[A-Z0-9]{3,4}$/', $icao)) {
             return response()->json([
                 'error'   => true,
                 'message' => 'Invalid ICAO code.',
@@ -70,11 +72,11 @@ class WeatherController extends Controller
 
         try {
             $metar = $this->airportService->getMetar($icao);
-            $taf   = $this->airportService->getTaf($icao);
+            $taf = $this->airportService->getTaf($icao);
         } catch (Throwable $e) {
             return response()->json([
                 'error'   => true,
-                'message' => 'Weather provider error: '.$e->getMessage(),
+                'message' => 'METAR unavailable.',
                 'icao'    => $icao,
             ], 503);
         }
@@ -94,12 +96,33 @@ class WeatherController extends Controller
             'conditions'  => $this->resolveConditions($metar),
             'temperature' => $this->resolveTemperature($metar),
             'wind'        => $this->resolveWind($metar),
-            'units'       => [
+            ...$this->resolveObservation($metar),
+            'units' => [
                 'altitude'    => setting('units.altitude', 'ft'),
                 'distance'    => setting('units.distance', 'nm'),
                 'temperature' => setting('units.temperature', 'c'),
             ],
         ]);
+    }
+
+    /**
+     * Return the parsed METAR observation time and its stale state.
+     *
+     * App\Support\Metar exposes the parsed time as an RFC 2822 date through
+     * `observed_date`. Observations older than ninety minutes are stale.
+     *
+     * @return array{observedAt: ?string, isStale: bool}
+     */
+    private function resolveObservation(?Metar $metar): array
+    {
+        $rawObservedAt = $metar?->result['observed_date'] ?? null;
+        $observedAt = is_string($rawObservedAt) ? $rawObservedAt : null;
+        $timestamp = $observedAt !== null ? strtotime($observedAt) : false;
+
+        return [
+            'observedAt' => $observedAt,
+            'isStale'    => $timestamp !== false && $timestamp < time() - (90 * 60),
+        ];
     }
 
     /**
@@ -117,15 +140,15 @@ class WeatherController extends Controller
             if (is_array($clouds) && count($clouds) > 0) {
                 $first = $clouds[0];
                 $cover = $first['cover'] ?? null;
-                $base  = isset($first['base_feet_agl']) ? (int) $first['base_feet_agl'].'ft' : null;
+                $base = isset($first['base_feet_agl']) ? (int) $first['base_feet_agl'].'ft' : null;
 
                 return match ($cover) {
                     'CLR', 'SKC', 'NSC', 'NCD' => 'Clear',
-                    'FEW'                        => 'Few Clouds'.($base ? " at {$base}" : ''),
-                    'SCT'                        => 'Scattered Clouds'.($base ? " at {$base}" : ''),
-                    'BKN'                        => 'Broken Clouds'.($base ? " at {$base}" : ''),
-                    'OVC'                        => 'Overcast'.($base ? " at {$base}" : ''),
-                    default                      => $cover,
+                    'FEW'                      => 'Few Clouds'.($base ? " at {$base}" : ''),
+                    'SCT'                      => 'Scattered Clouds'.($base ? " at {$base}" : ''),
+                    'BKN'                      => 'Broken Clouds'.($base ? " at {$base}" : ''),
+                    'OVC'                      => 'Overcast'.($base ? " at {$base}" : ''),
+                    default                    => $cover,
                 };
             }
         } catch (Throwable) {
@@ -175,14 +198,14 @@ class WeatherController extends Controller
         }
 
         try {
-            $dir   = $metar->wind_direction;
+            $dir = $metar->wind_direction;
             $speed = $metar->wind_speed;
 
             if ($dir === null && $speed === null) {
                 return null;
             }
 
-            $dirStr   = ($dir !== null) ? $dir.'°' : 'VRB';
+            $dirStr = ($dir !== null) ? $dir.'°' : 'VRB';
             $speedVal = ($speed !== null && is_object($speed) && method_exists($speed, 'toUnit'))
                 ? round($speed->toUnit('kt')).' kt'
                 : ($speed !== null ? (string) $speed : '—');

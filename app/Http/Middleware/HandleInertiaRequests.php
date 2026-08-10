@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Data\AirlineIdentityData;
+use App\Http\Data\PilotChromeData;
 use App\Models\User;
 use App\Services\Theme\ActiveThemeService;
 use App\Support\Skylight\Facades\Skylight;
@@ -88,11 +90,16 @@ class HandleInertiaRequests extends Middleware
 
             'auth' => [
                 'user' => $user ? [
-                    'id'     => $user->id,
-                    'name'   => $user->name,
-                    'avatar' => $user->resolveAvatarUrl(),
+                    'id'       => $user->id,
+                    'name'     => $user->name,
+                    'avatar'   => $user->resolveAvatarUrl(),
+                    'ident'    => $user->ident,
+                    'callsign' => $user->callsign,
+                    'airline'  => AirlineIdentityData::fromModel($user->airline)?->toArray(),
                 ] : null,
             ],
+
+            'pilotChrome' => fn () => $user ? PilotChromeData::fromUser($user) : null,
 
             // One-shot flash messages, lazily evaluated so they only read the
             // session when a response is actually built.
