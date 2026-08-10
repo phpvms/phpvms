@@ -25,6 +25,8 @@ use Override;
  * @property string            $name
  * @property string|null       $description
  * @property string|null       $image_url
+ * @property string|null       $icon
+ * @property string|null       $category
  * @property string|null       $ref_model_type
  * @property string|null       $ref_model_params
  * @property AwardTrigger|null $trigger
@@ -44,9 +46,11 @@ use Override;
  * @method static Builder<static>|Award query()
  * @method static Builder<static>|Award sortable($defaultParameters = null)
  * @method static Builder<static>|Award whereActive($value)
+ * @method static Builder<static>|Award whereCategory($value)
  * @method static Builder<static>|Award whereCreatedAt($value)
  * @method static Builder<static>|Award whereDeletedAt($value)
  * @method static Builder<static>|Award whereDescription($value)
+ * @method static Builder<static>|Award whereIcon($value)
  * @method static Builder<static>|Award whereId($value)
  * @method static Builder<static>|Award whereImageUrl($value)
  * @method static Builder<static>|Award whereName($value)
@@ -68,10 +72,25 @@ class Award extends Model
 
     public $table = 'awards';
 
+    /**
+     * Starting categories offered in the admin picker. Not a closed set — the
+     * `category` column takes any string, and anything already saved is offered
+     * alongside these. See categoryOptions().
+     */
+    public const array CATEGORIES = [
+        'MILESTONE',
+        'DISTANCE',
+        'SKILL',
+        'ROUTE',
+        'SPECIAL',
+    ];
+
     protected $fillable = [
         'name',
         'description',
         'image_url',
+        'icon',
+        'category',
         'ref_model_type',
         'ref_model_params',
         'trigger',
@@ -82,6 +101,8 @@ class Award extends Model
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',
+        'icon'             => 'nullable',
+        'category'         => 'nullable',
         'ref_model_type'   => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
@@ -150,6 +171,26 @@ class Award extends Model
         } catch (Exception) {
             return null;
         }
+    }
+
+    /**
+     * The categories offered in a picker: the presets, plus every category
+     * anyone has already invented, so a one-off from last month is a choice
+     * this month rather than something to retype exactly.
+     *
+     * @return array<string, string>
+     */
+    public static function categoryOptions(): array
+    {
+        return self::query()
+            ->whereNotNull('category')
+            ->distinct()
+            ->pluck('category')
+            ->merge(self::CATEGORIES)
+            ->unique()
+            ->sort()
+            ->mapWithKeys(fn (string $category): array => [$category => $category])
+            ->all();
     }
 
     public function image(): Attribute

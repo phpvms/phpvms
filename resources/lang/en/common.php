@@ -124,6 +124,7 @@ return [
     'manage_addons'         => 'Manage add-ons',
     'page'                  => 'Page',
     'icon'                  => 'Icon',
+    'category'              => 'Category',
     'public'                => 'Public',
     'content'               => 'Content',
     'required'              => 'Required',

@@ -13,14 +13,19 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class AwardsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            // The `type` column asks every row whether it is rules-based, which
+            // is a question about its AwardRule — one query per row without this.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('rule'))
             ->columns([
                 TextColumn::make('name')
                     ->label(__('common.name'))
@@ -30,6 +35,13 @@ class AwardsTable
                 TextColumn::make('description')
                     ->label(__('common.description'))
                     ->html(),
+
+                TextColumn::make('category')
+                    ->label(__('common.category'))
+                    ->badge()
+                    ->color('gray')
+                    ->sortable()
+                    ->placeholder('—'),
 
                 TextColumn::make('type')
                     ->label(__('filament.award_type'))
@@ -47,6 +59,10 @@ class AwardsTable
                     ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('category')
+                    ->label(__('common.category'))
+                    ->options(fn (): array => Award::categoryOptions()),
+
                 TrashedFilter::make(),
             ])
             ->recordActions([

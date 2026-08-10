@@ -5,12 +5,14 @@ namespace App\Filament\Resources\Users\Schemas;
 use App\Enums\UserState;
 use App\Models\Airport;
 use App\Models\Role;
+use App\Models\User;
 use App\Support\Timezonelist;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
@@ -139,6 +141,15 @@ class UserForm
                             ->columnSpanFull(),
                     ])
                     ->columnSpan(['lg' => 1]),
+
+                // Read-only: attaching and detaching lives in the Awards
+                // relation manager tab. This is the at-a-glance view.
+                Section::make(trans_choice('common.award', 2))
+                    ->schema([
+                        View::make('filament.users.awards-grid'),
+                    ])
+                    ->visible(fn (?User $record): bool => $record instanceof User)
+                    ->columnSpanFull(),
             ])
             ->columns(3);
     }
