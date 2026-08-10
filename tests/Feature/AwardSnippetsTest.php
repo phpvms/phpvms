@@ -121,7 +121,7 @@ test('a self-referencing snippet stops at the depth limit instead of hanging', f
 
     // Every level below the limit still contributes its `flights` rule; the
     // level that hits the limit contributes nothing, which is what ends it.
-    expect(substr_count($query->toSql(), '"flights" >='))->toBe(SnippetConstraint::MAX_DEPTH)
+    expect(substr_count(unquoteSql($query->toSql()), 'flights >='))->toBe(SnippetConstraint::MAX_DEPTH)
         ->and($query->pluck('id')->all())->toBe([$matches->id]);
 });
 

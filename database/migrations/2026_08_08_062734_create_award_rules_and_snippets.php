@@ -34,7 +34,9 @@ return new class() extends Migration
                 $table->charset = 'utf8mb4';
 
                 $table->id();
-                $table->unsignedBigInteger('award_id')->unique();
+                // `awards.id` is `increments()` (int unsigned), not `id()` --
+                // the types must match exactly or MySQL 8 rejects the FK below.
+                $table->unsignedInteger('award_id')->unique();
                 $table->json('conditions');
                 $table->timestamps();
 

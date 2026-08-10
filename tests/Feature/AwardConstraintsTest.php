@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\PirepState;
 use App\Enums\UserState;
+use App\Models\Airport;
+use App\Models\Pirep;
+use App\Services\Awards\CriteriaCompiler;
 use App\Services\Awards\PirepConstraints;
 use App\Services\Awards\UserConstraints;
 use Filament\QueryBuilder\Constraints\BooleanConstraint;
@@ -150,4 +153,24 @@ test('each call returns fresh constraint instances', function (): void {
         ->and($first['callsign'])->not->toBe($second['callsign'])
         ->and(byAttribute(PirepConstraints::make())['state'])
         ->not->toBe(byAttribute(PirepConstraints::make())['state']);
+});
+
+/*
+ * The airport constraints are searchable selects with no static option list, so
+ * their value only survives hydration if the option label resolves. An award
+ * naming an airport that has since been deleted must still compile: a criterion
+ * dropped in silence widens the award to every user.
+ */
+test('an airport criterion survives the airport being gone', function (): void {
+    $tree = ['r1' => ['type' => 'arr_airport_id', 'data' => ['operator' => 'is', 'settings' => ['value' => 'ZZZZ']]]];
+
+    $sql = new CriteriaCompiler()->compile(
+        Pirep::query(),
+        $tree,
+        PirepConstraints::make(),
+        Pirep::class,
+    )->toSql();
+
+    expect(Airport::find('ZZZZ'))->toBeNull()
+        ->and(unquoteSql($sql))->toContain('pireps.arr_airport_id');
 });

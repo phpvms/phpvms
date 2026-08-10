@@ -68,7 +68,7 @@ test('a nested AND/OR tree compiles to a nested query and returns only matching 
     $query = compileTree(nestedTree());
 
     // The OR group is a nested group inside the outer AND, not flattened.
-    expect($query->toSql())->toMatch('/"flights" >= \?.*and \(\(.*\) or \(.*\)\)/s');
+    expect(unquoteSql($query->toSql()))->toMatch('/flights >= \?.*and \(\(.*\) or \(.*\)\)/s');
 
     expect($query->pluck('id')->sort()->values()->all())
         ->toBe(collect([$matches->id, $alsoMatches->id])->sort()->values()->all());

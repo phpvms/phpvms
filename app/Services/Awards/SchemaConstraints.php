@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Awards;
 
+use App\Models\Airport;
 use Filament\QueryBuilder\Constraints\BooleanConstraint;
 use Filament\QueryBuilder\Constraints\Constraint;
 use Filament\QueryBuilder\Constraints\DateConstraint;
 use Filament\QueryBuilder\Constraints\NumberConstraint;
+use Filament\QueryBuilder\Constraints\SelectConstraint;
 use Filament\QueryBuilder\Constraints\TextConstraint;
 use Illuminate\Support\Facades\Schema;
 
@@ -52,6 +54,61 @@ class SchemaConstraints
         }
 
         return $constraints;
+    }
+
+    /**
+     * A searchable picker over `airports`, for the ICAO columns that would
+     * otherwise fall through to a free-text box.
+     *
+     * Airport columns hold `airports.id`, a string key rather than a numeric
+     * one, so the generic mapping types them as text and leaves the admin to
+     * type a code from memory and match it with LIKE. There are thousands of
+     * rows, so this searches rather than listing them all, the same way the
+     * PIREP form's airport fields do.
+     *
+     * The option *value* is the key and the *label* is the ICAO, which are not
+     * interchangeable even though the key currently holds the ICAO: airport
+     * keys are moving to ULIDs. Storing the key is what survives that, since
+     * the key is what the PIREP and user columns are compared against.
+     *
+     * `whereLike(caseSensitive: false)` rather than `like`: PostgreSQL's LIKE
+     * is case-sensitive, so a search for `kjfk` would otherwise find nothing.
+     */
+    public static function airport(string $name, string $label): SelectConstraint
+    {
+        return SelectConstraint::make($name)
+            ->label($label)
+            ->searchable()
+            ->native(false)
+            ->getSearchResultsUsing(fn (string $search): array => Airport::query()
+                ->whereLike('icao', "%{$search}%", caseSensitive: false)
+                ->orWhereLike('iata', "%{$search}%", caseSensitive: false)
+                ->orWhereLike('name', "%{$search}%", caseSensitive: false)
+                ->orderBy('icao')
+                ->limit(50)
+                ->get()
+                ->mapWithKeys(fn (Airport $airport): array => [$airport->getKey() => self::airportLabel($airport)])
+                ->all())
+            ->getOptionLabelUsing(function (mixed $value): ?string {
+                if (!is_string($value) || $value === '') {
+                    return null;
+                }
+
+                $airport = Airport::find($value);
+
+                // Falls back to the stored code rather than null when the
+                // airport is gone. Returning null makes the select discard the
+                // value during hydration, which drops the whole criterion --
+                // and criteria that vanish silently grant the award to
+                // everyone. Showing a bare code is how the admin sees that the
+                // airport no longer exists.
+                return $airport instanceof Airport ? self::airportLabel($airport) : $value;
+            });
+    }
+
+    private static function airportLabel(Airport $airport): string
+    {
+        return $airport->icao.' - '.$airport->name;
     }
 
     /**

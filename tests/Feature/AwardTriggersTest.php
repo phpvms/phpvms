@@ -162,7 +162,7 @@ test('the nightly sweep asks one question per award, not one per user', function
 
     $selects = [];
     DB::listen(function ($query) use (&$selects): void {
-        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, 'from "users"')) {
+        if (str_starts_with($query->sql, 'select') && str_contains(unquoteSql($query->sql), 'from users')) {
             $selects[] = $query->sql;
         }
     });

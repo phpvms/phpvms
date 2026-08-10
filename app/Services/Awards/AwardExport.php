@@ -6,6 +6,7 @@ namespace App\Services\Awards;
 
 use App\Enums\AwardTrigger;
 use App\Models\Award;
+use App\Models\AwardRule;
 use InvalidArgumentException;
 use JsonException;
 
@@ -55,6 +56,10 @@ class AwardExport
 
         if (!is_array($document) || !is_string($document['name'] ?? null) || !is_array($document['conditions'] ?? null)) {
             throw new InvalidArgumentException('Award document needs a name and a conditions tree.');
+        }
+
+        if (!AwardRule::isWellFormedTree($document['conditions'])) {
+            throw new InvalidArgumentException('Award document has a conditions tree the rule builder cannot read.');
         }
 
         $award = Award::create([

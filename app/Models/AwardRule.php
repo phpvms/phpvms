@@ -72,6 +72,43 @@ class AwardRule extends Model
     }
 
     /**
+     * True when every node in a tree is shaped the way the rule builder needs:
+     * an array carrying a string `type`, with nested groups likewise.
+     *
+     * Filament's `Builder` assumes that shape while hydrating the form and
+     * fatals on anything else, which strands the award on a 500 edit page. The
+     * criteria the admin builds are always well formed; an imported document is
+     * not, so it is checked before it is stored. Same walk as `snippetNames()`,
+     * but rejecting what that one steps over.
+     *
+     * @param array<string, mixed> $rules
+     */
+    public static function isWellFormedTree(array $rules): bool
+    {
+        foreach ($rules as $rule) {
+            if (!is_array($rule) || !is_string($rule['type'] ?? null)) {
+                return false;
+            }
+
+            $groups = $rule['data']['groups'] ?? [];
+
+            if (!is_array($groups)) {
+                return false;
+            }
+
+            foreach ($groups as $group) {
+                $nested = is_array($group) ? $group['rules'] ?? [] : null;
+
+                if (!is_array($nested) || !self::isWellFormedTree($nested)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Walks a stored query-builder tree collecting the names of the snippets
      * it references. A snippet reference is a rule whose constraint name is
      * `snippet:<name>`; OR blocks nest further rules under their groups.

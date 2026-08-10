@@ -32,10 +32,7 @@ class AwardRuleFactory extends Factory
         return [
             'award_id'   => Award::factory(),
             'conditions' => [
-                'combinator' => 'and',
-                'rules'      => [
-                    ['field' => 'flight_time', 'operator' => '>=', 'value' => 100],
-                ],
+                'r1' => ['type' => 'flight_time', 'data' => ['operator' => 'isMin', 'settings' => ['number' => 100]]],
             ],
         ];
     }

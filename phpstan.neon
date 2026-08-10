@@ -51,7 +51,7 @@ parameters:
         # Listed by name on purpose: a broad `TestResponse::` pattern would also
         # swallow genuine typos.
         - identifier: method.notFound
-          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::(assertCanSeeTableRecords|assertCanRenderTableColumn|assertCanNotRenderTableColumn|assertFormExists|assertFormFieldExists|assertFormFieldDoesNotExist)\(\)#'
+          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::(assertCanSeeTableRecords|assertCanRenderTableColumn|assertCanNotRenderTableColumn|assertFormExists|assertFormFieldExists|assertFormFieldDoesNotExist|assertActionExists)\(\)#'
           path: tests/
 
         # set() and assertSet() are real Testable methods. They only fail to resolve
@@ -68,6 +68,21 @@ parameters:
         # facade's static surface.
         - identifier: staticMethod.notFound
           message: '#Call to an undefined static method Illuminate\\Support\\Facades\\Log::(shouldHaveReceived|shouldNotHaveReceived)\(\)#'
+          path: tests/
+
+        # shouldReceive() is typed as returning the union of Mockery's own
+        # interfaces, so every later link in an expectation chain is checked
+        # against that union rather than against Expectation, which is what
+        # actually carries these. Named individually so a typo still reports.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::(once|andThrow)\(\)#'
+          path: tests/
+
+        # Pest's test() helper is typed as the union it can return outside a
+        # test closure; mock() lives on the TestCase that `test()` proxies to.
+        # Used by helper functions, which have no $this to call it on.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Pest\\PendingCalls\\TestCall\|Pest\\Support\\HigherOrderTapProxy::mock\(\)#'
           path: tests/
 
         # Mockery's stub types andReturns() as taking no arguments, though it is

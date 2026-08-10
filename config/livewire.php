@@ -276,8 +276,20 @@ return [
     */
 
     'payload' => [
-        'max_size'          => 1024 * 1024,   // 1MB - maximum request payload size in bytes
-        'max_nesting_depth' => 10,   // Maximum depth of dot-notation property paths
+        'max_size' => 1024 * 1024,   // 1MB - maximum request payload size in bytes
+        // Raised from Livewire's default of 10 for the award criteria builder,
+        // whose state nests far deeper than a normal form. Each OR group adds
+        // five segments (`<key>.data.groups.<key>.rules`) and a PIREP rule's
+        // inner builder adds eight, so one group around a single plain rule
+        // already reaches 11: `data.conditions.<key>.data.groups.<key>.rules.
+        // <key>.data.settings.<field>`. At the five levels of nesting
+        // CriteriaCompiler permits, the deepest legal path is 35.
+        //
+        // The bound that actually protects award criteria is the compiler's
+        // own (50 rules, 5 levels, failing closed) plus `max_size` below --
+        // not this one, which only decides whether a legal tree can be
+        // submitted at all.
+        'max_nesting_depth' => 40,   // Maximum depth of dot-notation property paths
         'max_calls'         => 50,           // Maximum method calls per request
         'max_components'    => 200,     // Maximum components per batch request
     ],

@@ -5,6 +5,7 @@ use App\Models\Award;
 use App\Models\AwardRule;
 use App\Models\AwardSnippet;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -18,7 +19,7 @@ function snippetTree(array $names): array
 {
     $rules = [];
 
-    foreach (array_values($names) as $i => $name) {
+    foreach ($names as $i => $name) {
         $reference = ['type' => AwardRule::SNIPPET_PREFIX.$name, 'data' => []];
 
         $rules['r'.$i] = $i === 0 ? $reference : [
@@ -83,7 +84,9 @@ test('saving a tree mirrors its snippet references into the pivot', function ():
 
     expect($award->rule->snippets->pluck('name')->sort()->values()->all())
         ->toBe(['active-pilot', 'long-haul'])
-        ->and($snippets->last()->rules)->toBeEmpty();
+        // Through the relation method: `AwardSnippet` also declares a static
+        // `$rules` validation array, so `->rules` reads as that property.
+        ->and($snippets->last()->rules()->count())->toBe(0);
 });
 
 test('editing a tree to drop a reference removes the pivot row', function (): void {
@@ -105,7 +108,10 @@ test('a referenced snippet cannot be deleted', function (): void {
 
     $award->saveConditionsTree(snippetTree(['active-pilot']));
 
-    expect(fn () => $snippet->delete())->toThrow(QueryException::class);
+    // Taken inside a nested transaction so the violation only unwinds a
+    // savepoint. PostgreSQL aborts the whole surrounding transaction when a
+    // statement fails, and the test still has work to do on this connection.
+    expect(fn () => DB::transaction(fn () => $snippet->delete()))->toThrow(QueryException::class);
 
     // ...but deleting the ruleset releases it.
     $award->saveConditionsTree(null);

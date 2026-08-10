@@ -97,7 +97,7 @@ test('a filtered count matches only users with enough PIREPs meeting every inner
 
     $tree = pirepRule('count', [
         PirepOperator::INNER_RULES_NAME => [
-            ...innerRule('i1', 'arr_airport_id', 'equals', ['text' => 'KJFK']),
+            ...innerRule('i1', 'arr_airport_id', 'is', ['value' => 'KJFK']),
             ...innerRule('i2', 'submitted_at', 'isAfter', ['mode' => 'absolute', 'date' => '2026-01-01 00:00:00']),
         ],
         PirepOperator::COMPARISON_NAME => 'atLeast',
@@ -134,9 +134,9 @@ test('a windowed sum aggregates only the PIREPs the inner rules select', functio
     $query = compilePirepTree($tree);
 
     // A correlated scalar subquery, not a `whereHas`, and the threshold is bound.
-    expect($query->toSql())
+    expect(unquoteSql($query->toSql()))
         ->toContain('select cast(sum(pireps.flight_time)')
-        ->toContain('from "pireps" where "pireps"."user_id" = "users"."id"')
+        ->toContain('from pireps where pireps.user_id = users.id')
         ->not->toContain('exists')
         ->and($query->getBindings())->toContain(600.0);
 
@@ -194,8 +194,8 @@ test('an inner OR group nests inside the one subquery', function (): void {
                 'type' => 'or',
                 'data' => [
                     'groups' => [
-                        'g1' => ['rules' => innerRule('g1r1', 'arr_airport_id', 'equals', ['text' => 'KJFK'])],
-                        'g2' => ['rules' => innerRule('g2r1', 'arr_airport_id', 'equals', ['text' => 'KLAX'])],
+                        'g1' => ['rules' => innerRule('g1r1', 'arr_airport_id', 'is', ['value' => 'KJFK'])],
+                        'g2' => ['rules' => innerRule('g2r1', 'arr_airport_id', 'is', ['value' => 'KLAX'])],
                     ],
                 ],
             ],
@@ -228,7 +228,7 @@ test('the accepted-state scope is forced and a non-accepted PIREP never counts',
 
     // The submitted state rule is applied, and the forced one is applied on top
     // of it -- it cannot be widened away.
-    expect($query->toSql())->toContain('"pireps"."state" = ? and "pireps"."state" in (?, ?)')
+    expect(unquoteSql($query->toSql()))->toContain('pireps.state = ? and pireps.state in (?, ?)')
         ->and($query->pluck('id')->all())->toBe([$accepted->id]);
 });
 
@@ -403,7 +403,7 @@ test('inner rules describe the same PIREP, not merely the same user', function (
 
     $tree = pirepRule('count', [
         PirepOperator::INNER_RULES_NAME => [
-            ...innerRule('i1', 'arr_airport_id', 'equals', ['text' => 'KJFK']),
+            ...innerRule('i1', 'arr_airport_id', 'is', ['value' => 'KJFK']),
             ...innerRule('i2', 'landing_rate', 'isMin', ['number' => -200]),
         ],
         PirepOperator::COMPARISON_NAME => 'atLeast',
@@ -414,10 +414,15 @@ test('inner rules describe the same PIREP, not merely the same user', function (
 
     expect($query->pluck('id')->all())->toBe([$oneGoodFlight->id]);
 
-    // And the proof that it is one subquery rather than two: a single `exists`,
-    // carrying both conditions.
+    // And the proof that it is one subquery rather than two: a single `exists`
+    // with both columns in it, so both conditions are necessarily inside it.
+    // Only the column names are asserted, so this survives a constraint being
+    // retyped -- the airport columns moved from text to select, which turned
+    // their comparison from LIKE into `=`.
     expect(substr_count($query->toSql(), 'exists'))->toBe(1)
-        ->and($query->toSql())->toContain('"pireps"."arr_airport_id" like ? and "pireps"."landing_rate" >= ?');
+        ->and(unquoteSql($query->toSql()))
+        ->toContain('pireps.arr_airport_id')
+        ->toContain('pireps.landing_rate >= ?');
 });
 
 test('the comparison and its inverse map onto the right count operators', function (string $comparison, bool $inverse, array $expectedNames): void {

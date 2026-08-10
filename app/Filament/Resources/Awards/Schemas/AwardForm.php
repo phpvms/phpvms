@@ -4,12 +4,15 @@ namespace App\Filament\Resources\Awards\Schemas;
 
 use App\Enums\AwardTrigger;
 use App\Models\Award;
+use App\Services\Awards\AwardRunService;
 use App\Services\Awards\Constraints\PirepConstraint;
+use App\Services\Awards\CriteriaCompilationFailed;
 use App\Services\Awards\SnippetConstraints;
 use App\Services\Awards\UserConstraints;
 use App\Services\AwardService;
 use Closure;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
@@ -24,6 +27,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\View\View;
 
 class AwardForm
 {
@@ -44,9 +48,58 @@ class AwardForm
                 Section::make(__('filament.award_conditions'))
                     ->description(__('filament.award_conditions_description'))
                     ->schema(fn (?Award $record): array => [self::criteriaField($record)])
+                    // Sits at the left of the same footer the save pair uses:
+                    // it answers a question about the criteria directly above
+                    // it, so it belongs with them rather than in the page
+                    // header. See ReversePrimaryButtons::getFormContentComponent().
+                    ->footerActions([self::runTestAction()])
                     ->columnSpanFull()
                     ->visible(fn (?Award $record, string $operation): bool => $operation === 'edit' && $record?->ref_model_type === null),
             ]);
+    }
+
+    /**
+     * Dry run: who the criteria currently match, without granting anything.
+     *
+     * The result is a table in the modal rather than a notification, because
+     * "six users" is only useful if you can see which six -- an unexpected
+     * count is the first sign that a rule is broader than intended. A tree
+     * that will not compile reports that here too, since it is the answer to
+     * the same question.
+     */
+    private static function runTestAction(): Action
+    {
+        return Action::make('runTest')
+            ->label(__('filament.award_run_test'))
+            ->icon(TablerIcon::Flask)
+            ->color('gray')
+            ->visible(fn (?Award $record): bool => $record?->rule !== null)
+            ->modalHeading(__('filament.award_run_test'))
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel(__('filament.award_run_test_close'))
+            ->modalContent(fn (Award $record): View => self::runTestResults($record));
+    }
+
+    /**
+     * The dry run behind that button, as a renderable view.
+     *
+     * Separate from the action so it can be exercised directly: driving a
+     * schema-component action through Livewire's test harness proves the
+     * plumbing, not the answer, and this is where the answer is decided.
+     */
+    public static function runTestResults(Award $award): View
+    {
+        try {
+            return view('filament.awards.run-test-results', [
+                'users' => app(AwardRunService::class)->run($award, grant: false),
+                'error' => null,
+            ]);
+        } catch (CriteriaCompilationFailed $criteriaCompilationFailed) {
+            return view('filament.awards.run-test-results', [
+                'users' => collect(),
+                'error' => $criteriaCompilationFailed->getMessage(),
+            ]);
+        }
     }
 
     /**

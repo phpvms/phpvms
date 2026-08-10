@@ -6,6 +6,7 @@ use App\Enums\AwardTrigger;
 use App\Filament\Resources\Awards\Pages\CreateAward;
 use App\Filament\Resources\Awards\Pages\EditAward;
 use App\Filament\Resources\Awards\Pages\ListAwards;
+use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\AwardSnippets\Pages\ManageAwardSnippets;
 use App\Models\Award;
 use App\Models\AwardSnippet;
@@ -18,6 +19,7 @@ use App\Services\Awards\CriteriaCompilationFailed;
 use Database\Seeders\RolesPermissionsSeeder;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use Modules\Awards\Awards\PilotFlightAwards;
@@ -126,12 +128,13 @@ it('switches a rules award to legacy through the drawer, clearing the ruleset', 
     expect($award->trigger)->toBeNull();
 });
 
-it('runs an award test from the edit page and reports affected users', function (): void {
+it('runs an award test and names who matches', function (): void {
     $award = Award::factory()->rules()->create(['active' => 1]);
+    $match = User::factory()->create(['flights' => 500]);
 
-    Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])
-        ->callAction('runTest')
-        ->assertNotified();
+    fakeRunService(collect([$match]), expectGrant: false);
+
+    expect(AwardForm::runTestResults($award)->render())->toContain($match->name);
 });
 
 it('still saves an unchanged legacy award through the edit form', function (): void {
@@ -224,11 +227,8 @@ it('reports the dry-run count and grants nothing', function (): void {
 
     fakeRunService(User::factory()->count(3)->create(), expectGrant: false);
 
-    Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])
-        ->callAction('runTest')
-        ->assertNotified(__('filament.award_run_affected', ['count' => 3]));
-
-    expect(UserAward::count())->toBe(0);
+    expect(AwardForm::runTestResults($award)->render())->toContain('3 pilots match')
+        ->and(UserAward::count())->toBe(0);
 });
 
 it('runs now through the granting path', function (): void {
@@ -248,9 +248,9 @@ it('reports a compilation failure instead of a count', function (): void {
         $mock->shouldReceive('run')->andThrow(CriteriaCompilationFailed::exceedsBounds(50, 5));
     });
 
-    Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])
-        ->callAction('runTest')
-        ->assertNotified(__('filament.award_run_failed'));
+    // Reported in the modal where the count would have been, not swallowed.
+    expect(AwardForm::runTestResults($award)->render())
+        ->toContain('Award criteria exceed the configured bounds');
 });
 
 it('creates a snippet, slugging the reference name from the label', function (): void {
@@ -331,8 +331,61 @@ it('imports an exported award document through the list action', function (): vo
 
     $imported = Award::query()->where('name', 'Century Club')->firstOrFail();
 
+    // `toEqual` rather than `toBe`: MySQL's native JSON type normalises object
+    // key order on the way in, so the round trip returns the same pairs in a
+    // different order.
     expect($imported->active)->toBeFalsy()
-        ->and($imported->rule?->conditions)->toBe($source->rule?->conditions);
+        ->and($imported->rule?->conditions)->toEqual($source->rule?->conditions);
+});
+
+/*
+ * A tree already in the database that the rule builder cannot read -- written
+ * before the current format, or by a direct write. Import now refuses these,
+ * but rows that predate that check still have to open rather than take the
+ * whole awards screen down with a 500.
+ */
+it('opens the list and the edit page when a stored tree is unreadable', function (): void {
+    $award = Award::factory()->create(['trigger' => AwardTrigger::User]);
+
+    DB::table('award_rules')->insert([
+        'award_id'   => $award->id,
+        'conditions' => json_encode(['combinator' => 'and', 'rules' => [['field' => 'flight_time']]], JSON_THROW_ON_ERROR),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    Livewire::test(ListAwards::class)->assertSuccessful();
+    Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])->assertSuccessful();
+});
+
+/*
+ * Switching an existing rule to the aggregate operator leaves the item's
+ * settings without an `aggregate` key. The select renders its first option
+ * anyway (`selectablePlaceholder(false)`), so the admin sees "Sum" chosen and
+ * has no reason to touch it -- then saving fails "aggregate is required" on a
+ * field that visibly has a value.
+ */
+it('treats the aggregate select as filled when it displays its default', function (): void {
+    $award = Award::factory()->create(['trigger' => AwardTrigger::User]);
+    $award->saveConditionsTree(['r1' => ['type' => 'pireps', 'data' => [
+        'operator' => 'aggregate',
+        // Neither `aggregate` nor `comparison` is stored; both selects show a
+        // default the admin never picked, and both are `required()`.
+        'settings' => [
+            'column' => 'flight_time',
+            'value'  => 3000,
+        ],
+    ]]]);
+
+    Livewire::test(EditAward::class, ['record' => $award->getRouteKey()])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    // And the option the admin was shown is the one that got stored.
+    $settings = array_values($award->refresh()->rule->conditions)[0]['data']['settings'];
+
+    expect($settings['aggregate'])->toBe('sum')
+        ->and($settings[PirepOperator::COMPARISON_NAME])->toBe('atLeast');
 });
 
 it('reports a malformed import document instead of creating an award', function (): void {
@@ -343,3 +396,26 @@ it('reports a malformed import document instead of creating an award', function 
 
     expect(Award::query()->count())->toBe($before);
 });
+
+/*
+ * Valid JSON carrying a tree the rule builder cannot hydrate. Storing one
+ * strands the award on a 500 edit page, because Filament's Builder fatals
+ * rather than skipping the node it cannot read.
+ */
+it('rejects an import whose conditions tree the rule builder cannot read', function (array $conditions): void {
+    $before = Award::query()->count();
+
+    Livewire::test(ListAwards::class)
+        ->callAction('import', ['document' => json_encode([
+            'name'       => 'Unreadable',
+            'conditions' => $conditions,
+        ], JSON_THROW_ON_ERROR)]);
+
+    expect(Award::query()->count())->toBe($before);
+})->with([
+    // The shape the discarded react-querybuilder design wrote.
+    'foreign tree'         => fn (): array => ['combinator' => 'and', 'rules' => [['field' => 'flight_time']]],
+    'item is not an array' => fn (): array => ['r1' => 'flight_time'],
+    'item has no type'     => fn (): array => ['r1' => ['data' => ['operator' => 'isMin']]],
+    'nested item is junk'  => fn (): array => ['r1' => ['type' => 'or', 'data' => ['groups' => [['rules' => ['n1' => 'nope']]]]]],
+]);

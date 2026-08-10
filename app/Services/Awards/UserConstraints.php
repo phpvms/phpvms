@@ -10,7 +10,6 @@ use Filament\QueryBuilder\Constraints\Constraint;
 use Filament\QueryBuilder\Constraints\DateConstraint;
 use Filament\QueryBuilder\Constraints\NumberConstraint;
 use Filament\QueryBuilder\Constraints\SelectConstraint;
-use Filament\QueryBuilder\Constraints\TextConstraint;
 
 /**
  * The `users` query-builder vocabulary, generated from the live schema so a
@@ -85,11 +84,9 @@ class UserConstraints
                 ->options(UserState::class)
                 ->multiple()
                 ->nullable(),
-            'home_airport_id' => TextConstraint::make('home_airport_id')
-                ->label('Home Airport')
+            'home_airport_id' => SchemaConstraints::airport('home_airport_id', 'Home Airport')
                 ->nullable(),
-            'curr_airport_id' => TextConstraint::make('curr_airport_id')
-                ->label('Current Airport')
+            'curr_airport_id' => SchemaConstraints::airport('curr_airport_id', 'Current Airport')
                 ->nullable(),
             'flight_time' => NumberConstraint::make('flight_time')
                 ->label('Flight Time (minutes)')

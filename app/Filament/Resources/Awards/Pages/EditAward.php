@@ -9,6 +9,7 @@ use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Awards\AwardResource;
 use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Models\Award;
+use App\Models\AwardRule;
 use App\Models\User;
 use App\Services\Awards\AwardRunService;
 use App\Services\Awards\CriteriaCompilationFailed;
@@ -101,13 +102,31 @@ class EditAward extends EditRecord
      * The criteria tree is not an `awards` column — hydrate it from the
      * ruleset row.
      *
+     * A tree the builder cannot read opens empty rather than fataling the
+     * page: `Builder` assumes every node is an array and throws a TypeError on
+     * anything else, which leaves the award uneditable and so unrepairable.
+     * The admin is told, because saving from here replaces what is stored.
+     *
      * @param  array<string, mixed> $data
      * @return array<string, mixed>
      */
     #[Override]
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['conditions'] = $this->getRecord()->rule->conditions ?? [];
+        $tree = $this->getRecord()->rule->conditions ?? [];
+
+        if (!AwardRule::isWellFormedTree($tree)) {
+            Notification::make()
+                ->warning()
+                ->title(__('filament.award_conditions_unreadable'))
+                ->body(__('filament.award_conditions_unreadable_body'))
+                ->persistent()
+                ->send();
+
+            $tree = [];
+        }
+
+        $data['conditions'] = $tree;
 
         return $data;
     }
@@ -155,13 +174,8 @@ class EditAward extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('runTest')
-                ->label(__('filament.award_run_test'))
-                ->icon(TablerIcon::Flask)
-                ->color('gray')
-                ->visible(fn (Award $record): bool => $record->rule !== null)
-                ->action(fn (Award $record) => $this->runAward($record, grant: false)),
-
+            // "Run test" lives in the criteria section's footer (AwardForm),
+            // next to the tree it reports on.
             Action::make('runNow')
                 ->label(__('filament.award_run_now'))
                 ->icon(TablerIcon::PlayerPlay)
@@ -250,7 +264,16 @@ class EditAward extends EditRecord
                 'label' => __('filament.award_type'),
                 'value' => $isRules ? __('filament.award_type_rules') : __('filament.award_type_legacy'),
                 'note'  => $isRules
-                    ? ($record->trigger?->getLabel() ?? '')
+                    ? ''
+                    : class_basename((string) $record->ref_model_type),
+            ],
+            [
+                'icon'  => TablerIcon::Target,
+                'tint'  => 'red',
+                'label' => __('filament.award_trigger'),
+                'value' => $record->trigger?->getLabel(),
+                'note'  => $isRules
+                    ? '  '
                     : class_basename((string) $record->ref_model_type),
             ],
             [

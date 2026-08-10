@@ -83,6 +83,14 @@ class PirepAggregateOperator extends PirepOperator
                 ->label('Aggregate')
                 ->options(static::AGGREGATES)
                 ->default(array_key_first(static::AGGREGATES))
+                // Having no placeholder, this renders its first option whether
+                // or not the state holds one -- and switching an existing rule
+                // onto this operator arrives with the key absent. Read the
+                // shown option as the state, or `required()` rejects a field
+                // the admin can see is filled.
+                ->formatStateUsing(fn (mixed $state): string => is_string($state) && $state !== ''
+                    ? $state
+                    : (string) array_key_first(static::AGGREGATES))
                 ->selectablePlaceholder(false)
                 ->required(),
             Select::make(static::COLUMN_NAME)

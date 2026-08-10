@@ -12,7 +12,6 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -31,10 +30,6 @@ class AwardsTable
                 TextColumn::make('description')
                     ->label(__('common.description'))
                     ->html(),
-
-                ImageColumn::make('image_url')
-                    ->label(__('common.image'))
-                    ->imageHeight(100),
 
                 TextColumn::make('type')
                     ->label(__('filament.award_type'))

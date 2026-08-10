@@ -158,6 +158,13 @@ abstract class PirepOperator extends Operator
             ->label('Comparison')
             ->options(static::COMPARISON_LABELS)
             ->default(array_key_first(static::COMPARISON_LABELS))
+            // Same reasoning as the aggregate select: no placeholder means the
+            // first option is shown even when the state is empty, so read it
+            // as the state rather than failing `required()` on a field that
+            // visibly has a value.
+            ->formatStateUsing(fn (mixed $state): string => is_string($state) && $state !== ''
+                ? $state
+                : (string) array_key_first(static::COMPARISON_LABELS))
             ->selectablePlaceholder(false)
             ->required();
     }

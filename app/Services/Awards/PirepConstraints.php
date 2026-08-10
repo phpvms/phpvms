@@ -88,12 +88,9 @@ class PirepConstraints
                 ->label('Flight Type')
                 ->options(FlightType::class)
                 ->multiple(),
-            'dpt_airport_id' => TextConstraint::make('dpt_airport_id')
-                ->label('Departure Airport'),
-            'arr_airport_id' => TextConstraint::make('arr_airport_id')
-                ->label('Arrival Airport'),
-            'alt_airport_id' => TextConstraint::make('alt_airport_id')
-                ->label('Alternate Airport')
+            'dpt_airport_id' => SchemaConstraints::airport('dpt_airport_id', 'Departure Airport'),
+            'arr_airport_id' => SchemaConstraints::airport('arr_airport_id', 'Arrival Airport'),
+            'alt_airport_id' => SchemaConstraints::airport('alt_airport_id', 'Alternate Airport')
                 ->nullable(),
             'level' => NumberConstraint::make('level')
                 ->label('Flight Level')
