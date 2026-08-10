@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
-use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Component;
@@ -19,19 +17,12 @@ use Filament\Support\Enums\Alignment;
  * Puts a form's action row in the footer of its last section, aligned right,
  * with the primary action furthest right.
  *
- * Two things happen here, both of which Filament offers no global hook for.
- *
- * The ordering: Filament builds the row save-first, cancel-last (see
- * `EditRecord::getFormActions()` and `CreateRecord::getFormActions()`), which
- * puts the primary action furthest from the edge of the row:
- *
- *   before:  [ Save changes ] [ Cancel ]
- *   after:   [ Cancel ] [ Save changes ]
- *
- * The order is just the array literal each page returns, so pages call
- * `reversePrimaryButtons()` from their own `getFormActions()`. Doing it
- * explicitly rather than overriding `getFormActions()` here keeps it visible at
- * the call site and lets a page add its own actions without losing the order.
+ * The ordering half lives in [[FormActionIcons]], which this trait pulls in so
+ * a page gets both from one `use`. Only the placement below needs a resource
+ * page: it calls `parent::getFormContentComponent()` and
+ * `getSubmitFormLivewireMethodName()`, which exist on `EditRecord` and
+ * `CreateRecord` but not on a plain `Filament\Pages\Page`. A plain page wanting
+ * only the button order should use `FormActionIcons` directly, as Settings does.
  *
  * The placement: by default the actions render in the *form's* footer, which
  * sits outside the section card and leaves the buttons floating under it.
@@ -48,37 +39,7 @@ use Filament\Support\Enums\Alignment;
  */
 trait ReversePrimaryButtons
 {
-    /**
-     * @param  array<Action> $actions
-     * @return array<Action>
-     */
-    protected function reversePrimaryButtons(array $actions): array
-    {
-        foreach ($actions as $action) {
-            if ($action instanceof Action) {
-                $action->icon(self::formActionIcon($action->getName()));
-            }
-        }
-
-        return array_reverse($actions);
-    }
-
-    /**
-     * Filament builds its form actions without icons, which leaves them a few
-     * pixels shorter than any button that has one -- visible as soon as they
-     * share a row with something like "Run test". Tabler throughout, matching
-     * the rest of the panel.
-     */
-    private static function formActionIcon(string $name): ?TablerIcon
-    {
-        return match ($name) {
-            'save'          => TablerIcon::DeviceFloppy,
-            'create'        => TablerIcon::Plus,
-            'createAnother' => TablerIcon::CopyPlus,
-            'cancel'        => TablerIcon::X,
-            default         => null,
-        };
-    }
+    use FormActionIcons;
 
     public function getFormContentComponent(): Component
     {

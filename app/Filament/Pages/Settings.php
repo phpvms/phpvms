@@ -5,7 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\Ability;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
-use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Filament\Concerns\FormActionIcons;
 use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
@@ -41,8 +41,8 @@ use UnitEnum;
 class Settings extends Page
 {
     use AuthorizesAccess;
+    use FormActionIcons;
     use InteractsWithFormActions;
-    use ReversePrimaryButtons;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 

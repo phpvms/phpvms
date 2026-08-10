@@ -57,7 +57,7 @@ final class FareTrace
         // Auto-price inputs can only be overridden per subfleet — the
         // flight_fare pivot has no columns for them.
         foreach (self::AUTO_FIELDS as $field) {
-            $raw = $subfleetPivot?->{$field} ?? null;
+            $raw = $subfleetPivot->{$field} ?? null;
 
             $trace[$field] = [
                 'base'     => $fare->{$field},

@@ -11,13 +11,15 @@ parameters:
         - app/
         - tests/
 
-    # Modules are still not analysed -- this only indexes their symbols so tests
-    # that drive a bundled module resolve against the real class. Composer cannot
-    # autoload them for us: the root maps `Modules\` to `modules/`, but a module
-    # directory does not have to match its namespace (`phpvms-addon-manager`
-    # provides `Modules\AddonManager`), and modules are not installed packages.
-    scanDirectories:
-        - modules/
+    # modules/ is deliberately not scanned. It once indexed module symbols so
+    # tests resolved against the real class, but two entries there are symlinks
+    # to full external checkouts (phpvms-acars -> acars-plugin, phpvms-vacentral)
+    # and PHPStan followed them into node_modules/ and vendor/. The resulting
+    # symbol cache reached 746 MB, which no run could load back -- every
+    # invocation died on its own cache at 4G before analysing a single file.
+    # Dropping it cost nothing measurable: a full run reports the same errors
+    # with and without the scan, and the `Modules\Sample` ignore below was
+    # already unmatched either way.
 
     # Level 10 is the highest level
     level: 5
@@ -26,6 +28,19 @@ parameters:
 
         # PHPStan is not able to understand the pivot attributes at the moment
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot::\$[a-zA-Z_]+#'
+
+        # The other half of the same gap: `pivot` itself, which Eloquent attaches
+        # to BelongsToMany results at runtime, so it has no declaration to
+        # resolve against. The entry above covers properties *on* the pivot
+        # object; this covers the property that holds it.
+        - identifier: property.notFound
+          message: '#Access to an undefined property App\\Models\\[A-Za-z]+::\$pivot#'
+
+        # MorphTo, Model::resolveRouteBinding() and Filament's
+        # InteractsWithRecord::getRecord() all return the base Model by design;
+        # the concrete type is only known at runtime.
+        - identifier: property.notFound
+          message: '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$[a-zA-Z_]+#'
 
         # FilesTrait::files() defines a morphMany via traits — larastan's relationExistence
         # rule can't statically resolve trait-defined polymorphic relations even though they
@@ -36,13 +51,6 @@ parameters:
         # ── tests/ only ────────────────────────────────────────────────────────
         # Each entry below is a static-analysis blind spot, not a defect. Real
         # findings were fixed at the source rather than listed here.
-
-        # Eloquent attaches `pivot` dynamically to BelongsToMany results. It is a
-        # runtime-materialised property that has no declaration to resolve against,
-        # the same gap the Pivot entry above already covers for app/.
-        - identifier: property.notFound
-          message: '#Access to an undefined property App\\Models\\[A-Za-z]+::\$pivot#'
-          path: tests/
 
         # Filament registers its table and form assertions as runtime macros on
         # Livewire's Testable, so they have no declaration to resolve against.
@@ -102,12 +110,6 @@ parameters:
         # Same union, read side: these are properties of the access-token double.
         - identifier: property.notFound
           message: '#Access to an undefined property Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage\|Mockery\\MockInterface::\$(token|refreshToken|expiresIn)#'
-          path: tests/
-
-        # MorphTo and Model::resolveRouteBinding() return the base Model by design;
-        # the concrete type is only known at runtime from the stored morph class.
-        - identifier: property.notFound
-          message: '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$[a-zA-Z_]+#'
           path: tests/
 
         # The sample addon is not tracked (modules/.gitignore ignores every addon
