@@ -48,62 +48,64 @@ defineEmits<{ remove: [] }>();
 </template>
 
 <style scoped>
-.frame {
-  background: var(--pv-panel);
-  border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-xl);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.frame.editing {
-  outline: 1px dashed color-mix(in srgb, var(--pv-accent) 40%, var(--pv-line));
-  outline-offset: 2px;
-}
-.head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--pv-line);
-}
-.title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--pv-ink);
-}
-.ic {
-  width: 15px;
-  height: 15px;
-  color: var(--pv-ink-faint);
-}
-.ic.tint {
-  color: var(--pv-ink-dim);
-}
-.spacer {
-  flex: 1;
-}
-.handle {
-  display: inline-flex;
-  cursor: grab;
-  color: var(--pv-ink-faint);
-}
-.handle:active {
-  cursor: grabbing;
-}
-.rm {
-  display: inline-flex;
-  padding: 2px;
-  border-radius: var(--pv-radius-sm);
-  color: var(--pv-ink-dim);
-}
-.rm:hover {
-  color: var(--pv-red);
-  background: color-mix(in srgb, var(--pv-red) 10%, transparent);
-}
-.body {
-  padding: 12px;
-  flex: 1;
+@layer components {
+  .frame {
+    background: var(--pv-panel);
+    border: 1px solid var(--pv-line);
+    border-radius: var(--pv-radius-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .frame.editing {
+    outline: 1px dashed color-mix(in srgb, var(--pv-accent) 40%, var(--pv-line));
+    outline-offset: 2px;
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--pv-line);
+  }
+  .title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pv-ink);
+  }
+  .ic {
+    width: 15px;
+    height: 15px;
+    color: var(--pv-ink-faint);
+  }
+  .ic.tint {
+    color: var(--pv-ink-dim);
+  }
+  .spacer {
+    flex: 1;
+  }
+  .handle {
+    display: inline-flex;
+    cursor: grab;
+    color: var(--pv-ink-faint);
+  }
+  .handle:active {
+    cursor: grabbing;
+  }
+  .rm {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: var(--pv-radius-sm);
+    color: var(--pv-ink-dim);
+  }
+  .rm:hover {
+    color: var(--pv-red);
+    background: color-mix(in srgb, var(--pv-red) 10%, transparent);
+  }
+  .body {
+    padding: 12px;
+    flex: 1;
+  }
 }
 </style>

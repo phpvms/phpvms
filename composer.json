@@ -215,8 +215,8 @@
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "@php artisan optimize:clear",
-      "pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0 --port 7474\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite --kill-others"
+      "@php artisan optimize:clear @no_additional_args",
+      "sh -c 'port=${1:-7474}; exec pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#86efac\" \"php artisan serve --host 0.0.0.0 --port $port\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"pnpm run dev\" \"pnpm --filter @phpvms/skylight run dev\" --names=server,queue,logs,admin-vite,pilot-vite --kill-others' -- @additional_args"
     ]
   },
   "config": {
