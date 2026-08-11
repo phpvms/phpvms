@@ -15,9 +15,10 @@
  *      itself carries wire:navigate, so the shortcut behaves like clicking the
  *      item rather than forcing a document load past the panel's ->spa().
  *
- * Everything is delegated on `document` rather than bound per-element, so it
- * keeps working after Livewire SPA navigation (`->spa()`) without needing to
- * listen for `livewire:navigated` and re-scan the DOM.
+ * Everything is delegated on `document` rather than bound per-element, so the
+ * listeners keep working after Livewire SPA navigation (`->spa()`) without
+ * needing to re-scan the DOM. The module state below does NOT come along for
+ * free, though — see resetFlyoutState().
  *
  * Panels are not teleported (`x-filament::dropdown` is used without
  * `:teleport="true"` in vendor/filament/filament/resources/views/components
@@ -47,8 +48,23 @@ function dropdownRoot(group) {
   return group.querySelector(":scope > .fi-dropdown");
 }
 
+// `Alpine.$data()` is `mergeProxies(closestDataStack(el))`, and that Proxy is
+// TRUTHY even when the stack is empty — every property just reads as
+// `undefined`. So a `?.` on the result never short-circuits and the caller ends
+// up calling `undefined()`. An empty stack is precisely what a torn-down
+// component looks like (Alpine's `x-data` cleanup runs
+// `_x_undoAddScopeToNode()`, which filters the scope back out of
+// `_x_dataStack` rather than restoring anything), and also what one Alpine has
+// not reached yet looks like. Probe for the methods we actually call so every
+// caller's null check is real.
 function alpineDropdown(root) {
-  return root && window.Alpine ? window.Alpine.$data(root) : null;
+  if (!root || !window.Alpine) {
+    return null;
+  }
+
+  const data = window.Alpine.$data(root);
+
+  return typeof data?.open === "function" && typeof data?.close === "function" ? data : null;
 }
 
 function firstItem(group) {
@@ -68,13 +84,24 @@ function navigatesInPlace(item) {
   return Array.from(item.attributes).some((attr) => attr.name.startsWith("wire:navigate"));
 }
 
-// Alpine's x-tooltip (Tippy) on the trigger button shows the same label as
-// our flyout's header, so the two overlap. Tippy instances are created
-// lazily on first hover and hang off the element as `el._tippy`, so this may
-// be a no-op the very first time — the next hover (another "about to open"
-// or click) calls it again once Tippy exists.
-function suppressTooltip(trigger) {
-  const btn = trigger.querySelector(".fi-sidebar-group-dropdown-trigger-btn");
+// Alpine's x-tooltip (Tippy) on the trigger button shows the same label as our
+// flyout's header, so the two overlap.
+//
+// This has to run on the *mouseover*, not when the flyout actually opens
+// OPEN_DELAY later: Filament registers the tooltip plugin without calling
+// `defaultProps`, so Tippy keeps its stock `delay: 0` and paints the label the
+// moment the pointer lands. Suppressing it only at open time left the label
+// visible for the whole delay — the flicker where Filament's tooltip appears
+// just before the flyout. Ordering works out because the spec dispatches
+// `mouseover` (which we take on `document`) before `mouseenter` (which Tippy
+// binds on the button), so a hover finds the instance already disabled.
+//
+// Re-disabling on every hover also covers the plugin re-enabling itself: its
+// directive effect calls `enable()` whenever the bound expression re-evaluates
+// to an object, and the blade builds a fresh object literal each time its
+// `x-effect` reruns (on `$store.sidebar.isOpen` or `$store.theme`).
+function suppressTooltip(group) {
+  const btn = group.querySelector(".fi-sidebar-group-dropdown-trigger-btn");
   btn?._tippy?.hide();
   btn?._tippy?.disable();
 }
@@ -102,7 +129,7 @@ function openFlyout(group) {
     closeFlyout(openGroup);
   }
 
-  suppressTooltip(trigger);
+  suppressTooltip(group);
 
   // dropdown.js's open()/x-float's panel.open() both read `event.currentTarget`
   // as the anchor to position against — the same element Filament's own
@@ -138,6 +165,9 @@ document.addEventListener("mouseover", (event) => {
     return;
   }
 
+  // Before Tippy's own `mouseenter` gets a turn — see suppressTooltip().
+  suppressTooltip(group);
+
   window.clearTimeout(closeTimer);
   scheduleOpen(group);
 });
@@ -155,6 +185,39 @@ document.addEventListener("mouseout", (event) => {
   window.clearTimeout(openTimer);
   scheduleClose();
 });
+
+// Drop every reference to a flyout that is about to disappear.
+//
+// Deliberately does NOT close it. Filament's dropdown component closes itself
+// on this same event, and a second close in the same tick is not a harmless
+// no-op: Alpine's `_x_toggleAndCascadeWithTransitions` stores the pending
+// `_x_hidePromise` on the element and only attaches the `isFromCancelledTransition`
+// catch on the following animation frame, reading whatever `_x_hidePromise`
+// holds *by then*. A second close overwrites that property and cancels the
+// in-flight transition, so the first promise rejects with nobody listening —
+// the "Uncaught (in promise) {isFromCancelledTransition: true}" console noise.
+// Closing is Filament's job here; ours is only to forget the node.
+function resetFlyoutState() {
+  window.clearTimeout(openTimer);
+  window.clearTimeout(closeTimer);
+  openGroup = null;
+  interceptedTrigger = null;
+}
+
+// Livewire's SPA navigation swaps the whole <body>, and Filament's sidebar is a
+// plain @livewire() component with no @persist, so every `li.fi-sidebar-group`
+// is destroyed and rebuilt. The delegated listeners in this file survive that;
+// the module state above does not get the same treatment for free — `openGroup`
+// would keep pointing at a node Livewire had already thrown away, and the next
+// hover would talk to it.
+//
+// `livewire:navigate` fires synchronously, before the swap, on every navigation
+// path: a wire:navigate link press, a programmatic `Livewire.navigate()`, and
+// back/forward for both cached and uncached pages. Because it lands while the
+// current flyout is still live, it closes cleanly here rather than leaving a
+// detached subtree behind. It is also the hook Filament's own dropdown uses to
+// close itself (vendor/filament/support/resources/js/components/dropdown.js).
+document.addEventListener("livewire:navigate", resetFlyoutState);
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape" || !openGroup) {
@@ -188,7 +251,7 @@ document.addEventListener(
     }
 
     event.stopImmediatePropagation();
-    suppressTooltip(trigger);
+    suppressTooltip(group);
     interceptedTrigger = trigger;
   },
   true,
@@ -225,15 +288,9 @@ document.addEventListener("click", (event) => {
 
   // Livewire.navigate is the programmatic form of clicking a wire:navigate
   // link, so the shortcut lands on the same page the flyout item would have.
-  // Nothing reloads any more, which means this module's own state survives the
-  // swap and has to be cleared by hand -- the flyout element about to be
-  // replaced would otherwise stay in openGroup and the next hover would talk to
-  // a detached node.
-  window.clearTimeout(openTimer);
-  window.clearTimeout(closeTimer);
-  if (openGroup) {
-    closeFlyout(openGroup);
-  }
-
+  // It is a getter for Alpine.navigate, which fires `livewire:navigate`
+  // synchronously before it does anything else -- so resetFlyoutState() above
+  // has already run by the time this returns and there is nothing to clean up
+  // here.
   window.Livewire.navigate(url);
 });
