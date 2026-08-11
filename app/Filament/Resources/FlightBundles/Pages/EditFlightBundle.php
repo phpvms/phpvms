@@ -42,6 +42,23 @@ class EditFlightBundle extends EditRecord
     }
 
     /**
+     * `Flight Bundles › <name>`. Filament names no record crumb at all here --
+     * the resource has no `$recordTitleAttribute` -- and ends the chain on the
+     * page label, which only repeats the heading above it.
+     */
+    #[Override]
+    public function getBreadcrumbs(): array
+    {
+        /** @var FlightBundle $record */
+        $record = $this->getRecord();
+
+        return [
+            FlightBundleResource::getUrl() => FlightBundleResource::getBreadcrumb(),
+            $record->name,
+        ];
+    }
+
+    /**
      * No page-level form — the table below is the page's content, and the
      * fields live in the Edit drawer.
      */

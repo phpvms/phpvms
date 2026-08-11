@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FlightBundles\Resources\Flight\Pages;
 use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Concerns\StacksRelationManagers;
+use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Schemas\FlightForm;
 use App\Models\Flight;
@@ -114,6 +115,38 @@ class EditFlight extends EditRecord
                 ->shortDayName,
             $selected,
         ));
+    }
+
+    /**
+     * `Flight Bundles › <bundle> › <ident> - <route>`.
+     *
+     * Filament's own chain reads "Flight Bundles › Flight Bundle › Flights ›
+     * AP2140 › Edit": the parent crumb falls back to the model label because
+     * FlightBundleResource has no `$recordTitleAttribute`, the nested resource
+     * adds a crumb of its own that links to an index page it does not have,
+     * and the page label repeats what the heading already says.
+     */
+    #[Override]
+    public function getBreadcrumbs(): array
+    {
+        /** @var Flight $record */
+        $record = $this->getRecord();
+        $bundle = $record->bundle;
+
+        $breadcrumbs = [FlightBundleResource::getUrl() => FlightBundleResource::getBreadcrumb()];
+
+        if ($bundle !== null) {
+            $breadcrumbs[FlightBundleResource::getUrl('edit', ['record' => $bundle])] = $bundle->name;
+        }
+
+        $breadcrumbs[] = sprintf(
+            '%s - %s → %s',
+            $record->ident,
+            $record->dpt_airport->icao,
+            $record->arr_airport->icao,
+        );
+
+        return $breadcrumbs;
     }
 
     /**

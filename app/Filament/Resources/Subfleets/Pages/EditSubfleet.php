@@ -69,6 +69,32 @@ class EditSubfleet extends EditRecord
     }
 
     /**
+     * `Subfleets › <type> - <name>`. Filament ends the chain on the page
+     * label, which only repeats what the heading above it already says.
+     *
+     * Both halves, because the name alone does not identify a subfleet -- a
+     * B738 and a B738-WL are both "Boeing 737-800". The type is what tells
+     * them apart, the same way the registration does for an aircraft.
+     */
+    #[Override]
+    public function getBreadcrumbs(): array
+    {
+        /** @var Subfleet $record */
+        $record = $this->getRecord();
+
+        return [
+            SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb(),
+            self::subfleetCrumb($record),
+        ];
+    }
+
+    /** Shared with the nested aircraft page, which links back to this one. */
+    public static function subfleetCrumb(Subfleet $subfleet): string
+    {
+        return $subfleet->type.' - '.$subfleet->name;
+    }
+
+    /**
      * The six relation managers (aircraft, ranks, typeratings, fares,
      * expenses, files) are appended by the trait.
      *

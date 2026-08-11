@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Pages;
 use App\Filament\Actions\EditDetailsAction;
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Concerns\StacksRelationManagers;
+use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Schemas\AircraftForm;
+use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\Aircraft;
 use App\Models\File;
 use App\Services\FileService;
@@ -66,6 +68,33 @@ class EditAircraft extends EditRecord
                 ['value' => number_format($record->pireps()->count()), 'label' => trans_choice('common.pirep', 2)],
             ],
         ]);
+    }
+
+    /**
+     * `Subfleets › <type> - <name> › <registration> - <name>`.
+     *
+     * Filament's own chain reads "Subfleets › Subfleet › Aircraft › N852AL ›
+     * Edit": the parent crumb falls back to the model label because
+     * SubfleetResource has no `$recordTitleAttribute`, the nested resource adds
+     * a crumb of its own that links to an index page it does not have, and the
+     * page label repeats what the heading already says.
+     */
+    #[Override]
+    public function getBreadcrumbs(): array
+    {
+        /** @var Aircraft $record */
+        $record = $this->getRecord();
+        $subfleet = $record->subfleet;
+
+        $breadcrumbs = [SubfleetResource::getUrl() => SubfleetResource::getBreadcrumb()];
+
+        if ($subfleet !== null) {
+            $breadcrumbs[SubfleetResource::getUrl('edit', ['record' => $subfleet])] = EditSubfleet::subfleetCrumb($subfleet);
+        }
+
+        $breadcrumbs[] = $record->registration.' - '.$record->name;
+
+        return $breadcrumbs;
     }
 
     /**
