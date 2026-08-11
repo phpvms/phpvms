@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\Schemas;
 
 use App\Enums\FlightType;
+use App\Filament\Forms\Components\AirportSelect;
 use App\Filament\Forms\StateCasts\DaysMaskStateCast;
 use App\Filament\Resources\FlightBundles\FlightBundleResource;
 use App\Models\Airport;
@@ -86,26 +87,16 @@ class FlightForm
                                     ->columnSpanFull(),
 
                                 Grid::make()->schema([
-                                    Select::make('dpt_airport_id')
+                                    AirportSelect::make('dpt_airport_id')
                                         ->label(__('airports.departure'))
-                                        ->relationship('dpt_airport', titleAttribute: 'icao')
-                                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                        ->searchable()
+                                        ->airportRelationship('dpt_airport')
                                         ->required()
-                                        ->preload()
-                                        ->native(false)
-                                        ->live()
                                         ->afterStateUpdated(self::recalculateRoute(...)),
 
-                                    Select::make('arr_airport_id')
+                                    AirportSelect::make('arr_airport_id')
                                         ->label(__('airports.arrival'))
-                                        ->relationship('arr_airport', titleAttribute: 'icao')
-                                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                        ->searchable()
+                                        ->airportRelationship('arr_airport')
                                         ->required()
-                                        ->preload()
-                                        ->native(false)
-                                        ->live()
                                         ->afterStateUpdated(self::recalculateRoute(...)),
                                 ])
                                     ->columnSpanFull()
@@ -115,13 +106,9 @@ class FlightForm
                                     ->label(__('flights.route')),
 
                                 Grid::make()->schema([
-                                    Select::make('alt_airport_id')
+                                    AirportSelect::make('alt_airport_id')
                                         ->label(__('flights.alternateairport'))
-                                        ->relationship('alt_airport', titleAttribute: 'icao')
-                                        ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false),
+                                        ->airportRelationship('alt_airport'),
 
                                     TextInput::make('level')
                                         ->label(__('flights.level'))

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Pireps\Schemas;
 
 use App\Enums\FlightType;
-use App\Models\Airport;
+use App\Filament\Forms\Components\AirportSelect;
 use App\Models\Pirep;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -70,21 +70,15 @@ class PirepForm
                                 ->native(false),
 
                             Grid::make()->schema([
-                                Select::make('dpt_airport_id')
+                                AirportSelect::make('dpt_airport_id')
                                     ->label(__('airports.departure'))
-                                    ->relationship('dpt_airport', 'icao')
-                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                    ->searchable()
-                                    ->native(false)
+                                    ->airportRelationship('dpt_airport')
                                     ->columnSpan(1)
                                     ->disabled(fn (Pirep $record): bool => $record->read_only),
 
-                                Select::make('arr_airport_id')
+                                AirportSelect::make('arr_airport_id')
                                     ->label(__('airports.arrival'))
-                                    ->relationship('arr_airport', 'icao')
-                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                    ->searchable()
-                                    ->native(false)
+                                    ->airportRelationship('arr_airport')
                                     ->columnSpan(1)
                                     ->disabled(fn (Pirep $record): bool => $record->read_only),
                             ])

@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Subfleets\Resources\Aircraft\Schemas;
 
 use App\Enums\AircraftStatus;
+use App\Filament\Forms\Components\AirportSelect;
 use App\Models\Aircraft;
-use App\Models\Airport;
 use App\Models\SimBriefAirframe;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\Field;
@@ -32,21 +32,13 @@ class AircraftForm
                         // because there is no overview to edit yet.
                         ...($withIdentity ? self::identityFields() : []),
 
-                        Select::make('hub_id')
+                        AirportSelect::make('hub_id')
                             ->label(__('airports.home'))
-                            ->relationship('home', 'icao')
-                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
+                            ->airportRelationship('home'),
 
-                        Select::make('airport_id')
+                        AirportSelect::make('airport_id')
                             ->label(__('airports.current'))
-                            ->relationship('airport', 'icao')
-                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
+                            ->airportRelationship('airport'),
 
                         // Nested Sections render as sequent head bands inside
                         // the same card, not as second and third cards.

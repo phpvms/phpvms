@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Subfleets\Schemas;
 
 use App\Enums\FlightType;
 use App\Enums\FuelType;
-use App\Models\Airport;
+use App\Filament\Forms\Components\AirportSelect;
 use App\Models\SimBriefAirframe;
 use App\Models\Subfleet;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
@@ -33,13 +33,9 @@ class SubfleetForm
                         // because there is no overview to edit yet.
                         ...($withIdentity ? self::identityFields() : []),
 
-                        Select::make('hub_id')
+                        AirportSelect::make('hub_id')
                             ->label(__('airports.home'))
-                            ->relationship('home', 'icao')
-                            ->preload()
-                            ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                            ->searchable()
-                            ->native(false),
+                            ->airportRelationship('home'),
 
                         Select::make('simbrief_type')
                             ->label(__('common.simbrief_airframe_id'))

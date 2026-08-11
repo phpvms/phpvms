@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Enums\UserState;
-use App\Models\Airport;
+use App\Filament\Forms\Components\AirportSelect;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Timezonelist;
@@ -77,22 +77,14 @@ class UserForm
                                     ->allowHtml()
                                     ->native(false),
 
-                                Select::make('home_airport_id')
+                                AirportSelect::make('home_airport_id')
                                     ->label(__('airports.home'))
-                                    ->relationship('home_airport', 'icao')
-                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->native(false),
+                                    ->airportRelationship('home_airport')
+                                    ->required(),
 
-                                Select::make('current_airport_id')
+                                AirportSelect::make('current_airport_id')
                                     ->label(__('airports.current'))
-                                    ->relationship('current_airport', 'icao')
-                                    ->getOptionLabelFromRecordUsing(fn (Airport $record): string => $record->icao.' - '.$record->name)
-                                    ->searchable()
-                                    ->preload()
-                                    ->native(false),
+                                    ->airportRelationship('current_airport'),
                             ])
                             ->columnSpanFull()
                             ->columns(),

@@ -22,9 +22,11 @@ return [
     'hub'                         => 'Hub',
     'only_hubs'                   => 'Only Hubs',
 
-    'bulk_add'          => 'Bulk Add',
-    'lookup'            => 'Lookup',
-    'lookup_successful' => 'Lookup Successful',
-    'lookup_failed'     => 'Lookup Failed',
-    'no_airport_found'  => 'No airport was found with ICAO: :icao',
+    'bulk_add'                => 'Bulk Add',
+    'lookup'                  => 'Lookup',
+    'lookup_successful'       => 'Lookup Successful',
+    'lookup_failed'           => 'Lookup Failed',
+    'no_airport_found'        => 'No airport was found with ICAO: :icao',
+    'airport_lookup'          => 'From Airport Lookup',
+    'no_local_airports_found' => 'No local airports found',
 ];
