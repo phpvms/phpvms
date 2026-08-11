@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\FlightBundles\Schemas;
 
-use App\Filament\Forms\Components\InlineMultiSelect;
-use App\Models\Subfleet;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -63,22 +62,13 @@ class FlightBundleForm
         ];
     }
 
-    /**
-     * Bundle-level default subfleets, edited in place instead of through a
-     * relation manager. Grouped by airline; airline-less subfleets list first
-     * (subfleets.airline_id is nullable even though the factory always fills
-     * it — an unguarded ->airline->name here would break the whole option list).
-     */
-    public static function subfleets(): InlineMultiSelect
+    public static function subfleets(): Select
     {
-        return InlineMultiSelect::make('subfleets')
+        return Select::make('subfleets')
             ->label(trans_choice('common.subfleet', 2))
             ->relationship('subfleets', 'name')
-            ->optionMetas(fn (): array => Subfleet::pluck('type', 'id')->all())
-            ->optionGroups(fn (): array => Subfleet::with('airline')
-                ->get()
-                ->mapWithKeys(fn (Subfleet $subfleet): array => [$subfleet->id => $subfleet->airline?->name])
-                ->filter()
-                ->all());
+            ->multiple()
+            ->searchable()
+            ->preload();
     }
 }

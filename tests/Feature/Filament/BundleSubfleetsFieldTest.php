@@ -7,27 +7,18 @@ use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Forms\Components\Select;
 use Livewire\Livewire;
 
-/**
- * Bundle-level subfleets are edited through the InlineMultiSelect inside the
- * Edit-details slideover (the relation manager it replaced lives only in git
- * history). The option closures run over every subfleet, so an unguarded
- * $subfleet->airline->name would break the whole slideover for one
- * airline-less row — subfleets.airline_id is nullable even though the
- * factory always fills it, which is why nothing else covers that case.
- */
-it('builds the subfleet options with an airline-less subfleet present', function (): void {
-    $orphan = Subfleet::factory()->create(['airline_id' => null, 'name' => 'Orphan Fleet']);
-    $normal = Subfleet::factory()->create(['name' => 'Mainline Fleet']);
-
+it('uses the stock searchable Filament multi-select for subfleets', function (): void {
     $field = FlightBundleForm::subfleets();
 
-    expect($field->getOptionGroups())
-        ->toHaveKey($normal->id)
-        ->not->toHaveKey($orphan->id)
-        ->and($field->getOptionMetas())
-        ->toHaveKey($orphan->id);
+    expect($field)
+        ->toBeInstanceOf(Select::class)
+        ->and($field->isMultiple())->toBeTrue()
+        ->and($field->isSearchable())->toBeTrue()
+        ->and($field->isPreloaded())->toBeTrue()
+        ->and($field->getRelationshipName())->toBe('subfleets');
 });
 
 it('attaches subfleets through the edit-details slideover', function (): void {
