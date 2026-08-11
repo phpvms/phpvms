@@ -382,6 +382,7 @@ class Addons extends Page
             'changelog_url'       => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
             'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: null,
             'monogram'            => $this->monogram((string) $entry['name']),
+            'tint'                => $this->tint((string) ($entry['category'] ?? ''), (string) $entry['registry_id']),
             'installs'            => (int) ($entry['installs_total'] ?? 0),
             'min_php'             => (string) ($entry['min_php'] ?? ''),
             'min_phpvms'          => (string) ($entry['min_phpvms'] ?? ''),
@@ -395,6 +396,37 @@ class Addons extends Page
             'compatible'          => $compatible,
             'incompatible_reason' => $incompatibleReason,
         ];
+    }
+
+    /**
+     * The monogram plate's colour, as one of the theme's shared category tints.
+     *
+     * Category first, so add-ons that do the same kind of job look related. An
+     * add-on with no category — every locally installed one, since the category
+     * only comes from the registry — falls back to a hue derived from its id, so
+     * it still gets a colour and the same one everywhere it appears.
+     *
+     * This is the one place colour touches a data value; it marks what an add-on
+     * IS, which never changes, not how it is doing. State stays with the chips.
+     */
+    private function tint(string $category, string $registryId): string
+    {
+        $byCategory = [
+            'operations'   => 'blue',
+            'dispatch'     => 'blue',
+            'acars'        => 'blue',
+            'pilots'       => 'teal',
+            'awards'       => 'teal',
+            'finance'      => 'amber',
+            'integration'  => 'amber',
+            'integrations' => 'amber',
+            'system'       => 'violet',
+            'reporting'    => 'rose',
+        ];
+
+        $hues = ['blue', 'teal', 'violet', 'rose', 'amber'];
+
+        return $byCategory[Str::lower($category)] ?? $hues[crc32($registryId) % count($hues)];
     }
 
     /**

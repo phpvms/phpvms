@@ -15,7 +15,7 @@
 @endphp
 
 <div class="addon-hero">
-    <span class="addon-tile addon-tile--lg">
+    <span class="addon-tile addon-tile--lg overview__icon--{{ $sel['tint'] }}">
         @if ($sel['icon'])
             <img src="{{ $sel['icon'] }}" alt="">
         @else
@@ -57,13 +57,13 @@
             @if ($sel['enabled'])
                 <x-filament::button color="gray" size="sm"
                     :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Power"
-                    wire:click="disable(@js($sel['installed_key']))">
+                    wire:click="disable({!! \Illuminate\Support\Js::from($sel['installed_key'], JSON_UNESCAPED_SLASHES) !!})">
                     {{ __('addon-manager::addons.disable') }}
                 </x-filament::button>
             @else
                 <x-filament::button color="gray" size="sm"
                     :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Power"
-                    wire:click="enable(@js($sel['installed_key']))">
+                    wire:click="enable({!! \Illuminate\Support\Js::from($sel['installed_key'], JSON_UNESCAPED_SLASHES) !!})">
                     {{ __('addon-manager::addons.enable') }}
                 </x-filament::button>
             @endif

@@ -2490,6 +2490,19 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply py-1.75 px-3 border-t border-t-(--line-soft) text-(--ink-3) text-[11px];
 }
 
+/* A footer carrying more than the submit row — an `enabled` toggle, say —
+ * stacks it above, one row per grid child (App\Filament\Concerns\
+ * ReversePrimaryButtons). The rule between them reads as the same divider that
+ * separates the footer from the section body, so the toggle sits in its own
+ * band instead of crowding Cancel/Save. Bled out to the footer's edges with a
+ * negative inline margin, because a rule inset by the footer padding reads as
+ * a field underline instead of a divider. */
+.fi-section-footer .fi-grid > * + * {
+  @apply border-t border-t-(--line-soft) pt-1.75;
+  margin-inline: calc(var(--spacing) * -3);
+  padding-inline: calc(var(--spacing) * 3);
+}
+
 /* Requires-action queue renders flush against its section (mockup
  * .panel__body--flush) — the rows carry their own padding. */
 .fi-section:has(.queue) .fi-section-content {
@@ -3332,8 +3345,11 @@ html[data-density="comfortable"] .tbl tbody td {
   color: color-mix(in oklab, white 88%, var(--primary-600));
 }
 
+/* z-10, not z-20: the rail and its hover flyout are z-20, and the jump bar sits
+ * later in the DOM — at equal z-index it paints over the flyout. It only has to
+ * beat the page content it scrolls across, which is z-auto. */
 .secnav {
-  @apply sticky z-20 flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
+  @apply sticky z-10 flex items-center gap-2 rounded-md border border-(--line) bg-(--surface-2) pr-2;
   top: 58px;
 }
 

@@ -365,3 +365,25 @@ it('warns on the page when the catalog it is showing is stale', function (): voi
         ->assertSee(__('addon-manager::addons.showing_cached_catalog'))
         ->assertSee('vmsACARS');
 });
+
+/**
+ * Every plate gets a colour. Category first so related add-ons look related;
+ * otherwise a hue off the id, because only catalog entries carry a category and
+ * a locally installed add-on would be left grey.
+ */
+it('tints every monogram plate, by category or by id', function (): void {
+    fakeDefaultCatalog();
+
+    $rows = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'))
+        ->allEntries()
+        ->keyBy('id');
+
+    expect($rows->pluck('tint')->filter())->toHaveCount($rows->count());
+
+    // Same id, same hue, every render — the plate must not flicker between pages.
+    $again = addonsPageInstance(Livewire::test(AddonsPage::class)->set('activeTab', 'browse'))
+        ->allEntries()
+        ->keyBy('id');
+
+    expect($again['skyops/skybank']['tint'])->toBe($rows['skyops/skybank']['tint']);
+});

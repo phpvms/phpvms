@@ -11,29 +11,19 @@
 @php
     $paginator = $this->paginator();
     $selected = $this->selected();
-    // Fixed map, so a category always gets the same plate wherever it appears.
-    // The hues are the theme's shared category tints (see "Category tints" in
-    // theme.css) — the same set the overview strip's icons use.
-    $tints = [
-        'operations'   => 'overview__icon--blue',
-        'dispatch'     => 'overview__icon--blue',
-        'acars'        => 'overview__icon--blue',
-        'pilots'       => 'overview__icon--teal',
-        'awards'       => 'overview__icon--teal',
-        'finance'      => 'overview__icon--amber',
-        'integration'  => 'overview__icon--amber',
-        'integrations' => 'overview__icon--amber',
-        'system'       => 'overview__icon--violet',
-        'reporting'    => 'overview__icon--rose',
-    ];
 @endphp
 
+{{-- Js::from() escapes forward slashes by default, so @js('phpvms/awards')
+     renders select('phpvms\\/awards') and Livewire hands the method a literal
+     backslash — the row never matches and the selection silently sticks. Keep
+     the JSON escaping (the id comes from the registry), drop the slash rule. --}}
 <div class="addon-list">
     @forelse ($paginator as $row)
-        <button type="button" wire:key="addon-{{ $row['id'] }}" wire:click="select(@js($row['id']))"
+        <button type="button" wire:key="addon-{{ $row['id'] }}"
+            wire:click="select({!! \Illuminate\Support\Js::from($row['id'], JSON_UNESCAPED_SLASHES) !!})"
             @class(['addon-row', 'addon-row--dim' => $row['installed'] && ! $row['enabled']])
             aria-current="{{ $selected && $selected['id'] === $row['id'] ? 'true' : 'false' }}">
-            <span @class(['addon-tile', $tints[\Illuminate\Support\Str::lower($row['category'])] ?? ''])>
+            <span class="addon-tile overview__icon--{{ $row['tint'] }}">
                 @if ($row['icon'])
                     <img src="{{ $row['icon'] }}" alt="">
                 @else

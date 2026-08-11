@@ -130,10 +130,12 @@ return [
             'route_types_helper'  => 'Leave empty to allow all flight types.',
         ],
         'sections' => [
+            'costs'                  => 'Costs',
             'operational_capability' => 'Operational Capability',
         ],
     ],
     'aircraft_information'                      => 'Aircraft Information',
+    'aircraft_identifiers'                      => 'Identifiers',
     'certified_weights'                         => 'Certified Weights',
     'typerating_information'                    => 'Typerating Information',
     'user_field_private'                        => 'Private (Only Visible To Admins)',
