@@ -5,93 +5,154 @@ declare(strict_types=1);
 use App\Filament\Resources\Airports\Pages\ListAirports;
 use App\Models\Airport;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
-// Use codes that are absent from the sample-data airports so the tests stay
-// hermetic regardless of what is already seeded in the shared testing DB.
 beforeEach(function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $this->actingAs(createAdminUser());
 
-    Http::fake([
-        'api.phpvms.net/v1/airports/ZZZA' => Http::response([
-            'icao'      => 'ZZZA', 'iata' => 'ZZA', 'name' => 'Alpha Field',
-            'city'      => 'Alphaville', 'country' => 'US', 'region' => 'NY', 'tz' => 'America/New_York',
-            'elevation' => 13, 'lat' => 40.6413, 'lon' => -73.7781,
-        ]),
-        'api.phpvms.net/v1/airports/ZZZB' => Http::response([
-            'icao'      => 'ZZZB', 'iata' => 'ZZB', 'name' => 'Bravo Field',
-            'city'      => 'Bravotown', 'country' => 'GB', 'region' => 'ENG', 'tz' => 'Europe/London',
-            'elevation' => 83, 'lat' => 51.4706, 'lon' => -0.4619,
-        ]),
-        // Unknown code -> non-successful response -> empty lookup -> error row.
-        'api.phpvms.net/v1/airports/ZZZX' => Http::response(null, 404),
-    ]);
+    Http::preventStrayRequests();
 });
 
-it('queues pasted codes as pending rows, then creates airports one at a time', function (): void {
-    $component = Livewire::test(ListAirports::class)
-        ->set('bulkIcaoInput', 'zzza, zzzb')
-        ->call('addBulkAirports');
+it('replaces the create actions with one add-airports drawer', function (): void {
+    $page = livewireInstance(ListAirports::class);
+    $actions = collect($page->getCachedHeaderActions())
+        ->whereInstanceOf(Action::class)
+        ->keyBy(fn (Action $action): string => $action->getName());
+    $action = $actions->get('addAirports');
 
-    // Both queued as pending, input cleared, nothing persisted yet.
-    expect(collect($component->get('bulkRows'))->pluck('status')->all())->toBe(['pending', 'pending']);
-    $component->assertSet('bulkIcaoInput', '');
-    expect(Airport::firstWhere('icao', 'ZZZA'))->toBeNull()
+    expect($actions)
+        ->toHaveKey('addAirports')
+        ->not->toHaveKeys(['create', 'bulkAdd'])
+        ->and($action->getLabel())->toBe('Add Airports')
+        ->and($action->isModalSlideOver())->toBeTrue()
+        ->and($action->getModalSubmitActionLabel())->toBe('Save and exit');
+
+    Livewire::test(ListAirports::class)
+        ->mountAction('addAirports')
+        ->assertSchemaComponentExists(
+            'airportSearchSelection',
+            null,
+            fn (Select $component): bool => $component->isSearchable()
+                && !$component->isNative()
+                && $component->isAutofocused(),
+        );
+})->group('filament');
+
+it('queues selected search results without saving until the drawer is submitted', function (): void {
+    Http::fake(function (Request $request) {
+        $icao = match ($request->data()['text'] ?? null) {
+            'zzza'  => 'ZZZA',
+            'zzzb'  => 'ZZZB',
+            default => null,
+        };
+
+        if ($icao === null) {
+            return Http::response([]);
+        }
+
+        return Http::response([airportLookupResult($icao)]);
+    });
+
+    $component = Livewire::test(ListAirports::class)
+        ->mountAction('addAirports')
+        ->call('searchAirports', 'zzza')
+        ->assertSet('queuedAirports', [])
+        ->call('queueSelectedAirport', 'ZZZA')
+        ->call('searchAirports', 'zzzb')
+        ->call('queueSelectedAirport', 'ZZZB');
+
+    expect($component->get('queuedAirports'))
+        ->toHaveKeys(['ZZZA', 'ZZZB'])
+        ->and($component->get('queuedAirports.ZZZA.title'))->toBe('ZZZA - Alpha Field')
+        ->and($component->get('queuedAirports.ZZZA.timezone'))->toBe('America/New_York')
+        ->and($component->get('queuedAirports.ZZZA.display_location'))->toBe('Alphaville, NY, US')
+        ->and(Airport::firstWhere('icao', 'ZZZA'))->toBeNull()
         ->and(Airport::firstWhere('icao', 'ZZZB'))->toBeNull();
 
-    // Drive the lookups the way the browser loop does.
-    $component->call('processNextBulkAirport')->assertReturned(1);
-    $component->call('processNextBulkAirport')->assertReturned(0);
+    $component->callMountedAction()->assertNotified();
 
     expect(Airport::firstWhere('icao', 'ZZZA')?->name)->toBe('Alpha Field')
         ->and(Airport::firstWhere('icao', 'ZZZB')?->name)->toBe('Bravo Field');
-
-    expect(collect($component->get('bulkRows'))->pluck('status')->all())->toBe(['added', 'added']);
 })->group('filament');
 
-it('flags an existing airport as updated and overwrites its lookup fields', function (): void {
-    Airport::factory()->create(['icao' => 'ZZZA', 'name' => 'Stale Name', 'hub' => false]);
+it('warns when a searched airport already exists', function (): void {
+    Airport::factory()->create([
+        'id'   => 'ZZZA',
+        'icao' => 'ZZZA',
+    ]);
 
-    $component = Livewire::test(ListAirports::class)
-        ->set('bulkIcaoInput', 'ZZZA')
-        ->call('addBulkAirports')
-        ->call('processNextBulkAirport');
+    Http::fake([
+        'api.phpvms.net/v2/airports/search*' => Http::response([
+            airportLookupResult('ZZZA'),
+        ]),
+    ]);
 
-    expect($component->get('bulkRows')[0]['status'])->toBe('updated')
-        ->and(Airport::firstWhere('icao', 'ZZZA')->name)->toBe('Alpha Field');
-})->group('filament');
-
-it('marks a failed lookup as an error and saves nothing', function (): void {
-    $component = Livewire::test(ListAirports::class)
-        ->set('bulkIcaoInput', 'ZZZX')
-        ->call('addBulkAirports')
-        ->call('processNextBulkAirport')
-        ->assertReturned(0);
-
-    expect($component->get('bulkRows')[0]['status'])->toBe('error')
-        ->and(Airport::firstWhere('icao', 'ZZZX'))->toBeNull();
-})->group('filament');
-
-it('persists the hub flag when a row is toggled', function (): void {
-    $component = Livewire::test(ListAirports::class)
-        ->set('bulkIcaoInput', 'ZZZA')
-        ->call('addBulkAirports')
-        ->call('processNextBulkAirport');
-
-    expect(Airport::firstWhere('icao', 'ZZZA')->hub)->toBeFalse();
-
-    $component->call('toggleBulkHub', 0);
-
-    expect(Airport::firstWhere('icao', 'ZZZA')->fresh()->hub)->toBeTrue()
-        ->and($component->get('bulkRows')[0]['hub'])->toBeTrue();
-})->group('filament');
-
-it('opens the bulk-add modal and resets any prior rows', function (): void {
     Livewire::test(ListAirports::class)
-        ->set('bulkRows', [['icao' => 'ZZZA', 'name' => 'x', 'hub' => false, 'status' => 'added']])
-        ->mountAction('bulkAdd')
-        ->assertActionMounted('bulkAdd')
-        ->assertSet('bulkRows', []);
+        ->mountAction('addAirports')
+        ->call('searchAirports', 'zzza')
+        ->call('queueSelectedAirport', 'ZZZA')
+        ->assertSet('queuedAirports', [])
+        ->assertNotified('ZZZA already exists');
 })->group('filament');
+
+it('waits for a selection when a search returns multiple airports', function (): void {
+    Http::fake([
+        'api.phpvms.net/v2/airports/search*' => Http::response([
+            airportLookupResult('ZZZA'),
+            airportLookupResult('ZZZB'),
+        ]),
+    ]);
+
+    $component = Livewire::test(ListAirports::class)
+        ->mountAction('addAirports')
+        ->call('searchAirports', 'zzz')
+        ->assertSet('queuedAirports', [])
+        ->call('queueSelectedAirport', 'ZZZB');
+
+    expect($component->get('queuedAirports'))
+        ->toHaveKey('ZZZB')
+        ->not->toHaveKey('ZZZA')
+        ->and(Airport::firstWhere('icao', 'ZZZB'))->toBeNull();
+})->group('filament');
+
+it('saves the manual airport form when the queue is empty', function (): void {
+    Livewire::test(ListAirports::class)
+        ->mountAction('addAirports')
+        ->fillForm([
+            'icao' => 'ZZZM',
+            'name' => 'Manual Field',
+            'lat'  => 33.1,
+            'lon'  => -84.2,
+        ])
+        ->callMountedAction()
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect(Airport::firstWhere('icao', 'ZZZM')?->name)->toBe('Manual Field');
+})->group('filament');
+
+/**
+ * @return array<string, mixed>
+ */
+function airportLookupResult(string $icao): array
+{
+    $isAlpha = $icao === 'ZZZA';
+
+    return [
+        'icao'    => $icao,
+        'iata'    => $isAlpha ? 'ZZA' : 'ZZB',
+        'name'    => $isAlpha ? 'Alpha Field' : 'Bravo Field',
+        'city'    => $isAlpha ? 'Alphaville' : 'Bravotown',
+        'country' => $isAlpha ? 'US' : 'GB',
+        'region'  => $isAlpha ? 'US-NY' : 'GB-ENG',
+        'tz'      => $isAlpha ? 'America/New_York' : 'Europe/London',
+        'alt'     => $isAlpha ? 13 : 83,
+        'lat'     => $isAlpha ? 40.6413 : 51.4706,
+        'lon'     => $isAlpha ? -73.7781 : -0.4619,
+    ];
+}

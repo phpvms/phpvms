@@ -31,8 +31,8 @@ function headerActionsFallingBackToPrimary(string $page): array
         ->all();
 }
 
-it('only the create CTA is primary on the airports header', function (): void {
-    expect(headerActionsFallingBackToPrimary(ListAirports::class))->toBe(['create']);
+it('only the add-airports CTA is primary on the airports header', function (): void {
+    expect(headerActionsFallingBackToPrimary(ListAirports::class))->toBe(['addAirports']);
 })->group('filament');
 
 it('only the create CTA is primary on the users header', function (): void {

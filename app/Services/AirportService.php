@@ -110,7 +110,18 @@ class AirportService extends Service
     /**
      * Search for airports from vACentral.
      *
-     * @return list<array{icao: string, name: string}>
+     * @return list<array{
+     *     icao: string,
+     *     iata: string,
+     *     name: string,
+     *     location: string,
+     *     country: string,
+     *     region: string,
+     *     timezone: string,
+     *     elevation: int,
+     *     lat: float,
+     *     lon: float
+     * }>
      */
     public function searchAirports(string $search): array
     {
@@ -134,8 +145,16 @@ class AirportService extends Service
                 && filled($airport['icao'] ?? null)
                 && filled($airport['name'] ?? null))
             ->map(fn (array $airport): array => [
-                'icao' => strtoupper((string) $airport['icao']),
-                'name' => (string) $airport['name'],
+                'icao'      => strtoupper((string) $airport['icao']),
+                'iata'      => strtoupper((string) ($airport['iata'] ?? '')),
+                'name'      => (string) $airport['name'],
+                'location'  => (string) ($airport['city'] ?? ''),
+                'country'   => strtoupper((string) ($airport['country'] ?? '')),
+                'region'    => strtoupper((string) ($airport['region'] ?? '')),
+                'timezone'  => (string) ($airport['tz'] ?? ''),
+                'elevation' => (int) ($airport['alt'] ?? 0),
+                'lat'       => (float) ($airport['lat'] ?? 0),
+                'lon'       => (float) ($airport['lon'] ?? 0),
             ])
             ->values()
             ->all();
