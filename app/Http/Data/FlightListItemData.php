@@ -26,13 +26,29 @@ final class FlightListItemData extends Data
         public ?string $type,
         public ?AirlineRefData $airline,
         public ?int $bidId,
+        public ?string $scheduledDeparture,
+        public ?string $scheduledArrival,
+        public ?string $routeCode,
+        public string $availability,
+        public ?string $availabilityReason,
+        public string $primaryAction,
     ) {}
 
     /**
      * @param array<string, int> $saved flight_id => bid_id
      */
-    public static function fromModel(Flight $f, array $saved): self
-    {
+    public static function fromModel(
+        Flight $f,
+        array $saved,
+        ?FlightDispatchPolicyData $policy = null,
+        bool $pilotAtLimit = false,
+        bool $operationalLocationBlocked = false,
+    ): self {
+        $policy ??= FlightDispatchPolicyData::fromSettings();
+        $hasOwnBid = isset($saved[$f->id]);
+        $flightLocked = !$hasOwnBid && $policy->disableFlightOnBid && $f->has_bid;
+        $unavailable = $flightLocked || (!$hasOwnBid && ($pilotAtLimit || $operationalLocationBlocked));
+
         return new self(
             id: $f->id,
             callsign: $f->ident,
@@ -40,9 +56,21 @@ final class FlightListItemData extends Data
             arr: $f->arr_airport?->icao,
             distanceNm: $f->distance ? (int) round($f->distance->toUnit('nmi')) : null,
             blockTime: $f->flight_time ? Time::minutesToTimeString((int) $f->flight_time) : null,
-            type: $f->flight_type?->getLabel(),
+            type: $f->flight_type->getLabel(),
             airline: $f->airline ? new AirlineRefData(icao: $f->airline->icao, name: $f->airline->name) : null,
             bidId: $saved[$f->id] ?? null,
+            scheduledDeparture: $f->dpt_time,
+            scheduledArrival: $f->arr_time,
+            routeCode: filled($f->route_code) ? $f->route_code : null,
+            availability: $hasOwnBid ? 'bid' : ($unavailable ? 'locked' : 'available'),
+            availabilityReason: $flightLocked
+                ? 'Another pilot has a bid on this flight'
+                : ((!$hasOwnBid && $pilotAtLimit)
+                    ? 'Remove your current bid before selecting another flight'
+                    : ((!$hasOwnBid && $operationalLocationBlocked)
+                        ? 'You must be at the departure airport to bid on this flight'
+                        : null)),
+            primaryAction: $hasOwnBid ? 'overview' : ($unavailable ? 'unavailable' : 'bid'),
         );
     }
 }

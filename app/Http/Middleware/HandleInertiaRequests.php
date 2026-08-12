@@ -29,12 +29,12 @@ class HandleInertiaRequests extends Middleware
     public function __construct(private readonly ActiveThemeService $themes) {}
 
     /**
-     * The Inertia root template. A DEDICATED name ('spa') that resolves to the
-     * skylight theme's spa.blade.php — deliberately NOT 'app', so it doesn't
+     * The Inertia root template. A dedicated view that points to the Skylight
+     * theme's spa.blade.php — deliberately not 'app', so it doesn't
      * shadow the Blade `app` layout that non-ported pages (home/login) extend.
      * Those fall back to seven's app layout; only SPA responses use this shell.
      */
-    protected $rootView = 'spa';
+    protected $rootView = 'layouts.skylight.spa';
 
     /**
      * Asset version — busts the client cache when the skylight build changes so

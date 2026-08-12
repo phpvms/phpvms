@@ -1,154 +1,168 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { router, Link } from "@inertiajs/vue3";
-import FmsEntry from "@/widgets/flight/FmsEntry.vue";
-import FlightStrip from "@/widgets/flight/FlightStrip.vue";
-
-/**
- * Flights schedule page. Reads the flat FlightsPresenter DTO: a page of flights,
- * pagination meta, and the active filters. Filtering + paging are real Inertia
- * visits (server re-runs the search), so this page stays a thin projection.
- */
+import { Link, router } from "@inertiajs/vue3";
+import { nextTick, shallowRef, useTemplateRef } from "vue";
+import DispatchFilters from "@/features/flights/DispatchFilters.vue";
+import FlightBidDrawer from "@/features/flights/FlightBidDrawer.vue";
+import FlightManifest from "@/features/flights/FlightManifest.vue";
+import type { FlightFilterOptions, FlightFilters, FlightPage } from "@/features/flights/types";
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];
-  page: { current: number; last: number; total: number };
-  filters: {
-    depIcao: string | null;
-    arrIcao: string | null;
-    flightNumber: string | null;
-    flightType: string | null;
-  };
+  policy: App.Http.Data.FlightDispatchPolicyData;
+  page: FlightPage;
+  filters: FlightFilters;
+  filterOptions: FlightFilterOptions;
 }>();
 
-function search(q: { from: string; to: string }) {
-  router.get(
-    "/flights",
-    {
-      dep_icao: q.from || undefined,
-      arr_icao: q.to || undefined,
+const drawer = useTemplateRef<InstanceType<typeof FlightBidDrawer>>("drawer");
+const invokingControl = shallowRef<HTMLElement | null>(null);
+const searchLoading = shallowRef(false);
+const searchError = shallowRef<string | null>(null);
+
+const queryNames: Record<keyof FlightFilters, string> = {
+  airlineId: "airline_id",
+  flightNumber: "flight_number",
+  flightType: "flight_type",
+  routeCode: "route_code",
+  depIcao: "dep_icao",
+  arrIcao: "arr_icao",
+  distanceGreaterThan: "dgt",
+  distanceLessThan: "dlt",
+  timeGreaterThan: "tgt",
+  timeLessThan: "tlt",
+  subfleetId: "subfleet_id",
+  typeRatingId: "type_rating_id",
+  icaoType: "icao_type",
+  search: "search",
+  orderBy: "orderBy",
+  sortedBy: "sortedBy",
+  limit: "limit",
+};
+
+function queryFor(filters: FlightFilters, page?: number): Record<string, string | number> {
+  const query: Record<string, string | number> = {};
+  for (const key of Object.keys(filters) as Array<keyof FlightFilters>) {
+    const value = filters[key];
+    if (value !== null && value !== "") query[queryNames[key]] = value;
+  }
+  if (page) query.page = page;
+  return query;
+}
+
+function search(filters: FlightFilters) {
+  router.get("/flights", queryFor(filters), {
+    preserveScroll: true,
+    onStart: () => {
+      searchLoading.value = true;
+      searchError.value = null;
     },
-    { preserveState: false, preserveScroll: true },
-  );
+    onError: () => {
+      searchError.value =
+        "The schedule could not be updated. The current results are still available.";
+    },
+    onFinish: () => {
+      searchLoading.value = false;
+    },
+  });
 }
 
-function fieldsFor(f: App.Http.Data.FlightListItemData) {
-  return [
-    { label: "Dist", value: f.distanceNm != null ? `${f.distanceNm}NM` : "—" },
-    { label: "Block", value: f.blockTime ?? "—" },
-    { label: "Type", value: f.type ?? "—" },
-  ];
+function reset() {
+  router.get("/flights", {}, { preserveScroll: true });
 }
 
-function pageHref(n: number): string {
-  const p = new URLSearchParams();
-  if (props.filters.depIcao) p.set("dep_icao", props.filters.depIcao);
-  if (props.filters.arrIcao) p.set("arr_icao", props.filters.arrIcao);
-  p.set("page", String(n));
-  return `/flights?${p.toString()}`;
+function pageHref(page: number): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(queryFor(props.filters, page)))
+    params.set(key, String(value));
+  return `/flights?${params.toString()}`;
 }
 
-const hasPrev = computed(() => props.page.current > 1);
-const hasNext = computed(() => props.page.current < props.page.last);
+function openBid(flightId: string, event: MouseEvent) {
+  invokingControl.value = event.currentTarget as HTMLElement;
+  drawer.value?.show(flightId);
+}
+
+async function returnFocus() {
+  await nextTick();
+  invokingControl.value?.focus();
+}
 </script>
 
 <template>
-  <section aria-label="Flight schedule">
-    <p class="pv-eyebrow">FLIGHTS · SCHEDULE</p>
-    <FmsEntry :from="filters.depIcao" @search="search" />
+  <section class="pv-flights-page" aria-label="Flight schedule">
+    <DispatchFilters
+      :filters="filters"
+      :options="filterOptions"
+      :loading="searchLoading"
+      :error="searchError"
+      @submit="search"
+      @reset="reset"
+    />
+    <FlightManifest :flights="flights" :policy="policy" @bid="openBid" />
 
-    <div class="board" role="list">
-      <FlightStrip
-        v-for="f in flights"
-        :key="f.id"
-        role="listitem"
-        :callsign="f.callsign"
-        :dpt="f.dpt"
-        :arr="f.arr"
-        :fields="fieldsFor(f)"
-        :tab="f.bidId ? 'green' : 'dim'"
+    <nav v-if="page.last > 1" class="pager" aria-label="Flight results pages">
+      <Link v-if="page.current > 1" :href="pageHref(page.current - 1)" preserve-scroll
+        >Previous</Link
       >
-        <template #trailing>
-          <span class="badge" :class="f.bidId ? 'on' : 'avail'">
-            {{ f.bidId ? "On Bid" : "Available" }}
-          </span>
-        </template>
-      </FlightStrip>
+      <span v-else aria-disabled="true">Previous</span>
+      <p>Page {{ page.current }} of {{ page.last }} · {{ page.total }} flights</p>
+      <Link v-if="page.current < page.last" :href="pageHref(page.current + 1)" preserve-scroll
+        >Next</Link
+      >
+      <span v-else aria-disabled="true">Next</span>
+    </nav>
 
-      <div v-if="!flights.length" class="empty">No flights match your filters</div>
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="page.last > 1" class="pager">
-      <Link v-if="hasPrev" :href="pageHref(page.current - 1)" class="pg" preserve-scroll
-        >← Prev</Link
-      >
-      <span v-else class="pg disabled">← Prev</span>
-      <span class="pg-info"
-        >Page {{ page.current }} of {{ page.last }} · {{ page.total }} flights</span
-      >
-      <Link v-if="hasNext" :href="pageHref(page.current + 1)" class="pg" preserve-scroll
-        >Next →</Link
-      >
-      <span v-else class="pg disabled">Next →</span>
-    </div>
+    <FlightBidDrawer ref="drawer" @closed="returnFocus" />
   </section>
 </template>
 
 <style scoped>
-.board {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
-}
-.empty {
-  font-size: 13px;
-  color: var(--pv-ink-dim);
-  border: 1px dashed var(--pv-line);
-  border-radius: var(--pv-radius-md);
-  padding: 24px;
-  text-align: center;
-}
-.badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--pv-radius-full);
-}
-.badge.on {
-  color: var(--pv-green);
-  background: color-mix(in srgb, var(--pv-green) 12%, transparent);
-}
-.badge.avail {
-  color: var(--pv-ink-dim);
-  background: var(--pv-panel-inset);
+.pv-flights-page {
+  min-width: 0;
 }
 .pager {
-  display: flex;
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) 90px;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
-}
-.pg {
-  font-size: 12px;
-  color: var(--pv-accent);
-  text-decoration: none;
+  gap: 12px;
+  margin-top: 18px;
   border: 1px solid var(--pv-line);
-  border-radius: var(--pv-radius-sm);
-  padding: 6px 12px;
+  border-radius: var(--pv-radius-md);
+  background: var(--pv-panel);
+  padding: 12px 16px;
+  text-align: center;
 }
-.pg:hover {
-  border-color: var(--pv-accent);
+.pager a,
+.pager span {
+  color: var(--pv-accent);
+  font-size: calc(12px * var(--pv-type-scale));
+  font-weight: 650;
+  text-decoration: none;
 }
-.pg.disabled {
+.pager a:first-child,
+.pager span:first-child {
+  text-align: left;
+}
+.pager a:last-child,
+.pager span:last-child {
+  text-align: right;
+}
+.pager span[aria-disabled="true"] {
+  color: var(--pv-ink-faint);
+}
+.pager p {
+  margin: 0;
   color: var(--pv-ink-dim);
-  opacity: 0.5;
+  font-family: var(--pv-font-mono);
+  font-size: calc(10px * var(--pv-type-scale));
 }
-.pg-info {
-  font-size: 12px;
-  color: var(--pv-ink-dim);
-  font-variant-numeric: tabular-nums;
+@media (max-width: 500px) {
+  .pager {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pager p {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
 }
 </style>

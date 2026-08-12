@@ -9,6 +9,9 @@ use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
+use App\Http\Data\SimBriefAttemptData;
+use App\Http\Data\SimBriefBriefingData;
+use App\Http\Data\SimBriefPlanningData;
 use App\Models\Aircraft;
 use App\Models\Bid;
 use App\Models\Fare;
@@ -18,12 +21,14 @@ use App\Models\SimBriefLayout;
 use App\Models\User;
 use App\Services\FareService;
 use App\Services\SimBriefService;
+use App\Services\SkylightSimBriefService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Inertia\Response as InertiaResponse;
 
 class SimBriefController
 {
@@ -31,6 +36,7 @@ class SimBriefController
         private readonly FareService $fareSvc,
         private readonly SimBriefService $simBriefSvc,
         private readonly AddonRegistry $addonRegistry,
+        private readonly SkylightSimBriefService $skylightSimBriefService,
     ) {}
 
     /**
@@ -158,7 +164,7 @@ class SimBriefController
             $loadmax = 100;
         }
 
-        if (setting('flights.use_cargo_load_factor ', false)) {
+        if (setting('flights.use_cargo_load_factor', false)) {
             $cgolfactor = $flight->load_factor ?? setting('flights.default_cargo_load_factor');
             $cgolfactorv = $flight->load_factor_variance ?? setting('flights.cargo_load_factor_variance');
 
@@ -464,5 +470,133 @@ class SimBriefController
         return response()->json([
             'api_code' => $api_code,
         ]);
+    }
+
+    public function skylightPlanning(Request $request): InertiaResponse|RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $flight = $this->skylightFlight($user, (string) $request->query('flight_id'));
+        $result = $this->skylightSimBriefService->begin(
+            $user,
+            $flight,
+            $request->integer('aircraft_id') ?: null,
+        );
+        if ($result instanceof SimBrief) {
+            return redirect()->route('frontend.simbrief.skylight.briefing', $result->id);
+        }
+
+        $result->load(['aircraft.airport', 'aircraft.subfleet', 'flight.airline', 'flight.arr_airport', 'flight.dpt_airport', 'flight.alt_airport']);
+
+        return inertia('SimBrief/Planning', [
+            'planning' => SimBriefPlanningData::fromModels($result, $flight, $result->aircraft, $user),
+        ]);
+    }
+
+    public function skylightApiCode(Request $request, string $staticId): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $attempt = $this->skylightSimBriefService->attemptFor($user, $staticId);
+        $request->validate(['apiRequest' => ['required', 'string', 'max:2048']]);
+
+        return response()->json([
+            'attempt'     => SimBriefAttemptData::fromModel($attempt),
+            'apiCode'     => md5((string) setting('simbrief.api_key').$request->string('apiRequest')->toString()),
+            'providerUrl' => 'https://www.simbrief.com/ofp/ofp.loader.api.php',
+        ]);
+    }
+
+    public function skylightPoll(Request $request, string $staticId): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $attempt = $this->skylightSimBriefService->attemptFor($user, $staticId);
+        $briefing = $this->skylightSimBriefService->download($user, $attempt);
+
+        if (!$briefing instanceof SimBrief) {
+            return response()->json([
+                'type'    => 'ofp-not-ready',
+                'message' => 'The SimBrief flight plan is not ready yet. Try again shortly.',
+            ], 409);
+        }
+
+        return response()->json([
+            'briefing'    => SimBriefBriefingData::fromModel($briefing, $user->bids()->where('flight_id', $briefing->flight_id)->first()),
+            'briefingUrl' => route('frontend.simbrief.skylight.briefing', $briefing->id),
+        ]);
+    }
+
+    public function skylightBriefing(Request $request, string $id): InertiaResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $briefing = $this->skylightSimBriefService->briefingFor($user, $id);
+
+        return inertia('SimBrief/Briefing', [
+            'briefing' => SimBriefBriefingData::fromModel(
+                $briefing,
+                $user->bids()->where('flight_id', $briefing->flight_id)->first(),
+            ),
+        ]);
+    }
+
+    public function skylightCancel(Request $request, string $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $briefing = $this->skylightSimBriefService->cancel($user, $id);
+
+        return response()->json([
+            'flightUrl' => route('frontend.flights.show', $briefing->flight_id),
+        ]);
+    }
+
+    public function skylightRegenerate(Request $request, string $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $briefing = $this->skylightSimBriefService->regenerate($user, $id);
+
+        return response()->json([
+            'planningUrl' => route('frontend.simbrief.skylight.planning', [
+                'flight_id'   => $briefing->flight_id,
+                'aircraft_id' => $briefing->aircraft_id,
+            ]),
+        ]);
+    }
+
+    public function skylightEditSync(Request $request, string $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $briefing = $this->skylightSimBriefService->syncEdited($user, $id);
+
+        if (!$briefing instanceof SimBrief) {
+            return response()->json([
+                'type'    => 'provider-error',
+                'message' => 'SimBrief has not published the updated flight plan yet. Try again shortly.',
+            ], 409);
+        }
+
+        return response()->json([
+            'briefing' => SimBriefBriefingData::fromModel(
+                $briefing,
+                $user->bids()->where('flight_id', $briefing->flight_id)->first(),
+            ),
+        ]);
+    }
+
+    private function skylightFlight(User $user, string $id): Flight
+    {
+        return Flight::query()
+            ->visible()
+            ->whereHas('airline', fn ($query) => $query->where('active', true))
+            ->when(
+                (bool) setting('pilots.restrict_to_company', false),
+                fn ($query) => $query->where('airline_id', $user->airline_id),
+            )
+            ->with(['airline', 'alt_airport', 'arr_airport', 'dpt_airport', 'fares'])
+            ->findOrFail($id);
     }
 }

@@ -1,9 +1,8 @@
 {{--
   Inertia mount shell for the SPA theme. This is the theme's ONLY Blade file.
-  Inertia's rootView is set to `spa` (NOT the default `app`) for this theme, so
-  the theme view finder resolves `view('spa')` to THIS file. The rootView was
-  deliberately renamed away from `app` to avoid colliding with the core app's
-  own `app` view.
+  Inertia's rootView points directly to `layouts.skylight.spa` (NOT the default
+  `app`). The dedicated name avoids colliding with the core app's own `app`
+  view.
 
   Assets are web-served from public/build/<theme>/ (published by the theme's
   pnpm Vite build). In dev, a `hot` file (written by `pnpm dev`) points at the

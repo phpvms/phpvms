@@ -13,7 +13,16 @@ export interface GlobeRoute {
 
 /** Read a CSS custom property off :root (tokens resolve the active deck). */
 function token(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const context = canvas.getContext("2d")!;
+  context.fillStyle = value;
+  context.fillRect(0, 0, 1, 1);
+  const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha / 255})`;
 }
 
 function marker(cls: string, html?: string): HTMLDivElement {

@@ -62,7 +62,21 @@ aircraftId: number | null,
 };
 export type BidRowData = {
 bid: App.Http.Data.BidData,
-flight: App.Http.Data.FlightData | null,
+flight: App.Http.Data.FlightListItemData | null,
+aircraft: App.Http.Data.EligibleAircraftData | null,
+state: string,
+expiresAt: string | null,
+canGenerateSimBrief: boolean,
+canRemove: boolean,
+};
+export type BidSelectionData = {
+bid: App.Http.Data.BidData,
+flight: App.Http.Data.FlightDetailData,
+aircraft: App.Http.Data.EligibleAircraftData | null,
+policy: App.Http.Data.FlightDispatchPolicyData,
+state: string,
+expiresAt: string | null,
+aircraftReserved: boolean,
 };
 export type DashboardData = {
 id: number,
@@ -86,6 +100,27 @@ state: string,
 label: string,
 color: string,
 };
+export type EligibleAircraftData = {
+id: number,
+registration: string,
+icaoType: string,
+name: string | null,
+subfleetId: number,
+subfleetName: string,
+airport: App.Http.Data.AirportRefData | null,
+state: string,
+status: string,
+};
+export type EligibleSubfleetData = {
+id: number,
+airlineIcao: string | null,
+airlineName: string | null,
+icaoType: string | null,
+displayName: string,
+eligibleAircraftCount: number,
+disabled: boolean,
+availabilityLabel: string | null,
+};
 export type FlightData = {
 id: string,
 callsign: string,
@@ -94,6 +129,39 @@ arr: string | null,
 distanceNm: number | null,
 blockTime: string | null,
 type: string | null,
+};
+export type FlightDetailData = {
+summary: App.Http.Data.FlightListItemData,
+departure: App.Http.Data.AirportPointData | null,
+arrival: App.Http.Data.AirportPointData | null,
+alternate: App.Http.Data.AirportPointData | null,
+departureWeather: App.Http.Data.WeatherStationData | null,
+arrivalWeather: App.Http.Data.WeatherStationData | null,
+alternateWeather: App.Http.Data.WeatherStationData | null,
+scheduledDeparture: string | null,
+scheduledArrival: string | null,
+route: string | null,
+cruiseLevel: number | null,
+dispatchUrl: string,
+simbriefPlanningUrl: string,
+};
+export type FlightDispatchPolicyData = {
+aircraftRequired: boolean,
+chooseLaterAllowed: boolean,
+allowMultipleBids: boolean,
+pilotBidLimitReached: boolean,
+disableFlightOnBid: boolean,
+expireHours: number,
+restrictToCompany: boolean,
+discoveryCurrentAirportOnly: boolean,
+requireCurrentAirport: boolean,
+restrictAircraftToRank: boolean,
+restrictAircraftToTypeRating: boolean,
+aircraftAtDepartureOnly: boolean,
+companyAircraftOnly: boolean,
+simbriefAvailable: boolean,
+simbriefRequiresBid: boolean,
+simbriefBlocksAircraft: boolean,
 };
 export type FlightListItemData = {
 id: string,
@@ -105,6 +173,12 @@ blockTime: string | null,
 type: string | null,
 airline: App.Http.Data.AirlineRefData | null,
 bidId: number | null,
+scheduledDeparture: string | null,
+scheduledArrival: string | null,
+routeCode: string | null,
+availability: string,
+availabilityReason: string | null,
+primaryAction: string,
 };
 export type LastPirepData = {
 id: string,
@@ -234,6 +308,42 @@ icao: string,
 name: string | null,
 lat: number,
 lon: number,
+};
+export type SimBriefAttemptData = {
+staticId: string,
+flightId: string,
+aircraftId: number,
+expiresAt: string,
+state: string,
+};
+export type SimBriefBriefingData = {
+id: string,
+flight: App.Http.Data.FlightDetailData,
+bid: App.Http.Data.BidData | null,
+aircraft: App.Http.Data.EligibleAircraftData,
+route: string,
+atcPlan: string,
+textOfp: string,
+weather: Record<string, string>,
+downloads: {
+name: string,
+url: string,
+}[],
+images: {
+name: string,
+url: string,
+}[],
+prefileLinks: Record<string, string>,
+editorUrl: string | null,
+canCancel: boolean,
+canRegenerate: boolean,
+};
+export type SimBriefPlanningData = {
+attempt: App.Http.Data.SimBriefAttemptData,
+flight: App.Http.Data.FlightDetailData,
+aircraft: App.Http.Data.EligibleAircraftData,
+providerFields: Record<string, string | number | null>,
+requiresExplicitGeneration: boolean,
 };
 export type StateBadgeData = {
 label: string,

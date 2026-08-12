@@ -1,0 +1,264 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  subfleets: readonly App.Http.Data.EligibleSubfleetData[];
+  aircraft: readonly App.Http.Data.EligibleAircraftData[];
+  subfleetId: number | null;
+  aircraftId: number | null;
+  required: boolean;
+  loadingAircraft: boolean;
+}>();
+
+const emit = defineEmits<{
+  "update:subfleetId": [subfleetId: number | null];
+  "update:aircraftId": [aircraftId: number | null];
+}>();
+
+const selectedSubfleet = computed({
+  get: () => props.subfleetId,
+  set: (id: number | null) => emit("update:subfleetId", id),
+});
+const selectedAircraft = computed({
+  get: () => props.aircraftId,
+  set: (id: number | null) => emit("update:aircraftId", id),
+});
+const selectedSubfleetCard = computed(
+  () => props.subfleets.find((subfleet) => subfleet.id === props.subfleetId) ?? null,
+);
+const selectedAircraftCard = computed(
+  () => props.aircraft.find((aircraft) => aircraft.id === props.aircraftId) ?? null,
+);
+
+function chooseLater() {
+  emit("update:aircraftId", null);
+}
+</script>
+
+<template>
+  <fieldset class="aircraft-picker">
+    <legend>Aircraft assignment</legend>
+    <p class="picker-help">
+      Choose a subfleet first. The current aircraft list loads only after that selection.
+    </p>
+
+    <label class="picker-label" for="bid-subfleet">Eligible subfleet</label>
+    <USelectMenu
+      id="bid-subfleet"
+      v-model="selectedSubfleet"
+      :items="subfleets"
+      value-key="id"
+      label-key="displayName"
+      :search-input="{ placeholder: 'Search subfleets' }"
+      :filter-fields="['displayName', 'icaoType', 'airlineIcao', 'airlineName']"
+      placeholder="Select an eligible subfleet"
+      :disabled="subfleets.length === 0"
+      class="select-menu"
+    >
+      <template #item="{ item }">
+        <div class="option-card" :class="{ unavailable: item.disabled }">
+          <div class="option-main">
+            <strong>{{ item.displayName }}</strong>
+            <span>{{
+              [item.airlineIcao, item.icaoType].filter(Boolean).join(" · ") || "Configured subfleet"
+            }}</span>
+          </div>
+          <span class="availability" :class="{ unavailable: item.disabled }">{{
+            item.availabilityLabel ?? `${item.eligibleAircraftCount} available`
+          }}</span>
+        </div>
+      </template>
+      <template #empty
+        ><span class="menu-empty">No configured subfleet matches this search.</span></template
+      >
+    </USelectMenu>
+
+    <article v-if="selectedSubfleetCard" class="selected-card" aria-label="Selected subfleet">
+      <span class="selected-label">Selected subfleet</span>
+      <strong>{{ selectedSubfleetCard.displayName }}</strong>
+      <span
+        >{{ selectedSubfleetCard.eligibleAircraftCount }} eligible aircraft currently
+        available</span
+      >
+    </article>
+
+    <template v-if="subfleetId !== null">
+      <label class="picker-label" for="bid-aircraft">Eligible aircraft</label>
+      <USelectMenu
+        id="bid-aircraft"
+        v-model="selectedAircraft"
+        :items="aircraft"
+        value-key="id"
+        label-key="registration"
+        :search-input="{ placeholder: 'Search registrations or types' }"
+        :filter-fields="['registration', 'icaoType', 'subfleetName', 'name', 'airport.icao']"
+        placeholder="Select an eligible aircraft"
+        :loading="loadingAircraft"
+        :disabled="loadingAircraft || aircraft.length === 0"
+        class="select-menu"
+      >
+        <template #item="{ item }">
+          <div class="option-card aircraft-card">
+            <div class="option-main">
+              <strong>{{ item.registration }}</strong>
+              <span>{{ item.icaoType }} · {{ item.subfleetName }}</span>
+            </div>
+            <span class="availability">{{ item.airport?.icao ?? "Airport unavailable" }}</span>
+          </div>
+        </template>
+        <template #empty
+          ><span class="menu-empty">No eligible aircraft matches this search.</span></template
+        >
+      </USelectMenu>
+
+      <div v-if="loadingAircraft" class="aircraft-state" role="status" aria-live="polite">
+        Loading current eligible aircraft…
+      </div>
+      <div v-else-if="aircraft.length === 0" class="aircraft-state" role="status">
+        <strong>No eligible aircraft</strong>
+        <span v-if="required"
+          >No active, parked aircraft meets the current server policy for this flight.</span
+        >
+        <span v-else>You can still create a flight-only bid.</span>
+      </div>
+      <article v-if="selectedAircraftCard" class="selected-card" aria-label="Selected aircraft">
+        <span class="selected-label">Selected aircraft</span>
+        <strong
+          >{{ selectedAircraftCard.registration }} · {{ selectedAircraftCard.icaoType }}</strong
+        >
+        <span
+          >{{ selectedAircraftCard.subfleetName }} ·
+          {{ selectedAircraftCard.airport?.icao ?? "Airport unavailable" }}</span
+        >
+      </article>
+    </template>
+
+    <UButton
+      v-if="!required"
+      color="neutral"
+      variant="soft"
+      icon="i-lucide-clock-3"
+      @click="chooseLater"
+    >
+      Choose later
+    </UButton>
+    <p v-if="!required" class="picker-help">
+      Choose later creates a flight-only bid. A selected aircraft is a non-exclusive preference.
+    </p>
+  </fieldset>
+</template>
+
+<style scoped>
+.aircraft-picker {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.aircraft-picker legend {
+  color: var(--pv-ink);
+  font-size: calc(1rem * var(--pv-type-scale));
+  font-weight: 750;
+}
+.picker-label,
+.selected-label {
+  color: var(--pv-ink-dim);
+  font-size: calc(0.75rem * var(--pv-type-scale));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.picker-help {
+  margin: -3px 0 4px;
+  color: var(--pv-ink-dim);
+  font-size: calc(0.875rem * var(--pv-type-scale));
+}
+.select-menu {
+  min-width: 0;
+  width: 100%;
+}
+.option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 4px 2px;
+}
+.option-card.unavailable {
+  opacity: 0.68;
+}
+.option-main {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.option-main strong {
+  overflow-wrap: anywhere;
+  color: var(--pv-ink);
+  font-family: var(--pv-font-mono);
+  font-size: calc(0.875rem * var(--pv-type-scale));
+}
+.option-main span,
+.availability {
+  overflow-wrap: anywhere;
+  color: var(--pv-ink-dim);
+  font-size: calc(0.75rem * var(--pv-type-scale));
+}
+.availability {
+  flex: 0 0 auto;
+  color: var(--pv-ink);
+  font-family: var(--pv-font-mono);
+  text-align: end;
+}
+.availability.unavailable {
+  color: var(--pv-ink-dim);
+}
+.menu-empty {
+  display: block;
+  padding: 10px;
+  color: var(--pv-ink-dim);
+  font-size: calc(0.875rem * var(--pv-type-scale));
+}
+.selected-card,
+.aircraft-state {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  border: 1px solid var(--pv-line-strong);
+  border-radius: var(--pv-radius-md);
+  background: var(--pv-panel-inset);
+  padding: 12px 14px;
+}
+.selected-card {
+  box-shadow: inset 3px 0 0 var(--pv-accent);
+}
+.selected-card strong,
+.aircraft-state strong {
+  overflow-wrap: anywhere;
+  color: var(--pv-ink);
+  font-family: var(--pv-font-mono);
+  font-size: calc(0.875rem * var(--pv-type-scale));
+}
+.selected-card span,
+.aircraft-state span {
+  overflow-wrap: anywhere;
+  color: var(--pv-ink-dim);
+  font-size: calc(0.75rem * var(--pv-type-scale));
+}
+.aircraft-state {
+  border-style: dashed;
+}
+@media (max-width: 390px) {
+  .option-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .availability {
+    text-align: start;
+  }
+}
+</style>
