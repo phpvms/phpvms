@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\AwardSnippets\Tables;
 
 use App\Models\AwardSnippet;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
@@ -41,29 +42,31 @@ class AwardSnippetsTable
                     ->badge(),
             ])
             ->recordActions([
-                // The rule builder needs the room.
-                EditAction::make()
-                    ->modalWidth(Width::FiveExtraLarge),
+                ActionGroup::make([
+                    // The rule builder needs the room.
+                    EditAction::make()
+                        ->modalWidth(Width::FiveExtraLarge),
 
-                // The `award_rule_snippet` foreign key already refuses this,
-                // but only as a QueryException. Refuse first, naming what is
-                // in the way.
-                DeleteAction::make()
-                    ->before(function (AwardSnippet $record, DeleteAction $action): void {
-                        $awards = $record->referencingAwardNames();
+                    // The `award_rule_snippet` foreign key already refuses this,
+                    // but only as a QueryException. Refuse first, naming what is
+                    // in the way.
+                    DeleteAction::make()
+                        ->before(function (AwardSnippet $record, DeleteAction $action): void {
+                            $awards = $record->referencingAwardNames();
 
-                        if ($awards === []) {
-                            return;
-                        }
+                            if ($awards === []) {
+                                return;
+                            }
 
-                        Notification::make()
-                            ->title(__('filament.award_snippet_delete_blocked'))
-                            ->body(implode(', ', $awards))
-                            ->danger()
-                            ->send();
+                            Notification::make()
+                                ->title(__('filament.award_snippet_delete_blocked'))
+                                ->body(implode(', ', $awards))
+                                ->danger()
+                                ->send();
 
-                        $action->cancel();
-                    }),
+                            $action->cancel();
+                        }),
+                ]),
             ]);
     }
 }

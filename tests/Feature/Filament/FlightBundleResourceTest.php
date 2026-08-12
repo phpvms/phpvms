@@ -7,6 +7,7 @@ use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\ListFlightBundles;
 use App\Models\FlightBundle;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\CreateAction;
 use Livewire\Livewire;
 
 it('renders the list page happy path', function (): void {
@@ -38,6 +39,32 @@ it('creates a new bundle and persists created_by', function (): void {
 
     $this->assertDatabaseHas('flight_bundles', [
         'name'       => 'Promo Q3',
+        'created_by' => $admin->id,
+    ]);
+});
+
+it('creates a new bundle from the list drawer', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+
+    $this->actingAs($admin);
+
+    Livewire::test(ListFlightBundles::class)
+        ->assertActionExists(
+            'create',
+            fn (CreateAction $action): bool => $action->isModalSlideOver()
+                && ($action->hasModal() === true)
+                && ($action->getUrl() === null),
+        )
+        ->callAction('create', [
+            'name'    => 'Drawer bundle',
+            'enabled' => true,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('flight_bundles', [
+        'name'       => 'Drawer bundle',
         'created_by' => $admin->id,
     ]);
 });

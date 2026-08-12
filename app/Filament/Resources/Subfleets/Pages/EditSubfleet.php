@@ -167,7 +167,7 @@ class EditSubfleet extends EditRecord
     /** The Edit trigger rendered inside the overview's last card. */
     public function editAction(): Action
     {
-        return EditDetailsAction::make(SubfleetForm::identityFields())
+        return EditDetailsAction::make(SubfleetForm::editDrawerFields())
             ->modalHeading(__('filament.subfleet_information'))
             ->modalDescription(__('filament.subfleet_description'))
             ->extraModalFooterActions([
@@ -179,7 +179,7 @@ class EditSubfleet extends EditRecord
     #[Override]
     public function form(Schema $schema): Schema
     {
-        return SubfleetForm::configure($schema, withIdentity: false);
+        return SubfleetForm::configure($schema, withIdentity: false, withHomeAirport: false);
     }
 
     #[Override]

@@ -6,6 +6,7 @@ use App\Enums\ExpenseType;
 use App\Models\Aircraft;
 use App\Models\Subfleet;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -81,8 +82,10 @@ class ExpensesRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

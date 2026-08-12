@@ -5,6 +5,7 @@ namespace App\Filament\Resources\News\Tables;
 use App\Events\NewsUpdated;
 use App\Filament\Resources\News\Schemas\NewsForm;
 use App\Models\News;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -42,15 +43,17 @@ class NewsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
-                EditAction::make()
-                    ->schema(fn (Schema $schema): Schema => NewsForm::configure($schema))
-                    ->after(function (array $data, News $record): void {
-                        if (get_truth_state($data['send_notifications'] ?? false)) {
-                            event(new NewsUpdated($record));
-                        }
-                    }),
+                ActionGroup::make([
+                    EditAction::make()
+                        ->schema(fn (Schema $schema): Schema => NewsForm::configure($schema))
+                        ->after(function (array $data, News $record): void {
+                            if (get_truth_state($data['send_notifications'] ?? false)) {
+                                event(new NewsUpdated($record));
+                            }
+                        }),
 
-                DeleteAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

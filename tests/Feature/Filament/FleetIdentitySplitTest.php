@@ -7,6 +7,7 @@ use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Pages\CreateAircraft;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Pages\EditAircraft;
 use App\Models\Aircraft;
+use App\Models\Airport;
 use App\Models\Subfleet;
 use Database\Seeders\RolesPermissionsSeeder;
 use Livewire\Livewire;
@@ -37,11 +38,26 @@ it('drops the subfleet identity fields from the edit form', function (): void {
     $component = Livewire::test(EditSubfleet::class, ['record' => $subfleet->getRouteKey()])
         ->assertSuccessful();
 
-    foreach (['airline_id', 'type', 'name'] as $field) {
+    foreach (['airline_id', 'name', 'type', 'hub_id'] as $field) {
         $component->assertFormFieldDoesNotExist($field);
     }
 
     $component->assertSee($subfleet->type);
+});
+
+it('edits the subfleet home airport in the identity drawer', function (): void {
+    $originalAirport = Airport::factory()->create();
+    $newAirport = Airport::factory()->create();
+    $subfleet = Subfleet::factory()->create(['hub_id' => $originalAirport->id]);
+
+    Livewire::test(EditSubfleet::class, ['record' => $subfleet->getRouteKey()])
+        ->mountAction('edit', ['recordKey' => $subfleet->getRouteKey()])
+        ->assertActionDataSet(['hub_id' => $originalAirport->id])
+        ->set('mountedActions.0.data.hub_id', $newAirport->id)
+        ->call('callMountedAction')
+        ->assertHasNoActionErrors();
+
+    expect($subfleet->fresh()->hub_id)->toBe($newAirport->id);
 });
 
 it('keeps the aircraft identity fields on the create form', function (): void {

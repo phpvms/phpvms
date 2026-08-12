@@ -6,6 +6,7 @@ namespace App\Filament\Resources\OAuthClients\Tables;
 
 use App\Models\OauthClient;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -53,8 +54,10 @@ class OAuthClientsTable
                     ->sortable(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

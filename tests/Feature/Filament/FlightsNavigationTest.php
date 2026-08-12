@@ -90,3 +90,55 @@ it('persists bundle_id from the parent route on create without a form selector',
     expect(Flight::query()->latest('id')->first()?->bundle_id)
         ->toBe($bundle->id);
 });
+
+it('creates the outbound flight and prepares a recalculated return flight', function (): void {
+    $bundle = FlightBundle::factory()->create();
+    $airline = Airline::factory()->create();
+    $departure = Airport::factory()->create([
+        'id'       => 'KAAA',
+        'icao'     => 'KAAA',
+        'timezone' => 'UTC',
+        'lat'      => 0,
+        'lon'      => 0,
+    ]);
+    $arrival = Airport::factory()->create([
+        'id'       => 'KBBB',
+        'icao'     => 'KBBB',
+        'timezone' => 'UTC',
+        'lat'      => 1,
+        'lon'      => 0,
+    ]);
+
+    $component = Livewire::test(CreateFlight::class, [
+        'parentRecord' => $bundle,
+    ]);
+
+    $component->assertSuccessful();
+    $component->assertSee('Create Return Flight');
+    $component->fillForm([
+        'airline_id'     => $airline->id,
+        'flight_type'    => FlightType::SCHED_PAX->value,
+        'flight_number'  => 4321,
+        'dpt_airport_id' => $departure->id,
+        'arr_airport_id' => $arrival->id,
+        'departure_time' => '08:00',
+        'arrival_time'   => '10:30',
+        'flight_time'    => '09:59',
+        'distance'       => 999,
+        'route'          => 'DCT OUTBOUND',
+        'notes'          => 'Copied to the return leg',
+    ])
+        ->call('createReturnFlight')
+        ->assertHasNoFormErrors();
+
+    $outbound = Flight::query()->where('bundle_id', $bundle->id)->sole();
+
+    expect($outbound->dpt_airport_id)->toBe($departure->id)
+        ->and($outbound->arr_airport_id)->toBe($arrival->id)
+        ->and($component->get('data.dpt_airport_id'))->toBe($arrival->id)
+        ->and($component->get('data.arr_airport_id'))->toBe($departure->id)
+        ->and((int) $component->get('data.distance'))->toBe(60)
+        ->and((string) $component->get('data.flight_time'))->toContain('02:30')
+        ->and($component->get('data.route'))->toBeNull()
+        ->and($component->get('data.notes'))->toBe('Copied to the return leg');
+});

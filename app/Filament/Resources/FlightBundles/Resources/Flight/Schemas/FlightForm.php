@@ -314,20 +314,46 @@ class FlightForm
      */
     public static function recalculateRoute(Get $get, Set $set): void
     {
-        self::recalculateBlockTime($get, $set);
+        foreach (self::routeCalculations([
+            'dpt_airport_id' => $get('dpt_airport_id'),
+            'arr_airport_id' => $get('arr_airport_id'),
+            'departure_time' => $get('departure_time'),
+            'arrival_time'   => $get('arrival_time'),
+        ]) as $field => $value) {
+            $set($field, $value);
+        }
+    }
 
-        $departure = $get('dpt_airport_id');
-        $arrival = $get('arr_airport_id');
+    /**
+     * @param  array{dpt_airport_id?: mixed, arr_airport_id?: mixed, departure_time?: mixed, arrival_time?: mixed} $data
+     * @return array{distance?: int, flight_time?: string}
+     */
+    public static function routeCalculations(array $data): array
+    {
+        $calculations = [];
+        $departureAirport = $data['dpt_airport_id'] ?? null;
+        $arrivalAirport = $data['arr_airport_id'] ?? null;
 
-        if (blank($departure) || blank($arrival)) {
-            return;
+        if (filled($departureAirport) && filled($arrivalAirport)) {
+            $distance = app(AirportService::class)->calculateDistance($departureAirport, $arrivalAirport);
+
+            if ($distance !== null) {
+                $calculations['distance'] = (int) round($distance->toUnit('nmi'));
+            }
         }
 
-        $distance = app(AirportService::class)->calculateDistance($departure, $arrival);
+        $blockTime = self::blockTimeFromValues(
+            $data['departure_time'] ?? null,
+            $data['arrival_time'] ?? null,
+            $departureAirport,
+            $arrivalAirport,
+        );
 
-        if ($distance !== null) {
-            $set('distance', (int) round($distance->toUnit('nmi')));
+        if ($blockTime !== null) {
+            $calculations['flight_time'] = $blockTime;
         }
+
+        return $calculations;
     }
 
     /**
@@ -354,15 +380,26 @@ class FlightForm
     /** @return string|null `H:i`, or null when it cannot be worked out */
     private static function blockTimeFrom(Get $get): ?string
     {
-        $departure = $get('departure_time');
-        $arrival = $get('arrival_time');
+        return self::blockTimeFromValues(
+            $get('departure_time'),
+            $get('arrival_time'),
+            $get('dpt_airport_id'),
+            $get('arr_airport_id'),
+        );
+    }
 
+    private static function blockTimeFromValues(
+        mixed $departure,
+        mixed $arrival,
+        mixed $departureAirport,
+        mixed $arrivalAirport,
+    ): ?string {
         if (blank($departure) || blank($arrival)) {
             return null;
         }
 
-        $departureZone = self::airportTimezone($get('dpt_airport_id'));
-        $arrivalZone = self::airportTimezone($get('arr_airport_id'));
+        $departureZone = self::airportTimezone($departureAirport);
+        $arrivalZone = self::airportTimezone($arrivalAirport);
 
         if ($departureZone === null || $arrivalZone === null) {
             return null;

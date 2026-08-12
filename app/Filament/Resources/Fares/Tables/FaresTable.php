@@ -7,6 +7,7 @@ use App\Filament\Resources\Fares\Support\FareTrace;
 use App\Models\Fare;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -98,22 +99,24 @@ class FaresTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                Action::make('overrides')
-                    ->label(__('filament.fare_overrides'))
-                    ->icon(TablerIcon::Sitemap)
-                    ->color('gray')
-                    ->modalHeading(fn (Fare $record): string => $record->code.' · '.$record->name)
-                    ->modalDescription(__('filament.fare_map_description'))
-                    ->modalWidth(Width::FiveExtraLarge)
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel(__('common.close'))
-                    ->modalContent(fn (Fare $record): Factory|View => view('filament.fares.override-map', [
-                        'fare' => $record->loadMissing(['subfleets', 'flights']),
-                    ])),
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                ActionGroup::make([
+                    Action::make('overrides')
+                        ->label(__('filament.fare_overrides'))
+                        ->icon(TablerIcon::Sitemap)
+                        ->color('gray')
+                        ->modalHeading(fn (Fare $record): string => $record->code.' · '.$record->name)
+                        ->modalDescription(__('filament.fare_map_description'))
+                        ->modalWidth(Width::FiveExtraLarge)
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel(__('common.close'))
+                        ->modalContent(fn (Fare $record): Factory|View => view('filament.fares.override-map', [
+                            'fare' => $record->loadMissing(['subfleets', 'flights']),
+                        ])),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make(),
+                    RestoreAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

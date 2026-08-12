@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SubfleetForm
 {
-    public static function configure(Schema $schema, bool $withIdentity = true): Schema
+    public static function configure(Schema $schema, bool $withIdentity = true, bool $withHomeAirport = true): Schema
     {
         return $schema
             ->components([
@@ -33,9 +33,7 @@ class SubfleetForm
                         // because there is no overview to edit yet.
                         ...($withIdentity ? self::identityFields() : []),
 
-                        AirportSelect::make('hub_id')
-                            ->label(__('airports.home'))
-                            ->airportRelationship('home'),
+                        ...($withHomeAirport ? [self::homeAirportField()] : []),
 
                         Select::make('simbrief_type')
                             ->label(__('common.simbrief_airframe_id'))
@@ -125,18 +123,36 @@ class SubfleetForm
                                     ->integer()
                                     ->minValue(0),
 
-                                Select::make('route_types')
-                                    ->label(__('filament.subfleets.fields.route_types'))
-                                    ->helperText(__('filament.subfleets.fields.route_types_helper'))
-                                    ->multiple()
-                                    ->options(FlightType::class)
-                                    ->native(false),
+                                self::routeTypesField(),
                             ])
                             ->columnSpanFull(),
                     ])
                     ->columns(3)
                     ->columnSpanFull(),
             ]);
+    }
+
+    /**
+     * @return array<int, Field>
+     */
+    public static function createFields(): array
+    {
+        return [
+            ...self::identityFields(),
+            self::homeAirportField(),
+            self::routeTypesField(),
+        ];
+    }
+
+    /**
+     * @return array<int, Field>
+     */
+    public static function editDrawerFields(): array
+    {
+        return [
+            ...self::identityFields(),
+            self::homeAirportField(),
+        ];
     }
 
     /**
@@ -167,7 +183,7 @@ class SubfleetForm
     }
 
     /**
-     * Airline, type and name: read in the edit page's overview, edited in the
+     * Airline, name and type: read in the edit page's overview, edited in the
      * drawer it opens.
      *
      * @return array<int, Field>
@@ -183,6 +199,11 @@ class SubfleetForm
                 ->required()
                 ->native(false),
 
+            TextInput::make('name')
+                ->label(__('common.name'))
+                ->required()
+                ->string(),
+
             // Live so the create page's airframe list narrows to the type as
             // soon as it is entered.
             TextInput::make('type')
@@ -190,11 +211,23 @@ class SubfleetForm
                 ->required()
                 ->live(onBlur: true)
                 ->string(),
-
-            TextInput::make('name')
-                ->label(__('common.name'))
-                ->required()
-                ->string(),
         ];
+    }
+
+    private static function homeAirportField(): AirportSelect
+    {
+        return AirportSelect::make('hub_id')
+            ->label(__('airports.home'))
+            ->airportRelationship('home');
+    }
+
+    private static function routeTypesField(): Select
+    {
+        return Select::make('route_types')
+            ->label(__('filament.subfleets.fields.route_types'))
+            ->helperText(__('filament.subfleets.fields.route_types_helper'))
+            ->multiple()
+            ->options(FlightType::class)
+            ->native(false);
     }
 }

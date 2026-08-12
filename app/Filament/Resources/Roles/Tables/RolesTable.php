@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Roles\Tables;
 
 use App\Filament\Resources\Roles\RoleResource;
 use App\Models\Role;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -33,9 +34,11 @@ class RolesTable
                     ->boolean(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make()
-                    ->hidden(fn (Role $record): bool => RoleResource::isSuperAdmin($record)),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make()
+                        ->hidden(fn (Role $record): bool => RoleResource::isSuperAdmin($record)),
+                ]),
             ]);
     }
 }

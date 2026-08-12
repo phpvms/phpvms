@@ -50,11 +50,12 @@ trait FormActionIcons
     private static function formActionIcon(string $name): ?TablerIcon
     {
         return match ($name) {
-            'save'          => TablerIcon::DeviceFloppy,
-            'create'        => TablerIcon::Plus,
-            'createAnother' => TablerIcon::CopyPlus,
-            'cancel'        => TablerIcon::X,
-            default         => null,
+            'save'               => TablerIcon::DeviceFloppy,
+            'create'             => TablerIcon::Plus,
+            'createAnother'      => TablerIcon::CopyPlus,
+            'createReturnFlight' => TablerIcon::ArrowsExchange,
+            'cancel'             => TablerIcon::X,
+            default              => null,
         };
     }
 }
