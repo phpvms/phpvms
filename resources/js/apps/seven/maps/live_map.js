@@ -14,7 +14,7 @@ import draw_base_map from "./base_map";
 
 import { ACTUAL_ROUTE_COLOR } from "./config";
 
-import request from "../../request";
+import request from "../request";
 
 window.$ = jQuery;
 window.jquery = jQuery;

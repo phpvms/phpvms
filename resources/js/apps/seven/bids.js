@@ -5,7 +5,7 @@
  * Edits here don't take place until you compile these assets and then upload them.
  */
 
-import request from "../request";
+import request from "./request";
 
 /**
  * Add a bid to a flight
