@@ -146,9 +146,11 @@ test('api calls', function (): void {
     // The briefing URL is keyed by the flight ID, not the SimBrief primary key
     expect(str_ends_with($url, $briefing->flight_id.'/briefing'))->toBeTrue();
 
-    // Retrieve the briefing via API, and then check the doctype
+    // Retrieve the briefing via API, and then check the doctype. The ACARS client picks its
+    // XML-vs-JSON parser off this header, so it has to be present on the response.
     $response = $this->get('/api/flights/'.$briefing->flight_id.'/briefing');
     $response->assertOk();
+    $response->assertHeader('Content-Type', 'application/json');
 
     $json = $response->json();
 
