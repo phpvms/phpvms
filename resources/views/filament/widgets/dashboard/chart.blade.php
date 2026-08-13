@@ -1,4 +1,4 @@
-<x-filament-widgets::widget class="fi-widget">
+<x-filament-widgets::widget class="fi-widget dashboard-chart-widget">
     <x-filament::section :heading="$heading">
         <x-slot name="afterHeader">
             <x-filament::modal

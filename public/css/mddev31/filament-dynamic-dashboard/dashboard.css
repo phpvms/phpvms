@@ -1,0 +1,265 @@
+/* ---------------------------------------------------------------------- *
+ * Sectioned dashboard canvas                                             *
+ * Outer CSS Grid holds one GridStack instance per template section.      *
+ * ---------------------------------------------------------------------- */
+
+.dashboard-canvas {
+    display: grid;
+    grid-auto-flow: row dense;
+    gap: 1rem;
+}
+
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* IMPORTANT: `flex: 1 1 auto` — NOT `flex: 1`.
+ *
+ * `flex: 1` expands to `flex: 1 1 0%`. A `flex-basis: 0%` would override the
+ * inline `style.height` GridStack sets via `updateContainerHeight()`, and the
+ * box would collapse to `min-height` while widgets — being `position:absolute`
+ * — keep rendering at their true coordinates outside the collapsed container.
+ *
+ * `flex: 1 1 auto` keeps `flex-basis: auto`, which reads the inline height
+ * GridStack writes. When the grid has widgets, the inline height wins. When
+ * the grid is empty (no inline height) AND its parent section is stretched
+ * to a tall row by CSS Grid (because a peer section has a tall widget), the
+ * grid-stack STILL grows to fill the section — giving the user a drop
+ * target that matches the visible blue highlight, not a 4rem strip at the
+ * top of an otherwise-empty section.
+ *
+ * Bumping min-height to two cells means even rows with no widget anywhere
+ * have a comfortable drop target. */
+.dashboard-section > .grid-stack {
+    flex: 1 1 auto;
+    min-height: calc(2 * var(--gs-cell-height, 80px));
+    transition: background 0.15s ease-in-out, outline-color 0.15s ease-in-out;
+    outline: 1px dashed transparent;
+    outline-offset: -2px;
+    border-radius: 0.5rem;
+}
+
+/* While any widget is being dragged, light up every peer grid so the user
+ * can see where they're allowed to drop. The grid that owns the dragged
+ * widget is highlighted more strongly. Driven by our own canvas-level class
+ * (set in dashboard.js on dragstart, cleared on dragstop) rather than
+ * GridStack's own `.grid-stack-dragging` — the latter isn't always cleaned
+ * up after cross-section drops and leaves stale outlines behind. */
+.dashboard-canvas.is-dragging .grid-stack {
+    background: rgba(59, 130, 246, 0.06);
+    outline-color: rgba(59, 130, 246, 0.35);
+}
+
+.dashboard-canvas.is-dragging .grid-stack.is-drag-source {
+    background: rgba(59, 130, 246, 0.12);
+    outline-color: rgba(59, 130, 246, 0.6);
+}
+
+/* Allow widget chrome (floating title, hover actions) to escape the
+ * GridStack item box without being clipped. */
+.grid-stack-item-content {
+    overflow: visible !important;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Widget wrapper: floating title, hover action cluster, loader overlay.  *
+ * ---------------------------------------------------------------------- */
+
+.dashboard-widget {
+    position: relative;
+    height: 100%;
+}
+
+/* Floating title badge sticking slightly above the widget.
+ * Tiny z-index — just enough to layer over the widget body inside the same
+ * stacking context. Anything higher competes with Filament overlays
+ * (dashboard selector dropdown, modals, action groups). */
+.dashboard-widget-title {
+    position: absolute;
+    top: -0.75rem;
+    left: 1rem;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.dashboard-widget-title-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    color: rgb(55 65 81);
+    background: white;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 9999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .dashboard-widget-title-badge {
+    color: rgb(209 213 219);
+    background: rgb(17 24 39);
+    border-color: rgb(55 65 81);
+}
+
+/* Action cluster (drag handle + edit + delete), revealed on hover.
+ * Tiny z-index — just enough to layer over the widget body. Filament's
+ * dropdowns/modals must always paint above the action cluster, so keep
+ * this well below Filament's overlay range. */
+.dashboard-widget-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 3;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.dashboard-widget:hover .dashboard-widget-actions,
+.dashboard-widget:focus-within .dashboard-widget-actions {
+    opacity: 1;
+}
+
+/* When the dashboard is locked (or the user can't edit), the canvas carries
+ * `.is-readonly`. The action cluster stays in the DOM so unlocking can show it
+ * again live without a server re-render, but is fully hidden while readonly. */
+.dashboard-canvas.is-readonly .dashboard-widget-actions {
+    display: none;
+}
+
+.dashboard-widget-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0.375rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: rgb(75 85 99);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-widget-action:hover {
+    color: rgb(17 24 39);
+}
+
+.dashboard-widget-action-danger {
+    color: rgb(220 38 38);
+}
+
+.dashboard-widget-action-danger:hover {
+    color: rgb(153 27 27);
+}
+
+/* Constrain Filament's <x-filament::icon> SVG inside each action button. */
+.dashboard-widget-action svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.dark .dashboard-widget-action {
+    background: rgba(17, 24, 39, 0.95);
+    color: rgb(209 213 219);
+}
+
+.dark .dashboard-widget-action:hover {
+    color: white;
+}
+
+.dd-drag-handle,
+.dashboard-widget-action.dd-drag-handle {
+    cursor: move;
+}
+
+/* Make sure GridStack's pointer events always land on the handle element
+   itself, never on the icon (otherwise the SVG becomes the event target and
+   the drag never starts). */
+.dd-drag-handle > * {
+    pointer-events: none;
+}
+
+/* Widget body — the Livewire widget itself + the optional loader overlay.
+ *
+ * `min-height: 0` lets percentage-height children compute correctly inside
+ * flex/grid ancestors.
+ *
+ * `overflow: hidden` clips widget content that exceeds the resized box
+ * (large tables, oversized charts). The floating title badge and hover
+ * action cluster live on `.dashboard-widget`, not on the body, so they
+ * remain visible.
+ *
+ * The card chrome (background, rounded corners, shadow, ring) is mounted
+ * HERE on the body — not on the inner `.fi-section` — so the shadow renders
+ * outside the body where nothing clips it. The inner Filament section
+ * chrome is stripped below.
+ *
+ * The `> *:not(.dashboard-widget-loader)` rule is a hint: children that
+ * opt in to `height: 100%` (e.g. a chart canvas configured with
+ * `chart.height: '100%'`) will fill the body. Widgets that style
+ * themselves (StatsOverview cards, tables, plain text) override this via
+ * their own CSS and are unaffected. */
+.dashboard-widget-body {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+
+    background-color: rgb(255 255 255);
+    border-radius: 0.75rem;
+    box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.1),
+        0 1px 2px -1px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .dashboard-widget-body {
+    background-color: rgb(17 24 39);
+    box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.3),
+        0 1px 2px -1px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-widget-body > *:not(.dashboard-widget-loader) {
+    height: 100%;
+}
+
+/* The body now provides the card chrome — neutralize Filament's own section
+ * chrome so we don't render two stacked cards.
+ */
+.dashboard-widget-body .fi-section,
+.dashboard-widget-body .fi-wi-stats-overview-stat,
+.dashboard-widget-body .fi-ta-ctn,
+.dashboard-widget-body .fi-section.fi-secondary,
+.dashboard-widget-body .fi-section.fi-aside > .fi-section-content-ctn {
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.dashboard-widget-loader {
+    position: absolute;
+    inset: 0;
+    /* Local stacking context inside the widget body — just above the
+     * Livewire widget render. The body has its own overflow context, so
+     * a small value is enough. */
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 0.75rem;
+}
+
+.dark .dashboard-widget-loader {
+    background: rgba(17, 24, 39, 0.5);
+}

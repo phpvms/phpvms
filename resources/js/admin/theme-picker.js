@@ -54,6 +54,14 @@ function save(state) {
   localStorage.setItem(STORE, JSON.stringify(state));
 }
 
+function refreshCharts() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".fi-wi-chart-frame").forEach((chart) => {
+      window.Alpine?.$data(chart)?.updateChartTheme?.();
+    });
+  });
+}
+
 function applyBrand(hex) {
   const root = document.documentElement.style;
   for (const [shade, [percent, mix]] of Object.entries(SHADE_MIX)) {
@@ -62,6 +70,8 @@ function applyBrand(hex) {
       percent >= 100 ? hex : `color-mix(in oklab, ${hex} ${percent}%, ${mix})`,
     );
   }
+
+  refreshCharts();
 }
 
 function apply(state) {

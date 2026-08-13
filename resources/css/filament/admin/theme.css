@@ -2424,14 +2424,6 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply absolute top-2 right-2;
 }
 
-/* ---------------------------------------------------------------------------
- * Dashboard 2-1 split — ActivityCalendarWidget (left) + Requires
- * action/Landing quality stack (right). Applied via ->extraAttributes() in
- * App\Filament\Pages\Dashboard::content() (mockup theme.css:1298-1305).
- * Same specificity as Tailwind's compiled grid-cols-* utility, but wins
- * because those utilities live in an unlayered-losing @layer while this rule
- * doesn't — same mechanism .fi-section already relies on above.
- * ------------------------------------------------------------------------- */
 /* The mockup's workspace rhythm is one 14px gap everywhere (gap-3.5).
  * Filament's schema grids default to 24px and .fi-page-content itself to
  * 32px — tightened for page-level content only; grids INSIDE sections
@@ -2444,43 +2436,76 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
   @apply gap-3.5;
 }
 
-/* Filament renders extraAttributes on the schema-component WRAPPER, with the
- * real `.fi-grid` element one level down — so the wrapper goes transparent
- * (display: contents) and the template lands on the inner grid. The
- * calendar's `columnSpan: full` wrapper is pinned back to one track, or it
- * pushes the right-hand stack to the next row. */
-.split {
-  @apply contents;
+/* The package owns GridStack. phpVMS adds only the explicit edit-state grid. */
+.dashboard-canvas.dashboard-layout-editing .grid-stack {
+  background-image:
+    linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100px;
 }
 
-.split--2-1 > .fi-grid {
-  @apply grid gap-3.5 items-stretch;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+.dashboard-canvas .dashboard-widget-action:not(.dd-drag-handle) {
+  display: none;
 }
 
-.split--2-1 > .fi-grid > * {
-  grid-column: auto / span 1;
+.dashboard-widget-body {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: none;
 }
 
-/* Both split children fill the row height; the chart's section grows and
- * centres its aspect-locked SVG in any leftover space. */
-.split--2-1 > .fi-grid > * > .fi-section,
-.split--2-1 > .fi-grid .fi-wi > .fi-section {
-  @apply h-full flex flex-col;
+.dashboard-widget-body > .fi-wi-widget > .fi-section {
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: var(--surface);
 }
 
-.split--2-1 > .fi-grid .fi-section-content-ctn {
-  @apply flex-1;
+.dashboard-stat-widget,
+.dashboard-stat-card {
+  height: 100%;
 }
 
-.split--2-1 > .fi-grid .fi-section-content {
-  @apply h-full flex flex-col justify-center;
+/* Same cell as the old stats strip (.overview__cell above), minus the divider
+ * rule — each stat is its own bordered widget now. The three rows are centred
+ * in the two-row widget box rather than pinned to the top. */
+.dashboard-stat-card {
+  @apply grid min-w-0 gap-x-2.75;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  align-content: center;
+  padding: 12px 14px 11px;
 }
 
-@media (max-width: 900px) {
-  .split--2-1 > .fi-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.dashboard-stat-card .overview__note {
+  @apply truncate;
+}
+
+.dashboard-widget-body .dashboard-chart-widget > .fi-section {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.dashboard-widget-body .dashboard-chart-widget > .fi-section > .fi-section-content-ctn {
+  min-height: 0;
+  flex: 1;
+}
+
+.dashboard-widget-body
+  .dashboard-chart-widget
+  > .fi-section
+  > .fi-section-content-ctn
+  > .fi-section-content,
+.dashboard-widget-body
+  .dashboard-chart-widget
+  > .fi-section
+  > .fi-section-content-ctn
+  > .fi-section-content
+  > [data-dashboard-chart] {
+  height: 100%;
+  min-height: 0;
 }
 
 /* Section footer (mockup .panel__foot, theme.css:1240-1242). Filament's

@@ -11,9 +11,9 @@ use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Widgets\AccountWidget;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
 class AdminPanelProvider extends BasePanelProvider
@@ -35,9 +35,6 @@ class AdminPanelProvider extends BasePanelProvider
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                AccountWidget::class,
-            ])
             // Icons turn the collapsed desktop sidebar into a module rail:
             // Filament renders the group icon instead of its items, and opens
             // the items in a dropdown beside it. That is the console's rail
@@ -165,6 +162,10 @@ class AdminPanelProvider extends BasePanelProvider
         // These files do not go through Vite, so registering them at boot
         // is safe: no manifest lookup, no console crash on fresh checkout.
         FilamentAsset::register([
+            Js::make(
+                'phpvms-dashboard-grid',
+                resource_path('js/admin/dashboard/grid.js'),
+            ),
             AlpineComponent::make(
                 'pirep-performance-chart',
                 resource_path('js/dist/admin/components/pirep-performance-chart.js'),

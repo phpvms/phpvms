@@ -1,16 +1,78 @@
 /**
- * Admin dashboard charts (D3).
+ * Admin dashboard charts and layout edit controls.
  *
- * Loaded lazily from `admin/app.js` only when a page contains
- * `[data-dashboard-chart]` elements. Each widget blade renders a container
- * plus a `<script type="application/json" data-dashboard-chart-data="...">`
- * payload; `bootstrap()` scans the DOM and renders whatever is present.
+ * Loaded lazily from `admin/app.js`. Each chart widget renders a container
+ * with a JSON payload; `bootstrap()` scans the DOM and renders whatever is
+ * present.
  */
 
 import * as d3 from "d3";
 
 const W = 800;
 const H = 240;
+
+function dashboardCanvas() {
+  return document.querySelector(".dashboard-canvas");
+}
+
+function setDashboardEditing(isEditing) {
+  const canvas = dashboardCanvas();
+  const component = canvas ? window.Alpine?.$data(canvas) : null;
+
+  component?.setEditable(isEditing);
+  canvas?.classList.toggle("dashboard-layout-editing", isEditing);
+
+  if (isEditing) {
+    canvas?.querySelectorAll(".grid-stack").forEach((gridElement) => {
+      if (gridElement.dataset.phpvmsResizeBound) return;
+
+      gridElement.gridstack?.on("resizestop", () => window.dispatchEvent(new Event("resize")));
+      gridElement.dataset.phpvmsResizeBound = "true";
+    });
+  }
+
+  document
+    .querySelectorAll("[data-dashboard-layout-edit]")
+    .forEach((action) => action.classList.toggle("hidden", isEditing));
+  document
+    .querySelectorAll("[data-dashboard-layout-save]")
+    .forEach((action) => action.classList.toggle("hidden", !isEditing));
+}
+
+export function editDashboardLayout() {
+  setDashboardEditing(true);
+}
+
+export function serializeLayout(canvas = dashboardCanvas()) {
+  if (!canvas) return [];
+
+  return Array.from(canvas.querySelectorAll(".grid-stack")).flatMap((gridElement) => {
+    const section = gridElement.dataset.section;
+    const nodes = gridElement.gridstack?.engine?.nodes ?? [];
+
+    return nodes.map((node) => ({
+      id: Number(node.el.getAttribute("gs-id")),
+      section,
+      x: node.x,
+      y: node.y,
+      w: node.w,
+      h: node.h,
+    }));
+  });
+}
+
+export async function saveDashboardLayouts() {
+  const canvas = dashboardCanvas();
+  const page = canvas?.closest("[wire\\:id]");
+  const wireId = page?.getAttribute("wire:id");
+  const wire = wireId ? window.Livewire?.find(wireId) : null;
+
+  if (wire) {
+    await wire.persistLayout(serializeLayout(canvas));
+  }
+
+  setDashboardEditing(false);
+}
 
 /**
  * Chart colours are read from the console's theme tokens (--primary-600,
@@ -48,7 +110,7 @@ function isDarkMode() {
 }
 
 /**
- * 8-step sequential ramp (light wash -> deep accent), same shape as the old
+ * 8-step sequential ramp (light wash -> accent), same shape as the old
  * hardcoded indigo array so renderers can keep indexing into it. Built at
  * render time so it tracks the current brand colour and appearance.
  */
@@ -57,13 +119,12 @@ function sequentialShades() {
   const dark = isDarkMode();
   // Light end: mostly white (light mode) or mostly the dark surface (dark
   // mode) with a wash of accent, matching the ~12%/16% mixes elsewhere in
-  // the theme. Dark end: accent mixed toward black, like a primary-700/800
-  // shade — both computed in JS, not via CSS color-mix (see note above).
+  // the theme. The final shade is the accent itself so the selected theme
+  // colour is present in every sequential chart.
   const lightEnd = dark
     ? d3.interpolateRgb("black", accent)(0.16)
     : d3.interpolateRgb("white", accent)(0.12);
-  const darkEnd = d3.interpolateRgb(accent, "black")(0.15);
-  const interpolate = d3.interpolateRgb(lightEnd, darkEnd);
+  const interpolate = d3.interpolateRgb(lightEnd, accent);
   return d3.range(8).map((i) => interpolate(i / 7));
 }
 
@@ -90,15 +151,23 @@ function svg(el, width, height) {
     .attr("preserveAspectRatio", "xMidYMid meet")
     .attr("role", "img")
     .style("width", "100%")
-    .style("height", "auto");
+    .style("height", "100%");
   return s;
 }
 
+function chartSize(el, fallbackHeight = H) {
+  return {
+    width: el.clientWidth || W,
+    height: el.clientHeight || fallbackHeight,
+  };
+}
+
 function noData(el) {
-  const s = svg(el, W, 120);
+  const { width, height } = chartSize(el, 120);
+  const s = svg(el, width, height);
   s.append("text")
-    .attr("x", W / 2)
-    .attr("y", 60)
+    .attr("x", width / 2)
+    .attr("y", height / 2)
     .attr("text-anchor", "middle")
     .attr("fill", "currentColor")
     .attr("font-size", 12)
@@ -131,17 +200,21 @@ function renderBar(el, data) {
   if (!labels.length || values.every((v) => !v)) return noData(el);
 
   const margin = { top: 16, right: 8, bottom: 24, left: 34 };
-  const width = W - margin.left - margin.right;
-  const height = H - margin.top - margin.bottom;
-  const s = svg(el, W, H);
+  const size = chartSize(el);
+  const width = size.width - margin.left - margin.right;
+  const height = size.height - margin.top - margin.bottom;
+  const s = svg(el, size.width, size.height);
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
   const shades = sequentialShades();
   const x = d3.scaleBand().domain(labels).range([0, width]).padding(0.25);
-  const max = Math.max(...values) * 1.1 || 1;
-  const y = d3.scaleLinear().domain([0, max]).range([height, 0]);
-  const color = d3.scaleLinear().domain([0, max]).range([shades[1], shades[5]]);
+  const maxValue = Math.max(...values) || 1;
+  const y = d3
+    .scaleLinear()
+    .domain([0, maxValue * 1.1])
+    .range([height, 0]);
+  const color = d3.scaleLinear().domain([0, maxValue]).range([shades[1], shades[7]]);
 
   g.append("g")
     .call(d3.axisLeft(y).ticks(4).tickSizeOuter(0))
@@ -179,9 +252,10 @@ function renderLine(el, data) {
   if (!labels.length) return noData(el);
 
   const margin = { top: 16, right: 8, bottom: 24, left: 40 };
-  const width = W - margin.left - margin.right;
-  const height = H - margin.top - margin.bottom;
-  const s = svg(el, W, H);
+  const size = chartSize(el);
+  const width = size.width - margin.left - margin.right;
+  const height = size.height - margin.top - margin.bottom;
+  const s = svg(el, size.width, size.height);
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
@@ -210,7 +284,7 @@ function renderLine(el, data) {
     .datum(values)
     .attr("d", line)
     .attr("fill", "none")
-    .attr("stroke", shades[5])
+    .attr("stroke", shades[7])
     .attr("stroke-width", 2);
 
   g.append("g")
@@ -235,7 +309,7 @@ function renderLine(el, data) {
     .attr("cx", (_, i) => x(labels[i]))
     .attr("cy", (v) => y(v))
     .attr("r", 2.5)
-    .attr("fill", shades[6])
+    .attr("fill", shades[7])
     .append("title")
     .text((v, i) => `${labels[i]}: ${Number(v).toLocaleString()}`);
 }
@@ -246,9 +320,8 @@ function renderDoughnut(el, data) {
   const values = data.values ?? [];
   if (!labels.length || values.every((v) => !v)) return noData(el);
 
-  const height = 260;
-  const width = W;
-  const radius = Math.min(width / 3, height / 2) - 30;
+  const { width, height } = chartSize(el, 260);
+  const radius = Math.max(12, Math.min(width / 3, height / 2) - 24);
   const s = svg(el, width, height);
   const g = s.append("g").attr("transform", `translate(${width / 2 - radius - 40},${height / 2})`);
 
@@ -322,17 +395,21 @@ function renderHBar(el, data) {
   if (!labels.length || values.every((v) => !v)) return noData(el);
 
   const margin = { top: 8, right: 48, bottom: 8, left: 74 };
-  const height = Math.max(140, labels.length * 24 + 20);
-  const width = W - margin.left - margin.right;
-  const s = svg(el, W, height + margin.top + margin.bottom);
+  const size = chartSize(el, Math.max(140, labels.length * 24 + 20));
+  const height = size.height - margin.top - margin.bottom;
+  const width = size.width - margin.left - margin.right;
+  const s = svg(el, size.width, size.height);
   const g = s.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
   const plot = chartContainer(s, g, width, height);
 
   const shades = sequentialShades();
   const y = d3.scaleBand().domain(labels).range([0, height]).padding(0.3);
-  const max = Math.max(...values) * 1.05 || 1;
-  const x = d3.scaleLinear().domain([0, max]).range([0, width]);
-  const color = d3.scaleLinear().domain([0, max]).range([shades[2], shades[6]]);
+  const maxValue = Math.max(...values) || 1;
+  const x = d3
+    .scaleLinear()
+    .domain([0, maxValue * 1.05])
+    .range([0, width]);
+  const color = d3.scaleLinear().domain([0, maxValue]).range([shades[2], shades[7]]);
 
   g.append("g")
     .call(d3.axisLeft(y).tickSizeOuter(0))
@@ -417,18 +494,20 @@ function renderCalendar(el, data) {
   const days = data.days ?? [];
   if (!days.length) return noData(el);
 
-  const cell = 24;
   const gutterL = 34;
   const gutterT = 24;
-  const height = gutterT + days.length * cell + 8;
-  const width = W;
+  const legendHeight = 18;
+  const minimumHeight = gutterT + days.length * 24 + legendHeight;
+  const { width, height } = chartSize(el, minimumHeight);
+  const cellWidth = (width - gutterL) / 24;
+  const cellHeight = (height - gutterT - legendHeight) / days.length;
   const s = svg(el, width, height);
   const g = s.append("g").attr("transform", `translate(${gutterL},${gutterT})`);
-  const plot = chartContainer(s, g, width - gutterL, height - gutterT - 8);
+  const plot = chartContainer(s, g, width - gutterL, height - gutterT - legendHeight);
 
   const shades = sequentialShades();
   const color = d3
-    .scaleSequential(d3.interpolateRgb(shades[1], shades[6]))
+    .scaleSequential(d3.interpolateRgb(shades[1], shades[7]))
     .domain([0, data.max || 1]);
 
   // hour labels (every 3h)
@@ -436,7 +515,7 @@ function renderCalendar(el, data) {
     .selectAll("text")
     .data(d3.range(0, 24, 3))
     .join("text")
-    .attr("x", (h) => h * cell + cell / 2)
+    .attr("x", (h) => h * cellWidth + cellWidth / 2)
     .attr("y", -8)
     .attr("text-anchor", "middle")
     .attr("font-size", 9)
@@ -450,7 +529,7 @@ function renderCalendar(el, data) {
     .data(days)
     .join("text")
     .attr("x", -8)
-    .attr("y", (_, i) => i * cell + cell / 2)
+    .attr("y", (_, i) => i * cellHeight + cellHeight / 2)
     .attr("text-anchor", "end")
     .attr("dominant-baseline", "middle")
     .attr("font-size", 9)
@@ -463,10 +542,10 @@ function renderCalendar(el, data) {
       .selectAll(`rect.day-${di}`)
       .data(day.values)
       .join("rect")
-      .attr("x", (_, hi) => hi * cell)
-      .attr("y", di * cell)
-      .attr("width", cell - 2)
-      .attr("height", cell - 2)
+      .attr("x", (_, hi) => hi * cellWidth)
+      .attr("y", di * cellHeight)
+      .attr("width", cellWidth - 2)
+      .attr("height", cellHeight - 2)
       .attr("rx", 3)
       .attr("fill", (v) => (v ? color(v) : "transparent"))
       .attr("stroke", "currentColor")
@@ -507,7 +586,7 @@ function renderCalendar(el, data) {
 
   // legend
   const legendId = `cal-legend-${uid++}`;
-  const legend = s.append("g").attr("transform", `translate(${gutterL},${height - 6})`);
+  const legend = s.append("g").attr("transform", `translate(${gutterL},${height - 12})`);
   legend
     .append("defs")
     .append("linearGradient")
@@ -622,8 +701,15 @@ export function init() {
     }, 50);
   };
   window.addEventListener("theme-changed", retint);
+  window.addEventListener("resize", retint);
   new MutationObserver(retint).observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["style", "class"],
+  });
+
+  window.addEventListener("dashboard-layout:edit", editDashboardLayout);
+  window.addEventListener("dashboard-layout:save", saveDashboardLayouts);
+  window.addEventListener("dashboard-layout:reset", () => {
+    window.setTimeout(() => window.location.reload(), 100);
   });
 }
