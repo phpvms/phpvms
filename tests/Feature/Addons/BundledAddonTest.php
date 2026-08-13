@@ -28,9 +28,10 @@ function placeBundledAddonOnDisk(string $base, string $name, bool $bundled): voi
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
     File::put($dir.'/module.json', json_encode([
-        'name'      => $name,
-        'providers' => [],
-        'bundled'   => $bundled,
+        'name'        => $name,
+        'registry_id' => 'acme/'.strtolower($name),
+        'providers'   => [],
+        'bundled'     => $bundled,
     ]));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']]]));
 }

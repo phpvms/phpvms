@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Addon;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 
 it('returns addons as the table name', function (): void {
@@ -21,10 +22,12 @@ it('casts installed_at to Carbon instance', function (): void {
     expect($addon->installed_at)->toBeInstanceOf(Carbon::class);
 });
 
-it('accepts null for registry_id', function (): void {
-    $addon = Addon::factory()->create(['registry_id' => null]);
+it('requires a unique registry_id', function (): void {
+    $addon = Addon::factory()->create(['registry_id' => 'acme/widget']);
 
-    expect($addon->registry_id)->toBeNull();
+    expect($addon->registry_id)->toBe('acme/widget');
+    expect(fn () => Addon::factory()->create(['registry_id' => 'acme/widget']))
+        ->toThrow(QueryException::class);
 });
 
 it('accepts null for version', function (): void {

@@ -11,7 +11,7 @@ namespace App\Addons\Models;
  * derived values (namespace, version) resolved from composer.json per D-07.
  *
  * Identity rules (D-03 / D-04):
- *   - registryId is null for bundled/unmanaged addons (registry_id absent or blank).
+ *   - registryId is required; ManifestParser rejects a manifest without one.
  *   - For bundled addons, name/alias are the human identity.
  *   - For managed addons, registryId is the canonical identity (MAN-03).
  */
@@ -23,8 +23,7 @@ final readonly class AddonManifest
      * @param string|null          $alias          Short machine alias, used for views
      * @param string               $type           Addon type: 'module', 'theme', etc. (D-02:
      *                                             defaults to 'module').
-     * @param string|null          $registryId     Registry canonical identity; null for bundled
-     *                                             addons (D-03).
+     * @param string               $registryId     Registry canonical identity; required (D-03).
      * @param string|null          $compat         phpVMS version constraint (stored only in Phase
      *                                             1, D-05).
      * @param string|null          $version        Version string; null when absent from both
@@ -57,7 +56,7 @@ final readonly class AddonManifest
         public ?string $alias,
         public string $type,
         public ?string $compat,
-        public ?string $registryId,
+        public string $registryId,
         public ?string $version,
         public string $namespace,
         public array $providers,

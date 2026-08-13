@@ -48,11 +48,12 @@ afterEach(function (): void {
 function makeFixtureAddon(string $path): Addon
 {
     return Addon::factory()->create([
-        'name'      => 'FixtureAddon',
-        'namespace' => 'Modules\\FixtureAddon',
-        'version'   => '1.0.0',
-        'path'      => $path,
-        'enabled'   => true,
+        'name'        => 'FixtureAddon',
+        'registry_id' => 'acme/fixture-addon',
+        'namespace'   => 'Modules\\FixtureAddon',
+        'version'     => '1.0.0',
+        'path'        => $path,
+        'enabled'     => true,
     ]);
 }
 
@@ -68,7 +69,7 @@ it('runs addon seeders by file path and records a seed marker', function (): voi
     $this->seederSvc->seedAddons();
 
     expect(Kvp::where('key', 'fixture_addon_proof')->exists())->toBeTrue()
-        ->and(Kvp::where('key', 'addon_seeded:modules-fixtureaddon:1.0.0')->exists())->toBeTrue()
+        ->and(Kvp::where('key', 'addon_seeded:acme-fixture-addon:1.0.0')->exists())->toBeTrue()
         ->and($this->seederSvc->addonSeedsPending())->toBeFalse();
 });
 
@@ -125,11 +126,12 @@ it('logs the underlying exception message when an addon seeder throws, and still
         PHP);
 
     Addon::factory()->create([
-        'name'      => 'ThrowingAddon',
-        'namespace' => 'Modules\\ThrowingAddon',
-        'version'   => '1.0.0',
-        'path'      => $throwingPath,
-        'enabled'   => true,
+        'name'        => 'ThrowingAddon',
+        'registry_id' => 'acme/throwing-addon',
+        'namespace'   => 'Modules\\ThrowingAddon',
+        'version'     => '1.0.0',
+        'path'        => $throwingPath,
+        'enabled'     => true,
     ]);
 
     // A second, well-behaved addon must still seed even though the throwing
@@ -147,9 +149,9 @@ it('logs the underlying exception message when an addon seeder throws, and still
             && !str_contains($message, "\n")
             && ($context['exception'] ?? null) instanceof Throwable);
 
-    expect(Kvp::where('key', 'addon_seeded:modules-throwingaddon:1.0.0')->exists())->toBeFalse()
+    expect(Kvp::where('key', 'addon_seeded:acme-throwing-addon:1.0.0')->exists())->toBeFalse()
         ->and(Kvp::where('key', 'fixture_addon_proof')->exists())->toBeTrue()
-        ->and(Kvp::where('key', 'addon_seeded:modules-fixtureaddon:1.0.0')->exists())->toBeTrue();
+        ->and(Kvp::where('key', 'addon_seeded:acme-fixture-addon:1.0.0')->exists())->toBeTrue();
 
     File::deleteDirectory($throwingPath);
 });

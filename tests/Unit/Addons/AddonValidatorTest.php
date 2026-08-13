@@ -19,8 +19,9 @@ afterEach(function (): void {
 
 it('returns the manifest for a valid addon', function (): void {
     File::put($this->dir.'/module.json', json_encode([
-        'name'      => 'Demo',
-        'providers' => [],
+        'name'        => 'Demo',
+        'registry_id' => 'acme/demo',
+        'providers'   => [],
     ]));
     File::put($this->dir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\Demo\\' => '']],

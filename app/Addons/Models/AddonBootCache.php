@@ -16,7 +16,7 @@ final readonly class AddonBootCache
      * @param string       $name         Human-readable module name.
      * @param string|null  $alias        Short machine alias; null when absent.
      * @param string       $type         Addon type ('module', 'theme', etc.).
-     * @param string|null  $registryId   Registry canonical identity; null for bundled addons.
+     * @param string       $registryId   Registry canonical identity; required (MAN-03).
      * @param string|null  $version      Version string; null when absent.
      * @param string       $namespace    PSR-4 root namespace.
      * @param list<string> $providers    Service-provider class names.
@@ -32,7 +32,7 @@ final readonly class AddonBootCache
         public string $name,
         public ?string $alias,
         public string $type,
-        public ?string $registryId,
+        public string $registryId,
         public ?string $version,
         public string $namespace,
         public array $providers,
@@ -55,7 +55,7 @@ final readonly class AddonBootCache
             name: (string) ($data['name'] ?? ''),
             alias: isset($data['alias']) ? (string) $data['alias'] : null,
             type: (string) ($data['type'] ?? 'module'),
-            registryId: isset($data['registry_id']) ? (string) $data['registry_id'] : null,
+            registryId: (string) ($data['registry_id'] ?? ''),
             version: isset($data['version']) ? (string) $data['version'] : null,
             namespace: (string) ($data['namespace'] ?? ''),
             providers: array_values(array_filter((array) ($data['providers'] ?? []), is_string(...))),

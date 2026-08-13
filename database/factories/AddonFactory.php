@@ -23,7 +23,7 @@ class AddonFactory extends Factory
 
         return [
             'name'         => $name,
-            'registry_id'  => null,
+            'registry_id'  => 'phpvms/'.Str::kebab($name),
             'type'         => 'module',
             'version'      => fake()->optional()->semver(),
             'namespace'    => 'Modules\\'.$name,

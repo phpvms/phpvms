@@ -87,7 +87,7 @@ class AddonSettings extends Page
         }
 
         return AddonSetting::query()
-            ->where('addon_id', $addon->id)
+            ->where('registry_id', $addon->registry_id)
             ->where('type', '!=', 'hidden')
             ->exists();
     }
@@ -150,7 +150,7 @@ class AddonSettings extends Page
                 $service = app(AddonSettingService::class);
 
                 foreach ($data as $key => $value) {
-                    $service->storeById($addon->id, $key, $value);
+                    $service->storeFor($addon->registry_id, $key, $value);
                 }
             });
 
@@ -263,7 +263,7 @@ class AddonSettings extends Page
         }
 
         return AddonSetting::query()
-            ->where('addon_id', $addon->id)
+            ->where('registry_id', $addon->registry_id)
             ->where('type', '!=', 'hidden')
             ->orderBy('order')
             ->get();

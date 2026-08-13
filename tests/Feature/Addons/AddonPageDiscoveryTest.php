@@ -44,7 +44,7 @@ function placeAddonOnDisk(string $base, string $name): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'providers' => []]));
+    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => 'acme/'.strtolower($name), 'providers' => []]));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => '']]]));
 }
 

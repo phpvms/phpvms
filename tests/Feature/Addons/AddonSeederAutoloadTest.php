@@ -20,7 +20,7 @@ beforeEach(function (): void {
     // module.json + composer.json: PSR-4 Modules\SeedFixture\ => app/. This path
     // is NOT in Composer's autoload map, so the class below is only loadable if
     // SeederService registers the addon's namespace before running the seeder.
-    File::put($this->addonDir.'/module.json', json_encode(['name' => 'SeedFixture', 'providers' => []]));
+    File::put($this->addonDir.'/module.json', json_encode(['name' => 'SeedFixture', 'registry_id' => 'acme/seed-fixture', 'providers' => []]));
     File::put($this->addonDir.'/composer.json', json_encode([
         'autoload' => ['psr-4' => ['Modules\\SeedFixture\\' => 'app/']],
     ]));
@@ -58,10 +58,11 @@ beforeEach(function (): void {
         PHP);
 
     Addon::factory()->create([
-        'name'      => 'SeedFixture',
-        'namespace' => 'Modules\\SeedFixture',
-        'path'      => $this->addonDir,
-        'enabled'   => true,
+        'name'        => 'SeedFixture',
+        'registry_id' => 'acme/seed-fixture',
+        'namespace'   => 'Modules\\SeedFixture',
+        'path'        => $this->addonDir,
+        'enabled'     => true,
     ]);
 });
 
@@ -76,5 +77,5 @@ it("registers an enabled addon's namespace so its seeder can load the addon's ow
     // PSR-4 namespace was registered first).
     expect(Kvp::where('key', 'seedfixture_ran')->value('value'))->toBe('widget-loaded')
         // ...and a per-addon seed marker was written, so it won't re-run forever.
-        ->and(Kvp::where('key', 'like', 'addon_seeded:modules-seedfixture:%')->exists())->toBeTrue();
+        ->and(Kvp::where('key', 'like', 'addon_seeded:acme-seed-fixture:%')->exists())->toBeTrue();
 });
