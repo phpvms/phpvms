@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
-import PvIcon from "@/shared/ui/PvIcon.vue";
+import PvIcon from "@/shared/components/PvIcon.vue";
 import type { NavigationDestination } from "./navigation";
 
 const props = defineProps<{

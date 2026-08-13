@@ -18,17 +18,26 @@ final class SimBriefPlanningData extends Data
 {
     /**
      * @param array<string, string|int|float|null> $providerFields
+     * @param list<string>                         $callsignOptions
      */
     public function __construct(
         public SimBriefAttemptData $attempt,
         public FlightDetailData $flight,
         public EligibleAircraftData $aircraft,
         public array $providerFields,
+        public bool $callsignEditable,
+        public array $callsignOptions,
         public bool $requiresExplicitGeneration,
+        public bool $embedGenerationAllowed,
     ) {}
 
-    public static function fromModels(SimBriefAttempt $attempt, Flight $flight, Aircraft $aircraft, User $user): self
-    {
+    public static function fromModels(
+        SimBriefAttempt $attempt,
+        Flight $flight,
+        Aircraft $aircraft,
+        User $user,
+        bool $embedGenerationAllowed,
+    ): self {
         $fares = collect($attempt->fare_data ?? []);
         $passengerCount = (int) $fares->where('type', FareType::PASSENGER->value)->sum('count');
         $cargoLoad = (int) $fares->where('type', FareType::CARGO->value)->sum('count');
@@ -49,9 +58,18 @@ final class SimBriefPlanningData extends Data
             ->map(fn (array $fare): string => $fare['code'].' '.$fare['count'])
             ->implode(' ');
         $airlineIcao = $flight->airline?->icao ?? '';
-        $callsign = (bool) setting('simbrief.callsign', true)
+        $callsignEditable = !(bool) setting('simbrief.callsign', true);
+        $callsign = !$callsignEditable
             ? $user->ident
             : $airlineIcao.(filled($flight->callsign) ? $flight->callsign : $flight->flight_number);
+        $callsignOptions = !$callsignEditable
+            ? [$user->ident]
+            : array_values(array_filter([
+                filled($flight->callsign) ? $airlineIcao.$flight->callsign : null,
+                $airlineIcao.$flight->flight_number,
+                filled($user->callsign) ? $airlineIcao.$user->callsign : null,
+                $user->ident,
+            ]));
         $acdata = json_encode([
             'paxwgt'  => $passengerWeight,
             'bagwgt'  => $baggageWeight,
@@ -101,7 +119,10 @@ final class SimBriefPlanningData extends Data
                 'type'         => $aircraft->subfleet->simbrief_type ?: $aircraft->icao,
                 'units'        => setting('units.weight') === 'kg' ? 'KGS' : 'LBS',
             ],
+            callsignEditable: $callsignEditable,
+            callsignOptions: $callsignOptions,
             requiresExplicitGeneration: true,
+            embedGenerationAllowed: $embedGenerationAllowed,
         );
     }
 }

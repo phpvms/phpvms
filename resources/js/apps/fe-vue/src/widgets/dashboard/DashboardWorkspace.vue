@@ -29,8 +29,11 @@ const { layout, editing, availableToAdd, addWidget, removeWidget, resetLayout, t
 </script>
 
 <template>
-  <div class="pv-dashboard">
-    <DashboardPilotHeader :dashboard :initials :user />
+  <UPage class="pv-dashboard">
+    <UPageHeader>
+      <DashboardPilotHeader :dashboard :initials :user />
+    </UPageHeader>
+
     <DashboardToolbar
       :available-widgets="availableToAdd"
       :editing
@@ -44,5 +47,5 @@ const { layout, editing, availableToAdd, addWidget, removeWidget, resetLayout, t
       :page-props="page.props as Record<string, unknown>"
       @remove-widget="removeWidget"
     />
-  </div>
+  </UPage>
 </template>

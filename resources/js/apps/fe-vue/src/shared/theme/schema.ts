@@ -1,4 +1,4 @@
-import defaultsJson from "../../../../../../schemas/skylight-theme-v1.defaults.json";
+import defaultsJson from "../../../schemas/skylight-theme-v1.defaults.json";
 
 export const THEME_VERSION = 1 as const;
 
@@ -108,6 +108,7 @@ export const SEMANTIC_COLORS = [
 export const BUTTON_COLORS = [...SEMANTIC_COLORS, "neutral"] as const;
 export const BUTTON_VARIANTS = ["solid", "outline", "soft", "subtle", "ghost", "link"] as const;
 export const CONTROL_SIZES = ["xs", "sm", "md", "lg", "xl"] as const;
+export const BUTTON_ALIGNMENTS = ["start", "center", "end"] as const;
 export const BUTTON_SHAPES = ["square", "rounded", "pill"] as const;
 export const BUTTON_WEIGHTS = ["normal", "medium", "semibold"] as const;
 export const INPUT_APPEARANCES = ["boxed", "underline"] as const;
@@ -124,6 +125,7 @@ export type SemanticColor = ValueOf<typeof SEMANTIC_COLORS>;
 export type ButtonColor = ValueOf<typeof BUTTON_COLORS>;
 export type ButtonVariant = ValueOf<typeof BUTTON_VARIANTS>;
 export type ControlSize = ValueOf<typeof CONTROL_SIZES>;
+export type ButtonAlignment = ValueOf<typeof BUTTON_ALIGNMENTS>;
 export type ButtonShape = ValueOf<typeof BUTTON_SHAPES>;
 export type ButtonWeight = ValueOf<typeof BUTTON_WEIGHTS>;
 export type InputAppearance = ValueOf<typeof INPUT_APPEARANCES>;
@@ -155,13 +157,13 @@ export interface UpstreamTheme {
 }
 
 export interface ThemeComponents {
-  button: {
-    props: { color: ButtonColor; variant: ButtonVariant; size: ControlSize };
-    style: { shape: ButtonShape; weight: ButtonWeight };
+  button?: {
+    props?: { color?: ButtonColor; variant?: ButtonVariant; size?: ControlSize };
+    style?: { alignment?: ButtonAlignment; shape?: ButtonShape; weight?: ButtonWeight };
   };
-  input: {
-    props: { color: ButtonColor; size: ControlSize };
-    style: { appearance: InputAppearance };
+  input?: {
+    props?: { color?: ButtonColor; size?: ControlSize };
+    style?: { appearance?: InputAppearance };
   };
 }
 
@@ -175,7 +177,7 @@ export interface ThemeDocumentV1 {
   version: typeof THEME_VERSION;
   nuxtUi: {
     theme: UpstreamTheme;
-    components: ThemeComponents;
+    components?: ThemeComponents;
   };
   phpvms: PhpVmsThemeSettings;
 }
@@ -215,6 +217,15 @@ function required(object: UnknownRecord, key: string, path: string): unknown {
     throw new ThemeValidationError(`${path}.${key}`, "is required");
   }
   return object[key];
+}
+
+function optionalObjectAt(
+  object: UnknownRecord,
+  key: string,
+  path: string,
+  keys: readonly string[],
+): UnknownRecord | undefined {
+  return Object.hasOwn(object, key) ? objectAt(object[key], `${path}.${key}`, keys) : undefined;
 }
 
 function enumAt<const T extends readonly string[]>(
@@ -347,79 +358,133 @@ function upstreamThemeAt(
 
 function componentsAt(value: unknown, path: string): ThemeComponents {
   const object = objectAt(value, path, ["button", "input"]);
-  const button = objectAt(required(object, "button", path), `${path}.button`, ["props", "style"]);
-  const buttonProps = objectAt(
-    required(button, "props", `${path}.button`),
-    `${path}.button.props`,
-    ["color", "variant", "size"],
-  );
-  const buttonStyle = objectAt(
-    required(button, "style", `${path}.button`),
-    `${path}.button.style`,
-    ["shape", "weight"],
-  );
-  const input = objectAt(required(object, "input", path), `${path}.input`, ["props", "style"]);
-  const inputProps = objectAt(required(input, "props", `${path}.input`), `${path}.input.props`, [
-    "color",
-    "size",
-  ]);
-  const inputStyle = objectAt(required(input, "style", `${path}.input`), `${path}.input.style`, [
-    "appearance",
-  ]);
+  const button = optionalObjectAt(object, "button", path, ["props", "style"]);
+  const buttonProps = button
+    ? optionalObjectAt(button, "props", `${path}.button`, ["color", "variant", "size"])
+    : undefined;
+  const buttonStyle = button
+    ? optionalObjectAt(button, "style", `${path}.button`, ["alignment", "shape", "weight"])
+    : undefined;
+  const input = optionalObjectAt(object, "input", path, ["props", "style"]);
+  const inputProps = input
+    ? optionalObjectAt(input, "props", `${path}.input`, ["color", "size"])
+    : undefined;
+  const inputStyle = input
+    ? optionalObjectAt(input, "style", `${path}.input`, ["appearance"])
+    : undefined;
 
   return {
-    button: {
-      props: {
-        color: enumAt(
-          required(buttonProps, "color", `${path}.button.props`),
-          `${path}.button.props.color`,
-          BUTTON_COLORS,
-        ),
-        variant: enumAt(
-          required(buttonProps, "variant", `${path}.button.props`),
-          `${path}.button.props.variant`,
-          BUTTON_VARIANTS,
-        ),
-        size: enumAt(
-          required(buttonProps, "size", `${path}.button.props`),
-          `${path}.button.props.size`,
-          CONTROL_SIZES,
-        ),
-      },
-      style: {
-        shape: enumAt(
-          required(buttonStyle, "shape", `${path}.button.style`),
-          `${path}.button.style.shape`,
-          BUTTON_SHAPES,
-        ),
-        weight: enumAt(
-          required(buttonStyle, "weight", `${path}.button.style`),
-          `${path}.button.style.weight`,
-          BUTTON_WEIGHTS,
-        ),
-      },
-    },
-    input: {
-      props: {
-        color: enumAt(
-          required(inputProps, "color", `${path}.input.props`),
-          `${path}.input.props.color`,
-          BUTTON_COLORS,
-        ),
-        size: enumAt(
-          required(inputProps, "size", `${path}.input.props`),
-          `${path}.input.props.size`,
-          CONTROL_SIZES,
-        ),
-      },
-      style: {
-        appearance: enumAt(
-          required(inputStyle, "appearance", `${path}.input.style`),
-          `${path}.input.style.appearance`,
-          INPUT_APPEARANCES,
-        ),
-      },
-    },
+    ...(button
+      ? {
+          button: {
+            ...(buttonProps
+              ? {
+                  props: {
+                    ...(Object.hasOwn(buttonProps, "color")
+                      ? {
+                          color: enumAt(
+                            buttonProps.color,
+                            `${path}.button.props.color`,
+                            BUTTON_COLORS,
+                          ),
+                        }
+                      : {}),
+                    ...(Object.hasOwn(buttonProps, "variant")
+                      ? {
+                          variant: enumAt(
+                            buttonProps.variant,
+                            `${path}.button.props.variant`,
+                            BUTTON_VARIANTS,
+                          ),
+                        }
+                      : {}),
+                    ...(Object.hasOwn(buttonProps, "size")
+                      ? {
+                          size: enumAt(
+                            buttonProps.size,
+                            `${path}.button.props.size`,
+                            CONTROL_SIZES,
+                          ),
+                        }
+                      : {}),
+                  },
+                }
+              : {}),
+            ...(buttonStyle
+              ? {
+                  style: {
+                    ...(Object.hasOwn(buttonStyle, "alignment")
+                      ? {
+                          alignment: enumAt(
+                            buttonStyle.alignment,
+                            `${path}.button.style.alignment`,
+                            BUTTON_ALIGNMENTS,
+                          ),
+                        }
+                      : {}),
+                    ...(Object.hasOwn(buttonStyle, "shape")
+                      ? {
+                          shape: enumAt(
+                            buttonStyle.shape,
+                            `${path}.button.style.shape`,
+                            BUTTON_SHAPES,
+                          ),
+                        }
+                      : {}),
+                    ...(Object.hasOwn(buttonStyle, "weight")
+                      ? {
+                          weight: enumAt(
+                            buttonStyle.weight,
+                            `${path}.button.style.weight`,
+                            BUTTON_WEIGHTS,
+                          ),
+                        }
+                      : {}),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
+    ...(input
+      ? {
+          input: {
+            ...(inputProps
+              ? {
+                  props: {
+                    ...(Object.hasOwn(inputProps, "color")
+                      ? {
+                          color: enumAt(
+                            inputProps.color,
+                            `${path}.input.props.color`,
+                            BUTTON_COLORS,
+                          ),
+                        }
+                      : {}),
+                    ...(Object.hasOwn(inputProps, "size")
+                      ? { size: enumAt(inputProps.size, `${path}.input.props.size`, CONTROL_SIZES) }
+                      : {}),
+                  },
+                }
+              : {}),
+            ...(inputStyle
+              ? {
+                  style: {
+                    ...(Object.hasOwn(inputStyle, "appearance")
+                      ? {
+                          appearance: enumAt(
+                            inputStyle.appearance,
+                            `${path}.input.style.appearance`,
+                            INPUT_APPEARANCES,
+                          ),
+                        }
+                      : {}),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -462,10 +527,9 @@ export function parseThemeDocument(value: unknown): ThemeDocumentV1 {
         "theme.nuxtUi.theme",
         false,
       ),
-      components: componentsAt(
-        required(nuxtUi, "components", "theme.nuxtUi"),
-        "theme.nuxtUi.components",
-      ),
+      ...(Object.hasOwn(nuxtUi, "components")
+        ? { components: componentsAt(nuxtUi.components, "theme.nuxtUi.components") }
+        : {}),
     },
     phpvms: phpVmsAt(required(root, "phpvms", "theme"), "theme.phpvms"),
   };

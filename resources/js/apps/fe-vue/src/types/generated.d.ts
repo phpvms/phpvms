@@ -34,6 +34,7 @@ logo: string | null,
 export type AirlineRefData = {
 icao: string,
 name: string,
+logo: string | null,
 };
 export type AirportPointData = {
 id: string,
@@ -77,6 +78,9 @@ policy: App.Http.Data.FlightDispatchPolicyData,
 state: string,
 expiresAt: string | null,
 aircraftReserved: boolean,
+ofpGenerated: boolean,
+ofpPlanningUrl: string | null,
+ofpUrl: string | null,
 };
 export type DashboardData = {
 id: number,
@@ -143,7 +147,7 @@ scheduledArrival: string | null,
 route: string | null,
 cruiseLevel: number | null,
 dispatchUrl: string,
-simbriefPlanningUrl: string,
+ofpPlanningUrl: string,
 };
 export type FlightDispatchPolicyData = {
 aircraftRequired: boolean,
@@ -159,7 +163,7 @@ restrictAircraftToRank: boolean,
 restrictAircraftToTypeRating: boolean,
 aircraftAtDepartureOnly: boolean,
 companyAircraftOnly: boolean,
-simbriefAvailable: boolean,
+simbriefEnabled: boolean,
 simbriefRequiresBid: boolean,
 simbriefBlocksAircraft: boolean,
 };
@@ -193,6 +197,13 @@ dpt_airport: App.Http.Data.AirportPointData | null,
 arr_airport: App.Http.Data.AirportPointData | null,
 aircraft: App.Http.Data.AircraftRefData | null,
 comments: App.Http.Data.PirepCommentData[],
+};
+export type OFPPlanningSelectionData = {
+flight: App.Http.Data.FlightDetailData,
+dispatchUrl: string,
+planningUrl: string,
+aircraftAssignmentUrl: string | null,
+subfleets: App.Http.Data.EligibleSubfleetData[],
 };
 export type PilotChromeData = {
 activeSector: App.Http.Data.ActiveSectorData | null,
@@ -343,7 +354,10 @@ attempt: App.Http.Data.SimBriefAttemptData,
 flight: App.Http.Data.FlightDetailData,
 aircraft: App.Http.Data.EligibleAircraftData,
 providerFields: Record<string, string | number | null>,
+callsignEditable: boolean,
+callsignOptions: string[],
 requiresExplicitGeneration: boolean,
+embedGenerationAllowed: boolean,
 };
 export type StateBadgeData = {
 label: string,

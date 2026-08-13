@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, shallowRef } from "vue";
 import { router } from "@inertiajs/vue3";
-import PvSlot from "@/shared/ui/PvSlot.vue";
-import SimBriefEditorDialog from "@/features/simbrief/SimBriefEditorDialog.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
+import SimBriefEditorDialog from "@/components/simbrief/SimBriefEditorDialog.vue";
 
 const props = defineProps<{ briefing: App.Http.Data.SimBriefBriefingData }>();
 const briefing = reactive({ ...props.briefing });
@@ -22,7 +22,7 @@ async function cancelBriefing() {
   cancelling.value = true;
   failure.value = null;
   try {
-    const response = await fetch(`/simbrief/briefings/${encodeURIComponent(props.briefing.id)}`, {
+    const response = await fetch(`/ofp/briefings/${encodeURIComponent(props.briefing.id)}`, {
       method: "DELETE",
       headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
     });
@@ -43,13 +43,10 @@ async function regenerate() {
   regenerating.value = true;
   failure.value = null;
   try {
-    const response = await fetch(
-      `/simbrief/briefings/${encodeURIComponent(briefing.id)}/regenerate`,
-      {
-        method: "POST",
-        headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
-      },
-    );
+    const response = await fetch(`/ofp/briefings/${encodeURIComponent(briefing.id)}/regenerate`, {
+      method: "POST",
+      headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
+    });
     const result = (await response.json()) as { planningUrl?: string; message?: string };
     if (!response.ok || !result.planningUrl)
       throw new Error(result.message ?? "Briefing could not be regenerated.");
@@ -66,13 +63,10 @@ async function syncEditor() {
   syncingEditor.value = true;
   failure.value = null;
   try {
-    const response = await fetch(
-      `/simbrief/briefings/${encodeURIComponent(briefing.id)}/edit-sync`,
-      {
-        method: "POST",
-        headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
-      },
-    );
+    const response = await fetch(`/ofp/briefings/${encodeURIComponent(briefing.id)}/edit-sync`, {
+      method: "POST",
+      headers: { Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
+    });
     const result = (await response.json()) as {
       briefing?: App.Http.Data.SimBriefBriefingData;
       message?: string;
@@ -95,8 +89,8 @@ function prefile() {
 </script>
 
 <template>
-  <section class="pv-simbrief-briefing" aria-label="SimBrief briefing">
-    <header class="briefing-header">
+  <UPage class="pv-simbrief-briefing" aria-label="SimBrief briefing">
+    <UPageHeader class="briefing-header">
       <div>
         <p class="pv-eyebrow">SIMBRIEF · COMPLETED BRIEFING</p>
         <h1>{{ briefing.flight.summary.callsign }}</h1>
@@ -109,7 +103,7 @@ function prefile() {
         <UButton color="neutral" variant="soft" @click="prefile">Prefile PIREP</UButton>
         <UButton v-if="briefing.editorUrl" @click="editorOpen = true">Edit OFP</UButton>
       </div>
-    </header>
+    </UPageHeader>
 
     <p v-if="failure" class="briefing-error" role="alert">{{ failure }}</p>
 
@@ -194,7 +188,7 @@ function prefile() {
             variant="soft"
             :loading="regenerating"
             @click="regenerate"
-            >Regenerate</UButton
+            >Regenerate OFP</UButton
           >
           <UButton
             v-if="briefing.canCancel && !confirmingCancel"
@@ -252,7 +246,7 @@ function prefile() {
       :flight-label="`${briefing.flight.summary.callsign} · ${briefing.flight.summary.dpt ?? '—'} → ${briefing.flight.summary.arr ?? '—'}`"
       @returned="syncEditor"
     />
-  </section>
+  </UPage>
 </template>
 
 <style scoped>
@@ -425,7 +419,6 @@ dd {
   .briefing-actions :deep(button),
   .briefing-lifecycle :deep(button) {
     flex: 1;
-    justify-content: center;
   }
 }
 </style>

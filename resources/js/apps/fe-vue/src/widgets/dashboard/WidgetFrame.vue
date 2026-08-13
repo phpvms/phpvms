@@ -4,7 +4,7 @@
  * (the SortableJS `handle`) and a remove control. The body is a default slot so
  * any catalog widget drops in unchanged.
  */
-import PvIcon from "@/shared/ui/PvIcon.vue";
+import PvIcon from "@/shared/components/PvIcon.vue";
 
 withDefaults(
   defineProps<{ title: string; icon?: string; editing?: boolean; removable?: boolean }>(),

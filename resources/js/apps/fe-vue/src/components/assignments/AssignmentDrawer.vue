@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import { nextTick, useTemplateRef, watch } from "vue";
+import { nextTick, shallowRef, useTemplateRef, watch } from "vue";
 import { router } from "@inertiajs/vue3";
-import BidAircraftPicker from "./BidAircraftPicker.vue";
-import BidCompactOverview from "./BidCompactOverview.vue";
-import { useFlightBidDrawer } from "./useFlightBidDrawer";
+import PvLoadingState from "@/shared/components/PvLoadingState.vue";
+import AircraftSelection from "./AircraftSelection.vue";
+import AssignmentOverview from "./AssignmentOverview.vue";
+import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
+import { useAssignmentDrawer } from "./useAssignmentDrawer";
 
 const emit = defineEmits<{ closed: [] }>();
 const heading = useTemplateRef<HTMLElement>("heading");
+const loadingAircraft = shallowRef(false);
 const {
   close,
-  aircraft,
   failure,
-  loadingAircraft,
   load,
   open,
   payload,
   selectedAircraftId,
-  selectedSubfleetId,
-  selectSubfleet,
+  selectionVersion,
   show,
   state,
   submit: submitBid,
-} = useFlightBidDrawer();
+} = useAssignmentDrawer();
 
 async function submit() {
   const hadSelection = payload.value?.selection !== null && payload.value?.selection !== undefined;
   await submitBid();
   const selection = payload.value?.selection;
-  if (!hadSelection && selection?.aircraft && selection.policy.simbriefAvailable) {
-    router.visit(
-      `/simbrief/planning?flight_id=${encodeURIComponent(selection.flight.summary.id)}&aircraft_id=${selection.aircraft.id}`,
-    );
+  if (!hadSelection && selection?.ofpPlanningUrl) {
+    router.visit(selection.ofpPlanningUrl);
   }
 }
 
@@ -56,6 +54,7 @@ defineExpose({ show });
     title="Flight bid"
     description="Select an eligible aircraft and confirm the flight bid."
     :dismissible="state !== 'submitting'"
+    :handle="false"
     :ui="{ content: 'pv-flight-bid-surface' }"
     @update:open="updateOpen"
   >
@@ -63,16 +62,30 @@ defineExpose({ show });
       <section class="pv-flight-bid-drawer" aria-label="Flight bid">
         <header class="drawer-header">
           <div>
-            <p class="pv-eyebrow">FLIGHT BID</p>
-            <h2 ref="heading" tabindex="-1">
-              {{ payload?.flight.summary.callsign ?? "Loading flight" }}
-            </h2>
+            <p class="pv-eyebrow">FLIGHT ASSIGNMENT</p>
+            <div ref="heading" tabindex="-1">
+              <FlightIdentHeader
+                v-if="payload"
+                :callsign="payload.flight.summary.callsign"
+                :departure="payload.flight.summary.dpt ?? '—'"
+                :arrival="payload.flight.summary.arr ?? '—'"
+                :airline-logo="payload.flight.summary.airline?.logo"
+                :airline-name="payload.flight.summary.airline?.name"
+                :aircraft="
+                  payload.selection?.aircraft
+                    ? `${payload.selection.aircraft.registration} · ${payload.selection.aircraft.icaoType}`
+                    : null
+                "
+                size="lg"
+              />
+              <span v-else>Loading flight</span>
+            </div>
           </div>
           <UButton
             type="button"
             color="neutral"
             variant="ghost"
-            icon="i-lucide-x"
+            icon="i-tabler-x"
             aria-label="Close flight bid"
             :disabled="state === 'submitting'"
             @click="updateOpen(false)"
@@ -80,9 +93,8 @@ defineExpose({ show });
         </header>
 
         <div class="drawer-scroll">
-          <div v-if="state === 'loading'" class="drawer-state" role="status" aria-live="polite">
-            <span class="state-spinner" aria-hidden="true" />
-            <strong>Loading policy and aircraft</strong>
+          <div v-if="state === 'loading'" class="drawer-state">
+            <PvLoadingState text="Loading policy and aircraft" />
             <p>The latest availability is checked before you can continue.</p>
           </div>
 
@@ -92,17 +104,13 @@ defineExpose({ show });
             <UButton type="button" @click="load()">Try again</UButton>
           </div>
 
-          <BidCompactOverview
+          <AssignmentOverview
             v-else-if="state === 'overview' && payload?.selection"
             :selection="payload.selection"
           />
 
           <form v-else-if="payload" class="bid-form" @submit.prevent="submit">
             <section class="flight-context" aria-label="Selected flight">
-              <p>
-                <strong>{{ payload.flight.summary.dpt ?? "—" }}</strong
-                ><span>→</span><strong>{{ payload.flight.summary.arr ?? "—" }}</strong>
-              </p>
               <dl>
                 <div>
                   <dt>Departure</dt>
@@ -123,31 +131,15 @@ defineExpose({ show });
               {{ failure.message }}
             </p>
 
-            <BidAircraftPicker
+            <AircraftSelection
+              :dispatch-url="payload.flight.dispatchUrl"
               :subfleets="payload.subfleets"
-              :aircraft="aircraft"
-              :subfleet-id="selectedSubfleetId"
               :aircraft-id="selectedAircraftId"
               :required="payload.policy.aircraftRequired"
-              :loading-aircraft="loadingAircraft"
-              @update:subfleet-id="selectSubfleet"
+              :selection-version="selectionVersion"
               @update:aircraft-id="selectedAircraftId = $event"
+              @update:loading-aircraft="loadingAircraft = $event"
             />
-
-            <UButton
-              v-if="
-                payload.policy.aircraftRequired &&
-                selectedSubfleetId !== null &&
-                aircraft.length === 0 &&
-                !loadingAircraft
-              "
-              type="button"
-              color="neutral"
-              variant="soft"
-              icon="i-lucide-refresh-cw"
-              @click="load()"
-              >Refresh aircraft</UButton
-            >
 
             <p class="policy-note">
               {{
@@ -244,14 +236,6 @@ h2:focus-visible {
   margin: 0;
   color: var(--pv-ink-dim);
 }
-.state-spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid var(--pv-line);
-  border-top-color: var(--pv-accent);
-  border-radius: 50%;
-  animation: pv-bid-spin 0.8s linear infinite;
-}
 .bid-form {
   display: grid;
   gap: 20px;
@@ -262,17 +246,6 @@ h2:focus-visible {
   border-radius: var(--pv-radius-md);
   background: var(--pv-panel);
   padding: 16px;
-}
-.flight-context > p {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0 0 14px;
-  color: var(--pv-ink);
-  font-size: calc(18px * var(--pv-type-scale));
-}
-.flight-context > p span {
-  color: var(--pv-ink-faint);
 }
 .flight-context dl {
   display: grid;
@@ -321,16 +294,6 @@ dd {
   font-size: calc(10px * var(--pv-type-scale));
   text-align: right;
 }
-@keyframes pv-bid-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .state-spinner {
-    animation: none;
-  }
-}
 @media (max-width: 390px) {
   .drawer-header,
   .drawer-scroll {
@@ -341,14 +304,13 @@ dd {
   }
   .drawer-actions :deep(button) {
     flex: 1;
-    justify-content: center;
   }
 }
 </style>
 
 <style>
 .pv-flight-bid-surface {
-  width: min(560px, 100vw) !important;
+  width: min(720px, 100vw) !important;
   max-width: none !important;
   height: 100dvh;
   max-height: 100dvh !important;

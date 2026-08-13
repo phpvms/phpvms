@@ -60,6 +60,36 @@ describe("Skylight theme schema", () => {
     );
   });
 
+  it("rejects unsupported button alignment values", () => {
+    const document = defaultThemeDocument() as unknown as Record<string, any>;
+    document.nuxtUi.components.button.style.alignment = "space-between";
+
+    expect(() => parseThemeDocument(document)).toThrowError(
+      /theme\.nuxtUi\.components\.button\.style\.alignment/,
+    );
+  });
+
+  it("preserves omitted component overrides for Nuxt UI defaults", () => {
+    const document = defaultThemeDocument() as unknown as Record<string, any>;
+    document.nuxtUi.components = {
+      button: {
+        props: { color: "warning" },
+        style: { shape: "pill" },
+      },
+      input: {},
+    };
+
+    expect(parseThemeDocument(document).nuxtUi.components).toEqual(document.nuxtUi.components);
+
+    document.nuxtUi.components = {};
+
+    expect(parseThemeDocument(document).nuxtUi.components).toEqual({});
+
+    delete document.nuxtUi.components;
+
+    expect(parseThemeDocument(document).nuxtUi.components).toBeUndefined();
+  });
+
   it("rejects unsupported raw export fields", () => {
     expect(() => normalizeThemeDocument({ ...rawTheme, class: "text-red-500" })).toThrowError(
       /theme\.nuxtUi\.theme\.class/,

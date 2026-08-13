@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import PvIcon from "@/shared/ui/PvIcon.vue";
+import PvIcon from "@/shared/components/PvIcon.vue";
 
 /**
  * VA-wide activity feed — a vertical timeline of the whole virtual airline's

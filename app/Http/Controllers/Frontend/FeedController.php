@@ -87,7 +87,7 @@ final class FeedController extends Controller
                         title: ($p->user?->name ?? 'A pilot').' filed '.$p->ident,
                         subtitle: $this->route($p->dpt_airport?->icao, $p->arr_airport?->icao),
                         timestamp: $ts->toIso8601String(),
-                        icon: 'plane-landing',
+                        icon: 'plane-arrival',
                     ),
                 ];
             });

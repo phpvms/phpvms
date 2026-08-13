@@ -58,7 +58,7 @@ function markLoaded() {
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-x"
+            icon="i-tabler-x"
             aria-label="Close OFP editor"
             @click="close"
           />
@@ -240,7 +240,6 @@ function markLoaded() {
   }
   .editor-actions :deep(button) {
     flex: 1;
-    justify-content: center;
   }
 }
 </style>

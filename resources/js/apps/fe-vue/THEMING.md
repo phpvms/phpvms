@@ -68,6 +68,7 @@ The phpVMS theme is versioned. It contains the upstream builder configuration wi
           "size": "md"
         },
         "style": {
+          "alignment": "center",
           "shape": "rounded",
           "weight": "medium"
         }
@@ -292,6 +293,8 @@ foundation shades.
 | `.pv-dashboard-toolbar`    | Dashboard title and Customize-mode toolbar, including Add widget, Reset, and Customize or Done controls |
 | `.pv-dashboard-pilot`      | Dashboard pilot summary                                                                                 |
 | `.pv-dashboard-board`      | Dashboard widget board                                                                                  |
+| `.pv-flight-info`          | Inline flight callsign and airport pair                                                                 |
+| `.pv-aircraft-selector`    | Flight aircraft selection card                                                                          |
 | `.pv-profile`              | Pilot profile page                                                                                      |
 | `.pv-pirep-detail`         | PIREP detail view                                                                                       |
 | `.pv-pirep-summary`        | PIREP summary                                                                                           |

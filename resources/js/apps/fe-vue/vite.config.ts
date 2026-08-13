@@ -6,6 +6,7 @@ import { phpTypescriptTransform } from "./dev/php-typescript-transform";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync, unlinkSync } from "node:fs";
+import { dynamicTablerIcons, tablerIcons } from "./icon.config";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -121,23 +122,25 @@ function writeHotFile(): import("vite").Plugin {
     apply: "serve",
     configureServer(server) {
       const port = server.config.server.port ?? 5273;
-      mkdirSync(PUBLIC_BUILD_DIR, { recursive: true });
-      writeFileSync(hotPath, `http://localhost:${port}`);
-      // Publish the shared Vue so the dev import-map URL resolves. NOTE: in dev the
-      // host's own `import 'vue'` is served from Vite's optimized deps (Vite rewrites
-      // bare specifiers before the import-map applies), so the import-map only feeds
-      // third-party ESM addon widgets — which would then get a SECOND Vue instance in
-      // dev. Dev fidelity for externalized ESM widgets is a known limitation; the
-      // production build is the source of truth. See report.
-      try {
-        copyVendorVue(PUBLIC_BUILD_DIR);
-      } catch {
-        /* non-fatal in dev */
-      }
-      server.httpServer?.once("close", clean);
-      process.once("SIGINT", clean);
-      process.once("SIGTERM", clean);
-      process.once("exit", clean);
+      server.httpServer?.once("listening", () => {
+        mkdirSync(PUBLIC_BUILD_DIR, { recursive: true });
+        writeFileSync(hotPath, `http://localhost:${port}`);
+        // Publish the shared Vue so the dev import-map URL resolves. NOTE: in dev the
+        // host's own `import 'vue'` is served from Vite's optimized deps (Vite rewrites
+        // bare specifiers before the import-map applies), so the import-map only feeds
+        // third-party ESM addon widgets — which would then get a SECOND Vue instance in
+        // dev. Dev fidelity for externalized ESM widgets is a known limitation; the
+        // production build is the source of truth. See report.
+        try {
+          copyVendorVue(PUBLIC_BUILD_DIR);
+        } catch {
+          /* non-fatal in dev */
+        }
+        server.httpServer?.once("close", clean);
+        process.once("SIGINT", clean);
+        process.once("SIGTERM", clean);
+        process.once("exit", clean);
+      });
     },
   };
 }
@@ -196,7 +199,17 @@ export default defineConfig(({ command }) => ({
 
   plugins: [
     vue(),
-    ui({ router: "inertia", dts: false }),
+    ui({
+      router: "inertia",
+      dts: false,
+      ui: { icons: tablerIcons },
+      icon: {
+        clientBundle: {
+          icons: [...dynamicTablerIcons],
+          scan: true,
+        },
+      },
+    }),
     tailwindcss(),
     // Dev-only: regenerate SPA types from PHP DTOs on change (no-op on build).
     phpTypescriptTransform({ repoRoot: REPO_ROOT }),

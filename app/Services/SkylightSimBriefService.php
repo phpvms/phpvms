@@ -29,10 +29,7 @@ final class SkylightSimBriefService
     {
         $this->assertAvailable($user, $flight);
 
-        $existing = SimBrief::query()
-            ->where('user_id', $user->id)
-            ->where('flight_id', $flight->id)
-            ->first();
+        $existing = $this->existingBriefingFor($user, $flight);
         if ($existing instanceof SimBrief) {
             return $existing;
         }
@@ -64,6 +61,14 @@ final class SkylightSimBriefService
             'fare_data'   => $this->planningFares($flight, $fares),
             'expires_at'  => Carbon::now('UTC')->addHours(2),
         ]);
+    }
+
+    public function existingBriefingFor(User $user, Flight $flight): ?SimBrief
+    {
+        return SimBrief::query()
+            ->where('user_id', $user->id)
+            ->where('flight_id', $flight->id)
+            ->first();
     }
 
     public function attemptFor(User $user, string $staticId): SimBriefAttempt

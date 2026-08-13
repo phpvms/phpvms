@@ -10,7 +10,7 @@
     "nuxtUi": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["theme", "components"],
+      "required": ["theme"],
       "properties": {
         "theme": { "$ref": "#/$defs/upstreamTheme" },
         "components": { "$ref": "#/$defs/components" }
@@ -214,17 +214,14 @@
     "components": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["button", "input"],
       "properties": {
         "button": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["props", "style"],
           "properties": {
             "props": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["color", "variant", "size"],
               "properties": {
                 "color": {
                   "enum": ["primary", "secondary", "success", "info", "warning", "error", "neutral"]
@@ -236,8 +233,8 @@
             "style": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["shape", "weight"],
               "properties": {
+                "alignment": { "enum": ["start", "center", "end"] },
                 "shape": { "enum": ["square", "rounded", "pill"] },
                 "weight": { "enum": ["normal", "medium", "semibold"] }
               }
@@ -247,12 +244,10 @@
         "input": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["props", "style"],
           "properties": {
             "props": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["color", "size"],
               "properties": {
                 "color": {
                   "enum": ["primary", "secondary", "success", "info", "warning", "error", "neutral"]
@@ -263,7 +258,6 @@
             "style": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["appearance"],
               "properties": {
                 "appearance": { "enum": ["boxed", "underline"] }
               }

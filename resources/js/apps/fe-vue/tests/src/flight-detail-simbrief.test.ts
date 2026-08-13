@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { defineComponent, h } from "vue";
 import { describe, expect, it } from "vitest";
-import FlightDetailPanel from "@/features/flights/FlightDetailPanel.vue";
+import FlightDetailPanel from "@/components/flights/FlightDetailPanel.vue";
 
 const buttonStub = defineComponent({
   props: { type: String, disabled: Boolean },
@@ -40,7 +40,7 @@ const flight: App.Http.Data.FlightDetailData = {
   route: "MRF JALTU",
   cruiseLevel: 360,
   dispatchUrl: "/flights/flight-1/dispatch",
-  simbriefPlanningUrl: "/simbrief/planning?flight_id=flight-1",
+  ofpPlanningUrl: "/ofp/planning?flight_id=flight-1",
 };
 
 const policy: App.Http.Data.FlightDispatchPolicyData = {
@@ -57,7 +57,7 @@ const policy: App.Http.Data.FlightDispatchPolicyData = {
   restrictAircraftToTypeRating: false,
   aircraftAtDepartureOnly: false,
   companyAircraftOnly: false,
-  simbriefAvailable: true,
+  simbriefEnabled: true,
   simbriefRequiresBid: false,
   simbriefBlocksAircraft: false,
 };
@@ -80,14 +80,12 @@ describe("flight detail SimBrief entry", () => {
       },
     });
 
-    expect(wrapper.get('a[href="/simbrief/planning?flight_id=flight-1"]').text()).toBe(
-      "Generate SimBrief",
-    );
+    expect(wrapper.get('a[href="/ofp/planning?flight_id=flight-1"]').text()).toBe("Generate OFP");
   });
 
   it("does not offer SimBrief when the server policy disallows it", () => {
     const wrapper = mount(FlightDetailPanel, {
-      props: { flight, policy: { ...policy, simbriefAvailable: false } },
+      props: { flight, policy: { ...policy, simbriefEnabled: false } },
       global: {
         stubs: {
           UButton: buttonStub,
@@ -99,6 +97,6 @@ describe("flight detail SimBrief entry", () => {
       },
     });
 
-    expect(wrapper.text()).not.toContain("Generate SimBrief");
+    expect(wrapper.text()).not.toContain("Generate OFP");
   });
 });

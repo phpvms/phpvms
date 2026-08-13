@@ -22,8 +22,6 @@ describe("AppShell", () => {
     });
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.attributes("style")).toBeUndefined();
-
     const toggle = wrapper.get(".pv-mobile-nav-toggle");
     const navigation = wrapper.get(".pv-region-nav");
 

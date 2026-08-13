@@ -78,7 +78,7 @@ describe("My Bids", () => {
       global: {
         stubs: {
           UButton: buttonStub,
-          FlightBidDrawer: drawerStub,
+          AssignmentDrawer: drawerStub,
           PvSlot: true,
           Link: defineComponent({
             props: { href: String },
@@ -93,7 +93,7 @@ describe("My Bids", () => {
     expect(wrapper.text()).toContain("KORD");
     expect(wrapper.text()).toContain("N104PV");
     expect(wrapper.text()).toContain("confirmed");
-    expect(wrapper.text()).toContain("Generate SimBrief");
+    expect(wrapper.text()).toContain("Generate OFP");
     expect(wrapper.html()).toContain('href="/flights/flight-1"');
 
     await wrapper.get("button").trigger("click");
@@ -106,7 +106,7 @@ describe("My Bids", () => {
       global: {
         stubs: {
           UButton: buttonStub,
-          FlightBidDrawer: drawerStub,
+          AssignmentDrawer: drawerStub,
           PvSlot: true,
           Link: defineComponent({
             props: { href: String },
@@ -117,8 +117,8 @@ describe("My Bids", () => {
     });
 
     expect(wrapper.text()).toContain("Aircraft not selected");
-    expect(wrapper.text()).toContain("Generate SimBrief");
-    expect(wrapper.html()).toContain("/simbrief/planning?flight_id=flight-1");
+    expect(wrapper.text()).toContain("Generate OFP");
+    expect(wrapper.html()).toContain("/ofp/planning?bid_id=9");
   });
 
   it("confirms removal and removes the row without a page reload", async () => {
@@ -138,7 +138,7 @@ describe("My Bids", () => {
       global: {
         stubs: {
           UButton: buttonStub,
-          FlightBidDrawer: drawerStub,
+          AssignmentDrawer: drawerStub,
           PvSlot: true,
           Link: defineComponent({
             props: { href: String },

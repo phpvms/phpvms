@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
 import { nextTick, shallowRef, useTemplateRef } from "vue";
-import FlightBidDrawer from "@/features/flights/FlightBidDrawer.vue";
-import FlightDetailPanel from "@/features/flights/FlightDetailPanel.vue";
+import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
+import FlightDetailPanel from "@/components/flights/FlightDetailPanel.vue";
 
 defineProps<{
   flight: App.Http.Data.FlightDetailData;
   policy: App.Http.Data.FlightDispatchPolicyData;
 }>();
 
-const drawer = useTemplateRef<InstanceType<typeof FlightBidDrawer>>("drawer");
+const drawer = useTemplateRef<InstanceType<typeof AssignmentDrawer>>("drawer");
 const invokingControl = shallowRef<HTMLElement | null>(null);
 
 function openBid(flightId: string, event: MouseEvent) {
@@ -27,7 +27,7 @@ async function returnFocus() {
   <section class="pv-flight-show" aria-label="Flight details">
     <Link class="back-link" href="/flights">← Back to flight manifest</Link>
     <FlightDetailPanel :flight="flight" :policy="policy" @bid="openBid" />
-    <FlightBidDrawer ref="drawer" @closed="returnFocus" />
+    <AssignmentDrawer ref="drawer" @closed="returnFocus" />
   </section>
 </template>
 

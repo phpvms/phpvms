@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
-import PvSlot from "@/shared/ui/PvSlot.vue";
-import FlightRouteMap from "./FlightRouteMap.vue";
-import SimBriefAircraftSelection from "@/features/simbrief/SimBriefAircraftSelection.vue";
+import { computed } from "vue";
+import AircraftCard from "./AircraftCard.vue";
+import FlightIdentHeader from "@/components/flights/FlightIdentHeader.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
 
 const props = defineProps<{ selection: App.Http.Data.BidSelectionData }>();
 
-const planningUrl = computed(() => {
-  if (!props.selection.policy.simbriefAvailable || !props.selection.aircraft) return null;
-  return `/simbrief/planning?flight_id=${encodeURIComponent(props.selection.flight.summary.id)}&aircraft_id=${props.selection.aircraft.id}`;
+const ofpAction = computed(() => {
+  if (props.selection.ofpGenerated && props.selection.ofpUrl) {
+    return { label: "View OFP", url: props.selection.ofpUrl };
+  }
+
+  if (props.selection.policy.simbriefEnabled && props.selection.ofpPlanningUrl) {
+    return { label: "Generate OFP", url: props.selection.ofpPlanningUrl };
+  }
+
+  return null;
 });
 
 function formatExpiry(value: string | null): string {
@@ -20,26 +27,28 @@ function formatExpiry(value: string | null): string {
   }).format(new Date(value));
 }
 
-function planSimBrief() {
-  if (planningUrl.value) router.visit(planningUrl.value);
+function visitOfp() {
+  if (ofpAction.value) router.visit(ofpAction.value.url);
 }
 </script>
 
 <template>
   <div class="bid-overview" aria-live="polite">
-    <header>
+    <!-- <header>
       <div>
         <p class="pv-eyebrow">BID CONFIRMED</p>
-        <h2>{{ selection.flight.summary.callsign }}</h2>
+        <FlightIdentHeader
+          :callsign="selection.flight.summary.callsign"
+          :departure="selection.flight.summary.dpt ?? '—'"
+          :arrival="selection.flight.summary.arr ?? '—'"
+          :airline-logo="selection.flight.summary.airline?.logo"
+          :airline-name="selection.flight.summary.airline?.name"
+          :aircraft="selection.aircraft ? `${selection.aircraft.registration} · ${selection.aircraft.icaoType}` : 'Aircraft not selected'"
+          size="lg"
+        />
       </div>
       <span class="bid-state">{{ selection.state }}</span>
-    </header>
-
-    <p class="overview-route">
-      <strong>{{ selection.flight.summary.dpt ?? "—" }}</strong
-      ><span>to</span><strong>{{ selection.flight.summary.arr ?? "—" }}</strong>
-    </p>
-    <FlightRouteMap :flight="selection.flight" compact />
+    </header> -->
 
     <dl class="overview-facts">
       <div>
@@ -59,16 +68,6 @@ function planSimBrief() {
         <dd>{{ selection.flight.summary.blockTime ?? "—" }}</dd>
       </div>
       <div>
-        <dt>Aircraft</dt>
-        <dd>
-          {{
-            selection.aircraft
-              ? `${selection.aircraft.registration} · ${selection.aircraft.icaoType}`
-              : "Aircraft not selected"
-          }}
-        </dd>
-      </div>
-      <div>
         <dt>Reservation</dt>
         <dd>
           {{
@@ -86,12 +85,12 @@ function planSimBrief() {
       </div>
     </dl>
 
-    <PvSlot name="bids.drawer.overview.actions" :context="{ bid: selection.bid, selection }" />
-    <UButton v-if="planningUrl" @click="planSimBrief">Generate SimBrief</UButton>
-    <SimBriefAircraftSelection
-      v-else-if="selection.policy.simbriefAvailable"
-      :flight="selection.flight"
-    />
+    <AircraftCard :aircraft="selection.aircraft" label="Aircraft" />
+
+    <div class="overview-actions">
+      <PvSlot name="bids.drawer.overview.actions" :context="{ bid: selection.bid, selection }" />
+      <UButton v-if="ofpAction" @click="visitOfp">{{ ofpAction.label }}</UButton>
+    </div>
   </div>
 </template>
 
@@ -107,12 +106,6 @@ header {
   justify-content: space-between;
   gap: 16px;
 }
-h2 {
-  margin: 3px 0 0;
-  color: var(--pv-ink);
-  font-family: var(--pv-font-mono);
-  font-size: calc(24px * var(--pv-type-scale));
-}
 .bid-state {
   border-radius: var(--pv-radius-full);
   background: color-mix(in srgb, var(--pv-green) 13%, transparent);
@@ -120,19 +113,6 @@ h2 {
   padding: 4px 9px;
   font-size: calc(10px * var(--pv-type-scale));
   font-weight: 750;
-  text-transform: uppercase;
-}
-.overview-route {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  color: var(--pv-ink);
-  font-size: calc(18px * var(--pv-type-scale));
-}
-.overview-route span {
-  color: var(--pv-ink-faint);
-  font-size: calc(10px * var(--pv-type-scale));
   text-transform: uppercase;
 }
 .overview-facts {
@@ -150,6 +130,13 @@ h2 {
 }
 .overview-facts .expiry {
   grid-column: 1 / -1;
+}
+.overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 dt {
   color: var(--pv-ink-faint);

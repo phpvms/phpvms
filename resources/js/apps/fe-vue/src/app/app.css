@@ -67,7 +67,7 @@
     background: var(--pv-bg);
     color: var(--pv-ink);
     font-family: var(--pv-font-body);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -129,4 +129,30 @@
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+}
+
+/* Input form fields */
+.pv-form-card
+  :where(
+    [data-slot="root"]:has(> input[data-slot="base"]),
+    [data-slot="root"]:has(> textarea[data-slot="base"]),
+    button[data-slot="base"]
+  ) {
+  @apply w-full text-center;
+}
+
+.pv-form-card input[data-slot="base"] {
+  @apply text-center;
+}
+
+.pv-form-card input[data-slot="base"]:has(+ [data-slot="leading"]) {
+  @apply pe-9;
+}
+
+.pv-form-card button[data-slot="base"] {
+  @apply w-full;
+}
+
+.pv-form-card button[data-slot="base"] > :where([data-slot="value"], [data-slot="placeholder"]) {
+  @apply flex-1 text-center;
 }

@@ -9,6 +9,9 @@ use App\Enums\AirframeSource;
 use App\Enums\FareType;
 use App\Enums\FlightType;
 use App\Exceptions\AssetNotFound;
+use App\Http\Data\EligibleSubfleetData;
+use App\Http\Data\FlightDetailData;
+use App\Http\Data\OFPPlanningSelectionData;
 use App\Http\Data\SimBriefAttemptData;
 use App\Http\Data\SimBriefBriefingData;
 use App\Http\Data\SimBriefPlanningData;
@@ -18,8 +21,11 @@ use App\Models\Fare;
 use App\Models\Flight;
 use App\Models\SimBrief;
 use App\Models\SimBriefLayout;
+use App\Models\Subfleet;
 use App\Models\User;
+use App\Services\BidService;
 use App\Services\FareService;
+use App\Services\SimBriefEmbedCapabilityService;
 use App\Services\SimBriefService;
 use App\Services\SkylightSimBriefService;
 use Exception;
@@ -37,6 +43,8 @@ class SimBriefController
         private readonly SimBriefService $simBriefSvc,
         private readonly AddonRegistry $addonRegistry,
         private readonly SkylightSimBriefService $skylightSimBriefService,
+        private readonly BidService $bidService,
+        private readonly SimBriefEmbedCapabilityService $simBriefEmbedCapability,
     ) {}
 
     /**
@@ -476,20 +484,51 @@ class SimBriefController
     {
         /** @var User $user */
         $user = $request->user();
-        $flight = $this->skylightFlight($user, (string) $request->query('flight_id'));
+        $bidId = $request->integer('bid_id') ?: null;
+        $bid = $bidId === null
+            ? null
+            : $user->bids()->whereKey($bidId)->firstOrFail();
+        $flight = $this->skylightFlight(
+            $user,
+            $bid?->flight_id ?? (string) $request->query('flight_id'),
+        );
+        $aircraftId = $bid instanceof Bid
+            ? $bid->aircraft_id
+            : ($request->integer('aircraft_id') ?: null);
+        $this->skylightSimBriefService->assertAvailable($user, $flight);
+
+        $existing = $this->skylightSimBriefService->existingBriefingFor($user, $flight);
+        if ($existing instanceof SimBrief) {
+            return redirect()->route('frontend.ofp.briefing', $existing->id);
+        }
+
+        if ($aircraftId === null) {
+            return inertia('Ofp/Simbrief/Planning', [
+                'planning'          => null,
+                'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
+            ]);
+        }
+
         $result = $this->skylightSimBriefService->begin(
             $user,
             $flight,
-            $request->integer('aircraft_id') ?: null,
+            $aircraftId,
         );
         if ($result instanceof SimBrief) {
-            return redirect()->route('frontend.simbrief.skylight.briefing', $result->id);
+            return redirect()->route('frontend.ofp.briefing', $result->id);
         }
 
         $result->load(['aircraft.airport', 'aircraft.subfleet', 'flight.airline', 'flight.arr_airport', 'flight.dpt_airport', 'flight.alt_airport']);
 
-        return inertia('SimBrief/Planning', [
-            'planning' => SimBriefPlanningData::fromModels($result, $flight, $result->aircraft, $user),
+        return inertia('Ofp/Simbrief/Planning', [
+            'planning' => SimBriefPlanningData::fromModels(
+                $result,
+                $flight,
+                $result->aircraft,
+                $user,
+                $this->simBriefEmbedCapability->allowed(),
+            ),
+            'aircraftSelection' => $this->ofpAircraftSelection($flight, $user, $bid?->id),
         ]);
     }
 
@@ -503,7 +542,7 @@ class SimBriefController
         return response()->json([
             'attempt'     => SimBriefAttemptData::fromModel($attempt),
             'apiCode'     => md5((string) setting('simbrief.api_key').$request->string('apiRequest')->toString()),
-            'providerUrl' => 'https://www.simbrief.com/ofp/ofp.loader.api.php',
+            'providerUrl' => SimBriefEmbedCapabilityService::PROVIDER_URL,
         ]);
     }
 
@@ -523,7 +562,7 @@ class SimBriefController
 
         return response()->json([
             'briefing'    => SimBriefBriefingData::fromModel($briefing, $user->bids()->where('flight_id', $briefing->flight_id)->first()),
-            'briefingUrl' => route('frontend.simbrief.skylight.briefing', $briefing->id),
+            'briefingUrl' => route('frontend.ofp.briefing', $briefing->id),
         ]);
     }
 
@@ -533,7 +572,7 @@ class SimBriefController
         $user = $request->user();
         $briefing = $this->skylightSimBriefService->briefingFor($user, $id);
 
-        return inertia('SimBrief/Briefing', [
+        return inertia('Ofp/Simbrief/Briefing', [
             'briefing' => SimBriefBriefingData::fromModel(
                 $briefing,
                 $user->bids()->where('flight_id', $briefing->flight_id)->first(),
@@ -559,7 +598,7 @@ class SimBriefController
         $briefing = $this->skylightSimBriefService->regenerate($user, $id);
 
         return response()->json([
-            'planningUrl' => route('frontend.simbrief.skylight.planning', [
+            'planningUrl' => route('frontend.ofp.planning', [
                 'flight_id'   => $briefing->flight_id,
                 'aircraft_id' => $briefing->aircraft_id,
             ]),
@@ -598,5 +637,29 @@ class SimBriefController
             )
             ->with(['airline', 'alt_airport', 'arr_airport', 'dpt_airport', 'fares'])
             ->findOrFail($id);
+    }
+
+    private function ofpAircraftSelection(Flight $flight, User $user, ?int $bidId): OFPPlanningSelectionData
+    {
+        return new OFPPlanningSelectionData(
+            flight: FlightDetailData::fromModel($flight, $bidId ? [$flight->id => $bidId] : []),
+            dispatchUrl: route('frontend.flights.dispatch', $flight->id),
+            planningUrl: route('frontend.ofp.planning', $bidId
+                ? ['bid_id' => $bidId]
+                : ['flight_id' => $flight->id]),
+            aircraftAssignmentUrl: $bidId
+                ? route('frontend.flights.bid.store', $flight->id)
+                : null,
+            subfleets: $this->bidService->configuredSubfleets($flight)
+                ->map(function (Subfleet $subfleet) use ($flight, $user): EligibleSubfleetData {
+                    $eligibleAircraftCount = $this->bidService
+                        ->eligibleAircraftQuery($flight, $user, $subfleet->id)
+                        ->count();
+
+                    return EligibleSubfleetData::fromModel($subfleet, $eligibleAircraftCount);
+                })
+                ->values()
+                ->all(),
+        );
     }
 }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
 import { computed, shallowRef, watch } from "vue";
-import PvSlot from "@/shared/ui/PvSlot.vue";
+import FlightIdentHeader from "./FlightIdentHeader.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];
@@ -26,6 +27,10 @@ function statusLabel(flight: App.Http.Data.FlightListItemData): string {
   if (flight.primaryAction === "overview") return "On bid";
   return flight.availability === "available" ? "Available" : "Unavailable";
 }
+
+function selectFlight(flightId: string): void {
+  selectedId.value = flightId;
+}
 </script>
 
 <template>
@@ -46,19 +51,20 @@ function statusLabel(flight: App.Http.Data.FlightListItemData): string {
           class="manifest-row"
           :class="{ selected: selected?.id === flight.id }"
           role="listitem"
+          tabindex="0"
+          :aria-current="selected?.id === flight.id ? 'true' : undefined"
+          :aria-label="`Show ${flight.callsign} operational context`"
+          @click="selectFlight(flight.id)"
+          @keydown.enter.prevent="selectFlight(flight.id)"
+          @keydown.space.prevent="selectFlight(flight.id)"
         >
-          <button
-            class="flight-select"
-            type="button"
-            :aria-label="`Show ${flight.callsign} operational context`"
-            @click="selectedId = flight.id"
-          >
+          <div class="flight-select">
             <span class="callsign">{{ flight.callsign }}</span>
             <span class="route"
               ><strong>{{ flight.dpt ?? "—" }}</strong
               ><span>→</span><strong>{{ flight.arr ?? "—" }}</strong></span
             >
-          </button>
+          </div>
           <dl class="row-facts">
             <div>
               <dt>Depart</dt>
@@ -79,17 +85,19 @@ function statusLabel(flight: App.Http.Data.FlightListItemData): string {
           </dl>
           <div class="row-actions">
             <span class="availability" :class="flight.availability">{{ statusLabel(flight) }}</span>
-            <Link class="detail-link" :href="`/flights/${flight.id}`">Details</Link>
+            <Link class="detail-link" :href="`/flights/${flight.id}`" @click.stop>Details</Link>
             <UButton
               v-if="flight.primaryAction !== 'unavailable'"
               type="button"
               size="sm"
               :variant="flight.primaryAction === 'overview' ? 'soft' : 'solid'"
-              @click="emit('bid', flight.id, $event)"
+              @click.stop="emit('bid', flight.id, $event)"
               >{{ flight.primaryAction === "overview" ? "Overview" : "Bid" }}</UButton
             >
-            <UButton v-else type="button" size="sm" disabled>Unavailable</UButton>
-            <PvSlot name="flights.row.actions" :context="{ flight, policy }" />
+            <UButton v-else type="button" size="sm" disabled @click.stop>Unavailable</UButton>
+            <div class="row-addon-actions" @click.stop @keydown.stop>
+              <PvSlot name="flights.row.actions" :context="{ flight, policy }" />
+            </div>
           </div>
           <p v-if="flight.availabilityReason" class="availability-reason">
             {{ flight.availabilityReason }}
@@ -100,11 +108,16 @@ function statusLabel(flight: App.Http.Data.FlightListItemData): string {
 
     <aside v-if="selected" class="selected-flight" aria-labelledby="selected-flight-heading">
       <p class="pv-eyebrow">SELECTED FLIGHT</p>
-      <h2 id="selected-flight-heading">{{ selected.callsign }}</h2>
-      <p class="selected-route">
-        <strong>{{ selected.dpt ?? "—" }}</strong
-        ><span>to</span><strong>{{ selected.arr ?? "—" }}</strong>
-      </p>
+      <FlightIdentHeader
+        id="selected-flight-heading"
+        :callsign="selected.callsign"
+        :departure="selected.dpt ?? '—'"
+        :arrival="selected.arr ?? '—'"
+        :airline-logo="selected.airline?.logo"
+        :airline-name="selected.airline?.name"
+        :href="`/flights/${selected.id}`"
+        size="lg"
+      />
       <dl class="selected-facts">
         <div>
           <dt>Scheduled departure</dt>
@@ -131,16 +144,14 @@ function statusLabel(flight: App.Http.Data.FlightListItemData): string {
           <dd>{{ selected.blockTime ?? "—" }}</dd>
         </div>
       </dl>
-      <p class="ofp-note"><strong>OFP:</strong> Not generated. Dispatch planning starts later.</p>
+      <p class="ofp-note"><strong>OFP:</strong> Not generated</p>
       <div class="selected-actions">
-        <Link class="detail-link" :href="`/flights/${selected.id}`">Open flight details</Link>
         <UButton
           v-if="selected.primaryAction !== 'unavailable'"
           type="button"
+          block
           @click="emit('bid', selected.id, $event)"
-          >{{
-            selected.primaryAction === "overview" ? "Open bid overview" : "Bid on flight"
-          }}</UButton
+          >{{ selected.primaryAction === "overview" ? "View Bid" : "Bid on flight" }}</UButton
         >
       </div>
       <PvSlot name="flights.detail.actions" :context="{ flight: selected, policy }" />
@@ -198,9 +209,15 @@ h2 {
   min-width: 0;
   padding: 15px 20px;
   border-bottom: 1px solid var(--pv-line);
+  cursor: pointer;
 }
 .manifest-row:last-child {
   border-bottom: 0;
+}
+.manifest-row:focus-visible {
+  outline: 2px solid var(--pv-focus);
+  outline-offset: -3px;
+  border-radius: var(--pv-radius-sm);
 }
 .manifest-row.selected {
   background: color-mix(in srgb, var(--pv-accent) 5%, var(--pv-panel));
@@ -215,12 +232,6 @@ h2 {
   background: transparent;
   color: inherit;
   text-align: left;
-  cursor: pointer;
-}
-.flight-select:focus-visible {
-  outline: 2px solid var(--pv-focus);
-  outline-offset: 5px;
-  border-radius: var(--pv-radius-sm);
 }
 .callsign {
   color: var(--pv-accent);
@@ -271,6 +282,9 @@ dd {
   gap: 8px;
   min-width: 0;
 }
+.row-addon-actions {
+  display: contents;
+}
 .availability {
   border-radius: var(--pv-radius-full);
   padding: 3px 8px;
@@ -305,24 +319,10 @@ dd {
   top: 16px;
   padding: 22px;
 }
-.selected-route {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 22px 0;
-  color: var(--pv-ink);
-  font-family: var(--pv-font-mono);
-  font-size: calc(20px * var(--pv-type-scale));
-}
-.selected-route span {
-  color: var(--pv-ink-faint);
-  font-family: var(--pv-font-body);
-  font-size: calc(11px * var(--pv-type-scale));
-  text-transform: uppercase;
-}
 .selected-facts {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  margin-top: 22px;
   padding: 18px 0;
   border-block: 1px solid var(--pv-line);
 }
@@ -374,9 +374,6 @@ dd {
   .manifest-row,
   .selected-flight {
     padding-inline: 14px;
-  }
-  .selected-route {
-    font-size: calc(17px * var(--pv-type-scale));
   }
 }
 </style>

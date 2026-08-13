@@ -7,6 +7,7 @@ use App\Enums\AircraftState;
 use App\Enums\AircraftStatus;
 use App\Enums\FareType;
 use App\Events\CronHourly;
+use App\Http\Data\BidSelectionData;
 use App\Http\Data\FlightDispatchPolicyData;
 use App\Models\Aircraft;
 use App\Models\Airline;
@@ -28,6 +29,7 @@ use App\Services\UserService;
 use Carbon\Carbon;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
@@ -137,9 +139,89 @@ it('returns every authoritative dispatch policy setting', function (): void {
         ->and($policy->aircraftRequired)->toBeTrue()
         ->and($policy->chooseLaterAllowed)->toBeFalse()
         ->and($policy->expireHours)->toBe(12)
-        ->and($policy->simbriefAvailable)->toBeTrue()
+        ->and($policy->simbriefEnabled)->toBeTrue()
         ->and($policy->simbriefRequiresBid)->toBeTrue()
         ->and($policy->simbriefBlocksAircraft)->toBeTrue();
+});
+
+it('exposes server-derived OFP URLs for the authenticated bid only', function (): void {
+    $fixture = makeDispatchFixture();
+    updateSetting('simbrief.api_key', 'configured');
+    $bid = app(BidService::class)->addBid($fixture['flight'], $fixture['user'], $fixture['aircraft']);
+    $policy = FlightDispatchPolicyData::fromSettings();
+
+    $selection = BidSelectionData::fromModel($bid, $policy, $fixture['user']);
+    expect($selection->ofpGenerated)->toBeFalse()
+        ->and($selection->ofpPlanningUrl)->toBe(route('frontend.ofp.planning', ['bid_id' => $bid->id]))
+        ->and($selection->ofpUrl)->toBeNull()
+        ->and($selection->flight->ofpPlanningUrl)->toBe(
+            route('frontend.ofp.planning').'?flight_id='.$fixture['flight']->id,
+        );
+
+    $this->actingAs($fixture['user'])
+        ->get($selection->ofpPlanningUrl)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Ofp/Simbrief/Planning', false)
+            ->where('planning.attempt.flightId', $fixture['flight']->id)
+            ->where('planning.attempt.aircraftId', $fixture['aircraft']->id)
+            ->where('aircraftSelection.flight.summary.id', $fixture['flight']->id)
+            ->where('aircraftSelection.dispatchUrl', route('frontend.flights.dispatch', $fixture['flight']->id))
+            ->has('aircraftSelection.subfleets', 1));
+
+    $otherPilot = User::factory()->create(['airline_id' => $fixture['user']->airline_id]);
+    $this->actingAs($otherPilot)
+        ->get($selection->ofpPlanningUrl)
+        ->assertNotFound();
+
+    updateSetting('simbrief.api_key', '');
+    $disabled = BidSelectionData::fromModel($bid, FlightDispatchPolicyData::fromSettings(), $fixture['user']);
+    expect($disabled->ofpPlanningUrl)->toBeNull();
+    updateSetting('simbrief.api_key', 'configured');
+
+    $notOwned = BidSelectionData::fromModel($bid, $policy, $otherPilot);
+    expect($notOwned->ofpGenerated)->toBeFalse()
+        ->and($notOwned->ofpPlanningUrl)->toBeNull()
+        ->and($notOwned->ofpUrl)->toBeNull();
+
+    SimBrief::factory()->create([
+        'user_id'   => $otherPilot->id,
+        'flight_id' => $fixture['flight']->id,
+    ]);
+    $withoutOwnOfp = BidSelectionData::fromModel($bid, $policy, $fixture['user']);
+    expect($withoutOwnOfp->ofpGenerated)->toBeFalse()
+        ->and($withoutOwnOfp->ofpUrl)->toBeNull();
+
+    $ofp = SimBrief::factory()->create([
+        'user_id'   => $fixture['user']->id,
+        'flight_id' => $fixture['flight']->id,
+    ]);
+    $withOwnOfp = BidSelectionData::fromModel($bid, $policy, $fixture['user']);
+    expect($withOwnOfp->ofpGenerated)->toBeTrue()
+        ->and($withOwnOfp->ofpPlanningUrl)->toBeNull()
+        ->and($withOwnOfp->ofpUrl)->toBe(route('frontend.ofp.briefing', $ofp->id));
+});
+
+it('uses the OFP namespace only for the new Skylight route surface', function (): void {
+    expect(route('frontend.ofp.planning'))->toEndWith('/ofp/planning')
+        ->and(route('frontend.ofp.attempt.api-code', 'attempt-id'))->toEndWith('/ofp/attempts/attempt-id/api-code')
+        ->and(route('frontend.ofp.attempt.poll', 'attempt-id'))->toEndWith('/ofp/attempts/attempt-id/poll')
+        ->and(route('frontend.ofp.briefing', 'ofp-id'))->toEndWith('/ofp/briefings/ofp-id')
+        ->and(route('frontend.ofp.briefing.cancel', 'ofp-id'))->toEndWith('/ofp/briefings/ofp-id')
+        ->and(route('frontend.ofp.briefing.regenerate', 'ofp-id'))->toEndWith('/ofp/briefings/ofp-id/regenerate')
+        ->and(route('frontend.ofp.briefing.edit-sync', 'ofp-id'))->toEndWith('/ofp/briefings/ofp-id/edit-sync')
+        ->and(route('frontend.simbrief.generate'))->toEndWith('/simbrief/generate')
+        ->and(route('frontend.simbrief.briefing', 'legacy-id'))->toEndWith('/simbrief/legacy-id');
+
+    expect(Route::getRoutes()->getByName('frontend.ofp.planning')->methods())->toContain('GET')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.attempt.api-code')->methods())->toContain('POST')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.attempt.poll')->methods())->toContain('POST')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.briefing')->methods())->toContain('GET')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.briefing.cancel')->methods())->toContain('DELETE')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.briefing.regenerate')->methods())->toContain('POST')
+        ->and(Route::getRoutes()->getByName('frontend.ofp.briefing.edit-sync')->methods())->toContain('POST')
+        ->and(Route::getRoutes()->getByName('frontend.simbrief.generate')->methods())->toContain('GET')
+        ->and(Route::getRoutes()->getByName('frontend.simbrief.briefing')->methods())->toContain('GET');
 });
 
 it('clamps legacy negative bid expiry and rejects new negative settings', function (): void {
@@ -175,10 +257,10 @@ it('opens Skylight planning and prevents another pilot from using its static ID'
     $fixture['user']->update(['simbrief_username' => null]);
 
     $this->actingAs($fixture['user'])
-        ->get('/simbrief/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
+        ->get('/ofp/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-            ->component('SimBrief/Planning', false)
+            ->component('Ofp/Simbrief/Planning', false)
             ->where('planning.attempt.flightId', $fixture['flight']->id)
             ->where('planning.attempt.aircraftId', $fixture['aircraft']->id));
 
@@ -186,8 +268,86 @@ it('opens Skylight planning and prevents another pilot from using its static ID'
     $otherPilot = User::factory()->create(['airline_id' => $fixture['user']->airline_id]);
 
     $this->actingAs($otherPilot)
-        ->postJson('/simbrief/attempts/'.$staticId.'/api-code', ['apiRequest' => 'request'])
+        ->postJson('/ofp/attempts/'.$staticId.'/api-code', ['apiRequest' => 'request'])
         ->assertNotFound();
+});
+
+it('returns aircraft selection for a flight-only bid before creating an OFP attempt', function (): void {
+    $fixture = makeDispatchFixture();
+    updateSetting('simbrief.api_key', 'configured');
+    $bid = app(BidService::class)->addBid($fixture['flight'], $fixture['user']);
+    $planningUrl = route('frontend.ofp.planning', ['bid_id' => $bid->id]);
+
+    expect(BidSelectionData::fromModel($bid, FlightDispatchPolicyData::fromSettings(), $fixture['user'])->ofpPlanningUrl)
+        ->toBe($planningUrl);
+
+    $this->actingAs($fixture['user'])
+        ->get($planningUrl.'&aircraft_id='.$fixture['aircraft']->id)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Ofp/Simbrief/Planning', false)
+            ->where('planning', null)
+            ->where('aircraftSelection.flight.summary.id', $fixture['flight']->id)
+            ->where('aircraftSelection.flight.summary.dpt', $fixture['departure']->icao)
+            ->where('aircraftSelection.flight.summary.arr', $fixture['arrival']->icao)
+            ->where('aircraftSelection.flight.route', 'DCT TEST')
+            ->where('aircraftSelection.dispatchUrl', route('frontend.flights.dispatch', $fixture['flight']->id))
+            ->where('aircraftSelection.planningUrl', $planningUrl)
+            ->where('aircraftSelection.aircraftAssignmentUrl', route('frontend.flights.bid.store', $fixture['flight']->id))
+            ->has('aircraftSelection.subfleets', 1)
+            ->where('aircraftSelection.subfleets.0.id', $fixture['subfleet']->id));
+
+    expect($bid->refresh()->aircraft_id)->toBeNull()
+        ->and(SimBriefAttempt::query()->where('user_id', $fixture['user']->id)->count())->toBe(0);
+
+    $this->actingAs($fixture['user'])
+        ->postJson(route('frontend.flights.bid.store', $fixture['flight']->id), [
+            'aircraftId' => $fixture['aircraft']->id,
+        ])
+        ->assertOk()
+        ->assertJsonPath('selection.aircraft.id', $fixture['aircraft']->id)
+        ->assertJsonPath('selection.ofpPlanningUrl', $planningUrl);
+
+    expect($bid->refresh()->aircraft_id)->toBe($fixture['aircraft']->id);
+
+    $replacement = Aircraft::factory()->create([
+        'subfleet_id' => $fixture['subfleet']->id,
+        'airport_id'  => $fixture['departure']->id,
+    ]);
+    $this->actingAs($fixture['user'])
+        ->postJson(route('frontend.flights.bid.store', $fixture['flight']->id), [
+            'aircraftId' => $replacement->id,
+        ])
+        ->assertOk();
+    expect($bid->refresh()->aircraft_id)->toBe($fixture['aircraft']->id);
+
+    $this->actingAs($fixture['user'])
+        ->get($planningUrl)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('planning.attempt.flightId', $fixture['flight']->id)
+            ->where('planning.attempt.aircraftId', $fixture['aircraft']->id));
+
+    expect(SimBriefAttempt::query()->where('user_id', $fixture['user']->id)->count())->toBe(1);
+});
+
+it('rejects an ineligible aircraft when filling an unassigned bid', function (): void {
+    $fixture = makeDispatchFixture();
+    $bid = app(BidService::class)->addBid($fixture['flight'], $fixture['user']);
+    $inactive = Aircraft::factory()->create([
+        'subfleet_id' => $fixture['subfleet']->id,
+        'airport_id'  => $fixture['departure']->id,
+        'status'      => AircraftStatus::MAINTENANCE,
+    ]);
+
+    $this->actingAs($fixture['user'])
+        ->postJson(route('frontend.flights.bid.store', $fixture['flight']->id), [
+            'aircraftId' => $inactive->id,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonPath('type', 'stale-aircraft');
+
+    expect($bid->refresh()->aircraft_id)->toBeNull();
 });
 
 it('uses the configured cargo load factor for Skylight SimBrief planning', function (): void {
@@ -209,11 +369,48 @@ it('uses the configured cargo load factor for Skylight SimBrief planning', funct
     ]));
 
     $this->actingAs($fixture['user'])
-        ->get('/simbrief/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
+        ->get('/ofp/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-            ->component('SimBrief/Planning', false)
+            ->component('Ofp/Simbrief/Planning', false)
             ->where('planning.providerFields.cargo', '1.0'));
+});
+
+it('provides the same editable callsign choices as Seven', function (): void {
+    $fixture = makeDispatchFixture();
+    updateSetting('simbrief.api_key', 'configured');
+    updateSetting('simbrief.callsign', false);
+    $fixture['flight']->update(['callsign' => 'ALPHA']);
+    $fixture['user']->update(['callsign' => 'PILOT']);
+    $airlineIcao = $fixture['airline']->icao;
+
+    $this->actingAs($fixture['user'])
+        ->get('/ofp/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Ofp/Simbrief/Planning', false)
+            ->where('planning.callsignEditable', true)
+            ->where('planning.callsignOptions', [
+                $airlineIcao.'ALPHA',
+                $airlineIcao.$fixture['flight']->flight_number,
+                $airlineIcao.'PILOT',
+                $fixture['user']->ident,
+            ]));
+});
+
+it('keeps the pilot ident fixed when the Seven callsign setting is enabled', function (): void {
+    $fixture = makeDispatchFixture();
+    updateSetting('simbrief.api_key', 'configured');
+    updateSetting('simbrief.callsign', true);
+
+    $this->actingAs($fixture['user'])
+        ->get('/ofp/planning?flight_id='.$fixture['flight']->id.'&aircraft_id='.$fixture['aircraft']->id)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Ofp/Simbrief/Planning', false)
+            ->where('planning.callsignEditable', false)
+            ->where('planning.callsignOptions', [$fixture['user']->ident])
+            ->where('planning.providerFields.callsign', $fixture['user']->ident));
 });
 
 it('stores an optional aircraft preference or a flight-only bid when blocking is off', function (): void {
@@ -437,19 +634,19 @@ it('uses non-GET owner-scoped SimBrief lifecycle mutations', function (): void {
     $otherPilot = User::factory()->create(['airline_id' => $fixture['user']->airline_id]);
 
     $this->actingAs($otherPilot)
-        ->postJson('/simbrief/briefings/'.$briefing->id.'/regenerate')
+        ->postJson('/ofp/briefings/'.$briefing->id.'/regenerate')
         ->assertNotFound();
 
     $this->actingAs($otherPilot)
-        ->postJson('/simbrief/briefings/'.$briefing->id.'/edit-sync')
+        ->postJson('/ofp/briefings/'.$briefing->id.'/edit-sync')
         ->assertNotFound();
 
     $this->actingAs($fixture['user'])
-        ->postJson('/simbrief/briefings/'.$briefing->id.'/regenerate')
+        ->postJson('/ofp/briefings/'.$briefing->id.'/regenerate')
         ->assertOk()
         ->assertJsonPath(
             'planningUrl',
-            route('frontend.simbrief.skylight.planning', [
+            route('frontend.ofp.planning', [
                 'flight_id'   => $fixture['flight']->id,
                 'aircraft_id' => $fixture['aircraft']->id,
             ]),

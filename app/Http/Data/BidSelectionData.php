@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Data;
 
 use App\Models\Bid;
+use App\Models\SimBrief;
+use App\Models\User;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -19,9 +21,12 @@ final class BidSelectionData extends Data
         public string $state,
         public ?string $expiresAt,
         public bool $aircraftReserved,
+        public bool $ofpGenerated,
+        public ?string $ofpPlanningUrl,
+        public ?string $ofpUrl,
     ) {}
 
-    public static function fromModel(Bid $bid, FlightDispatchPolicyData $policy): self
+    public static function fromModel(Bid $bid, FlightDispatchPolicyData $policy, User $user): self
     {
         $bid->loadMissing([
             'aircraft.airport',
@@ -35,6 +40,13 @@ final class BidSelectionData extends Data
         $expiresAt = $policy->expireHours > 0
             ? $bid->created_at?->copy()->addHours($policy->expireHours)->toIso8601String()
             : null;
+        $isOwner = $bid->user_id === $user->id;
+        $ofpId = $isOwner
+            ? SimBrief::query()
+                ->where('user_id', $user->id)
+                ->where('flight_id', $bid->flight_id)
+                ->value('id')
+            : null;
 
         return new self(
             bid: BidData::fromModel($bid),
@@ -44,6 +56,11 @@ final class BidSelectionData extends Data
             state: 'confirmed',
             expiresAt: $expiresAt,
             aircraftReserved: $policy->aircraftRequired && $bid->aircraft_id !== null,
+            ofpGenerated: $ofpId !== null,
+            ofpPlanningUrl: $isOwner && $policy->simbriefEnabled && $ofpId === null
+                ? route('frontend.ofp.planning', ['bid_id' => $bid->id])
+                : null,
+            ofpUrl: $ofpId === null ? null : route('frontend.ofp.briefing', $ofpId),
         );
     }
 }

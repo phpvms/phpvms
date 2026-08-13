@@ -31,7 +31,7 @@ export interface WidgetDef {
   /** Human label shown in the Add-widget menu + frame header. */
   title: string;
   /**
-   * Menu/header icon. Either a lucide icon name (kebab- or PascalCase, e.g.
+   * Menu/header icon. Either a Tabler icon name (kebab- or PascalCase, e.g.
    * `cloud-sun`) or raw inline SVG path markup (legacy, must start with `<`).
    * Rendered via PvIcon, which handles both forms.
    */

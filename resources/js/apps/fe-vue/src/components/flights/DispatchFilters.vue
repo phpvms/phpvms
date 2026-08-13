@@ -185,7 +185,7 @@ function clear() {
         /></label>
 
         <div class="filter-actions">
-          <UButton type="submit" icon="i-lucide-search" :loading="loading" :disabled="loading">{{
+          <UButton type="submit" icon="i-tabler-search" :loading="loading" :disabled="loading">{{
             loading ? "Updating results" : "Apply filters"
           }}</UButton>
           <UButton type="button" color="neutral" variant="ghost" :disabled="loading" @click="clear"
@@ -290,7 +290,6 @@ label > span {
   }
   .filter-actions :deep(button) {
     flex: 1;
-    justify-content: center;
   }
 }
 </style>

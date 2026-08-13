@@ -24,7 +24,7 @@ final class FlightDetailData extends Data
         public ?string $route,
         public ?int $cruiseLevel,
         public string $dispatchUrl,
-        public string $simbriefPlanningUrl,
+        public string $ofpPlanningUrl,
     ) {}
 
     /** @param array<string, int> $saved */
@@ -54,7 +54,7 @@ final class FlightDetailData extends Data
             route: filled($flight->route) ? $flight->route : null,
             cruiseLevel: $flight->level ?: null,
             dispatchUrl: route('frontend.flights.dispatch', $flight->id),
-            simbriefPlanningUrl: route('frontend.simbrief.skylight.planning').'?flight_id='.$flight->id,
+            ofpPlanningUrl: route('frontend.ofp.planning').'?flight_id='.$flight->id,
         );
     }
 

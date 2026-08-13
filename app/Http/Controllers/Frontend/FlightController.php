@@ -379,7 +379,7 @@ class FlightController extends Controller
                     return EligibleSubfleetData::fromModel($subfleet, $eligibleAircraftCount);
                 })
                 ->values(),
-            'selection' => $bid ? BidSelectionData::fromModel($bid, $policy) : null,
+            'selection' => $bid ? BidSelectionData::fromModel($bid, $policy, $user) : null,
         ]);
     }
 
@@ -436,7 +436,7 @@ class FlightController extends Controller
         }
 
         return response()->json([
-            'selection' => BidSelectionData::fromModel($bid, FlightDispatchPolicyData::fromSettings()),
+            'selection' => BidSelectionData::fromModel($bid, FlightDispatchPolicyData::fromSettings(), $user),
         ]);
     }
 

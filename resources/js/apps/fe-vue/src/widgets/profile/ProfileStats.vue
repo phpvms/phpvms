@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StatTile from "@/shared/ui/stats/StatTile.vue";
+import StatTile from "@/shared/components/stats/StatTile.vue";
 
 defineProps<{ profile: App.Http.Data.ProfileData }>();
 </script>

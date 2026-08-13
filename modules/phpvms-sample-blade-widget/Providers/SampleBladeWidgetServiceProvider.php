@@ -121,7 +121,7 @@ class SampleBladeWidgetServiceProvider extends ServiceProvider
      *               HTML in place — no full page reload). The alternative,
      *               'iframe', would host us in a same-origin <iframe> instead.
      *   title       Label shown in the "Add widget" menu and the frame header.
-     *   icon        A lucide icon name (rendered by the SPA).
+     *   icon        A Tabler icon name (rendered by the SPA).
      *   endpoint    URL the shell fetches. Use a LITERAL path here, NOT
      *               route('sample-blade-widget.notams'). Addon ServiceProviders
      *               boot early — route registration order across providers is not
@@ -141,7 +141,7 @@ class SampleBladeWidgetServiceProvider extends ServiceProvider
             'kind'        => 'blade',
             'mode'        => 'island',
             'title'       => 'Station NOTAMs (sample)',
-            'icon'        => 'triangle-alert',           // lucide name
+            'icon'        => 'alert-triangle',           // Tabler name
             'endpoint'    => '/widgets/sample-notams',   // literal path (see note above)
             'defaultZone' => 'sidebar',
             'defaultOn'   => false,

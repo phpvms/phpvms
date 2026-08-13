@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
 import { computed, nextTick, shallowRef, useTemplateRef } from "vue";
-import FlightBidDrawer from "@/features/flights/FlightBidDrawer.vue";
-import PvSlot from "@/shared/ui/PvSlot.vue";
+import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
 
 /**
  * My Bids page. Reads BidRowData[] (one row per validated bid: a `bid` object +
@@ -19,7 +19,7 @@ const props = defineProps<{
   acarsPlugin: boolean;
 }>();
 
-const drawer = useTemplateRef<InstanceType<typeof FlightBidDrawer>>("drawer");
+const drawer = useTemplateRef<InstanceType<typeof AssignmentDrawer>>("drawer");
 const invokingControl = shallowRef<HTMLElement | null>(null);
 const confirmingId = shallowRef<number | null>(null);
 const removingId = shallowRef<number | null>(null);
@@ -46,9 +46,7 @@ function formatExpiry(value: string | null): string {
 }
 
 function simBriefHref(row: App.Http.Data.BidRowData): string {
-  const params = new URLSearchParams({ flight_id: row.bid.flightId });
-  if (row.aircraft) params.set("aircraft_id", String(row.aircraft.id));
-  return `/simbrief/planning?${params.toString()}`;
+  return `/ofp/planning?bid_id=${row.bid.id}`;
 }
 
 function csrfToken(): string {
@@ -165,7 +163,7 @@ async function removeBid(row: App.Http.Data.BidRowData) {
                   >Details</Link
                 >
                 <Link v-if="row.canGenerateSimBrief" class="simbrief-link" :href="simBriefHref(row)"
-                  >Generate SimBrief</Link
+                  >Generate OFP</Link
                 >
                 <UButton
                   type="button"
@@ -221,7 +219,7 @@ async function removeBid(row: App.Http.Data.BidRowData) {
       <Link class="browse-link" href="/flights">Browse flights</Link>
     </div>
 
-    <FlightBidDrawer ref="drawer" @closed="returnFocus" />
+    <AssignmentDrawer ref="drawer" @closed="returnFocus" />
   </section>
 </template>
 

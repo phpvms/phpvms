@@ -14,9 +14,9 @@ interface ChromePageProps extends Record<string, unknown> {
 
 export function useAppChrome() {
   const page = usePage<ChromePageProps>();
-  const user = computed(() => page.props.auth?.user ?? null);
-  const appName = computed(() => page.props.appName ?? "phpVMS");
-  const pilotChrome = computed(() => page.props.pilotChrome ?? null);
+  const user = computed(() => page.props?.auth?.user ?? null);
+  const appName = computed(() => page.props?.appName ?? "phpVMS");
+  const pilotChrome = computed(() => page.props?.pilotChrome ?? null);
   const initials = computed(() =>
     (user.value?.name ?? "?")
       .split(" ")

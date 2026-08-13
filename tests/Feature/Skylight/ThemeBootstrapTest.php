@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Services\Theme\ActiveThemeService;
 use App\Services\Theme\ThemeDocumentNormalizer;
 use App\Services\Theme\ThemePublicationService;
 use Igaster\LaravelTheme\Facades\Theme;
@@ -45,6 +46,42 @@ it('uses a null theme prop and bundled application CSS when no revision is activ
 
     expect($shared)->toHaveKey('theme')
         ->and($shared['theme'])->toBeNull();
+});
+
+it('publishes changed source defaults while the Skylight Vite server is active', function (): void {
+    $hotFile = public_path('build/skylight/hot');
+    $previousHotFile = File::exists($hotFile) ? File::get($hotFile) : null;
+    File::ensureDirectoryExists(dirname($hotFile));
+    File::put($hotFile, 'http://localhost:5273');
+
+    $document = app(ThemeDocumentNormalizer::class)->defaults();
+    $oldDocument = $document;
+    $oldDocument['nuxtUi']['components']['input']['style']['appearance'] = 'underline';
+    $oldRevision = app(ThemePublicationService::class)->publish(
+        'skylight',
+        $oldDocument,
+        'body { color: red; }',
+    );
+
+    app()->detectEnvironment(fn (): string => 'demo');
+
+    try {
+        $revision = app(ActiveThemeService::class)->revision('skylight');
+
+        expect($revision)->not->toBeNull()
+            ->and($revision->id)->not->toBe($oldRevision->id)
+            ->and($revision->document)->toBe($document)
+            ->and($revision->custom_css)->toBe('body { color: red; }')
+            ->and(app(ActiveThemeService::class)->revision('skylight')->id)->toBe($revision->id);
+    } finally {
+        app()->detectEnvironment(fn (): string => 'testing');
+
+        if ($previousHotFile === null) {
+            File::delete($hotFile);
+        } else {
+            File::put($hotFile, $previousHotFile);
+        }
+    }
 });
 
 it('orders production application theme and custom links before module scripts', function (): void {

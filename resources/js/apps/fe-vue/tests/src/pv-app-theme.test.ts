@@ -29,7 +29,7 @@ const UThemeStub = defineComponent({
 describe("PvApp theme providers", () => {
   it("hosts UApp and the resolved UTheme on the first render", () => {
     const document = defaultThemeDocument();
-    document.nuxtUi.components.button.style.shape = "pill";
+    document.nuxtUi.components!.button!.style!.shape = "pill";
     const resolved = resolveTheme(document);
 
     const wrapper = shallowMount(PvApp, {

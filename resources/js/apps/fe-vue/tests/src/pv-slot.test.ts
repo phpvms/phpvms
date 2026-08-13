@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import { defineComponent, h } from "vue";
-import PvSlot from "@/shared/ui/PvSlot.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
 import { RegistryKey, ResolverKey, PagePropsKey } from "@/shared/lib/usePvSlot";
 import type { SlotEntry, ComponentResolver } from "@/shared/lib/registry";
 

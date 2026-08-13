@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
-import PvSlot from "@/shared/ui/PvSlot.vue";
+import FlightIdentHeader from "./FlightIdentHeader.vue";
+import PvSlot from "@/shared/components/PvSlot.vue";
 import AirportWeather from "./AirportWeather.vue";
 import FlightRouteMap from "./FlightRouteMap.vue";
 
@@ -16,11 +17,14 @@ const emit = defineEmits<{ bid: [flightId: string, event: MouseEvent] }>();
     <header class="detail-hero">
       <div>
         <p class="pv-eyebrow">FLIGHT DISPATCH</p>
-        <h1>{{ flight.summary.callsign }}</h1>
-        <p class="route">
-          <strong>{{ flight.summary.dpt ?? "—" }}</strong
-          ><span>to</span><strong>{{ flight.summary.arr ?? "—" }}</strong>
-        </p>
+        <FlightIdentHeader
+          :callsign="flight.summary.callsign"
+          :departure="flight.summary.dpt ?? '—'"
+          :arrival="flight.summary.arr ?? '—'"
+          :airline-logo="flight.summary.airline?.logo"
+          :airline-name="flight.summary.airline?.name"
+          size="lg"
+        />
       </div>
       <div class="detail-actions">
         <UButton
@@ -34,12 +38,12 @@ const emit = defineEmits<{ bid: [flightId: string, event: MouseEvent] }>();
         <UButton v-else type="button" disabled>Unavailable</UButton>
         <Link
           v-if="
-            policy.simbriefAvailable &&
+            policy.simbriefEnabled &&
             (!policy.simbriefRequiresBid || flight.summary.primaryAction === 'overview')
           "
           class="simbrief-link"
-          :href="flight.simbriefPlanningUrl"
-          >Generate SimBrief</Link
+          :href="flight.ofpPlanningUrl"
+          >Generate OFP</Link
         >
         <PvSlot name="flights.detail.actions" :context="{ flight, policy }" />
       </div>
@@ -96,7 +100,7 @@ const emit = defineEmits<{ bid: [flightId: string, event: MouseEvent] }>();
     <section class="ofp-state" aria-label="Operational flight plan state">
       <p class="pv-eyebrow">OFP</p>
       <strong>Not generated</strong>
-      <span>SimBrief planning is a separate step and does not start when a bid is placed.</span>
+      <span>Generate the OFP with SimBrief after bid confirmation.</span>
     </section>
   </article>
 </template>
@@ -122,25 +126,6 @@ const emit = defineEmits<{ bid: [flightId: string, event: MouseEvent] }>();
   justify-content: space-between;
   gap: 20px;
   padding: 24px;
-}
-h1 {
-  margin: 3px 0 8px;
-  color: var(--pv-ink);
-  font-family: var(--pv-font-mono);
-  font-size: calc(30px * var(--pv-type-scale));
-}
-.route {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  color: var(--pv-ink);
-  font-size: calc(18px * var(--pv-type-scale));
-}
-.route span {
-  color: var(--pv-ink-faint);
-  font-size: calc(11px * var(--pv-type-scale));
-  text-transform: uppercase;
 }
 .detail-actions {
   display: flex;

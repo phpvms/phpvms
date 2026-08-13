@@ -90,7 +90,7 @@ class SampleVueWidgetServiceProvider extends ServiceProvider
      *               modules/phpvms-sample-vue-widget/public/widgets/sample.js and served at
      *               /ext/samplevuewidget/widgets/sample.js — the addon's public/
      *               dir symlinked to public/ext/<lower-name>/ by `addons:relink`.
-     *   title/icon  Label + lucide icon in the "Add widget" menu / frame header.
+     *   title/icon  Label + Tabler icon in the "Add widget" menu / frame header.
      *   defaultZone 'grid' → where it lands; span 1 → one grid column.
      *   defaultOn   false → not shown until a pilot adds it from the catalog.
      *   props       Static props merged into the component — here the widget's
@@ -105,7 +105,7 @@ class SampleVueWidgetServiceProvider extends ServiceProvider
             // i.e. "SampleVueWidget" → "samplevuewidget" (NOT the hyphenated alias).
             'module'      => '/ext/samplevuewidget/widgets/sample.js',
             'title'       => 'Sample Vue widget',
-            'icon'        => 'boxes',                 // lucide name
+            'icon'        => 'packages',              // Tabler name
             'defaultZone' => 'grid',
             'span'        => 1,
             'defaultOn'   => false,

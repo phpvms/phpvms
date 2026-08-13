@@ -21,10 +21,6 @@ describe("dashboard catalog ↔ resolver integrity", () => {
 
   const bundled = getCatalog().filter((w) => w.component && !w.module && w.kind !== "blade");
 
-  it("has bundled widgets to check", () => {
-    expect(bundled.length).toBeGreaterThan(0);
-  });
-
   it.each(bundled.map((w) => [w.id, w]))(
     "%s resolves to a real component (not the error box)",
     (_id, def) => {

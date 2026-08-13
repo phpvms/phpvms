@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Link, router } from "@inertiajs/vue3";
 import { nextTick, shallowRef, useTemplateRef } from "vue";
-import DispatchFilters from "@/features/flights/DispatchFilters.vue";
-import FlightBidDrawer from "@/features/flights/FlightBidDrawer.vue";
-import FlightManifest from "@/features/flights/FlightManifest.vue";
-import type { FlightFilterOptions, FlightFilters, FlightPage } from "@/features/flights/types";
+import AssignmentDrawer from "@/components/assignments/AssignmentDrawer.vue";
+import DispatchFilters from "@/components/flights/DispatchFilters.vue";
+import FlightManifest from "@/components/flights/FlightManifest.vue";
+import type { FlightFilterOptions, FlightFilters, FlightPage } from "@/components/flights/types";
 
 const props = defineProps<{
   flights: App.Http.Data.FlightListItemData[];
@@ -14,7 +14,7 @@ const props = defineProps<{
   filterOptions: FlightFilterOptions;
 }>();
 
-const drawer = useTemplateRef<InstanceType<typeof FlightBidDrawer>>("drawer");
+const drawer = useTemplateRef<InstanceType<typeof AssignmentDrawer>>("drawer");
 const invokingControl = shallowRef<HTMLElement | null>(null);
 const searchLoading = shallowRef(false);
 const searchError = shallowRef<string | null>(null);
@@ -89,15 +89,17 @@ async function returnFocus() {
 </script>
 
 <template>
-  <section class="pv-flights-page" aria-label="Flight schedule">
-    <DispatchFilters
-      :filters="filters"
-      :options="filterOptions"
-      :loading="searchLoading"
-      :error="searchError"
-      @submit="search"
-      @reset="reset"
-    />
+  <UPage class="pv-flights-page" aria-label="Flight schedule">
+    <UPageHeader>
+      <DispatchFilters
+        :filters="filters"
+        :options="filterOptions"
+        :loading="searchLoading"
+        :error="searchError"
+        @submit="search"
+        @reset="reset"
+      />
+    </UPageHeader>
     <FlightManifest :flights="flights" :policy="policy" @bid="openBid" />
 
     <nav v-if="page.last > 1" class="pager" aria-label="Flight results pages">
@@ -112,8 +114,8 @@ async function returnFocus() {
       <span v-else aria-disabled="true">Next</span>
     </nav>
 
-    <FlightBidDrawer ref="drawer" @closed="returnFocus" />
-  </section>
+    <AssignmentDrawer ref="drawer" @closed="returnFocus" />
+  </UPage>
 </template>
 
 <style scoped>

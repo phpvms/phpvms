@@ -95,6 +95,7 @@
           "size": "md"
         },
         "style": {
+          "alignment": "center",
           "shape": "rounded",
           "weight": "medium"
         }
@@ -103,9 +104,6 @@
         "props": {
           "color": "neutral",
           "size": "md"
-        },
-        "style": {
-          "appearance": "underline"
         }
       }
     }

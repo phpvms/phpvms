@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, h } from "vue";
-import type { FlightFilterOptions, FlightFilters } from "@/features/flights/types";
+import type { FlightFilterOptions, FlightFilters } from "@/components/flights/types";
 import Flights from "@/pages/Flights.vue";
 
 const inertia = vi.hoisted(() => ({ get: vi.fn() }));
@@ -78,7 +78,7 @@ describe("flight search state", () => {
           restrictAircraftToTypeRating: false,
           aircraftAtDepartureOnly: false,
           companyAircraftOnly: false,
-          simbriefAvailable: false,
+          simbriefEnabled: false,
           simbriefRequiresBid: false,
           simbriefBlocksAircraft: false,
         },
@@ -90,7 +90,7 @@ describe("flight search state", () => {
         stubs: {
           DispatchFilters: filterStub,
           FlightManifest: true,
-          FlightBidDrawer: true,
+          AssignmentDrawer: true,
         },
       },
     });

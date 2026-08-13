@@ -41,7 +41,7 @@ final class BidRowData extends Data
             expiresAt: $policy->expireHours > 0
                 ? $bid->created_at?->copy()->addHours($policy->expireHours)->toIso8601String()
                 : null,
-            canGenerateSimBrief: $policy->simbriefAvailable,
+            canGenerateSimBrief: $policy->simbriefEnabled,
             canRemove: true,
         );
     }

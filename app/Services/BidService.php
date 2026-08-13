@@ -160,9 +160,16 @@ class BidService extends Service
             $existing = Bid::query()
                 ->where('user_id', $lockedUser->id)
                 ->where('flight_id', $lockedFlight->id)
+                ->lockForUpdate()
                 ->first();
 
             if ($existing instanceof Bid) {
+                if ($existing->aircraft_id === null && $lockedAircraft instanceof Aircraft) {
+                    $this->assertAircraftMayBeBid($lockedFlight, $lockedUser, $lockedAircraft);
+                    $existing->aircraft()->associate($lockedAircraft);
+                    $existing->save();
+                }
+
                 $this->recomputeFlightBidState($lockedFlight);
 
                 return $existing;
@@ -187,30 +194,7 @@ class BidService extends Service
             }
 
             if ($lockedAircraft instanceof Aircraft) {
-                if ((bool) setting('bids.block_aircraft', false)
-                    && Bid::query()->where('aircraft_id', $lockedAircraft->id)->exists()) {
-                    throw new BidExistsForAircraft($lockedAircraft);
-                }
-
-                $eligible = $this->eligibleAircraftQuery($lockedFlight, $lockedUser)
-                    ->whereKey($lockedAircraft->id)
-                    ->exists();
-
-                if (!$eligible) {
-                    $reserved = (bool) setting('bids.block_aircraft', false)
-                        && Bid::query()
-                            ->where('aircraft_id', $lockedAircraft->id)
-                            ->where('user_id', '!=', $lockedUser->id)
-                            ->exists();
-
-                    if ($reserved) {
-                        throw new BidExistsForAircraft($lockedAircraft);
-                    }
-
-                    throw ValidationException::withMessages([
-                        'aircraftId' => 'This aircraft is no longer eligible. Refresh the aircraft list.',
-                    ]);
-                }
+                $this->assertAircraftMayBeBid($lockedFlight, $lockedUser, $lockedAircraft);
             }
 
             $created = Bid::query()->create([
@@ -346,6 +330,32 @@ class BidService extends Service
             ]);
         }
 
+    }
+
+    private function assertAircraftMayBeBid(Flight $flight, User $user, Aircraft $aircraft): void
+    {
+        if ((bool) setting('bids.block_aircraft', false)
+            && Bid::query()->where('aircraft_id', $aircraft->id)->exists()) {
+            throw new BidExistsForAircraft($aircraft);
+        }
+
+        if ($this->eligibleAircraftQuery($flight, $user)->whereKey($aircraft->id)->exists()) {
+            return;
+        }
+
+        $reserved = (bool) setting('bids.block_aircraft', false)
+            && Bid::query()
+                ->where('aircraft_id', $aircraft->id)
+                ->where('user_id', '!=', $user->id)
+                ->exists();
+
+        if ($reserved) {
+            throw new BidExistsForAircraft($aircraft);
+        }
+
+        throw ValidationException::withMessages([
+            'aircraftId' => 'This aircraft is no longer eligible. Refresh the aircraft list.',
+        ]);
     }
 
     private function recomputeFlightBidState(Flight $flight): void

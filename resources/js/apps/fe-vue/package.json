@@ -16,15 +16,16 @@
   "dependencies": {
     "@inertiajs/vue3": "^3.6.0",
     "@nuxt/ui": "4.10.0",
+    "@phpvms/simbrief": "workspace:*",
     "@vueuse/core": "^14.3.0",
     "laravel-vue-i18n": "^2.8.0",
-    "lucide-vue-next": "^1.0.0",
     "maplibre-gl": "^5.24.0",
     "topojson-client": "^3.1.0",
     "vue": "^3.5.39",
     "vue-draggable-plus": "^0.6.1"
   },
   "devDependencies": {
+    "@iconify-json/tabler": "^1.2.38",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.3.2",
     "@types/topojson-client": "^3.1.5",

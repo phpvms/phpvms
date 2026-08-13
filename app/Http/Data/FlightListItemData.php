@@ -57,7 +57,13 @@ final class FlightListItemData extends Data
             distanceNm: $f->distance ? (int) round($f->distance->toUnit('nmi')) : null,
             blockTime: $f->flight_time ? Time::minutesToTimeString((int) $f->flight_time) : null,
             type: $f->flight_type->getLabel(),
-            airline: $f->airline ? new AirlineRefData(icao: $f->airline->icao, name: $f->airline->name) : null,
+            airline: $f->airline
+                ? new AirlineRefData(
+                    icao: $f->airline->icao,
+                    name: $f->airline->name,
+                    logo: $f->airline->logo_url,
+                )
+                : null,
             bidId: $saved[$f->id] ?? null,
             scheduledDeparture: $f->dpt_time,
             scheduledArrival: $f->arr_time,

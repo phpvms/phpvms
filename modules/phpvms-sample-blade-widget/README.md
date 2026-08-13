@@ -50,7 +50,7 @@ Skylight::widgets()->register([
     'kind'        => 'blade',
     'mode'        => 'island',
     'title'       => 'Station NOTAMs (sample)',
-    'icon'        => 'triangle-alert',              // lucide icon name
+    'icon'        => 'alert-triangle',               // Tabler icon name
     'endpoint'    => '/widgets/sample-notams',      // LITERAL path — not route()
     'defaultZone' => 'sidebar',
     'defaultOn'   => false,

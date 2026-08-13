@@ -24,7 +24,7 @@ final class FlightDispatchPolicyData extends Data
         public bool $restrictAircraftToTypeRating,
         public bool $aircraftAtDepartureOnly,
         public bool $companyAircraftOnly,
-        public bool $simbriefAvailable,
+        public bool $simbriefEnabled,
         public bool $simbriefRequiresBid,
         public bool $simbriefBlocksAircraft,
     ) {}
@@ -45,7 +45,7 @@ final class FlightDispatchPolicyData extends Data
             restrictAircraftToTypeRating: (bool) setting('pireps.restrict_aircraft_to_typerating', false),
             aircraftAtDepartureOnly: (bool) setting('pireps.only_aircraft_at_dpt_airport', false),
             companyAircraftOnly: (bool) setting('flights.only_company_aircraft', false),
-            simbriefAvailable: filled(setting('simbrief.api_key')),
+            simbriefEnabled: filled(setting('simbrief.api_key')),
             simbriefRequiresBid: (bool) setting('simbrief.only_bids', false),
             simbriefBlocksAircraft: (bool) setting('simbrief.block_aircraft', false),
         );

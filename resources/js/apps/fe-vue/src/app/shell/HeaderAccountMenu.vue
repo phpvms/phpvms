@@ -13,8 +13,8 @@ const menuItems = computed(() => [
     },
   ],
   [
-    { label: "Profile", icon: "i-lucide-user", onSelect: () => router.visit("/profile") },
-    { label: "Sign out", icon: "i-lucide-log-out", onSelect: () => router.visit("/logout") },
+    { label: "Profile", icon: "i-tabler-user", onSelect: () => router.visit("/profile") },
+    { label: "Sign out", icon: "i-tabler-logout", onSelect: () => router.visit("/logout") },
   ],
 ]);
 </script>

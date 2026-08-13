@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use JsonException;
 use JsonSchema\Validator;
+use stdClass;
 
 final class ThemeDocumentNormalizer
 {
@@ -56,6 +57,30 @@ final class ThemeDocumentNormalizer
 
         $this->validate($document);
 
+        foreach (['button', 'input'] as $componentName) {
+            $component = $document['nuxtUi']['components'][$componentName] ?? null;
+
+            if (!is_array($component)) {
+                continue;
+            }
+
+            foreach (['props', 'style'] as $sectionName) {
+                if (($component[$sectionName] ?? null) === []) {
+                    unset($component[$sectionName]);
+                }
+            }
+
+            if ($component === []) {
+                unset($document['nuxtUi']['components'][$componentName]);
+            } else {
+                $document['nuxtUi']['components'][$componentName] = $component;
+            }
+        }
+
+        if (($document['nuxtUi']['components'] ?? null) === []) {
+            unset($document['nuxtUi']['components']);
+        }
+
         return $document;
     }
 
@@ -86,7 +111,7 @@ final class ThemeDocumentNormalizer
      */
     public function defaults(): array
     {
-        return $this->readJson(resource_path('schemas/skylight-theme-v1.defaults.json'));
+        return $this->readJson(resource_path('js/apps/fe-vue/schemas/skylight-theme-v1.defaults.json'));
     }
 
     /**
@@ -95,7 +120,33 @@ final class ThemeDocumentNormalizer
     private function validate(array $document): void
     {
         $data = json_decode(json_encode($document, JSON_THROW_ON_ERROR));
-        $schema = json_decode(File::get(resource_path('schemas/skylight-theme-v1.schema.json')));
+        $components = $data->nuxtUi->components ?? null;
+
+        if ($components === []) {
+            $data->nuxtUi->components = new stdClass();
+        } elseif (is_object($components)) {
+            foreach (['button', 'input'] as $componentName) {
+                $component = $components->{$componentName} ?? null;
+
+                if ($component === []) {
+                    $components->{$componentName} = new stdClass();
+
+                    continue;
+                }
+
+                if (!is_object($component)) {
+                    continue;
+                }
+
+                foreach (['props', 'style'] as $sectionName) {
+                    if (($component->{$sectionName} ?? null) === []) {
+                        $component->{$sectionName} = new stdClass();
+                    }
+                }
+            }
+        }
+
+        $schema = json_decode(File::get(resource_path('js/apps/fe-vue/schemas/skylight-theme-v1.schema.json')));
         $validator = new Validator();
         $validator->validate($data, $schema);
 

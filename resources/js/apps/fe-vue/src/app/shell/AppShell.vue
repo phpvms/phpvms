@@ -136,7 +136,7 @@ const {
   .pv-region-main {
     grid-area: main;
     overflow-y: auto;
-    padding: 24px 28px 32px;
+    padding: 0px 28px 32px;
   }
   .pv-region-aside {
     grid-area: aside;
@@ -259,7 +259,7 @@ const {
     }
     .pv-region-main {
       min-width: 0;
-      padding: 20px 16px 28px;
+      padding: 0px 16px 28px;
     }
     .pv-region-aside {
       max-height: 40dvh;

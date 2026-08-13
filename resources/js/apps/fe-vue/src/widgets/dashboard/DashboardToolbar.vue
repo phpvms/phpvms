@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { shallowRef, useTemplateRef } from "vue";
 import { onClickOutside } from "@vueuse/core";
-import PvIcon from "@/shared/ui/PvIcon.vue";
+import PvIcon from "@/shared/components/PvIcon.vue";
 import type { WidgetDef } from "./catalog";
 
 defineProps<{ availableWidgets: WidgetDef[]; editing: boolean }>();

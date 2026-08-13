@@ -86,13 +86,13 @@ Route::group([
     Route::resource('profile', ProfileController::class);
 
     Route::get('simbrief/generate', [SimBriefController::class, 'generate'])->name('simbrief.generate');
-    Route::get('simbrief/planning', [SimBriefController::class, 'skylightPlanning'])->name('simbrief.skylight.planning');
-    Route::post('simbrief/attempts/{staticId}/api-code', [SimBriefController::class, 'skylightApiCode'])->name('simbrief.skylight.attempt.api-code');
-    Route::post('simbrief/attempts/{staticId}/poll', [SimBriefController::class, 'skylightPoll'])->name('simbrief.skylight.attempt.poll');
-    Route::get('simbrief/briefings/{id}', [SimBriefController::class, 'skylightBriefing'])->name('simbrief.skylight.briefing');
-    Route::delete('simbrief/briefings/{id}', [SimBriefController::class, 'skylightCancel'])->name('simbrief.skylight.briefing.cancel');
-    Route::post('simbrief/briefings/{id}/regenerate', [SimBriefController::class, 'skylightRegenerate'])->name('simbrief.skylight.briefing.regenerate');
-    Route::post('simbrief/briefings/{id}/edit-sync', [SimBriefController::class, 'skylightEditSync'])->name('simbrief.skylight.briefing.edit-sync');
+    Route::get('ofp/planning', [SimBriefController::class, 'skylightPlanning'])->name('ofp.planning');
+    Route::post('ofp/attempts/{staticId}/api-code', [SimBriefController::class, 'skylightApiCode'])->name('ofp.attempt.api-code');
+    Route::post('ofp/attempts/{staticId}/poll', [SimBriefController::class, 'skylightPoll'])->name('ofp.attempt.poll');
+    Route::get('ofp/briefings/{id}', [SimBriefController::class, 'skylightBriefing'])->name('ofp.briefing');
+    Route::delete('ofp/briefings/{id}', [SimBriefController::class, 'skylightCancel'])->name('ofp.briefing.cancel');
+    Route::post('ofp/briefings/{id}/regenerate', [SimBriefController::class, 'skylightRegenerate'])->name('ofp.briefing.regenerate');
+    Route::post('ofp/briefings/{id}/edit-sync', [SimBriefController::class, 'skylightEditSync'])->name('ofp.briefing.edit-sync');
     Route::post('simbrief/apicode', [SimBriefController::class, 'api_code'])->name('simbrief.api_code');
     Route::get('simbrief/check_ofp', [SimBriefController::class, 'check_ofp'])->name('simbrief.check_ofp')->middleware('throttle:10,1');
     Route::get('simbrief/update_ofp', [SimBriefController::class, 'update_ofp'])->name('simbrief.update_ofp');

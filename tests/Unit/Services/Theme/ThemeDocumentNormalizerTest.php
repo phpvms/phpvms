@@ -30,6 +30,30 @@ it('normalizes the verified raw builder fixture without persisting a draft', fun
         ->and(ActiveThemePublication::query()->count())->toBe(0);
 });
 
+it('preserves omitted component overrides for Nuxt UI defaults', function (): void {
+    $normalizer = app(ThemeDocumentNormalizer::class);
+    $document = $normalizer->defaults();
+    $document['nuxtUi']['components'] = [
+        'button' => [
+            'props' => ['color' => 'warning'],
+            'style' => ['shape' => 'pill'],
+        ],
+        'input' => [],
+    ];
+
+    expect($normalizer->normalize($document)['nuxtUi']['components'])
+        ->toBe([
+            'button' => [
+                'props' => ['color' => 'warning'],
+                'style' => ['shape' => 'pill'],
+            ],
+        ]);
+
+    $document['nuxtUi']['components'] = [];
+
+    expect($normalizer->normalize($document)['nuxtUi'])->not->toHaveKey('components');
+});
+
 it('matches the frontend legacy raw defaults', function (): void {
     $raw = rawThemeFixture();
     unset(
