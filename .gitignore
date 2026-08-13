@@ -119,3 +119,6 @@ frankenphp
 frankenphp-worker.php
 public/vendor/**
 public/css/phpvms/**
+
+# OpenSpec working artifacts - local only
+openspec/
