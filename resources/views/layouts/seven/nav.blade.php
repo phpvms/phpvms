@@ -1,7 +1,16 @@
+@php
+    $branding = app(\App\Support\Branding::class);
+@endphp
+
 <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand " href="{{ url('/') }}">
-            <img src="{{ public_asset('/assets/img/logo_blue_bg.svg') }}" width="135px" alt="phpvms Logo" />
+            {{-- `Branding::logo()`'s bundled fallback (`logo_blue.svg`) is a
+            transparent icon mark, not this bar's pre-change full-bleed
+            lockup (`logo_blue_bg.svg`) -- so the unconfigured case keeps the
+            original asset, and only an uploaded logo overrides it. --}}
+            <img src="{{ $branding->hasLogo() ? $branding->logo() : public_asset('/assets/img/logo_blue_bg.svg') }}"
+                width="135px" alt="{{ $branding->name() }} Logo" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

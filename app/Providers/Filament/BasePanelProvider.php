@@ -7,6 +7,7 @@ namespace App\Providers\Filament;
 use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
+use App\Support\Branding;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
@@ -81,8 +82,8 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
             ->font('Geist')
-            ->brandName(setting('app.name', 'phpvms'))
-            ->favicon(asset('assets/img/favicon.png'))
+            ->brandName(fn (): string => app(Branding::class)->name())
+            ->favicon(fn (): string => app(Branding::class)->favicon())
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => view('filament.auth.login-hero')->render(),

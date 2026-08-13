@@ -50,6 +50,17 @@ final class Branding
     }
 
     /**
+     * Whether an airline logo has been uploaded. Lets a call site keep its
+     * own pre-existing default asset instead of `logo()`'s bundled fallback,
+     * for places where that fallback is a different asset than what used to
+     * render there.
+     */
+    public function hasLogo(): bool
+    {
+        return setting('branding.logo_url', '') !== '';
+    }
+
+    /**
      * Favicon URL. Deliberately skips the full-size original when the 32px
      * derivative is missing — a full-size logo is a worse favicon than the
      * bundled one.

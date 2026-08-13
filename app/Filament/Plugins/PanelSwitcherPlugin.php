@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Plugins;
 
+use App\Support\Branding;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -80,7 +81,7 @@ final class PanelSwitcherPlugin implements Plugin
         return view('filament.plugins.panel-switcher', [
             'panels'    => $panels,
             'current'   => $current,
-            'brandName' => config('app.name') ?: 'phpvms',
+            'brandName' => app(Branding::class)->name(),
             'addonsUrl' => $this->addonsUrl(),
         ]);
     }

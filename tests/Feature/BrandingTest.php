@@ -46,7 +46,8 @@ describe('with no settings rows at all', function (): void {
             ->and($branding->logo(180))->toBe(asset('assets/img/logo_blue.svg'))
             ->and($branding->favicon())->toBe(asset('assets/img/favicon.png'))
             ->and($branding->banner())->toBeNull()
-            ->and($branding->brandColor())->toBe('#067ec1');
+            ->and($branding->brandColor())->toBe('#067ec1')
+            ->and($branding->hasLogo())->toBeFalse();
     });
 });
 
@@ -77,6 +78,16 @@ describe('with the branding rows seeded but empty', function (): void {
             ->and($branding->brandColor())->toBe('#ff0000')
             ->and($branding->logo())->toBe('https://cdn.example.com/logo.png')
             ->and($branding->banner())->toBe('https://cdn.example.com/banner.png');
+    });
+
+    it('hasLogo is false until a logo has been uploaded', function (): void {
+        expect(app(Branding::class)->hasLogo())->toBeFalse();
+    });
+
+    it('hasLogo is true once a logo has been uploaded', function (): void {
+        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+
+        expect(app(Branding::class)->hasLogo())->toBeTrue();
     });
 
     it('sized logo falls back to the original when the derivative is empty', function (): void {
