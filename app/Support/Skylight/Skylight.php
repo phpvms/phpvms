@@ -8,7 +8,7 @@ namespace App\Support\Skylight;
  * The skylight SPA extension hub.
  *
  * A single container-bound instance holds every extension registry the SPA
- * exposes. Addons reach it through the {@see \App\Support\Skylight\Facades\Skylight}
+ * exposes. Addons reach it through the {@see Facades\Skylight}
  * facade from their ServiceProvider::boot():
  *
  *   Skylight::widgets()->register([...]);   // dashboard widget

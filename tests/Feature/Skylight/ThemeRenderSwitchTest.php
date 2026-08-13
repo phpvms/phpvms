@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\HandleInertiaRequests;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Route;
+use Illuminate\View\ViewException;
 
 /**
  * spa-theme-render-switch spec (skylight-dashboard-slice/specs/spa-theme-render-switch/spec.md)
@@ -52,10 +55,17 @@ test('Response themed macro is registered', function (): void {
 test('themed macro returns inertia response when active theme is spa', function (): void {
     Theme::set('skylight');
 
-    $presenter = new class {
-        public function toInertiaArray(): array { return ['kind' => 'inertia']; }
+    $presenter = new class()
+    {
+        public function toInertiaArray(): array
+        {
+            return ['kind' => 'inertia'];
+        }
 
-        public function toBladeArray(): array { return ['kind' => 'blade']; }
+        public function toBladeArray(): array
+        {
+            return ['kind' => 'blade'];
+        }
     };
 
     $response = response()->themed('Dashboard', 'dashboard.index', $presenter);
@@ -65,16 +75,23 @@ test('themed macro returns inertia response when active theme is spa', function 
     // first visit renders HTML via the root Blade template. The returned object
     // is an Inertia\Response, not a Illuminate\Http\Response, so we check the
     // class hierarchy instead of the status code which requires a full render.
-    expect($response)->toBeInstanceOf(\Inertia\Response::class);
+    expect($response)->toBeInstanceOf(Inertia\Response::class);
 });
 
 test('themed macro returns blade view when active theme is blade', function (): void {
     Theme::set('seven');
 
-    $presenter = new class {
-        public function toInertiaArray(): array { return ['kind' => 'inertia']; }
+    $presenter = new class()
+    {
+        public function toInertiaArray(): array
+        {
+            return ['kind' => 'inertia'];
+        }
 
-        public function toBladeArray(): array { return ['greeting' => 'hello']; }
+        public function toBladeArray(): array
+        {
+            return ['greeting' => 'hello'];
+        }
     };
 
     // dashboard.index view may not render in the test environment so we just
@@ -82,8 +99,8 @@ test('themed macro returns blade view when active theme is blade', function (): 
     try {
         $response = response()->themed('Dashboard', 'dashboard.index', $presenter);
         // If the view renders, it's a Blade View or Response — not Inertia.
-        expect($response)->not->toBeInstanceOf(\Inertia\Response::class);
-    } catch (\Illuminate\View\ViewException|\InvalidArgumentException $e) {
+        expect($response)->not->toBeInstanceOf(Inertia\Response::class);
+    } catch (ViewException|InvalidArgumentException $e) {
         // View doesn't exist in the test env — that's expected and still proves
         // the macro took the Blade path (it tried to render the view).
         expect($e->getMessage())->toContain('dashboard');
@@ -91,7 +108,7 @@ test('themed macro returns blade view when active theme is blade', function (): 
 });
 
 test('admin routes do not carry the Inertia middleware', function (): void {
-    $routes = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes());
+    $routes = collect(Route::getRoutes()->getRoutes());
 
     $adminRoute = $routes->first(fn ($r) => $r->uri() === 'admin');
 
@@ -99,11 +116,11 @@ test('admin routes do not carry the Inertia middleware', function (): void {
 
     $middleware = $adminRoute->middleware();
 
-    expect($middleware)->not->toContain(\Inertia\Middleware::class);
+    expect($middleware)->not->toContain(HandleInertiaRequests::class);
 });
 
 test('api routes do not carry the Inertia middleware', function (): void {
-    $routes = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes());
+    $routes = collect(Route::getRoutes()->getRoutes());
 
     // api/user is a representative api route
     $apiRoute = $routes->first(fn ($r) => str_starts_with($r->uri(), 'api/'));
@@ -112,11 +129,11 @@ test('api routes do not carry the Inertia middleware', function (): void {
 
     $middleware = $apiRoute->middleware();
 
-    expect($middleware)->not->toContain(\Inertia\Middleware::class);
+    expect($middleware)->not->toContain(HandleInertiaRequests::class);
 });
 
 test('frontend dashboard route carries the Inertia middleware', function (): void {
-    $routes = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes());
+    $routes = collect(Route::getRoutes()->getRoutes());
 
     $dashRoute = $routes->first(fn ($r) => $r->uri() === 'dashboard' && in_array('GET', $r->methods(), true));
 
@@ -124,5 +141,5 @@ test('frontend dashboard route carries the Inertia middleware', function (): voi
 
     $middleware = $dashRoute->middleware();
 
-    expect($middleware)->toContain(\Inertia\Middleware::class);
+    expect($middleware)->toContain(HandleInertiaRequests::class);
 });

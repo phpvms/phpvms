@@ -7,6 +7,7 @@ use App\Services\AddonSettingService;
 use App\Services\KvpService;
 use App\Services\SettingService;
 use Carbon\Carbon;
+use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Auth;
@@ -555,13 +556,12 @@ if (!function_exists('theme_setting')) {
     /**
      * Read a key from the active theme's theme.json metadata.
      *
-     * @param  string $key     Key name (e.g. 'kind', 'framework', 'manifest')
-     * @param  mixed  $default Value when key is absent or no theme is active
-     * @return mixed
+     * @param string $key     Key name (e.g. 'kind', 'framework', 'manifest')
+     * @param mixed  $default Value when key is absent or no theme is active
      */
     function theme_setting(string $key, mixed $default = null): mixed
     {
-        $theme = \Igaster\LaravelTheme\Facades\Theme::current();
+        $theme = Theme::current();
 
         if ($theme === null) {
             return $default;
