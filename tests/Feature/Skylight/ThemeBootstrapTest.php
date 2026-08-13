@@ -36,7 +36,7 @@ it('shares only the active normalized document and versions it with Inertia asse
             ? (string) filemtime(public_path('build/skylight/manifest.json'))
             : parentInertiaVersion($request)) ?? '').'|'.$published->revision))
         ->and($shared)->toHaveKey('theme')
-        ->and($shared['theme'])->toBe($document)
+        ->and($shared['theme'])->toEqual($document)
         ->and(array_keys($shared))->not->toContain('runtimeTheme');
 });
 
