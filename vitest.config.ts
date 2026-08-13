@@ -23,7 +23,7 @@ export default defineConfig({
     include: [
       "resources/js/apps/admin/routeforge/**/*.test.ts",
       "resources/js/rqb/**/*.test.ts",
-      "resources/js/admin/*.test.js",
+      "resources/js/apps/admin/*.test.js",
     ],
     environment: "happy-dom",
     globals: false,

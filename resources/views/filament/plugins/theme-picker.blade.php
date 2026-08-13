@@ -18,7 +18,7 @@
 
 {{--
     Console theme picker: brand colour, appearance and density, applied
-    client-side by resources/js/admin/theme-picker.js. Ported from the
+    client-side by resources/js/apps/admin/theme-picker.js. Ported from the
     mockup's picker (mockups/admin-console-v2/theme-picker.js), trimmed to
     the three sections above — canvas, page header, glass headers and the
     "what this writes" output are intentionally left out.

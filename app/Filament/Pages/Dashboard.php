@@ -26,6 +26,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View as ViewComponent;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -188,10 +189,14 @@ class Dashboard extends DynamicDashboard
     /**
      * Delete a single widget from the current dashboard.
      *
-     * Scoped to `currentDashboardId` so a malicious id can't delete a widget
-     * belonging to another user's dashboard. Silently no-ops if the widget
-     * isn't in scope — the client already removed it from the DOM, so a 500
-     * here would just be noise.
+     * Scoped through `getCurrentDashboard()`, which resolves via
+     * `getAvailableDashboards()` and so only ever yields a dashboard owned by
+     * the current user. The raw `currentDashboardId` property is *not* usable
+     * as a scope: the vendor base class declares it `#[Session]`, not
+     * `#[Locked]`, so a client can set it to any id.
+     *
+     * Silently no-ops if the widget isn't on that dashboard — the client
+     * already removed it from the DOM, so a 500 here would just be noise.
      *
      * Marked `#[Renderless]` so the call hits the DB but skips Livewire's
      * re-render; the frontend removes the DOM node itself.
@@ -199,12 +204,14 @@ class Dashboard extends DynamicDashboard
     #[Renderless]
     public function deleteDashboardWidget(int $id): void
     {
-        abort_unless(static::canEdit(), 403);
+        $dashboard = $this->getCurrentDashboard();
 
-        DashboardWidget::query()
-            ->where('id', $id)
-            ->where('dashboard_id', $this->currentDashboardId)
-            ->delete();
+        abort_unless(
+            $dashboard instanceof DashboardModel && static::canEdit() && !$dashboard->is_locked,
+            403,
+        );
+
+        $dashboard->widgets()->whereKey($id)->delete();
     }
 
     /** @return array<Action> */
@@ -237,20 +244,25 @@ class Dashboard extends DynamicDashboard
                     'class'                     => 'hidden',
                     'data-dashboard-layout-add' => '',
                 ])
-                ->disabled(fn (): bool => $this->getAddableWidgetOptions() === [])
-                ->tooltip(fn (): ?string => $this->getAddableWidgetOptions() === []
-                    ? __('filament.dashboard.add_widget_all_added')
-                    : null)
-                ->schema([
-                    Radio::make('type')
-                        ->label(__('filament.dashboard.add_widget_type'))
-                        ->options(fn (): array => $this->getAddableWidgetOptions())
-                        ->required(),
-                ])
+                // The options are resolved when the modal mounts rather than
+                // when the page renders, because removing a widget is
+                // renderless and would otherwise leave a stale picker behind.
+                ->schema(fn (): array => $this->getAddableWidgetOptions() === []
+                    ? [Text::make(__('filament.dashboard.add_widget_all_added'))]
+                    : [
+                        Radio::make('type')
+                            ->label(__('filament.dashboard.add_widget_type'))
+                            ->options(fn (): array => $this->getAddableWidgetOptions())
+                            ->required(),
+                    ])
+                ->modalSubmitAction(fn (): ?bool => $this->getAddableWidgetOptions() === [] ? false : null)
                 ->action(function (array $data): void {
                     $dashboard = $this->getCurrentDashboard();
 
-                    abort_unless($dashboard instanceof DashboardModel && static::canEdit(), 403);
+                    abort_unless(
+                        $dashboard instanceof DashboardModel && static::canEdit() && !$dashboard->is_locked,
+                        403,
+                    );
 
                     /** @var class-string<DynamicWidget> $type */
                     $type = $data['type'];

@@ -40,6 +40,10 @@ document.addEventListener("alpine:init", () => {
 
         grid.on("resizestop", () => window.dispatchEvent(new Event("resize")));
       });
+
+      // The lazily-imported dashboard chunk can resolve before Alpine boots, so
+      // its edit-mode restore waits on this rather than assuming a live grid.
+      window.dispatchEvent(new CustomEvent("dashboard-grid:ready"));
     },
 
     setEditable(editable) {

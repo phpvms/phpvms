@@ -1178,7 +1178,7 @@
 /* ---------------------------------------------------------------------------
  * Rail clock (resources/views/filament/shared/rail-clock.blade.php).
  *
- * Ticked by resources/js/admin/utc-clock.js. Sits at the head of the rail,
+ * Ticked by resources/js/apps/admin/utc-clock.js. Sits at the head of the rail,
  * the same 44px height as the topbar so the two chrome bands align — no rule
  * under it, the rail reads as one column top to bottom.
  * ------------------------------------------------------------------------- */
@@ -2446,6 +2446,53 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 
 .dashboard-canvas .dashboard-widget-action:not(.dd-drag-handle) {
   display: none;
+}
+
+/* × remove button — one per widget, edit-mode only. It lives on
+ * `.grid-stack-item` (a sibling of `.grid-stack-item-content`, not inside the
+ * vendor widget-wrapper we can't edit), positioned absolutely just left of the
+ * vendor drag handle, and adds no height to the widget body — the stat cell's
+ * 85.8px content box has 0 slack in the 100px row.
+ *
+ * The vendor handle sits at top/right 0.5rem inside `.dashboard-widget`, which
+ * GridStack insets by the 4px item margin, so it lands 12px from this item's
+ * top edge and 12px from its right. Hence top: 0.75rem (12px) to line the two
+ * up, and right: 2.25rem (36px) to sit immediately left of the 24px handle. */
+.dashboard-widget-remove {
+  display: none;
+  position: absolute;
+  top: 0.75rem;
+  right: 2.25rem;
+  z-index: 3;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--ink-4);
+  cursor: pointer;
+}
+
+.dashboard-widget-remove svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.dashboard-canvas.dashboard-layout-editing .dashboard-widget-remove {
+  display: inline-flex;
+}
+
+.dashboard-widget-remove:hover {
+  color: var(--bad);
+  background: var(--bad-soft);
+}
+
+.dashboard-widget-remove:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 1px;
 }
 
 .dashboard-widget-body {

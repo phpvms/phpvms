@@ -467,5 +467,6 @@ return [
         'add_widget_type'          => 'Widget type',
         'add_widget_all_added'     => 'All widgets are already on your dashboard.',
         'add_widget_added'         => 'Widget added',
+        'remove_widget'            => 'Remove widget',
     ],
 ];

@@ -1,7 +1,7 @@
 {{--
     UTC clock pinned to the head of the module rail.
 
-    Ticked client-side by resources/js/admin/utc-clock.js; rendered empty here
+    Ticked client-side by resources/js/apps/admin/utc-clock.js; rendered empty here
     so there is no server-rendered timestamp to go stale before hydration.
 
     Rendered via PanelsRenderHook::SIDEBAR_START.

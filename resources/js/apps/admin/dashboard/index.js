@@ -37,11 +37,39 @@ function setDashboardEditing(isEditing) {
   document
     .querySelectorAll("[data-dashboard-layout-save]")
     .forEach((action) => action.classList.toggle("hidden", !isEditing));
+  document
+    .querySelectorAll("[data-dashboard-layout-add]")
+    .forEach((action) => action.classList.toggle("hidden", !isEditing));
 }
 
 export function editDashboardLayout() {
   setDashboardEditing(true);
 }
+
+/**
+ * Remove a widget from the grid client-side and delete its row in the
+ * background. No confirmation, no reload, no notification.
+ *
+ * The GridStack instance is always read back off the DOM
+ * (`gridElement.gridstack`), never from Alpine state — Alpine deep-proxies
+ * its data, and a proxied instance fails GridStack's `node.grid === this`
+ * identity check (see the same rule in grid.js).
+ */
+export function removeDashboardWidget(id) {
+  const canvas = dashboardCanvas();
+  const itemEl = canvas?.querySelector(`.grid-stack-item[gs-id="${id}"]`);
+  const gridElement = itemEl?.closest(".grid-stack");
+  const grid = gridElement?.gridstack;
+  if (!itemEl || !grid) return;
+
+  grid.removeWidget(itemEl);
+
+  const page = canvas.closest("[wire\\:id]");
+  const wireId = page?.getAttribute("wire:id");
+  const wire = wireId ? window.Livewire?.find(wireId) : null;
+  wire?.deleteDashboardWidget(id);
+}
+window.removeDashboardWidget = removeDashboardWidget;
 
 export function serializeLayout(canvas = dashboardCanvas()) {
   if (!canvas) return [];
@@ -712,4 +740,25 @@ export function init() {
   window.addEventListener("dashboard-layout:reset", () => {
     window.setTimeout(() => window.location.reload(), 100);
   });
+
+  // After adding a widget, the backend sets this flag and reloads the page
+  // so the new widget lands with edit mode still on. Always clear the key
+  // immediately, even if the canvas or grid never appears, so a stale flag
+  // can't strand a later page load in edit mode.
+  //
+  // The restore itself has to wait for a booted GridStack: this chunk is
+  // imported dynamically and can resolve before Alpine runs `bootGrids()`,
+  // and everything edit mode does to the grid is optional-chained — running
+  // early would paint the edit chrome over a still-static grid with no retry.
+  if (window.sessionStorage.getItem("phpvms:dashboard-editing") === "1") {
+    window.sessionStorage.removeItem("phpvms:dashboard-editing");
+
+    if (dashboardCanvas()?.querySelector(".grid-stack")?.gridstack) {
+      setDashboardEditing(true);
+    } else {
+      window.addEventListener("dashboard-grid:ready", () => setDashboardEditing(true), {
+        once: true,
+      });
+    }
+  }
 }

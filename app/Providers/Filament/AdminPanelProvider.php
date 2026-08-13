@@ -164,7 +164,7 @@ class AdminPanelProvider extends BasePanelProvider
         FilamentAsset::register([
             Js::make(
                 'phpvms-dashboard-grid',
-                resource_path('js/admin/dashboard/grid.js'),
+                resource_path('js/apps/admin/dashboard/grid.js'),
             ),
             AlpineComponent::make(
                 'pirep-performance-chart',

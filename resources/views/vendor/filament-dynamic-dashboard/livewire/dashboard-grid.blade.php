@@ -44,6 +44,18 @@
                                 'pageFilters' => $pageFilters,
                             ])
                         </div>
+
+                        @if ($canEdit)
+                            <button
+                                type="button"
+                                class="dashboard-widget-remove"
+                                x-on:click="removeDashboardWidget({{ $widget['id'] }})"
+                                aria-label="{{ __('filament.dashboard.remove_widget') }}"
+                                title="{{ __('filament.dashboard.remove_widget') }}"
+                            >
+                                <x-filament::icon icon="heroicon-m-x-mark" />
+                            </button>
+                        @endif
                     </div>
                 @endforeach
             </div>

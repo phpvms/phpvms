@@ -16,12 +16,29 @@ use App\Filament\Widgets\ReportsFiledStatWidget;
 use App\Filament\Widgets\TailsAvailableStatWidget;
 use App\Filament\Widgets\VersionWidget;
 use App\Http\Middleware\UpdatePending;
+use App\Models\Permission;
 use App\Models\Pirep;
+use App\Models\User;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Radio;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use MDDev\DynamicDashboard\Models\Dashboard as DashboardModel;
 use MDDev\DynamicDashboard\Models\DashboardWidget;
 
 use function Pest\Livewire\livewire;
+
+/** Mirrors FleetAirframeOptionsTest's selectOptions() helper, for the Radio field. */
+function radioOptions(Schema $schema, string $name): array
+{
+    /** @var Radio $radio */
+    $radio = $schema->getComponent(
+        fn (Component $component): bool => $component instanceof Radio && $component->getName() === $name,
+    );
+
+    return $radio->getOptions();
+}
 
 test('admin dashboard renders the welcome heading and the new widgets', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
@@ -41,6 +58,7 @@ test('admin dashboard renders the welcome heading and the new widgets', function
         ->assertSeeHtml('data-dashboard-layout-edit')
         ->assertSeeHtml('data-dashboard-layout-save')
         ->assertSeeHtml('class="dashboard-canvas is-readonly"')
+        ->assertSeeHtml('class="dashboard-widget-remove"')
         ->assertSeeHtml('class="grid-stack"')
         ->assertSeeHtml('wire:ignore')
         ->assertDontSeeHtml('x-init="init()"')
@@ -199,4 +217,211 @@ test('admin dashboard upgrades the legacy stats strip without resetting other wi
             'w' => 6,
             'h' => 2,
         ]);
+});
+
+test('deleteDashboardWidget removes the widget row and leaves the rest untouched', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    $component = livewire(Dashboard::class);
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+    $widget = $dashboard->widgets()->where('type', HoursFlownChart::class)->sole();
+
+    $component->call('deleteDashboardWidget', $widget->id);
+
+    expect(DashboardWidget::query()->find($widget->id))->toBeNull()
+        ->and($dashboard->widgets()->count())->toBe(12)
+        ->and($dashboard->widgets()->pluck('type')->all())->not->toContain(HoursFlownChart::class);
+});
+
+test('deleteDashboardWidget does not delete a widget belonging to another users dashboard', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $other = createAdminUser();
+
+    $this->actingAs($other);
+    livewire(Dashboard::class);
+    $otherDashboard = DashboardModel::query()->where('created_by', $other->id)->sole();
+    $otherWidget = $otherDashboard->widgets()->firstOrFail();
+
+    $this->actingAs($admin);
+    $component = livewire(Dashboard::class);
+
+    $component->call('deleteDashboardWidget', $otherWidget->id);
+
+    expect(DashboardWidget::query()->find($otherWidget->id))->not->toBeNull()
+        ->and($otherDashboard->widgets()->count())->toBe(13);
+});
+
+test('deleteDashboardWidget ignores a client-set currentDashboardId', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $other = createAdminUser();
+
+    $this->actingAs($other);
+    livewire(Dashboard::class);
+    $otherDashboard = DashboardModel::query()->where('created_by', $other->id)->sole();
+    $otherWidget = $otherDashboard->widgets()->firstOrFail();
+
+    // `currentDashboardId` is `#[Session]`, not `#[Locked]`, so the client can
+    // set it to any id. The delete must not trust it.
+    $this->actingAs($admin);
+    livewire(Dashboard::class)
+        ->set('currentDashboardId', $otherDashboard->id)
+        ->call('deleteDashboardWidget', $otherWidget->id);
+
+    expect(DashboardWidget::query()->find($otherWidget->id))->not->toBeNull()
+        ->and($otherDashboard->widgets()->count())->toBe(13);
+});
+
+test('deleteDashboardWidget refuses to touch a locked dashboard', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    $component = livewire(Dashboard::class);
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+    $widget = $dashboard->widgets()->where('type', HoursFlownChart::class)->sole();
+
+    $dashboard->update(['is_locked' => true]);
+
+    $component->call('deleteDashboardWidget', $widget->id)->assertForbidden();
+
+    expect(DashboardWidget::query()->find($widget->id))->not->toBeNull();
+});
+
+test('deleteDashboardWidget and addDashboardWidget are forbidden without edit rights', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+    Filament::setCurrentPanel('admin');
+
+    $viewer = User::factory()->create();
+    Permission::firstOrCreate(['name' => 'view:dashboard', 'guard_name' => 'web']);
+    $viewer->givePermissionTo('view:dashboard');
+
+    $this->actingAs($viewer->fresh());
+
+    expect(Dashboard::canAccess())->toBeTrue()
+        ->and(Dashboard::canEdit())->toBeFalse();
+
+    $component = livewire(Dashboard::class)->assertDontSeeHtml('dashboard-widget-remove');
+    $dashboard = DashboardModel::query()->where('created_by', $viewer->id)->sole();
+    $widget = $dashboard->widgets()->where('type', HoursFlownChart::class)->sole();
+
+    $component->call('deleteDashboardWidget', $widget->id)->assertForbidden();
+
+    expect(DashboardWidget::query()->find($widget->id))->not->toBeNull()
+        ->and($dashboard->widgets()->count())->toBe(13);
+
+    // The add action is gated a step earlier, by ->visible(static::canEdit()),
+    // so a view-only user never gets to mount it at all.
+    $dashboard->widgets()->where('type', LandingRateChart::class)->sole()->delete();
+
+    livewire(Dashboard::class)->assertActionHidden('addDashboardWidget');
+
+    expect($dashboard->widgets()->where('type', LandingRateChart::class)->exists())->toBeFalse();
+});
+
+test('addDashboardWidget refuses to touch a locked dashboard', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+    Filament::setCurrentPanel('admin');
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    livewire(Dashboard::class);
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+    $dashboard->widgets()->where('type', LandingRateChart::class)->sole()->delete();
+    $dashboard->update(['is_locked' => true]);
+
+    livewire(Dashboard::class)
+        ->callAction('addDashboardWidget', ['type' => LandingRateChart::class])
+        ->assertForbidden();
+
+    expect($dashboard->widgets()->where('type', LandingRateChart::class)->exists())->toBeFalse();
+});
+
+test('deleteDashboardWidget is a no-op for a non-existent id', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+
+    $component = livewire(Dashboard::class);
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+    $nonExistentId = (DashboardWidget::query()->max('id') ?? 0) + 1000;
+
+    $component->call('deleteDashboardWidget', $nonExistentId)->assertHasNoErrors();
+
+    expect($dashboard->widgets()->count())->toBe(13);
+});
+
+test('addDashboardWidget creates a row using the widget classes own default size', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+    // getAvailableWidgetOptions() discovers widgets off the current Filament
+    // panel; a component-level Livewire test never runs through the
+    // SetUpPanel middleware that a real HTTP request would, so it has to be
+    // set explicitly.
+    Filament::setCurrentPanel('admin');
+
+    $component = livewire(Dashboard::class);
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+    $dashboard->widgets()->where('type', LandingRateChart::class)->sole()->delete();
+
+    $maxY = $dashboard->widgets()->max('y');
+
+    $component->callAction('addDashboardWidget', ['type' => LandingRateChart::class])
+        ->assertHasNoErrors();
+
+    $created = $dashboard->widgets()->where('type', LandingRateChart::class)->sole();
+
+    expect($created->section_slug)->toBe('main')
+        ->and($created->x)->toBe(0)
+        ->and($created->y)->toBeGreaterThan($maxY)
+        ->and($created->w)->toBe(LandingRateChart::getDynamicDashboardDefaultWidth())
+        ->and($created->h)->toBe(LandingRateChart::getDynamicDashboardDefaultHeight());
+});
+
+test('addDashboardWidget options exclude widgets already on the dashboard', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+    Filament::setCurrentPanel('admin');
+
+    // Mounting the page creates the 13 default widgets, so the picker starts
+    // empty: the modal says so and drops its submit button rather than offering
+    // an empty choice.
+    $full = livewire(Dashboard::class)->mountAction('addDashboardWidget');
+
+    expect($full->instance()->getMountedAction()?->getModalSubmitAction())->toBeNull();
+
+    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
+
+    $dashboard->widgets()->where('type', LandingRateChart::class)->sole()->delete();
+
+    $page = livewire(Dashboard::class)->mountAction('addDashboardWidget');
+    $options = radioOptions(
+        $page->instance()->getSchema($page->instance()->getMountedActionSchemaName()),
+        'type',
+    );
+
+    expect($options)->toHaveCount(1)
+        ->and($options)->toHaveKey(LandingRateChart::class);
 });
