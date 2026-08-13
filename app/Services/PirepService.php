@@ -29,6 +29,7 @@ use App\Exceptions\UserNotAtAirport;
 use App\Models\Acars;
 use App\Models\Aircraft;
 use App\Models\Airport;
+use App\Models\Flight;
 use App\Models\Navdata;
 use App\Models\Pirep;
 use App\Models\PirepArchive;
