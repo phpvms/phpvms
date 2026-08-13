@@ -19,6 +19,15 @@ class SettingsSeeder extends Seeder
     private array $settings = [
         // General
         [
+            'key'         => 'general.site_name',
+            'name'        => 'Site Name',
+            'group'       => 'general',
+            'value'       => '',
+            'type'        => 'text',
+            'options'     => '',
+            'description' => 'The airline name shown across the admin panel and frontend',
+        ],
+        [
             'key'         => 'general.theme',
             'name'        => 'Current Theme',
             'group'       => 'general',
@@ -898,6 +907,64 @@ class SettingsSeeder extends Seeder
             'name'        => 'Registry Public Key',
             'group'       => 'general',
             'value'       => '+SDNBf6LCATJElc5yi2mrhpJwGh5So/s1Hi3jCUETic=',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+
+        // Branding (hidden — edited only via the Branding page, never the
+        // settings UI). Empty until an admin uploads or sets them;
+        // App\Support\Branding falls back to the hardcoded phpVMS assets.
+        [
+            'key'         => 'branding.brand_color',
+            'name'        => 'Brand Color',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'branding.logo_url',
+            'name'        => 'Logo URL',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'branding.logo_32_url',
+            'name'        => 'Logo URL (32px)',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'branding.logo_64_url',
+            'name'        => 'Logo URL (64px)',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'branding.logo_180_url',
+            'name'        => 'Logo URL (180px)',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
+        [
+            'key'         => 'branding.banner_url',
+            'name'        => 'Banner URL',
+            'group'       => 'branding',
+            'value'       => '',
             'type'        => 'hidden',
             'options'     => '',
             'description' => '',
