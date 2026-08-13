@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Contracts\Metar as MetarProvider;
 use App\Models\User;
 use App\Support\Metar;
-use RuntimeException;
 
 beforeEach(function (): void {
     $this->actingAs(User::factory()->create());
