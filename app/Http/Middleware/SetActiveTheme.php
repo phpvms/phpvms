@@ -64,10 +64,10 @@ class SetActiveTheme implements Middleware
     public function setTheme(Request $request): void
     {
         try {
-            $theme = setting('general.theme', 'seven');
+            $theme = setting('general.theme', config('themes.default'));
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
-            $theme = 'seven';
+            $theme = config('themes.default');
         }
 
         if (empty($theme)) {

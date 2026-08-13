@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'themes_path'     => resource_path('views/layouts'),
     'asset_not_found' => 'LOG_ERROR',
-    'default'         => env('DEFAULT_THEME', 'seven'),
+    'default'         => env('DEFAULT_THEME', 'skylight'),
     'cache'           => true,
     'themes'          => [],
     'asset_delivery'  => env('THEME_ASSET_DELIVERY', 'route'),
