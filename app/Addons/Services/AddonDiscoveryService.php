@@ -247,9 +247,12 @@ class AddonDiscoveryService
             // registry_id is the only identity: name and namespace both change
             // across versions, and matching on them let a renamed addon look
             // installed while its row still pointed at the old one.
-            $installed = $installedAddons->first(fn (Addon $addon): bool => $addon->registry_id === $m->registryId);
+            $installed = $installedAddons->first(fn (Addon $addon): bool => $addon->registry_id === $m->registryId
+                || $this->isLegacyRowFor($addon, $m));
 
             if ($installed) {
+                $this->healLegacyIdentity($installed, $m);
+
                 continue;
             }
 
@@ -257,6 +260,35 @@ class AddonDiscoveryService
         }
 
         return $newAddons;
+    }
+
+    /**
+     * Whether this row predates the registry_id requirement and belongs to
+     * this manifest.
+     *
+     * Only reachable when the code is ahead of the schema — a deploy that
+     * ships this file before `migrate` runs. Without it every such row looks
+     * like a new addon, upsert() inserts a second row with the same namespace,
+     * and the unique index on `namespace` throws inside AddonServiceProvider::
+     * boot() where nothing catches it: every request 500s until migrations run.
+     */
+    private function isLegacyRowFor(Addon $addon, AddonManifest $m): bool
+    {
+        return blank($addon->registry_id) && $addon->namespace === $m->namespace;
+    }
+
+    /**
+     * Stamp the manifest's registry_id onto a row that has none, so the match
+     * above is needed exactly once per addon.
+     */
+    private function healLegacyIdentity(Addon $addon, AddonManifest $m): void
+    {
+        if (!blank($addon->registry_id)) {
+            return;
+        }
+
+        $addon->registry_id = $m->registryId;
+        $addon->save();
     }
 
     /**
@@ -278,7 +310,8 @@ class AddonDiscoveryService
         $cacheRows = [];
 
         foreach ($manifests as $m) {
-            $addon = $installed->first(fn (Addon $a): bool => $a->registry_id === $m->registryId);
+            $addon = $installed->first(fn (Addon $a): bool => $a->registry_id === $m->registryId
+                || $this->isLegacyRowFor($a, $m));
 
             if ($addon !== null) {
                 $cacheRows[] = $this->buildBootCacheRow($m, true);
