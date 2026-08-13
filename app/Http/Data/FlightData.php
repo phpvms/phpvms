@@ -49,7 +49,7 @@ final class FlightData extends Data
             arr: $flight->arr_airport_id,
             distanceNm: $flight->distance ? (int) round($flight->distance->toUnit('nmi')) : null,
             blockTime: $flight->flight_time ? Time::minutesToTimeString((int) $flight->flight_time) : null,
-            type: $flight->flight_type?->getLabel(),
+            type: $flight->flight_type->getLabel(),
         );
     }
 }

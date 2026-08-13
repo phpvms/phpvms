@@ -16,6 +16,13 @@ use function count;
 
 /**
  * Class Metar
+ *
+ * @property string $raw
+ * @property-read array<int, array<string, mixed>>|null $clouds
+ * @property-read string|null                    $observed_date
+ * @property-read Temperature|null               $temperature
+ * @property-read int|null                       $wind_direction
+ * @property-read Distance|null                  $wind_speed
  */
 
 /*

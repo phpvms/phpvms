@@ -91,8 +91,8 @@ class WeatherController extends Controller
 
         return response()->json([
             'icao'        => $icao,
-            'metar'       => $metar?->raw ?? null,
-            'taf'         => $taf?->raw ?? null,
+            'metar'       => $metar?->raw,
+            'taf'         => $taf?->raw,
             'conditions'  => $this->resolveConditions($metar),
             'temperature' => $this->resolveTemperature($metar),
             'wind'        => $this->resolveWind($metar),
@@ -206,9 +206,7 @@ class WeatherController extends Controller
             }
 
             $dirStr = ($dir !== null) ? $dir.'°' : 'VRB';
-            $speedVal = ($speed !== null && is_object($speed) && method_exists($speed, 'toUnit'))
-                ? round($speed->toUnit('kt')).' kt'
-                : ($speed !== null ? (string) $speed : '—');
+            $speedVal = $speed !== null ? round($speed->toUnit('kt')).' kt' : '—';
 
             return "{$dirStr} at {$speedVal}";
         } catch (Throwable) {

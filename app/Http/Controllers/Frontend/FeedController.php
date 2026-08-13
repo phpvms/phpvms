@@ -77,14 +77,14 @@ final class FeedController extends Controller
             ->limit(self::LIMIT)
             ->get()
             ->map(function (Pirep $p): array {
-                $ts = $p->submitted_at ?? $p->created_at ?? Carbon::now();
+                $ts = Carbon::make($p->submitted_at) ?? $p->created_at ?? Carbon::now();
 
                 return [
                     'ts'    => $ts,
                     'event' => new ActivityEventData(
                         id: 'pirep:'.$p->id,
                         type: 'pirep',
-                        title: ($p->user?->name ?? 'A pilot').' filed '.$p->ident,
+                        title: ($p->user->name ?? 'A pilot').' filed '.$p->ident,
                         subtitle: $this->route($p->dpt_airport?->icao, $p->arr_airport?->icao),
                         timestamp: $ts->toIso8601String(),
                         icon: 'plane-arrival',
@@ -167,7 +167,7 @@ final class FeedController extends Controller
                     'event' => new ActivityEventData(
                         id: 'award:'.$ua->id,
                         type: 'award',
-                        title: ($ua->user?->name ?? 'A pilot').' earned '.($ua->award?->name ?? 'an award'),
+                        title: ($ua->user->name ?? 'A pilot').' earned '.($ua->award->name ?? 'an award'),
                         subtitle: null,
                         timestamp: $ts->toIso8601String(),
                         icon: 'award',

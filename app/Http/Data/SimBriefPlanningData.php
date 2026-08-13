@@ -57,7 +57,7 @@ final class SimBriefPlanningData extends Data
         $loadDistribution = $fares
             ->map(fn (array $fare): string => $fare['code'].' '.$fare['count'])
             ->implode(' ');
-        $airlineIcao = $flight->airline?->icao ?? '';
+        $airlineIcao = $flight->airline->icao ?? '';
         $callsignEditable = !(bool) setting('simbrief.callsign', true);
         $callsign = !$callsignEditable
             ? $user->ident

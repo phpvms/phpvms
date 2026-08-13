@@ -34,6 +34,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -173,6 +174,7 @@ class PirepController extends Controller
         }
 
         $perPage = paginate_limit($request->integer('limit') ?: null);
+        /** @var LengthAwarePaginator<int, Pirep> $pireps */
         $pireps = $query->paginate($perPage);
 
         // Blade gets the paginator (model-rich) verbatim; the SPA gets flat,

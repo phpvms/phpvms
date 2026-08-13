@@ -6,6 +6,7 @@ namespace App\Http\Data;
 
 use App\Enums\PirepState;
 use App\Models\Pirep;
+use LogicException;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -30,6 +31,7 @@ final class ActiveSectorData extends Data
             state: match ($pirep->state) {
                 PirepState::IN_PROGRESS => 'in_progress',
                 PirepState::PAUSED      => 'paused',
+                default                 => throw new LogicException('Active sectors require an active PIREP state'),
             },
         );
     }

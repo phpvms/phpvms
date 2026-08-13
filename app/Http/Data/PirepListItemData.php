@@ -52,7 +52,7 @@ final class PirepListItemData extends Data
             distance: self::distanceLabel($p->distance),
             score: $p->score,
             landingRate: $p->landing_rate,
-            state: $p->state?->getLabel() ?? '—',
+            state: $p->state->getLabel(),
             stateColor: self::stateColor($p->state),
             submittedAt: $p->submitted_at?->toIso8601String(),
         );

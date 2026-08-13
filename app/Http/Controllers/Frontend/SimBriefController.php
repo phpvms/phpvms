@@ -490,7 +490,7 @@ class SimBriefController
             : $user->bids()->whereKey($bidId)->firstOrFail();
         $flight = $this->skylightFlight(
             $user,
-            $bid?->flight_id ?? (string) $request->query('flight_id'),
+            $bid instanceof Bid ? $bid->flight_id : (string) $request->query('flight_id'),
         );
         $aircraftId = $bid instanceof Bid
             ? $bid->aircraft_id

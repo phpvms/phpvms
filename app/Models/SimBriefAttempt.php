@@ -16,6 +16,7 @@ use Override;
  * @property int        $aircraft_id
  * @property array|null $fare_data
  * @property Carbon     $expires_at
+ * @property-read Aircraft|null $aircraft
  */
 class SimBriefAttempt extends Model
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data;
 
-use App\Enums\PirepStatus;
+use App\Enums\PirepPhase;
 use App\Models\Pirep;
 use App\Support\Units\Time;
 use Spatie\LaravelData\Data;
@@ -72,12 +72,12 @@ final class PirepData extends Data
             arr: $p->arr_airport_id,
             dptName: $p->dpt_airport?->name,
             arrName: $p->arr_airport?->name,
-            state: $p->state?->getLabel() ?? '—',
+            state: $p->state->getLabel(),
             stateColor: PirepListItemData::stateColor($p->state),
             status: self::statusLabel($p),
             source: $p->source?->getLabel() ?? '—',
             sourceName: $p->source_name,
-            flightType: $p->flight_type?->getLabel(),
+            flightType: $p->flight_type->getLabel(),
             route: $p->route,
             notes: $p->notes,
             flightTime: $p->flight_time ? Time::minutesToTimeString((int) $p->flight_time) : null,
@@ -115,7 +115,7 @@ final class PirepData extends Data
     }
 
     /**
-     * PirepStatus label, tolerant of legacy/invalid stored values. The status
+     * PirepPhase label, tolerant of legacy/invalid stored values. The status
      * column can hold values outside the string-backed enum (e.g. a stale "0"),
      * which would make the model cast throw on access — so read the raw value and
      * tryFrom() it instead of touching $p->status.
@@ -124,7 +124,7 @@ final class PirepData extends Data
     {
         $raw = $p->getRawOriginal('status');
 
-        return $raw === null ? null : PirepStatus::tryFrom($raw)?->getLabel();
+        return is_string($raw) ? PirepPhase::tryFrom($raw)?->getLabel() : null;
     }
 
     /** Unit-aware fuel string in the pilot's configured units, e.g. "4200 lbs". */

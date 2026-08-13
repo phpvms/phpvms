@@ -561,13 +561,11 @@ if (!function_exists('theme_setting')) {
      */
     function theme_setting(string $key, mixed $default = null): mixed
     {
-        $theme = Theme::current();
-
-        if ($theme === null) {
+        if (Theme::get() === '') {
             return $default;
         }
 
-        return $theme->getSetting($key, $default);
+        return Theme::current()->getSetting($key, $default);
     }
 }
 

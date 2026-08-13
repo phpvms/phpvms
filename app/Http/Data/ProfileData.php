@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Data;
 
 use App\Models\User;
+use App\Models\UserField;
 use App\Support\Units\Time;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
@@ -41,7 +42,7 @@ final class ProfileData extends Data
     ) {}
 
     /**
-     * @param Collection<int, object> $userFields resolved public UserField models (name + value)
+     * @param Collection<int, UserField> $userFields resolved public UserField models (name + value)
      */
     public static function fromModel(User $u, Collection $userFields, bool $acars): self
     {
