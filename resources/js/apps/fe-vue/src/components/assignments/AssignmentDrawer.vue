@@ -66,11 +66,7 @@ defineExpose({ show });
             <div ref="heading" tabindex="-1">
               <FlightIdentHeader
                 v-if="payload"
-                :callsign="payload.flight.summary.callsign"
-                :departure="payload.flight.summary.dpt ?? '—'"
-                :arrival="payload.flight.summary.arr ?? '—'"
-                :airline-logo="payload.flight.summary.airline?.logo"
-                :airline-name="payload.flight.summary.airline?.name"
+                :flight="payload.flight.summary"
                 :aircraft="
                   payload.selection?.aircraft
                     ? `${payload.selection.aircraft.registration} · ${payload.selection.aircraft.icaoType}`

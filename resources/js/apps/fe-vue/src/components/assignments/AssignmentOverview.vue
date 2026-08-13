@@ -38,11 +38,7 @@ function visitOfp() {
       <div>
         <p class="pv-eyebrow">BID CONFIRMED</p>
         <FlightIdentHeader
-          :callsign="selection.flight.summary.callsign"
-          :departure="selection.flight.summary.dpt ?? '—'"
-          :arrival="selection.flight.summary.arr ?? '—'"
-          :airline-logo="selection.flight.summary.airline?.logo"
-          :airline-name="selection.flight.summary.airline?.name"
+          :flight="selection.flight.summary"
           :aircraft="selection.aircraft ? `${selection.aircraft.registration} · ${selection.aircraft.icaoType}` : 'Aircraft not selected'"
           size="lg"
         />

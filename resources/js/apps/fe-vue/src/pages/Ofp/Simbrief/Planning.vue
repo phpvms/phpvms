@@ -89,11 +89,7 @@ async function continueWithAircraft(nextAircraftId: number | null) {
         <div class="planning-identity">
           <FlightIdentHeader
             v-if="flight"
-            :callsign="flight.summary.callsign"
-            :departure="flight.summary.dpt ?? '—'"
-            :arrival="flight.summary.arr ?? '—'"
-            :airline-logo="flight.summary.airline?.logo"
-            :airline-name="flight.summary.airline?.name"
+            :flight="flight.summary"
             :aircraft="
               planning ? `${planning.aircraft.registration} · ${planning.aircraft.icaoType}` : null
             "

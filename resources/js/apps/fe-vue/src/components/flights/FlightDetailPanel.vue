@@ -17,14 +17,7 @@ const emit = defineEmits<{ bid: [flightId: string, event: MouseEvent] }>();
     <header class="detail-hero">
       <div>
         <p class="pv-eyebrow">FLIGHT DISPATCH</p>
-        <FlightIdentHeader
-          :callsign="flight.summary.callsign"
-          :departure="flight.summary.dpt ?? '—'"
-          :arrival="flight.summary.arr ?? '—'"
-          :airline-logo="flight.summary.airline?.logo"
-          :airline-name="flight.summary.airline?.name"
-          size="lg"
-        />
+        <FlightIdentHeader :flight="flight.summary" size="lg" />
       </div>
       <div class="detail-actions">
         <UButton

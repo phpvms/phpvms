@@ -110,11 +110,7 @@ function selectFlight(flightId: string): void {
       <p class="pv-eyebrow">SELECTED FLIGHT</p>
       <FlightIdentHeader
         id="selected-flight-heading"
-        :callsign="selected.callsign"
-        :departure="selected.dpt ?? '—'"
-        :arrival="selected.arr ?? '—'"
-        :airline-logo="selected.airline?.logo"
-        :airline-name="selected.airline?.name"
+        :flight="selected"
         :href="`/flights/${selected.id}`"
         size="lg"
       />
