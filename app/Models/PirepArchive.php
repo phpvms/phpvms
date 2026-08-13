@@ -51,6 +51,7 @@ class PirepArchive extends Model
         'aircraft',
         'simbrief',
         'navlog',
+        'fines',
     ];
 
     #[Override]
@@ -62,6 +63,7 @@ class PirepArchive extends Model
             'aircraft'             => 'array',
             'simbrief'             => 'array',
             'navlog'               => 'array',
+            'fines'                => 'array',
         ];
     }
 
