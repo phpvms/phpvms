@@ -110,7 +110,7 @@
     </script>
 
     {{-- Start of the required tags block. Don't remove these or things will break!! --}}
-    @vite(['resources/js/entrypoint.js', 'resources/js/frontend/app.js'])
+    @vite(['resources/js/apps/seven/entrypoint.js', 'resources/js/apps/seven/app.js'])
     @yield('scripts')
 
     {{-- This is the color theme switcher --}}

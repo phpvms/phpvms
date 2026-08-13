@@ -423,6 +423,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->belongsToMany(Award::class, 'user_awards')->withTimestamps()->withTrashed();
     }
 
+    /** @return HasMany<Bid, $this> */
     public function bids(): HasMany
     {
         return $this->hasMany(Bid::class, 'user_id');

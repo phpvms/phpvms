@@ -9,6 +9,7 @@ use App\Exceptions\SettingNotFound;
 use App\Models\Setting;
 use App\Services\Concerns\CastsSettingValue;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Read/write access to application settings stored in the `settings` table.
@@ -75,6 +76,12 @@ class SettingService extends Service
      */
     public function store(string $key, mixed $value): mixed
     {
+        if ($key === 'bids.expire_time' && $value !== null && (int) $value < 0) {
+            throw ValidationException::withMessages([
+                'bids.expire_time' => 'Bid expiry cannot be negative.',
+            ]);
+        }
+
         $formattedKey = Setting::formatKey($key);
 
         $setting = Setting::where('id', $formattedKey)->first(['id', 'value']);

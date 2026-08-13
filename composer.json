@@ -96,6 +96,8 @@
     "hidehalo/nanoid-php": "^2.0",
     "laravel/octane": "^2.17",
     "spatie/laravel-permission": "^8.0",
+    "inertiajs/inertia-laravel": "*",
+    "spatie/laravel-typescript-transformer": "*",
     "laravel/passport": "^13.7",
     "arthurpar06/laravel-discord-notifier": "^0.2"
   },
@@ -131,6 +133,7 @@
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
+      "Modules\\SampleVueWidget\\": "modules/phpvms-sample-vue-widget/",
       "Modules\\": "modules/"
     }
   },
@@ -174,7 +177,7 @@
     ],
     "bump:minor": [
       "composer update && composer bump",
-      "bun x npm-check-updates -u -t minor && bun install"
+      "pnpm dlx npm-check-updates -u -t minor && pnpm install"
     ],
     "lint": "pint --parallel",
     "pint": "pint --parallel",
@@ -183,6 +186,11 @@
     "test:lint": "pint --test --parallel",
     "test:refactor": "rector --dry-run",
     "test:types": "phpstan analyse",
+    "types": "@php artisan typescript:transform",
+    "test:types-drift": [
+      "@php artisan typescript:transform",
+      "git diff --exit-code resources/js/apps/fe-vue/src/types/generated.d.ts"
+    ],
     "test:arch": "pest --filter=arch",
     "test:mysql": "bin/test-db.sh mysql",
     "test:pgsql": "bin/test-db.sh pgsql",
@@ -193,6 +201,7 @@
       "@test:lint",
       "@test:refactor",
       "@test:types",
+      "@test:types-drift",
       "@test:unit"
     ],
     "setup": [
@@ -201,14 +210,14 @@
       "@php artisan key:generate",
       "@php artisan migrate --force",
       "@php artisan passport:keys --force",
-      "bun install --ignore-scripts",
-      "bun run build",
+      "pnpm install --ignore-scripts",
+      "pnpm run build",
       "@php artisan filament:assets"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "@php artisan optimize:clear",
-      "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host 0.0.0.0 --port 7474\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite --kill-others"
+      "@php artisan optimize:clear @no_additional_args",
+      "sh -c 'port=${1:-7474}; exec pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#86efac\" \"php artisan serve --host 0.0.0.0 --port $port\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"pnpm run dev\" \"pnpm --filter @phpvms/skylight run dev\" --names=server,queue,logs,admin-vite,pilot-vite --kill-others' -- @additional_args"
     ]
   },
   "config": {

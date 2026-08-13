@@ -1,0 +1,21 @@
+# Single pnpm workspace for the whole repo (one install, one lockfile, one store).
+#
+# Members:
+#   - the repo root itself — admin/seven build tooling (vite, preact, esbuild,
+#     oxlint/oxfmt, tailwind) driven by the root vite.config.js + bin/build.js.
+#   - resources/js/apps/fe-vue — the Vue SPA (@phpvms/skylight) + its @phpvms/skylight-tests
+#     package. Builds itself via its own vite.config.ts → public/build/skylight.
+#   - resources/js/packages/* — future shared packages (empty for now).
+#
+# admin/ and seven/ under resources/js/apps have no package.json, so they are NOT
+# workspace packages — just source built by the root pipeline.
+packages:
+  - "resources/js/apps/fe-vue"
+  - "resources/js/apps/fe-vue/tests"
+  - "resources/js/packages/*"
+
+# Allow these deps to run install scripts.
+allowBuilds:
+  "@parcel/watcher": true
+  esbuild: true
+  vue-demi: true

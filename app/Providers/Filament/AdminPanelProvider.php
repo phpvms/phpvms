@@ -119,7 +119,7 @@ class AdminPanelProvider extends PanelProvider
             // Inject vite this way - it might not exist when this is registered
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
+                fn (): string => Blade::render("@vite('resources/js/apps/admin/app.js')"),
             )
             ->breadcrumbs(false)
             ->unsavedChangesAlerts()

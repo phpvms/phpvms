@@ -13,7 +13,6 @@ use App\Exceptions\PilotIdNotFound;
 use App\Exceptions\PilotIdRangeExhausted;
 use App\Exceptions\UserPilotIdExists;
 use App\Models\Airline;
-use App\Models\Bid;
 use App\Models\Pirep;
 use App\Models\Rank;
 use App\Models\Role;
@@ -36,6 +35,10 @@ use Illuminate\Support\Facades\Log;
 
 class UserService extends Service
 {
+    public function __construct(
+        private readonly BidService $bidSvc,
+    ) {}
+
     /**
      * Find the user and return them with all of the data properly attached
      */
@@ -169,8 +172,7 @@ class UserService extends Service
         // Delete any fields which might have personal information
         UserFieldValue::where('user_id', $user->id)->delete();
 
-        // Remove any bids
-        Bid::where('user_id', $user->id)->delete();
+        $this->bidSvc->removeBidsForUser($user);
 
         // If this user has PIREPs, do a soft delete. Otherwise, just delete them outright
         if ($user->pireps->count() > 0) {

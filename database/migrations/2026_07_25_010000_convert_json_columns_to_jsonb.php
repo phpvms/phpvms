@@ -53,9 +53,11 @@ return new class() extends Migration
             if (!Schema::hasTable($table)) {
                 continue;
             }
+
             if (!Schema::hasColumn($table, $column)) {
                 continue;
             }
+
             DB::statement(sprintf(
                 'alter table %s alter column %s type %s using %s::%s',
                 $table,

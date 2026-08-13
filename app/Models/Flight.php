@@ -587,6 +587,32 @@ class Flight extends Model
      */
     public function accessibleSubfleetsFor(User $user, array $with = []): Collection
     {
+        $configured = $this->configuredSubfleets($with);
+        if ($configured->isEmpty()) {
+            return $configured;
+        }
+
+        $allowedIds = Subfleet::query()
+            ->allowedFor($user)
+            ->whereKey($configured->modelKeys())
+            ->pluck('id')
+            ->all();
+
+        return $configured
+            ->whereIn('id', $allowedIds)
+            ->values();
+    }
+
+    /**
+     * Resolve the flight's configured subfleet rung without applying a pilot's
+     * aircraft qualification policy. Dispatch uses this to retain disabled
+     * zero-result subfleets while the picker evaluates eligibility separately.
+     *
+     * @param  array<int, string>        $with
+     * @return Collection<int, Subfleet>
+     */
+    public function configuredSubfleets(array $with = []): Collection
+    {
         // A partially-hydrated model (Flight::select('id')->first()) leaves
         // bundle_id null, which makes rung 2 vacuously false and silently
         // WIDENS the result to the whole fleet. Fail loudly instead.
@@ -622,7 +648,6 @@ class Flight extends Model
         // configured?" gate is written — and planned — exactly once, and so the
         // shape mirrors the cascade it implements.
         return Subfleet::query()
-            ->allowedFor($user)
             ->with($with)
             ->where(function (Builder $query) use ($hasLivePins, $hasLiveBundleDefaults): void {
                 // Rung 1 — this flight's own pins. No liveness join needed here:

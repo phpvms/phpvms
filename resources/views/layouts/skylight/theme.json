@@ -1,0 +1,7 @@
+{
+  "name": "skylight",
+  "extends": "seven",
+  "kind": "spa",
+  "framework": "vue",
+  "manifest": "manifest.json"
+}

@@ -10,5 +10,8 @@
 !/Vacentral
 !/ModulesManager
 !/Sample
+!/phpvms-dashboard
+!/phpvms-sample-blade-widget
+!/phpvms-sample-vue-widget
+!/phpvms-sample-vue-slot
 !/phpvms-addon-manager
-

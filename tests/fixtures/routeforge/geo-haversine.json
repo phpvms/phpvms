@@ -1,5 +1,5 @@
 {
-  "_doc": "Cross-language haversine parity fixture. PHP (App\\Support\\Geo) and TS (resources/js/admin/routeforge/lib/geo.ts) both load this file in their test suites and assert their own output matches `expected_nm` to within `tolerance_nm`. Drift in either implementation fails its own test, not the other's — but BOTH expected values were computed once with R = 3440.065 nm + the canonical haversine formula, so a divergence anywhere surfaces as a parity break.",
+  "_doc": "Cross-language haversine parity fixture. PHP (App\\Support\\Geo) and TS (resources/js/apps/admin/routeforge/lib/geo.ts) both load this file in their test suites and assert their own output matches `expected_nm` to within `tolerance_nm`. Drift in either implementation fails its own test, not the other's — but BOTH expected values were computed once with R = 3440.065 nm + the canonical haversine formula, so a divergence anywhere surfaces as a parity break.",
   "earth_radius_nm": 3440.065,
   "tolerance_nm": 1e-9,
   "cases": [

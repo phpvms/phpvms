@@ -7,6 +7,8 @@ use App\Enums\PirepFieldSource;
 use App\Enums\PirepSource;
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\PirepResource;
+use App\Http\Data\PirepData;
+use App\Http\Data\PirepListItemData;
 use App\Http\Requests\CreatePirepRequest;
 use App\Http\Requests\SearchPirepsRequest;
 use App\Http\Requests\UpdatePirepRequest;
@@ -32,10 +34,12 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Inertia\Response as InertiaResponse;
 use Laracasts\Flash\Flash;
 
 class PirepController extends Controller
@@ -138,7 +142,7 @@ class PirepController extends Controller
         $this->fareSvc->saveToPirep($pirep, $fares);
     }
 
-    public function index(SearchPirepsRequest $request): View
+    public function index(SearchPirepsRequest $request): View|InertiaResponse
     {
         $user = Auth::user();
 
@@ -170,18 +174,37 @@ class PirepController extends Controller
         }
 
         $perPage = paginate_limit($request->integer('limit') ?: null);
+        /** @var LengthAwarePaginator<int, Pirep> $pireps */
         $pireps = $query->paginate($perPage);
 
-        return view('pireps.index', [
-            'user'   => $user,
-            'pireps' => $pireps,
-        ]);
+        // Blade gets the paginator (model-rich) verbatim; the SPA gets flat,
+        // typed PirepListItemData built lazily from the same page of models.
+        return response()->themed(
+            'Pireps/Index',
+            'pireps.index',
+            bladeData: [
+                'user'   => $user,
+                'pireps' => $pireps,
+            ],
+            spa: fn (): array => [
+                'pireps' => collect($pireps->items())
+                    ->map(fn (Pirep $p): PirepListItemData => PirepListItemData::fromModel($p))
+                    ->all(),
+                'pagination' => [
+                    'currentPage' => $pireps->currentPage(),
+                    'lastPage'    => $pireps->lastPage(),
+                    'total'       => $pireps->total(),
+                ],
+            ],
+        );
     }
 
-    public function show(string $id): RedirectResponse|View
+    public function show(string $id): RedirectResponse|View|InertiaResponse
     {
         // Support retrieval of deleted relationships
         $with = [
+            'acars_logs',
+            'field_values', // the `fields` accessor (custom PIREP fields) needs this loaded
             'events',
             'aircraft'    => fn ($query) => $query->withTrashed()->with(['airline' => fn ($query) => $query->withTrashed()]),
             'airline'     => fn ($query) => $query->withTrashed()->with('journal'),
@@ -203,11 +226,16 @@ class PirepController extends Controller
 
         $map_features = $this->geoSvc->pirepGeoJson($pirep);
 
-        return view('pireps.show', [
-            'pirep'        => $pirep,
-            'map_features' => $map_features,
-            'user'         => Auth::user(),
-        ]);
+        return response()->themed(
+            'Pireps/Show',
+            'pireps.show',
+            bladeData: [
+                'pirep'        => $pirep,
+                'map_features' => $map_features,
+                'user'         => Auth::user(),
+            ],
+            spa: fn (): array => ['pirep' => PirepData::fromModel($pirep)],
+        );
     }
 
     /**

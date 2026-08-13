@@ -119,7 +119,7 @@ abstract class PanelProvider extends FilamentPanelProvider
             ->favicon(asset('assets/img/favicon.png'))
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
+                fn (): string => Blade::render("@vite('resources/js/apps/admin/app.js')"),
             )
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->unsavedChangesAlerts()

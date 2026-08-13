@@ -36,7 +36,7 @@
                 class="fi-pirep-detail-v2-map"
                 x-data="{
                     async init() {
-                        // window.phpvms is set by resources/js/admin/app.js,
+                        // window.phpvms is set by resources/js/apps/admin/app.js,
                         // which is injected into every admin page via the
                         // HEAD_END render hook in AdminPanelProvider. Vite
                         // serves it as `<script type=module>`, so it runs

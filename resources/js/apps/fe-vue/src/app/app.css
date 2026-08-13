@@ -1,0 +1,158 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) theme(static);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "@nuxt/ui";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* Nuxt UI reserves `neutral`; keep the upstream Tailwind palette available to runtime themes. */
+@theme static {
+  --color-neutral-50: oklch(98.5% 0 0);
+  --color-neutral-100: oklch(97% 0 0);
+  --color-neutral-200: oklch(92.2% 0 0);
+  --color-neutral-300: oklch(87% 0 0);
+  --color-neutral-400: oklch(70.8% 0 0);
+  --color-neutral-500: oklch(55.6% 0 0);
+  --color-neutral-600: oklch(43.9% 0 0);
+  --color-neutral-700: oklch(37.1% 0 0);
+  --color-neutral-800: oklch(26.9% 0 0);
+  --color-neutral-900: oklch(20.5% 0 0);
+  --color-neutral-950: oklch(14.5% 0 0);
+}
+
+/* Canonical runtime --pv-* token layer (Workspace light default + .dark deck). */
+@import "../shared/lib/tokens.css";
+
+/* Dark mode is class-driven: <html class="dark"> flips the deck. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Tailwind v4 theme mapping. `inline` keeps values as var() references so runtime
+ * --pv-* overrides flow through utilities.
+ */
+@theme inline {
+  /* Workspace semantic colors as first-class utilities (bg-panel, text-ink-dim…). */
+  --color-bg: var(--pv-bg);
+  --color-panel: var(--pv-panel);
+  --color-panel-inset: var(--pv-panel-inset);
+  --color-hover: var(--pv-hover);
+  --color-line: var(--pv-line);
+  --color-line-strong: var(--pv-line-strong);
+  --color-ink: var(--pv-ink);
+  --color-ink-dim: var(--pv-ink-dim);
+  --color-ink-faint: var(--pv-ink-faint);
+  --color-accent: var(--pv-accent);
+  --color-accent-soft: var(--pv-accent-soft);
+  --color-cyan: var(--pv-cyan);
+  --color-ok: var(--pv-green);
+  --color-warn: var(--pv-amber);
+  --color-bad: var(--pv-red);
+
+  --font-body: var(--pv-font-body);
+  --font-mono: var(--pv-font-mono);
+  --font-display: var(--pv-font-display);
+
+  --radius-sm: var(--pv-radius-sm);
+  --radius-md: var(--pv-radius-md);
+  --radius-lg: var(--pv-radius-lg);
+  --radius-xl: var(--pv-radius-xl);
+}
+
+@layer base {
+  html {
+    background: var(--pv-bg);
+  }
+  body {
+    background: var(--pv-bg);
+    color: var(--pv-ink);
+    font-family: var(--pv-font-body);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv05", "ss01";
+  }
+}
+
+@layer components {
+  .pv-container {
+    @apply mx-auto w-full px-4 lg:px-6;
+    max-width: var(--pv-container-width);
+  }
+
+  /* Workspace micro label — uppercase, tracked, muted. */
+  .micro {
+    font-size: 11px;
+    line-height: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pv-ink-dim);
+  }
+
+  /* Section eyebrow (legacy pages): micro label + trailing hairline. */
+  .pv-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    line-height: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--pv-ink-dim);
+  }
+  .pv-eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--pv-line);
+  }
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin themed scrollbars. */
+@utility scroll-thin {
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--pv-ink-300);
+    border-radius: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* Input form fields */
+.pv-form-card
+  :where(
+    [data-slot="root"]:has(> input[data-slot="base"]),
+    [data-slot="root"]:has(> textarea[data-slot="base"]),
+    button[data-slot="base"]
+  ) {
+  @apply w-full text-center;
+}
+
+.pv-form-card input[data-slot="base"] {
+  @apply text-center;
+}
+
+.pv-form-card input[data-slot="base"]:has(+ [data-slot="leading"]) {
+  @apply pe-9;
+}
+
+.pv-form-card button[data-slot="base"] {
+  @apply w-full;
+}
+
+.pv-form-card button[data-slot="base"] > :where([data-slot="value"], [data-slot="placeholder"]) {
+  @apply flex-1 text-center;
+}

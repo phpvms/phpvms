@@ -42,13 +42,18 @@ class SimBriefService extends Service
         array $fares = []
     ): ?SimBrief {
         try {
-            $response = Http::timeout(30)
-                ->withoutRedirecting()
-                ->get(config('phpvms.simbrief_ofp_url'), [
-                    'username'  => $user->simbrief_username,
-                    'static_id' => $static_id,
-                    'json'      => 'v2',
-                ]);
+            $query = [
+                'static_id' => $static_id,
+                'json'      => 'v2',
+            ];
+            if (filled($user->simbrief_username)) {
+                $query['username'] = $user->simbrief_username;
+            }
+
+            $response = Http::timeout(30)->withoutRedirecting()->get(
+                config('phpvms.simbrief_ofp_url'),
+                $query,
+            );
 
             if ($response->status() !== 200) {
                 return null;

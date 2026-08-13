@@ -15,6 +15,7 @@ use App\Services\FlightService;
 test('bids', function (): void {
     updateSetting('bids.allow_multiple_bids', true);
     updateSetting('bids.disable_flight_on_bid', false);
+    updateSetting('bids.block_aircraft', false);
 
     $subfleet = Subfleet::factory()->hasAircraft(2)->create();
     $rank = Rank::factory()->hasAttached($subfleet)->create();
@@ -116,6 +117,7 @@ test('bids', function (): void {
 
 test('multiple bids single flight', function (): void {
     updateSetting('bids.disable_flight_on_bid', true);
+    updateSetting('bids.block_aircraft', false);
 
     $user1 = User::factory()->create();
     $user2 = User::factory()->create([
@@ -136,6 +138,8 @@ test('multiple bids single flight', function (): void {
 })->throws(BidExistsForFlight::class);
 
 test('add bid api', function (): void {
+    updateSetting('bids.block_aircraft', false);
+
     $user = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -190,6 +194,8 @@ test('delete bid api returns not found for missing flight', function (): void {
 });
 
 test('delete flight with bids', function (): void {
+    updateSetting('bids.block_aircraft', false);
+
     $user = User::factory()->create();
     apiAs($user);
 

@@ -8,7 +8,6 @@ use App\Contracts\Service;
 use App\Enums\PirepPhase;
 use App\Enums\PirepState;
 use App\Exceptions\DuplicateFlight;
-use App\Models\Bid;
 use App\Models\Flight;
 use App\Models\FlightFieldValue;
 use App\Models\Navdata;
@@ -23,6 +22,7 @@ class FlightService extends Service
 {
     public function __construct(
         private readonly AirportService $airportSvc,
+        private readonly BidService $bidSvc,
     ) {}
 
     /**
@@ -221,8 +221,7 @@ class FlightService extends Service
      */
     public function deleteFlight(Flight $flight): void
     {
-        $where = ['flight_id' => $flight->id];
-        Bid::where($where)->delete();
+        $this->bidSvc->removeBidsForFlight($flight);
         $flight->delete();
     }
 

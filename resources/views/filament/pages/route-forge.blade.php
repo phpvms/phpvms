@@ -11,7 +11,7 @@
     renders. No PHP-rendered data envelope, no window.* globals — the only
     server-injected payload in the HTML is the boot URL itself.
 
-    See resources/js/admin/routeforge/main.tsx for the boot-fetch flow.
+    See resources/js/apps/admin/routeforge/main.tsx for the boot-fetch flow.
 --}}
 <x-filament-panels::page>
     <div
@@ -20,5 +20,5 @@
         data-boot-url="{{ $this->bootUrl }}"
     ></div>
 
-    @vite('resources/js/admin/routeforge/main.tsx')
+    @vite('resources/js/apps/admin/routeforge/main.tsx')
 </x-filament-panels::page>

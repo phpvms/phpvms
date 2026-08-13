@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "nuxtUi": {
+    "theme": {
+      "colors": {
+        "primary": "indigo",
+        "secondary": "sky",
+        "success": "emerald",
+        "info": "blue",
+        "warning": "amber",
+        "error": "rose"
+      },
+      "colorShades": {
+        "primary": "600",
+        "secondary": "600",
+        "success": "600",
+        "info": "600",
+        "warning": "600",
+        "error": "600"
+      },
+      "neutral": "zinc",
+      "radius": 0.375,
+      "font": "Geist",
+      "lightOverrides": {
+        "text": {
+          "dimmed": "400",
+          "muted": "500",
+          "toned": "600",
+          "default": "700",
+          "highlighted": "900",
+          "inverted": "white"
+        },
+        "bg": {
+          "default": "white",
+          "muted": "50",
+          "elevated": "100",
+          "accented": "200",
+          "inverted": "900"
+        },
+        "border": {
+          "default": "200",
+          "muted": "200",
+          "accented": "300",
+          "inverted": "900"
+        }
+      },
+      "darkOverrides": {
+        "text": {
+          "dimmed": "500",
+          "muted": "400",
+          "toned": "300",
+          "default": "200",
+          "highlighted": "white",
+          "inverted": "900"
+        },
+        "bg": {
+          "default": "900",
+          "muted": "800",
+          "elevated": "800",
+          "accented": "700",
+          "inverted": "white"
+        },
+        "border": {
+          "default": "800",
+          "muted": "700",
+          "accented": "700",
+          "inverted": "white"
+        }
+      },
+      "darkColors": {
+        "primary": "indigo",
+        "secondary": "sky",
+        "success": "emerald",
+        "info": "blue",
+        "warning": "orange",
+        "error": "rose"
+      },
+      "darkColorShades": {
+        "primary": "500",
+        "secondary": "500",
+        "success": "500",
+        "info": "500",
+        "warning": "500",
+        "error": "500"
+      },
+      "darkNeutral": "zinc",
+      "darkRadius": 0.375,
+      "darkFont": "Geist"
+    },
+    "components": {
+      "button": {
+        "props": {
+          "color": "primary",
+          "variant": "solid",
+          "size": "md"
+        },
+        "style": {
+          "alignment": "center",
+          "shape": "rounded",
+          "weight": "medium"
+        }
+      },
+      "input": {
+        "props": {
+          "color": "neutral",
+          "size": "md"
+        }
+      }
+    }
+  },
+  "phpvms": {
+    "density": "compact",
+    "navigation": "sidebar",
+    "tableDensity": "compact"
+  }
+}

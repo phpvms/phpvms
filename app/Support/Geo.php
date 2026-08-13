@@ -7,7 +7,7 @@ namespace App\Support;
 /**
  * Canonical great-circle geometry helpers (nautical miles).
  *
- * Mirrors `resources/js/admin/routeforge/lib/geo.ts` byte-for-byte (same
+ * Mirrors `resources/js/apps/admin/routeforge/lib/geo.ts` byte-for-byte (same
  * Earth radius, same haversine arithmetic) so client-side preview distances
  * and server-side `/preview-airports` decoration stay consistent. Keep the
  * two implementations in sync by reference: if you change the formula here,

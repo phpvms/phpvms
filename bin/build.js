@@ -67,12 +67,12 @@ const defaultOptions = {
 
 compile({
   ...defaultOptions,
-  entryPoints: ["./resources/js/admin/components/pirep-performance-chart.js"],
+  entryPoints: ["./resources/js/apps/admin/components/pirep-performance-chart.js"],
   outfile: "./resources/js/dist/admin/components/pirep-performance-chart.js",
 });
 
 compile({
   ...defaultOptions,
-  entryPoints: ["./resources/js/admin/components/pirep-landing-analysis.js"],
+  entryPoints: ["./resources/js/apps/admin/components/pirep-landing-analysis.js"],
   outfile: "./resources/js/dist/admin/components/pirep-landing-analysis.js",
 });

@@ -1,0 +1,13 @@
+{
+    "name": "phpvms/sample-blade-widget",
+    "type": "phpvms-module",
+    "description": "A sample phpVMS module that adds a Blade dashboard widget to the skylight SPA",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\SampleBladeWidget\\": "."
+        }
+    }
+}
