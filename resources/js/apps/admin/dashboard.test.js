@@ -283,10 +283,11 @@ it("does not enter edit mode on boot when the session flag is absent", () => {
   );
 });
 
-it("reveals the add-widget button alongside save, and hides it alongside save again", async () => {
+it("reveals the add-widget and reset buttons alongside save, and hides them again", async () => {
   document.body.innerHTML = `
     <div wire:id="dashboard">
       <button class="hidden" data-dashboard-layout-add></button>
+      <button class="hidden" data-dashboard-layout-reset></button>
       <div class="dashboard-canvas is-readonly">
         <div class="grid-stack" data-section="main"></div>
       </div>
@@ -298,9 +299,11 @@ it("reveals the add-widget button alongside save, and hides it alongside save ag
   editDashboardLayout();
 
   expect(document.querySelector("[data-dashboard-layout-add]").classList).not.toContain("hidden");
+  expect(document.querySelector("[data-dashboard-layout-reset]").classList).not.toContain("hidden");
 
   window.Livewire = { find: () => ({ persistLayout: vi.fn().mockResolvedValue(undefined) }) };
   await saveDashboardLayouts();
 
   expect(document.querySelector("[data-dashboard-layout-add]").classList).toContain("hidden");
+  expect(document.querySelector("[data-dashboard-layout-reset]").classList).toContain("hidden");
 });

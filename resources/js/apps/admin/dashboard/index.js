@@ -40,6 +40,9 @@ function setDashboardEditing(isEditing) {
   document
     .querySelectorAll("[data-dashboard-layout-add]")
     .forEach((action) => action.classList.toggle("hidden", !isEditing));
+  document
+    .querySelectorAll("[data-dashboard-layout-reset]")
+    .forEach((action) => action.classList.toggle("hidden", !isEditing));
 }
 
 export function editDashboardLayout() {

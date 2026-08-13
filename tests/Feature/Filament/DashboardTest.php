@@ -40,6 +40,37 @@ function radioOptions(Schema $schema, string $name): array
     return $radio->getOptions();
 }
 
+/**
+ * The widget types Dashboard::DEFAULT_WIDGETS seeds, in creation order.
+ *
+ * Kept in one place so a change to the default layout means one edit here
+ * rather than a hunt for hardcoded counts across the file.
+ *
+ * @return list<class-string>
+ */
+function defaultWidgetTypes(): array
+{
+    return [
+        ReportsFiledStatWidget::class,
+        BlockHoursStatWidget::class,
+        DistanceStatWidget::class,
+        PilotsFlyingStatWidget::class,
+        TailsAvailableStatWidget::class,
+        ActivityCalendarWidget::class,
+        VersionWidget::class,
+        RecentActionWidget::class,
+        LandingRateChart::class,
+        HoursFlownChart::class,
+        PirepStateChart::class,
+    ];
+}
+
+/** Registered widgets that the default layout deliberately leaves off. */
+function addableWidgetTypes(): array
+{
+    return [AccountWidget::class, DistanceFlownChart::class];
+}
+
 test('admin dashboard renders the welcome heading and the new widgets', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
     $this->withoutMiddleware(UpdatePending::class);
@@ -57,6 +88,7 @@ test('admin dashboard renders the welcome heading and the new widgets', function
         ->assertSee(__('filament.dashboard.save_layout'))
         ->assertSeeHtml('data-dashboard-layout-edit')
         ->assertSeeHtml('data-dashboard-layout-save')
+        ->assertSeeHtml('data-dashboard-layout-reset')
         ->assertSeeHtml('class="dashboard-canvas is-readonly"')
         ->assertSeeHtml('class="dashboard-widget-remove"')
         ->assertSeeHtml('class="grid-stack"')
@@ -75,22 +107,8 @@ test('admin dashboard renders the welcome heading and the new widgets', function
     $widgetTypes = $dashboard->widgets()->pluck('type')->all();
 
     expect($dashboard->is_personal)->toBeTrue()
-        ->and($widgetTypes)->toBe([
-            ReportsFiledStatWidget::class,
-            BlockHoursStatWidget::class,
-            DistanceStatWidget::class,
-            PilotsFlyingStatWidget::class,
-            TailsAvailableStatWidget::class,
-            AccountWidget::class,
-            VersionWidget::class,
-            ActivityCalendarWidget::class,
-            RecentActionWidget::class,
-            HoursFlownChart::class,
-            DistanceFlownChart::class,
-            PirepStateChart::class,
-            LandingRateChart::class,
-        ])
-        ->and(ActivityCalendarWidget::getDynamicDashboardMinHeight())->toBe(3)
+        ->and($widgetTypes)->toBe(defaultWidgetTypes())
+        ->and(ActivityCalendarWidget::getDynamicDashboardMinHeight())->toBe(4)
         ->and(HoursFlownChart::getDynamicDashboardMinHeight())->toBe(3)
         ->and(DistanceFlownChart::getDynamicDashboardMinHeight())->toBe(3)
         ->and(PirepStateChart::getDynamicDashboardMinHeight())->toBe(3)
@@ -149,7 +167,7 @@ test('admin dashboard saves and resets the current users package layout', functi
         ->assertDispatched('dashboard-layout:reset')
         ->assertHasNoErrors();
 
-    expect(DashboardWidget::query()->where('dashboard_id', $dashboard->id)->count())->toBe(13)
+    expect(DashboardWidget::query()->where('dashboard_id', $dashboard->id)->count())->toBe(count(defaultWidgetTypes()))
         ->and(DashboardWidget::query()
             ->where('dashboard_id', $dashboard->id)
             ->where('type', ReportsFiledStatWidget::class)
@@ -233,7 +251,7 @@ test('deleteDashboardWidget removes the widget row and leaves the rest untouched
     $component->call('deleteDashboardWidget', $widget->id);
 
     expect(DashboardWidget::query()->find($widget->id))->toBeNull()
-        ->and($dashboard->widgets()->count())->toBe(12)
+        ->and($dashboard->widgets()->count())->toBe(count(defaultWidgetTypes()) - 1)
         ->and($dashboard->widgets()->pluck('type')->all())->not->toContain(HoursFlownChart::class);
 });
 
@@ -255,7 +273,7 @@ test('deleteDashboardWidget does not delete a widget belonging to another users 
     $component->call('deleteDashboardWidget', $otherWidget->id);
 
     expect(DashboardWidget::query()->find($otherWidget->id))->not->toBeNull()
-        ->and($otherDashboard->widgets()->count())->toBe(13);
+        ->and($otherDashboard->widgets()->count())->toBe(count(defaultWidgetTypes()));
 });
 
 test('deleteDashboardWidget ignores a client-set currentDashboardId', function (): void {
@@ -278,7 +296,7 @@ test('deleteDashboardWidget ignores a client-set currentDashboardId', function (
         ->call('deleteDashboardWidget', $otherWidget->id);
 
     expect(DashboardWidget::query()->find($otherWidget->id))->not->toBeNull()
-        ->and($otherDashboard->widgets()->count())->toBe(13);
+        ->and($otherDashboard->widgets()->count())->toBe(count(defaultWidgetTypes()));
 });
 
 test('deleteDashboardWidget refuses to touch a locked dashboard', function (): void {
@@ -320,7 +338,7 @@ test('deleteDashboardWidget and addDashboardWidget are forbidden without edit ri
     $component->call('deleteDashboardWidget', $widget->id)->assertForbidden();
 
     expect(DashboardWidget::query()->find($widget->id))->not->toBeNull()
-        ->and($dashboard->widgets()->count())->toBe(13);
+        ->and($dashboard->widgets()->count())->toBe(count(defaultWidgetTypes()));
 
     // The add action is gated a step earlier, by ->visible(static::canEdit()),
     // so a view-only user never gets to mount it at all.
@@ -364,7 +382,7 @@ test('deleteDashboardWidget is a no-op for a non-existent id', function (): void
 
     $component->call('deleteDashboardWidget', $nonExistentId)->assertHasNoErrors();
 
-    expect($dashboard->widgets()->count())->toBe(13);
+    expect($dashboard->widgets()->count())->toBe(count(defaultWidgetTypes()));
 });
 
 test('addDashboardWidget creates a row using the widget classes own default size', function (): void {
@@ -405,23 +423,49 @@ test('addDashboardWidget options exclude widgets already on the dashboard', func
     $this->actingAs($admin);
     Filament::setCurrentPanel('admin');
 
-    // Mounting the page creates the 13 default widgets, so the picker starts
-    // empty: the modal says so and drops its submit button rather than offering
-    // an empty choice.
+    $mountOptions = function () use (&$page): array {
+        $page = livewire(Dashboard::class)->mountAction('addDashboardWidget');
+
+        return radioOptions(
+            $page->instance()->getSchema($page->instance()->getMountedActionSchemaName()),
+            'type',
+        );
+    };
+
+    // A fresh dashboard offers exactly the registered widgets the default
+    // layout leaves off, and nothing that is already placed.
+    expect(array_keys($mountOptions()))->toEqualCanonicalizing(addableWidgetTypes());
+
+    // Removing a placed widget puts its type back in the picker.
+    DashboardModel::query()
+        ->where('created_by', $admin->id)
+        ->sole()
+        ->widgets()
+        ->where('type', LandingRateChart::class)
+        ->sole()
+        ->delete();
+
+    expect(array_keys($mountOptions()))
+        ->toEqualCanonicalizing([...addableWidgetTypes(), LandingRateChart::class]);
+});
+
+test('addDashboardWidget offers no submit button once every widget is placed', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+    $this->withoutMiddleware(UpdatePending::class);
+
+    $admin = createAdminUser();
+    $this->actingAs($admin);
+    Filament::setCurrentPanel('admin');
+
+    $component = livewire(Dashboard::class);
+
+    foreach (addableWidgetTypes() as $type) {
+        $component->callAction('addDashboardWidget', ['type' => $type])->assertHasNoErrors();
+    }
+
+    // Nothing left to add: the modal explains that instead of offering an
+    // empty choice, so there is no submit action to press.
     $full = livewire(Dashboard::class)->mountAction('addDashboardWidget');
 
     expect($full->instance()->getMountedAction()?->getModalSubmitAction())->toBeNull();
-
-    $dashboard = DashboardModel::query()->where('created_by', $admin->id)->sole();
-
-    $dashboard->widgets()->where('type', LandingRateChart::class)->sole()->delete();
-
-    $page = livewire(Dashboard::class)->mountAction('addDashboardWidget');
-    $options = radioOptions(
-        $page->instance()->getSchema($page->instance()->getMountedActionSchemaName()),
-        'type',
-    );
-
-    expect($options)->toHaveCount(1)
-        ->and($options)->toHaveKey(LandingRateChart::class);
 });

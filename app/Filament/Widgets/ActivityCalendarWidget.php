@@ -32,12 +32,12 @@ class ActivityCalendarWidget extends Widget implements DynamicWidget
 
     public static function getDynamicDashboardDefaultWidth(): int
     {
-        return 12;
+        return 8;
     }
 
     public static function getDynamicDashboardDefaultHeight(): int
     {
-        return 3;
+        return 4;
     }
 
     public static function getDynamicDashboardMinHeight(): int

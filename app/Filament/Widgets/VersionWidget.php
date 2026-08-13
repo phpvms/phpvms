@@ -31,12 +31,12 @@ class VersionWidget extends Widget implements DynamicWidget
 
     public static function getDynamicDashboardDefaultWidth(): int
     {
-        return 6;
+        return 4;
     }
 
     public static function getDynamicDashboardDefaultHeight(): int
     {
-        return 2;
+        return 1;
     }
 
     public function mount(VersionService $versionSvc): void

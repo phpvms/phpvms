@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\AuthorizesAccess;
-use App\Filament\Widgets\AccountWidget;
 use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Filament\Widgets\BlockHoursStatWidget;
-use App\Filament\Widgets\DistanceFlownChart;
 use App\Filament\Widgets\DistanceStatWidget;
 use App\Filament\Widgets\HoursFlownChart;
 use App\Filament\Widgets\LandingRateChart;
@@ -67,14 +65,12 @@ class Dashboard extends DynamicDashboard
         ['name' => 'Distance', 'type' => DistanceStatWidget::class, 'x' => 4, 'y' => 0],
         ['name' => 'Pilots flying', 'type' => PilotsFlyingStatWidget::class, 'x' => 6, 'y' => 0],
         ['name' => 'Tails available', 'type' => TailsAvailableStatWidget::class, 'x' => 9, 'y' => 0],
-        ['name' => 'Account', 'type' => AccountWidget::class, 'x' => 0, 'y' => 1],
-        ['name' => 'phpVMS', 'type' => VersionWidget::class, 'x' => 6, 'y' => 1],
-        ['name' => 'Flight activity by hour', 'type' => ActivityCalendarWidget::class, 'x' => 0, 'y' => 3],
-        ['name' => 'Recent action', 'type' => RecentActionWidget::class, 'x' => 0, 'y' => 6],
-        ['name' => 'Flight hours', 'type' => HoursFlownChart::class, 'x' => 4, 'y' => 6],
-        ['name' => 'Distance flown', 'type' => DistanceFlownChart::class, 'x' => 4, 'y' => 9],
-        ['name' => 'PIREPs by state', 'type' => PirepStateChart::class, 'x' => 0, 'y' => 12],
-        ['name' => 'Average landing rate', 'type' => LandingRateChart::class, 'x' => 4, 'y' => 12],
+        ['name' => 'Flight activity by hour', 'type' => ActivityCalendarWidget::class, 'x' => 0, 'y' => 1],
+        ['name' => 'phpVMS', 'type' => VersionWidget::class, 'x' => 8, 'y' => 1],
+        ['name' => 'Recent action', 'type' => RecentActionWidget::class, 'x' => 8, 'y' => 2],
+        ['name' => 'Average landing rate', 'type' => LandingRateChart::class, 'x' => 0, 'y' => 5],
+        ['name' => 'Flight hours', 'type' => HoursFlownChart::class, 'x' => 0, 'y' => 8],
+        ['name' => 'PIREPs by state', 'type' => PirepStateChart::class, 'x' => 8, 'y' => 8],
     ];
 
     #[Override]
@@ -227,6 +223,10 @@ class Dashboard extends DynamicDashboard
                 ->modalHeading(__('filament.dashboard.reset_layout_heading'))
                 ->modalDescription(__('filament.dashboard.reset_layout_description'))
                 ->visible(static::canEdit())
+                ->extraAttributes([
+                    'class'                       => 'hidden',
+                    'data-dashboard-layout-reset' => '',
+                ])
                 ->action(fn () => $this->resetDashboardLayout()),
             Action::make('editDashboardLayout')
                 ->label(__('filament.dashboard.edit_layout'))
