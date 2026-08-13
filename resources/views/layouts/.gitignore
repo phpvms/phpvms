@@ -9,3 +9,4 @@
 !/skylight/
 /skylight/*
 !/skylight/spa.blade.php
+!/skylight/theme.json
