@@ -1,14 +1,17 @@
 /**
- * Theme picker — brand colour, appearance, density.
+ * Theme picker — appearance and density. Brand colour moved to the Branding
+ * admin page (site-wide, read from `App\Support\Branding` and applied via
+ * Filament's own `->colors()` closure) — it is no longer a per-user
+ * localStorage preference, so this file no longer touches it.
  *
- * Ported from mockups/admin-console-v2/theme-picker.js, trimmed to the three
+ * Ported from mockups/admin-console-v2/theme-picker.js, trimmed to the two
  * sections the real admin panel keeps — see
  * resources/views/filament/plugins/theme-picker.blade.php for the markup.
  * Vanilla ESM, no Alpine dependency: the dropdown open/close itself is
  * Filament's own Alpine (x-filament::dropdown), left untouched here.
  *
- * State: only { brand, density } persist at STORE. Appearance (light/dark) is
- * NOT part of that state — it rides Filament's own mechanism instead
+ * State: only { density } persists at STORE. Appearance (light/dark) is NOT
+ * part of that state — it rides Filament's own mechanism instead
  * (vendor/filament/filament/resources/js/dark-mode.js): clicking a mode
  * button dispatches a `theme-changed` window CustomEvent whose `detail` is
  * 'light' | 'dark', which that script persists to localStorage 'theme' and
@@ -18,28 +21,7 @@
 const STORE = "phpvms-console-theme";
 
 const DEFAULTS = {
-  brand: "#067ec1",
   density: "compact",
-};
-
-// Shade name -> [percent of brand hex, mix colour]. 600 is the brand hex
-// itself; lighter shades mix toward white, darker shades toward black.
-// ponytail: a straight-line approximation of Filament's
-// Color::generatePalette curve, not perceptually tuned per shade — good
-// enough for a live client-side preview. Upgrade to a real palette generator
-// if the approximation ever looks off against a saved server-side palette.
-const SHADE_MIX = {
-  50: [4, "white"],
-  100: [8, "white"],
-  200: [17, "white"],
-  300: [30, "white"],
-  400: [45, "white"],
-  500: [70, "white"],
-  600: [100, "white"],
-  700: [85, "black"],
-  800: [70, "black"],
-  900: [55, "black"],
-  950: [35, "black"],
 };
 
 function load() {
@@ -54,28 +36,7 @@ function save(state) {
   localStorage.setItem(STORE, JSON.stringify(state));
 }
 
-function refreshCharts() {
-  requestAnimationFrame(() => {
-    document.querySelectorAll(".fi-wi-chart-frame").forEach((chart) => {
-      window.Alpine?.$data(chart)?.updateChartTheme?.();
-    });
-  });
-}
-
-function applyBrand(hex) {
-  const root = document.documentElement.style;
-  for (const [shade, [percent, mix]] of Object.entries(SHADE_MIX)) {
-    root.setProperty(
-      `--primary-${shade}`,
-      percent >= 100 ? hex : `color-mix(in oklab, ${hex} ${percent}%, ${mix})`,
-    );
-  }
-
-  refreshCharts();
-}
-
 function apply(state) {
-  applyBrand(state.brand);
   document.documentElement.dataset.density = state.density;
 }
 
@@ -93,22 +54,6 @@ function currentMode() {
 }
 
 function syncControls(state) {
-  document.querySelectorAll(".fi-theme-picker [data-preset]").forEach((btn) => {
-    btn.setAttribute(
-      "aria-pressed",
-      String(btn.dataset.preset.toLowerCase() === state.brand.toLowerCase()),
-    );
-  });
-
-  const hexColor = document.querySelector(".fi-theme-picker [data-hex-color]");
-  const hexText = document.querySelector(".fi-theme-picker [data-hex-text]");
-  if (hexColor) {
-    hexColor.value = state.brand;
-  }
-  if (hexText) {
-    hexText.value = state.brand;
-  }
-
   document.querySelectorAll(".fi-theme-picker [data-density]").forEach((btn) => {
     btn.setAttribute("aria-pressed", String(btn.dataset.density === state.density));
   });
@@ -121,7 +66,7 @@ function syncControls(state) {
 
 let state = load();
 
-// Applied before paint so brand/density don't flash the defaults first.
+// Applied before paint so density doesn't flash the default first.
 apply(state);
 
 function update(patch) {
@@ -132,12 +77,6 @@ function update(patch) {
 }
 
 document.addEventListener("click", (event) => {
-  const preset = event.target.closest(".fi-theme-picker button[data-preset]");
-  if (preset) {
-    update({ brand: preset.dataset.preset });
-    return;
-  }
-
   const mode = event.target.closest(".fi-theme-picker button[data-mode]");
   if (mode) {
     window.dispatchEvent(new CustomEvent("theme-changed", { detail: mode.dataset.mode }));
@@ -153,24 +92,6 @@ document.addEventListener("click", (event) => {
 
   if (event.target.closest(".fi-theme-picker .fi-dropdown-trigger")) {
     syncControls(state);
-  }
-});
-
-document.addEventListener("input", (event) => {
-  if (event.target.matches(".fi-theme-picker [data-hex-color]")) {
-    update({ brand: event.target.value });
-  }
-});
-
-document.addEventListener("change", (event) => {
-  if (!event.target.matches(".fi-theme-picker [data-hex-text]")) {
-    return;
-  }
-  const value = event.target.value.trim();
-  if (/^#[0-9a-f]{6}$/i.test(value)) {
-    update({ brand: value });
-  } else {
-    event.target.value = state.brand;
   }
 });
 

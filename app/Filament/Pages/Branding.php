@@ -22,6 +22,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -220,7 +221,8 @@ class Branding extends Page
                                 ->validationMessages([
                                     'regex' => __('filament.branding_color_invalid'),
                                 ])
-                                ->required(),
+                                ->required()
+                                ->belowContent(View::make('filament.pages.branding.color-presets')),
                         ]),
 
                     Section::make(__('filament.branding_logo'))
