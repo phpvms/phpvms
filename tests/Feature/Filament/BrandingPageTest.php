@@ -116,3 +116,39 @@ it('does not dispatch GenerateBrandingSizes when the banner is autosaved', funct
 
     Queue::assertNotPushed(GenerateBrandingSizes::class);
 });
+
+/**
+ * SettingService::store() only updates rows that already exist, so an install
+ * that has not run `migrate-data` persists nothing. The page used to report
+ * success anyway, which is how a real "I changed the colour and it did nothing"
+ * report came in.
+ */
+it('reports failure instead of success when a settings row is missing', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Setting::where('id', 'branding_brand_color')->delete();
+
+    Livewire::test(Branding::class)
+        ->fillForm([
+            'general.site_name'    => 'Acme Air',
+            'branding.brand_color' => '#4f46e5',
+        ])
+        ->call('save')
+        ->assertNotified(__('filament.branding_save_failed'));
+
+    expect(Setting::find('branding_brand_color'))->toBeNull();
+});
+
+it('still reports success when every row exists', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->fillForm([
+            'general.site_name'    => 'Acme Air',
+            'branding.brand_color' => '#4f46e5',
+        ])
+        ->call('save')
+        ->assertNotified(__('filament.branding_saved'));
+
+    expect(Setting::find('branding_brand_color')->value)->toBe('#4f46e5');
+});

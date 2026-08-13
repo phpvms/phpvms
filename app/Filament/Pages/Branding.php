@@ -20,6 +20,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
@@ -129,11 +130,36 @@ class Branding extends Page
         try {
             $data = $this->form->getState();
 
-            DB::transaction(function () use ($data): void {
+            // store() returns null for a key with no row, and settings rows are
+            // seeded by migration -- so an install that has not run
+            // `migrate-data` silently persists nothing. Reporting success there
+            // is worse than failing: the admin sees a green toast, reloads, and
+            // finds the old value with no clue why.
+            $missing = DB::transaction(function () use ($data): array {
                 $settingService = app(SettingService::class);
-                $settingService->store('general.site_name', $data['general']['site_name'] ?? '');
-                $settingService->store('branding.brand_color', $data['branding']['brand_color'] ?? '');
+
+                $writes = [
+                    'general.site_name'    => $data['general']['site_name'] ?? '',
+                    'branding.brand_color' => $data['branding']['brand_color'] ?? '',
+                ];
+
+                return array_keys(array_filter(
+                    $writes,
+                    fn (string $value, string $key): bool => $settingService->store($key, $value) === null,
+                    ARRAY_FILTER_USE_BOTH,
+                ));
             });
+
+            if ($missing !== []) {
+                Notification::make()
+                    ->danger()
+                    ->title(__('filament.branding_save_failed'))
+                    ->body(__('filament.branding_save_failed_body', ['keys' => implode(', ', $missing)]))
+                    ->persistent()
+                    ->send();
+
+                return;
+            }
 
             Notification::make()
                 ->success()
@@ -200,30 +226,28 @@ class Branding extends Page
                 ->collapsible()
                 ->persistCollapsed()
                 ->schema([
-                    Section::make(__('filament.branding_identity'))
-                        ->id('branding-identity')
-                        ->icon(TablerIcon::IdBadge2)
-                        ->collapsible()
-                        ->persistCollapsed()
-                        ->columns(2)
-                        ->schema([
-                            TextInput::make('general.site_name')
-                                ->label(__('filament.branding_airline_name'))
-                                ->helperText(__('filament.branding_airline_name_hint'))
-                                ->string()
-                                ->required(),
+                    // Name and colour sit directly in the card rather than in a
+                    // band of their own: they are the card's own subject, and a
+                    // head band above the first real subsection reads as a label
+                    // for nothing.
+                    Grid::make(2)->schema([
+                        TextInput::make('general.site_name')
+                            ->label(__('filament.branding_airline_name'))
+                            ->helperText(__('filament.branding_airline_name_hint'))
+                            ->string()
+                            ->required(),
 
-                            ColorPicker::make('branding.brand_color')
-                                ->label(__('filament.branding_color'))
-                                ->helperText(__('filament.branding_color_hint'))
-                                ->hex()
-                                ->rule('regex:/^#[0-9a-fA-F]{6}$/')
-                                ->validationMessages([
-                                    'regex' => __('filament.branding_color_invalid'),
-                                ])
-                                ->required()
-                                ->belowContent(View::make('filament.pages.branding.color-presets')),
-                        ]),
+                        ColorPicker::make('branding.brand_color')
+                            ->label(__('filament.branding_color'))
+                            ->helperText(__('filament.branding_color_hint'))
+                            ->hex()
+                            ->rule('regex:/^#[0-9a-fA-F]{6}$/')
+                            ->validationMessages([
+                                'regex' => __('filament.branding_color_invalid'),
+                            ])
+                            ->required()
+                            ->belowContent(View::make('filament.pages.branding.color-presets')),
+                    ]),
 
                     Section::make(__('filament.branding_logo'))
                         ->id('branding-logo')
