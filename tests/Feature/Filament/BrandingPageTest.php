@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Enums\NavigationGroup;
 use App\Filament\Pages\Branding;
+use App\Jobs\GenerateBrandingSizes;
 use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -87,4 +89,30 @@ it('autosaves the logo upload without calling save', function (): void {
 
     expect($url)->not->toBeEmpty()
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+});
+
+it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+    Queue::fake();
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    Queue::assertPushed(GenerateBrandingSizes::class, fn (GenerateBrandingSizes $job): bool => $job->diskPath === 'branding/logo.png');
+});
+
+it('does not dispatch GenerateBrandingSizes when the banner is autosaved', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+    Queue::fake();
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->set('data.banner', UploadedFile::fake()->image('banner.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    Queue::assertNotPushed(GenerateBrandingSizes::class);
 });

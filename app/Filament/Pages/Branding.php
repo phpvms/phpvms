@@ -9,6 +9,7 @@ use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
+use App\Jobs\GenerateBrandingSizes;
 use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
 use BackedEnum;
@@ -109,6 +110,10 @@ class Branding extends Page
             : '';
 
         app(SettingService::class)->store($settingKey, $url);
+
+        if ($key === 'logo' && filled($path)) {
+            GenerateBrandingSizes::dispatch($path);
+        }
     }
 
     protected function autosaveNotificationTitle(): string
