@@ -137,6 +137,7 @@
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
+      "Modules\\AddonManager\\": "modules/phpvms-addon-manager/app/",
       "Modules\\SampleVueWidget\\": "modules/phpvms-sample-vue-widget/",
       "Modules\\": "modules/"
     }
