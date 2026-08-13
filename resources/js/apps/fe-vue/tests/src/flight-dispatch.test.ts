@@ -821,14 +821,12 @@ describe("flight bid UI", () => {
         ),
       ),
     );
-    const open = vi
-      .spyOn(window, "open")
-      .mockReturnValue({
-        closed: false,
-        close: vi.fn(),
-        document,
-        focus: vi.fn(),
-      } as unknown as Window);
+    const open = vi.spyOn(window, "open").mockReturnValue({
+      closed: false,
+      close: vi.fn(),
+      document,
+      focus: vi.fn(),
+    } as unknown as Window);
     const wrapper = mount(SimBriefPlanning, {
       props: { planning: planningData(), aircraftSelection: null },
       global: {

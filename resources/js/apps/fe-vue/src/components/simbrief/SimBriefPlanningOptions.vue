@@ -173,6 +173,22 @@ defineExpose({ generate });
 
         <USeparator class="sm:col-span-2 lg:col-span-3" decorative="true" />
 
+        <UFormField label="ATC callsign">
+          <USelect
+            v-if="planning.callsignEditable"
+            v-model="fields.callsign"
+            name="callsign"
+            icon="i-tabler-broadcast"
+            :items="callsignOptions"
+          />
+          <UInput
+            v-else
+            icon="i-tabler-broadcast"
+            variant="subtle"
+            :model-value="fields.callsign"
+            disabled
+          />
+        </UFormField>
         <UFormField label="Departure airport">
           <UInput
             icon="i-tabler-plane-departure"
