@@ -23,6 +23,8 @@ use App\Models\User;
 use BackedEnum;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Radio;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\View as ViewComponent;
 use Filament\Support\Icons\Heroicon;
@@ -183,6 +185,28 @@ class Dashboard extends DynamicDashboard
         $this->dispatch('dashboard-layout:reset');
     }
 
+    /**
+     * Delete a single widget from the current dashboard.
+     *
+     * Scoped to `currentDashboardId` so a malicious id can't delete a widget
+     * belonging to another user's dashboard. Silently no-ops if the widget
+     * isn't in scope — the client already removed it from the DOM, so a 500
+     * here would just be noise.
+     *
+     * Marked `#[Renderless]` so the call hits the DB but skips Livewire's
+     * re-render; the frontend removes the DOM node itself.
+     */
+    #[Renderless]
+    public function deleteDashboardWidget(int $id): void
+    {
+        abort_unless(static::canEdit(), 403);
+
+        DashboardWidget::query()
+            ->where('id', $id)
+            ->where('dashboard_id', $this->currentDashboardId)
+            ->delete();
+    }
+
     /** @return array<Action> */
     #[Override]
     protected function getHeaderActions(): array
@@ -204,6 +228,49 @@ class Dashboard extends DynamicDashboard
                 ->visible(static::canEdit())
                 ->alpineClickHandler("window.dispatchEvent(new CustomEvent('dashboard-layout:edit'))")
                 ->extraAttributes(['data-dashboard-layout-edit' => '']),
+            Action::make('addDashboardWidget')
+                ->label(__('filament.dashboard.add_widget'))
+                ->icon(Heroicon::OutlinedPlus)
+                ->color('gray')
+                ->visible(static::canEdit())
+                ->extraAttributes([
+                    'class'                     => 'hidden',
+                    'data-dashboard-layout-add' => '',
+                ])
+                ->disabled(fn (): bool => $this->getAddableWidgetOptions() === [])
+                ->tooltip(fn (): ?string => $this->getAddableWidgetOptions() === []
+                    ? __('filament.dashboard.add_widget_all_added')
+                    : null)
+                ->schema([
+                    Radio::make('type')
+                        ->label(__('filament.dashboard.add_widget_type'))
+                        ->options(fn (): array => $this->getAddableWidgetOptions())
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $dashboard = $this->getCurrentDashboard();
+
+                    abort_unless($dashboard instanceof DashboardModel && static::canEdit(), 403);
+
+                    /** @var class-string<DynamicWidget> $type */
+                    $type = $data['type'];
+
+                    $maxY = $dashboard->widgets()->where('section_slug', 'main')->max('y') ?? -1;
+
+                    $this->createDashboardWidget($dashboard, [
+                        'name' => $type::getWidgetLabel(),
+                        'type' => $type,
+                        'x'    => 0,
+                        'y'    => $maxY + 1,
+                    ]);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('filament.dashboard.add_widget_added'))
+                        ->send();
+
+                    $this->js("sessionStorage.setItem('phpvms:dashboard-editing', '1'); window.location.reload();");
+                }),
             Action::make('saveDashboardLayout')
                 ->label(__('filament.dashboard.save_layout'))
                 ->icon(Heroicon::OutlinedCheck)
@@ -215,6 +282,25 @@ class Dashboard extends DynamicDashboard
                     'data-dashboard-layout-save' => '',
                 ]),
         ];
+    }
+
+    /**
+     * Widget type => label options for the "Add widget" picker, excluding
+     * types already placed on the current dashboard.
+     *
+     * @return array<string, string>
+     */
+    private function getAddableWidgetOptions(): array
+    {
+        $dashboard = $this->getCurrentDashboard();
+
+        if (!$dashboard instanceof DashboardModel) {
+            return [];
+        }
+
+        $existingTypes = $dashboard->widgets()->pluck('type')->all();
+
+        return array_diff_key($this->getAvailableWidgetOptions(), array_flip($existingTypes));
     }
 
     private function createDefaultWidgets(DashboardModel $dashboard): void

@@ -32,7 +32,10 @@ class PirepArchiveService extends Service
     {
         return PirepArchive::updateOrCreate(
             ['pirep_id' => $pirep->id],
-            array_merge(['flight_id' => $pirep->flight_id], $data ?? $this->build($pirep)),
+            array_merge([
+                'flight_id'            => $pirep->flight_id,
+                'scheduled_arrival_at' => $pirep->scheduled_arrival_at,
+            ], $data ?? $this->build($pirep)),
         );
     }
 

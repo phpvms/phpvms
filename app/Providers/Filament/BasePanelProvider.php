@@ -111,7 +111,7 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             // Inject vite this way - it might not exist when this is registered
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/admin/app.js')"),
+                fn (): string => Blade::render("@vite('resources/js/apps/admin/app.js')"),
             )
             // Theme picker: brand colour, appearance, density — lands in the
             // topbar tools cluster right before the search box.

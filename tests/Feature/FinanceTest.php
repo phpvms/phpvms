@@ -218,6 +218,7 @@ test('flight fares over api', function (): void {
 });
 
 test('flight fares over api on user bids', function (): void {
+    updateSetting('bids.block_aircraft', false);
     updateSetting('pireps.only_aircraft_at_dpt_airport', false);
     updateSetting('pireps.restrict_aircraft_to_rank', false);
 

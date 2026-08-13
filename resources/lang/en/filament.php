@@ -463,5 +463,9 @@ return [
         'reset_layout'             => 'Reset layout',
         'reset_layout_heading'     => 'Reset your dashboard layout?',
         'reset_layout_description' => 'This restores the default widget positions and sizes.',
+        'add_widget'               => 'Add widget',
+        'add_widget_type'          => 'Widget type',
+        'add_widget_all_added'     => 'All widgets are already on your dashboard.',
+        'add_widget_added'         => 'Widget added',
     ],
 ];

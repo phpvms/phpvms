@@ -16,6 +16,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": []
   },
-  "include": ["resources/js/admin/routeforge/**/*"],
+  "include": ["resources/js/apps/admin/routeforge/**/*"],
   "exclude": ["node_modules", "vendor", "public", "storage"]
 }

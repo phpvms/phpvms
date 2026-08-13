@@ -19,6 +19,7 @@ use Override;
 
 /**
  * @property string      $id
+ * @property string|null $static_id
  * @property int         $user_id
  * @property string|null $flight_id
  * @property string|null $pirep_id
@@ -62,6 +63,7 @@ class SimBrief extends Model
 
     protected $fillable = [
         'id',
+        'static_id',
         'user_id',
         'flight_id',
         'aircraft_id',

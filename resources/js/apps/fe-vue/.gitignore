@@ -1,0 +1,11 @@
+dist/
+node_modules/
+apps/*/node_modules/
+packages/*/node_modules/
+*.local
+.env
+
+# Playwright e2e artifacts + local verification screenshots
+.verify/
+test-results/
+playwright-report/

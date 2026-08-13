@@ -5,7 +5,7 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 @source '../../../../resources/views/livewire/**/*';
-@source '../../../../resources/js/admin/routeforge/**/*';
+@source '../../../../resources/js/apps/admin/routeforge/**/*';
 @source '../../../../../acars-plugin/resources/js/sop-planner/src/**/*';
 
 /* Alpine x-cloak. Used by 24 Filament vendor views, defined by none of them —

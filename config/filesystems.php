@@ -34,6 +34,8 @@ return [
 
     'public_files' => env('FILESYSTEM_PUBLIC_DISK', 'public'),
 
+    'theme_assets' => env('THEME_ASSET_DISK', 'theme-assets'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -61,6 +63,15 @@ return [
             'driver'     => 'local',
             'root'       => storage_path('app/public'),
             'url'        => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw'      => false,
+            'report'     => false,
+        ],
+
+        'theme-assets' => [
+            'driver'     => 'local',
+            'root'       => storage_path('app/public/theme-assets'),
+            'url'        => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/storage/theme-assets',
             'visibility' => 'public',
             'throw'      => false,
             'report'     => false,

@@ -99,8 +99,8 @@ sail artisan about
 # Composer commands within Laravel Sail...
 sail composer install
 
-# Bun commands within Laravel Sail...
-sail bun run dev
+# pnpm commands within Laravel Sail...
+sail pnpm run dev
 ```
 
 To interact with databases (MariaDB, Redis...), please refer to the Laravel Sail documentation

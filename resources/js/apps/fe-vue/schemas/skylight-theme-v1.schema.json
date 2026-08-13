@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://phpvms.net/schemas/skylight-theme-v1.schema.json",
+  "title": "phpVMS Skylight theme document version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "nuxtUi", "phpvms"],
+  "properties": {
+    "version": { "const": 1 },
+    "nuxtUi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["theme"],
+      "properties": {
+        "theme": { "$ref": "#/$defs/upstreamTheme" },
+        "components": { "$ref": "#/$defs/components" }
+      }
+    },
+    "phpvms": { "$ref": "#/$defs/phpvms" }
+  },
+  "$defs": {
+    "palette": {
+      "enum": [
+        "red",
+        "orange",
+        "amber",
+        "yellow",
+        "lime",
+        "green",
+        "emerald",
+        "teal",
+        "cyan",
+        "sky",
+        "blue",
+        "indigo",
+        "violet",
+        "purple",
+        "fuchsia",
+        "pink",
+        "rose",
+        "slate",
+        "gray",
+        "zinc",
+        "neutral",
+        "stone",
+        "taupe",
+        "mauve",
+        "mist",
+        "olive"
+      ]
+    },
+    "neutralPalette": {
+      "enum": ["slate", "gray", "zinc", "neutral", "stone", "taupe", "mauve", "mist", "olive"]
+    },
+    "shade": {
+      "enum": [
+        "white",
+        "black",
+        "50",
+        "100",
+        "200",
+        "300",
+        "400",
+        "500",
+        "600",
+        "700",
+        "800",
+        "900",
+        "950"
+      ]
+    },
+    "font": {
+      "enum": [
+        "Public Sans",
+        "DM Sans",
+        "Figtree",
+        "Geist",
+        "Inter",
+        "Lato",
+        "Montserrat",
+        "Nunito",
+        "Open Sans",
+        "Outfit",
+        "Plus Jakarta Sans",
+        "Poppins",
+        "Raleway",
+        "Roboto",
+        "Source Sans 3",
+        "Space Grotesk",
+        "Work Sans",
+        "Lora",
+        "Merriweather",
+        "Playfair Display",
+        "Source Serif 4",
+        "Libre Baskerville",
+        "DM Serif Display",
+        "Crimson Text",
+        "JetBrains Mono",
+        "Fira Code",
+        "Source Code Pro",
+        "IBM Plex Mono",
+        "Space Mono",
+        "Sora",
+        "Archivo",
+        "Lexend",
+        "Urbanist",
+        "Bricolage Grotesque"
+      ]
+    },
+    "semanticColors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "secondary", "success", "info", "warning", "error"],
+      "properties": {
+        "primary": { "$ref": "#/$defs/palette" },
+        "secondary": { "$ref": "#/$defs/palette" },
+        "success": { "$ref": "#/$defs/palette" },
+        "info": { "$ref": "#/$defs/palette" },
+        "warning": { "$ref": "#/$defs/palette" },
+        "error": { "$ref": "#/$defs/palette" }
+      }
+    },
+    "semanticShades": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "secondary", "success", "info", "warning", "error"],
+      "properties": {
+        "primary": { "$ref": "#/$defs/shade" },
+        "secondary": { "$ref": "#/$defs/shade" },
+        "success": { "$ref": "#/$defs/shade" },
+        "info": { "$ref": "#/$defs/shade" },
+        "warning": { "$ref": "#/$defs/shade" },
+        "error": { "$ref": "#/$defs/shade" }
+      }
+    },
+    "textOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimmed", "muted", "toned", "default", "highlighted", "inverted"],
+      "properties": {
+        "dimmed": { "$ref": "#/$defs/shade" },
+        "muted": { "$ref": "#/$defs/shade" },
+        "toned": { "$ref": "#/$defs/shade" },
+        "default": { "$ref": "#/$defs/shade" },
+        "highlighted": { "$ref": "#/$defs/shade" },
+        "inverted": { "$ref": "#/$defs/shade" }
+      }
+    },
+    "backgroundOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "muted", "elevated", "accented", "inverted"],
+      "properties": {
+        "default": { "$ref": "#/$defs/shade" },
+        "muted": { "$ref": "#/$defs/shade" },
+        "elevated": { "$ref": "#/$defs/shade" },
+        "accented": { "$ref": "#/$defs/shade" },
+        "inverted": { "$ref": "#/$defs/shade" }
+      }
+    },
+    "borderOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "muted", "accented", "inverted"],
+      "properties": {
+        "default": { "$ref": "#/$defs/shade" },
+        "muted": { "$ref": "#/$defs/shade" },
+        "accented": { "$ref": "#/$defs/shade" },
+        "inverted": { "$ref": "#/$defs/shade" }
+      }
+    },
+    "tokenOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "bg", "border"],
+      "properties": {
+        "text": { "$ref": "#/$defs/textOverrides" },
+        "bg": { "$ref": "#/$defs/backgroundOverrides" },
+        "border": { "$ref": "#/$defs/borderOverrides" }
+      }
+    },
+    "upstreamTheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "colors",
+        "colorShades",
+        "neutral",
+        "radius",
+        "font",
+        "lightOverrides",
+        "darkOverrides",
+        "darkColors",
+        "darkColorShades",
+        "darkNeutral",
+        "darkRadius",
+        "darkFont"
+      ],
+      "properties": {
+        "colors": { "$ref": "#/$defs/semanticColors" },
+        "colorShades": { "$ref": "#/$defs/semanticShades" },
+        "neutral": { "$ref": "#/$defs/neutralPalette" },
+        "radius": { "type": "number", "minimum": 0, "maximum": 2 },
+        "font": { "$ref": "#/$defs/font" },
+        "lightOverrides": { "$ref": "#/$defs/tokenOverrides" },
+        "darkOverrides": { "$ref": "#/$defs/tokenOverrides" },
+        "darkColors": { "$ref": "#/$defs/semanticColors" },
+        "darkColorShades": { "$ref": "#/$defs/semanticShades" },
+        "darkNeutral": { "$ref": "#/$defs/neutralPalette" },
+        "darkRadius": { "type": "number", "minimum": 0, "maximum": 2 },
+        "darkFont": { "$ref": "#/$defs/font" }
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "props": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "enum": ["primary", "secondary", "success", "info", "warning", "error", "neutral"]
+                },
+                "variant": { "enum": ["solid", "outline", "soft", "subtle", "ghost", "link"] },
+                "size": { "enum": ["xs", "sm", "md", "lg", "xl"] }
+              }
+            },
+            "style": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "alignment": { "enum": ["start", "center", "end"] },
+                "shape": { "enum": ["square", "rounded", "pill"] },
+                "weight": { "enum": ["normal", "medium", "semibold"] }
+              }
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "props": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "enum": ["primary", "secondary", "success", "info", "warning", "error", "neutral"]
+                },
+                "size": { "enum": ["xs", "sm", "md", "lg", "xl"] }
+              }
+            },
+            "style": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "appearance": { "enum": ["boxed", "underline"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "phpvms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["density", "navigation", "tableDensity"],
+      "properties": {
+        "density": { "enum": ["compact", "comfortable"] },
+        "navigation": { "enum": ["sidebar", "top"] },
+        "tableDensity": { "enum": ["compact", "comfortable"] }
+      }
+    }
+  }
+}

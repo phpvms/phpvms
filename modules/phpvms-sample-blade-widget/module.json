@@ -1,0 +1,21 @@
+{
+    "$schema": "https://phpvms.net/schemas/addon.schema.json",
+    "schema_version": 1,
+    "name": "SampleBladeWidget",
+    "alias": "sample-blade-widget",
+    "registry_id": "phpvms/sample-blade-widget",
+    "type": "module",
+    "description": "Reference addon: contributes a native-looking Blade dashboard widget to the skylight SPA (no Vue, no build).",
+    "keywords": ["sample", "skylight", "widget", "blade"],
+    "active": 0,
+    "order": 0,
+    "providers": [
+        "Modules\\SampleBladeWidget\\Providers\\SampleBladeWidgetServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "database": {
+        "tables": []
+    }
+}

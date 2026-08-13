@@ -204,7 +204,7 @@ test('find all flights', function (): void {
     $res->assertJsonCount(5, 'data');
 });
 
-test('frontend flight list hides restricted flights and keeps open flights', function (): void {
+test('frontend flight list does not apply aircraft rank eligibility', function (): void {
     updateSetting('pilots.restrict_to_company', false);
     updateSetting('pilots.only_show_flights_from_current', false);
     updateSetting('pireps.restrict_aircraft_to_rank', true);
@@ -244,7 +244,7 @@ test('frontend flight list hides restricted flights and keeps open flights', fun
     expect($flightIds)
         ->toContain($allowedFlight->id)
         ->toContain($openFlight->id)
-        ->not->toContain($restrictedFlight->id);
+        ->toContain($restrictedFlight->id);
 });
 
 test('frontend flight list prefers explicit ordering over sortable aliases', function (): void {

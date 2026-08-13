@@ -44,6 +44,7 @@ use App\Notifications\Notifiables\PublicBroadcast;
 use App\Services\Finance\PirepFinanceService;
 use App\Support\Units\Fuel;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -172,6 +173,7 @@ class PirepService extends Service
         $pirep->status = PirepPhase::INITIATED;
         $pirep->save();
         $pirep->refresh();
+        $this->snapshotScheduledArrival($pirep);
 
         // Check if there is a simbrief_id, update it to have the pirep_id
         // Keep the flight_id until the end of flight (pirep file)
@@ -261,6 +263,7 @@ class PirepService extends Service
 
         $pirep->save();
         $pirep->refresh();
+        $this->snapshotScheduledArrival($pirep);
 
         $this->updateCustomFields($pirep->id, $fields);
 
@@ -279,6 +282,7 @@ class PirepService extends Service
         $pirep = Pirep::findOrFail($pirep_id);
         $pirep->update($attrs);
         $pirep->refresh();
+        $this->snapshotScheduledArrival($pirep);
 
         $this->updateCustomFields($pirep_id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
@@ -349,6 +353,7 @@ class PirepService extends Service
 
         $pirep->save();
         $pirep->refresh();
+        $this->snapshotScheduledArrival($pirep);
 
         $this->updateCustomFields($pirep->id, $fields);
         $this->fareSvc->saveToPirep($pirep, $fares);
@@ -478,6 +483,7 @@ class PirepService extends Service
         event(new PirepFiled($pirep));
 
         $pirep->refresh();
+        $this->snapshotScheduledArrival($pirep);
 
         // Snapshot the flight/aircraft/simbrief here rather than in file(),
         // which only the ACARS API calls — the frontend files a PIREP with
@@ -510,6 +516,46 @@ class PirepService extends Service
         }
 
         $pirep->save();
+    }
+
+    private function snapshotScheduledArrival(Pirep $pirep): void
+    {
+        if ($pirep->scheduled_arrival_at !== null || $pirep->flight_id === null) {
+            return;
+        }
+
+        $flight = Flight::query()->with(['dpt_airport', 'arr_airport'])->find($pirep->flight_id);
+        if ($flight === null
+            || $flight->departure_time === null
+            || $flight->arrival_time === null
+            || $flight->dpt_airport?->timezone === null
+            || $flight->arr_airport?->timezone === null
+        ) {
+            return;
+        }
+
+        $blockOff = $pirep->getRawOriginal('block_off_time') === null ? null : $pirep->block_off_time;
+        $departureInstant = $blockOff ?? $pirep->created_at ?? Carbon::now('UTC');
+        $serviceDate = $departureInstant->copy()->setTimezone($flight->dpt_airport->timezone)->toDateString();
+        $departure = CarbonImmutable::parse(
+            $serviceDate.' '.$flight->departure_time->format('H:i:s'),
+            $flight->dpt_airport->timezone
+        );
+        $arrival = CarbonImmutable::parse(
+            $serviceDate.' '.$flight->arrival_time->format('H:i:s'),
+            $flight->arr_airport->timezone
+        );
+
+        if ($arrival->lessThanOrEqualTo($departure)) {
+            $arrival = $arrival->addDay();
+        }
+
+        Pirep::query()
+            ->whereKey($pirep->id)
+            ->whereNull('scheduled_arrival_at')
+            ->update(['scheduled_arrival_at' => $arrival->utc()]);
+
+        $pirep->refresh();
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Http\Controllers\Frontend\AirportController;
 use App\Http\Controllers\Frontend\CreditsController;
 use App\Http\Controllers\Frontend\DashboardController;
 use App\Http\Controllers\Frontend\DownloadController;
+use App\Http\Controllers\Frontend\FeedController;
 use App\Http\Controllers\Frontend\FlightController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\LanguageController;
@@ -18,18 +19,40 @@ use App\Http\Controllers\Frontend\PirepController;
 use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SimBriefController;
 use App\Http\Controllers\Frontend\UserController;
+use App\Http\Controllers\Frontend\WeatherController;
+use App\Http\Controllers\ThemeAssetController;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::get('theme-assets/{themeName}/{revision}/{asset}', ThemeAssetController::class)
+    ->where('themeName', '[A-Za-z0-9][A-Za-z0-9._-]*')
+    ->where('revision', '[a-f0-9]{64}')
+    ->where('asset', 'theme\\.css|custom\\.css')
+    ->name('theme-assets.show');
+
 Route::group([
     'prefix'     => '',
     'as'         => 'frontend.',
-    'middleware' => (config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth']),
+    'middleware' => array_merge(
+        config('phpvms.registration.email_verification', false) ? ['auth', 'verified'] : ['auth'],
+        [HandleInertiaRequests::class]
+    ),
 ], function (): void {
     Route::resource('dashboard', DashboardController::class);
+
+    // Weather JSON endpoint for the <weather-widget> custom element (Task Group 5).
+    // Session-authenticated (same 'auth' middleware as dashboard), returns JSON only.
+    // Throttled to guard against accidental METAR storms from fast-refreshing clients.
+    Route::get('api/weather/{icao}', [WeatherController::class, 'show'])
+        ->name('weather.show')
+        ->middleware('throttle:30,1');
+
+    // VA-wide activity feed JSON endpoint for the PvActivityFeed dashboard widget.
+    Route::get('api/activity', [FeedController::class, 'index'])->name('activity');
 
     Route::get('airports/{id}', [AirportController::class, 'show'])->name('airports.show');
 
@@ -38,6 +61,10 @@ Route::group([
 
     Route::get('flights/bids', [FlightController::class, 'bids'])->name('flights.bids');
     Route::get('flights/search', [FlightController::class, 'search'])->name('flights.search');
+    Route::get('flights/{id}/dispatch', [FlightController::class, 'dispatchData'])->name('flights.dispatch');
+    Route::get('flights/{id}/dispatch/subfleets/{subfleetId}/aircraft', [FlightController::class, 'dispatchAircraft'])->name('flights.dispatch.aircraft');
+    Route::post('flights/{id}/bid', [FlightController::class, 'storeBid'])->name('flights.bid.store');
+    Route::delete('flights/{id}/bid', [FlightController::class, 'destroyBid'])->name('flights.bid.destroy');
     Route::resource('flights', FlightController::class);
 
     Route::get('pireps/fares', [PirepController::class, 'fares']);
@@ -59,6 +86,13 @@ Route::group([
     Route::resource('profile', ProfileController::class);
 
     Route::get('simbrief/generate', [SimBriefController::class, 'generate'])->name('simbrief.generate');
+    Route::get('ofp/planning', [SimBriefController::class, 'skylightPlanning'])->name('ofp.planning');
+    Route::post('ofp/attempts/{staticId}/api-code', [SimBriefController::class, 'skylightApiCode'])->name('ofp.attempt.api-code');
+    Route::post('ofp/attempts/{staticId}/poll', [SimBriefController::class, 'skylightPoll'])->name('ofp.attempt.poll');
+    Route::get('ofp/briefings/{id}', [SimBriefController::class, 'skylightBriefing'])->name('ofp.briefing');
+    Route::delete('ofp/briefings/{id}', [SimBriefController::class, 'skylightCancel'])->name('ofp.briefing.cancel');
+    Route::post('ofp/briefings/{id}/regenerate', [SimBriefController::class, 'skylightRegenerate'])->name('ofp.briefing.regenerate');
+    Route::post('ofp/briefings/{id}/edit-sync', [SimBriefController::class, 'skylightEditSync'])->name('ofp.briefing.edit-sync');
     Route::post('simbrief/apicode', [SimBriefController::class, 'api_code'])->name('simbrief.api_code');
     Route::get('simbrief/check_ofp', [SimBriefController::class, 'check_ofp'])->name('simbrief.check_ofp')->middleware('throttle:10,1');
     Route::get('simbrief/update_ofp', [SimBriefController::class, 'update_ofp'])->name('simbrief.update_ofp');
@@ -69,8 +103,9 @@ Route::group([
 });
 
 Route::group([
-    'prefix' => '',
-    'as'     => 'frontend.',
+    'prefix'     => '',
+    'as'         => 'frontend.',
+    'middleware' => [HandleInertiaRequests::class],
 ], function (): void {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('r/{id}', [PirepController::class, 'show'])->name('pirep.show.public');

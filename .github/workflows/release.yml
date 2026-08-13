@@ -74,13 +74,17 @@ jobs:
           composer dump-autoload
           sudo chmod +x ./.github/scripts/*
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install NPM dependencies
-        run: bun install --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Compile assets
-        run: bun run build
+        run: pnpm run build
 
       - name: Publish Filament assets
         run: php artisan filament:assets

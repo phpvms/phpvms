@@ -26,6 +26,10 @@ services:
       DB_PASSWORD: password
     volumes:
       - ".:/var/www/html"
+      # LOCAL-ONLY (do not commit): live-mount the external vmsACARS plugin repo
+      # as a module so its skylight bids slot can be developed against this stack.
+      # Dir name = hyphenated registry id (phpvms/acars), matching phpvms-vacentral.
+      - "/Users/nabeel/source/phpvms/acars-plugin:/var/www/html/modules/phpvms-acars"
     networks:
       - sail
     depends_on:
