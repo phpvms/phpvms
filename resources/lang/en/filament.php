@@ -182,6 +182,8 @@ return [
     'branding_color_invalid'                    => 'Must be a hex colour, e.g. #067ec1.',
     'branding_logo'                             => 'Logo',
     'branding_logo_hint'                        => 'Square image, shown in the admin sidebar and as the favicon source.',
+    'branding_logo_dark'                        => 'Dark mode logo',
+    'branding_logo_dark_hint'                   => 'Shown instead of the logo above when the admin panel is in dark mode. Optional -- leave empty to use the same logo in both modes.',
     'branding_banner'                           => 'Banner',
     'branding_banner_hint'                      => 'Wide image, shown behind the admin login form.',
     'branding_saved'                            => 'Branding saved',

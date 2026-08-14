@@ -61,6 +61,23 @@ final class Branding
     }
 
     /**
+     * Dark-mode logo URL. Falls back to the light logo when no dark logo has
+     * been uploaded, so an install with nothing configured is unchanged.
+     */
+    public function logoDark(): string
+    {
+        return setting('branding.logo_dark_url', '') ?: $this->logo();
+    }
+
+    /**
+     * Whether a dark-mode logo has been uploaded.
+     */
+    public function hasDarkLogo(): bool
+    {
+        return setting('branding.logo_dark_url', '') !== '';
+    }
+
+    /**
      * Favicon URL. Deliberately skips the full-size original when the 32px
      * derivative is missing — a full-size logo is a worse favicon than the
      * bundled one.

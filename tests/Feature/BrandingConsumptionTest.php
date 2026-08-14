@@ -76,6 +76,29 @@ describe('admin panel, with nothing configured', function (): void {
     });
 });
 
+it('renders a single img tag when no dark logo is set', function (): void {
+    updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+
+    Filament::setCurrentPanel('admin');
+
+    expect(substr_count(view('filament.shared.brand')->render(), '<img'))->toBe(1);
+});
+
+it('renders two img tags with dark-mode variant classes when a dark logo is set', function (): void {
+    updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+    updateSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+
+    Filament::setCurrentPanel('admin');
+
+    $html = view('filament.shared.brand')->render();
+
+    expect(substr_count($html, '<img'))->toBe(2)
+        ->and($html)->toContain('https://cdn.example.com/logo.png')
+        ->and($html)->toContain('https://cdn.example.com/logo-dark.png')
+        ->and($html)->toContain('dark:hidden')
+        ->and($html)->toContain('dark:block');
+});
+
 it('leaves the system panel showing phpVMS branding regardless of airline settings', function (): void {
     updateSetting('general.site_name', 'Acme Air');
     updateSetting('branding.logo_url', 'https://cdn.example.com/logo.png');

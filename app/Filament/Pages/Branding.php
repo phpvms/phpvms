@@ -99,12 +99,16 @@ class Branding extends Page
      */
     protected function autosaveKeys(): array
     {
-        return ['logo', 'banner'];
+        return ['logo', 'logo_dark', 'banner'];
     }
 
     protected function persistAutosavedField(string $key, mixed $value): void
     {
-        $settingKey = $key === 'logo' ? 'branding.logo_url' : 'branding.banner_url';
+        $settingKey = match ($key) {
+            'logo'      => 'branding.logo_url',
+            'logo_dark' => 'branding.logo_dark_url',
+            'banner'    => 'branding.banner_url',
+        };
         $path = is_string($value) ? $value : null;
 
         $url = filled($path)
@@ -265,6 +269,18 @@ class Branding extends Page
                             )
                                 ->imageHeight('10rem')
                                 ->alignCenter(),
+
+                            $this->upload('logo_dark')
+                                ->label(__('filament.branding_logo_dark'))
+                                ->helperText(__('filament.branding_logo_dark_hint')),
+
+                            Image::make(
+                                url: fn (): string => app(BrandingSupport::class)->logoDark(),
+                                alt: __('filament.branding_logo_dark'),
+                            )
+                                ->imageHeight('10rem')
+                                ->alignCenter()
+                                ->visible(fn (): bool => app(BrandingSupport::class)->hasDarkLogo()),
                         ]),
 
                     Section::make(__('filament.branding_banner'))

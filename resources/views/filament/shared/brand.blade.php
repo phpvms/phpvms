@@ -7,11 +7,24 @@
 @endphp
 
 <div class="flex items-center gap-3">
-    <img
-        src="{{ $isSystemPanel ? asset('assets/img/logo_blue.svg') : $branding->logo() }}"
-        alt="{{ $isSystemPanel ? 'phpvms' : $branding->name() }}"
-        class="h-12 w-auto"
-    />
+    @if (!$isSystemPanel && $branding->hasDarkLogo())
+        <img
+            src="{{ $branding->logo() }}"
+            alt="{{ $branding->name() }}"
+            class="h-12 w-auto dark:hidden"
+        />
+        <img
+            src="{{ $branding->logoDark() }}"
+            alt="{{ $branding->name() }}"
+            class="hidden h-12 w-auto dark:block"
+        />
+    @else
+        <img
+            src="{{ $isSystemPanel ? asset('assets/img/logo_blue.svg') : $branding->logo() }}"
+            alt="{{ $isSystemPanel ? 'phpvms' : $branding->name() }}"
+            class="h-12 w-auto"
+        />
+    @endif
     <span
         class="font-display text-[27.75px] font-semibold tracking-[-0.01em] text-[#444950] dark:text-[#e3e3e3]"
     >

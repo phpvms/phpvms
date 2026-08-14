@@ -969,6 +969,15 @@ class SettingsSeeder extends Seeder
             'options'     => '',
             'description' => '',
         ],
+        [
+            'key'         => 'branding.logo_dark_url',
+            'name'        => 'Dark Logo URL',
+            'group'       => 'branding',
+            'value'       => '',
+            'type'        => 'hidden',
+            'options'     => '',
+            'description' => '',
+        ],
     ];
 
     public function run(): void

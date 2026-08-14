@@ -117,4 +117,27 @@ describe('with the branding rows seeded but empty', function (): void {
 
         expect(app(Branding::class)->favicon())->toBe('https://cdn.example.com/logo-32.png');
     });
+
+    it('logoDark falls back to the light logo when unset', function (): void {
+        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+
+        expect(app(Branding::class)->logoDark())->toBe('https://cdn.example.com/logo.png');
+    });
+
+    it('logoDark returns the dark logo once one is set', function (): void {
+        setBrandingSetting('branding.logo_url', 'https://cdn.example.com/logo.png');
+        setBrandingSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+
+        expect(app(Branding::class)->logoDark())->toBe('https://cdn.example.com/logo-dark.png');
+    });
+
+    it('hasDarkLogo is false until a dark logo has been uploaded', function (): void {
+        expect(app(Branding::class)->hasDarkLogo())->toBeFalse();
+    });
+
+    it('hasDarkLogo is true once a dark logo has been uploaded', function (): void {
+        setBrandingSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
+
+        expect(app(Branding::class)->hasDarkLogo())->toBeTrue();
+    });
 });

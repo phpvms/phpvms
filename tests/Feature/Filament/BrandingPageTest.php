@@ -104,6 +104,34 @@ it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): v
     Queue::assertPushed(GenerateBrandingSizes::class, fn (GenerateBrandingSizes $job): bool => $job->diskPath === 'branding/logo.png');
 });
 
+it('autosaves the dark logo upload without calling save', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->set('data.logo_dark', UploadedFile::fake()->image('logo-dark.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    $url = Setting::where('id', Setting::formatKey('branding.logo_dark_url'))->value('value');
+
+    expect($url)->not->toBeEmpty()
+        ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+});
+
+it('does not dispatch GenerateBrandingSizes when the dark logo is autosaved', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+    Queue::fake();
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->set('data.logo_dark', UploadedFile::fake()->image('logo-dark.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    Queue::assertNotPushed(GenerateBrandingSizes::class);
+});
+
 it('does not dispatch GenerateBrandingSizes when the banner is autosaved', function (): void {
     Storage::fake(config('filesystems.public_files'));
     Queue::fake();
