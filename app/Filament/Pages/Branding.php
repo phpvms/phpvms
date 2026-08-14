@@ -318,9 +318,19 @@ class Branding extends Page
      */
     private function upload(string $key): FileUpload
     {
+        // Both logos are square by contract: GenerateBrandingSizes resizes to
+        // 32/64/180 squares, and they render as a favicon and a switcher icon.
+        // FilePond crops to the ratio client-side before upload (it is what
+        // flips `shouldTransformImage`, FileUpload.php:961), so a non-square
+        // source is corrected rather than refused -- no editor UI, which
+        // matters because `previewable(false)` leaves the image-edit plugin
+        // nowhere to hang its button. The banner is free-form.
+        $isLogo = str_starts_with($key, 'logo');
+
         return FileUpload::make($key)
             ->label('')
             ->image()
+            ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload->imageCropAspectRatio('1:1'))
             ->previewable(false)
             ->disk(config('filesystems.public_files'))
             ->directory('branding')
