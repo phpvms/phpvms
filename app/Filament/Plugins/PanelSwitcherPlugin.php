@@ -82,6 +82,12 @@ final class PanelSwitcherPlugin implements Plugin
             'panels'    => $panels,
             'current'   => $current,
             'brandName' => app(Branding::class)->name(),
+            // 64px is the switcher/table icon derivative. Null when the airline
+            // has uploaded nothing, so the blade keeps the built-in mark and an
+            // unconfigured install looks exactly as it did.
+            'brandMark' => app(Branding::class)->hasLogo()
+                ? app(Branding::class)->logo(64)
+                : null,
             'addonsUrl' => $this->addonsUrl(),
         ]);
     }

@@ -51,6 +51,25 @@ class GenerateBrandingSizes implements ShouldQueue
             $settings->store("branding.logo_{$size}_url", '');
         }
 
+        $disk = Storage::disk(config('filesystems.public_files'));
+        $extension = strtolower(pathinfo($this->diskPath, PATHINFO_EXTENSION));
+
+        // An SVG needs no derivatives -- it is resolution-independent, so the
+        // same file serves as favicon, switcher icon and full-size logo. It
+        // also CANNOT be rasterised here: GD decodes binary image formats and
+        // throws NotReadableException("Unable to init from given binary data")
+        // on `<svg ...`, which is what every SVG logo upload used to fail with.
+        // Point the size keys at the original instead of erroring.
+        if ($extension === 'svg') {
+            $url = $disk->url($this->diskPath);
+
+            foreach (self::SIZES as $size) {
+                $settings->store("branding.logo_{$size}_url", $url);
+            }
+
+            return;
+        }
+
         $driver = $this->availableDriver();
 
         if ($driver === null) {
@@ -61,8 +80,6 @@ class GenerateBrandingSizes implements ShouldQueue
 
         $manager = new ImageManager(['driver' => $driver]);
 
-        $disk = Storage::disk(config('filesystems.public_files'));
-        $extension = pathinfo($this->diskPath, PATHINFO_EXTENSION);
         $source = $disk->get($this->diskPath);
 
         foreach (self::SIZES as $size) {

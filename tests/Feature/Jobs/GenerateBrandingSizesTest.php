@@ -144,3 +144,27 @@ it('produces square derivatives from a non-square source', function (): void {
         expect($topLeft['blue'])->toBeGreaterThan($topLeft['green']);
     }
 });
+
+/**
+ * An SVG cannot be rasterised by GD -- intervention throws
+ * NotReadableException("Unable to init from given binary data") on `<svg ...`.
+ * It also does not need to be: one resolution-independent file serves every
+ * size. Every SVG logo upload used to land in failed_jobs because of this.
+ */
+it('points every size at the original for an SVG logo instead of failing', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $disk = Storage::disk(config('filesystems.public_files'));
+    $disk->put('branding/logo.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>');
+
+    new GenerateBrandingSizes('branding/logo.svg')->handle();
+
+    $expected = $disk->url('branding/logo.svg');
+
+    foreach ([32, 64, 180] as $size) {
+        expect(derivativeSettingValue($size))->toBe($expected);
+    }
+
+    // No raster derivatives were written.
+    expect($disk->exists('branding/logo-32.svg'))->toBeFalse();
+});

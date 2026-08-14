@@ -1468,6 +1468,29 @@
   filter: brightness(0) invert(1);
 }
 
+/* ---------------------------------------------------------------------------
+ * An airline's own logo in a mark slot (brand button and menu item both).
+ *
+ * The built-in marks are single-colour glyphs on an accent swatch, so they are
+ * tinted white. An uploaded logo carries its own colours and must NOT be
+ * recoloured -- the `brightness(0) invert(1)` above would flatten it to a white
+ * silhouette. Drop the swatch and the filter and let it fill the slot.
+ *
+ * Placed after that rule deliberately: `.fi-brandmark-custom img` and
+ * `.fi-brandmenu-item-mark img` have equal specificity (0,1,1), so this only
+ * wins on source order. Moving it earlier in the file silently re-enables the
+ * white-silhouette filter.
+ * ------------------------------------------------------------------------- */
+.fi-brandmark-custom {
+  @apply bg-transparent;
+}
+
+.fi-brandmark-custom img {
+  @apply w-full h-full;
+  object-fit: contain;
+  filter: none;
+}
+
 .fi-brandmenu-item-text strong {
   @apply block text-[12.5px] text-(--ink);
   font-weight: 550;
