@@ -1824,28 +1824,6 @@
     0 0 0 3px currentColor;
 }
 
-.fi-picker-hex {
-  @apply flex items-center gap-1.5 mt-2.5;
-}
-
-.fi-picker-hex input[type="color"] {
-  @apply w-7 h-7 p-0 border border-(--line-strong) rounded-md bg-(--surface) cursor-pointer;
-}
-
-.fi-picker-hex input[type="text"] {
-  @apply flex-1 h-7 px-2 border border-(--line-strong) rounded-md bg-(--surface) text-[12px] text-(--ink) outline-none;
-  font-family: ui-monospace, monospace;
-}
-
-.fi-picker-hex input[type="text"]:focus {
-  @apply border-(--primary-600);
-}
-
-.fi-picker-hint {
-  @apply text-[11.5px] leading-[1.4] text-(--ink-3);
-  margin: 6px 0 0;
-}
-
 .fi-picker-segmented {
   @apply inline-flex rounded-md overflow-hidden border border-(--line-strong) bg-(--surface);
 }
