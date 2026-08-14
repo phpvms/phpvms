@@ -43,8 +43,10 @@ return new class() extends Migration
         DB::table('addon_settings')->whereNull('registry_id')->delete();
 
         Schema::table('addon_settings', function (Blueprint $table): void {
-            $table->dropUnique(['addon_id', 'key']);
+            // The foreign key goes first: MySQL backs the constraint with the
+            // unique index and refuses to drop an index a constraint needs.
             $table->dropForeign(['addon_id']);
+            $table->dropUnique(['addon_id', 'key']);
             $table->dropColumn('addon_id');
         });
 

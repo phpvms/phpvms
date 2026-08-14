@@ -55,8 +55,10 @@ return new class() extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('is_locked')->default(false);
             $table->boolean('is_personal')->default(false);
-            $table->foreignId('created_by')->nullable()
-                ->constrained($usersTable)->nullOnDelete();
+            // unsignedInteger, not foreignId: users.id is `increments()` (INT),
+            // and MySQL rejects a BIGINT column referencing it.
+            $table->unsignedInteger('created_by')->nullable();
+            $table->foreign('created_by')->references('id')->on($usersTable)->nullOnDelete();
             $table->json('settings')->nullable();
             $table->json('filters')->nullable();
             $table->json('display_filters')->nullable();
