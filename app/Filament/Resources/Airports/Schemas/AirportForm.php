@@ -36,7 +36,7 @@ class AirportForm
                         ->label('ICAO')
                         ->required()
                         ->string()
-                        ->length(4)
+                        ->maxLength(8)
                         ->columnSpan(2)
                         ->extraInputAttributes([
                             'x-on:keydown.enter.prevent' => "document.getElementById('airport-icao-lookup')?.click()",
@@ -46,7 +46,7 @@ class AirportForm
                     TextInput::make('iata')
                         ->label('IATA')
                         ->string()
-                        ->length(3)
+                        ->maxLength(8)
                         ->columnSpan(2),
 
                     TextInput::make('name')

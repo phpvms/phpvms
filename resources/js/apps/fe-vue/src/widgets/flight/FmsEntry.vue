@@ -33,7 +33,7 @@ function submit() {
       <input
         v-model="from"
         class="in"
-        maxlength="4"
+        maxlength="8"
         spellcheck="false"
         autocomplete="off"
         aria-label="Departure ICAO"
@@ -45,7 +45,7 @@ function submit() {
       <input
         v-model="to"
         class="in"
-        maxlength="4"
+        maxlength="8"
         placeholder="____"
         spellcheck="false"
         autocomplete="off"
