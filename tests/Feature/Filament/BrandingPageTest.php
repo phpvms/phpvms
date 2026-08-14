@@ -9,6 +9,7 @@ use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\ImageUploadService;
+use App\Services\SettingService;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
@@ -264,4 +265,28 @@ it('enables a 1:1 image editor on both logo uploads but not the banner', functio
     assert($banner instanceof FileUpload);
 
     expect($banner->hasImageEditor())->toBeFalse();
+});
+
+/**
+ * runAutosave() persists every key in autosaveKeys(), and the upload fields are
+ * never prefilled on mount -- so on a fresh page load the two untouched uploads
+ * hold null and used to write '' over settings saved in an earlier session.
+ * Uploading a logo silently destroyed the banner and dark logo.
+ */
+it('does not wipe the other uploads when one is autosaved', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    $settings = app(SettingService::class);
+    $settings->store('branding.banner_url', 'https://example.test/storage/branding/banner.webp');
+    $settings->store('branding.logo_dark_url', 'https://example.test/storage/branding/logo_dark.webp');
+
+    Livewire::test(Branding::class)
+        ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    expect(Setting::find('branding_banner_url')->value)->toBe('https://example.test/storage/branding/banner.webp')
+        ->and(Setting::find('branding_logo_dark_url')->value)->toBe('https://example.test/storage/branding/logo_dark.webp')
+        ->and(Setting::find('branding_logo_url')->value)->not->toBeEmpty();
 });

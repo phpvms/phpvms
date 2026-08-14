@@ -8,7 +8,6 @@ use App\Services\ImageUploadService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Mockery\MockInterface;
 
 function derivativeSettingValue(int $size): ?string
 {
@@ -63,12 +62,14 @@ it('fails soft and leaves the derivative keys empty when no image extension is a
 
     Log::shouldReceive('warning')->once()->with(Mockery::pattern('/no image extension/i'));
 
-    /** @var GenerateBrandingSizes&MockInterface $job */
-    $job = Mockery::mock(GenerateBrandingSizes::class, [$path])->makePartial();
-    $job->shouldAllowMockingProtectedMethods();
-    $job->shouldReceive('availableDriver')->once()->andReturn(null);
+    // "No image extension" is a property of the environment, so it is expressed
+    // on the service both the job and the upload path consult.
+    $service = Mockery::mock(ImageUploadService::class)->makePartial();
+    $service->shouldReceive('webpDriver')->andReturn(null);
+    $service->shouldReceive('rasterDriver')->andReturn(null);
+    app()->instance(ImageUploadService::class, $service);
 
-    $job->handle();
+    new GenerateBrandingSizes($path)->handle();
 
     $disk = Storage::disk(config('filesystems.public_files'));
 
@@ -195,5 +196,33 @@ it('still writes derivatives in the source format when webp is unavailable', fun
         expect($disk->exists("branding/logo-{$size}.png"))->toBeTrue()
             ->and($disk->exists("branding/logo-{$size}.webp"))->toBeFalse()
             ->and(derivativeSettingValue($size))->toEndWith('.png');
+    }
+});
+
+/**
+ * pullfrog caught this: choosing the format from webpDriver() while encoding
+ * with rasterDriver() breaks on a GD-without-WebP + Imagick-with-WebP build.
+ * rasterDriver() prefers GD whenever it is loaded, so GD would be handed a
+ * .webp source it cannot decode and the job would throw instead of failing
+ * soft. Format and encoder must come from the same driver.
+ */
+it('encodes with the same driver that chose the format', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $disk = Storage::disk(config('filesystems.public_files'));
+    putSolidLogo('branding/logo.png', 90);
+
+    // GD loaded but WebP-incapable; Imagick can do WebP.
+    $service = Mockery::mock(ImageUploadService::class)->makePartial();
+    $service->shouldReceive('webpDriver')->andReturn('imagick');
+    $service->shouldReceive('rasterDriver')->andReturn('gd');
+    app()->instance(ImageUploadService::class, $service);
+
+    new GenerateBrandingSizes('branding/logo.png')->handle();
+
+    // webp was chosen, so the imagick driver must have done the encoding.
+    foreach ([32, 64, 180] as $size) {
+        expect($disk->exists("branding/logo-{$size}.webp"))->toBeTrue()
+            ->and(derivativeSettingValue($size))->toEndWith('.webp');
     }
 });

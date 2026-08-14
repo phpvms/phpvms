@@ -43,6 +43,35 @@ trait AutosavesFields
     abstract protected function persistAutosavedField(string $key, mixed $value): void;
 
     /**
+     * The keys this run should write: just the field that triggered it, when
+     * that field is one of them.
+     *
+     * Writing every key on every autosave is only safe when there is one key.
+     * With several -- Branding has logo, logo_dark and banner -- the untouched
+     * fields hold null on a fresh page load, because a FileUpload is not
+     * prefilled from the value it saved in an earlier session. Persisting those
+     * nulls blanked the settings the admin had not touched, so uploading a logo
+     * destroyed their banner and dark logo.
+     *
+     * Falls back to every key when the caller passes no component, which is how
+     * a page-level autosave (rather than a single field's) still works.
+     *
+     * @return list<string>
+     */
+    protected function autosavingKeys(mixed $component = null): array
+    {
+        $keys = $this->autosaveKeys();
+
+        if ($component === null || !method_exists($component, 'getName')) {
+            return $keys;
+        }
+
+        $name = $component->getName();
+
+        return in_array($name, $keys, true) ? [$name] : $keys;
+    }
+
+    /**
      * Gate writes; override where the page has its own authorization.
      */
     protected function canAutosave(): bool
@@ -98,7 +127,7 @@ trait AutosavesFields
         try {
             $state = $this->form->getState();
 
-            foreach ($this->autosaveKeys() as $key) {
+            foreach ($this->autosavingKeys($component) as $key) {
                 $this->persistAutosavedField($key, $state[$key] ?? null);
             }
 

@@ -71,7 +71,25 @@ class GenerateBrandingSizes implements ShouldQueue
             return;
         }
 
-        $driver = $this->availableDriver();
+        // One driver decides BOTH the format and the encoding, and they must be
+        // the same driver. Picking the format from webpDriver() while encoding
+        // with rasterDriver() breaks on a GD-without-WebP + Imagick-with-WebP
+        // build: rasterDriver() prefers GD whenever it is loaded, so GD would be
+        // handed a .webp source it cannot decode, throw NotReadableException,
+        // and retry into failed_jobs -- the opposite of this job's fail-soft
+        // contract, and it would cost that install its favicon.
+        //
+        // Prefer the WebP-capable driver. Fall back to any raster driver and the
+        // source format, because a GD build without WebP still resizes PNG and
+        // JPEG perfectly well and skipping derivatives there would be worse.
+        $service = app(ImageUploadService::class);
+        $driver = $service->webpDriver();
+        $format = 'webp';
+
+        if ($driver === null) {
+            $driver = $service->rasterDriver();
+            $format = $extension;
+        }
 
         if ($driver === null) {
             Log::warning('GenerateBrandingSizes: no image extension (GD or Imagick) available, skipping logo derivative generation.');
@@ -82,11 +100,6 @@ class GenerateBrandingSizes implements ShouldQueue
         $manager = new ImageManager(['driver' => $driver]);
 
         $source = $disk->get($this->diskPath);
-
-        // WebP where the driver can encode it, the source format otherwise. A
-        // GD build without WebP still resizes PNG/JPEG perfectly well, and
-        // skipping derivatives there would cost that install its favicon.
-        $format = app(ImageUploadService::class)->webpDriver() !== null ? 'webp' : $extension;
 
         foreach (self::SIZES as $size) {
             $path = "branding/logo-{$size}.{$format}";
@@ -101,20 +114,14 @@ class GenerateBrandingSizes implements ShouldQueue
 
             $disk->put($path, $encoded);
 
+            // Explicit, matching ImageUploadService::store(). `public_files` can
+            // point at S3/R2 (config/filesystems.php), where a bare put() takes
+            // the disk default and the derivative URLs would 403 while the
+            // original logo renders. rescue() because a local disk has no
+            // per-object visibility to set.
+            rescue(fn () => $disk->setVisibility($path, 'public'), report: false);
+
             $settings->store("branding.logo_{$size}_url", $disk->url($path));
         }
-    }
-
-    /**
-     * The first available image driver, or null when neither GD nor Imagick is
-     * installed. Deliberately NOT the WebP-capable check: resizing only needs a
-     * driver that can decode the source, and a GD build without WebP must still
-     * produce derivatives (the encode format is chosen separately in handle()).
-     * Delegates to {@see ImageUploadService} so this and the upload path never
-     * disagree. Extracted so tests can mock the condition without runkit.
-     */
-    protected function availableDriver(): ?string
-    {
-        return app(ImageUploadService::class)->rasterDriver();
     }
 }
