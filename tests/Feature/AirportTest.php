@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\AirportService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 it('can create an airport from api response', function (): void {
     // This is the response from the API
@@ -81,7 +82,10 @@ it('returns cached data if available', function (): void {
 });
 
 it('creates a generic airport if auto_lookup is disabled', function (): void {
-    Config::set('general.auto_airport_lookup', false);
+    // Already off for every test (see TestCase::setUp), but stated here so the
+    // test does not silently change meaning if that default ever moves. It used
+    // to call Config::set(), which set a config key the service never reads.
+    updateSetting('general.auto_airport_lookup', false);
 
     // KORD does not exist in DB; lookupAirportIfNotFound returns null from
     // Airport::find(), then creates a generic airport row.
@@ -335,4 +339,40 @@ it('preserves ?limit= in /api/airports/hubs pagination metadata', function (): v
     $next = $res->json('meta.next_page');
     expect($next)->not->toBeNull()
         ->and($next)->toContain('limit=2');
+});
+
+/**
+ * The only test that exercises the vACentral lookup path, and it fakes the
+ * response rather than reaching the network. `general.auto_airport_lookup` is
+ * off for every test by default (TestCase::setUp), so this turns it back on
+ * deliberately.
+ */
+it('creates an airport from a faked vacentral lookup', function (): void {
+    updateSetting('general.auto_airport_lookup', true);
+
+    Http::fake([
+        config('phpvms.api_url').'/v1/airports/*' => Http::response([
+            'icao'      => 'KORD',
+            'iata'      => 'ORD',
+            'name'      => "O'Hare International Airport",
+            'location'  => 'Chicago',
+            'country'   => 'US',
+            'region'    => 'IL',
+            'timezone'  => 'America/Chicago',
+            'elevation' => 672,
+            'lat'       => 41.9786,
+            'lon'       => -87.9048,
+        ]),
+    ]);
+
+    expect(Airport::find('KORD'))->toBeNull();
+
+    $result = app(AirportService::class)->lookupAirportIfNotFound('KORD');
+
+    expect($result)->not->toBeNull()
+        ->and($result->icao)->toBe('KORD')
+        ->and($result->name)->toBe("O'Hare International Airport");
+
+    $this->assertDatabaseHas('airports', ['icao' => 'KORD']);
+    Http::assertSentCount(1);
 });
