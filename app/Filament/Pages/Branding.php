@@ -427,9 +427,11 @@ class Branding extends Page
                 fn (FileUpload $component, TemporaryUploadedFile $file): string => app(ImageUploadService::class)->storeFilamentUpload($component, $file)
             )
             ->live()
-            ->afterStateUpdated(function (FileUpload $component, $livewire): void {
-                $livewire->runAutosave($component);
-            });
+            // The trait's own wiring closure, as the acars-plugin pages use.
+            // Hand-rolling `$livewire->runAutosave($component)` here duplicated
+            // it; that form is only needed by a schema class shared across
+            // pages, where there is no `$this` (see AirlineForm::logoUpload()).
+            ->afterStateUpdated($this->autosave());
     }
 
     #[Override]
