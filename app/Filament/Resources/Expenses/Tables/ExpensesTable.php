@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Expenses\Tables;
 
 use App\Enums\ExpenseType;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -50,8 +51,10 @@ class ExpensesTable
                     ->multiple(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

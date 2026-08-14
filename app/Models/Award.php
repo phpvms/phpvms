@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Model;
+use App\Enums\AwardTrigger;
 use Database\Factories\AwardFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,20 +11,26 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Kyslik\ColumnSortable\Sortable;
+use Override;
 
 /**
  * The Award model
  *
- * @property int         $id
- * @property string      $name
- * @property string|null $description
- * @property string|null $image_url
- * @property string|null $ref_model_type
- * @property string|null $ref_model_params
+ * @property int               $id
+ * @property string            $name
+ * @property string|null       $description
+ * @property string|null       $image_url
+ * @property string|null       $icon
+ * @property string|null       $category
+ * @property string|null       $ref_model_type
+ * @property string|null       $ref_model_params
+ * @property AwardTrigger|null $trigger
+ * @property-read AwardRule|null $rule
  * @property int|null    $active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -39,9 +46,11 @@ use Kyslik\ColumnSortable\Sortable;
  * @method static Builder<static>|Award query()
  * @method static Builder<static>|Award sortable($defaultParameters = null)
  * @method static Builder<static>|Award whereActive($value)
+ * @method static Builder<static>|Award whereCategory($value)
  * @method static Builder<static>|Award whereCreatedAt($value)
  * @method static Builder<static>|Award whereDeletedAt($value)
  * @method static Builder<static>|Award whereDescription($value)
+ * @method static Builder<static>|Award whereIcon($value)
  * @method static Builder<static>|Award whereId($value)
  * @method static Builder<static>|Award whereImageUrl($value)
  * @method static Builder<static>|Award whereName($value)
@@ -63,12 +72,28 @@ class Award extends Model
 
     public $table = 'awards';
 
+    /**
+     * Starting categories offered in the admin picker. Not a closed set — the
+     * `category` column takes any string, and anything already saved is offered
+     * alongside these. See categoryOptions().
+     */
+    public const array CATEGORIES = [
+        'MILESTONE',
+        'DISTANCE',
+        'SKILL',
+        'ROUTE',
+        'SPECIAL',
+    ];
+
     protected $fillable = [
         'name',
         'description',
         'image_url',
+        'icon',
+        'category',
         'ref_model_type',
         'ref_model_params',
+        'trigger',
         'active',
     ];
 
@@ -76,6 +101,8 @@ class Award extends Model
         'name'             => 'required',
         'description'      => 'nullable',
         'image_url'        => 'nullable',
+        'icon'             => 'nullable',
+        'category'         => 'nullable',
         'ref_model_type'   => 'required',
         'ref_model_params' => 'nullable',
         'active'           => 'nullable',
@@ -88,6 +115,47 @@ class Award extends Model
         'active',
         'created_at',
     ];
+
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'trigger' => AwardTrigger::class,
+        ];
+    }
+
+    /** @return HasOne<AwardRule, $this> */
+    public function rule(): HasOne
+    {
+        return $this->hasOne(AwardRule::class);
+    }
+
+    /**
+     * True when this award's criteria are a rules-based condition tree,
+     * rather than the legacy ref_model_type class path.
+     */
+    public function isRulesBased(): bool
+    {
+        return $this->rule !== null;
+    }
+
+    /**
+     * Upserts or removes this award's ruleset row. A null tree — legacy
+     * award, or criteria cleared — deletes the row.
+     */
+    public function saveConditionsTree(?array $tree): void
+    {
+        if ($tree === null) {
+            $this->rule()->delete();
+            $this->unsetRelation('rule');
+
+            return;
+        }
+
+        $rule = $this->rule()->updateOrCreate([], ['conditions' => $tree]);
+        $rule->syncSnippetsFromConditions();
+        $this->setRelation('rule', $rule);
+    }
 
     /**
      * Get the referring object
@@ -103,6 +171,26 @@ class Award extends Model
         } catch (Exception) {
             return null;
         }
+    }
+
+    /**
+     * The categories offered in a picker: the presets, plus every category
+     * anyone has already invented, so a one-off from last month is a choice
+     * this month rather than something to retype exactly.
+     *
+     * @return array<string, string>
+     */
+    public static function categoryOptions(): array
+    {
+        return self::query()
+            ->whereNotNull('category')
+            ->distinct()
+            ->pluck('category')
+            ->merge(self::CATEGORIES)
+            ->unique()
+            ->sort()
+            ->mapWithKeys(fn (string $category): array => [$category => $category])
+            ->all();
     }
 
     public function image(): Attribute

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OAuthClients\Tables;
 
 use App\Models\OauthClient;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -40,8 +42,8 @@ class OAuthClientsTable
                 IconColumn::make('revoked')
                     ->label(__('oauth.revoked'))
                     ->boolean()
-                    ->trueIcon('heroicon-o-x-circle')
-                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueIcon(TablerIcon::CircleX)
+                    ->falseIcon(TablerIcon::CircleCheck)
                     ->trueColor('danger')
                     ->falseColor('success'),
 
@@ -52,8 +54,10 @@ class OAuthClientsTable
                     ->sortable(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -16,7 +16,7 @@ beforeEach(function (): void {
     $this->base = sys_get_temp_dir().'/rebuild-'.uniqid();
     $this->addonDir = $this->base.'/Demo';
     File::ensureDirectoryExists($this->addonDir);
-    File::put($this->addonDir.'/module.json', json_encode(['name' => 'Demo', 'providers' => []]));
+    File::put($this->addonDir.'/module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []]));
     File::put($this->addonDir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
     Config::set('addons.paths.base', $this->base);
 
@@ -29,7 +29,7 @@ afterEach(function (): void {
 });
 
 it('rebuildCache() writes enabled addons to the boot cache', function (): void {
-    Addon::factory()->create(['name' => 'Demo', 'path' => $this->addonDir, 'enabled' => true]);
+    Addon::factory()->create(['name' => 'Demo', 'registry_id' => 'acme/demo', 'path' => $this->addonDir, 'enabled' => true]);
 
     app(AddonDiscoveryService::class)->rebuildCache();
 
@@ -38,7 +38,7 @@ it('rebuildCache() writes enabled addons to the boot cache', function (): void {
 });
 
 it('rebuildCache() omits disabled addons', function (): void {
-    Addon::factory()->create(['name' => 'Demo', 'path' => $this->addonDir, 'enabled' => false]);
+    Addon::factory()->create(['name' => 'Demo', 'registry_id' => 'acme/demo', 'path' => $this->addonDir, 'enabled' => false]);
 
     app(AddonDiscoveryService::class)->rebuildCache();
 

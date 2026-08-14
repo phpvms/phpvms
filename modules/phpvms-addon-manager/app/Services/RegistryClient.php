@@ -267,8 +267,15 @@ class RegistryClient
             'keywords'      => is_array($row['keywords'] ?? null) ? array_values($row['keywords']) : [],
             'publisher'     => (string) ($row['publisher'] ?? ''),
             'publisher_url' => (string) ($row['publisherUrl'] ?? $row['publisher_url'] ?? ''),
+            // Published by the phpVMS project rather than a third party. Sorts
+            // first in the browse listing; never affects installability.
+            'official' => (bool) ($row['official'] ?? false),
             // Tolerate camelCase (contract) or snake_case (older registry builds).
             'repository_url' => (string) ($row['repositoryUrl'] ?? $row['repository_url'] ?? ''),
+            'product_url'    => (string) ($row['productUrl'] ?? $row['product_url'] ?? ''),
+            // Not in the wire contract yet. Read defensively so the detail pane's
+            // changelog row appears the day the registry starts sending it.
+            'changelog_url' => (string) ($row['changelogUrl'] ?? $row['changelog_url'] ?? ''),
             // Store bare minimums: tolerate a registry that still sends composer
             // constraints (">=8.4") by stripping the leading operator. Version
             // handling lives in CompatibilityEvaluator, not hand-rolled here.

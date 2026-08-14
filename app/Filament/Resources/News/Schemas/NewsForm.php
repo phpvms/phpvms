@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\News\Schemas;
 
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class NewsForm
 {
@@ -31,9 +31,9 @@ class NewsForm
                     ->dehydrated(false)
                     ->default(false)
                     ->onColor('success')
-                    ->onIcon(Heroicon::CheckCircle)
+                    ->onIcon(TablerIcon::Check)
                     ->offColor('danger')
-                    ->offIcon(Heroicon::XCircle),
+                    ->offIcon(TablerIcon::X),
             ]);
     }
 }

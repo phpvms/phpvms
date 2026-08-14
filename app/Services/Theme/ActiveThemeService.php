@@ -7,12 +7,12 @@ namespace App\Services\Theme;
 use App\Models\ActiveThemePublication;
 use App\Models\PublishedThemeRevision;
 
-final class ActiveThemeService
+final readonly class ActiveThemeService
 {
     public function __construct(
-        private readonly ThemeAssetService $assets,
-        private readonly ThemeDocumentNormalizer $normalizer,
-        private readonly ThemePublicationService $publications,
+        private ThemeAssetService $assets,
+        private ThemeDocumentNormalizer $normalizer,
+        private ThemePublicationService $publications,
     ) {}
 
     public function revision(string $themeName): ?PublishedThemeRevision

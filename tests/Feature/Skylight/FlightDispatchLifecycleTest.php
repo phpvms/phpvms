@@ -69,7 +69,7 @@ function makeDispatchFixture(?User $user = null): array
         'route'          => 'DCT TEST',
     ]);
 
-    return compact('user', 'airline', 'subfleet', 'aircraft', 'flight', 'departure', 'arrival');
+    return ['user' => $user, 'airline' => $airline, 'subfleet' => $subfleet, 'aircraft' => $aircraft, 'flight' => $flight, 'departure' => $departure, 'arrival' => $arrival];
 }
 
 it('returns typed drawer data only to an authenticated pilot', function (): void {
@@ -227,6 +227,7 @@ it('uses the OFP namespace only for the new Skylight route surface', function ()
 it('clamps legacy negative bid expiry and rejects new negative settings', function (): void {
     $setting = Setting::query()->where('id', 'bids_expire_time')->firstOrFail();
     $setting->update(['value' => '-3']);
+
     app(SettingService::class)->clearMemo();
 
     expect(FlightDispatchPolicyData::fromSettings()->expireHours)->toBe(0)

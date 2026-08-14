@@ -4,22 +4,46 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Concerns\IsDynamicDashboardWidget;
 use App\Models\Acars;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
+use MDDev\DynamicDashboard\Contracts\DynamicWidget;
 use Override;
 
 /**
  * D3 calendar heatmap of flight activity (ACARS telemetry events) per hour
  * for the trailing seven days. One row per day, one column per hour.
  */
-class ActivityCalendarWidget extends Widget
+class ActivityCalendarWidget extends Widget implements DynamicWidget
 {
+    use IsDynamicDashboardWidget;
+
     protected string $view = 'filament.widgets.dashboard.chart';
 
     protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 1;
+
+    public static function getWidgetLabel(): string
+    {
+        return __('filament.dashboard.activity_calendar');
+    }
+
+    public static function getDynamicDashboardDefaultWidth(): int
+    {
+        return 8;
+    }
+
+    public static function getDynamicDashboardDefaultHeight(): int
+    {
+        return 4;
+    }
+
+    public static function getDynamicDashboardMinHeight(): int
+    {
+        return static::getDynamicDashboardDefaultHeight();
+    }
 
     #[Override]
     protected function getViewData(): array

@@ -49,7 +49,5 @@ return [
     'cache_build_background'            => "You don't have access to the proc_open function, so the cache rebuild will be done in the background. Check logs for details.",
     'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
     'update_phpvms'                     => 'Update phpvms',
-    'eyebrow'                           => '',
     'hero_title'                        => "Welcome. Let's get you flying",
-    'hero_subtitle'                     => '',
 ];

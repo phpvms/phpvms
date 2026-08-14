@@ -9,11 +9,11 @@ use App\Filament\Exports\AircraftExporter;
 use App\Filament\Imports\AircraftImporter;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
 use App\Filament\Resources\Subfleets\Resources\Aircraft\Tables\AircraftTable;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 
@@ -48,7 +48,7 @@ class AircraftRelationManager extends RelationManager
                     ->exporter(AircraftExporter::class),
 
                 CreateAction::make()
-                    ->icon(Heroicon::OutlinedPlusCircle),
+                    ->icon(TablerIcon::CirclePlus),
             ]);
     }
 

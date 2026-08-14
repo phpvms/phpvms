@@ -110,7 +110,7 @@ test('themed macro returns blade view when active theme is blade', function (): 
 test('admin routes do not carry the Inertia middleware', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
-    $adminRoute = $routes->first(fn ($r) => $r->uri() === 'admin');
+    $adminRoute = $routes->first(fn ($r): bool => $r->uri() === 'admin');
 
     expect($adminRoute)->not->toBeNull();
 
@@ -123,7 +123,7 @@ test('api routes do not carry the Inertia middleware', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
     // api/user is a representative api route
-    $apiRoute = $routes->first(fn ($r) => str_starts_with($r->uri(), 'api/'));
+    $apiRoute = $routes->first(fn ($r): bool => str_starts_with($r->uri(), 'api/'));
 
     expect($apiRoute)->not->toBeNull();
 
@@ -135,7 +135,7 @@ test('api routes do not carry the Inertia middleware', function (): void {
 test('frontend dashboard route carries the Inertia middleware', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
-    $dashRoute = $routes->first(fn ($r) => $r->uri() === 'dashboard' && in_array('GET', $r->methods(), true));
+    $dashRoute = $routes->first(fn ($r): bool => $r->uri() === 'dashboard' && in_array('GET', $r->methods(), true));
 
     expect($dashRoute)->not->toBeNull();
 

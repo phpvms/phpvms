@@ -20,7 +20,7 @@ namespace App\Support\Skylight;
  * share() serializes it — and anything a disabled addon would have registered is
  * absent, because its provider never booted.
  */
-final class Skylight
+final readonly class Skylight
 {
     private WidgetRegistry $widgets;
 

@@ -12,9 +12,9 @@ use App\Filament\Resources\OAuthClients\Schemas\OAuthClientForm;
 use App\Filament\Resources\OAuthClients\Tables\OAuthClientsTable;
 use App\Models\OauthClient;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -23,9 +23,11 @@ class OAuthClientResource extends Resource
 {
     protected static ?string $model = OauthClient::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Key;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+
+    protected static ?int $navigationSort = 3;
 
     #[Override]
     public static function form(Schema $schema): Schema

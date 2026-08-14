@@ -33,7 +33,6 @@ final class L3EmptySubfleets implements LintRule
                 ruleId: self::ID,
                 severity: self::SEVERITY,
                 message: __('filament.routeforge.lint.l3_empty_subfleets'),
-                rowIndex: null,
                 details: [],
             ),
         ];

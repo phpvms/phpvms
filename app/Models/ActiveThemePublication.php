@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -12,13 +13,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int                    $published_theme_revision_id
  * @property PublishedThemeRevision $revision
  */
+#[WithoutIncrementing]
 class ActiveThemePublication extends Model
 {
     protected $primaryKey = 'theme_name';
 
     protected $keyType = 'string';
-
-    public $incrementing = false;
 
     protected $fillable = [
         'theme_name',

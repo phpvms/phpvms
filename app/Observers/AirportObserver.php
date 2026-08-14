@@ -16,7 +16,6 @@ class AirportObserver
         }
 
         $airport->icao = strtoupper(trim($airport->icao));
-        $airport->id = $airport->icao;
     }
 
     public function updating(Airport $airport): void
@@ -26,6 +25,5 @@ class AirportObserver
         }
 
         $airport->icao = strtoupper(trim($airport->icao));
-        $airport->id = $airport->icao;
     }
 }

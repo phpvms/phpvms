@@ -76,63 +76,61 @@ final class ThemeCssRenderer
         foreach (self::SHADES as $shade) {
             $lines[] = "--pv-ink-{$shade}: var(--ui-color-neutral-{$shade});";
         }
+
         $lines[] = '--pv-ink-150: color-mix(in srgb, var(--pv-ink-100) 50%, var(--pv-ink-200));';
         $lines[] = '--pv-ink-850: color-mix(in srgb, var(--pv-ink-800) 50%, var(--pv-ink-900));';
-
-        array_push($lines,
-            '--pv-bg: var(--ui-bg-muted);',
-            '--pv-panel: var(--ui-bg);',
-            '--pv-panel-inset: var(--ui-bg-muted);',
-            '--pv-hover: var(--ui-bg-elevated);',
-            '--pv-line: var(--ui-border);',
-            '--pv-line-strong: var(--ui-border-accented);',
-            '--pv-ink: var(--ui-text);',
-            '--pv-ink-dim: var(--ui-text-muted);',
-            '--pv-ink-faint: var(--ui-text-dimmed);',
-            '--pv-track: var(--ui-bg-accented);',
-            '--pv-accent: var(--ui-primary);',
-            '--pv-accent-soft: color-mix(in srgb, var(--ui-primary) 12%, transparent);',
-            '--pv-cyan: var(--ui-info);',
-            '--pv-green: var(--ui-success);',
-            '--pv-amber: var(--ui-warning);',
-            '--pv-red: var(--ui-error);',
-            "--pv-font-body: {$fontValue};",
-            '--pv-font-mono: "IBM Plex Mono", ui-monospace, monospace;',
-            "--pv-font-display: {$fontValue};",
-            '--pv-font-family-base: var(--pv-font-body);',
-            '--pv-font-family-mono: var(--pv-font-mono);',
-            '--pv-type-scale: 1;',
-            '--pv-radius-sm: max(0rem, calc(var(--ui-radius) - 0.125rem));',
-            '--pv-radius-md: var(--ui-radius);',
-            '--pv-radius-lg: calc(var(--ui-radius) + 0.125rem);',
-            '--pv-radius-xl: calc(var(--ui-radius) + 0.25rem);',
-            '--pv-radius-full: 9999px;',
-            '--pv-shadow-panel: none;',
-            '--pv-shadow-chrome: none;',
-            '--pv-nav-width: 240px;',
-            '--pv-header-height: 56px;',
-            '--pv-aside-width: 240px;',
-            '--pv-container-width: 1360px;',
-            "--pv-globe-sea: {$globeColors['sea']};",
-            "--pv-globe-land: {$globeColors['land']};",
-            "--pv-globe-coast: {$globeColors['coast']};",
-            '--pv-slot-error-bg: color-mix(in srgb, var(--ui-error) 12%, var(--ui-bg));',
-            '--pv-slot-error-border: color-mix(in srgb, var(--ui-error) 35%, var(--ui-border));',
-            '--pv-slot-error-text: var(--ui-error);',
-            '--pv-color-page: var(--pv-bg);',
-            '--pv-color-surface: var(--pv-panel);',
-            '--pv-color-surface-alt: var(--pv-panel-inset);',
-            '--pv-color-surface-raised: var(--pv-panel);',
-            '--pv-color-border: var(--pv-line);',
-            '--pv-color-text: var(--pv-ink);',
-            '--pv-color-text-muted: var(--pv-ink-dim);',
-            '--pv-color-primary: var(--pv-accent);',
-            '--pv-color-primary-text: var(--ui-text-inverted);',
-            '--pv-color-info: var(--pv-cyan);',
-            '--pv-color-success: var(--pv-green);',
-            '--pv-color-warning: var(--pv-amber);',
-            '--pv-color-error: var(--pv-red);',
-        );
+        $lines[] = '--pv-bg: var(--ui-bg-muted);';
+        $lines[] = '--pv-panel: var(--ui-bg);';
+        $lines[] = '--pv-panel-inset: var(--ui-bg-muted);';
+        $lines[] = '--pv-hover: var(--ui-bg-elevated);';
+        $lines[] = '--pv-line: var(--ui-border);';
+        $lines[] = '--pv-line-strong: var(--ui-border-accented);';
+        $lines[] = '--pv-ink: var(--ui-text);';
+        $lines[] = '--pv-ink-dim: var(--ui-text-muted);';
+        $lines[] = '--pv-ink-faint: var(--ui-text-dimmed);';
+        $lines[] = '--pv-track: var(--ui-bg-accented);';
+        $lines[] = '--pv-accent: var(--ui-primary);';
+        $lines[] = '--pv-accent-soft: color-mix(in srgb, var(--ui-primary) 12%, transparent);';
+        $lines[] = '--pv-cyan: var(--ui-info);';
+        $lines[] = '--pv-green: var(--ui-success);';
+        $lines[] = '--pv-amber: var(--ui-warning);';
+        $lines[] = '--pv-red: var(--ui-error);';
+        $lines[] = "--pv-font-body: {$fontValue};";
+        $lines[] = '--pv-font-mono: "IBM Plex Mono", ui-monospace, monospace;';
+        $lines[] = "--pv-font-display: {$fontValue};";
+        $lines[] = '--pv-font-family-base: var(--pv-font-body);';
+        $lines[] = '--pv-font-family-mono: var(--pv-font-mono);';
+        $lines[] = '--pv-type-scale: 1;';
+        $lines[] = '--pv-radius-sm: max(0rem, calc(var(--ui-radius) - 0.125rem));';
+        $lines[] = '--pv-radius-md: var(--ui-radius);';
+        $lines[] = '--pv-radius-lg: calc(var(--ui-radius) + 0.125rem);';
+        $lines[] = '--pv-radius-xl: calc(var(--ui-radius) + 0.25rem);';
+        $lines[] = '--pv-radius-full: 9999px;';
+        $lines[] = '--pv-shadow-panel: none;';
+        $lines[] = '--pv-shadow-chrome: none;';
+        $lines[] = '--pv-nav-width: 240px;';
+        $lines[] = '--pv-header-height: 56px;';
+        $lines[] = '--pv-aside-width: 240px;';
+        $lines[] = '--pv-container-width: 1360px;';
+        $lines[] = "--pv-globe-sea: {$globeColors['sea']};";
+        $lines[] = "--pv-globe-land: {$globeColors['land']};";
+        $lines[] = "--pv-globe-coast: {$globeColors['coast']};";
+        $lines[] = '--pv-slot-error-bg: color-mix(in srgb, var(--ui-error) 12%, var(--ui-bg));';
+        $lines[] = '--pv-slot-error-border: color-mix(in srgb, var(--ui-error) 35%, var(--ui-border));';
+        $lines[] = '--pv-slot-error-text: var(--ui-error);';
+        $lines[] = '--pv-color-page: var(--pv-bg);';
+        $lines[] = '--pv-color-surface: var(--pv-panel);';
+        $lines[] = '--pv-color-surface-alt: var(--pv-panel-inset);';
+        $lines[] = '--pv-color-surface-raised: var(--pv-panel);';
+        $lines[] = '--pv-color-border: var(--pv-line);';
+        $lines[] = '--pv-color-text: var(--pv-ink);';
+        $lines[] = '--pv-color-text-muted: var(--pv-ink-dim);';
+        $lines[] = '--pv-color-primary: var(--pv-accent);';
+        $lines[] = '--pv-color-primary-text: var(--ui-text-inverted);';
+        $lines[] = '--pv-color-info: var(--pv-cyan);';
+        $lines[] = '--pv-color-success: var(--pv-green);';
+        $lines[] = '--pv-color-warning: var(--pv-amber);';
+        $lines[] = '--pv-color-error: var(--pv-red);';
 
         return '  '.implode("\n  ", $lines)."\n";
     }

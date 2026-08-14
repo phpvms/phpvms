@@ -52,8 +52,8 @@ try {
             : Aircraft::query()->findOrFail($attempt['aircraft']),
     );
     $result = ['status' => 'created', 'type' => null];
-} catch (Throwable $exception) {
-    $result = ['status' => 'rejected', 'type' => $exception::class];
+} catch (Throwable $throwable) {
+    $result = ['status' => 'rejected', 'type' => $throwable::class];
 }
 
 file_put_contents($payload['result'], json_encode($result, JSON_THROW_ON_ERROR));

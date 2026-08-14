@@ -15,9 +15,9 @@ use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use App\Services\UserService;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -28,11 +28,11 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Pilots;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Users;
 
     protected static ?string $recordTitleAttribute = 'name';
 

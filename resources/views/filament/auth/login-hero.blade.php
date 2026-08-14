@@ -1,8 +1,7 @@
 {{--
   Login hero — rendered above the Filament login form via the
   panels::auth.login.form.before render hook (AdminPanelProvider).
-  Mirrors the installer hero (resources/views/filament/system/hero.blade.php)
-  minus the eyebrow + dot grid (dot grid lives on body::after globally).
+  Centered heading + subtitle over the global body::after dot grid.
 --}}
 <header class="mb-6 text-center">
     <h1

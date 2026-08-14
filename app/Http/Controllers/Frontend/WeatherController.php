@@ -73,7 +73,7 @@ class WeatherController extends Controller
         try {
             $metar = $this->airportService->getMetar($icao);
             $taf = $this->airportService->getTaf($icao);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return response()->json([
                 'error'   => true,
                 'message' => 'METAR unavailable.',
@@ -81,7 +81,7 @@ class WeatherController extends Controller
             ], 503);
         }
 
-        if ($metar === null && $taf === null) {
+        if (!$metar instanceof Metar && !$taf instanceof Metar) {
             return response()->json([
                 'error'   => true,
                 'message' => 'No weather data available for '.$icao.'. The weather provider may be unavailable or the ICAO code may not have a reporting station.',
@@ -131,7 +131,7 @@ class WeatherController extends Controller
      */
     private function resolveConditions(?Metar $metar): ?string
     {
-        if ($metar === null) {
+        if (!$metar instanceof Metar) {
             return null;
         }
 
@@ -163,7 +163,7 @@ class WeatherController extends Controller
      */
     private function resolveTemperature(?Metar $metar): ?string
     {
-        if ($metar === null) {
+        if (!$metar instanceof Metar) {
             return null;
         }
 
@@ -193,7 +193,7 @@ class WeatherController extends Controller
      */
     private function resolveWind(?Metar $metar): ?string
     {
-        if ($metar === null) {
+        if (!$metar instanceof Metar) {
             return null;
         }
 

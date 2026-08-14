@@ -456,8 +456,15 @@ class PirepFinanceService extends Service
 
                 $debit = Money::createFromAmount($expense->amount);
 
+                // Honour charge_to_user here too — payExpensesForPirep already does, and a
+                // listener-supplied Expense had no way to bill the pilot before this.
+                $journal = $pirep->airline->journal;
+                if ($expense->charge_to_user) {
+                    $journal = $pirep->user->journal;
+                }
+
                 $this->financeSvc->debitFromJournal(
-                    $pirep->airline->journal,
+                    $journal,
                     $debit,
                     $pirep,
                     'Expense: '.$expense->name,

@@ -1,0 +1,14 @@
+{
+  "key": "flat-12",
+  "name": "filament-dynamic-dashboard::templates.flat_12.name",
+  "description": "filament-dynamic-dashboard::templates.flat_12.description",
+  "columns": 12,
+  "sections": [
+    {
+      "slug": "main",
+      "name": null,
+      "columns": 12,
+      "row_height": 100
+    }
+  ]
+}

@@ -17,7 +17,7 @@ use Str;
 /**
  * @property int         $id
  * @property string|null $name
- * @property string|null $registry_id
+ * @property string      $registry_id
  * @property string      $type
  * @property string|null $version
  * @property string      $namespace
@@ -65,7 +65,7 @@ class Addon extends Model
 
     public static array $rules = [
         'name'         => 'required|string',
-        'registry_id'  => 'nullable|string',
+        'registry_id'  => 'required|string',
         'type'         => 'required|string',
         'version'      => 'nullable|string',
         'namespace'    => 'required|string',
@@ -91,7 +91,7 @@ class Addon extends Model
      */
     public function settings(): HasMany
     {
-        return $this->hasMany(AddonSetting::class);
+        return $this->hasMany(AddonSetting::class, 'registry_id', 'registry_id');
     }
 
     /**

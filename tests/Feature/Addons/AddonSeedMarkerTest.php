@@ -66,27 +66,27 @@ it('keys the seed marker on registry_id when present', function (): void {
     expect(Kvp::where('key', 'addon_seeded:phpvms-acars:1.1.0')->exists())->toBeTrue();
 });
 
-it('falls back to namespace when registry_id is null', function (): void {
+it('keys an unversioned addon on :base', function (): void {
     makeSeedableAddon([
-        'registry_id' => null,
+        'registry_id' => 'phpvms/sample',
         'namespace'   => 'Modules\\Sample',
-        'version'     => '2.0.0',
+        'version'     => null,
     ]);
 
     app(SeederService::class)->seedAddons();
 
-    expect(Kvp::where('key', 'addon_seeded:modules-sample:2.0.0')->exists())->toBeTrue();
+    expect(Kvp::where('key', 'addon_seeded:phpvms-sample:base')->exists())->toBeTrue();
 });
 
-it('does not collide two null-registry_id addons on different namespaces', function (): void {
+it('does not collide two addons with different registry_ids', function (): void {
     makeSeedableAddon([
-        'registry_id' => null,
+        'registry_id' => 'phpvms/awards',
         'namespace'   => 'Modules\\Awards',
         'version'     => null,
     ]);
 
     makeSeedableAddon([
-        'registry_id' => null,
+        'registry_id' => 'phpvms/sample',
         'namespace'   => 'Modules\\Sample',
         'version'     => null,
     ]);
@@ -94,8 +94,8 @@ it('does not collide two null-registry_id addons on different namespaces', funct
     $seederSvc = app(SeederService::class);
     $seederSvc->seedAddons();
 
-    expect(Kvp::where('key', 'addon_seeded:modules-awards:base')->exists())->toBeTrue()
-        ->and(Kvp::where('key', 'addon_seeded:modules-sample:base')->exists())->toBeTrue()
+    expect(Kvp::where('key', 'addon_seeded:phpvms-awards:base')->exists())->toBeTrue()
+        ->and(Kvp::where('key', 'addon_seeded:phpvms-sample:base')->exists())->toBeTrue()
         ->and($seederSvc->addonSeedsPending())->toBeFalse();
 });
 
@@ -117,20 +117,19 @@ it('clears every version of an addon marker on uninstall', function (): void {
 });
 
 it('slugifies the identity so the key carries no LIKE metacharacters', function (): void {
-    // keyed_str() strips the backslash of a namespace and the slash of a
-    // registry_id, along with any % or _ wildcard. That keeps the key safe to
-    // interpolate into the uninstall LIKE pattern: a raw `Modules\Sample` would
-    // behave differently on MySQL and Postgres (backslash is their default LIKE
-    // escape character) than on sqlite (which has none).
+    // keyed_str() strips the slash of a registry_id along with any % or _
+    // wildcard. That keeps the key safe to interpolate into the uninstall LIKE
+    // pattern: a raw separator would behave differently on MySQL and Postgres
+    // (backslash is their default LIKE escape character) than on sqlite.
     $addon = Addon::factory()->create([
-        'registry_id' => null,
+        'registry_id' => 'modules/sample%',
         'namespace'   => 'Modules\\Sample',
         'version'     => '1.0.0',
     ]);
 
     Kvp::create(['key' => 'addon_seeded:modules-sample:1.0.0', 'value' => 'x']);
 
-    // Distinct addon whose namespace has no separator — keyed_str keeps the `-`
+    // Distinct addon whose identity has no separator — keyed_str keeps the `-`
     // delimiter, so it must not collapse onto the same identity.
     Kvp::create(['key' => 'addon_seeded:modulessample:1.0.0', 'value' => 'x']);
 

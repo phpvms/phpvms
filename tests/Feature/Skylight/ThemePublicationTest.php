@@ -187,8 +187,8 @@ it('rejects oversized custom CSS before writing or persisting', function (): voi
     try {
         app(ThemePublicationService::class)->publish('skylight', publishedThemeDocument(), '12345');
         $this->fail('Expected custom CSS validation to fail.');
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('customCss');
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('customCss');
     }
 
     expect(PublishedThemeRevision::query()->count())->toBe(0)

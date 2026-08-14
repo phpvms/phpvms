@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Contracts\Factory;
-use App\Models\Addon;
 use App\Models\AddonSetting;
 
 /**
@@ -22,7 +21,7 @@ class AddonSettingFactory extends Factory
         $key = AddonSetting::formatKey(fake()->unique()->word());
 
         return [
-            'addon_id'    => Addon::factory(),
+            'registry_id' => 'phpvms/'.fake()->unique()->slug(2),
             'alias'       => fake()->slug(1),
             'order'       => 0,
             'key'         => $key,

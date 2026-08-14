@@ -64,10 +64,10 @@ class SetActiveTheme implements Middleware
     public function setTheme(Request $request): void
     {
         try {
-            $theme = setting('general.theme', 'seven');
+            $theme = setting('general.theme', config('themes.default'));
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
-            $theme = 'seven';
+            $theme = config('themes.default');
         }
 
         if (empty($theme)) {
@@ -78,11 +78,49 @@ class SetActiveTheme implements Middleware
             // Skipped paths don't pick a per-request theme but still need a
             // deterministic baseline under Octane (see method PHPDoc).
             // SPA theming is never applied to admin/api/importer/install/update.
-            Theme::set(config('themes.default'));
+            Theme::set($this->registeredTheme(config('themes.default')));
 
             return;
         }
 
-        Theme::set($theme);
+        Theme::set($this->registeredTheme($theme));
+    }
+
+    /**
+     * Resolve a theme name to one that is actually registered.
+     *
+     * Themes::set() does not fail on an unknown name — it builds a parentless
+     * Theme, so the `extends` chain silently disappears and every themed view
+     * 404s at the finder with "View [...] not found". That is reachable in
+     * practice because the theme cache (bootstrap/cache/themes.php) is only
+     * rebuilt when the file is missing: an install that gains a theme after
+     * the cache was written never sees it.
+     *
+     * So rebuild the cache once — that alone fixes the stale-cache case — and
+     * fall back to a theme that exists rather than serving a 500.
+     */
+    private function registeredTheme(string $theme): string
+    {
+        if (Theme::exists($theme)) {
+            return $theme;
+        }
+
+        Theme::rebuildCache();
+        Theme::scanThemes();
+
+        if (Theme::exists($theme)) {
+            return $theme;
+        }
+
+        // all() is a list of Theme objects, not a name-keyed map.
+        $fallback = Theme::all()[0]->name ?? null;
+
+        Log::warning(sprintf(
+            'Theme "%s" is not installed; falling back to "%s".',
+            $theme,
+            $fallback ?? 'none',
+        ));
+
+        return $fallback ?? $theme;
     }
 }

@@ -9,6 +9,19 @@ use App\Services\UserService;
 use App\Services\YamlDatabaseService;
 
 /**
+ * Strip identifier quoting out of generated SQL.
+ *
+ * An assertion about the *shape* of a compiled query has to read the same on
+ * every driver, and the grammars disagree on quoting: MySQL emits backticks
+ * where PostgreSQL and SQLite emit double quotes. Bindings are always `?`, so
+ * there are no string literals here for this to damage.
+ */
+function unquoteSql(string $sql): string
+{
+    return str_replace(['`', '"'], '', $sql);
+}
+
+/**
  * Load the given yaml file into the database
  */
 function loadYamlIntoDb(string $file): void

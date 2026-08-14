@@ -9,7 +9,7 @@ it('round-trips the files list through toArray()/fromArray()', function (): void
         name: 'Sample',
         alias: 'sample',
         type: 'module',
-        registryId: null,
+        registryId: 'acme/sample',
         version: '1.0.0',
         namespace: 'Modules\\Sample',
         providers: [],

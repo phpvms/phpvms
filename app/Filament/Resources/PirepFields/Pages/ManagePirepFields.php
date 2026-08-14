@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\PirepFields\Pages;
 
 use App\Filament\Resources\PirepFields\PirepFieldResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ManagePirepFields extends ManageRecords
@@ -19,7 +19,7 @@ class ManagePirepFields extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }

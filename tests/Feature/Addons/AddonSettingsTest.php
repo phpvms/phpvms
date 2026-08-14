@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
 function makeAddonSetting(array $addon = [], array $setting = []): array
 {
     $addonModel = Addon::factory()->create($addon);
-    $settingModel = AddonSetting::factory()->create(['addon_id' => $addonModel->id] + $setting);
+    $settingModel = AddonSetting::factory()->create(['registry_id' => $addonModel->registry_id] + $setting);
 
     return [$addonModel, $settingModel];
 }
@@ -30,7 +30,7 @@ it('inserts declared keys with their defaults on first sync', function (): void 
 
     $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
 
-    $greeting = AddonSetting::where('addon_id', $sample->id)->where('key', 'greeting')->first();
+    $greeting = AddonSetting::where('registry_id', $sample->registry_id)->where('key', 'greeting')->first();
 
     expect($greeting)->not->toBeNull()
         ->and($greeting->value)->toBe('Hello from the Sample module!')
@@ -44,7 +44,7 @@ it('preserves a user-edited value but reconciles metadata on re-sync', function 
     $sync->sync();
 
     $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
-    $row = AddonSetting::where('addon_id', $sample->id)->where('key', 'greeting')->firstOrFail();
+    $row = AddonSetting::where('registry_id', $sample->registry_id)->where('key', 'greeting')->firstOrFail();
 
     // User edits the value and we corrupt the description to prove it gets reconciled.
     $row->update(['value' => 'Custom greeting', 'description' => 'stale']);
@@ -63,10 +63,10 @@ it('is idempotent — repeated syncs do not duplicate rows', function (): void {
     $sync->sync();
 
     $sample = Addon::where('namespace', 'Modules\\Sample')->firstOrFail();
-    $countAfterFirst = AddonSetting::where('addon_id', $sample->id)->count();
+    $countAfterFirst = AddonSetting::where('registry_id', $sample->registry_id)->count();
 
     $sync->sync();
-    $countAfterSecond = AddonSetting::where('addon_id', $sample->id)->count();
+    $countAfterSecond = AddonSetting::where('registry_id', $sample->registry_id)->count();
 
     expect($countAfterFirst)->toBe(5)
         ->and($countAfterSecond)->toBe($countAfterFirst);
@@ -86,7 +86,7 @@ it('registers no rows for an addon whose providers do not declare settings', fun
         return;
     }
 
-    expect(AddonSetting::where('addon_id', $awards->id)->count())->toBe(0);
+    expect(AddonSetting::where('registry_id', $awards->registry_id)->count())->toBe(0);
 });
 
 // ── Helper resolution (8.3) ──────────────────────────────────────────────────
@@ -118,9 +118,9 @@ it('returns the default for an unknown addon or key', function (): void {
 
 it('casts values by type', function (): void {
     [$addon] = makeAddonSetting(['registry_id' => 'cast/test'], ['key' => 'flag', 'type' => 'boolean', 'value' => '1']);
-    AddonSetting::factory()->create(['addon_id' => $addon->id, 'key' => 'count', 'type' => 'int', 'value' => '42']);
-    AddonSetting::factory()->create(['addon_id' => $addon->id, 'key' => 'ratio', 'type' => 'float', 'value' => '0.25']);
-    AddonSetting::factory()->create(['addon_id' => $addon->id, 'key' => 'day', 'type' => 'date', 'value' => '2026-01-15']);
+    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'count', 'type' => 'int', 'value' => '42']);
+    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'ratio', 'type' => 'float', 'value' => '0.25']);
+    AddonSetting::factory()->create(['registry_id' => $addon->registry_id, 'key' => 'day', 'type' => 'date', 'value' => '2026-01-15']);
 
     expect(addon_setting('cast/test', 'flag'))->toBeTrue()
         ->and(addon_setting('cast/test', 'count'))->toBe(42)
@@ -144,7 +144,7 @@ it('does not store to an unknown addon or key', function (): void {
 
     expect(addon_setting_save('nope', 'token', 'x'))->toBeNull()
         ->and(app(AddonSettingService::class)->store('vendor/widget', 'missing', 'x'))->toBeNull()
-        ->and(AddonSetting::where('addon_id', $addon->id)->where('key', 'token')->value('value'))->toBe('old');
+        ->and(AddonSetting::where('registry_id', $addon->registry_id)->where('key', 'token')->value('value'))->toBe('old');
 });
 
 // ── Isolation (8.6) ──────────────────────────────────────────────────────────

@@ -301,7 +301,13 @@ class PermissionRegistry
             fn (AddonBootCache $entry): bool => $entry->name === $module
         );
 
-        if ($entry !== null && $entry->registryId !== null) {
+        // `!== ''`, not `!== null`: AddonBootCache::$registryId is a non-nullable
+        // string that from() coerces with `(string) ($data['registry_id'] ?? '')`,
+        // so a row without a registry id arrives as an empty string. The old null
+        // check could never fail, and an empty id fell through to
+        // keyed_str('') === '' -- an empty permission prefix rather than the
+        // module name.
+        if ($entry !== null && $entry->registryId !== '') {
             return keyed_str(strtolower($entry->registryId));
         }
 

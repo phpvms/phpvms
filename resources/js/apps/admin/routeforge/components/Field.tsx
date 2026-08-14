@@ -39,19 +39,40 @@ export type FieldProps = {
 /**
  * Tailwind utility string shared across <input>, <select>, <textarea>.
  * Centralised so a future theme audit (Section 7.2) updates one constant.
+ *
+ * These mirror Filament's `.fi-input-wrp` chrome (ring + shadow, not a border)
+ * combined with `.fi-input`'s typography, so RouteForge controls match the rest
+ * of the panel. Filament splits them across a wrapper div and the input; we
+ * keep the single element and carry both, which means the values are copied
+ * rather than inherited.
+ *
+ * ponytail: copied values drift if Filament restyles .fi-input-wrp. Swap to
+ * real wrapper divs + fi-input-wrp/fi-input if that ever bites — the two can't
+ * share one element because `input.fi-input` outranks `.fi-input-wrp` on
+ * specificity and forces bg-transparent.
+ *
+ * Radius comes from --radius-lg, sizing from --text-sm, both set in
+ * resources/css/filament/admin/theme.css.
  */
-export const INPUT_CLASS =
-  "block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm " +
-  "text-gray-900 placeholder-gray-400 " +
-  "focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 " +
-  "disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 " +
-  "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 " +
-  "dark:disabled:bg-gray-900 dark:disabled:text-gray-600";
+const INPUT_BASE =
+  "block w-full appearance-none rounded-lg border-none bg-(--surface) px-3 py-1.5 text-sm leading-6 " +
+  "text-(--ink) placeholder:text-(--ink-4) shadow-sm transition duration-75 " +
+  "focus:outline-none disabled:cursor-not-allowed disabled:bg-(--surface-2) disabled:text-(--ink-3)";
 
-export const INPUT_CLASS_ERROR = INPUT_CLASS.replace("border-gray-300", "border-red-400").replace(
-  "dark:border-gray-600",
-  "dark:border-red-500",
-);
+export const INPUT_CLASS = `${INPUT_BASE} ring-1 ring-(--line-strong) focus:ring-2 focus:ring-primary-600`;
+
+export const INPUT_CLASS_ERROR = `${INPUT_BASE} ring-1 ring-(--bad) focus:ring-2 focus:ring-(--bad)`;
+
+/**
+ * Selects need Filament's `select.fi-select-input` on top, which supplies the
+ * chevron background-image and the end padding that clears it. Without it
+ * `appearance-none` strips the native arrow and leaves no dropdown affordance.
+ *
+ * Our utilities still win over that class's own background/padding: Filament
+ * imports its CSS into layer(components), and Tailwind orders utilities after
+ * components regardless of specificity.
+ */
+export const SELECT_CLASS = `${INPUT_CLASS} fi-select-input`;
 
 export function Field({
   label,
@@ -65,18 +86,18 @@ export function Field({
   helpAriaLabel,
 }: FieldProps) {
   const helpIconClass =
-    "inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
+    "inline-flex h-4 w-4 items-center justify-center rounded-full bg-(--mute-soft) text-[10px] font-bold text-(--mute) hover:bg-(--mute-line) focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   return (
     <div class="mb-3">
       <label
         htmlFor={htmlFor}
-        class="mb-1 flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300"
+        class="mb-1 flex items-center gap-1 text-sm font-medium text-(--ink-2)"
       >
         <span>
           {label}
           {required === true && (
-            <span class="ml-0.5 text-red-600 dark:text-red-400" aria-label="required">
+            <span class="ml-0.5 text-(--bad)" aria-label="required">
               *
             </span>
           )}
@@ -108,10 +129,10 @@ export function Field({
       </label>
       {children}
       {hint !== undefined && (error === undefined || error === null || error === "") && (
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
+        <p class="mt-1 text-xs text-(--ink-3)">{hint}</p>
       )}
       {error !== undefined && error !== null && error !== "" && (
-        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p class="mt-1 text-xs text-(--bad)">{error}</p>
       )}
     </div>
   );

@@ -45,7 +45,5 @@ return [
     'cache_build_background'            => 'Vous n\'avez pas la fonction proc_open. Le cache sera reconstruit en arrière-plan, consultez les logs pour plus de détails.',
     'update_completed'                  => 'Mise à jour terminée avec succès. Vous allez être redirigé dans quelques secondes',
     'update_phpvms'                     => 'Mettre à jour phpvms',
-    'eyebrow'                           => '',
     'hero_title'                        => 'Bienvenue. Préparez-vous à prendre votre envol',
-    'hero_subtitle'                     => '',
 ];

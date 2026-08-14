@@ -11,9 +11,9 @@ use App\Filament\Resources\Ranks\Schemas\RankForm;
 use App\Filament\Resources\Ranks\Tables\RanksTable;
 use App\Models\Rank;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -24,11 +24,11 @@ class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Pilots;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingUp;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::TrendingUp;
 
     protected static ?string $recordTitleAttribute = 'name';
 

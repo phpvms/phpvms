@@ -40,7 +40,6 @@ final class L10BatchOver100 implements LintRule
                     'count' => $count,
                     'cap'   => $cap,
                 ]),
-                rowIndex: null,
                 details: [
                     'row_count' => $count,
                     'cap'       => $cap,

@@ -6,6 +6,7 @@ use App\Models\Airport;
 use App\Models\File;
 use App\Models\Subfleet;
 use App\Services\FileService;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -69,14 +70,16 @@ class SubfleetsTable
                     ->preload(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make()->before(function (Subfleet $record): void {
-                    $record->files()->each(function (File $file): void {
-                        app(FileService::class)->removeFile($file);
-                    });
-                }),
-                RestoreAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make()->before(function (Subfleet $record): void {
+                        $record->files()->each(function (File $file): void {
+                            app(FileService::class)->removeFile($file);
+                        });
+                    }),
+                    RestoreAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

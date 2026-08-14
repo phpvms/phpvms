@@ -10,7 +10,7 @@ it('no longer serializes a filament field in boot-cache rows', function (): void
         name: 'Sample',
         alias: 'sample',
         type: 'module',
-        registryId: null,
+        registryId: 'acme/sample',
         version: '1.0.0',
         namespace: 'Modules\\Sample',
         providers: [],

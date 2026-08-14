@@ -7,9 +7,9 @@ namespace App\Filament\Resources\News\Pages;
 use App\Events\NewsAdded;
 use App\Filament\Resources\News\NewsResource;
 use App\Models\News;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
@@ -22,7 +22,7 @@ class ListNews extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle)
+                ->icon(TablerIcon::CirclePlus)
                 ->mutateDataUsing(function (array $data): array {
                     $data['user_id'] = Auth::id();
 

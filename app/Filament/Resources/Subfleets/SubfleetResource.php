@@ -16,9 +16,9 @@ use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\Tables\SubfleetsTable;
 use App\Models\Subfleet;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,11 +31,11 @@ class SubfleetResource extends Resource
 {
     protected static ?string $model = Subfleet::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Fleet;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Plane;
 
     #[Override]
     public static function form(Schema $schema): Schema
@@ -99,7 +99,7 @@ class SubfleetResource extends Resource
     #[Override]
     public static function getModelLabel(): string
     {
-        return __('common.subfleet');
+        return trans_choice('common.subfleet', 1);
     }
 
     #[Override]

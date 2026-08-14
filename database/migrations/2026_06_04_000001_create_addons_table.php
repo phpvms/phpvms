@@ -73,6 +73,10 @@ return new class() extends Migration
                     }
                 }
 
+                if (empty($manifest['registry_id'])) {
+                    continue;
+                }
+
                 if ($namespace === null) {
                     $namespace = 'Modules\\'.basename((string) $directory);
                 }
@@ -84,7 +88,7 @@ return new class() extends Migration
                 // T-01-02: bound parameters via query-builder insert() — no string concatenation.
                 DB::table('addons')->insert([
                     'name'         => $manifest['name'] ?? basename((string) $directory),
-                    'registry_id'  => null,
+                    'registry_id'  => $manifest['registry_id'],
                     'type'         => $manifest['type'] ?? 'module',
                     'version'      => $version,
                     'namespace'    => $namespace,

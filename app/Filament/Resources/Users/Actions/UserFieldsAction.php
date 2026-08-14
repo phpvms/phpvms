@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Users\Actions;
 
 use App\Filament\Resources\UserFields\UserFieldResource;
 use App\Models\UserField;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
-use Filament\Support\Icons\Heroicon;
 
 class UserFieldsAction
 {
@@ -13,7 +13,8 @@ class UserFieldsAction
     {
         return Action::make('userfields')
             ->label(trans_choice('common.user_field', 2))
-            ->icon(Heroicon::OutlinedClipboardDocumentList)
+            ->color('gray')
+            ->icon(TablerIcon::ClipboardList)
             ->url(UserFieldResource::getUrl())
             ->visible(fn (): bool => auth()->user()?->can('view-any', UserField::class));
     }

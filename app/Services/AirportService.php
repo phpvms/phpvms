@@ -11,6 +11,7 @@ use App\Models\Airport;
 use App\Support\Dto\PhpvmsApi\AirportData;
 use App\Support\Metar;
 use App\Support\Units\Distance;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use League\Geotools\Coordinate\Coordinate;
@@ -81,7 +82,13 @@ class AirportService extends Service
             return $airport;
         }
 
-        $response = Http::get(config('phpvms.api_url').'/v1/airports/'.$icao);
+        try {
+            $response = Http::connectTimeout(2)
+                ->timeout(5)
+                ->get(config('phpvms.api_url').'/v1/airports/'.$icao);
+        } catch (ConnectionException) {
+            return [];
+        }
 
         if (!$response->successful()) {
             return [];
@@ -96,6 +103,80 @@ class AirportService extends Service
             $airport,
             config('cache.keys.AIRPORT_VACENTRAL_LOOKUP.time')
         );
+
+        return $airport;
+    }
+
+    /**
+     * Search for airports from vACentral.
+     *
+     * @return list<array{
+     *     icao: string,
+     *     iata: string,
+     *     name: string,
+     *     location: string,
+     *     country: string,
+     *     region: string,
+     *     timezone: string,
+     *     elevation: int,
+     *     lat: float,
+     *     lon: float
+     * }>
+     */
+    public function searchAirports(string $search): array
+    {
+        try {
+            $response = Http::acceptJson()
+                ->connectTimeout(2)
+                ->timeout(5)
+                ->get(config('phpvms.api_url').'/v2/airports/search', [
+                    'text' => $search,
+                ]);
+        } catch (ConnectionException) {
+            return [];
+        }
+
+        if (!$response->successful()) {
+            return [];
+        }
+
+        return collect($response->json())
+            ->filter(fn (mixed $airport): bool => is_array($airport)
+                && filled($airport['icao'] ?? null)
+                && filled($airport['name'] ?? null))
+            ->map(fn (array $airport): array => [
+                'icao'      => strtoupper((string) $airport['icao']),
+                'iata'      => strtoupper((string) ($airport['iata'] ?? '')),
+                'name'      => (string) $airport['name'],
+                'location'  => (string) ($airport['city'] ?? ''),
+                'country'   => strtoupper((string) ($airport['country'] ?? '')),
+                'region'    => strtoupper((string) ($airport['region'] ?? '')),
+                'timezone'  => (string) ($airport['tz'] ?? ''),
+                'elevation' => (int) ($airport['alt'] ?? 0),
+                'lat'       => (float) ($airport['lat'] ?? 0),
+                'lon'       => (float) ($airport['lon'] ?? 0),
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function addAirportFromVacentral(string $icao): ?Airport
+    {
+        $icao = strtoupper($icao);
+        $airport = Airport::find($icao);
+
+        if ($airport !== null) {
+            return $airport;
+        }
+
+        $lookup = $this->lookupAirport($icao);
+
+        if ($lookup === []) {
+            return null;
+        }
+
+        $airport = new Airport($lookup);
+        $airport->save();
 
         return $airport;
     }
@@ -128,15 +209,7 @@ class AirportService extends Service
             return $airport;
         }
 
-        $lookup = $this->lookupAirport($icao);
-        if ($lookup === []) {
-            return null;
-        }
-
-        $airport = new Airport($lookup);
-        $airport->save();
-
-        return $airport;
+        return $this->addAirportFromVacentral($icao);
     }
 
     /**

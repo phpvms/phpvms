@@ -487,6 +487,13 @@ class PirepService extends Service
         $pirep->refresh();
         $this->snapshotScheduledArrival($pirep);
 
+        // Snapshot the flight/aircraft/simbrief here as well as in file():
+        // only the ACARS API calls file(), and the frontend files a PIREP with
+        // create() + submit(), so archiving in file() alone missed every manual
+        // PIREP. save() is an updateOrCreate on pirep_id, so covering both
+        // paths costs nothing when one PIREP happens to take both.
+        $this->pirepArchiveSvc->save($pirep);
+
         // Figure out what pirep state should be, if nothing provided yet.
         if ($pirep->state != PirepState::ACCEPTED && $pirep->state != PirepState::REJECTED) {
             $default_state = PirepState::PENDING;

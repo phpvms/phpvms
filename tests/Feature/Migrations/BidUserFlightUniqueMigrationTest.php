@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 beforeEach(function (): void {
     $this->migration = require database_path('migrations/2026_08_10_210000_add_unique_user_flight_to_bids.php');
     $this->migration->down();
+
     $this->user = User::factory()->create();
     $this->flight = Flight::factory()->create(['airline_id' => $this->user->airline_id]);
 });

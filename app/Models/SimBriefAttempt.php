@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Override;
@@ -18,13 +19,12 @@ use Override;
  * @property Carbon     $expires_at
  * @property-read Aircraft|null $aircraft
  */
+#[WithoutIncrementing]
 class SimBriefAttempt extends Model
 {
     public $table = 'simbrief_attempts';
 
     protected $primaryKey = 'static_id';
-
-    public $incrementing = false;
 
     protected $keyType = 'string';
 

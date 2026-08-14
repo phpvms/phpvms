@@ -11,16 +11,24 @@ use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
+use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
+use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Url;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Modules\AddonManager\Jobs\InstallAddonJob;
 use Modules\AddonManager\Services\CompatibilityEvaluator;
@@ -29,6 +37,8 @@ use Modules\AddonManager\Support\InstallProgress;
 use Override;
 use Throwable;
 use UnitEnum;
+
+use function Filament\Support\original_request;
 
 /**
  * Split-catalog addon manager: browse the registry, install/update from it, and
@@ -43,21 +53,40 @@ class Addons extends Page
 {
     use AuthorizesAccess;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::AddOns;
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Puzzle;
 
-    protected string $view = 'addon-manager::filament.pages.addons';
+    /** Rows per page. Ten fills the column without making it the whole screen. */
+    private const int PER_PAGE = 10;
 
-    public string $activeTab = 'browse';
+    /**
+     * The tab a bare /admin/addons lands on. It has to agree with the first
+     * workspace tab, or arriving at the page highlights a tab you did not pick.
+     * Installed leads because "why is that add-on not running" is the question
+     * people come here with; browsing the registry is a deliberate second step.
+     */
+    private const string DEFAULT_TAB = 'installed';
+
+    /**
+     * Which population is listed. Bound to `?tab=` so the topbar's workspace
+     * tabs can link straight to it; still a plain property, so `set()` works.
+     */
+    #[Url(as: 'tab')]
+    public string $activeTab = self::DEFAULT_TAB;
+
+    /** Enable state within the active tab: `all`, `enabled` or `disabled`. */
+    public string $state = 'all';
 
     public string $search = '';
 
     public ?string $category = null;
 
     public ?string $selectedId = null;
+
+    public int $page = 1;
 
     /**
      * Per-request memo for the assembled listing — allEntries() runs disk
@@ -84,12 +113,165 @@ class Addons extends Page
         return (string) Str::of(__('common.addons'))->plural();
     }
 
+    /**
+     * Three workspace tabs rather than one nav entry. The topbar navigator is
+     * built from the active group's NavigationItems, so this is what puts
+     * Installed / Updates / Registry up there instead of stacking a second tab
+     * row inside the page.
+     *
+     * Every badge here renders on EVERY admin page, so all three stay cheap: one
+     * count query, one cached-catalog read, and the existing cache-only update
+     * count. None of them may reach the network or scan the disk.
+     *
+     * @return array<int, NavigationItem>
+     */
+    #[Override]
+    public static function getNavigationItems(): array
+    {
+        $tabs = [
+            'installed' => [__('addon-manager::addons.installed_tab'), TablerIcon::Puzzle, fn (): ?string => self::badge(Addon::query()->count())],
+            'updates'   => [__('addon-manager::addons.updates'), TablerIcon::Download, fn (): ?string => self::badge(app(static::class)->updateCount())],
+            'browse'    => [__('addon-manager::addons.registry_tab'), TablerIcon::Search, fn (): ?string => self::badge(count(app(RegistryClient::class)->cachedCatalog()['entries']))],
+        ];
+
+        $sort = static::getNavigationSort() ?? 0;
+        $items = [];
+
+        foreach ($tabs as $tab => [$label, $icon, $badge]) {
+            $items[] = NavigationItem::make($label)
+                ->key(static::class.':'.$tab)
+                ->group(static::getNavigationGroup())
+                ->icon($icon)
+                ->badge($badge, color: $tab === 'updates' ? 'warning' : null)
+                ->sort($sort++)
+                ->isActiveWhen(fn (): bool => original_request()->routeIs(static::getRouteName())
+                    && original_request()->query('tab', self::DEFAULT_TAB) === $tab)
+                ->url(static::getUrl(['tab' => $tab]));
+        }
+
+        return $items;
+    }
+
+    /** A zero count is not news; leave the tab unbadged. */
+    private static function badge(int $count): ?string
+    {
+        return $count > 0 ? (string) $count : null;
+    }
+
     #[Override]
     public static function getNavigationBadge(): ?string
     {
         $count = app(static::class)->updateCount();
 
         return $count > 0 ? (string) $count : null;
+    }
+
+    // ── Page chrome ────────────────────────────────────────────────────────
+
+    #[Override]
+    public function getHeading(): string
+    {
+        return __('addon-manager::addons.heading');
+    }
+
+    /**
+     * Three counts instead of a sentence, in the band header's metrics row —
+     * the same treatment the PIREP list uses.
+     */
+    #[Override]
+    public function getSubheading(): string|Htmlable|null
+    {
+        $rows = $this->allEntries();
+
+        return view('addon-manager::filament.addons.head-metrics', [
+            'listed'   => $this->tabCounts()[$this->activeTab],
+            'updates'  => $rows->where('update_available', true)->count(),
+            'disabled' => $rows->where('installed', true)->where('enabled', false)->count(),
+        ]);
+    }
+
+    /**
+     * @return array<int, Action>
+     */
+    #[Override]
+    protected function getHeaderActions(): array
+    {
+        return [
+            $this->uploadZipAction(),
+            Action::make('checkUpdates')
+                ->label(__('addon-manager::addons.check_updates'))
+                ->icon(TablerIcon::Refresh)
+                ->color('gray')
+                ->action(fn () => $this->refreshCatalog()),
+        ];
+    }
+
+    /**
+     * List left, detail right. Both halves are Sections so they inherit the
+     * panel's card, header band and density; the split is the schema Grid's own
+     * column spans rather than a hand-rolled two-column CSS grid.
+     */
+    #[Override]
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            View::make('addon-manager::filament.addons.notice')
+                ->visible(fn (): bool => $this->catalogState()['stale'] || filled($this->catalogState()['error'])),
+
+            // One column of 430px and one of whatever is left is not a ratio the
+            // 12-column grid can express, so `.catalog` supplies the template and
+            // the Grid just holds the two cards.
+            Grid::make()
+                ->columns(1)
+                ->extraAttributes(['class' => 'catalog'])
+                ->schema([
+                    Section::make()
+                        ->schema([
+                            View::make('addon-manager::filament.addons.toolbar'),
+                            View::make('addon-manager::filament.addons.list'),
+                        ]),
+
+                    Section::make()
+                        ->extraAttributes(['class' => 'catalog__detail'])
+                        ->schema([
+                            View::make('addon-manager::filament.addons.empty')
+                                ->visible(fn (): bool => $this->selected() === null),
+
+                            View::make('addon-manager::filament.addons.hero')
+                                ->visible(fn (): bool => $this->selected() !== null),
+
+                            View::make('addon-manager::filament.addons.register')
+                                ->visible(fn (): bool => $this->selected() !== null),
+
+                            // Nested Section: renders as a sequent head band
+                            // inside the same card, not a second card.
+                            Section::make(__('addon-manager::addons.releases'))
+                                ->icon(TablerIcon::History)
+                                ->collapsible()
+                                ->persistCollapsed()
+                                ->visible(fn (): bool => $this->releases() !== [])
+                                ->schema([
+                                    View::make('addon-manager::filament.addons.releases'),
+                                ]),
+
+                            View::make('addon-manager::filament.addons.verify')
+                                ->visible(fn (): bool => $this->selected() !== null),
+                        ]),
+                ]),
+        ]);
+    }
+
+    /**
+     * Release history for the selection, newest first. Best-effort: the registry
+     * call behind it is allowed to fail, and an empty list hides the section.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function releases(): array
+    {
+        $releases = $this->selected()['release']['releases'] ?? null;
+
+        return is_array($releases) ? $releases : [];
     }
 
     // ── Data assembly ──────────────────────────────────────────────────────
@@ -185,11 +367,22 @@ class Addons extends Page
             'category'    => (string) ($entry['category'] ?? ''),
             'license'     => (string) ($entry['license'] ?? ''),
             'publisher'   => (string) ($entry['publisher'] ?? ''),
+            // Published by the phpVMS project rather than a third party. Sorts
+            // first and earns a star; never affects whether it can be installed.
+            'official' => (bool) ($entry['official'] ?? false),
             // Registry-supplied URLs are rendered as hrefs; drop any non-http(s)
             // scheme (e.g. javascript:) so a hostile registry can't inject one.
-            'repository_url'      => $this->safeUrl((string) ($entry['repository_url'] ?? '')),
+            'repository_url' => $this->safeUrl((string) ($entry['repository_url'] ?? '')),
+            // Where the add-on lives for a human: its own site if it has one,
+            // otherwise the repository. Both are optional and the row is hidden
+            // when neither is supplied.
+            'product_url' => $this->safeUrl((string) ($entry['product_url'] ?? '')),
+            // Not yet emitted by registry.phpvms.net — read defensively so the
+            // row appears the moment the registry starts sending it.
+            'changelog_url'       => $this->safeUrl((string) ($entry['changelog_url'] ?? '')),
             'icon'                => $this->safeUrl((string) ($entry['icon'] ?? '')) ?: null,
             'monogram'            => $this->monogram((string) $entry['name']),
+            'tint'                => $this->tint((string) ($entry['category'] ?? ''), (string) $entry['registry_id']),
             'installs'            => (int) ($entry['installs_total'] ?? 0),
             'min_php'             => (string) ($entry['min_php'] ?? ''),
             'min_phpvms'          => (string) ($entry['min_phpvms'] ?? ''),
@@ -203,6 +396,37 @@ class Addons extends Page
             'compatible'          => $compatible,
             'incompatible_reason' => $incompatibleReason,
         ];
+    }
+
+    /**
+     * The monogram plate's colour, as one of the theme's shared category tints.
+     *
+     * Category first, so add-ons that do the same kind of job look related. An
+     * add-on with no category — every locally installed one, since the category
+     * only comes from the registry — falls back to a hue derived from its id, so
+     * it still gets a colour and the same one everywhere it appears.
+     *
+     * This is the one place colour touches a data value; it marks what an add-on
+     * IS, which never changes, not how it is doing. State stays with the chips.
+     */
+    private function tint(string $category, string $registryId): string
+    {
+        $byCategory = [
+            'operations'   => 'blue',
+            'dispatch'     => 'blue',
+            'acars'        => 'blue',
+            'pilots'       => 'teal',
+            'awards'       => 'teal',
+            'finance'      => 'amber',
+            'integration'  => 'amber',
+            'integrations' => 'amber',
+            'system'       => 'violet',
+            'reporting'    => 'rose',
+        ];
+
+        $hues = ['blue', 'teal', 'violet', 'rose', 'amber'];
+
+        return $byCategory[Str::lower($category)] ?? $hues[crc32($registryId) % count($hues)];
     }
 
     /**
@@ -221,11 +445,19 @@ class Addons extends Page
             default     => $rows->where('in_catalog', true),
         };
 
+        $rows = match ($this->state) {
+            'enabled'  => $rows->where('installed', true)->where('enabled', true),
+            'disabled' => $rows->where('installed', true)->where('enabled', false),
+            default    => $rows,
+        };
+
         if (filled($this->category)) {
             $rows = $rows->where('category', $this->category);
         }
 
-        if (filled($this->search)) {
+        $searching = filled($this->search);
+
+        if ($searching) {
             $needle = Str::lower($this->search);
             $rows = $rows->filter(fn (array $row): bool => str_contains(Str::lower($row['name']), $needle)
                 || str_contains(Str::lower($row['description']), $needle)
@@ -235,9 +467,31 @@ class Addons extends Page
         return $rows
             ->sortBy([
                 fn (array $a, array $b): int => ($a['compatible'] ? 0 : 1) <=> ($b['compatible'] ? 0 : 1),
+                // Official add-ons lead the shelf. Not while searching: someone
+                // who typed a name wants the best match first, and demoting a
+                // community add-on that matched better would be a lookup bug.
+                fn (array $a, array $b): int => $searching
+                    ? 0
+                    : (($a['official'] ? 0 : 1) <=> ($b['official'] ? 0 : 1)),
                 fn (array $a, array $b): int => strcasecmp((string) $a['name'], (string) $b['name']),
             ])
             ->values();
+    }
+
+    /**
+     * Rows on the current page, plus what the footer needs to describe them.
+     * Named `paginator` because `$page` is already the page-number property.
+     */
+    public function paginator(): LengthAwarePaginator
+    {
+        $rows = $this->listing();
+
+        return new LengthAwarePaginator(
+            $rows->forPage($this->page, self::PER_PAGE)->values(),
+            $rows->count(),
+            self::PER_PAGE,
+            $this->page,
+        );
     }
 
     /**
@@ -282,6 +536,38 @@ class Addons extends Page
             ->sort()
             ->values()
             ->all();
+    }
+
+    /**
+     * Any narrowing of the list invalidates the page number — page 3 of a
+     * five-row result is an empty column with no way back.
+     */
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['activeTab', 'state', 'search', 'category'], true)) {
+            $this->page = 1;
+        }
+    }
+
+    /**
+     * Counts for the enable-state tabs, scoped to the active tab so the numbers
+     * describe the list actually on screen.
+     *
+     * @return array{all: int, enabled: int, disabled: int}
+     */
+    public function stateCounts(): array
+    {
+        $rows = match ($this->activeTab) {
+            'updates'   => $this->allEntries()->where('update_available', true),
+            'installed' => $this->allEntries()->where('installed', true),
+            default     => $this->allEntries()->where('in_catalog', true),
+        };
+
+        return [
+            'all'      => $rows->count(),
+            'enabled'  => $rows->where('installed', true)->where('enabled', true)->count(),
+            'disabled' => $rows->where('installed', true)->where('enabled', false)->count(),
+        ];
     }
 
     /**
@@ -530,7 +816,7 @@ class Addons extends Page
     {
         return Action::make('delete')
             ->label(__('filament-actions::delete.single.label'))
-            ->icon(Heroicon::OutlinedTrash)
+            ->icon(TablerIcon::Trash)
             ->color('danger')
             ->requiresConfirmation()
             ->schema([

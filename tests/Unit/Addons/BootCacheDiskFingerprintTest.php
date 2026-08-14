@@ -32,14 +32,17 @@ function placeAddon(string $base, string $name): void
 {
     $dir = $base.'/'.strtolower($name);
     File::ensureDirectoryExists($dir);
-    File::put($dir.'/module.json', json_encode(['name' => $name, 'providers' => []]));
+    $registryId = 'acme/'.strtolower($name);
+
+    File::put($dir.'/module.json', json_encode(['name' => $name, 'registry_id' => $registryId, 'providers' => []]));
     File::put($dir.'/composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\'.$name.'\\' => 'app/']]]));
 
     Addon::factory()->create([
-        'name'      => $name,
-        'namespace' => 'Modules\\'.$name,
-        'path'      => $dir,
-        'enabled'   => true,
+        'name'        => $name,
+        'registry_id' => $registryId,
+        'namespace'   => 'Modules\\'.$name,
+        'path'        => $dir,
+        'enabled'     => true,
     ]);
 }
 
@@ -56,7 +59,7 @@ it('rebuilds when a module.json is edited but the DB is untouched', function ():
     // Force the mtime forward: some filesystems have 1-second mtime
     // resolution, and this edit can otherwise land in the same second as the
     // original write above.
-    File::put($manifestPath, json_encode(['name' => 'AlphaRenamed', 'providers' => []]));
+    File::put($manifestPath, json_encode(['name' => 'AlphaRenamed', 'registry_id' => 'acme/alpha', 'providers' => []]));
     touch($manifestPath, time() + 1);
 
     expect($svc->primeIfNeeded())->toBeTrue();

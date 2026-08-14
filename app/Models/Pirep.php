@@ -425,7 +425,7 @@ class Pirep extends Model
      */
     public function route(): Attribute
     {
-        return Attribute::make(set: fn ($route) => strtoupper(trim((string) $route)));
+        return Attribute::make(set: fn ($route): string => strtoupper(trim((string) $route)));
     }
 
     /**

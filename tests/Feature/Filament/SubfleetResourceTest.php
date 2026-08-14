@@ -4,12 +4,49 @@ declare(strict_types=1);
 
 use App\Enums\FlightType;
 use App\Filament\Resources\Subfleets\Pages\EditSubfleet;
+use App\Filament\Resources\Subfleets\Pages\ListSubfleets;
+use App\Filament\Resources\Subfleets\SubfleetResource;
+use App\Models\Airline;
+use App\Models\Airport;
 use App\Models\SimBriefAirframe;
 use App\Models\Subfleet;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\CreateAction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+
+it('creates a subfleet from the list drawer and opens its edit page', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+    $airline = Airline::factory()->create();
+    $airport = Airport::factory()->create();
+
+    $component = Livewire::test(ListSubfleets::class)
+        ->assertActionExists(
+            'create',
+            fn (CreateAction $action): bool => $action->isModalSlideOver()
+                && ($action->hasModal() === true)
+                && ($action->getUrl() === null),
+        );
+
+    $component->callAction('create', [
+        'airline_id'  => $airline->id,
+        'type'        => 'B738',
+        'name'        => 'Boeing 737-800',
+        'hub_id'      => $airport->id,
+        'route_types' => [FlightType::SCHED_PAX->value],
+    ])->assertHasNoActionErrors();
+
+    $subfleet = Subfleet::query()->where('type', 'B738')->sole();
+
+    expect($subfleet->airline_id)->toBe($airline->id)
+        ->and($subfleet->hub_id)->toBe($airport->id)
+        ->and($subfleet->route_types?->contains(FlightType::SCHED_PAX))->toBeTrue();
+
+    $component->assertRedirect(SubfleetResource::getUrl('edit', ['record' => $subfleet]));
+});
 
 it('renders the operational capability section with new fields', function (): void {
     $this->seed(RolesPermissionsSeeder::class);

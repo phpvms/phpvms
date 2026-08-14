@@ -14,9 +14,9 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\PermissionRegistry;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -25,9 +25,9 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ShieldCheck;
 
-    protected static string|UnitEnum|null $navigationGroup = EnumsNavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = EnumsNavigationGroup::Pilots;
 
     protected static ?int $navigationSort = 4;
 

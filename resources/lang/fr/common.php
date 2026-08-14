@@ -29,7 +29,7 @@ return [
     'aircraft'        => 'Avion',
     'airline'         => 'Compagnie',
     'airport'         => 'Aéroport',
-    'subfleet'        => 'Sous-Flotte',
+    'subfleet'        => 'Sous-Flotte|Sous-Flottes',
     'distance'        => 'Distance',
     'fuel'            => 'Carburant',
     'metar'           => 'METAR',

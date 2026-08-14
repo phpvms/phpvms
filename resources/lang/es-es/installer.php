@@ -44,7 +44,5 @@ return [
     'lets_rebuild_cache'                => "Let's rebuild the cache.",
     'update_completed'                  => "Update completed successfully. You'll be redirected in a few seconds",
     'update_phpvms'                     => 'Update phpvms',
-    'eyebrow'                           => '',
     'hero_title'                        => 'Bienvenido. Pongámonos a volar',
-    'hero_subtitle'                     => '',
 ];

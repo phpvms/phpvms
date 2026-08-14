@@ -1,4 +1,4 @@
-<x-filament-widgets::widget class="fi-widget">
+<x-filament-widgets::widget class="fi-widget dashboard-chart-widget">
     <x-filament::section :heading="$heading">
         <x-slot name="afterHeader">
             <x-filament::modal
@@ -8,7 +8,7 @@
             >
                 <x-slot name="trigger">
                     <x-filament::icon-button
-                        icon="heroicon-o-arrows-pointing-out"
+                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ArrowsMaximize"
                         :label="__('filament.dashboard.expand_chart')"
                         color="gray"
                         size="sm"

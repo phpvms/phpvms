@@ -62,7 +62,14 @@ class ManifestParser
         // --- phpVMS keys (all optional) ---
         $type = $data['type'] ?? 'module'; // D-02: default 'module'
         $compat = $data['compat'] ?? null; // D-05: stored only
-        $registryId = $this->resolveRegistryId($data['registry_id'] ?? null); // D-03
+        // D-03: registry_id is the addon's identity — the addons table requires
+        // it and addon_settings are keyed on it. A manifest without one is not
+        // installable, so it is skipped here rather than half-loaded.
+        $registryId = $this->resolveRegistryId($data['registry_id'] ?? null);
+
+        if ($registryId === null) {
+            return null;
+        }
 
         // --- Derived: namespace + version (D-07) ---
         $namespace = $this->resolveNamespace($addonPath, $composerData);

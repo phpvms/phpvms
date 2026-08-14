@@ -22,7 +22,7 @@ function weatherProvider(?string $metar = null, ?string $taf = null, ?Throwable 
 
         public function metar(string $icao): string
         {
-            if ($this->exception !== null) {
+            if ($this->exception instanceof Throwable) {
                 throw $this->exception;
             }
 

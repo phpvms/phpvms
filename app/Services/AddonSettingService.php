@@ -16,11 +16,10 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Read/write access to per-addon settings stored in `addon_settings`.
  *
- * An addon is addressed by a handle that resolves as either its manifest
- * `alias` or `registry_id` (alias is universal; bundled addons have a null
- * registry_id). Reads are typed via {@see CastsSettingValue} and cached per
- * resolved addon + key, so the helper observes the same value regardless of
- * which handle was used.
+ * An addon is addressed by a handle that resolves as its manifest `alias`,
+ * its `registry_id`, or its name. Reads are typed via {@see CastsSettingValue}
+ * and cached per resolved registry_id + key, so the helper observes the same
+ * value regardless of which handle was used.
  *
  * Stateless and Octane-safe: no mutable instance state; all caching lives in
  * the application cache.
@@ -38,9 +37,9 @@ class AddonSettingService extends Service
      */
     public function retrieve(string $handle, string $key): mixed
     {
-        $addonId = $this->resolveAddonId($handle);
+        $registryId = $this->resolveRegistryId($handle);
 
-        if ($addonId === null) {
+        if ($registryId === null) {
             throw new SettingNotFound($handle.' addon not found');
         }
 
@@ -50,13 +49,13 @@ class AddonSettingService extends Service
             $cache = config('cache.keys.ADDON_SETTINGS');
 
             return Cache::remember(
-                $cache['key'].$addonId.'.'.$formattedKey,
+                $cache['key'].$registryId.'.'.$formattedKey,
                 $cache['time'],
-                fn (): mixed => $this->read($addonId, $formattedKey),
+                fn (): mixed => $this->read($registryId, $formattedKey),
             );
         }
 
-        return $this->read($addonId, $formattedKey);
+        return $this->read($registryId, $formattedKey);
     }
 
     /**
@@ -66,25 +65,25 @@ class AddonSettingService extends Service
      */
     public function store(string $handle, string $key, mixed $value): mixed
     {
-        $addonId = $this->resolveAddonId($handle);
+        $registryId = $this->resolveRegistryId($handle);
 
-        if ($addonId === null) {
+        if ($registryId === null) {
             return null;
         }
 
-        return $this->storeById($addonId, $key, $value);
+        return $this->storeFor($registryId, $key, $value);
     }
 
     /**
-     * Persist a value for a known addon id. Returns the value on success, or
-     * null when the key does not exist. Invalidates the cached value.
+     * Persist a value for a known addon registry_id. Returns the value on
+     * success, or null when the key does not exist. Invalidates the cache.
      */
-    public function storeById(int $addonId, string $key, mixed $value): mixed
+    public function storeFor(string $registryId, string $key, mixed $value): mixed
     {
         $formattedKey = AddonSetting::formatKey($key);
 
         $setting = AddonSetting::query()
-            ->where('addon_id', $addonId)
+            ->where('registry_id', $registryId)
             ->where('key', $formattedKey)
             ->first(['id', 'value']);
 
@@ -100,7 +99,7 @@ class AddonSettingService extends Service
             $setting->value = (string) $value;
             $setting->save();
 
-            $this->forgetCache($addonId, $formattedKey);
+            $this->forgetCache($registryId, $formattedKey);
         }
 
         return $value;
@@ -119,10 +118,10 @@ class AddonSettingService extends Service
      *
      * @return Collection<int, AddonSetting>
      */
-    public function all(int $addonId): Collection
+    public function all(string $registryId): Collection
     {
         return AddonSetting::query()
-            ->where('addon_id', $addonId)
+            ->where('registry_id', $registryId)
             ->orderBy('order')
             ->get();
     }
@@ -136,29 +135,28 @@ class AddonSettingService extends Service
             return null;
         }
 
-        $addonId = $this->resolveAddonId($handle);
+        $registryId = $this->resolveRegistryId($handle);
 
-        return $addonId === null ? null : Addon::query()->find($addonId);
+        return $registryId === null ? null : Addon::query()->where('registry_id', $registryId)->first();
     }
 
     /**
-     * Resolve a handle to an addon id.
+     * Resolve a handle (registry_id, name or manifest alias) to a registry_id.
      *
-     * Tries the addons table first (registry_id, then name), then falls back to
-     * the boot cache for the manifest `alias` — which is not stored on the
-     * addons table — mapping the matched entry back to its addon row.
+     * The addons table carries registry_id and name; `alias` lives only in the
+     * manifest, so an alias handle is matched against the boot cache.
      */
-    public function resolveAddonId(string $handle): ?int
+    public function resolveRegistryId(string $handle): ?string
     {
         if ($handle === '') {
             return null;
         }
 
-        $id = Addon::query()->where('registry_id', $handle)->value('id')
-            ?? Addon::query()->where('name', $handle)->value('id');
+        $registryId = Addon::query()->where('registry_id', $handle)->value('registry_id')
+            ?? Addon::query()->where('name', $handle)->value('registry_id');
 
-        if ($id !== null) {
-            return (int) $id;
+        if ($registryId !== null) {
+            return (string) $registryId;
         }
 
         $entry = $this->bootCache->all()->first(
@@ -167,27 +165,7 @@ class AddonSettingService extends Service
                 || $e->name === $handle
         );
 
-        if ($entry === null) {
-            return null;
-        }
-
-        // Same fallback as AddonSettingSyncService::resolveAddonId(): a manifest
-        // can declare a registry_id that the addon's row does not carry yet —
-        // create_addons_table seeds the column null and only the
-        // backfill_addon_registry_ids data migration fills it. Without falling
-        // through to the unique namespace, every addon_setting() read for that
-        // addon silently returns its default.
-        if ($entry->registryId !== null) {
-            $resolved = Addon::query()->where('registry_id', $entry->registryId)->value('id');
-
-            if ($resolved !== null) {
-                return (int) $resolved;
-            }
-        }
-
-        $resolved = Addon::query()->where('namespace', $entry->namespace)->value('id');
-
-        return $resolved === null ? null : (int) $resolved;
+        return $entry?->registryId;
     }
 
     /**
@@ -195,10 +173,10 @@ class AddonSettingService extends Service
      *
      * @throws SettingNotFound when the key has no row for the addon.
      */
-    private function read(int $addonId, string $formattedKey): mixed
+    private function read(string $registryId, string $formattedKey): mixed
     {
         $setting = AddonSetting::query()
-            ->where('addon_id', $addonId)
+            ->where('registry_id', $registryId)
             ->where('key', $formattedKey)
             ->first(['type', 'value']);
 
@@ -209,12 +187,12 @@ class AddonSettingService extends Service
         return $this->castSettingValue($setting->type, $setting->value);
     }
 
-    private function forgetCache(int $addonId, string $formattedKey): void
+    private function forgetCache(string $registryId, string $formattedKey): void
     {
         $cache = config('cache.keys.ADDON_SETTINGS');
 
         if (is_array($cache) && isset($cache['key'])) {
-            Cache::forget($cache['key'].$addonId.'.'.$formattedKey);
+            Cache::forget($cache['key'].$registryId.'.'.$formattedKey);
         }
     }
 }

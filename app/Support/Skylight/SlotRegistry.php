@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Skylight;
 
+use InvalidArgumentException;
+
 /**
  * Server-side registry of SLOT entries — components injected into named
  * extension points ("slots") on first-party SPA pages (e.g. the flight-detail
@@ -46,14 +48,14 @@ final class SlotRegistry
     public function register(array $entry): self
     {
         if (empty($entry['slot']) || !is_string($entry['slot'])) {
-            throw new \InvalidArgumentException('Skylight slot entry requires a string "slot".');
+            throw new InvalidArgumentException('Skylight slot entry requires a string "slot".');
         }
 
         // A `module` entry is imported at runtime under its `component` name (the
         // resolver key). Without a string component the SPA would key the resolver
         // with `undefined` and the slot could never resolve — fail loudly here.
         if (!empty($entry['module']) && (empty($entry['component']) || !is_string($entry['component']))) {
-            throw new \InvalidArgumentException('A Skylight slot entry with a "module" requires a string "component" (the resolver key it is imported under).');
+            throw new InvalidArgumentException('A Skylight slot entry with a "module" requires a string "component" (the resolver key it is imported under).');
         }
 
         $entry['order'] ??= 100;

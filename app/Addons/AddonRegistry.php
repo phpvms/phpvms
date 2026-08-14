@@ -16,6 +16,7 @@ use App\Events\AddonUpdated;
 use App\Exceptions\AddonInstallException;
 use App\Exceptions\AddonNotFoundException;
 use App\Models\Addon;
+use App\Models\AddonSetting;
 use App\Services\Installer\MigrationService;
 use App\Services\Installer\SeederService;
 use Closure;
@@ -101,8 +102,12 @@ class AddonRegistry
      * Does NOT remove files on disk. No-op when the addon is unknown.
      *
      * When $removeTables is true, the addon's schema migrations are rolled back
-     * (dropping its tables) and its seed markers are cleared before the row is
-     * removed, so a later reinstall starts from a clean schema and re-seeds.
+     * (dropping its tables), its seed markers are cleared, and its saved
+     * settings are deleted, so a later reinstall starts clean and re-seeds.
+     *
+     * When it is false the settings rows are deliberately left behind: they are
+     * keyed on registry_id, not the addon row id, so reinstalling the addon
+     * finds the operator's values again instead of resetting them to defaults.
      */
     public function delete(string $name, bool $removeTables = false): void
     {
@@ -119,6 +124,7 @@ class AddonRegistry
         if ($removeTables) {
             $this->removeAddonTables($addon);
             app(SeederService::class)->clearAddonSeedMarkers($addon);
+            AddonSetting::query()->where('registry_id', $addon->registry_id)->delete();
         }
 
         $this->assetLinker->unlink($addon->getName());
@@ -361,23 +367,24 @@ class AddonRegistry
     /**
      * Derive a filesystem-safe directory name from an addon manifest.
      *
-     * When a registry_id is present (managed addons), converts it to a
-     * lowercase slug via keyed_str(): slashes become hyphens, non-alphanumeric
-     * chars are stripped. A registry_id of "phpvms/vmsacars" produces "phpvms-vmsacars".
+     * Converts the registry_id to a lowercase slug via keyed_str(): slashes
+     * become hyphens, non-alphanumeric chars are stripped. A registry_id of
+     * "phpvms/vmsacars" produces "phpvms-vmsacars".
      *
-     * Falls back to keyed_str() on the manifest name for unmanaged addons,
-     * ensuring the same sanitisation guarantee in both paths.
+     * Falls back to keyed_str() on the manifest name for the edge case of a
+     * registry_id that sanitises to nothing, keeping the same guarantee.
      *
      * @throws AddonInstallException when no safe characters remain after sanitisation
      */
     private function safeName(AddonManifest $manifest): string
     {
-        if ($manifest->registryId !== null) {
-            $safe = keyed_str(strtolower($manifest->registryId));
+        // registryId is a non-nullable string, so the old `!== null` guard here
+        // could never fail; the empty check below is the one that matters, and
+        // an id that sanitises away still falls through to the name.
+        $safe = keyed_str(strtolower($manifest->registryId));
 
-            if ($safe !== '') {
-                return $safe;
-            }
+        if ($safe !== '') {
+            return $safe;
         }
 
         $safe = keyed_str(strtolower($manifest->name));

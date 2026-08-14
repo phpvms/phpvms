@@ -1,0 +1,22 @@
+# Read by oxfmt (`bun run fmt`). It honours .gitignore and .prettierignore in
+# the project root, but not .git/info/exclude -- which is where the agent
+# tooling directories below are ignored, so without this file oxfmt walks
+# thousands of vendored plugin files that are not part of this project.
+.agents/
+.bg-shell/
+.claude/
+.codemap/
+.gsd/
+.impeccable/
+.lean-ctx/
+.mcp.json
+.planning/
+CLAUDE.md
+compose.full.yml
+docs/superpowers/
+opencode.jsonc
+openspec/
+
+# Hand-authored design mockups. These are drafts kept for reference rather
+# than source, and reformatting them only churns the diff.
+sketches/

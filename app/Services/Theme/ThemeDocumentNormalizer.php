@@ -21,9 +21,9 @@ final class ThemeDocumentNormalizer
     {
         try {
             $input = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
+        } catch (JsonException $jsonException) {
             throw ValidationException::withMessages([
-                '$' => ['Invalid JSON: '.$exception->getMessage()],
+                '$' => ['Invalid JSON: '.$jsonException->getMessage()],
             ]);
         }
 

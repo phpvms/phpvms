@@ -6,6 +6,7 @@ use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\File;
 use App\Services\FileService;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -97,14 +98,16 @@ class AircraftTable
                     ->preload(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make()->before(function (Aircraft $record): void {
-                    $record->files()->each(function (File $file): void {
-                        app(FileService::class)->removeFile($file);
-                    });
-                }),
-                RestoreAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                    ForceDeleteAction::make()->before(function (Aircraft $record): void {
+                        $record->files()->each(function (File $file): void {
+                            app(FileService::class)->removeFile($file);
+                        });
+                    }),
+                    RestoreAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -82,7 +82,7 @@ it('write() then read() round-trips AddonBootCache objects', function (): void {
     $addon2 = makeAddonBootCache([
         'name'        => 'Awards',
         'namespace'   => 'Modules\\Awards',
-        'registry_id' => null,
+        'registry_id' => 'acme/awards',
         'version'     => null,
         'enabled'     => true,
     ]);

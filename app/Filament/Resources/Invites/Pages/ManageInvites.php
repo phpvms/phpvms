@@ -5,9 +5,9 @@ namespace App\Filament\Resources\Invites\Pages;
 use App\Filament\Resources\Invites\InviteResource;
 use App\Models\Invite;
 use App\Notifications\Messages\InviteLink;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Override;
@@ -21,7 +21,7 @@ class ManageInvites extends ManageRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle)
+                ->icon(TablerIcon::CirclePlus)
                 ->mutateDataUsing(function (array $data): array {
                     if (!is_null($data['email'])) {
                         $data['usage_limit'] = 1;

@@ -244,13 +244,15 @@ class AddonDiscoveryService
         /** @var AddonManifest $m */
         foreach ($manifests as $m) {
             // If the addon is already in the DB, don't do anything with it.
-            // Guard registry_id (nullable for unmanaged addons) so two
-            // null-registry rows don't collide via null === null.
-            $installed = $installedAddons->first(fn (Addon $addon): bool => ($m->registryId !== null && $addon->registry_id === $m->registryId)
-                || ($addon->name === $m->name)
-                || ($addon->namespace === $m->namespace));
+            // registry_id is the only identity: name and namespace both change
+            // across versions, and matching on them let a renamed addon look
+            // installed while its row still pointed at the old one.
+            $installed = $installedAddons->first(fn (Addon $addon): bool => $addon->registry_id === $m->registryId
+                || $this->isLegacyRowFor($addon, $m));
 
             if ($installed) {
+                $this->healLegacyIdentity($installed, $m);
+
                 continue;
             }
 
@@ -258,6 +260,35 @@ class AddonDiscoveryService
         }
 
         return $newAddons;
+    }
+
+    /**
+     * Whether this row predates the registry_id requirement and belongs to
+     * this manifest.
+     *
+     * Only reachable when the code is ahead of the schema — a deploy that
+     * ships this file before `migrate` runs. Without it every such row looks
+     * like a new addon, upsert() inserts a second row with the same namespace,
+     * and the unique index on `namespace` throws inside AddonServiceProvider::
+     * boot() where nothing catches it: every request 500s until migrations run.
+     */
+    private function isLegacyRowFor(Addon $addon, AddonManifest $m): bool
+    {
+        return blank($addon->registry_id) && $addon->namespace === $m->namespace;
+    }
+
+    /**
+     * Stamp the manifest's registry_id onto a row that has none, so the match
+     * above is needed exactly once per addon.
+     */
+    private function healLegacyIdentity(Addon $addon, AddonManifest $m): void
+    {
+        if (!blank($addon->registry_id)) {
+            return;
+        }
+
+        $addon->registry_id = $m->registryId;
+        $addon->save();
     }
 
     /**
@@ -279,9 +310,8 @@ class AddonDiscoveryService
         $cacheRows = [];
 
         foreach ($manifests as $m) {
-            $addon = $installed->first(fn (Addon $a): bool => ($m->registryId !== null && $a->registry_id === $m->registryId)
-                || $a->name === $m->name
-                || $a->namespace === $m->namespace);
+            $addon = $installed->first(fn (Addon $a): bool => $a->registry_id === $m->registryId
+                || $this->isLegacyRowFor($a, $m));
 
             if ($addon !== null) {
                 $cacheRows[] = $this->buildBootCacheRow($m, true);
@@ -384,9 +414,7 @@ class AddonDiscoveryService
     /**
      * Upsert one addon row into the DB, preserving the operator's enabled flag (D-12).
      *
-     * Match key (stable identity):
-     *  - registry_id when managed (non-null registryId).
-     *  - namespace when bundled (null registryId).
+     * Match key: registry_id, the addon's only stable identity.
      *
      * Resolves the existing row by its match key before writing, so re-priming
      * (or a retried/interrupted scan) updates in place instead of inserting a
@@ -395,11 +423,7 @@ class AddonDiscoveryService
      */
     private function upsert(AddonManifest $m): Addon
     {
-        $match = $m->registryId !== null
-            ? ['registry_id' => $m->registryId]
-            : ['namespace' => $m->namespace];
-
-        $addon = Addon::firstOrNew($match);
+        $addon = Addon::firstOrNew(['registry_id' => $m->registryId]);
 
         $addon->name = $m->name;
         $addon->namespace = $m->namespace;

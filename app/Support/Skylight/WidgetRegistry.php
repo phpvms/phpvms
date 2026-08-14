@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Skylight;
 
+use InvalidArgumentException;
+
 /**
  * Server-side registry of dashboard widgets contributed to the skylight SPA.
  *
@@ -72,7 +74,7 @@ final class WidgetRegistry
     public function register(array $definition): self
     {
         if (empty($definition['id']) || !is_string($definition['id'])) {
-            throw new \InvalidArgumentException('Skylight widget definition requires a string "id".');
+            throw new InvalidArgumentException('Skylight widget definition requires a string "id".');
         }
 
         $definition['kind'] ??= 'vue';

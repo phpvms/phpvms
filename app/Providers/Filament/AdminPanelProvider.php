@@ -5,45 +5,25 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
-use App\Filament\Plugins\ClearCachesPlugin;
-use App\Filament\Plugins\LanguageSwitcherPlugin;
-use App\Filament\Plugins\PanelSwitcherPlugin;
-use App\Filament\Plugins\SidebarCollapseTogglePlugin;
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
-use Filament\PanelProvider;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Support\Icons\Heroicon;
-use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
-class AdminPanelProvider extends PanelProvider
+class AdminPanelProvider extends BasePanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $panel = $panel
+        $panel = $this->applyConsoleChrome($panel)
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
             ->colors([
                 'primary' => Color::generatePalette('#067ec1'),
             ])
@@ -55,78 +35,63 @@ class AdminPanelProvider extends PanelProvider
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                AccountWidget::class,
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                PreventRequestForgery::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ])
-            ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('14.5rem')
-            ->maxContentWidth(Width::Full)
+            // Icons turn the collapsed desktop sidebar into a module rail:
+            // Filament renders the group icon instead of its items, and opens
+            // the items in a dropdown beside it. That is the console's rail
+            // plus its flyout menu, with no custom markup.
+            // The module rail, in order. Dashboard stays ungrouped so it sits
+            // on the rail as its own item rather than inside a module.
+            // Keyed by enum case name: NavigationManager matches an item's group
+            // against the registered array key first, and only falls back to
+            // comparing translated labels. Bare (numerically-indexed) entries hit
+            // that fallback and stop matching under any locale whose label differs
+            // from the case name, which silently drops the icon.
             ->navigationGroups([
-                EnumsNavigationGroup::Operations->name,
-                EnumsNavigationGroup::Config->name,
-                EnumsNavigationGroup::Developers->name,
+                EnumsNavigationGroup::Operations->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
+                    ->icon(TablerIcon::Plane),
+                EnumsNavigationGroup::Planning->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
+                    ->icon(TablerIcon::CalendarTime),
+                EnumsNavigationGroup::Fleet->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
+                    ->icon(TablerIcon::Box),
+                EnumsNavigationGroup::Pilots->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
+                    ->icon(TablerIcon::Users),
+                EnumsNavigationGroup::Reports->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Reports->getLabel())
+                    ->icon(TablerIcon::Report),
+                EnumsNavigationGroup::Finance->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
+                    ->icon(TablerIcon::Cash),
+                EnumsNavigationGroup::Config->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
+                    ->icon(TablerIcon::Settings),
+                EnumsNavigationGroup::AddOns->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::AddOns->getLabel())
+                    ->icon(TablerIcon::Puzzle),
+                EnumsNavigationGroup::System->name => NavigationGroup::make()
+                    ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
+                    ->icon(TablerIcon::Terminal),
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
 
                 NavigationItem::make()
-                    ->label(fn (): string => __('common.go_back_to', ['name' => config('app.name')]))
-                    ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->url('/'),
-
-                NavigationItem::make()
                     ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
-                    ->group(EnumsNavigationGroup::Developers)
+                    ->group(EnumsNavigationGroup::System)
                     ->sort(3)
-                    ->icon(Heroicon::OutlinedDocumentText)
+                    ->icon(TablerIcon::FileText)
                     ->label(fn (): string => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])
+            // Base plugins (panel switcher, caches, language) come from
+            // applyConsoleChrome(); plugins() is additive.
             ->plugins([
                 FilamentSpatieLaravelBackupPlugin::make()
                     ->usingPage(Backups::class),
-                PanelSwitcherPlugin::make(),
-                ClearCachesPlugin::make(),
-                LanguageSwitcherPlugin::make(),
-                SidebarCollapseTogglePlugin::make(),
-            ])
-            ->bootUsing(function (): void {
-                activity()->enableLogging();
-            })
-            ->brandName('phpvms')
-            ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
-            ->brandLogoHeight('3rem')
-            ->font('Geist')
-            ->favicon(asset('assets/img/favicon.png'))
-            ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn (): string => view('filament.auth.login-hero')->render(),
-            )
-            // Inject vite this way - it might not exist when this is registered
-            ->renderHook(
-                PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/apps/admin/app.js')"),
-            )
-            ->breadcrumbs(false)
-            ->unsavedChangesAlerts()
-            ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
-            ->errorNotifications()
-            ->databaseNotifications()
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ]);
 
         return $this->discoverModuleComponents($panel);
     }
@@ -197,6 +162,10 @@ class AdminPanelProvider extends PanelProvider
         // These files do not go through Vite, so registering them at boot
         // is safe: no manifest lookup, no console crash on fresh checkout.
         FilamentAsset::register([
+            Js::make(
+                'phpvms-dashboard-grid',
+                resource_path('js/apps/admin/dashboard/grid.js'),
+            ),
             AlpineComponent::make(
                 'pirep-performance-chart',
                 resource_path('js/dist/admin/components/pirep-performance-chart.js'),

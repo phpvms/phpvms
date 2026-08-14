@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->zip = $this->work.'/demo.zip';
     $zip = new ZipArchive();
     $zip->open($this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'providers' => []]));
+    $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'providers' => []]));
     $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
     $zip->close();
 });
@@ -32,7 +32,7 @@ it('install() places the addon and registers a DB row', function (): void {
 
     expect($addon)->toBeInstanceOf(Addon::class)
         ->and($addon->getName())->toBe('Demo')
-        ->and(File::isDirectory($this->modules.'/demo'))->toBeTrue()
+        ->and(File::isDirectory($this->modules.'/acme-demo'))->toBeTrue()
         ->and(Addon::query()->where('name', 'Demo')->exists())->toBeTrue();
 });
 

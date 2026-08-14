@@ -80,6 +80,7 @@ function raceBidAttempts(array $attempts): array
             if ($ready === count($attempts)) {
                 break;
             }
+
             usleep(1000);
         } while (microtime(true) < $deadline);
 
@@ -111,6 +112,7 @@ function raceBidAttempts(array $attempts): array
         foreach (glob($directory.'/*') ?: [] as $file) {
             unlink($file);
         }
+
         rmdir($directory);
     }
 }

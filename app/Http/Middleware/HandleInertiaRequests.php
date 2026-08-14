@@ -99,7 +99,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
 
-            'pilotChrome' => fn () => $user ? PilotChromeData::fromUser($user) : null,
+            'pilotChrome' => fn (): ?PilotChromeData => $user ? PilotChromeData::fromUser($user) : null,
 
             // One-shot flash messages, lazily evaluated so they only read the
             // session when a response is actually built.

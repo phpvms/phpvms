@@ -8,9 +8,9 @@ use App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Filament\Resources\ActivityLogs\Pages\ViewActivityLog;
 use App\Filament\Resources\ActivityLogs\Tables\ActivityLogsTable;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use Spatie\Activitylog\Models\Activity;
@@ -20,11 +20,11 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Developers;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::System;
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::News;
 
     #[Override]
     public static function form(Schema $schema): Schema

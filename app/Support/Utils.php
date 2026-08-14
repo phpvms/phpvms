@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Addons\AddonRegistry;
 use App\Contracts\Model;
+use Deprecated;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Str;
 use Pdp\Rules;
@@ -15,9 +16,8 @@ class Utils
 {
     /**
      * Generate a new Nano ID with a given length.
-     *
-     * @deprecated use Str::nanoid()
      */
+    #[Deprecated(message: 'use Str::nanoid()')]
     public static function generateNewId(?int $length = null): string
     {
         return Str::nanoid($length ?? Model::ID_MAX_LENGTH);

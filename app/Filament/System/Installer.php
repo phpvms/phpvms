@@ -30,7 +30,6 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema as FilamentSchema;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
@@ -82,7 +81,11 @@ class Installer extends Page
     public static function canAccess(): bool
     {
         try {
-            return !(Schema::hasTable('users') && User::query()->withoutGlobalScopes()->exists());
+            if (!Schema::hasTable('users')) {
+                return true;
+            }
+
+            return !User::query()->withoutGlobalScopes()->exists();
         } catch (QueryException) {
             // DB unreachable/not yet migrated — treat as not installed so the
             // installer can run.
@@ -640,18 +643,8 @@ class Installer extends Page
     }
 
     #[Override]
-    public function getHeader(): ?View
-    {
-        return view('filament.system.hero', [
-            'eyebrow'  => __('installer.eyebrow'),
-            'title'    => __('installer.hero_title'),
-            'subtitle' => __('installer.hero_subtitle'),
-        ]);
-    }
-
-    #[Override]
     public function getTitle(): string
     {
-        return __('installer.title');
+        return __('installer.hero_title');
     }
 }

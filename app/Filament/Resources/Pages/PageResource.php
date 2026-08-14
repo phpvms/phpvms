@@ -10,9 +10,9 @@ use App\Filament\Resources\Pages\Schemas\PageForm;
 use App\Filament\Resources\Pages\Tables\PagesTable;
 use App\Models\Page;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Override;
 use UnitEnum;
@@ -23,9 +23,9 @@ class PageResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::FileText;
 
     protected static ?string $recordTitleAttribute = 'name';
 

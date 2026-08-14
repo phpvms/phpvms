@@ -99,7 +99,11 @@
     "inertiajs/inertia-laravel": "*",
     "spatie/laravel-typescript-transformer": "*",
     "laravel/passport": "^13.7",
-    "arthurpar06/laravel-discord-notifier": "^0.2"
+    "arthurpar06/laravel-discord-notifier": "^0.2",
+    "secondnetwork/blade-tabler-icons": "^3.46",
+    "andreiio/blade-iconoir": "^4.7",
+    "daljo25/filament-tabler-icons": "^3.45",
+    "mddev31/filament-dynamic-dashboard": "^1.0.3"
   },
   "require-dev": {
     "filp/whoops": "^2.18.4",
@@ -133,6 +137,7 @@
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/",
+      "Modules\\AddonManager\\": "modules/phpvms-addon-manager/app/",
       "Modules\\SampleVueWidget\\": "modules/phpvms-sample-vue-widget/",
       "Modules\\": "modules/"
     }

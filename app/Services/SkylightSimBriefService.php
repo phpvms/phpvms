@@ -17,12 +17,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-final class SkylightSimBriefService
+final readonly class SkylightSimBriefService
 {
     public function __construct(
-        private readonly BidService $bidService,
-        private readonly FareService $fareService,
-        private readonly SimBriefService $simBriefService,
+        private BidService $bidService,
+        private FareService $fareService,
+        private SimBriefService $simBriefService,
     ) {}
 
     public function begin(User $user, Flight $flight, ?int $aircraftId = null): SimBriefAttempt|SimBrief

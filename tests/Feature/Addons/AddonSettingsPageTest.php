@@ -62,12 +62,12 @@ it('scopes settings to the owning addon only', function (): void {
 
     // A second addon with its own settings must not appear in Sample's scope.
     $other = Addon::factory()->create(['registry_id' => 'other/addon']);
-    AddonSetting::factory()->create(['addon_id' => $other->id, 'key' => 'secret']);
+    AddonSetting::factory()->create(['registry_id' => $other->registry_id, 'key' => 'secret']);
 
-    $scoped = app(AddonSettingService::class)->all($sample->id);
+    $scoped = app(AddonSettingService::class)->all($sample->registry_id);
 
     expect($scoped)->toHaveCount(5)
-        ->and($scoped->pluck('addon_id')->unique()->all())->toBe([$sample->id]);
+        ->and($scoped->pluck('registry_id')->unique()->all())->toBe([$sample->registry_id]);
 })->skip(sampleAddonMissing(...), 'No sample addon on disk; it is not tracked in this repo.');
 
 it('contributes the edit:addon-settings permission to the registry', function (): void {

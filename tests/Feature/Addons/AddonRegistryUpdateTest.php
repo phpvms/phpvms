@@ -19,7 +19,7 @@ beforeEach(function (): void {
         $path = $this->work.'/demo-'.$version.'.zip';
         $zip = new ZipArchive();
         $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'version' => $version, 'providers' => []]));
+        $zip->addFromString('module.json', json_encode(['name' => 'Demo', 'registry_id' => 'acme/demo', 'version' => $version, 'providers' => []]));
         $zip->addFromString('composer.json', json_encode(['autoload' => ['psr-4' => ['Modules\\Demo\\' => '']]]));
         $zip->close();
 

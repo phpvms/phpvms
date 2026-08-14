@@ -7,9 +7,9 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Filament\Resources\Users\Actions\InvitesAction;
 use App\Filament\Resources\Users\Actions\UserFieldsAction;
 use App\Filament\Resources\Users\UserResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListUsers extends ListRecords
@@ -21,7 +21,7 @@ class ListUsers extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon(TablerIcon::CirclePlus),
             UserFieldsAction::make(),
             InvitesAction::make(),
         ];

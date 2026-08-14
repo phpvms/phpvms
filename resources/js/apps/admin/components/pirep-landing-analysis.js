@@ -14,6 +14,17 @@
 
 import Chart from "chart.js/auto";
 
+/**
+ * Read a console theme token as a literal hex string, falling back to the
+ * given default. See the identical helper in pirep-performance-chart.js for
+ * why no getComputedStyle() color-mix probe is needed here.
+ */
+function cssVar(name, fallback) {
+  if (typeof document === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 // Runway schematic dimensions (SVG viewBox units).
 // 20m assumed runway width per project decision — visual only, no real-world
 // length needed. SVG aspect tuned so the centerline reads as a "long strip".
@@ -45,10 +56,10 @@ const SCORE_AXIS_LABELS = {
 // Color bands for individual metric scores. Used both in scorecard tooltip
 // and in runway-diagram severity tints.
 function severityColor(score) {
-  if (score >= 80) return "#10b981"; // emerald — excellent
-  if (score >= 60) return "#84cc16"; // lime — acceptable
-  if (score >= 40) return "#f59e0b"; // amber — degraded
-  return "#ef4444"; // red — bad
+  if (score >= 80) return cssVar("--ok", "#10b981"); // excellent
+  if (score >= 60) return "#84cc16"; // lime — acceptable (no console token for this band)
+  if (score >= 40) return cssVar("--warn", "#f59e0b"); // degraded
+  return cssVar("--bad", "#ef4444"); // bad
 }
 
 export default function pirepLandingAnalysis(payload) {
@@ -166,15 +177,15 @@ export default function pirepLandingAnalysis(payload) {
               max: 100,
               ticks: {
                 stepSize: 25,
-                color: "#9ca3af",
+                color: cssVar("--ink-3", "#9ca3af"),
                 backdropColor: "transparent",
                 font: { family: "Geist Mono", size: 9 },
                 showLabelBackdrop: false,
               },
-              grid: { color: "#e5e7eb" },
-              angleLines: { color: "#e5e7eb" },
+              grid: { color: cssVar("--line", "#e5e7eb") },
+              angleLines: { color: cssVar("--line", "#e5e7eb") },
               pointLabels: {
-                color: "#374151",
+                color: cssVar("--ink-3", "#374151"),
                 font: { family: "Geist", size: 10, weight: "500" },
                 padding: 6,
               },

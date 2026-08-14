@@ -71,8 +71,12 @@ class Updater extends Page
      */
     private function authorizeUpdate(): void
     {
-        // v7
-        if (Schema::hasTable('role_user')) {
+        // The v8 permission tables are the discriminator, not role_user: the
+        // baseline migration creates an (empty) legacy role_user table on
+        // fresh installs too, so its presence alone would 403 every admin.
+        if (Schema::hasTable('model_has_roles')) { // v8
+            abort_if(!Auth::user()?->can('access_admin'), 403);
+        } else { // v7, mid-upgrade — spatie tables don't exist yet
             $result = DB::table('role_user')
                 ->where('user_id', Auth::id())
                 ->where('roles.name', 'LIKE', '%admin%')
@@ -80,8 +84,6 @@ class Updater extends Page
                 ->count();
 
             abort_if($result === 0, 403);
-        } else { // v8
-            abort_if(!Auth::user()?->can('access_admin'), 403);
         }
     }
 
@@ -99,7 +101,7 @@ class Updater extends Page
 
         $this->updateStarted = true;
 
-        $this->stream(content: PHP_EOL.__('installer.starting_migration_process').PHP_EOL, to: $this->stream);
+        $this->streamOutput(PHP_EOL.__('installer.starting_migration_process').PHP_EOL);
 
         $migrationSvc = app(MigrationService::class);
         $seederSvc = app(SeederService::class);
@@ -108,7 +110,7 @@ class Updater extends Page
         $dataMigrationsPending = $migrationSvc->dataMigrationsAvailable();
 
         $streamCallback = function (string $buffer): void {
-            $this->stream(content: $buffer.PHP_EOL, to: $this->stream);
+            $this->streamOutput($buffer.PHP_EOL);
         };
 
         if (count($migrationsPending) !== 0) {
@@ -134,15 +136,26 @@ class Updater extends Page
             $migrationSvc->runAllDataMigrationsWithStreaming($streamCallback);
         }
 
-        $this->stream(content: __('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL, to: $this->stream);
+        $this->streamOutput(__('installer.migrations_completed').PHP_EOL.__('installer.lets_rebuild_cache').PHP_EOL);
 
         app(StreamedCommandsService::class)->streamArtisanCommand(['optimize:clear'], $streamCallback);
         app(StreamedCommandsService::class)->streamArtisanCommand(['optimize'], $streamCallback);
 
-        $this->stream(content: PHP_EOL.__('installer.update_completed').PHP_EOL, to: $this->stream);
+        $this->streamOutput(PHP_EOL.__('installer.update_completed').PHP_EOL);
 
         $panelUrl = Filament::getDefaultPanel()->getUrl();
-        $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 10000)');
+        $this->js('setTimeout(() => window.location.href = '.json_encode($panelUrl).', 3000)');
+    }
+
+    /**
+     * Streams a chunk to the browser AND accumulates it in $updateOutput —
+     * wire:stream content only lives until the request's re-render, which
+     * would otherwise morph the log back to the (empty) component state.
+     */
+    private function streamOutput(string $content): void
+    {
+        $this->updateOutput .= $content;
+        $this->stream(content: $content, to: $this->stream);
     }
 
     #[Override]

@@ -11,9 +11,9 @@ use App\Filament\Resources\Subfleets\Resources\Aircraft\Tables\AircraftTable;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\Aircraft;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +25,7 @@ class AircraftResource extends Resource
 {
     protected static ?string $model = Aircraft::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Stack;
 
     protected static ?string $parentResource = SubfleetResource::class;
 

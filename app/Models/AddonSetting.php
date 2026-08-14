@@ -14,12 +14,13 @@ use Illuminate\Support\Carbon;
 /**
  * A single setting belonging to one addon.
  *
- * Mirrors the typed columns of {@see Setting} but scoped per addon via
- * `addon_id`. Settings are declared by an addon's service provider (see
+ * Mirrors the typed columns of {@see Setting} but scoped per addon via its
+ * `registry_id` — stable across uninstall/reinstall, unlike the addon row id.
+ * Settings are declared by an addon's service provider (see
  * App\Contracts\Addons\HasSettings) and synced into this table on boot.
  *
  * @property int         $id
- * @property int         $addon_id
+ * @property string      $registry_id
  * @property string|null $alias
  * @property int         $order
  * @property string      $key
@@ -48,7 +49,7 @@ class AddonSetting extends Model
     public $table = 'addon_settings';
 
     protected $fillable = [
-        'addon_id',
+        'registry_id',
         'alias',
         'order',
         'key',
@@ -77,6 +78,6 @@ class AddonSetting extends Model
      */
     public function addon(): BelongsTo
     {
-        return $this->belongsTo(Addon::class);
+        return $this->belongsTo(Addon::class, 'registry_id', 'registry_id');
     }
 }

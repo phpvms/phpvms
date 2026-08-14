@@ -22,7 +22,7 @@ class SettingsSeeder extends Seeder
             'key'         => 'general.theme',
             'name'        => 'Current Theme',
             'group'       => 'general',
-            'value'       => 'seven',
+            'value'       => 'skylight',
             'type'        => 'select',
             'options'     => '',
             'description' => 'The currently active theme',

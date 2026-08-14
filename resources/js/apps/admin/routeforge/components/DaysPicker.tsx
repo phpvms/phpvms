@@ -50,21 +50,13 @@ export function DaysPicker() {
   return (
     <div class="mb-3">
       <div class="mb-1 flex items-center justify-between">
-        <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">Days</span>
+        <span class="block text-sm font-medium text-(--ink-2)">Days</span>
         <div class="flex gap-2 text-xs">
-          <button
-            type="button"
-            class="text-primary-600 hover:underline dark:text-primary-400"
-            onClick={selectAll}
-          >
+          <button type="button" class="text-primary-600 hover:underline" onClick={selectAll}>
             All
           </button>
-          <span class="text-gray-300 dark:text-gray-600">·</span>
-          <button
-            type="button"
-            class="text-primary-600 hover:underline dark:text-primary-400"
-            onClick={clearAll}
-          >
+          <span class="text-(--line-strong)">·</span>
+          <button type="button" class="text-primary-600 hover:underline" onClick={clearAll}>
             None
           </button>
         </div>
@@ -78,8 +70,8 @@ export function DaysPicker() {
               class={
                 "inline-flex cursor-pointer items-center gap-1.5 rounded border px-3 py-1.5 text-sm " +
                 (checked
-                  ? "border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200"
-                  : "border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300")
+                  ? "border-primary-500 bg-(--surface-2) text-primary-600"
+                  : "border-(--line-strong) bg-(--surface) text-(--ink-2)")
               }
             >
               <input
@@ -93,7 +85,7 @@ export function DaysPicker() {
           );
         })}
       </div>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-xs text-(--ink-3)">
         Bitmask {mask} (
         {mask === 127 ? "every day" : mask === 0 ? "no days selected" : `${countBits(mask)}/7 days`}
         ).

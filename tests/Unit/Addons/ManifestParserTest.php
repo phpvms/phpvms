@@ -7,9 +7,10 @@ it('normalises database.tables: trims, drops blanks/non-strings, de-dupes', func
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
     file_put_contents($tmpDir.'/module.json', json_encode([
-        'name'      => 'TablesWidget',
-        'providers' => [],
-        'database'  => [
+        'name'        => 'TablesWidget',
+        'registry_id' => 'acme/tables-widget',
+        'providers'   => [],
+        'database'    => [
             'tables' => ['  things  ', '', 'things', 42, 'more_things'],
         ],
     ]));
@@ -133,8 +134,9 @@ it('resolves composer autoload.files into absolute paths under the addon dir', f
     file_put_contents($tmpDir.'/helpers.php', "<?php\n");
     file_put_contents($tmpDir.'/src/fns.php', "<?php\n");
     file_put_contents($tmpDir.'/module.json', json_encode([
-        'name'      => 'FilesWidget',
-        'providers' => [],
+        'name'        => 'FilesWidget',
+        'registry_id' => 'acme/files-widget',
+        'providers'   => [],
     ]));
     file_put_contents($tmpDir.'/composer.json', json_encode([
         'autoload' => [
@@ -164,8 +166,9 @@ it('returns an empty files list when autoload.files is absent or malformed', fun
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
     file_put_contents($tmpDir.'/module.json', json_encode([
-        'name'      => 'NoFiles',
-        'providers' => [],
+        'name'        => 'NoFiles',
+        'registry_id' => 'acme/no-files',
+        'providers'   => [],
     ]));
     file_put_contents($tmpDir.'/composer.json', json_encode([
         'autoload' => [
@@ -196,8 +199,9 @@ it('rejects autoload.files entries that escape the addon directory', function ()
     file_put_contents($base.'/secret.php', "<?php\n");
 
     file_put_contents($addonDir.'/module.json', json_encode([
-        'name'      => 'Escaper',
-        'providers' => [],
+        'name'        => 'Escaper',
+        'registry_id' => 'acme/escaper',
+        'providers'   => [],
     ]));
     file_put_contents($addonDir.'/composer.json', json_encode([
         'autoload' => [
@@ -225,8 +229,9 @@ it('rejects escaping autoload.files entries even when the target does not exist'
     mkdir($addonDir, 0755, true);
 
     file_put_contents($addonDir.'/module.json', json_encode([
-        'name'      => 'GhostEscaper',
-        'providers' => [],
+        'name'        => 'GhostEscaper',
+        'registry_id' => 'acme/ghost-escaper',
+        'providers'   => [],
     ]));
     file_put_contents($addonDir.'/composer.json', json_encode([
         'autoload' => [
@@ -247,7 +252,7 @@ it('rejects escaping autoload.files entries even when the target does not exist'
     }
 });
 
-it('normalises blank registry_id to null (D-03)', function (): void {
+it('returns null when registry_id is blank (D-03)', function (): void {
     $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
     mkdir($tmpDir, 0755, true);
     file_put_contents($tmpDir.'/module.json', json_encode([
@@ -259,10 +264,28 @@ it('normalises blank registry_id to null (D-03)', function (): void {
 
     try {
         $parser = new ManifestParser();
-        $result = $parser->parse($tmpDir);
 
-        expect($result)->toBeInstanceOf(AddonManifest::class)
-            ->and($result->registryId)->toBeNull();
+        expect($parser->parse($tmpDir))->toBeNull();
+    } finally {
+        unlink($tmpDir.'/composer.json');
+        unlink($tmpDir.'/module.json');
+        rmdir($tmpDir);
+    }
+});
+
+it('returns null when registry_id is absent — it is the addon identity', function (): void {
+    $tmpDir = sys_get_temp_dir().'/manifest_parser_test_'.uniqid();
+    mkdir($tmpDir, 0755, true);
+    file_put_contents($tmpDir.'/module.json', json_encode([
+        'name'      => 'NoId',
+        'providers' => [],
+    ]));
+    file_put_contents($tmpDir.'/composer.json', '{}');
+
+    try {
+        $parser = new ManifestParser();
+
+        expect($parser->parse($tmpDir))->toBeNull();
     } finally {
         unlink($tmpDir.'/composer.json');
         unlink($tmpDir.'/module.json');

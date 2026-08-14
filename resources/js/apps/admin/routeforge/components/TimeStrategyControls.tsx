@@ -68,15 +68,10 @@ export function TimeStrategyControls() {
 
   return (
     <div class="mb-3">
-      <span class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Time strategy
-      </span>
+      <span class="mb-1 block text-sm font-medium text-(--ink-2)">Time strategy</span>
 
       {/* Segmented control */}
-      <div
-        class="mb-3 inline-flex rounded border border-gray-300 dark:border-gray-600"
-        role="group"
-      >
+      <div class="mb-3 inline-flex rounded border border-(--line-strong)" role="group">
         {KIND_ORDER.map((k, i) => {
           const active = ts.kind === k;
           return (
@@ -88,10 +83,10 @@ export function TimeStrategyControls() {
                 "px-3 py-1.5 text-sm " +
                 (i === 0 ? "rounded-l " : "") +
                 (i === KIND_ORDER.length - 1 ? "rounded-r " : "") +
-                (i > 0 ? "border-l border-gray-300 dark:border-gray-600 " : "") +
+                (i > 0 ? "border-l border-(--line-strong) " : "") +
                 (active
                   ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700")
+                  : "bg-(--surface) text-(--ink-2) hover:bg-(--surface-2)")
               }
               onClick={() => changeKind(k)}
             >
@@ -217,8 +212,8 @@ export function TimeStrategyControls() {
       )}
 
       {/* Jitter — common across all strategies */}
-      <div class="rounded border border-gray-200 p-3 dark:border-gray-700">
-        <label class="mb-2 inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+      <div class="rounded border border-(--line) p-3">
+        <label class="mb-2 inline-flex items-center gap-2 text-sm font-medium text-(--ink-2)">
           <input
             type="checkbox"
             class="h-4 w-4"

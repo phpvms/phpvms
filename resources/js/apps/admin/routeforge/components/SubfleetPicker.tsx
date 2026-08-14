@@ -186,15 +186,12 @@ export function SubfleetPicker() {
             const s = subfleetCache.value[id];
             const display = s !== undefined ? `${s.name} (${s.type})` : `#${id}`;
             return (
-              <span
-                key={id}
-                class="inline-flex items-center gap-1 rounded bg-primary-100 px-2 py-0.5 text-xs text-primary-800 dark:bg-primary-900/40 dark:text-primary-200"
-              >
+              <span key={id} class="chip chip--info chip--plain">
                 <span>{display}</span>
                 <button
                   type="button"
                   aria-label={`Remove ${display}`}
-                  class="text-primary-600 hover:text-red-600 dark:text-primary-300 dark:hover:text-red-400"
+                  class="hover:text-(--bad)"
                   onClick={() => removeSubfleet(id)}
                 >
                   ×
@@ -245,21 +242,21 @@ export function SubfleetPicker() {
           }}
         />
         {open && !loading && (
-          <div class="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+          <div class="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded border border-(--line-strong) bg-(--surface) shadow-lg">
             {noSubfleetsAtAll && (
-              <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+              <div class="px-3 py-2 text-xs text-(--ink-3)">
                 No subfleets attached to this airline.
               </div>
             )}
             {!noSubfleetsAtAll && filteredResults.length === 0 && (
-              <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">No matches.</div>
+              <div class="px-3 py-2 text-xs text-(--ink-3)">No matches.</div>
             )}
             {filteredResults.map((s) => {
               const isSelected = selected.includes(s.id);
               return (
                 <label
                   key={s.id}
-                  class="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                  class="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-(--surface-2)"
                 >
                   <input
                     type="checkbox"
@@ -267,9 +264,9 @@ export function SubfleetPicker() {
                     checked={isSelected}
                     onChange={() => toggleSubfleet(s.id)}
                   />
-                  <span class="font-mono text-xs text-gray-600 dark:text-gray-400">{s.type}</span>
+                  <span class="font-mono text-xs text-(--ink-3)">{s.type}</span>
                   <span>{s.name}</span>
-                  <span class="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                  <span class="ml-auto text-xs text-(--ink-3)">
                     {s.aircraft_count} ac
                     {s.max_range_nm !== null ? ` · ${s.max_range_nm}nm` : ""}
                   </span>

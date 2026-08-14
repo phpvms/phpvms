@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Awards\AwardResource;
+use App\Filament\Resources\Awards\Schemas\AwardForm;
 use Filament\Resources\Pages\CreateRecord;
 use Override;
 
@@ -24,6 +25,8 @@ class CreateAward extends CreateRecord
     #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $data = AwardForm::mutateTypeFields($data);
+
         if (!empty($data['image_file'])) {
             $data['image_url'] = $data['image_file'];
         }

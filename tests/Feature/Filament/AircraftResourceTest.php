@@ -6,11 +6,14 @@ use App\Filament\Resources\Subfleets\Resources\Aircraft\Pages\EditAircraft;
 use App\Models\Aircraft;
 use App\Models\SimBriefAirframe;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Component;
+use Livewire\Livewire;
 
 it('renders the icao airframe dropdown with the stored value resolved from the airframes table', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 
-    $admin = createAdminUser();
+    createAdminUser();
     $aircraft = Aircraft::factory()->create(['icao' => 'B738']);
 
     SimBriefAirframe::create([
@@ -19,16 +22,21 @@ it('renders the icao airframe dropdown with the stored value resolved from the a
         'airframe_id' => '3_1677576294832',
     ]);
 
-    // Nested resource under Subfleets; the real route provides the parent.
-    $url = EditAircraft::getUrl([
-        'record'   => $aircraft->id,
-        'subfleet' => $aircraft->subfleet_id,
-    ]);
+    // The icao select is an identity field, so it lives in the overview's
+    // drawer rather than the page form. The drawer's modal body is rendered
+    // client-side, so read the resolved label off the mounted schema.
+    $page = Livewire::test(EditAircraft::class, [
+        'record'       => $aircraft->getRouteKey(),
+        'parentRecord' => $aircraft->subfleet,
+    ])
+        ->mountAction('edit', ['recordKey' => $aircraft->getRouteKey()])
+        ->assertHasNoActionErrors();
 
-    // getOptionLabelUsing resolves the stored icao against the airframes table,
-    // so the page renders the airframe name alongside the code.
-    $this->actingAs($admin)
-        ->get($url)
-        ->assertOk()
-        ->assertSee('B738 - iniBuilds (MSFS) - 737-800');
+    $drawer = $page->instance();
+
+    /** @var Select $icao */
+    $icao = $drawer->getSchema($drawer->getMountedActionSchemaName())
+        ->getComponent(fn (Component $component): bool => $component instanceof Select && $component->getName() === 'icao');
+
+    expect($icao->getOptionLabel())->toBe('B738 - iniBuilds (MSFS) - 737-800');
 });

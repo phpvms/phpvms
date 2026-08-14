@@ -6,8 +6,8 @@ namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Override;
 use UnitEnum;
 
@@ -27,11 +27,11 @@ use UnitEnum;
  */
 class RouteForge extends Page
 {
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Operations;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Planning;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Stack;
 
     protected string $view = 'filament.pages.route-forge';
 

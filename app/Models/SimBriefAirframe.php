@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\Model;
 use App\Enums\AirframeSource;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -58,6 +59,25 @@ class SimBriefAirframe extends Model
         'details'     => 'nullable',
         'options'     => 'nullable',
     ];
+
+    /**
+     * Airframes for an aircraft type code.
+     *
+     * A subfleet's `type` is free text and often carries a variant suffix
+     * ("B.738-WL"), so match on the leading four alphanumerics of the ICAO
+     * code rather than the whole string. A blank type filters nothing.
+     */
+    #[Scope]
+    protected function forType(Builder $query, ?string $type): Builder
+    {
+        $code = preg_replace('/[^A-Za-z0-9]/', '', (string) $type);
+
+        if (blank($code)) {
+            return $query;
+        }
+
+        return $query->where('icao', 'like', substr((string) $code, 0, 4).'%');
+    }
 
     // Relationships
     public function sbaircraft(): BelongsTo

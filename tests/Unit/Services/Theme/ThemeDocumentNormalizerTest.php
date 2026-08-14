@@ -82,8 +82,8 @@ it('rejects an unsupported document version because version one has no migration
     try {
         app(ThemeDocumentNormalizer::class)->normalize($document);
         $this->fail('Expected theme validation to fail.');
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('version');
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('version');
     }
 });
 
@@ -91,8 +91,8 @@ it('rejects malformed JSON at the root field', function (): void {
     try {
         app(ThemeDocumentNormalizer::class)->normalizeJson('{');
         $this->fail('Expected JSON validation to fail.');
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('$');
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('$');
     }
 });
 
@@ -103,8 +103,8 @@ it('rejects unsafe classes with field-level errors', function (): void {
     try {
         app(ThemeDocumentNormalizer::class)->normalize($document);
         $this->fail('Expected theme validation to fail.');
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('nuxtUi.components.button.style.shape');
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('nuxtUi.components.button.style.shape');
     }
 });
 
@@ -115,10 +115,10 @@ it('resolves nested schema refs and rejects nested additional properties', funct
     try {
         app(ThemeDocumentNormalizer::class)->normalize($document);
         $this->fail('Expected theme validation to fail.');
-    } catch (ValidationException $exception) {
-        expect($exception->errors())
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())
             ->toHaveKey('nuxtUi.components.button')
-            ->and($exception->errors()['nuxtUi.components.button'][0])
+            ->and($validationException->errors()['nuxtUi.components.button'][0])
             ->toContain('property ui is not defined');
     }
 });

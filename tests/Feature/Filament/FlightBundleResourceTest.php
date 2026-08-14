@@ -7,6 +7,7 @@ use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Filament\Resources\FlightBundles\Pages\ListFlightBundles;
 use App\Models\FlightBundle;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filament\Actions\CreateAction;
 use Livewire\Livewire;
 
 it('renders the list page happy path', function (): void {
@@ -42,6 +43,32 @@ it('creates a new bundle and persists created_by', function (): void {
     ]);
 });
 
+it('creates a new bundle from the list drawer', function (): void {
+    $this->seed(RolesPermissionsSeeder::class);
+
+    $admin = createAdminUser();
+
+    $this->actingAs($admin);
+
+    Livewire::test(ListFlightBundles::class)
+        ->assertActionExists(
+            'create',
+            fn (CreateAction $action): bool => $action->isModalSlideOver()
+                && ($action->hasModal() === true)
+                && ($action->getUrl() === null),
+        )
+        ->callAction('create', [
+            'name'    => 'Drawer bundle',
+            'enabled' => true,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('flight_bundles', [
+        'name'       => 'Drawer bundle',
+        'created_by' => $admin->id,
+    ]);
+});
+
 it('renders the edit page happy path', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 
@@ -67,7 +94,7 @@ it('shows delete action for the seeded Default bundle', function (): void {
         ->assertTableActionVisible('delete', $defaultBundle);
 });
 
-it('enabled toggle is editable on the seeded Default bundle edit page', function (): void {
+it('enabled is editable on the seeded Default bundle through the edit-details slideover', function (): void {
     $this->seed(RolesPermissionsSeeder::class);
 
     $admin = createAdminUser();
@@ -76,7 +103,12 @@ it('enabled toggle is editable on the seeded Default bundle edit page', function
 
     expect($default)->not->toBeNull();
 
+    // assertSuccessful() comes last: Testable carries `@mixin TestResponse`, so
+    // every link after it is typed against TestResponse rather than Testable.
     Livewire::test(EditFlightBundle::class, ['record' => $default->getRouteKey()])
-        ->assertSuccessful()
-        ->assertFormFieldExists('enabled');
+        ->callAction('edit', ['enabled' => false])
+        ->assertHasNoActionErrors()
+        ->assertSuccessful();
+
+    expect($default->fresh()->enabled)->toBeFalse();
 });

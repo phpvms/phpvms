@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Airlines\Pages;
 
 use App\Filament\Resources\Airlines\AirlineResource;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListAirlines extends ListRecords
@@ -19,7 +19,7 @@ class ListAirlines extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+                ->icon(TablerIcon::CirclePlus),
         ];
     }
 }

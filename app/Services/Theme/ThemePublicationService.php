@@ -13,12 +13,12 @@ use Illuminate\Validation\ValidationException;
 use JsonException;
 use LogicException;
 
-final class ThemePublicationService
+final readonly class ThemePublicationService
 {
     public function __construct(
-        private readonly ThemeDocumentNormalizer $normalizer,
-        private readonly ThemeCssRenderer $renderer,
-        private readonly ThemeAssetService $assets,
+        private ThemeDocumentNormalizer $normalizer,
+        private ThemeCssRenderer $renderer,
+        private ThemeAssetService $assets,
     ) {}
 
     /**

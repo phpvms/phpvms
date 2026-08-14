@@ -46,11 +46,12 @@ beforeEach(function (): void {
     $this->migrationDir = $migrationDir;
 
     Addon::factory()->create([
-        'name'      => 'FixtureUninstall',
-        'namespace' => 'Modules\\FixtureUninstall',
-        'version'   => '1.0.0',
-        'path'      => $this->addonPath,
-        'enabled'   => false,
+        'name'        => 'FixtureUninstall',
+        'registry_id' => 'acme/fixture-uninstall',
+        'namespace'   => 'Modules\\FixtureUninstall',
+        'version'     => '1.0.0',
+        'path'        => $this->addonPath,
+        'enabled'     => false,
     ]);
 
     Artisan::call('migrate', [
@@ -71,13 +72,13 @@ afterEach(function (): void {
 it('drops the addon tables and migration records when removeTables is true', function (): void {
     expect(Schema::hasTable('fixture_addon_things'))->toBeTrue();
 
-    Kvp::updateOrCreate(['key' => 'addon_seeded:modules-fixtureuninstall:1.0.0'], ['value' => '1']);
+    Kvp::updateOrCreate(['key' => 'addon_seeded:acme-fixture-uninstall:1.0.0'], ['value' => '1']);
 
     $this->registry->delete('FixtureUninstall', true);
 
     expect(Schema::hasTable('fixture_addon_things'))->toBeFalse()
         ->and(DB::table('migrations')->where('migration', 'like', '%create_fixture_addon_things_table')->exists())->toBeFalse()
-        ->and(Kvp::where('key', 'addon_seeded:modules-fixtureuninstall:1.0.0')->exists())->toBeFalse()
+        ->and(Kvp::where('key', 'addon_seeded:acme-fixture-uninstall:1.0.0')->exists())->toBeFalse()
         ->and(Addon::query()->where('name', 'FixtureUninstall')->exists())->toBeFalse();
 });
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Model;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Override;
@@ -18,10 +19,9 @@ use Override;
  * @property string      $revision
  * @property Carbon      $published_at
  */
+#[WithoutTimestamps]
 class PublishedThemeRevision extends Model
 {
-    public $timestamps = false;
-
     protected $fillable = [
         'theme_name',
         'schema_version',

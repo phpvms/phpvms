@@ -44,7 +44,7 @@ final class ThemeAssetService
     public function url(string $themeName, string $revision, string $asset): string
     {
         if (config('themes.asset_delivery') === 'route') {
-            return route('theme-assets.show', compact('themeName', 'revision', 'asset'));
+            return route('theme-assets.show', ['themeName' => $themeName, 'revision' => $revision, 'asset' => $asset]);
         }
 
         return $this->disk()->url($this->path($themeName, $revision, $asset));

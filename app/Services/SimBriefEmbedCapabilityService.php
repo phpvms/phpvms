@@ -11,9 +11,9 @@ use Throwable;
 
 final class SimBriefEmbedCapabilityService
 {
-    public const PROVIDER_URL = 'https://www.simbrief.com/ofp/ofp.loader.api.php';
+    public const string PROVIDER_URL = 'https://www.simbrief.com/ofp/ofp.loader.api.php';
 
-    private const CACHE_KEY = 'simbrief:generation-embed-capability:v2';
+    private const string CACHE_KEY = 'simbrief:generation-embed-capability:v2';
 
     public function allowed(): bool
     {

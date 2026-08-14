@@ -73,34 +73,24 @@ export function DraftResumeBanner({ result, onResolve }: DraftResumeBannerProps)
   return (
     <div
       role="status"
-      class="mx-auto flex max-w-2xl flex-col gap-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      class="mx-auto flex max-w-2xl flex-col gap-4 rounded-lg border border-(--line) bg-(--surface) p-5 shadow-sm"
     >
       <div class="space-y-2">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">
-          {t("banner.title")}
-        </h2>
-        <p class="text-sm text-gray-600 dark:text-gray-300">
+        <h2 class="text-base font-semibold text-(--ink)">{t("banner.title")}</h2>
+        <p class="text-sm text-(--ink-2)">
           {t("banner.saved_at", { date: savedAt.toLocaleString() })}
         </p>
         {is_stale && (
-          <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+          <p class="rounded border border-(--warn-line) bg-(--warn-soft) px-3 py-2 text-sm text-(--warn)">
             {t("banner.stale_warning")}
           </p>
         )}
       </div>
       <div class="flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
-          class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-          onClick={handleDiscard}
-        >
+        <button type="button" class="fi-btn fi-color-gray" onClick={handleDiscard}>
           {t("banner.discard")}
         </button>
-        <button
-          type="button"
-          class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700"
-          onClick={handleResume}
-        >
+        <button type="button" class="fi-btn fi-color-primary" onClick={handleResume}>
           {t("banner.resume")}
         </button>
       </div>

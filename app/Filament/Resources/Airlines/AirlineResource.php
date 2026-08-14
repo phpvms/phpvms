@@ -11,9 +11,9 @@ use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Filament\Resources\Airlines\Tables\AirlinesTable;
 use App\Models\Airline;
 use BackedEnum;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -24,11 +24,11 @@ class AirlineResource extends Resource
 {
     protected static ?string $model = Airline::class;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Planning;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 4;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Building;
 
     protected static ?string $recordTitleAttribute = 'name';
 

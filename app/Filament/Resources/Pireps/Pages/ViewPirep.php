@@ -10,6 +10,8 @@ use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
@@ -17,8 +19,11 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\IconPosition;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 use Override;
 use Throwable;
 
@@ -78,6 +83,46 @@ class ViewPirep extends ViewRecord
         return implode(' ', $parts);
     }
 
+    /**
+     * Plain-text subline under the heading (mockup pirep.html:476):
+     * "{pilot name} · filed {date} via {source}". Mirrors the source-label
+     * logic the old avatar-hero header partial used to compute.
+     */
+    #[Override]
+    public function getSubheading(): string|Htmlable|null
+    {
+        $record = $this->record;
+
+        $filed = $record->submitted_at
+            ? 'filed '.$record->submitted_at->format('j M H:i').'Z'
+            : null;
+
+        $sourceLabel = filled($record->source_name)
+            ? $record->source?->getLabel().' · '.$record->source_name
+            : $record->source?->getLabel();
+
+        if (filled($sourceLabel)) {
+            $filed = filled($filed) ? $filed.' via '.$sourceLabel : 'via '.$sourceLabel;
+        }
+
+        $parts = array_filter([$record->user?->name, $filed], filled(...));
+
+        /* State chip rides the subline (mockup puts it beside the actions) so
+         * the report's state is visible without opening a tab. */
+        $chipClass = match ($record->state->getColor()) {
+            'success' => 'chip--ok',
+            'warning' => 'chip--warn',
+            'danger'  => 'chip--bad',
+            'info'    => 'chip--info',
+            default   => 'chip--mute',
+        };
+        $chip = '<span class="chip '.$chipClass.'">'.e($record->state->getLabel()).'</span>';
+
+        return new HtmlString(
+            $chip.($parts === [] ? '' : '<span>'.e(implode(' · ', $parts)).'</span>'),
+        );
+    }
+
     #[Override]
     public function content(Schema $schema): Schema
     {
@@ -135,16 +180,34 @@ class ViewPirep extends ViewRecord
         // no-op
     }
 
+    /**
+     * Order is deliberate: destructive first (left-most, away from the
+     * primary flow), then Edit, then the state decision as a dropdown
+     * button on the right (Tailwind Plus dropdown pattern).
+     */
     #[Override]
     protected function getHeaderActions(): array
     {
         return [
-            AcceptAction::make(),
-            RejectAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->icon(TablerIcon::Trash),
             ForceDeleteAction::make(),
             RestoreAction::make(),
+            /* Default EditAction color is primary, which takes the hero's
+             * inverted-ink fill — too loud next to Delete/Status. Neutral
+             * field, intent in the icon tint, like its neighbours. */
+            EditAction::make()
+                ->icon(TablerIcon::Edit)
+                ->color('info'),
+            ActionGroup::make([
+                AcceptAction::make(),
+                RejectAction::make(),
+            ])
+                ->label(__('common.status'))
+                ->icon(TablerIcon::ChevronDown)
+                ->iconPosition(IconPosition::After)
+                ->button()
+                ->color('gray'),
         ];
     }
 

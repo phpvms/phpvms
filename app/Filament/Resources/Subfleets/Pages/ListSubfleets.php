@@ -3,16 +3,19 @@
 namespace App\Filament\Resources\Subfleets\Pages;
 
 use App\Enums\ImportExportType;
+use App\Filament\Actions\Drawer;
 use App\Filament\Actions\ExportAction as OldExportAction;
 use App\Filament\Actions\ImportAction as OldImportAction;
 use App\Filament\Exports\SubfleetExporter;
 use App\Filament\Imports\SubfleetImporter;
+use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\SubfleetResource;
+use App\Models\Subfleet;
+use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Icons\Heroicon;
 use Override;
 
 class ListSubfleets extends ListRecords
@@ -37,8 +40,14 @@ class ListSubfleets extends ListRecords
                 ->visible(config('phpvms.use_queued_filament_imports'))
                 ->exporter(SubfleetExporter::class),
 
-            CreateAction::make()
-                ->icon(Heroicon::OutlinedPlusCircle),
+            Drawer::configure(
+                CreateAction::make()
+                    ->modal()
+                    ->createAnother(false)
+                    ->icon(TablerIcon::CirclePlus)
+                    ->successRedirectUrl(fn (Subfleet $record): string => SubfleetResource::getUrl('edit', ['record' => $record])),
+                SubfleetForm::createFields(),
+            ),
         ];
     }
 }

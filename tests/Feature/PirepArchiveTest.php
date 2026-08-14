@@ -92,7 +92,9 @@ test('file() archives flight, aircraft, and simbrief data', function (): void {
     $pirep = Pirep::factory()->create(['state' => PirepState::IN_PROGRESS]);
     attachSimBriefOfp($pirep);
 
-    app(PirepService::class)->file($pirep);
+    $pirepSvc = app(PirepService::class);
+    $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
 
     $archive = PirepArchive::find($pirep->id);
 
@@ -105,14 +107,16 @@ test('file() archives flight, aircraft, and simbrief data', function (): void {
         ->and($archive->aircraft['registration'])->toEqual($pirep->aircraft->registration);
 });
 
-test('file() on a manual pirep writes a sparse archive row', function (): void {
+// No file() here on purpose: the frontend files a manual PIREP with
+// create() + submit() and never touches file(), which is the ACARS API's path.
+test('submit() on a manual pirep writes a sparse archive row', function (): void {
     $pirep = Pirep::factory()->create([
         'state'       => PirepState::IN_PROGRESS,
         'flight_id'   => null,
         'aircraft_id' => null,
     ]);
 
-    app(PirepService::class)->file($pirep);
+    app(PirepService::class)->submit($pirep);
 
     $archive = PirepArchive::find($pirep->id);
 
@@ -135,7 +139,9 @@ test('file() survives a simbrief row whose OFP file is missing', function (): vo
     expect($simbrief->images)->toBeEmpty()
         ->and($simbrief->files)->toBeEmpty();
 
-    app(PirepService::class)->file($pirep);
+    $pirepSvc = app(PirepService::class);
+    $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
 
     $archive = PirepArchive::find($pirep->id);
 
@@ -150,9 +156,11 @@ test('re-filing a pirep upserts the archive row', function (): void {
 
     $pirepSvc = app(PirepService::class);
     $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
 
     $pirep->update(['state' => PirepState::IN_PROGRESS]);
     $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
 
     expect(PirepArchive::where('pirep_id', $pirep->id)->count())->toEqual(1);
 });
@@ -162,6 +170,7 @@ test('delete() removes the archive row', function (): void {
 
     $pirepSvc = app(PirepService::class);
     $pirepSvc->file($pirep);
+    $pirepSvc->submit($pirep);
 
     expect(PirepArchive::find($pirep->id))->not->toBeNull();
 
