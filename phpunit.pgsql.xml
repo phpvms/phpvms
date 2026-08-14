@@ -56,6 +56,8 @@
              tests always resolve config from files + these env values. -->
         <server name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
         <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <server name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <env name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
         <!-- Both blocks are required. Laravel resolves env() through a repository
              that reads $_SERVER before $_ENV, and the CLI SAPI copies exported
              shell variables into $_SERVER, so an exported DB_CONNECTION silently

@@ -47,6 +47,13 @@
              tests always resolve config from files + these env values. -->
         <server name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
         <env name="APP_CONFIG_CACHE" value="cache/config-phpunit-never-cached.php" force="true"/>
+        <!-- Same for a cached bootstrap/cache/routes-v7.php: the suite would run
+             against whatever routes the last `artisan route:cache` captured, and
+             loadRoutesFrom() no-ops while routes are cached, so anything that
+             registers routes at runtime (addon service providers) never gets
+             them. Pin it at a path that never exists. -->
+        <server name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
+        <env name="APP_ROUTES_CACHE" value="cache/routes-phpunit-never-cached.php" force="true"/>
         <server name="DB_CONNECTION" value="sqlite" force="true"/>
         <server name="DB_DATABASE" value=":memory:" force="true"/>
         <server name="DB_URL" value="" force="true"/>
