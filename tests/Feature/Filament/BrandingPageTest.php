@@ -238,14 +238,19 @@ it('still reports success when every row exists', function (): void {
 it('enables a 1:1 image editor on both logo uploads but not the banner', function (): void {
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 
-    $form = Livewire::test(Branding::class)->instance()->form;
+    /** @var Branding $page */
+    $page = Livewire::test(Branding::class)->instance();
+    $form = $page->form;
 
+    // getComponent() is typed as Action|ActionGroup|Component, so each result
+    // is narrowed before the FileUpload-specific calls.
     foreach (['logo', 'logo_dark'] as $key) {
         $upload = $form->getComponent(fn ($component): bool => $component instanceof FileUpload
             && $component->getName() === $key);
 
-        expect($upload)->not->toBeNull()
-            ->and($upload->hasImageEditor())->toBeTrue()
+        assert($upload instanceof FileUpload);
+
+        expect($upload->hasImageEditor())->toBeTrue()
             // The dialog is opened by auto-open, not by the FilePond edit
             // button -- that button is an overlay on the preview, which
             // previewable(false) removes.
@@ -255,6 +260,8 @@ it('enables a 1:1 image editor on both logo uploads but not the banner', functio
 
     $banner = $form->getComponent(fn ($component): bool => $component instanceof FileUpload
         && $component->getName() === 'banner');
+
+    assert($banner instanceof FileUpload);
 
     expect($banner->hasImageEditor())->toBeFalse();
 });

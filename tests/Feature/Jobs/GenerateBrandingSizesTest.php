@@ -8,6 +8,7 @@ use App\Services\ImageUploadService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Mockery\MockInterface;
 
 function derivativeSettingValue(int $size): ?string
 {
@@ -62,6 +63,7 @@ it('fails soft and leaves the derivative keys empty when no image extension is a
 
     Log::shouldReceive('warning')->once()->with(Mockery::pattern('/no image extension/i'));
 
+    /** @var GenerateBrandingSizes&MockInterface $job */
     $job = Mockery::mock(GenerateBrandingSizes::class, [$path])->makePartial();
     $job->shouldAllowMockingProtectedMethods();
     $job->shouldReceive('availableDriver')->once()->andReturn(null);

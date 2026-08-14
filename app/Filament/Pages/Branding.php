@@ -36,6 +36,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Js;
+use InvalidArgumentException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Override;
 use UnitEnum;
@@ -109,10 +110,13 @@ class Branding extends Page
 
     protected function persistAutosavedField(string $key, mixed $value): void
     {
+        // Keyed on autosaveKeys(); an unlisted key means the two have drifted,
+        // and failing loudly beats an UnhandledMatchError from a bare match.
         $settingKey = match ($key) {
             'logo'      => 'branding.logo_url',
             'logo_dark' => 'branding.logo_dark_url',
             'banner'    => 'branding.banner_url',
+            default     => throw new InvalidArgumentException("No branding setting is mapped to the autosaved field [{$key}]."),
         };
         $path = is_string($value) ? $value : null;
 
