@@ -319,34 +319,33 @@ class Branding extends Page
     private function upload(string $key): FileUpload
     {
         // Both logos are square by contract: they render as a favicon and a
-        // switcher icon, and GenerateBrandingSizes cuts 32/64/180 squares. The
-        // editor's ratio list is locked to 1:1 so the admin chooses WHICH
-        // square, rather than accepting whatever a centre-crop picked.
+        // switcher icon, and GenerateBrandingSizes cuts 32/64/180 squares.
         //
-        // This coexists with previewable(false): filepond-plugin-image-edit
-        // renders its button as an overlay on the preview when one exists, and
-        // otherwise falls back to a `.filepond--action-edit-item-alt` button in
-        // the file-info row -- which Filament's shipped CSS already styles.
+        // The crop dialog is opened by `automaticallyOpenImageEditorForAspectRatio()`,
+        // NOT by `imageEditor()`. `imageEditor()` only sets
+        // isImageEditorExplicitlyEnabled, which turns on FilePond's own edit
+        // BUTTON -- and that button is drawn as an overlay on the image preview,
+        // which `previewable(false)` removes. Auto-open needs no button: it runs
+        // in FilePond's `beforeAddFile` hook (file-upload.js:180-199), so it
+        // fires the moment a file is chosen.
         //
-        // The editor is opt-in per upload though (FilePond's imageEditInstantEdit
-        // is off and Filament does not expose it), so a non-square image can
-        // still reach the job. That is handled there by fit(), not here.
+        // Note it only opens when the image does NOT already match the ratio
+        // (`checkImageAspectRatio` short-circuits at :193). Uploading an
+        // already-square logo correctly shows no dialog.
+        //
+        // `imageAspectRatio()` must hold exactly ONE ratio here -- auto-open
+        // throws on a multi-ratio list (FileUpload.php:626-630). The deprecated
+        // `imageCropAspectRatio()` is the old name for
+        // imageAspectRatio() + automaticallyCropImagesToAspectRatio(), i.e. the
+        // silent centre-crop, which is not what we want.
         $isLogo = str_starts_with($key, 'logo');
 
         return FileUpload::make($key)
             ->label('')
             ->image()
             ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload
-                ->imageEditor()
-                // Two entries, not one. getImageEditorAspectRatioOptionsForJs()
-                // (FileUpload.php:676-678) DISCARDS the whole list when it holds
-                // fewer than two -- Filament hides a one-option selector -- so
-                // `['1:1']` alone silently yields no ratio control at all. `null`
-                // is the "no fixed ratio" entry, which keeps 1:1 selectable
-                // rather than mandatory. The square guarantee does not rest on
-                // this anyway: GenerateBrandingSizes::fit() squares whatever
-                // arrives.
-                ->imageEditorAspectRatios([null, '1:1']))
+                ->imageAspectRatio('1:1')
+                ->automaticallyOpenImageEditorForAspectRatio())
             ->previewable(false)
             ->disk(config('filesystems.public_files'))
             ->directory('branding')

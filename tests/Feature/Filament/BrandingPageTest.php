@@ -199,7 +199,11 @@ it('enables a 1:1 image editor on both logo uploads but not the banner', functio
 
         expect($upload)->not->toBeNull()
             ->and($upload->hasImageEditor())->toBeTrue()
-            ->and(array_keys($upload->getImageEditorAspectRatiosForJs()))->toContain('1:1');
+            // The dialog is opened by auto-open, not by the FilePond edit
+            // button -- that button is an overlay on the preview, which
+            // previewable(false) removes.
+            ->and($upload->shouldAutomaticallyOpenImageEditorForAspectRatio())->toBeTrue()
+            ->and($upload->getAutomaticallyOpenImageEditorForAspectRatio())->toBe(1.0);
     }
 
     $banner = $form->getComponent(fn ($component): bool => $component instanceof FileUpload
