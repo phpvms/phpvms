@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Filament\Pages\Branding;
+use App\Services\ImageUploadService;
 use App\Services\SettingService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -82,8 +83,13 @@ class GenerateBrandingSizes implements ShouldQueue
 
         $source = $disk->get($this->diskPath);
 
+        // WebP where the driver can encode it, the source format otherwise. A
+        // GD build without WebP still resizes PNG/JPEG perfectly well, and
+        // skipping derivatives there would cost that install its favicon.
+        $format = app(ImageUploadService::class)->webpDriver() !== null ? 'webp' : $extension;
+
         foreach (self::SIZES as $size) {
-            $path = "branding/logo-{$size}.{$extension}";
+            $path = "branding/logo-{$size}.{$format}";
 
             // fit(), not resize(): resize($size, $size) forces both dimensions
             // and STRETCHES a non-square source. The upload UI offers a 1:1
@@ -91,7 +97,7 @@ class GenerateBrandingSizes implements ShouldQueue
             // image set through a seeder or the API, so the job cannot assume a
             // square input. fit() picks the best-fitting square, crops to it,
             // then scales -- correct for any source aspect.
-            $encoded = (string) $manager->make($source)->fit($size, $size)->encode();
+            $encoded = (string) $manager->make($source)->fit($size, $size)->encode($format, ImageUploadService::WEBP_QUALITY);
 
             $disk->put($path, $encoded);
 
@@ -100,16 +106,15 @@ class GenerateBrandingSizes implements ShouldQueue
     }
 
     /**
-     * The first available image extension, or null when neither GD nor
-     * Imagick is installed. Extracted so tests can mock the condition
-     * without runkit.
+     * The first available image driver, or null when neither GD nor Imagick is
+     * installed. Deliberately NOT the WebP-capable check: resizing only needs a
+     * driver that can decode the source, and a GD build without WebP must still
+     * produce derivatives (the encode format is chosen separately in handle()).
+     * Delegates to {@see ImageUploadService} so this and the upload path never
+     * disagree. Extracted so tests can mock the condition without runkit.
      */
     protected function availableDriver(): ?string
     {
-        return match (true) {
-            extension_loaded('gd')      => 'gd',
-            extension_loaded('imagick') => 'imagick',
-            default                     => null,
-        };
+        return app(ImageUploadService::class)->rasterDriver();
     }
 }

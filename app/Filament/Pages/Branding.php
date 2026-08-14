@@ -10,6 +10,7 @@ use App\Filament\Concerns\AuthorizesAccess;
 use App\Filament\Concerns\AutosavesFields;
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Jobs\GenerateBrandingSizes;
+use App\Services\ImageUploadService;
 use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
 use BackedEnum;
@@ -415,6 +416,11 @@ class Branding extends Page
             ->visibility('public')
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file): string => $key.'.'.strtolower($file->getClientOriginalExtension())
+            )
+            // Converts to WebP through the shared upload service instead of
+            // storing whatever format was dropped; see ImageUploadService.
+            ->saveUploadedFileUsing(
+                fn (FileUpload $component, TemporaryUploadedFile $file): string => app(ImageUploadService::class)->storeFilamentUpload($component, $file)
             )
             ->live()
             ->afterStateUpdated(function (FileUpload $component, $livewire): void {

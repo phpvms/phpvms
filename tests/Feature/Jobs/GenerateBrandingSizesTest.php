@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Jobs\GenerateBrandingSizes;
 use App\Models\Setting;
+use App\Services\ImageUploadService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -50,7 +51,7 @@ it('writes three derivative files and three setting keys', function (): void {
     $disk = Storage::disk(config('filesystems.public_files'));
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertExists("branding/logo-{$size}.png");
+        $disk->assertExists("branding/logo-{$size}.webp");
         expect(derivativeSettingValue($size))->not->toBeEmpty();
     }
 });
@@ -70,7 +71,7 @@ it('fails soft and leaves the derivative keys empty when no image extension is a
     $disk = Storage::disk(config('filesystems.public_files'));
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertMissing("branding/logo-{$size}.png");
+        $disk->assertMissing("branding/logo-{$size}.webp");
         expect(derivativeSettingValue($size))->toBe('');
     }
 });
@@ -82,7 +83,7 @@ it('regenerates the derivative files and keeps the setting keys filled on re-upl
     putSolidLogo($path, red: 255);
 
     new GenerateBrandingSizes($path)->handle();
-    $firstBytes = $disk->get('branding/logo-64.png');
+    $firstBytes = $disk->get('branding/logo-64.webp');
     $firstUrl = derivativeSettingValue(64);
 
     // Re-upload: different image bytes land at the same deterministic path.
@@ -91,11 +92,11 @@ it('regenerates the derivative files and keeps the setting keys filled on re-upl
     new GenerateBrandingSizes($path)->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $disk->assertExists("branding/logo-{$size}.png");
+        $disk->assertExists("branding/logo-{$size}.webp");
         expect(derivativeSettingValue($size))->not->toBeEmpty();
     }
 
-    expect($disk->get('branding/logo-64.png'))->not->toBe($firstBytes)
+    expect($disk->get('branding/logo-64.webp'))->not->toBe($firstBytes)
         ->and(derivativeSettingValue(64))->toBe($firstUrl);
 });
 
@@ -129,13 +130,13 @@ it('produces square derivatives from a non-square source', function (): void {
     new GenerateBrandingSizes('branding/logo.png')->handle();
 
     foreach ([32, 64, 180] as $size) {
-        $png = $disk->get("branding/logo-{$size}.png");
-        $info = getimagesizefromstring($png);
+        $webp = $disk->get("branding/logo-{$size}.webp");
+        $info = getimagesizefromstring($webp);
 
         expect($info[0])->toBe($size)
             ->and($info[1])->toBe($size);
 
-        $derivative = imagecreatefromstring($png);
+        $derivative = imagecreatefromstring($webp);
         $topLeft = imagecolorsforindex($derivative, imagecolorat($derivative, 1, 1));
         imagedestroy($derivative);
 
@@ -167,4 +168,30 @@ it('points every size at the original for an SVG logo instead of failing', funct
 
     // No raster derivatives were written.
     expect($disk->exists('branding/logo-32.svg'))->toBeFalse();
+});
+
+/**
+ * A GD build compiled without WebP can still decode and resize PNG. Routing the
+ * job's driver check through webpDriver() made it skip derivatives entirely on
+ * such an install, costing it the favicon -- resizing does not need WebP, only
+ * the encode format does.
+ */
+it('still writes derivatives in the source format when webp is unavailable', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $disk = Storage::disk(config('filesystems.public_files'));
+    putSolidLogo('branding/logo.png', 40);
+
+    $service = Mockery::mock(ImageUploadService::class)->makePartial();
+    $service->shouldReceive('webpDriver')->andReturn(null);
+    $service->shouldReceive('rasterDriver')->andReturn('gd');
+    app()->instance(ImageUploadService::class, $service);
+
+    new GenerateBrandingSizes('branding/logo.png')->handle();
+
+    foreach ([32, 64, 180] as $size) {
+        expect($disk->exists("branding/logo-{$size}.png"))->toBeTrue()
+            ->and($disk->exists("branding/logo-{$size}.webp"))->toBeFalse()
+            ->and(derivativeSettingValue($size))->toEndWith('.png');
+    }
 });

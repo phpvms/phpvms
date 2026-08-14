@@ -16,6 +16,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\AddonSettingService;
+use App\Services\ImageUploadService;
 use App\Services\ModuleService;
 use App\Services\PermissionRegistry;
 use App\Services\RouteForge\Contracts\LintRule;
@@ -327,6 +328,10 @@ class AppServiceProvider extends ServiceProvider
         // Airline branding resolution. Stateless/Octane-safe (see class
         // docblock); bound as a singleton purely for reuse, not caching.
         $this->app->singleton(Branding::class);
+
+        // Central admin image-upload conversion. Stateless/Octane-safe, no
+        // memo to flush; bound as a singleton purely for reuse.
+        $this->app->singleton(ImageUploadService::class);
 
         // Permission registry: modules register custom permissions into the
         // same instance during boot(), so it must be a singleton.

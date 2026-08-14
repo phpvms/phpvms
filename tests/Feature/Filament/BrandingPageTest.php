@@ -8,6 +8,7 @@ use App\Jobs\GenerateBrandingSizes;
 use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\ImageUploadService;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
@@ -103,7 +104,39 @@ it('autosaves the logo upload without calling save', function (): void {
     $url = Setting::where('id', Setting::formatKey('branding.logo_url'))->value('value');
 
     expect($url)->not->toBeEmpty()
+        ->and($url)->toEndWith('.webp')
         ->and(Setting::where('id', Setting::formatKey('general.site_name'))->value('value'))->not->toBe('Acme Air');
+});
+
+/**
+ * Every admin image upload routes through ImageUploadService. With no
+ * WebP-capable driver it must degrade to storing the upload unconverted
+ * rather than throwing -- an install without GD/Imagick webp support has to
+ * keep working. Forcing this via a partial mock of webpDriver() (rather than
+ * disabling the real extension) is what proves the service's fallback branch
+ * runs at all: reverting ImageUploadService::store()'s `$driver === null`
+ * branch to always attempt ->encode('webp', ...) makes this fail, because
+ * the mocked driver name ('gd') is still handed to a fresh ImageManager that
+ * really does have WebP support, so encoding would still succeed and the
+ * stored file would still end in .webp.
+ */
+it('stores the original file unconverted when no webp driver is available', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    $mock = Mockery::mock(ImageUploadService::class)->makePartial();
+    $mock->shouldReceive('webpDriver')->andReturn(null);
+    app()->instance(ImageUploadService::class, $mock);
+
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
+        ->assertDispatched('autosaved');
+
+    $url = Setting::where('id', Setting::formatKey('branding.logo_url'))->value('value');
+
+    expect($url)->not->toBeEmpty()
+        ->and($url)->toEndWith('.png');
 });
 
 it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): void {
@@ -116,7 +149,7 @@ it('dispatches GenerateBrandingSizes when the logo is autosaved', function (): v
         ->set('data.logo', UploadedFile::fake()->image('logo.png', 64, 64))
         ->assertDispatched('autosaved');
 
-    Queue::assertPushed(GenerateBrandingSizes::class, fn (GenerateBrandingSizes $job): bool => $job->diskPath === 'branding/logo.png');
+    Queue::assertPushed(GenerateBrandingSizes::class, fn (GenerateBrandingSizes $job): bool => $job->diskPath === 'branding/logo.webp');
 });
 
 it('autosaves the dark logo upload without calling save', function (): void {
