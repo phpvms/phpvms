@@ -213,3 +213,14 @@ parameters:
         # believes the second check can never differ from the first.
         - identifier: if.alwaysFalse
           path: app/Http/Middleware/SetActiveTheme.php
+
+        # ReversePrimaryButtons falls back to parent::getFormContentComponent()
+        # when a form has no top-level Section. That parent exists on EditRecord
+        # and CreateRecord, which is what the trait was written for, but not on a
+        # plain Filament\Pages\Page -- and Branding is the first plain page to
+        # use it. Unreachable there in practice: the house admin page format
+        # requires one outer Section card, so lastFormSection() always resolves.
+        # A plain page adopting this trait must keep that outer Section.
+        - identifier: staticMethod.notFound
+          message: '#Call to an undefined static method Filament\\Pages\\Page(<[^>]+>)?::getFormContentComponent\(\)#'
+          path: app/Filament/Concerns/ReversePrimaryButtons.php
