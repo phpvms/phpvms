@@ -28,6 +28,22 @@
     identical to the saved result. Good enough to judge a colour by; upgrade the
     curve if the two ever visibly diverge.
 --}}
+{{--
+    Two sources, because Filament's ColorPicker has two:
+
+    - Dragging happens inside a <hex-color-picker> web component (vanilla-colorful,
+      rendered at ColorPicker.php:184). It never fires `input` on an <input> -- it
+      dispatches a `color-changed` CustomEvent with `bubbles: true`, which is also
+      how Filament's own color-picker.js reads it. Listening for `input` on the
+      text box therefore caught nothing while dragging.
+    - Typing a hex into the text box fires `change` on it, and setting the picker's
+      `.color` property programmatically does NOT re-emit `color-changed`, so that
+      case needs its own listener.
+
+    Both are bound with Alpine's `.document` modifier rather than a manual
+    addEventListener, so Alpine removes them when this node is torn down -- a
+    Livewire re-render would otherwise stack a duplicate listener each time.
+--}}
 <div
     class="fi-picker-swatches mt-2"
     x-data="{
@@ -52,19 +68,9 @@
                 );
             }
         },
-
-        init() {
-            // The ColorPicker's own inputs live in the field above this partial,
-            // not inside it, so reach up to the shared field wrapper. `input`
-            // fires continuously while the native picker is dragged, which is
-            // what makes this feel live.
-            const field = this.$el.closest('.fi-fo-field, .fi-fo-field-wrp');
-
-            field?.querySelectorAll('input').forEach((input) => {
-                input.addEventListener('input', (event) => this.preview(event.target.value));
-            });
-        },
     }"
+    x-on:color-changed.document="preview($event.detail?.value)"
+    x-on:change.document="$event.target.matches('.fi-fo-color-picker input') && preview($event.target.value)"
 >
     @foreach ($presets as $hex => $name)
         <button
