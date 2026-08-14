@@ -1849,12 +1849,18 @@
   @apply block mb-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
 }
 
+/* One row of all 26 Filament palettes. `auto-fit` rather than a fixed
+ * `repeat(26, …)`: the swatches shrink to fit whatever width the card has, and
+ * only wrap once they would go below 14px — narrow enough that a comfortable
+ * -density sidebar still keeps them on one line, small enough to stay a
+ * legible target. */
 .fi-picker-swatches {
-  @apply grid grid-cols-8 gap-1.5;
+  @apply grid gap-1;
+  grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
 }
 
 .fi-picker-swatch {
-  @apply w-full rounded-md;
+  @apply w-full rounded-sm;
   aspect-ratio: 1;
   border: 1px solid color-mix(in oklab, currentColor 45%, transparent);
   transition: transform 100ms;

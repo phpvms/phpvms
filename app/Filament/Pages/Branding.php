@@ -244,6 +244,58 @@ class Branding extends Page
                         ->string()
                         ->required(),
 
+                    Section::make(__('filament.branding_admin_colors'))
+                        ->id('branding-admin-colors')
+                        ->icon(TablerIcon::ColorSwatch)
+                        ->collapsible()
+                        ->persistCollapsed()
+                        // Four columns so the custom picker sits at a quarter
+                        // width beside the swatch row rather than stretching
+                        // across the card; the swatches span the full width.
+                        ->columns(4)
+                        ->schema([
+                            View::make('filament.pages.branding.color-presets')
+                                ->viewData(fn (Get $get): array => [
+                                    'palettes' => app(BrandingSupport::class)->palettes(),
+                                    'selected' => strtolower((string) $get('branding.brand_color')),
+                                ])
+                                ->columnSpanFull(),
+
+                            ColorPicker::make('branding.custom_color')
+                                ->label(__('filament.branding_admin_colors_custom'))
+                                ->helperText(__('filament.branding_admin_colors_custom_hint'))
+                                ->hex()
+                                // UI-only: this field never holds the saved value
+                                // (see the Hidden field below), only a hex the
+                                // admin is currently dragging towards. Saving it
+                                // would silently overwrite a palette selection
+                                // the next time this page loads.
+                                ->dehydrated(false)
+                                ->default(fn (): string => $this->customColorSeed())
+                                ->live()
+                                ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                    if (is_string($state) && preg_match('/^#[0-9a-fA-F]{6}$/', $state) === 1) {
+                                        $set('branding.brand_color', $state);
+                                    }
+                                }),
+
+                            Hidden::make('branding.brand_color')
+                                ->required()
+                                ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                    $palettes = app(BrandingSupport::class)->palettes();
+
+                                    if (isset($palettes[strtolower((string) $value)])) {
+                                        return;
+                                    }
+
+                                    if (preg_match('/^#[0-9a-fA-F]{6}$/', (string) $value) === 1) {
+                                        return;
+                                    }
+
+                                    $fail(__('filament.branding_admin_colors_invalid'));
+                                }),
+                        ]),
+
                     Section::make(__('filament.branding_logo'))
                         ->id('branding-logo')
                         ->icon(TablerIcon::Photo)
@@ -293,52 +345,6 @@ class Branding extends Page
                                 ->visible(fn (): bool => filled(app(BrandingSupport::class)->banner())),
                         ]),
 
-                    Section::make(__('filament.branding_admin_colors'))
-                        ->id('branding-admin-colors')
-                        ->icon(TablerIcon::ColorSwatch)
-                        ->collapsible()
-                        ->persistCollapsed()
-                        ->schema([
-                            View::make('filament.pages.branding.color-presets')
-                                ->viewData(fn (Get $get): array => [
-                                    'palettes' => app(BrandingSupport::class)->palettes(),
-                                    'selected' => strtolower((string) $get('branding.brand_color')),
-                                ]),
-
-                            ColorPicker::make('branding.custom_color')
-                                ->label(__('filament.branding_admin_colors_custom'))
-                                ->helperText(__('filament.branding_admin_colors_custom_hint'))
-                                ->hex()
-                                // UI-only: this field never holds the saved value
-                                // (see the Hidden field below), only a hex the
-                                // admin is currently dragging towards. Saving it
-                                // would silently overwrite a palette selection
-                                // the next time this page loads.
-                                ->dehydrated(false)
-                                ->default(fn (): string => $this->customColorSeed())
-                                ->live()
-                                ->afterStateUpdated(function (Set $set, ?string $state): void {
-                                    if (is_string($state) && preg_match('/^#[0-9a-fA-F]{6}$/', $state) === 1) {
-                                        $set('branding.brand_color', $state);
-                                    }
-                                }),
-
-                            Hidden::make('branding.brand_color')
-                                ->required()
-                                ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
-                                    $palettes = app(BrandingSupport::class)->palettes();
-
-                                    if (isset($palettes[strtolower((string) $value)])) {
-                                        return;
-                                    }
-
-                                    if (preg_match('/^#[0-9a-fA-F]{6}$/', (string) $value) === 1) {
-                                        return;
-                                    }
-
-                                    $fail(__('filament.branding_admin_colors_invalid'));
-                                }),
-                        ]),
                 ]),
         ];
     }

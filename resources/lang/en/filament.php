@@ -175,7 +175,7 @@ return [
     'maintenance_archive_pirep_flights_queued'  => 'PIREP flight data backfill queued',
     'branding'                                  => 'Branding',
     'branding_subheading'                       => "Your airline's name, brand colour, logo and banner across the admin panel and site.",
-    'branding_airline_name'                     => 'Airline name',
+    'branding_airline_name'                     => 'Airline Name',
     'branding_airline_name_hint'                => 'Shown in the admin panel and on the site.',
     'branding_logo'                             => 'Logo',
     'branding_logo_hint'                        => 'Square image, shown in the admin sidebar and as the favicon source.',
