@@ -62,6 +62,20 @@ it('saves the airline name to general.site_name', function (): void {
         ->and(Setting::where('id', Setting::formatKey('branding.brand_color'))->value('value'))->toBe('#4f46e5');
 });
 
+it('saves a palette name to branding.brand_color', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    Livewire::test(Branding::class)
+        ->fillForm([
+            'general'  => ['site_name' => 'Acme Air'],
+            'branding' => ['brand_color' => 'blue'],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(Setting::where('id', Setting::formatKey('branding.brand_color'))->value('value'))->toBe('blue');
+});
+
 it('rejects an invalid hex colour and writes nothing', function (): void {
     $this->actingAs(brandingUser('view:branding', 'edit:branding'));
 

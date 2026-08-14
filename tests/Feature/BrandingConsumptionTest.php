@@ -6,6 +6,7 @@ use App\Http\Middleware\UpdatePending;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Support\Colors\Color;
 use Igaster\LaravelTheme\Facades\Theme;
 
 use function Pest\Laravel\actingAs;
@@ -54,6 +55,14 @@ describe('admin panel, with branding configured', function (): void {
             ->assertSee('Acme Air')
             ->assertSee('https://cdn.example.com/logo.png', escape: false);
     });
+});
+
+it("resolves the admin panel's primary colour to a stored palette name", function (): void {
+    updateSetting('branding.brand_color', 'blue');
+
+    Filament::setCurrentPanel('admin');
+
+    expect(Filament::getPanel('admin')->getColors()['primary'])->toBe(Color::Blue);
 });
 
 describe('admin panel, with nothing configured', function (): void {

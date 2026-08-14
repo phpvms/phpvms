@@ -13,18 +13,22 @@ use App\Jobs\GenerateBrandingSizes;
 use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
 use BackedEnum;
+use Closure;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Image;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Arr;
@@ -230,28 +234,15 @@ class Branding extends Page
                 ->collapsible()
                 ->persistCollapsed()
                 ->schema([
-                    // Name and colour sit directly in the card rather than in a
-                    // band of their own: they are the card's own subject, and a
-                    // head band above the first real subsection reads as a label
-                    // for nothing.
-                    Grid::make(2)->schema([
-                        TextInput::make('general.site_name')
-                            ->label(__('filament.branding_airline_name'))
-                            ->helperText(__('filament.branding_airline_name_hint'))
-                            ->string()
-                            ->required(),
-
-                        ColorPicker::make('branding.brand_color')
-                            ->label(__('filament.branding_color'))
-                            ->helperText(__('filament.branding_color_hint'))
-                            ->hex()
-                            ->rule('regex:/^#[0-9a-fA-F]{6}$/')
-                            ->validationMessages([
-                                'regex' => __('filament.branding_color_invalid'),
-                            ])
-                            ->required()
-                            ->belowContent(View::make('filament.pages.branding.color-presets')),
-                    ]),
+                    // The airline name sits directly in the card rather than in
+                    // a band of its own: it is the card's own subject, and a
+                    // head band above the first real subsection reads as a
+                    // label for nothing.
+                    TextInput::make('general.site_name')
+                        ->label(__('filament.branding_airline_name'))
+                        ->helperText(__('filament.branding_airline_name_hint'))
+                        ->string()
+                        ->required(),
 
                     Section::make(__('filament.branding_logo'))
                         ->id('branding-logo')
@@ -301,8 +292,74 @@ class Branding extends Page
                                 ->alignCenter()
                                 ->visible(fn (): bool => filled(app(BrandingSupport::class)->banner())),
                         ]),
+
+                    Section::make(__('filament.branding_admin_colors'))
+                        ->id('branding-admin-colors')
+                        ->icon(TablerIcon::ColorSwatch)
+                        ->collapsible()
+                        ->persistCollapsed()
+                        ->schema([
+                            View::make('filament.pages.branding.color-presets')
+                                ->viewData(fn (Get $get): array => [
+                                    'palettes' => app(BrandingSupport::class)->palettes(),
+                                    'selected' => strtolower((string) $get('branding.brand_color')),
+                                ]),
+
+                            ColorPicker::make('branding.custom_color')
+                                ->label(__('filament.branding_admin_colors_custom'))
+                                ->helperText(__('filament.branding_admin_colors_custom_hint'))
+                                ->hex()
+                                // UI-only: this field never holds the saved value
+                                // (see the Hidden field below), only a hex the
+                                // admin is currently dragging towards. Saving it
+                                // would silently overwrite a palette selection
+                                // the next time this page loads.
+                                ->dehydrated(false)
+                                ->default(fn (): string => $this->customColorSeed())
+                                ->live()
+                                ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                    if (is_string($state) && preg_match('/^#[0-9a-fA-F]{6}$/', $state) === 1) {
+                                        $set('branding.brand_color', $state);
+                                    }
+                                }),
+
+                            Hidden::make('branding.brand_color')
+                                ->required()
+                                ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                                    $palettes = app(BrandingSupport::class)->palettes();
+
+                                    if (isset($palettes[strtolower((string) $value)])) {
+                                        return;
+                                    }
+
+                                    if (preg_match('/^#[0-9a-fA-F]{6}$/', (string) $value) === 1) {
+                                        return;
+                                    }
+
+                                    $fail(__('filament.branding_admin_colors_invalid'));
+                                }),
+                        ]),
                 ]),
         ];
+    }
+
+    /**
+     * Seed value for the custom colour picker: the stored hex verbatim when
+     * a hex is stored, or the selected palette's 600 shade converted to hex
+     * when a palette name is stored. Reading {@see BrandingSupport::brandPalette()}
+     * directly here (rather than the raw hex) would round the input through
+     * Filament's generated ramp for a hex value, which is not what was typed.
+     */
+    private function customColorSeed(): string
+    {
+        $branding = app(BrandingSupport::class);
+        $stored = $branding->brandColor();
+
+        if (isset($branding->palettes()[strtolower($stored)])) {
+            return Color::convertToHex($branding->brandPalette()[600]);
+        }
+
+        return $stored;
     }
 
     /**

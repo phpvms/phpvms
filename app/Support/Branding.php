@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Filament\Support\Colors\Color;
+
 /**
  * Resolves airline-supplied branding — name, logo, favicon, banner and brand
  * colour — with a fallback chain that terminates in the phpVMS asset that was
@@ -101,5 +103,47 @@ final class Branding
     public function brandColor(): string
     {
         return setting('branding.brand_color', '') ?: self::DEFAULT_BRAND_COLOR;
+    }
+
+    /**
+     * Every one of Filament's built-in Tailwind palettes, keyed by lowercase
+     * name -- exactly {@see Color::all()}'s list, so the 26-palette count
+     * this class relies on tracks Filament's own enumeration rather than a
+     * copy of it.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function palettes(): array
+    {
+        return Color::all();
+    }
+
+    /**
+     * Brand colour resolved to its 50-950 shade map, for the admin panel's
+     * `primary` palette.
+     *
+     * `branding.brand_color` (see {@see brandColor()}) holds EITHER a
+     * palette name, matched case-insensitively against {@see palettes()}, OR
+     * a hex string, which generates its palette via
+     * {@see Color::generatePalette()} -- the same call `AdminPanelProvider`
+     * made directly before this method existed. A value that is neither
+     * falls back to the default palette rather than feeding a malformed hex
+     * into `generatePalette()`.
+     *
+     * @return array<int, string>
+     */
+    public function brandPalette(): array
+    {
+        $stored = $this->brandColor();
+
+        if ($palette = $this->palettes()[strtolower($stored)] ?? null) {
+            return $palette;
+        }
+
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $stored) === 1) {
+            return Color::generatePalette($stored);
+        }
+
+        return Color::generatePalette(self::DEFAULT_BRAND_COLOR);
     }
 }

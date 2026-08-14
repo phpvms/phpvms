@@ -12,7 +12,6 @@ use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Filament\Support\Colors\Color;
 use Illuminate\Support\Str;
 use Override;
 use ReflectionClass;
@@ -89,7 +88,7 @@ abstract class PanelProvider extends BasePanelProvider
     protected function colors(): array
     {
         return [
-            'primary' => Color::generatePalette(app(Branding::class)->brandColor()),
+            'primary' => app(Branding::class)->brandPalette(),
         ];
     }
 

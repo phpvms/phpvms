@@ -13,7 +13,6 @@ use Filament\Panel;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
-use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
@@ -26,7 +25,7 @@ class AdminPanelProvider extends BasePanelProvider
             ->id('admin')
             ->path('admin')
             ->colors(fn (): array => [
-                'primary' => Color::generatePalette(app(Branding::class)->brandColor()),
+                'primary' => app(Branding::class)->brandPalette(),
             ])
             ->assets([
                 Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css'),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Setting;
 use App\Support\Branding;
+use Filament\Support\Colors\Color;
 
 function brandingMigrationForBrandingTest(): object
 {
@@ -139,5 +140,23 @@ describe('with the branding rows seeded but empty', function (): void {
         setBrandingSetting('branding.logo_dark_url', 'https://cdn.example.com/logo-dark.png');
 
         expect(app(Branding::class)->hasDarkLogo())->toBeTrue();
+    });
+
+    it('brandPalette resolves the exact Filament palette when the setting is a known palette name, case-insensitively', function (): void {
+        setBrandingSetting('branding.brand_color', 'Blue');
+
+        expect(app(Branding::class)->brandPalette())->toBe(Color::Blue);
+    });
+
+    it('brandPalette generates a palette from a stored hex', function (): void {
+        setBrandingSetting('branding.brand_color', '#4f46e5');
+
+        expect(app(Branding::class)->brandPalette())->toBe(Color::generatePalette('#4f46e5'));
+    });
+
+    it('brandPalette falls back to the default palette for a value that is neither a palette name nor a hex', function (): void {
+        setBrandingSetting('branding.brand_color', 'not-a-color-or-palette');
+
+        expect(app(Branding::class)->brandPalette())->toBe(Color::generatePalette('#067ec1'));
     });
 });
