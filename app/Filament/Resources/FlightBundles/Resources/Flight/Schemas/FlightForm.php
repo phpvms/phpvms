@@ -17,6 +17,7 @@ use Carbon\CarbonInterface;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use DateTimeInterface;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -24,7 +25,6 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -240,7 +240,10 @@ class FlightForm
      * the edit page's overview and edited through its drawer, so the two
      * places that render them stay in step.
      *
-     * @return array<int, Component>
+     * Every element is a Field (Select/TextInput), not just a Component --
+     * EditFlight maps over these calling getName(), which only Field has.
+     *
+     * @return array<int, Field>
      */
     public static function identityFields(): array
     {
@@ -290,10 +293,13 @@ class FlightForm
         $blockTime = self::clockTime($get('flight_time'));
 
         return [
+            // `?->` only where there is no `??` to fall back on: the coalesce
+            // already swallows a property read on null, so `$departure?->name ?? ''`
+            // is the nullsafe doing nothing.
             'dptIcao'       => $departure?->icao,
-            'dptName'       => $departure?->name ?? '',
+            'dptName'       => $departure->name ?? '',
             'arrIcao'       => $arrival?->icao,
-            'arrName'       => $arrival?->name ?? '',
+            'arrName'       => $arrival->name ?? '',
             'departureTime' => blank($get('departure_time')) ? null : self::clockTime($get('departure_time')),
             'arrivalTime'   => blank($get('arrival_time')) ? null : self::clockTime($get('arrival_time')),
             'blockTime'     => $blockTime === '' ? '—' : $blockTime,

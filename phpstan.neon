@@ -173,3 +173,43 @@ parameters:
         # pest.expectation.impossible stays enabled -- that one catches real bugs.
         - identifier: pest.expectation.redundant
           path: tests/
+
+        # Filament registers page actions dynamically, so `$this->editAction`
+        # resolves the page's `editAction()` method through __get. The overview
+        # component takes the action as a property (never a method call), which
+        # is the documented convention -- there is no declaration to see.
+        - identifier: property.notFound
+          message: '#Access to an undefined property App\\Filament\\Resources\\.*::\$editAction#'
+
+        # Livewire test helpers. `livewire()` is typed as the base Component, so
+        # Filament's schema/action accessors on the concrete page are invisible,
+        # and TestResponse gains its Filament assertions via macros.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Livewire\\Component::(getSchema|getMountedAction|getMountedActionSchemaName)\(\)#'
+          path: tests/
+        - identifier: method.notFound
+          message: '#Call to an undefined method Illuminate\\Testing\\TestResponse::(html|instance|assert[A-Za-z]+)\(\)#'
+          path: tests/
+
+        # Mockery's fluent API returns a union whose members do not all declare
+        # every expectation method, and Invader is intentionally untyped -- it
+        # exists to reach private members.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::#'
+          path: tests/
+        - identifier: method.notFound
+          message: '#Call to an undefined method Spatie\\Invade\\Invader#'
+          path: tests/
+
+        # The query builder hands constraint callbacks the base Constraint; the
+        # concrete subclass carrying isInteger()/getOptions()/isNullable() is
+        # only known at runtime from the constraint that was registered.
+        - identifier: method.notFound
+          message: '#Call to an undefined method Filament\\QueryBuilder\\Constraints\\Constraint::#'
+
+        # Theme::exists() is re-checked after rebuildCache()/scanThemes(), which
+        # is the entire point: the first call can be false purely because the
+        # cached theme list is stale. PHPStan treats the facade as pure and so
+        # believes the second check can never differ from the first.
+        - identifier: if.alwaysFalse
+          path: app/Http/Middleware/SetActiveTheme.php

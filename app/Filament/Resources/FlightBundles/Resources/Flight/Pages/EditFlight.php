@@ -77,7 +77,9 @@ class EditFlight extends EditRecord
         return view('filament.shared.hero-subheading', [
             'meta' => implode(' · ', array_filter([
                 $record->airline?->name,
-                $record->flight_type?->getLabel(),
+                // flights.flight_type is NOT NULL with a default, and the model
+                // casts it to the enum, so it is never null here.
+                $record->flight_type->getLabel(),
                 self::frequencyLabel($record),
             ])),
             'chip'    => ['label' => $statusLabel, 'color' => $statusColor],

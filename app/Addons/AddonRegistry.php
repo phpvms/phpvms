@@ -378,12 +378,13 @@ class AddonRegistry
      */
     private function safeName(AddonManifest $manifest): string
     {
-        if ($manifest->registryId !== null) {
-            $safe = keyed_str(strtolower($manifest->registryId));
+        // registryId is a non-nullable string, so the old `!== null` guard here
+        // could never fail; the empty check below is the one that matters, and
+        // an id that sanitises away still falls through to the name.
+        $safe = keyed_str(strtolower($manifest->registryId));
 
-            if ($safe !== '') {
-                return $safe;
-            }
+        if ($safe !== '') {
+            return $safe;
         }
 
         $safe = keyed_str(strtolower($manifest->name));
