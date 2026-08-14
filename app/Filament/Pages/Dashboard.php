@@ -23,6 +23,7 @@ use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
+use Filament\Panel;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View as ViewComponent;
@@ -72,6 +73,19 @@ class Dashboard extends DynamicDashboard
         ['name' => 'Flight hours', 'type' => HoursFlownChart::class, 'x' => 0, 'y' => 8],
         ['name' => 'PIREPs by state', 'type' => PirepStateChart::class, 'x' => 8, 'y' => 8],
     ];
+
+    /**
+     * The dashboard is the panel's home page, so it owns `/admin` itself.
+     *
+     * Filament's own Dashboard page does this; DynamicDashboard extends the
+     * plain Page, which would otherwise slug it to `/admin/dashboard` and leave
+     * `/admin` as a redirect.
+     */
+    #[Override]
+    public static function getRoutePath(Panel $panel): string
+    {
+        return '/';
+    }
 
     #[Override]
     public function mount(): void
