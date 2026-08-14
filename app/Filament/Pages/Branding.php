@@ -318,19 +318,27 @@ class Branding extends Page
      */
     private function upload(string $key): FileUpload
     {
-        // Both logos are square by contract: GenerateBrandingSizes resizes to
-        // 32/64/180 squares, and they render as a favicon and a switcher icon.
-        // FilePond crops to the ratio client-side before upload (it is what
-        // flips `shouldTransformImage`, FileUpload.php:961), so a non-square
-        // source is corrected rather than refused -- no editor UI, which
-        // matters because `previewable(false)` leaves the image-edit plugin
-        // nowhere to hang its button. The banner is free-form.
+        // Both logos are square by contract: they render as a favicon and a
+        // switcher icon, and GenerateBrandingSizes cuts 32/64/180 squares. The
+        // editor's ratio list is locked to 1:1 so the admin chooses WHICH
+        // square, rather than accepting whatever a centre-crop picked.
+        //
+        // This coexists with previewable(false): filepond-plugin-image-edit
+        // renders its button as an overlay on the preview when one exists, and
+        // otherwise falls back to a `.filepond--action-edit-item-alt` button in
+        // the file-info row -- which Filament's shipped CSS already styles.
+        //
+        // The editor is opt-in per upload though (FilePond's imageEditInstantEdit
+        // is off and Filament does not expose it), so a non-square image can
+        // still reach the job. That is handled there by fit(), not here.
         $isLogo = str_starts_with($key, 'logo');
 
         return FileUpload::make($key)
             ->label('')
             ->image()
-            ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload->imageCropAspectRatio('1:1'))
+            ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload
+                ->imageEditor()
+                ->imageEditorAspectRatios(['1:1']))
             ->previewable(false)
             ->disk(config('filesystems.public_files'))
             ->directory('branding')

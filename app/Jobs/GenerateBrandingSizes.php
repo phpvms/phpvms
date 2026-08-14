@@ -68,7 +68,13 @@ class GenerateBrandingSizes implements ShouldQueue
         foreach (self::SIZES as $size) {
             $path = "branding/logo-{$size}.{$extension}";
 
-            $encoded = (string) $manager->make($source)->resize($size, $size)->encode();
+            // fit(), not resize(): resize($size, $size) forces both dimensions
+            // and STRETCHES a non-square source. The upload UI offers a 1:1
+            // crop but the admin can decline it, and nothing constrains an
+            // image set through a seeder or the API, so the job cannot assume a
+            // square input. fit() picks the best-fitting square, crops to it,
+            // then scales -- correct for any source aspect.
+            $encoded = (string) $manager->make($source)->fit($size, $size)->encode();
 
             $disk->put($path, $encoded);
 
