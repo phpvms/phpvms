@@ -27,7 +27,6 @@ use Filament\Panel;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View as ViewComponent;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -231,7 +230,7 @@ class Dashboard extends DynamicDashboard
         return [
             Action::make('resetDashboardLayout')
                 ->label(__('filament.dashboard.reset_layout'))
-                ->icon(Heroicon::OutlinedArrowPath)
+                ->icon(TablerIcon::Refresh)
                 ->color('gray')
                 ->requiresConfirmation()
                 ->modalHeading(__('filament.dashboard.reset_layout_heading'))
@@ -244,14 +243,14 @@ class Dashboard extends DynamicDashboard
                 ->action(fn () => $this->resetDashboardLayout()),
             Action::make('editDashboardLayout')
                 ->label(__('filament.dashboard.edit_layout'))
-                ->icon(Heroicon::OutlinedSquares2x2)
+                ->icon(TablerIcon::LayoutGrid)
                 ->color('gray')
                 ->visible(static::canEdit())
                 ->alpineClickHandler("window.dispatchEvent(new CustomEvent('dashboard-layout:edit'))")
                 ->extraAttributes(['data-dashboard-layout-edit' => '']),
             Action::make('addDashboardWidget')
                 ->label(__('filament.dashboard.add_widget'))
-                ->icon(Heroicon::OutlinedPlus)
+                ->icon(TablerIcon::Plus)
                 ->color('gray')
                 ->visible(static::canEdit())
                 ->extraAttributes([
@@ -299,7 +298,7 @@ class Dashboard extends DynamicDashboard
                 }),
             Action::make('saveDashboardLayout')
                 ->label(__('filament.dashboard.save_layout'))
-                ->icon(Heroicon::OutlinedCheck)
+                ->icon(TablerIcon::Check)
                 ->color('primary')
                 ->visible(static::canEdit())
                 ->alpineClickHandler("window.dispatchEvent(new CustomEvent('dashboard-layout:save'))")
