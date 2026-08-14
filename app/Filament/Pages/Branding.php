@@ -338,7 +338,15 @@ class Branding extends Page
             ->image()
             ->when($isLogo, fn (FileUpload $upload): FileUpload => $upload
                 ->imageEditor()
-                ->imageEditorAspectRatios(['1:1']))
+                // Two entries, not one. getImageEditorAspectRatioOptionsForJs()
+                // (FileUpload.php:676-678) DISCARDS the whole list when it holds
+                // fewer than two -- Filament hides a one-option selector -- so
+                // `['1:1']` alone silently yields no ratio control at all. `null`
+                // is the "no fixed ratio" entry, which keeps 1:1 selectable
+                // rather than mandatory. The square guarantee does not rest on
+                // this anyway: GenerateBrandingSizes::fit() squares whatever
+                // arrives.
+                ->imageEditorAspectRatios([null, '1:1']))
             ->previewable(false)
             ->disk(config('filesystems.public_files'))
             ->directory('branding')

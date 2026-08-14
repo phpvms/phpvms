@@ -9,6 +9,7 @@ use App\Models\Permission;
 use App\Models\Setting;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -179,4 +180,30 @@ it('still reports success when every row exists', function (): void {
         ->assertNotified(__('filament.branding_saved'));
 
     expect(Setting::find('branding_brand_color')->value)->toBe('#4f46e5');
+});
+
+/**
+ * The 1:1 crop is the whole point of the logo uploads -- the derivatives are
+ * squares and the favicon/switcher render them small. Assert on the component
+ * rather than the markup, since the editor's button is drawn by FilePond at
+ * runtime and never appears in the server-rendered HTML.
+ */
+it('enables a 1:1 image editor on both logo uploads but not the banner', function (): void {
+    $this->actingAs(brandingUser('view:branding', 'edit:branding'));
+
+    $form = Livewire::test(Branding::class)->instance()->form;
+
+    foreach (['logo', 'logo_dark'] as $key) {
+        $upload = $form->getComponent(fn ($component): bool => $component instanceof FileUpload
+            && $component->getName() === $key);
+
+        expect($upload)->not->toBeNull()
+            ->and($upload->hasImageEditor())->toBeTrue()
+            ->and(array_keys($upload->getImageEditorAspectRatiosForJs()))->toContain('1:1');
+    }
+
+    $banner = $form->getComponent(fn ($component): bool => $component instanceof FileUpload
+        && $component->getName() === 'banner');
+
+    expect($banner->hasImageEditor())->toBeFalse();
 });
