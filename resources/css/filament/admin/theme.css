@@ -90,6 +90,29 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * --primary-600 is declared as a typed custom property so that the ~20 rules
+ * using relative colour syntax against it -- `oklch(from var(--primary-600)
+ * L C calc(h ± N))`, the hero gradient at :602 and the module-rail/login
+ * treatments -- recompute when the accent changes at runtime.
+ *
+ * Filament emits --primary-* as plain (untyped) properties from
+ * AssetManager::renderStyles(), which is fine for a value fixed at page load.
+ * It is NOT fine once the Branding page's live preview writes the property
+ * from JS: an untyped custom property is an arbitrary token stream, so a
+ * dependent `oklch(from var(...))` does not reliably invalidate and the hero
+ * keeps its old gradient while every color-mix() rule around it updates.
+ * Registering it as <color> gives the browser a typed value to invalidate on.
+ *
+ * Only 600 is registered because it is the only shade any relative-colour rule
+ * reads; the rest are only ever color-mix() inputs, which re-resolve untyped.
+ * ------------------------------------------------------------------------- */
+@property --primary-600 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #067ec1;
+}
+
+/* ---------------------------------------------------------------------------
  * Console tokens (light mode only — dark set is a separate pass).
  *
  * Values ported from mockups/admin-console-v2/theme.css:92-131. --canvas
