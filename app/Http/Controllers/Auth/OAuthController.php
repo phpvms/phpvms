@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
-use App\Enums\UserState;
+use App\Models\Enums\UserState;
 use App\Models\User;
 use App\Models\UserOAuthToken;
 use App\Services\UserService;
@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\AbstractProvider;
 
 class OAuthController extends Controller
 {
@@ -38,32 +37,23 @@ class OAuthController extends Controller
                 $envScopes = config('services.discord.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                /** @var AbstractProvider $driver */
-                $driver = Socialite::driver('discord');
-
-                return $driver->scopes($scopes)->redirect();
+                return Socialite::driver('discord')->scopes($scopes)->redirect();
             case 'ivao':
                 $scopes = config('services.ivao.scopes', []);
 
-                /** @var AbstractProvider $driver */
-                $driver = Socialite::driver('ivao');
-
-                return $driver->scopes($scopes)->redirect();
+                return Socialite::driver('ivao')->scopes($scopes)->redirect();
             case 'vatsim':
                 $requiredScopes = ['email'];
                 $envScopes = config('services.vatsim.scopes', []);
                 $scopes = array_unique(array_merge($envScopes, $requiredScopes));
 
-                /** @var AbstractProvider $driver */
-                $driver = Socialite::driver('vatsim');
-
-                return $driver->scopes($scopes)->redirect();
+                return Socialite::driver('vatsim')->scopes($scopes)->redirect();
             default:
                 abort(404);
         }
     }
 
-    public function handleProviderCallback(string $provider, Request $request): View|RedirectResponse
+public function handleProviderCallback(string $provider, Request $request): View|RedirectResponse
     {
         $providerUser = null;
 
@@ -71,14 +61,19 @@ class OAuthController extends Controller
             abort(404);
         }
 
-        if (!in_array($provider, ['discord', 'ivao', 'vatsim'], true)) {
-            abort(404);
+        switch ($provider) {
+            case 'discord':
+                $providerUser = Socialite::driver('discord')->user();
+                break;
+            case 'ivao':
+                $providerUser = Socialite::driver('ivao')->user();
+                break;
+            case 'vatsim':
+                $providerUser = Socialite::driver('vatsim')->stateless()->user();
+                break;
+            default:
+                abort(404);
         }
-
-        /** @var ?AbstractProvider $driver */
-        $driver = Socialite::driver($provider);
-        /** @var ?\Laravel\Socialite\Two\User $providerUser */
-        $providerUser = $driver->user();
 
         if (!$providerUser) {
             flash()->error('Provider '.$provider.' not found');
@@ -98,9 +93,9 @@ class OAuthController extends Controller
                 'user_id'  => $user->id,
                 'provider' => $provider,
             ], [
-                'token'         => $providerUser->token,
-                'refresh_token' => $providerUser->refreshToken,
-                'expires_at'    => now()->addSeconds($providerUser->expiresIn),
+                'token'             => $providerUser->token,
+                'refresh_token'     => $providerUser->refreshToken,
+                'last_refreshed_at' => now(),
             ]);
 
             if ($provider === 'discord') {
@@ -112,10 +107,26 @@ class OAuthController extends Controller
             return redirect(route('frontend.profile.index'));
         }
 
-        $providerEmail = mb_strtolower(trim((string) $providerUser->getEmail()));
-        $user = User::where($provider.'_id', $providerUser->getId())->orWhere('email', $providerEmail)->first();
+        // 1. Standard phpVMS check: match by existing provider_id or email address
+        $user = User::where($provider.'_id', $providerUser->getId())
+            ->orWhere('email', $providerUser->getEmail())
+            ->first();
+
+        // 2. Custom VATSIM check: If no user found by email/provider_id, match by "VATSIM ID" custom profile field
+        if (!$user && $provider === 'vatsim') {
+            $matchedUserId = \Illuminate\Support\Facades\DB::table('user_field_values')
+                ->join('user_fields', 'user_field_values.user_field_id', '=', 'user_fields.id')
+                ->where('user_fields.name', 'VATSIM ID')
+                ->where('user_field_values.value', $providerUser->getId())
+                ->value('user_field_values.user_id');
+
+            if ($matchedUserId) {
+                $user = User::find($matchedUserId);
+            }
+        }
 
         if ($user) {
+            // This links their vatsim_id column automatically for future logins
             $user->update([
                 $provider.'_id' => $providerUser->getId(),
                 'lastlogin_at'  => now(),
@@ -129,7 +140,7 @@ class OAuthController extends Controller
 
             // We don't want to log in a non-active user
             if ($user->state !== UserState::ACTIVE && $user->state !== UserState::ON_LEAVE) {
-                Log::info('Trying to login '.$user->ident.', state '.$user->state->getLabel());
+                Log::info('Trying to login '.$user->ident.', state '.UserState::label($user->state));
 
                 // Log them out
                 Auth::logout();
@@ -153,9 +164,9 @@ class OAuthController extends Controller
                 'user_id'  => $user->id,
                 'provider' => $provider,
             ], [
-                'token'         => $providerUser->token,
-                'refresh_token' => $providerUser->refreshToken,
-                'expires_at'    => now()->addSeconds($providerUser->expiresIn),
+                'token'             => $providerUser->token,
+                'refresh_token'     => $providerUser->refreshToken,
+                'last_refreshed_at' => now(),
             ]);
 
             Auth::login($user, true);
@@ -179,7 +190,7 @@ class OAuthController extends Controller
         }
 
         $user = Auth::user();
-        UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
+        $otherProviders = UserOAuthToken::where('user_id', $user->id)->where('provider', '!=', $provider)->count();
 
         $user->update([
             $provider.'_id' => '',
