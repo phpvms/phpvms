@@ -7,7 +7,22 @@
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
         name='viewport' />
 
-    <title>@yield('title') - {{ config('app.name') }}</title>
+    @php
+        $branding = app(\App\Support\Branding::class);
+        $ogBanner = $branding->banner();
+        // og:image must be absolute -- Storage::url() on the local public
+        // disk returns a relative path, which scrapers reject.
+        $ogImage = $ogBanner
+            ? (\Illuminate\Support\Str::startsWith($ogBanner, ['http://', 'https://']) ? $ogBanner : url($ogBanner))
+            : null;
+    @endphp
+
+    <title>@yield('title') - {{ $branding->name() }}</title>
+
+    <meta property="og:title" content="@yield('title') - {{ $branding->name() }}" />
+    @if ($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}" />
+    @endif
     <script>
         // Check for saved user preference, if any, on initial load
         (function() {
@@ -24,7 +39,7 @@
     <meta name="csrf-token" content="{!! csrf_token() !!}">
     {{-- End the required lines block --}}
 
-    <link rel="shortcut icon" type="image/png" href="{{ public_asset('/assets/img/favicon.png') }}" />
+    <link rel="shortcut icon" href="{{ $branding->favicon() }}" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -83,7 +98,7 @@
 
                 <div class="col-md-4 d-flex align-items-center">
                     <span class="mb-3 mb-md-0 text-body-secondary">Copyright {{ date('Y') }}
-                        {{ config('app.name') }}</span>
+                        {{ $branding->name() }}</span>
                 </div>
                 <div class="col-md-4 d-flex align-items-center justify-content-end">
                     <span class="mb-3 mb-md-0 text-body-secondary text-end">Powered by <a href="https://www.phpvms.net"

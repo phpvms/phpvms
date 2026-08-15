@@ -1,0 +1,149 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use Filament\Support\Colors\Color;
+
+/**
+ * Resolves airline-supplied branding — name, logo, favicon, banner and brand
+ * colour — with a fallback chain that terminates in the phpVMS asset that was
+ * hardcoded prior to this class existing, so an install with nothing
+ * configured renders unchanged.
+ *
+ * Holds no state: every accessor reads through the `setting()` helper on
+ * every call rather than memoizing. It is bound as a container singleton
+ * (`AppServiceProvider`) purely for convenient reuse of one instance, not for
+ * caching — if this class ever gains a memo, that memo must be added to
+ * `config/octane.php`'s `flush` array, the same way `SettingService` is.
+ */
+final class Branding
+{
+    /** Fallback brand colour: the phpVMS blue. */
+    private const string DEFAULT_BRAND_COLOR = '#067ec1';
+
+    /**
+     * Airline display name. Falls back to `config('app.name')` when
+     * `general.site_name` is empty.
+     */
+    public function name(): string
+    {
+        return setting('general.site_name', '') ?: (string) config('app.name');
+    }
+
+    /**
+     * Logo URL, optionally at a derivative size (32, 64 or 180).
+     *
+     * A sized lookup falls back to the original logo, then to the bundled
+     * asset. The unsized lookup falls straight to the bundled asset.
+     */
+    public function logo(?int $size = null): string
+    {
+        $default = asset('assets/img/logo_blue.svg');
+
+        if ($size === null) {
+            return setting('branding.logo_url', '') ?: $default;
+        }
+
+        return setting("branding.logo_{$size}_url", '')
+            ?: setting('branding.logo_url', '')
+            ?: $default;
+    }
+
+    /**
+     * Whether an airline logo has been uploaded. Lets a call site keep its
+     * own pre-existing default asset instead of `logo()`'s bundled fallback,
+     * for places where that fallback is a different asset than what used to
+     * render there.
+     */
+    public function hasLogo(): bool
+    {
+        return setting('branding.logo_url', '') !== '';
+    }
+
+    /**
+     * Dark-mode logo URL. Falls back to the light logo when no dark logo has
+     * been uploaded, so an install with nothing configured is unchanged.
+     */
+    public function logoDark(): string
+    {
+        return setting('branding.logo_dark_url', '') ?: $this->logo();
+    }
+
+    /**
+     * Whether a dark-mode logo has been uploaded.
+     */
+    public function hasDarkLogo(): bool
+    {
+        return setting('branding.logo_dark_url', '') !== '';
+    }
+
+    /**
+     * Favicon URL. Deliberately skips the full-size original when the 32px
+     * derivative is missing — a full-size logo is a worse favicon than the
+     * bundled one.
+     */
+    public function favicon(): string
+    {
+        return setting('branding.logo_32_url', '') ?: asset('assets/img/favicon.png');
+    }
+
+    /**
+     * Banner URL, or null when none has been uploaded.
+     */
+    public function banner(): ?string
+    {
+        return setting('branding.banner_url', '') ?: null;
+    }
+
+    /**
+     * Brand colour as a hex string. Falls back to the phpVMS blue.
+     */
+    public function brandColor(): string
+    {
+        return setting('branding.brand_color', '') ?: self::DEFAULT_BRAND_COLOR;
+    }
+
+    /**
+     * Every one of Filament's built-in Tailwind palettes, keyed by lowercase
+     * name -- exactly {@see Color::all()}'s list, so the 26-palette count
+     * this class relies on tracks Filament's own enumeration rather than a
+     * copy of it.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function palettes(): array
+    {
+        return Color::all();
+    }
+
+    /**
+     * Brand colour resolved to its 50-950 shade map, for the admin panel's
+     * `primary` palette.
+     *
+     * `branding.brand_color` (see {@see brandColor()}) holds EITHER a
+     * palette name, matched case-insensitively against {@see palettes()}, OR
+     * a hex string, which generates its palette via
+     * {@see Color::generatePalette()} -- the same call `AdminPanelProvider`
+     * made directly before this method existed. A value that is neither
+     * falls back to the default palette rather than feeding a malformed hex
+     * into `generatePalette()`.
+     *
+     * @return array<int, string>
+     */
+    public function brandPalette(): array
+    {
+        $stored = $this->brandColor();
+
+        if ($palette = $this->palettes()[strtolower($stored)] ?? null) {
+            return $palette;
+        }
+
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $stored) === 1) {
+            return Color::generatePalette($stored);
+        }
+
+        return Color::generatePalette(self::DEFAULT_BRAND_COLOR);
+    }
+}

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
+use App\Support\Branding;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
@@ -12,7 +13,6 @@ use Filament\Panel;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
-use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
@@ -24,8 +24,8 @@ class AdminPanelProvider extends BasePanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->colors([
-                'primary' => Color::generatePalette('#067ec1'),
+            ->colors(fn (): array => [
+                'primary' => app(Branding::class)->brandPalette(),
             ])
             ->assets([
                 Css::make('leaflet', 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css'),

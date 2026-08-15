@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Airlines\Schemas;
 
 use App\Filament\Concerns\AutosavesFields;
 use App\Models\Airline;
+use App\Services\ImageUploadService;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -28,15 +29,15 @@ class AirlineForm
                 Section::make(__('filament.airline_information'))
                     ->schema([
                         TextInput::make('icao')
-                            ->label('ICAO (3LD)')
+                            ->label('ICAO')
                             ->required()
                             ->string()
-                            ->length(3),
+                            ->maxLength(8),
 
                         TextInput::make('iata')
-                            ->label('IATA (2LD)')
+                            ->label('IATA')
                             ->string()
-                            ->length(2),
+                            ->maxLength(8),
 
                         TextInput::make('callsign')
                             ->label(__('flights.callsign'))
@@ -113,6 +114,11 @@ class AirlineForm
             // been created yet has no id to use, so it falls back to a ULID.
             ->getUploadedFileNameForStorageUsing(
                 fn (TemporaryUploadedFile $file, ?Airline $record): string => ($record->id ?? Str::ulid()).'.'.strtolower($file->getClientOriginalExtension())
+            )
+            // Converts to WebP through the shared upload service instead of
+            // storing whatever format was dropped; see ImageUploadService.
+            ->saveUploadedFileUsing(
+                fn (FileUpload $component, TemporaryUploadedFile $file): string => app(ImageUploadService::class)->storeFilamentUpload($component, $file)
             )
             // The column may hold an external URL, which has no file on our disk
             // for the default resolver to stat. Hand those to the preview as-is.

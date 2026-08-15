@@ -592,7 +592,7 @@ class Installer extends Page
                         ->statePath('user')
                         ->schema([
                             TextInput::make('airline_icao')
-                                ->length(3)
+                                ->maxLength(8)
                                 ->string()
                                 ->required()
                                 ->unique('airlines', 'icao')

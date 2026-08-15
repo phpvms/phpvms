@@ -72,9 +72,9 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             ],
 
             'origins'        => ['required', 'array', 'min:1'],
-            'origins.*'      => ['string', 'size:4', 'alpha', 'exists:airports,id'],
+            'origins.*'      => ['string', 'max:8', 'alpha', 'exists:airports,id'],
             'destinations'   => ['required', 'array', 'min:1'],
-            'destinations.*' => ['string', 'size:4', 'alpha', 'exists:airports,id'],
+            'destinations.*' => ['string', 'max:8', 'alpha', 'exists:airports,id'],
 
             'bundle'                    => ['required', 'array'],
             'bundle.existing_bundle_id' => [
@@ -98,8 +98,8 @@ abstract class BaseRouteForgeBatchRequest extends FormRequest
             'rows.*.callsign'       => ['nullable', 'string', 'max:32'],
             'rows.*.route_code'     => ['nullable', 'string', 'max:5'],
             'rows.*.route_leg'      => ['nullable', 'integer', 'min:0', 'max:255'],
-            'rows.*.dpt_airport_id' => ['required', 'string', 'size:4', 'alpha', Rule::in($allowedIcaos)],
-            'rows.*.arr_airport_id' => ['required', 'string', 'size:4', 'alpha', Rule::in($allowedIcaos)],
+            'rows.*.dpt_airport_id' => ['required', 'string', 'max:8', 'alpha', Rule::in($allowedIcaos)],
+            'rows.*.arr_airport_id' => ['required', 'string', 'max:8', 'alpha', Rule::in($allowedIcaos)],
             'rows.*.departure_time' => ['nullable', 'string', 'date_format:H:i'],
             'rows.*.arrival_time'   => ['nullable', 'string', 'date_format:H:i'],
             'rows.*.distance_nm'    => ['nullable', 'numeric', 'min:0'],

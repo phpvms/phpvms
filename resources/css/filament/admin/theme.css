@@ -90,6 +90,29 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * --primary-600 is declared as a typed custom property so that the ~20 rules
+ * using relative colour syntax against it -- `oklch(from var(--primary-600)
+ * L C calc(h ± N))`, the hero gradient at :602 and the module-rail/login
+ * treatments -- recompute when the accent changes at runtime.
+ *
+ * Filament emits --primary-* as plain (untyped) properties from
+ * AssetManager::renderStyles(), which is fine for a value fixed at page load.
+ * It is NOT fine once the Branding page's live preview writes the property
+ * from JS: an untyped custom property is an arbitrary token stream, so a
+ * dependent `oklch(from var(...))` does not reliably invalidate and the hero
+ * keeps its old gradient while every color-mix() rule around it updates.
+ * Registering it as <color> gives the browser a typed value to invalidate on.
+ *
+ * Only 600 is registered because it is the only shade any relative-colour rule
+ * reads; the rest are only ever color-mix() inputs, which re-resolve untyped.
+ * ------------------------------------------------------------------------- */
+@property --primary-600 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #067ec1;
+}
+
+/* ---------------------------------------------------------------------------
  * Console tokens (light mode only — dark set is a separate pass).
  *
  * Values ported from mockups/admin-console-v2/theme.css:92-131. --canvas
@@ -1445,6 +1468,29 @@
   filter: brightness(0) invert(1);
 }
 
+/* ---------------------------------------------------------------------------
+ * An airline's own logo in a mark slot (brand button and menu item both).
+ *
+ * The built-in marks are single-colour glyphs on an accent swatch, so they are
+ * tinted white. An uploaded logo carries its own colours and must NOT be
+ * recoloured -- the `brightness(0) invert(1)` above would flatten it to a white
+ * silhouette. Drop the swatch and the filter and let it fill the slot.
+ *
+ * Placed after that rule deliberately: `.fi-brandmark-custom img` and
+ * `.fi-brandmenu-item-mark img` have equal specificity (0,1,1), so this only
+ * wins on source order. Moving it earlier in the file silently re-enables the
+ * white-silhouette filter.
+ * ------------------------------------------------------------------------- */
+.fi-brandmark-custom {
+  @apply bg-transparent;
+}
+
+.fi-brandmark-custom img {
+  @apply w-full h-full;
+  object-fit: contain;
+  filter: none;
+}
+
 .fi-brandmenu-item-text strong {
   @apply block text-[12.5px] text-(--ink);
   font-weight: 550;
@@ -1803,12 +1849,18 @@
   @apply block mb-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-(--ink-3);
 }
 
+/* One row of all 26 Filament palettes. `auto-fit` rather than a fixed
+ * `repeat(26, …)`: the swatches shrink to fit whatever width the card has, and
+ * only wrap once they would go below 14px — narrow enough that a comfortable
+ * -density sidebar still keeps them on one line, small enough to stay a
+ * legible target. */
 .fi-picker-swatches {
-  @apply grid grid-cols-8 gap-1.5;
+  @apply grid gap-1;
+  grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
 }
 
 .fi-picker-swatch {
-  @apply w-full rounded-md;
+  @apply w-full rounded-sm;
   aspect-ratio: 1;
   border: 1px solid color-mix(in oklab, currentColor 45%, transparent);
   transition: transform 100ms;
@@ -1822,28 +1874,6 @@
   box-shadow:
     0 0 0 1.5px var(--surface),
     0 0 0 3px currentColor;
-}
-
-.fi-picker-hex {
-  @apply flex items-center gap-1.5 mt-2.5;
-}
-
-.fi-picker-hex input[type="color"] {
-  @apply w-7 h-7 p-0 border border-(--line-strong) rounded-md bg-(--surface) cursor-pointer;
-}
-
-.fi-picker-hex input[type="text"] {
-  @apply flex-1 h-7 px-2 border border-(--line-strong) rounded-md bg-(--surface) text-[12px] text-(--ink) outline-none;
-  font-family: ui-monospace, monospace;
-}
-
-.fi-picker-hex input[type="text"]:focus {
-  @apply border-(--primary-600);
-}
-
-.fi-picker-hint {
-  @apply text-[11.5px] leading-[1.4] text-(--ink-3);
-  margin: 6px 0 0;
 }
 
 .fi-picker-segmented {

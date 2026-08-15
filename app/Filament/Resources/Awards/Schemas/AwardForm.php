@@ -10,6 +10,7 @@ use App\Services\Awards\CriteriaCompilationFailed;
 use App\Services\Awards\SnippetConstraints;
 use App\Services\Awards\UserConstraints;
 use App\Services\AwardService;
+use App\Services\ImageUploadService;
 use Closure;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Actions\Action;
@@ -30,6 +31,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Throwable;
 
 class AwardForm
@@ -261,7 +263,13 @@ class AwardForm
                                 ->image()
                                 ->imageEditor()
                                 ->disk(config('filesystems.public_files'))
-                                ->directory('awards'),
+                                ->directory('awards')
+                                // Converts to WebP through the shared upload
+                                // service instead of storing whatever format
+                                // was dropped; see ImageUploadService.
+                                ->saveUploadedFileUsing(
+                                    fn (FileUpload $component, TemporaryUploadedFile $file): string => app(ImageUploadService::class)->storeFilamentUpload($component, $file)
+                                ),
                         ]),
 
                     Tab::make(__('common.image_url'))

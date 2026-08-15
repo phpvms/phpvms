@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Plugins;
 
+use App\Support\Branding;
 use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -80,7 +81,13 @@ final class PanelSwitcherPlugin implements Plugin
         return view('filament.plugins.panel-switcher', [
             'panels'    => $panels,
             'current'   => $current,
-            'brandName' => config('app.name') ?: 'phpvms',
+            'brandName' => app(Branding::class)->name(),
+            // 64px is the switcher/table icon derivative. Null when the airline
+            // has uploaded nothing, so the blade keeps the built-in mark and an
+            // unconfigured install looks exactly as it did.
+            'brandMark' => app(Branding::class)->hasLogo()
+                ? app(Branding::class)->logo(64)
+                : null,
             'addonsUrl' => $this->addonsUrl(),
         ]);
     }

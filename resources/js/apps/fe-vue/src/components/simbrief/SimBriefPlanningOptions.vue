@@ -206,7 +206,7 @@ defineExpose({ generate });
           />
         </UFormField>
         <UFormField label="Alternate airport">
-          <UInput v-model="fields.altn" name="altn" icon="i-tabler-plane-tilt" maxlength="4" />
+          <UInput v-model="fields.altn" name="altn" icon="i-tabler-plane-tilt" maxlength="8" />
         </UFormField>
 
         <UFormField label="Scheduled departure time (UTC)">

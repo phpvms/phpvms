@@ -7,11 +7,11 @@ namespace App\Contracts\Modules;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\AddonSettings;
 use App\Providers\Filament\BasePanelProvider;
+use App\Support\Branding;
 use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Filament\Support\Colors\Color;
 use Illuminate\Support\Str;
 use Override;
 use ReflectionClass;
@@ -50,7 +50,7 @@ abstract class PanelProvider extends BasePanelProvider
         $panel = $this->applyConsoleChrome($panel)
             ->id($this->moduleKey())
             ->path('admin/'.$this->moduleKey())
-            ->colors($this->colors())
+            ->colors(fn (): array => $this->colors())
             /* Icon-bearing group objects, mirroring AdminPanelProvider —
              * groups registered as bare name strings have no icon, so the
              * collapsed rail can't render its icon-only trigger and falls
@@ -88,7 +88,7 @@ abstract class PanelProvider extends BasePanelProvider
     protected function colors(): array
     {
         return [
-            'primary' => Color::generatePalette('#067ec1'),
+            'primary' => app(Branding::class)->brandPalette(),
         ];
     }
 

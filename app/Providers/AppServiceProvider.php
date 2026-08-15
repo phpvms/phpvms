@@ -16,6 +16,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Policies\Filament\ActivityPolicy;
 use App\Services\AddonSettingService;
+use App\Services\ImageUploadService;
 use App\Services\ModuleService;
 use App\Services\PermissionRegistry;
 use App\Services\RouteForge\Contracts\LintRule;
@@ -33,6 +34,7 @@ use App\Services\RouteForge\Rules\L7SubfleetsHaveNoFares;
 use App\Services\RouteForge\Rules\L8EventDatesOutsideWindow;
 use App\Services\RouteForge\Rules\L9BatchOver50;
 use App\Services\SettingService;
+use App\Support\Branding;
 use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
@@ -322,6 +324,14 @@ class AppServiceProvider extends ServiceProvider
         // Per-addon settings read/write. Stateless/Octane-safe; bound as a
         // singleton so the `addon_setting()` helper reuses one instance.
         $this->app->singleton(AddonSettingService::class);
+
+        // Airline branding resolution. Stateless/Octane-safe (see class
+        // docblock); bound as a singleton purely for reuse, not caching.
+        $this->app->singleton(Branding::class);
+
+        // Central admin image-upload conversion. Stateless/Octane-safe, no
+        // memo to flush; bound as a singleton purely for reuse.
+        $this->app->singleton(ImageUploadService::class);
 
         // Permission registry: modules register custom permissions into the
         // same instance during boot(), so it must be a singleton.

@@ -16,7 +16,7 @@
                   <div class="row">
                     <div class="col-sm-4">
                       <label for="type">Type</label>
-                      <input type="text" class="form-control" value="{{ $aircraft->icao }}" maxlength="4" disabled>
+                      <input type="text" class="form-control" value="{{ $aircraft->icao }}" maxlength="8" disabled>
                       @if(filled($aircraft->subfleet->simbrief_type))
                         <input type="hidden" name="type" value="{{ $aircraft->subfleet->simbrief_type }}">
                       @else
@@ -87,17 +87,17 @@
                   <div class="row">
                     <div class="col-sm-4">
                       <label for="dorig">Departure Airport</label>
-                      <input id="dorig" type="text" class="form-control" maxlength="4" value="{{ $flight->dpt_airport_id }}" disabled>
-                      <input name="orig" type="hidden" maxlength="4" value="{{ $flight->dpt_airport_id }}">
+                      <input id="dorig" type="text" class="form-control" maxlength="8" value="{{ $flight->dpt_airport_id }}" disabled>
+                      <input name="orig" type="hidden" maxlength="8" value="{{ $flight->dpt_airport_id }}">
                     </div>
                     <div class="col-sm-4">
                       <label for="ddest">Arrival Airport</label>
-                      <input id="ddest" type="text" class="form-control" maxlength="4" value="{{ $flight->arr_airport_id }}" disabled>
-                      <input name="dest" type="hidden" maxlength="4" value="{{ $flight->arr_airport_id }}">
+                      <input id="ddest" type="text" class="form-control" maxlength="8" value="{{ $flight->arr_airport_id }}" disabled>
+                      <input name="dest" type="hidden" maxlength="8" value="{{ $flight->arr_airport_id }}">
                     </div>
                     <div class="col-sm-4">
                       <label for="altn">Alternate Airport</label>
-                      <input name="altn" type="text" class="form-control" maxlength="4" value="{{ $flight->alt_airport_id ?? 'AUTO' }}">
+                      <input name="altn" type="text" class="form-control" maxlength="8" value="{{ $flight->alt_airport_id ?? 'AUTO' }}">
                     </div>
                   </div>
                   <br>

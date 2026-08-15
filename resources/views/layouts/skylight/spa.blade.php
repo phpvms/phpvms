@@ -81,8 +81,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" type="image/png" href="{{ public_asset('/assets/img/favicon.png') }}">
-    <title inertia>{{ config('app.name', 'phpVMS') }}</title>
+    <link rel="shortcut icon" href="{{ app(\App\Support\Branding::class)->favicon() }}">
+    <title inertia>{{ app(\App\Support\Branding::class)->name() }}</title>
     <script>
         (() => {
             let saved = 'auto';
