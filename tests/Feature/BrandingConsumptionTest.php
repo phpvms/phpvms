@@ -50,7 +50,7 @@ describe('admin panel, with branding configured', function (): void {
     });
 
     it('shows the airline logo and name in the sidebar brand block and switcher', function (): void {
-        get('/admin/dashboard')
+        get('/admin')
             ->assertOk()
             ->assertSee('Acme Air')
             ->assertSee('https://cdn.example.com/logo.png', escape: false);
@@ -79,7 +79,7 @@ describe('admin panel, with nothing configured', function (): void {
     });
 
     it('renders the bundled logo in the sidebar brand block', function (): void {
-        get('/admin/dashboard')
+        get('/admin')
             ->assertOk()
             ->assertSee(asset('assets/img/logo_blue.svg'), escape: false);
     });

@@ -31,7 +31,7 @@ beforeEach(function (): void {
 it('reflects a brand colour change on the next request without an Octane worker restart', function (): void {
     updateSetting('branding.brand_color', '#4f46e5');
 
-    $first = get('/admin/dashboard')->assertOk();
+    $first = get('/admin')->assertOk();
     $firstPrimary600 = firstPrimary600($first->getContent());
 
     expect($firstPrimary600)->toBe(Color::generatePalette('#4f46e5')[600]);
@@ -56,7 +56,7 @@ it('reflects a brand colour change on the next request without an Octane worker 
         app()->forgetInstance($binding);
     }
 
-    $second = get('/admin/dashboard')->assertOk();
+    $second = get('/admin')->assertOk();
     $secondPrimary600 = firstPrimary600($second->getContent());
 
     expect($secondPrimary600)
@@ -65,7 +65,7 @@ it('reflects a brand colour change on the next request without an Octane worker 
 });
 
 it('no longer exposes brand-colour swatches or a hex input in the topbar picker', function (): void {
-    get('/admin/dashboard')
+    get('/admin')
         ->assertOk()
         ->assertDontSee('fi-picker-hex', escape: false)
         ->assertDontSee('data-hex-color', escape: false)
@@ -73,7 +73,7 @@ it('no longer exposes brand-colour swatches or a hex input in the topbar picker'
 });
 
 it('still renders appearance and density controls in the topbar picker', function (): void {
-    get('/admin/dashboard')
+    get('/admin')
         ->assertOk()
         ->assertSee('data-mode="light"', escape: false)
         ->assertSee('data-mode="dark"', escape: false)
