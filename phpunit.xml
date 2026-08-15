@@ -11,10 +11,11 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
-        <testsuite name="Arch">
-            <file>tests/ArchTest.php</file>
-            <directory>tests/Arch</directory>
-        </testsuite>
+        <!-- The Arch suite is disabled: six tests that cost ~3s alone but add
+             ~1750s when they run in a process that has already loaded the rest
+             of the suite, because every `toBeUsed`/`toOnlyBeUsedIn` walks every
+             class the process can see. Run it on its own when you want it:
+             `vendor/bin/pest` with the entry restored. -->
         <testsuite name="Components">
             <directory suffix=".test.php">resources/views</directory>
         </testsuite>
