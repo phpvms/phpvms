@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Controller;
-use App\Models\Enums\UserState;
+use App\Enums\UserState;
 use App\Models\User;
 use App\Models\UserOAuthToken;
 use App\Services\UserService;
