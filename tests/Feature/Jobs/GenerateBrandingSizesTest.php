@@ -226,3 +226,24 @@ it('encodes with the same driver that chose the format', function (): void {
             ->and(derivativeSettingValue($size))->toEndWith('.webp');
     }
 });
+
+/**
+ * The fail-soft contract covers the whole derivative path, not just a missing
+ * GD/Imagick. A source that vanished between the upload and the queue run
+ * would otherwise throw out of handle() and retry into failed_jobs over what
+ * is a favicon.
+ */
+it('fails soft and leaves the derivative keys empty when the source file is gone', function (): void {
+    Storage::fake(config('filesystems.public_files'));
+
+    Log::shouldReceive('warning')->once()->with(Mockery::pattern('/could not generate logo derivatives/i'));
+
+    new GenerateBrandingSizes('branding/never-uploaded.png')->handle();
+
+    $disk = Storage::disk(config('filesystems.public_files'));
+
+    foreach ([32, 64, 180] as $size) {
+        $disk->assertMissing("branding/logo-{$size}.webp");
+        expect(derivativeSettingValue($size))->toBe('');
+    }
+});

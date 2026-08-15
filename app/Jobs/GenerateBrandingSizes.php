@@ -8,6 +8,7 @@ use App\Filament\Pages\Branding;
 use App\Services\ImageUploadService;
 use App\Services\SettingService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -15,6 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
+use Throwable;
 
 /**
  * Generates 32/64/180px derivatives of an uploaded square logo and records
@@ -99,6 +101,24 @@ class GenerateBrandingSizes implements ShouldQueue
 
         $manager = new ImageManager(['driver' => $driver]);
 
+        // The whole derivative path is soft, not just the driver check above:
+        // a source deleted from the disk between upload and run, or a file the
+        // chosen driver cannot decode, would otherwise retry three times into
+        // failed_jobs over what is a cosmetic favicon. The size keys are
+        // already cleared, so bailing here leaves exactly the empty state the
+        // class contract describes.
+        try {
+            $this->writeDerivatives($manager, $disk, $format, $settings);
+        } catch (Throwable $throwable) {
+            Log::warning('GenerateBrandingSizes: could not generate logo derivatives: '.$throwable->getMessage());
+        }
+    }
+
+    /**
+     * @param Filesystem $disk the `filesystems.public_files` disk
+     */
+    private function writeDerivatives(ImageManager $manager, Filesystem $disk, string $format, SettingService $settings): void
+    {
         $source = $disk->get($this->diskPath);
 
         foreach (self::SIZES as $size) {
