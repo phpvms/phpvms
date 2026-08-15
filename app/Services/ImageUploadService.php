@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use enshrined\svgSanitize\Sanitizer;
 use Filament\Forms\Components\BaseFileUpload;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ use Imagick;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use RuntimeException;
 
 /**
  * Single code path for every admin-panel image upload: converts a raster
@@ -20,10 +22,13 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
  * dropped in. Wired into Branding, AirlineForm and AwardForm via
  * `saveUploadedFileUsing(fn ($component, $file) => ...->storeFilamentUpload(...))`.
  *
- * SVGs (and anything GD/Imagick cannot decode) are stored verbatim -- GD
- * throws NotReadableException on `<svg`, see {@see GenerateBrandingSizes}.
+ * SVGs are sanitized and stored as-is rather than rasterised -- GD throws
+ * NotReadableException on `<svg`, see {@see GenerateBrandingSizes}, and the
+ * point of a vector logo is that it stays vector. Anything else GD/Imagick
+ * cannot decode is stored byte-for-byte.
  * An install with no WebP-capable driver keeps working unconverted: this
- * must degrade, never throw.
+ * must degrade, never throw. The one exception is an SVG that will not parse
+ * as XML, which is rejected rather than served -- see {@see sanitizeSvg()}.
  *
  * Stateless, so it is Octane-safe as a singleton with no entry needed in
  * config/octane.php's `flush` array.
@@ -46,7 +51,7 @@ class ImageUploadService
         $extension = strtolower($file->getClientOriginalExtension());
 
         if ($extension === 'svg') {
-            return $this->storeVerbatim($storage, $file, $directory, $basename, $extension);
+            return $this->storeVerbatim($storage, $file, $directory, $basename, $extension, $this->sanitizeSvg($file->get()));
         }
 
         $driver = $this->webpDriver();
@@ -117,10 +122,34 @@ class ImageUploadService
         };
     }
 
-    private function storeVerbatim(Filesystem $storage, TemporaryUploadedFile $file, string $directory, string $basename, string $extension): string
+    /**
+     * Strip anything executable out of an SVG before it reaches public storage.
+     *
+     * An SVG is an XML document, not an opaque image: served from our own
+     * origin, a `<script>` or an `onload=` inside one runs with the site's
+     * cookies as soon as anyone opens the file's URL directly. `<img src>`
+     * never executes it, which is why the logo rendering everywhere looks
+     * harmless. Uploads are admin-only, so this guards admin-tier escalation
+     * and a link handed to someone else, not an anonymous attack.
+     *
+     * @throws RuntimeException when the upload is not parseable as XML at all,
+     *                          which is not something to store and serve
+     */
+    private function sanitizeSvg(string $contents): string
+    {
+        $clean = new Sanitizer()->sanitize($contents);
+
+        if ($clean === false) {
+            throw new RuntimeException('The uploaded SVG could not be parsed and was not stored.');
+        }
+
+        return $clean;
+    }
+
+    private function storeVerbatim(Filesystem $storage, TemporaryUploadedFile $file, string $directory, string $basename, string $extension, ?string $contents = null): string
     {
         $path = trim($directory.'/'.$basename.'.'.$extension, '/');
-        $storage->put($path, $file->get());
+        $storage->put($path, $contents ?? $file->get());
         rescue(fn () => $storage->setVisibility($path, 'public'), report: false);
 
         return $path;
