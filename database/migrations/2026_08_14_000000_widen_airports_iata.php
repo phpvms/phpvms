@@ -30,12 +30,10 @@ return new class() extends Migration
         }
     }
 
-    public function down(): void
-    {
-        if (Schema::hasTable('airports') && Schema::hasColumn('airports', 'iata')) {
-            Schema::table('airports', function (Blueprint $table): void {
-                $table->string('iata', 5)->nullable()->change();
-            });
-        }
-    }
+    /**
+     * Deliberately empty. Narrowing back to 5 would truncate or reject any code
+     * an operator entered while the column was wide, and a column that is wider
+     * than the app needs costs a rolled-back install nothing.
+     */
+    public function down(): void {}
 };
