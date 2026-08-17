@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Ranks\Pages;
 
 use App\Filament\Resources\Ranks\RankResource;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Override;
@@ -19,7 +19,7 @@ class ListRanks extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(TablerIcon::CirclePlus),
+                ->icon(Phosphor::PlusCircleLight),
         ];
     }
 }

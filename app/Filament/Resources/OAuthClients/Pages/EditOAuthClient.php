@@ -7,7 +7,7 @@ namespace App\Filament\Resources\OAuthClients\Pages;
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\OAuthClients\OAuthClientResource;
 use App\Models\OauthClient;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -32,7 +32,7 @@ class EditOAuthClient extends EditRecord
     {
         return [
             $this->rotateSecretAction(),
-            DeleteAction::make(),
+            DeleteAction::make()->icon(Phosphor::TrashLight),
         ];
     }
 
@@ -44,7 +44,7 @@ class EditOAuthClient extends EditRecord
     {
         return Action::make('rotateSecret')
             ->label(__('oauth.rotate_secret'))
-            ->icon(TablerIcon::Refresh)
+            ->icon(Phosphor::ArrowsClockwiseLight)
             ->color('warning')
             ->requiresConfirmation()
             ->modalDescription(__('oauth.rotate_secret_confirm'))

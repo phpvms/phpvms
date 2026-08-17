@@ -10,7 +10,7 @@ use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Filament\Resources\Airports\Tables\AirportsTable;
 use App\Models\Airport;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -29,7 +29,7 @@ class AirportResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::MapPin;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::MapPinLight;
 
     #[Override]
     public static function form(Schema $schema): Schema

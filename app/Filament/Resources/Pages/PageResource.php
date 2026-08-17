@@ -10,7 +10,7 @@ use App\Filament\Resources\Pages\Schemas\PageForm;
 use App\Filament\Resources\Pages\Tables\PagesTable;
 use App\Models\Page;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -25,7 +25,7 @@ class PageResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::FileText;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::FileTextLight;
 
     protected static ?string $recordTitleAttribute = 'name';
 

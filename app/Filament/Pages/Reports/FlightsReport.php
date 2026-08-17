@@ -10,7 +10,7 @@ use App\Filament\Widgets\LandingRateChart;
 use App\Filament\Widgets\PirepHistoryTable;
 use App\Filament\Widgets\PirepStateChart;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Override;
 
 /**
@@ -21,7 +21,7 @@ class FlightsReport extends BaseReportPage
 {
     protected static ?string $slug = 'reports/flights';
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Plane;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::AirplaneLight;
 
     protected static ?int $navigationSort = 1;
 

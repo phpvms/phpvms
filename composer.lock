@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4b851f422547328a5b3fe83cb73297d",
+    "content-hash": "d5f61ce3ed0fa6b534e8e1160e183d91",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -1068,6 +1068,77 @@
             "time": "2023-12-20T15:40:13+00:00"
         },
         {
+            "name": "codeat3/blade-phosphor-icons",
+            "version": "2.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeat3/blade-phosphor-icons.git",
+                "reference": "39a40c44908729d20f03f9903f4abcc165b1b02b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeat3/blade-phosphor-icons/zipball/39a40c44908729d20f03f9903f4abcc165b1b02b",
+                "reference": "39a40c44908729d20f03f9903f4abcc165b1b02b",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.1",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "codeat3/blade-icon-generation-helpers": "^0.12",
+                "codeat3/phpcs-styles": "^1.0",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
+                "phpunit/phpunit": "^9.0|^10.5|^11.0|^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Codeat3\\BladePhosphorIcons\\BladePhosphorIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Codeat3\\BladePhosphorIcons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Swapnil Sarwe",
+                    "homepage": "https://swapnilsarwe.com"
+                },
+                {
+                    "name": "Dries Vints",
+                    "homepage": "https://driesvints.com"
+                }
+            ],
+            "description": "A package to easily make use of \"Phosphor Icons\" in your Laravel Blade views.",
+            "homepage": "https://github.com/codeat3/blade-phosphor-icons",
+            "keywords": [
+                "blade",
+                "laravel",
+                "phosphor-icons"
+            ],
+            "support": {
+                "issues": "https://github.com/codeat3/blade-phosphor-icons/issues",
+                "source": "https://github.com/codeat3/blade-phosphor-icons/tree/2.4.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/swapnilsarwe",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-03-21T13:21:02+00:00"
+        },
+        {
             "name": "composer/ca-bundle",
             "version": "1.5.12",
             "source": {
@@ -1835,66 +1906,6 @@
             "time": "2024-05-06T16:37:16+00:00"
         },
         {
-            "name": "daljo25/filament-tabler-icons",
-            "version": "v3.45.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/daljo25/filament-tabler-icons.git",
-                "reference": "82928782ef4885aaeac534b17f9db34e0357c110"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/daljo25/filament-tabler-icons/zipball/82928782ef4885aaeac534b17f9db34e0357c110",
-                "reference": "82928782ef4885aaeac534b17f9db34e0357c110",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^4.0|^5.0",
-                "php": "^8.2",
-                "secondnetwork/blade-tabler-icons": "^3.41.0",
-                "spatie/laravel-package-tools": "^1.15.0"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.22"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Daljo25\\FilamentTablerIcons\\FilamentTablerIconsServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Daljo25\\FilamentTablerIcons\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daljo25",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A Filament plugin that integrates tabler icons, allowing you to use them seamlessly across Filament forms, tables, actions, and more.",
-            "homepage": "https://github.com/daljo25/filament-tabler-icons",
-            "keywords": [
-                "filamentphp",
-                "icons",
-                "laravel",
-                "tabler"
-            ],
-            "support": {
-                "issues": "https://github.com/daljo25/filament-tabler-icons/issues",
-                "source": "https://github.com/daljo25/filament-tabler-icons"
-            },
-            "time": "2026-07-21T07:49:57+00:00"
-        },
-        {
             "name": "danharrin/date-format-converter",
             "version": "v0.3.1",
             "source": {
@@ -2655,6 +2666,122 @@
                 "source": "https://github.com/FakerPHP/Faker/tree/v1.24.1"
             },
             "time": "2024-11-21T13:46:39+00:00"
+        },
+        {
+            "name": "filafly/filament-icons",
+            "version": "v2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filafly/filament-icons.git",
+                "reference": "c1ced1bc0d0a03cd276ca2c3abf3abe2ca20b97d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filafly/filament-icons/zipball/c1ced1bc0d0a03cd276ca2c3abf3abe2ca20b97d",
+                "reference": "c1ced1bc0d0a03cd276ca2c3abf3abe2ca20b97d",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0 || ^5.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.20",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Filafly\\Icons\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nolan Nordlund",
+                    "email": "nolan@filafly.com",
+                    "homepage": "https://www.filafly.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Core package for managing Filament icon drivers via a common interface.",
+            "homepage": "https://filafly.com/plugins/filament-icons",
+            "keywords": [
+                "Phosphor",
+                "carbon",
+                "filament",
+                "font awesome",
+                "iconoir",
+                "icons",
+                "laravel",
+                "replace",
+                "swap"
+            ],
+            "support": {
+                "issues": "https://github.com/filafly/filament-icons/issues",
+                "source": "https://github.com/filafly/filament-icons/tree/v2.2.1"
+            },
+            "time": "2026-04-06T18:46:37+00:00"
+        },
+        {
+            "name": "filafly/filament-phosphor-icons",
+            "version": "v2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filafly/filament-phosphor-icons.git",
+                "reference": "fef462488ded09352f29acae576378850d087886"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filafly/filament-phosphor-icons/zipball/fef462488ded09352f29acae576378850d087886",
+                "reference": "fef462488ded09352f29acae576378850d087886",
+                "shasum": ""
+            },
+            "require": {
+                "codeat3/blade-phosphor-icons": "^2.3",
+                "filafly/filament-icons": "^2.0",
+                "filament/filament": "^4.0 || ^5.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.22"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Filafly\\Icons\\Phosphor\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nolan Nordlund",
+                    "email": "nolan@filafly.com",
+                    "homepage": "https://www.filafly.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Phosphor icon pack for Filament Icons",
+            "homepage": "https://filafly.com/plugins/filament-icons",
+            "keywords": [
+                "Phosphor",
+                "filament",
+                "icons",
+                "laravel",
+                "replace",
+                "swap"
+            ],
+            "support": {
+                "issues": "https://github.com/filafly/filament-phosphor-icons/issues",
+                "source": "https://github.com/filafly/filament-phosphor-icons/tree/v2.2.0"
+            },
+            "time": "2026-02-26T10:28:09+00:00"
         },
         {
             "name": "filament/actions",
@@ -10759,64 +10886,6 @@
                 }
             ],
             "time": "2022-12-17T21:53:22+00:00"
-        },
-        {
-            "name": "secondnetwork/blade-tabler-icons",
-            "version": "v3.46.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/secondnetwork/blade-tabler-icons.git",
-                "reference": "aedaebc18f382a9d0a1870e9ad394c5c89abd72b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/secondnetwork/blade-tabler-icons/zipball/aedaebc18f382a9d0a1870e9ad394c5c89abd72b",
-                "reference": "aedaebc18f382a9d0a1870e9ad394c5c89abd72b",
-                "shasum": ""
-            },
-            "require": {
-                "blade-ui-kit/blade-icons": "^1.8",
-                "illuminate/support": "^9.0|^10.0|^11.0|^12.0|^13.0",
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "orchestra/testbench": "^6.0|^7.0|^9.0|^10.0",
-                "phpunit/phpunit": "^9.0|^10.0|^11.0|^12.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "secondnetwork\\TablerIcons\\BladeTablerIconsServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "secondnetwork\\TablerIcons\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Andreas Farah"
-                }
-            ],
-            "description": "A package to easily make use of tabler-icons in your Laravel Blade views.",
-            "homepage": "https://github.com/secondnetwork/blade-tabler-icons",
-            "keywords": [
-                "blade",
-                "laravel",
-                "tabler-icons"
-            ],
-            "support": {
-                "issues": "https://github.com/secondnetwork/blade-tabler-icons/issues",
-                "source": "https://github.com/secondnetwork/blade-tabler-icons/tree/v3.46.0"
-            },
-            "time": "2026-07-30T13:49:44+00:00"
         },
         {
             "name": "seld/jsonlint",

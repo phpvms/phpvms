@@ -8,7 +8,7 @@ use App\Filament\Plugins\ClearCachesPlugin;
 use App\Filament\Plugins\LanguageSwitcherPlugin;
 use App\Filament\Plugins\PanelSwitcherPlugin;
 use App\Support\Branding;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\PhosphorIcons;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,8 +16,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider as FilamentPanelProvider;
 use Filament\Support\Enums\Width;
-use Filament\Tables\View\TablesIconAlias;
-use Filament\View\PanelsIconAlias;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -72,6 +70,14 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             // 7xl default and render max-width-centred.
             ->maxContentWidth(Width::Full)
             ->plugins([
+                // Swaps Filament's own chrome icons — the ~159 aliases behind
+                // the sidebar toggle, modal close, dropdown carets, pagination
+                // arrows and so on — from its bundled Heroicons to Phosphor.
+                // Without this, only the aliases named explicitly below change
+                // and the rest of the panel stays Heroicon.
+                // style('light') rather than the ->light() sugar: that one only
+                // exists through IconSet::__call(), so static analysis can't see it.
+                PhosphorIcons::make()->style('light'),
                 PanelSwitcherPlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
@@ -81,7 +87,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             })
             ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
-            ->font('Geist')
+            // No ->font() here: the typeface is owned by the theme stylesheet
+            // (resources/css/filament/admin/theme.css), which both loads Inter
+            // and sets --font-sans.
             ->brandName(fn (): string => app(Branding::class)->name())
             ->favicon(fn (): string => app(Branding::class)->favicon())
             ->renderHook(
@@ -100,6 +108,13 @@ abstract class BasePanelProvider extends FilamentPanelProvider
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_START,
                 fn (): string => view('filament.shared.rail-clock')->render(),
+            )
+            // Way back out to the pilot-facing site. NAV_END is the last thing
+            // inside the <nav>, so it lands at the foot of the rail directly
+            // above the user menu — Filament has no hook inside the footer.
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_END,
+                fn (): string => view('filament.shared.back-to-site')->render(),
             )
             // Workspace navigator: the active module's items as topbar tabs,
             // so moving inside a module never needs the rail. Hooked after the
@@ -120,12 +135,6 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn (): string => view('filament.plugins.theme-picker')->render(),
             )
-            // Tabler equivalents for a few ubiquitous chrome glyphs.
-            ->icons([
-                PanelsIconAlias::GLOBAL_SEARCH_FIELD                       => TablerIcon::Search,
-                PanelsIconAlias::TOPBAR_OPEN_DATABASE_NOTIFICATIONS_BUTTON => TablerIcon::Bell,
-                TablesIconAlias::ACTIONS_FILTER                            => TablerIcon::Filter,
-            ])
             ->unsavedChangesAlerts()
             ->spa(hasPrefetching: config('phpvms.use_prefetching_in_admin', false))
             ->errorNotifications()

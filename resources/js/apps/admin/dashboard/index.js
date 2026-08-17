@@ -111,17 +111,20 @@ export async function saveDashboardLayouts() {
  * charts retint with the theme picker's brand colour and dark mode.
  *
  * resolveColor() forces the browser to resolve a `var()` reference to a
- * concrete rgb() via a hidden probe element (getComputedStyle().color).
- * This only works for *literal* custom properties: every --primary-N shade
- * except --primary-600 is itself set by the theme picker as a
- * `color-mix(in oklab, ...)` string, and Chrome's computed-value
- * serialization for that returns an `oklab(...)`/`color(srgb ...)`
- * string — which d3-color can't parse (it silently falls back to black).
- * --primary-600 is always the literal brand hex, so it's safe; lighter/
- * darker shades are mixed in JS with d3.interpolateRgb below instead of
- * asking CSS to pre-mix them.
+ * concrete colour via a hidden probe element, then pushes that through a
+ * 1x1 canvas to land on plain `rgb()`.
+ *
+ * The canvas hop is the load-bearing part. Filament v5 emits its palettes
+ * in oklch (Color::generatePalette returns `oklch(0.977 0.014 276.966)`),
+ * and any token the theme builds with `color-mix(in oklab, ...)` computes
+ * the same way. getComputedStyle() serialises both as `oklab(...)` /
+ * `color(srgb ...)`, which d3-color cannot parse — it returns null and
+ * every series silently renders black. Painting the colour and reading the
+ * pixel back delegates the conversion to the browser, so any colour space
+ * CSS understands arrives here as something d3 does.
  */
 let colorProbe = null;
+let colorCanvas = null;
 let colorCache = new Map();
 function resolveColor(cssVar) {
   if (colorCache.has(cssVar)) return colorCache.get(cssVar);
@@ -131,9 +134,28 @@ function resolveColor(cssVar) {
     document.body.appendChild(colorProbe);
   }
   colorProbe.style.color = cssVar;
-  const resolved = getComputedStyle(colorProbe).color;
+  const computed = getComputedStyle(colorProbe).color;
+  const resolved = toRgb(computed);
   colorCache.set(cssVar, resolved);
   return resolved;
+}
+
+/** Any CSS colour the browser can paint -> `rgb(r, g, b)`. */
+function toRgb(value) {
+  if (!colorCanvas) {
+    colorCanvas = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  }
+  if (!colorCanvas) return value;
+
+  // Reset first: an unparseable value leaves fillStyle at its previous
+  // setting rather than throwing, which would silently reuse the last
+  // series' colour.
+  colorCanvas.fillStyle = "#000";
+  colorCanvas.fillStyle = value;
+  colorCanvas.fillRect(0, 0, 1, 1);
+
+  const [r, g, b] = colorCanvas.getImageData(0, 0, 1, 1).data;
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function isDarkMode() {

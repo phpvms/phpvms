@@ -35,7 +35,7 @@ class PilotsFlyingStatWidget extends DashboardStatWidget
             'value'    => number_format((clone $reports)->distinct('user_id')->count('user_id')),
             'suffix'   => 'of '.number_format(User::active()->count()),
             'note'     => $topPilot?->user?->name !== null ? $topPilot->user->name.' leads on '.(int) $topPilot->getAttribute('legs').' legs' : null,
-            'icon'     => 'tabler-users',
+            'icon'     => 'phosphor-users-light',
             'accent'   => 'rose',
             'noteIcon' => null,
         ];

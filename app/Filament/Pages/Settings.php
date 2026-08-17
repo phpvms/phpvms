@@ -10,7 +10,7 @@ use App\Models\Setting;
 use App\Services\FinanceService;
 use App\Services\SettingService;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -48,7 +48,7 @@ class Settings extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Settings;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::GearLight;
 
     public ?array $data = [];
 
@@ -192,9 +192,9 @@ class Settings extends Page
                             return Toggle::make($setting->key)
                                 ->label($setting->name)
                                 ->helperText($setting->description)
-                                ->offIcon(TablerIcon::X)
+                                ->offIcon(Phosphor::XLight)
                                 ->offColor('danger')
-                                ->onIcon(TablerIcon::Check)
+                                ->onIcon(Phosphor::CheckLight)
                                 ->onColor('success');
                         }
 

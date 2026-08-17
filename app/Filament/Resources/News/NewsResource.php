@@ -8,7 +8,7 @@ use App\Filament\Resources\News\Schemas\NewsForm;
 use App\Filament\Resources\News\Tables\NewsTable;
 use App\Models\News;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -25,7 +25,7 @@ class NewsResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::News;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::NewspaperLight;
 
     protected static ?string $recordTitleAttribute = 'subject';
 

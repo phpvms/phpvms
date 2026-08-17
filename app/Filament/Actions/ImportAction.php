@@ -4,7 +4,7 @@ namespace App\Filament\Actions;
 
 use App\Enums\ImportExportType;
 use App\Services\ImportService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Forms\Components\FileUpload;
@@ -115,8 +115,8 @@ class ImportAction extends Action
 
         $this->modalSubmitActionLabel('Import');
 
-        $this->icon(TablerIcon::FileUpload);
+        $this->icon(Phosphor::FileArrowUpLight);
 
-        $this->groupedIcon(TablerIcon::FileUpload);
+        $this->groupedIcon(Phosphor::FileArrowUpLight);
     }
 }

@@ -20,11 +20,11 @@ beforeEach(function (): void {
 it('searches the icon set and renders each match as its glyph', function (): void {
     $results = AwardForm::searchIcons('plane');
 
-    expect($results)->toHaveKey('tabler-plane');
-    // Substring, not prefix — "plane" should also surface `brand-planetscale`.
+    expect($results)->toHaveKey('phosphor-airplane-light');
+    // Substring, not prefix — "plane" should also surface `airplane-in-flight`.
     expect(array_keys($results))->each->toContain('plane');
-    expect($results['tabler-plane'])->toContain('<svg');
-    expect($results['tabler-plane'])->toContain('plane');
+    expect($results['phosphor-airplane-light'])->toContain('<svg');
+    expect($results['phosphor-airplane-light'])->toContain('plane');
 });
 
 // ~7200 icons is far more than a Select should be handed at once.
@@ -33,10 +33,10 @@ it('caps icon search results', function (): void {
 });
 
 it('treats a space in an icon search as a hyphen', function (): void {
-    expect(AwardForm::searchIcons('plane departure'))->toHaveKey('tabler-plane-departure');
+    expect(AwardForm::searchIcons('airplane takeoff'))->toHaveKey('phosphor-airplane-takeoff-light');
 });
 
-// A term matching nothing is still offered, so a name from outside the Tabler
+// A term matching nothing is still offered, so a name from outside the Phosphor
 // set can be typed in. One that resolves to no glyph anywhere falls back to
 // showing the bare name rather than throwing.
 it('offers an unresolvable icon name as its bare name', function (): void {
@@ -47,7 +47,7 @@ it('offers an unresolvable icon name as its bare name', function (): void {
 // asserting on the raw attribute catches a regression to visible markup.
 it('links to the icon set in a new tab from the icon field', function (): void {
     Livewire::test(CreateAward::class)
-        ->assertSee('href="https://tabler.io/icons"', escape: false)
+        ->assertSee('href="https://phosphoricons.com/"', escape: false)
         ->assertSee('target="_blank"', escape: false)
         ->assertSee(__('filament.award_icon_browse'));
 });
@@ -56,7 +56,7 @@ it('saves an icon and category on a new award', function (): void {
     Livewire::test(CreateAward::class)
         ->fillForm([
             'name'     => 'Long Haul',
-            'icon'     => 'tabler-plane-departure',
+            'icon'     => 'phosphor-airplane-takeoff-light',
             'category' => 'DISTANCE',
         ])
         ->call('create')
@@ -64,7 +64,7 @@ it('saves an icon and category on a new award', function (): void {
 
     $award = Award::where('name', 'Long Haul')->first();
 
-    expect($award->icon)->toBe('tabler-plane-departure');
+    expect($award->icon)->toBe('phosphor-airplane-takeoff-light');
     expect($award->category)->toBe('DISTANCE');
 });
 
@@ -104,9 +104,9 @@ it('uppercases a category typed into the create-option form', function (): void 
 it('shows a starter set of icons before anything is typed', function (): void {
     $starters = AwardForm::starterIcons();
 
-    expect($starters)->toHaveKey('tabler-trophy');
+    expect($starters)->toHaveKey('phosphor-trophy-light');
     expect($starters)->toHaveCount(30);
-    expect($starters['tabler-trophy'])->toContain('<svg');
+    expect($starters['phosphor-trophy-light'])->toContain('<svg');
 });
 
 // The point of uppercasing: the typed category has to come back as a suggestion
@@ -117,7 +117,7 @@ it('suggests a typed category once its award is saved', function (): void {
     expect(Award::categoryOptions())->toHaveKey('NIGHT OPS');
 });
 
-it('offers a typed icon name that is not in the Tabler set', function (): void {
+it('offers a typed icon name that is not in the Phosphor set', function (): void {
     $results = AwardForm::searchIcons('heroicon-o-star');
 
     expect($results)->toHaveKey('heroicon-o-star');
@@ -140,7 +140,7 @@ it('renders the pilot awards grid with icon, name and category', function (): vo
     $user = User::factory()->create();
     $award = Award::factory()->create([
         'name'     => 'Transatlantic',
-        'icon'     => 'tabler-world',
+        'icon'     => 'phosphor-globe-light',
         'category' => 'ROUTE',
     ]);
 
@@ -169,7 +169,7 @@ it('survives an icon name that no longer exists in the icon set', function (): v
     $user = User::factory()->create();
     $award = Award::factory()->create([
         'name' => 'Ghost Icon',
-        'icon' => 'tabler-this-icon-was-removed',
+        'icon' => 'phosphor-this-icon-was-removed',
     ]);
 
     $user->awards()->attach($award->id);

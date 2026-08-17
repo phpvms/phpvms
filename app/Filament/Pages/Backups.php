@@ -7,7 +7,7 @@ namespace App\Filament\Pages;
 use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Override;
 use ShuvroRoy\FilamentSpatieLaravelBackup\Pages\Backups as BaseBackups;
 use UnitEnum;
@@ -16,7 +16,7 @@ class Backups extends BaseBackups
 {
     use AuthorizesAccess;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Database;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::DatabaseLight;
 
     protected static ?int $navigationSort = 4;
 

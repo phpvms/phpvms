@@ -35,7 +35,7 @@
                 <span class="addon-row__top">
                     <span class="addon-row__title">
                         @if ($row['official'])
-                            <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::StarFilled"
+                            <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::StarFill"
                                 class="official" role="img"
                                 :aria-label="__('addon-manager::addons.official_hint')" />
                         @endif
@@ -84,7 +84,7 @@
         </button>
     @empty
         <div class="empty">
-            <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Puzzle" />
+            <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::PuzzlePieceLight" />
             <strong>{{ __('addon-manager::addons.no_results_title') }}</strong>
             <span>{{ __('addon-manager::addons.no_results_hint') }}</span>
         </div>

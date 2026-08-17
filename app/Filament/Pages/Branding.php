@@ -15,7 +15,7 @@ use App\Services\SettingService;
 use App\Support\Branding as BrandingSupport;
 use BackedEnum;
 use Closure;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -58,7 +58,7 @@ class Branding extends Page
 
     protected static ?int $navigationSort = 0;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Palette;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::PaletteLight;
 
     public ?array $data = [];
 
@@ -235,7 +235,7 @@ class Branding extends Page
         return [
             Section::make(__('filament.branding'))
                 ->id('branding')
-                ->icon(TablerIcon::Palette)
+                ->icon(Phosphor::PaletteLight)
                 ->collapsible()
                 ->persistCollapsed()
                 ->schema([
@@ -251,7 +251,7 @@ class Branding extends Page
 
                     Section::make(__('filament.branding_admin_colors'))
                         ->id('branding-admin-colors')
-                        ->icon(TablerIcon::ColorSwatch)
+                        ->icon(Phosphor::SwatchesLight)
                         ->collapsible()
                         ->persistCollapsed()
                         // Four columns so the custom picker sits at a quarter
@@ -303,7 +303,7 @@ class Branding extends Page
 
                     Section::make(__('filament.branding_logo'))
                         ->id('branding-logo')
-                        ->icon(TablerIcon::Photo)
+                        ->icon(Phosphor::ImageLight)
                         ->collapsible()
                         ->persistCollapsed()
                         ->columns(2)
@@ -333,7 +333,7 @@ class Branding extends Page
 
                     Section::make(__('filament.branding_banner'))
                         ->id('branding-banner')
-                        ->icon(TablerIcon::Layout)
+                        ->icon(Phosphor::LayoutLight)
                         ->collapsible()
                         ->persistCollapsed()
                         ->columns(2)

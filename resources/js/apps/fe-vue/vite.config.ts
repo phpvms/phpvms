@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import ui from "@nuxt/ui/vite";
@@ -22,6 +22,11 @@ const REPO_ROOT = resolve(WORKSPACE_ROOT, "..", "..", "..", "..");
 const LAYOUTS_DIR = resolve(REPO_ROOT, "resources", "views", "layouts", THEME_NAME);
 // Web-served asset root: repo-root/public/build/<theme>/ (browser loads from here).
 const PUBLIC_BUILD_DIR = resolve(REPO_ROOT, "public", "build", THEME_NAME);
+// The app is served from APP_URL, a different origin to this dev server, so the
+// module scripts in the Inertia shell are a cross-origin load. Vite 6+ only sends
+// CORS headers to origins it is told about, so without this the browser blocks
+// @vite/client and main.ts and the SPA silently never mounts.
+const APP_URL = loadEnv("development", REPO_ROOT, "APP_URL").APP_URL;
 const APP_CSS = resolve(WORKSPACE_ROOT, "src", "app", "app.css");
 const SPA_ENTRY = resolve(WORKSPACE_ROOT, "src", "app", "main.ts");
 
@@ -249,6 +254,7 @@ export default defineConfig(({ command }) => ({
     port: 5274,
     host: true, // bind 0.0.0.0 so Docker can reach the host via its gateway IP
     strictPort: true,
+    cors: { origin: APP_URL ? [APP_URL] : true },
 
     // The hot file is written to the dist dir so Laravel's Vite integration
     // (or our custom hot-file reader) can detect the dev server.

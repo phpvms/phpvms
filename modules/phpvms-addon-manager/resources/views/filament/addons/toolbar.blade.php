@@ -25,7 +25,7 @@
 
         <span class="subtabs__aside">
             <span class="field">
-                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Filter" />
+                <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::FunnelLight" />
                 <label class="sr-only" for="addon-category">{{ __('addon-manager::addons.all_categories') }}</label>
                 <select id="addon-category" wire:model.live="category">
                     <option value="">{{ __('addon-manager::addons.all_categories') }}</option>
@@ -39,7 +39,7 @@
 
     <div class="filters">
         <label class="field field--search">
-            <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Search" />
+            <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::MagnifyingGlassLight" />
             <span class="sr-only">{{ __('addon-manager::addons.search_addons', ['count' => $states['all']]) }}</span>
             <input type="search" wire:model.live.debounce.300ms="search"
                 placeholder="{{ __('addon-manager::addons.search_addons', ['count' => $states['all']]) }}">

@@ -6,7 +6,7 @@
     <x-filament::icon-button
         color="gray"
         size="lg"
-        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::LayoutSidebar"
+        :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::SidebarLight"
         :label="__('filament-panels::layout.actions.sidebar.collapse.label')"
         x-on:click="$store.sidebar.isOpen ? $store.sidebar.close() : $store.sidebar.open()"
     />

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Pireps\Actions;
 
 use App\Filament\Resources\PirepFields\PirepFieldResource;
 use App\Models\PirepField;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 
 class PirepFieldsAction
@@ -16,7 +16,7 @@ class PirepFieldsAction
             /* Utility link, not a CTA — neutral field like the view page's
              * buttons; primary fill stays reserved for Create-style actions. */
             ->color('gray')
-            ->icon(TablerIcon::ClipboardList)
+            ->icon(Phosphor::ClipboardTextLight)
             ->url(PirepFieldResource::getUrl('index'))
             ->visible(fn (): bool => auth()->user()?->can('view-any', PirepField::class));
     }

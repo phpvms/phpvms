@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 
 /**
@@ -47,14 +47,14 @@ trait FormActionIcons
      * share a row with something like "Run test". Tabler throughout, matching
      * the rest of the panel.
      */
-    private static function formActionIcon(string $name): ?TablerIcon
+    private static function formActionIcon(string $name): ?Phosphor
     {
         return match ($name) {
-            'save'               => TablerIcon::DeviceFloppy,
-            'create'             => TablerIcon::Plus,
-            'createAnother'      => TablerIcon::CopyPlus,
-            'createReturnFlight' => TablerIcon::ArrowsExchange,
-            'cancel'             => TablerIcon::X,
+            'save'               => Phosphor::FloppyDiskLight,
+            'create'             => Phosphor::PlusLight,
+            'createAnother'      => Phosphor::CopySimpleLight,
+            'createReturnFlight' => Phosphor::SwapLight,
+            'cancel'             => Phosphor::XLight,
             default              => null,
         };
     }

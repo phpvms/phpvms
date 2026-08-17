@@ -10,7 +10,7 @@ use App\Filament\Resources\FlightBundles\Schemas\FlightBundleForm;
 use App\Models\Aircraft;
 use App\Models\FlightBundle;
 use Carbon\Carbon;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -95,7 +95,7 @@ class EditFlightBundle extends EditRecord
             ->modalHeading(__('filament.bundles.edit_details'))
             ->modalDescription(__('filament.bundles.edit_details_description'))
             ->extraModalFooterActions([
-                DeleteAction::make(),
+                DeleteAction::make()->icon(Phosphor::TrashLight),
             ]);
     }
 
@@ -103,13 +103,13 @@ class EditFlightBundle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 
     /**
-     * @return array<int, array{icon: TablerIcon, tint: string|null, label: string, value: string, note: string}>
+     * @return array<int, array{icon: Phosphor, tint: string|null, label: string, value: string, note: string}>
      */
     protected function summaryCards(): array
     {
@@ -129,28 +129,28 @@ class EditFlightBundle extends EditRecord
 
         return [
             [
-                'icon'  => TablerIcon::Power,
+                'icon'  => Phosphor::PowerLight,
                 'tint'  => null,
                 'label' => __('common.status'),
                 'value' => $record->enabled ? __('common.enabled') : __('common.disabled'),
                 'note'  => $record->visible ? 'Visible to pilots' : 'Hidden from pilots',
             ],
             [
-                'icon'  => TablerIcon::Plane,
+                'icon'  => Phosphor::AirplaneLight,
                 'tint'  => 'blue',
                 'label' => trans_choice('common.flight', 2),
                 'value' => number_format($flightsTotal),
                 'note'  => $flightsEnabled.' enabled · '.($flightsTotal - $flightsEnabled).' disabled',
             ],
             [
-                'icon'  => TablerIcon::Stack2,
+                'icon'  => Phosphor::StackSimpleLight,
                 'tint'  => 'teal',
                 'label' => trans_choice('common.subfleet', 2),
                 'value' => number_format($subfleetCount),
                 'note'  => $tailCount.' '.Str::plural('tail', $tailCount),
             ],
             [
-                'icon'  => TablerIcon::CalendarEvent,
+                'icon'  => Phosphor::CalendarDotLight,
                 'tint'  => 'violet',
                 'label' => __('filament.bundles.window'),
                 'value' => $window,

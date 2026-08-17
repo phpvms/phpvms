@@ -15,7 +15,7 @@ use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use App\Services\UserService;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -32,7 +32,7 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Users;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::UsersLight;
 
     protected static ?string $recordTitleAttribute = 'name';
 

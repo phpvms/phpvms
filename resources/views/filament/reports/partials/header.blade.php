@@ -30,12 +30,12 @@
             <x-slot name="trigger">
                 <button type="button" class="fi-report-filter-trigger">
                     <x-filament::icon
-                        icon="tabler-calendar-time"
+                        icon="phosphor-calendar-dots-light"
                         class="fi-report-filter-trigger-icon"
                     />
                     <span>{{ $this->getPeriodLabel() }}</span>
                     <x-filament::icon
-                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronDown"
+                        :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::CaretDownLight"
                         class="fi-report-filter-trigger-caret"
                     />
                 </button>
@@ -94,12 +94,12 @@
             <x-slot name="trigger">
                 <button type="button" class="fi-report-filter-trigger">
                     <x-filament::icon
-                        icon="tabler-plane"
+                        icon="phosphor-airplane-light"
                         class="fi-report-filter-trigger-icon"
                     />
                     <span>{{ $this->getAirlinesLabel() }}</span>
                     <x-filament::icon
-                        :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ChevronDown"
+                        :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::CaretDownLight"
                         class="fi-report-filter-trigger-caret"
                     />
                 </button>

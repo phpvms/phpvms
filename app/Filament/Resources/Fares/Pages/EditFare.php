@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Fares\Pages;
 
 use App\Filament\Concerns\ReversePrimaryButtons;
 use App\Filament\Resources\Fares\FareResource;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -28,9 +29,9 @@ class EditFare extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()->icon(Phosphor::TrashLight),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 }

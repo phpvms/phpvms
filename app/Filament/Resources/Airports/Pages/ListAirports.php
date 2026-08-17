@@ -12,7 +12,7 @@ use App\Filament\Resources\Airports\AirportResource;
 use App\Filament\Resources\Airports\Schemas\AirportForm;
 use App\Models\Airport;
 use App\Services\AirportService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
@@ -65,7 +65,7 @@ class ListAirports extends ListRecords
             Drawer::configure(
                 Action::make('addAirports')
                     ->label(__('airports.add_airports'))
-                    ->icon(TablerIcon::CirclePlus)
+                    ->icon(Phosphor::PlusCircleLight)
                     ->visible(fn (): bool => Gate::allows('create', Airport::class))
                     ->modalHeading(__('airports.add_airports'))
                     ->modalDescription(__('airports.add_airports_description'))

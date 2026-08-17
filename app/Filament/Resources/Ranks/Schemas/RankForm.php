@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Ranks\Schemas;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
@@ -53,24 +53,24 @@ class RankForm
 
                                 Toggle::make('auto_approve_acars')
                                     ->label(__('filament.rank_auto_approve_acars'))
-                                    ->offIcon(TablerIcon::X)
+                                    ->offIcon(Phosphor::XLight)
                                     ->offColor('danger')
-                                    ->onIcon(TablerIcon::Check)
+                                    ->onIcon(Phosphor::CheckLight)
                                     ->onColor('success'),
 
                                 Toggle::make('auto_approve_manual')
                                     ->label(__('filament.rank_auto_approve_manual'))
-                                    ->offIcon(TablerIcon::X)
+                                    ->offIcon(Phosphor::XLight)
                                     ->offColor('danger')
-                                    ->onIcon(TablerIcon::Check)
+                                    ->onIcon(Phosphor::CheckLight)
                                     ->onColor('success'),
 
                                 Toggle::make('auto_promote')
                                     ->label(__('filament.rank_auto_promote'))
                                     ->helperText(__('filament.rank_auto_promote_hint'))
-                                    ->offIcon(TablerIcon::X)
+                                    ->offIcon(Phosphor::XLight)
                                     ->offColor('danger')
-                                    ->onIcon(TablerIcon::Check)
+                                    ->onIcon(Phosphor::CheckLight)
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()

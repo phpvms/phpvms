@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Fares\Tables;
 use App\Enums\FareType;
 use App\Filament\Resources\Fares\Support\FareTrace;
 use App\Models\Fare;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -102,7 +102,7 @@ class FaresTable
                 ActionGroup::make([
                     Action::make('overrides')
                         ->label(__('filament.fare_overrides'))
-                        ->icon(TablerIcon::Sitemap)
+                        ->icon(Phosphor::TreeStructureLight)
                         ->color('gray')
                         ->modalHeading(fn (Fare $record): string => $record->code.' · '.$record->name)
                         ->modalDescription(__('filament.fare_map_description'))

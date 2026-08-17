@@ -9,7 +9,7 @@
 @endphp
 
 <div class="notice">
-    <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Refresh" />
+    <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::ArrowsClockwiseLight" />
 
     <span class="notice__text">
         <strong>

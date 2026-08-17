@@ -19,18 +19,71 @@ import "chartjs-adapter-date-fns";
 Chart.register(annotationPlugin);
 
 /**
- * Read a console theme token (e.g. `--primary-600`, `--ok`) as a literal
- * hex string, falling back to the given default when the variable isn't
- * set (SSR/tests) or resolves empty. Unlike resources/js/admin/dashboard's
- * resolveColor(), no getComputedStyle() probe is needed here — every token
- * this file reads (--primary-600, --ok/--warn/--bad/--info, --line/--ink-3)
- * is defined in theme.css as a literal hex, not a color-mix() expression,
- * so the custom property's own value is already a usable hex/rgba string.
+ * Read a console theme token (e.g. `--primary-600`, `--ok`) as a colour
+ * Chart.js can parse, falling back to the given default when the variable
+ * isn't set (SSR/tests) or resolves empty.
+ *
+ * The normalise step is load-bearing. Most tokens here (--ok/--warn/--bad/
+ * --info/--ink-3) are literal hex in theme.css, but --primary-600 comes from
+ * Filament, which emits its palettes in oklch (Color::generatePalette returns
+ * `oklch(0.55 0.15 277)`). Chart.js's colour parser doesn't understand oklch
+ * and yields black. Painting the value into a 1x1 canvas hands the conversion
+ * to the browser, so any colour space CSS accepts arrives here as rgb().
  */
 function cssVar(name, fallback) {
   if (typeof document === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return value || fallback;
+
+  // A probe element, not getPropertyValue(). Filament declares the palette as
+  // an indirection -- `--primary-600: var(--color-600)` with `--color-600`
+  // holding the real oklch -- so getPropertyValue() hands back the literal
+  // text "var(--color-600)", which no colour parser resolves. Assigning to an
+  // element's `color` makes the cascade resolve the chain for us.
+  if (colorProbe === undefined) {
+    colorProbe = document.createElement("span");
+    colorProbe.style.cssText = "position:fixed;top:-9999px;left:-9999px;visibility:hidden";
+    document.body.appendChild(colorProbe);
+  }
+
+  colorProbe.style.color = "";
+  colorProbe.style.color = `var(${name})`;
+  const value = getComputedStyle(colorProbe).color;
+
+  return value ? toRgb(value, fallback) : fallback;
+}
+
+let colorProbe;
+let colorCanvas;
+function toRgb(value, fallback) {
+  if (colorCanvas === undefined) {
+    colorCanvas =
+      document.createElement("canvas").getContext("2d", { willReadFrequently: true }) ?? null;
+  }
+  if (!colorCanvas) return value;
+
+  // Reset first: an unparseable value leaves fillStyle at its previous
+  // setting rather than throwing, which would silently reuse another series'
+  // colour instead of falling back.
+  colorCanvas.fillStyle = "#000";
+  colorCanvas.fillStyle = value;
+  colorCanvas.fillRect(0, 0, 1, 1);
+
+  const [r, g, b, a] = colorCanvas.getImageData(0, 0, 1, 1).data;
+  if (a === 0 && value !== "transparent") return fallback;
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * Chart type comes from the theme's own font tokens rather than a hardcoded
+ * family — the panel's typeface is set in theme.css (--font-sans/--font-mono)
+ * and no longer by the panel's ->font(), so naming a family here would pin
+ * the charts to whatever was current when this was written.
+ */
+const FONT_MONO = () => cssFont("--font-mono", "ui-monospace, monospace");
+
+function cssFont(name, fallback) {
+  if (typeof document === "undefined") return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
 // Phase shading keyed off ACARS sample `status` (PirepPhase enum value).
@@ -159,7 +212,7 @@ export default function pirepPerformanceChart(payload) {
             display: idx === 0 || phases[idx - 1]?.code !== phase.code,
             content: phase.label,
             position: { x: "start", y: "start" },
-            font: { family: "Geist Mono", size: 9, weight: "500" },
+            font: { family: FONT_MONO(), size: 9, weight: "500" },
             color: cssVar("--ink-3", "#6b7280"),
             backgroundColor: "transparent",
             padding: { top: 4, left: 6 },
@@ -240,14 +293,14 @@ export default function pirepPerformanceChart(payload) {
               grid: { display: false },
               ticks: {
                 color: cssVar("--ink-3", "#9ba3af"),
-                font: { family: "Geist Mono", size: 10 },
+                font: { family: FONT_MONO(), size: 10 },
               },
             },
             y: {
               grid: { color: cssVar("--line", "#eef1f4"), drawTicks: false },
               ticks: {
                 color: cssVar("--ink-3", "#9ba3af"),
-                font: { family: "Geist Mono", size: 10 },
+                font: { family: FONT_MONO(), size: 10 },
                 callback: (v) =>
                   cfg.unit === "ft" ? (v / 1000).toFixed(0) + "k" : v.toLocaleString(),
               },

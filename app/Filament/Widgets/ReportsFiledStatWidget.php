@@ -29,7 +29,7 @@ class ReportsFiledStatWidget extends DashboardStatWidget
             'value'    => number_format((clone $reports)->count()),
             'suffix'   => null,
             'note'     => (clone $reports)->where('state', PirepState::ACCEPTED)->count().' accepted · '.(clone $reports)->where('state', PirepState::PENDING)->count().' pending',
-            'icon'     => 'tabler-file-text',
+            'icon'     => 'phosphor-file-text-light',
             'accent'   => 'violet',
             'noteIcon' => null,
         ];

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Invites\Schemas;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -44,9 +44,9 @@ class InviteForm
                     ->label(__('invites.email_link'))
                     ->helperText(__('filament.invite_email_link_hint'))
                     ->disabled(fn (Get $get): bool => $get('email') === null || $get('email') === '')
-                    ->offIcon(TablerIcon::X)
+                    ->offIcon(Phosphor::XLight)
                     ->offColor('danger')
-                    ->onIcon(TablerIcon::Check)
+                    ->onIcon(Phosphor::CheckLight)
                     ->onColor('success'),
             ])
             ->columns();

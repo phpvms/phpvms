@@ -28,7 +28,7 @@
                 id="t-flight"
                 @click="activeTab = 'flight'"
             >
-                @svg('tabler-plane') Flight
+                @svg('phosphor-airplane-light') Flight
             </button>
             <button
                 type="button"
@@ -39,7 +39,7 @@
                 id="t-log"
                 @click="activeTab = 'log'"
             >
-                @svg('tabler-list') {{ __('pireps.flight_log') }} <em>{{ $logEntries->count() }}</em>
+                @svg('phosphor-list-light') {{ __('pireps.flight_log') }} <em>{{ $logEntries->count() }}</em>
             </button>
             <button
                 type="button"
@@ -50,7 +50,7 @@
                 id="t-fin"
                 @click="activeTab = 'finances'"
             >
-                @svg('tabler-cash') {{ __('pireps.finance') }}
+                @svg('phosphor-money-light') {{ __('pireps.finance') }}
             </button>
             <button
                 type="button"
@@ -61,7 +61,7 @@
                 id="t-arc"
                 @click="activeTab = 'archive'"
             >
-                @svg('tabler-archive') {{ __('filament.original_flight') }}
+                @svg('phosphor-archive-light') {{ __('filament.original_flight') }}
             </button>
         </div>
 

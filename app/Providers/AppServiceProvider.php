@@ -39,11 +39,9 @@ use App\Support\ThemeViewFinder;
 use App\Support\Units\Time;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Closure;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ExportAction;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Support\Facades\FilamentView;
-use Filament\View\PanelsRenderHook;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Igaster\LaravelTheme\Facades\Theme;
 use Illuminate\Auth\Access\Response;
@@ -104,7 +102,7 @@ class AppServiceProvider extends ServiceProvider
         // Resolved at render time because TimePicker flips hasDate() off
         // only after this configuration runs.
         DateTimePicker::configureUsing(static fn (DateTimePicker $picker): DateTimePicker => $picker
-            ->suffixIcon(static fn (DateTimePicker $component): ?TablerIcon => $component->hasDate() ? TablerIcon::Calendar : null));
+            ->suffixIcon(static fn (DateTimePicker $component): ?Phosphor => $component->hasDate() ? Phosphor::CalendarLight : null));
 
         // The SettingService memo is request-scoped via config/octane.php 'flush',
         // but a long-running queue worker is not flushed per job. Reset the memo
@@ -140,22 +138,6 @@ class AppServiceProvider extends ServiceProvider
         // request pipeline. The middleware reapplies the default before any
         // opt-in (EnableActivityLogging middleware, Filament panel boot)
         // gets a chance to flip it on.
-
-        /**
-         * Inject the extra display + monospace fonts used by the docs design
-         * (Encode Sans for headings, Geist Mono + JetBrains Mono for code).
-         * Served via Bunny Fonts (GDPR-compliant Google Fonts mirror — same
-         * family names, same files, no Google CDN call). The body font (Geist)
-         * is loaded by each panel via ->font('Geist'), which also writes
-         * Filament's --font-family CSS variable. Family + weight list mirrors
-         * docs/src/css/custom.css.
-         */
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::HEAD_END,
-            static fn (): string => <<<'HTML'
-                <link rel="stylesheet" href="https://fonts.bunny.net/css?family=encode-sans:500,600,700|geist-mono:400,500|jetbrains-mono:400,500,600&display=swap">
-                HTML,
-        );
 
         /**
          * Nano ID string helpers, mirroring Laravel's Str::uuid()/Str::ulid().

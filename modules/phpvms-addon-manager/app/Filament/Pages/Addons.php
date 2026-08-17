@@ -11,7 +11,7 @@ use App\Enums\NavigationGroup;
 use App\Filament\Concerns\AuthorizesAccess;
 use App\Models\Addon;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
@@ -57,7 +57,7 @@ class Addons extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Puzzle;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::PuzzlePieceLight;
 
     /** Rows per page. Ten fills the column without making it the whole screen. */
     private const int PER_PAGE = 10;
@@ -129,9 +129,9 @@ class Addons extends Page
     public static function getNavigationItems(): array
     {
         $tabs = [
-            'installed' => [__('addon-manager::addons.installed_tab'), TablerIcon::Puzzle, fn (): ?string => self::badge(Addon::query()->count())],
-            'updates'   => [__('addon-manager::addons.updates'), TablerIcon::Download, fn (): ?string => self::badge(app(static::class)->updateCount())],
-            'browse'    => [__('addon-manager::addons.registry_tab'), TablerIcon::Search, fn (): ?string => self::badge(count(app(RegistryClient::class)->cachedCatalog()['entries']))],
+            'installed' => [__('addon-manager::addons.installed_tab'), Phosphor::PuzzlePieceLight, fn (): ?string => self::badge(Addon::query()->count())],
+            'updates'   => [__('addon-manager::addons.updates'), Phosphor::DownloadSimpleLight, fn (): ?string => self::badge(app(static::class)->updateCount())],
+            'browse'    => [__('addon-manager::addons.registry_tab'), Phosphor::MagnifyingGlassLight, fn (): ?string => self::badge(count(app(RegistryClient::class)->cachedCatalog()['entries']))],
         ];
 
         $sort = static::getNavigationSort() ?? 0;
@@ -200,7 +200,7 @@ class Addons extends Page
             $this->uploadZipAction(),
             Action::make('checkUpdates')
                 ->label(__('addon-manager::addons.check_updates'))
-                ->icon(TablerIcon::Refresh)
+                ->icon(Phosphor::ArrowsClockwiseLight)
                 ->color('gray')
                 ->action(fn () => $this->refreshCatalog()),
         ];
@@ -246,7 +246,7 @@ class Addons extends Page
                             // Nested Section: renders as a sequent head band
                             // inside the same card, not a second card.
                             Section::make(__('addon-manager::addons.releases'))
-                                ->icon(TablerIcon::History)
+                                ->icon(Phosphor::ClockCounterClockwiseLight)
                                 ->collapsible()
                                 ->persistCollapsed()
                                 ->visible(fn (): bool => $this->releases() !== [])
@@ -816,7 +816,7 @@ class Addons extends Page
     {
         return Action::make('delete')
             ->label(__('filament-actions::delete.single.label'))
-            ->icon(TablerIcon::Trash)
+            ->icon(Phosphor::TrashLight)
             ->color('danger')
             ->requiresConfirmation()
             ->schema([

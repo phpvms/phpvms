@@ -4,7 +4,7 @@
     (component tag on blade pages, View::make('components.admin.overview') in
     Filament schemas).
 
-    cards: list of [icon => TablerIcon, tint => null|'blue'|'teal'|'violet'|'rose'|'amber',
+    cards: list of [icon => Phosphor, tint => null|'blue'|'teal'|'violet'|'rose'|'amber',
         label, value, note (optional)]
     editAction: the page's edit Action (pairs with
         App\Filament\Actions\EditDetailsAction's settings drawer), rendered in

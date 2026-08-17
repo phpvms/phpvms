@@ -7,7 +7,7 @@ use App\Enums\FuelType;
 use App\Filament\Forms\Components\AirportSelect;
 use App\Models\SimBriefAirframe;
 use App\Models\Subfleet;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,7 +24,7 @@ class SubfleetForm
             ->components([
                 Section::make(__('filament.subfleet_information'))
                     ->id('subfleet-information')
-                    ->icon(TablerIcon::Stack2)
+                    ->icon(Phosphor::StackSimpleLight)
                     ->collapsible()
                     ->persistCollapsed()
                     ->schema([
@@ -77,7 +77,7 @@ class SubfleetForm
                         // the same card, not as second and third cards.
                         Section::make(__('filament.subfleets.sections.costs'))
                             ->id('costs')
-                            ->icon(TablerIcon::Cash)
+                            ->icon(Phosphor::MoneyLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(3)
@@ -104,7 +104,7 @@ class SubfleetForm
 
                         Section::make(__('filament.subfleets.sections.operational_capability'))
                             ->id('operational-capability')
-                            ->icon(TablerIcon::Map)
+                            ->icon(Phosphor::MapTrifoldLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(3)

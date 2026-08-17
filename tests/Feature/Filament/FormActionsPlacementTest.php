@@ -59,11 +59,12 @@ it('splits the section footer, escape action before the primary one', function (
         // flip the submit pair back to primary-first.
         ->and($html)->not->toContain('fi-ac fi-align-end')
         // Icons on the submit pair, or they render shorter than any button
-        // that has one and the row looks misaligned. Tabler, like the rest of
+        // that has one and the row looks misaligned. Phosphor, like the rest of
         // the panel -- and nothing from heroicons, which only reaches the app
         // as a Filament dependency.
-        ->and($html)->toContain('icon-tabler-device-floppy')
-        ->and($html)->toContain('icon-tabler-x')
+        // Phosphor SVGs carry no identifying class, so the 256 viewBox is the
+        // discriminator: heroicons and Tabler both draw on 24.
+        ->and($html)->toContain('viewBox="0 0 256 256"')
         ->and($html)->not->toContain('icon-heroicon');
 })->with([
     // Two slots: the schema's own footer action holds the left edge.

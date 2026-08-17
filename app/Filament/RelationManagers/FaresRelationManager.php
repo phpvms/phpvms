@@ -4,7 +4,7 @@ namespace App\Filament\RelationManagers;
 
 use App\Models\Fare;
 use App\Models\Flight;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DetachAction;
@@ -89,7 +89,7 @@ class FaresRelationManager extends RelationManager
             ->filters([
                 //
             ])
-            ->emptyStateIcon(TablerIcon::Cash)
+            ->emptyStateIcon(Phosphor::MoneyLight)
             ->emptyStateHeading(__('filament.fare_empty_heading'))
             // A flight with no fares of its own inherits its subfleets'; a
             // subfleet with none simply has none, so only say the former.

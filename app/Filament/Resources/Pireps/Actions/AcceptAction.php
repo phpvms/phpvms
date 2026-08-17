@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Pireps\Actions;
 use App\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
@@ -15,7 +15,7 @@ class AcceptAction
     {
         return Action::make('accept')
             ->color('success')
-            ->icon(TablerIcon::CircleCheck)
+            ->icon(Phosphor::CheckCircleLight)
             ->label(__('common.accept'))
             ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {

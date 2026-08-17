@@ -1,6 +1,6 @@
 <div>
     <x-filament::icon-button
-        icon="tabler-refresh"
+        icon="phosphor-arrows-clockwise-light"
         :tooltip="__('filament.maintenance_clear_cache')"
         color="gray"
         wire:click="clear"

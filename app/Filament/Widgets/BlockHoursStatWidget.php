@@ -30,7 +30,7 @@ class BlockHoursStatWidget extends DashboardStatWidget
             'value'    => number_format($blockMinutes / 60, 1),
             'suffix'   => 'h',
             'note'     => $legsCount.' legs · '.number_format($legsCount > 0 ? $blockMinutes / $legsCount / 60 : 0, 1).' h average',
-            'icon'     => 'tabler-clock',
+            'icon'     => 'phosphor-clock-light',
             'accent'   => 'blue',
             'noteIcon' => null,
         ];

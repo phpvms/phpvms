@@ -8,7 +8,7 @@ use App\Filament\Widgets\AirlineFinanceChart;
 use App\Filament\Widgets\AirlineFinanceTable;
 use App\Models\Airline;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -32,7 +32,7 @@ class Finances extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ChartBar;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::ChartBarLight;
 
     #[Override]
     public static function getNavigationLabel(): string

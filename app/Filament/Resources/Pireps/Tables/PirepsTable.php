@@ -4,9 +4,12 @@ namespace App\Filament\Resources\Pireps\Tables;
 
 use App\Enums\PirepState;
 use App\Filament\Resources\Pireps\PirepResource;
+use App\Filament\Resources\Subfleets\Resources\Aircraft\AircraftResource;
+use App\Filament\Widgets\ActivityCalendarWidget;
 use App\Models\Airport;
 use App\Models\Pirep;
 use App\Support\Units\Time;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -36,16 +39,36 @@ class PirepsTable
 {
     public static function configure(Table $table): Table
     {
-        return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query
-                ->with(['airline', 'aircraft', 'user', 'dpt_airport:id,icao,name', 'arr_airport:id,icao,name'])
-                ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
+        return $table->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+            'airline',
+            'aircraft',
+            'user',
+            'dpt_airport:id,icao,name',
+            'arr_airport:id,icao,name',
+        ])
+            ->whereNotIn('state', [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED]))
             ->columns([
                 TextColumn::make('ident')
                     ->label(trans_choice('common.flight', 1))
                     ->fontFamily(FontFamily::Mono)
                     ->url(fn (Pirep $record): string => PirepResource::getUrl('view', ['record' => $record]))
-                    ->sortable(['flight_number']),
+                    ->sortable(['flight_number'])
+                    ->icon(fn (Pirep $record): Phosphor => match ($record->state) {
+                        PirepState::ACCEPTED => Phosphor::CheckFat,
+                        PirepState::REJECTED => Phosphor::XBold,
+                        default              => Phosphor::SealQuestionBold
+                    })
+                    ->iconColor(fn (Pirep $record): string => match ($record->state) {
+                        PirepState::ACCEPTED => 'success',
+                        PirepState::REJECTED => 'danger',
+                        default              => 'info'
+                    }),
+
+                /*TextColumn::make('state')
+                    ->label(__('common.state'))
+                    ->badge()
+                    ->sortable()
+                    ->alignCenter(),*/
 
                 TextColumn::make('user.name')
                     ->label(trans_choice('common.pilot', 1))
@@ -58,42 +81,62 @@ class PirepsTable
 
                 TextColumn::make('aircraft.registration')
                     ->label(__('pireps.tail'))
-                    ->fontFamily(FontFamily::Mono),
+                    ->fontFamily(FontFamily::Mono)
+                    // Tail and type read as one fact about the airframe, so they
+                    // share a column: "N854AL (B738)".
+                    ->state(function (Pirep $record): string {
+                        $aircraft = $record->aircraft;
+
+                        if ($aircraft === null) {
+                            return '';
+                        }
+
+                        return filled($aircraft->icao)
+                            ? "{$aircraft->registration} ({$aircraft->icao})"
+                            : (string) $aircraft->registration;
+                    })
+                    // AircraftResource declares $parentResource = SubfleetResource,
+                    // so its routes are nested and the subfleet segment is part of
+                    // the URL, not an extra lookup: subfleet_id is a column on the
+                    // aircraft row this table already eager-loads, so reading it
+                    // here costs no query.
+                    ->url(fn (Pirep $record): ?string => $record->aircraft === null ? null : AircraftResource::getUrl('edit', [
+                        'subfleet' => $record->aircraft->subfleet_id,
+                        'record'   => $record->aircraft,
+                    ]))
+                    ->alignCenter(),
 
                 TextColumn::make('flight_time')
                     ->label(__('pireps.block'))
                     ->fontFamily(FontFamily::Mono)
-                    ->alignEnd()
+                    ->alignCenter()
                     ->formatStateUsing(function (?int $state): string {
                         $hm = Time::minutesToTimeParts($state ?? 0);
 
                         return sprintf('%d:%02d', $hm['h'], $hm['m']);
                     }),
 
-                TextColumn::make('landing_rate')
-                    ->label(__('pireps.landing'))
+                TextColumn::make('score')
+                    ->label(__('pireps.score'))
                     ->fontFamily(FontFamily::Mono)
-                    ->alignEnd()
-                    ->formatStateUsing(fn (int|float|null $state): string => $state !== null && (int) $state !== 0 ? number_format((float) $state) : '—')
-                    ->tooltip(fn (int|float|null $state): ?string => $state !== null && (int) $state !== 0 ? number_format((float) $state).' fpm' : null)
+                    ->alignCenter()
+                    // ->formatStateUsing(fn (int|float|null $state): string => $state !== null && (int) $state !== 0 ? number_format((float) $state) : '—')
+                    ->tooltip(fn (int|float|null $state): ?string => $state !== null && (int) $state !== 0
+                        ? number_format((float) $state).' fpm'
+                        : null)
                     ->color(fn (int|float|null $state): ?string => match (true) {
                         $state === null || (int) $state === 0 => 'gray',
-                        $state > 0, $state <= -400            => 'danger',
-                        $state <= -250                        => 'warning',
-                        $state > -150                         => 'success',
+                        $state > 90                           => 'success',
+                        $state >= 80                          => 'warning',
+                        $state < 80                           => 'danger',
                         default                               => null,
                     }),
-
-                TextColumn::make('state')
-                    ->label(__('common.state'))
-                    ->badge()
-                    ->sortable(),
 
                 TextColumn::make('submitted_at')
                     ->label(__('pireps.filed'))
                     ->fontFamily(FontFamily::Mono)
                     ->alignEnd()
-                    ->dateTime('j M H:i')
+                    ->dateTime('j M')
                     ->dateTimeTooltip()
                     ->sortable(),
             ])
@@ -106,10 +149,15 @@ class PirepsTable
             ->filters([
                 SelectFilter::make('state')
                     ->label(__('common.state'))
-                    ->options(collect(PirepState::cases())
-                        ->reject(fn (PirepState $state): bool => in_array($state, [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED], true))
-                        ->mapWithKeys(fn (PirepState $state): array => [$state->value => $state->getLabel()])
-                        ->all()),
+                    ->options(
+                        collect(PirepState::cases())->reject(fn (PirepState $state): bool => in_array(
+                            $state,
+                            [PirepState::DRAFT, PirepState::IN_PROGRESS, PirepState::CANCELLED],
+                            true,
+                        ))
+                            ->mapWithKeys(fn (PirepState $state): array => [$state->value => $state->getLabel()])
+                            ->all(),
+                    ),
 
                 SelectFilter::make('airline')
                     ->relationship('airline', 'name')
@@ -144,14 +192,17 @@ class PirepsTable
                         DatePicker::make('filed_before')
                             ->label(__('filament.filed_before')),
                     ])
-                    ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when(
-                            isset($data['filed_after']) && $data['filed_after'],
-                            fn (Builder $query): Builder => $query->whereDate('submitted_at', '>=', $data['filed_after']),
-                        )
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        isset($data['filed_after']) && $data['filed_after'],
+                        fn (Builder $query): Builder => $query->whereDate('submitted_at', '>=', $data['filed_after']),
+                    )
                         ->when(
                             isset($data['filed_before']) && $data['filed_before'],
-                            fn (Builder $query): Builder => $query->whereDate('submitted_at', '<=', $data['filed_before']),
+                            fn (Builder $query): Builder => $query->whereDate(
+                                'submitted_at',
+                                '<=',
+                                $data['filed_before'],
+                            ),
                         )),
                 TrashedFilter::make(),
 
@@ -164,14 +215,20 @@ class PirepsTable
                         DateTimePicker::make('to')
                             ->label(__('filament.departed_to')),
                     ])
-                    ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when(
-                            filled($data['from'] ?? null),
-                            fn (Builder $query): Builder => $query->where('block_off_time', '>=', $data['from']),
-                        )
+                    // Same expression the activity calendar buckets on, so a
+                    // box there and the list it deep-links to select the same
+                    // rows. block_off_time alone would drop every PIREP that
+                    // never got one from ACARS.
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        filled($data['from'] ?? null),
+                        fn (Builder $query): Builder => $query->whereRaw(ActivityCalendarWidget::ACTIVITY_AT.' >= ?', [
+                            $data['from'],
+                        ]),
+                    )
                         ->when(
                             filled($data['to'] ?? null),
-                            fn (Builder $query): Builder => $query->where('block_off_time', '<=', $data['to']),
+                            fn (Builder $query): Builder => $query->whereRaw(ActivityCalendarWidget::ACTIVITY_AT
+                            .' <= ?', [$data['to']]),
                         )),
             ])
             // No funnel/dropdown: the quick bar below and the always-visible

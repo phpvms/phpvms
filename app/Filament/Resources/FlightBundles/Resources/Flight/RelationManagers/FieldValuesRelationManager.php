@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\FlightBundles\Resources\Flight\RelationManagers;
 
 use App\Models\Flight;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -55,12 +55,12 @@ class FieldValuesRelationManager extends RelationManager
             ->filters([
                 //
             ])
-            ->emptyStateIcon(TablerIcon::Columns)
+            ->emptyStateIcon(Phosphor::ColumnsLight)
             ->emptyStateHeading(__('filament.flights.fields_empty_heading'))
             ->emptyStateDescription(__('filament.flights.fields_empty_description'))
             ->headerActions([
                 CreateAction::make()
-                    ->icon(TablerIcon::CirclePlus)
+                    ->icon(Phosphor::PlusCircleLight)
                     ->mutateDataUsing(function (array $data): array {
                         /** @var Flight $flight */
                         $flight = $this->getOwnerRecord();

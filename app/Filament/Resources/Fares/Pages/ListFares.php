@@ -9,7 +9,7 @@ use App\Filament\Exports\FareExporter;
 use App\Filament\Imports\FareImporter;
 use App\Filament\Resources\Fares\FareResource;
 use App\Models\Flight;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
@@ -45,11 +45,11 @@ class ListFares extends ListRecords
                 ->exporter(FareExporter::class),
 
             CreateAction::make()
-                ->icon(TablerIcon::CirclePlus),
+                ->icon(Phosphor::PlusCircleLight),
 
             Action::make('probe')
                 ->label(__('filament.fare_probe'))
-                ->icon(TablerIcon::Calculator)
+                ->icon(Phosphor::CalculatorLight)
                 ->color('gray')
                 ->modalHeading(__('filament.fare_probe'))
                 ->modalDescription(__('filament.fare_probe_description'))

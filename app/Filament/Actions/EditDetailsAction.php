@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Actions;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Component;
 
@@ -29,7 +29,7 @@ class EditDetailsAction
         return Drawer::configure(
             EditAction::make()
                 ->label(__('common.edit'))
-                ->icon(TablerIcon::Pencil)
+                ->icon(Phosphor::PencilLight)
                 ->color('gray'),
             $fields,
         );

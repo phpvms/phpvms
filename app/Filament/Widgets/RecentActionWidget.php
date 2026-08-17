@@ -14,7 +14,7 @@ use App\Models\Aircraft;
 use App\Models\Pirep;
 use App\Models\User;
 use Carbon\Carbon;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -61,7 +61,7 @@ class RecentActionWidget extends TableWidget implements DynamicWidget
                 TextColumn::make('strong')
                     ->label(__('filament.dashboard.recent_action'))
                     ->description(fn (array $record): ?string => $record['sub'])
-                    ->icon(fn (array $record): TablerIcon => $record['icon'])
+                    ->icon(fn (array $record): Phosphor => $record['icon'])
                     ->iconColor(fn (array $record): string => $record['color'])
                     ->wrap(),
                 TextColumn::make('when')
@@ -71,13 +71,13 @@ class RecentActionWidget extends TableWidget implements DynamicWidget
             ->recordUrl(fn (array $record): string => $record['url'])
             ->paginated(false)
             ->emptyStateHeading(__('filament.dashboard.nothing_needs_attention'))
-            ->emptyStateIcon(TablerIcon::CircleCheck);
+            ->emptyStateIcon(Phosphor::CheckCircleLight);
     }
 
     /**
      * @return array<string, array{
      *     color: string,
-     *     icon: TablerIcon,
+     *     icon: Phosphor,
      *     strong: string,
      *     sub: ?string,
      *     when: string,
@@ -92,7 +92,7 @@ class RecentActionWidget extends TableWidget implements DynamicWidget
         foreach (Pirep::query()->where('state', PirepState::PENDING)->with(['user:id,name', 'airline:id,icao,iata'])->oldest('submitted_at')->limit(self::LIMIT)->get() as $pirep) {
             $records["pirep-{$pirep->id}"] = [
                 'color'   => 'warning',
-                'icon'    => TablerIcon::Clock,
+                'icon'    => Phosphor::ClockLight,
                 'strong'  => __('filament.dashboard.pirep_awaiting_review', ['ident' => $pirep->ident]),
                 'sub'     => "{$pirep->user?->name} · {$pirep->dpt_airport_id} → {$pirep->arr_airport_id}",
                 'when'    => $this->age($pirep->submitted_at),
@@ -104,7 +104,7 @@ class RecentActionWidget extends TableWidget implements DynamicWidget
         foreach (User::pending()->oldest('created_at')->limit(self::LIMIT)->get() as $user) {
             $records["user-{$user->id}"] = [
                 'color'   => 'info',
-                'icon'    => TablerIcon::UserPlus,
+                'icon'    => Phosphor::UserPlusLight,
                 'strong'  => __('filament.dashboard.user_awaiting_approval', ['name' => $user->name]),
                 'sub'     => $user->email,
                 'when'    => $this->age($user->created_at),
@@ -116,7 +116,7 @@ class RecentActionWidget extends TableWidget implements DynamicWidget
         foreach (Aircraft::query()->where('status', AircraftStatus::MAINTENANCE)->with('subfleet:id,name')->limit(self::LIMIT)->get() as $aircraft) {
             $records["aircraft-{$aircraft->id}"] = [
                 'color'   => 'warning',
-                'icon'    => TablerIcon::Tool,
+                'icon'    => Phosphor::WrenchLight,
                 'strong'  => __('filament.dashboard.aircraft_in_maintenance', ['registration' => $aircraft->registration]),
                 'sub'     => $aircraft->subfleet?->name,
                 'when'    => '—',

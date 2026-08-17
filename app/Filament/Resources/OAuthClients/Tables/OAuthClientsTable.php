@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OAuthClients\Tables;
 
 use App\Models\OauthClient;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -42,8 +42,8 @@ class OAuthClientsTable
                 IconColumn::make('revoked')
                     ->label(__('oauth.revoked'))
                     ->boolean()
-                    ->trueIcon(TablerIcon::CircleX)
-                    ->falseIcon(TablerIcon::CircleCheck)
+                    ->trueIcon(Phosphor::XCircleLight)
+                    ->falseIcon(Phosphor::CheckCircleLight)
                     ->trueColor('danger')
                     ->falseColor('success'),
 

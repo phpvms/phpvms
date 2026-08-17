@@ -7,7 +7,7 @@ use App\Models\Airport;
 use App\Models\Flight;
 use App\Models\FlightBundle;
 use App\Models\Subfleet;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -113,7 +113,7 @@ class FlightsTable
                 BulkActionGroup::make([
                     BulkAction::make('enable')
                         ->label(__('common.enable'))
-                        ->icon(TablerIcon::CircleCheck)
+                        ->icon(Phosphor::CheckCircleLight)
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
@@ -123,7 +123,7 @@ class FlightsTable
 
                     BulkAction::make('disable')
                         ->label(__('common.disable'))
-                        ->icon(TablerIcon::CircleMinus)
+                        ->icon(Phosphor::MinusCircleLight)
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
@@ -133,7 +133,7 @@ class FlightsTable
 
                     BulkAction::make('move_to_bundle')
                         ->label(__('filament.flights.bulk_actions.move_to_bundle'))
-                        ->icon(TablerIcon::ArrowsLeftRight)
+                        ->icon(Phosphor::ArrowsLeftRightLight)
                         ->schema([
                             Select::make('bundle_id')
                                 ->label(__('filament.flights.fields.bundle'))
@@ -152,7 +152,7 @@ class FlightsTable
 
                     BulkAction::make('attach_subfleets')
                         ->label(__('filament.flights.bulk_actions.attach_subfleets'))
-                        ->icon(TablerIcon::Link)
+                        ->icon(Phosphor::LinkLight)
                         ->schema([
                             Select::make('subfleet_ids')
                                 ->label(__('filament.flights.bulk_actions.subfleets_field'))
@@ -168,7 +168,7 @@ class FlightsTable
 
                     BulkAction::make('detach_subfleets')
                         ->label(__('filament.flights.bulk_actions.detach_subfleets'))
-                        ->icon(TablerIcon::LinkOff)
+                        ->icon(Phosphor::LinkBreakLight)
                         ->color('danger')
                         ->requiresConfirmation()
                         ->schema([

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\News\Schemas;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -31,9 +31,9 @@ class NewsForm
                     ->dehydrated(false)
                     ->default(false)
                     ->onColor('success')
-                    ->onIcon(TablerIcon::Check)
+                    ->onIcon(Phosphor::CheckLight)
                     ->offColor('danger')
-                    ->offIcon(TablerIcon::X),
+                    ->offIcon(Phosphor::XLight),
             ]);
     }
 }

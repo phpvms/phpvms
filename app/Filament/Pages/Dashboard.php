@@ -19,7 +19,7 @@ use App\Filament\Widgets\VersionWidget;
 use App\Http\Middleware\UpdatePending;
 use App\Models\User;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
@@ -47,7 +47,7 @@ class Dashboard extends DynamicDashboard
 
     protected static string|array $routeMiddleware = [UpdatePending::class];
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Dashboard;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::GaugeLight;
 
     /**
      * Default placement only. Each widget class owns its own size through
@@ -230,7 +230,7 @@ class Dashboard extends DynamicDashboard
         return [
             Action::make('resetDashboardLayout')
                 ->label(__('filament.dashboard.reset_layout'))
-                ->icon(TablerIcon::Refresh)
+                ->icon(Phosphor::ArrowsClockwiseLight)
                 ->color('gray')
                 ->requiresConfirmation()
                 ->modalHeading(__('filament.dashboard.reset_layout_heading'))
@@ -243,14 +243,14 @@ class Dashboard extends DynamicDashboard
                 ->action(fn () => $this->resetDashboardLayout()),
             Action::make('editDashboardLayout')
                 ->label(__('filament.dashboard.edit_layout'))
-                ->icon(TablerIcon::LayoutGrid)
+                ->icon(Phosphor::GridFourLight)
                 ->color('gray')
                 ->visible(static::canEdit())
                 ->alpineClickHandler("window.dispatchEvent(new CustomEvent('dashboard-layout:edit'))")
                 ->extraAttributes(['data-dashboard-layout-edit' => '']),
             Action::make('addDashboardWidget')
                 ->label(__('filament.dashboard.add_widget'))
-                ->icon(TablerIcon::Plus)
+                ->icon(Phosphor::PlusLight)
                 ->color('gray')
                 ->visible(static::canEdit())
                 ->extraAttributes([
@@ -298,7 +298,7 @@ class Dashboard extends DynamicDashboard
                 }),
             Action::make('saveDashboardLayout')
                 ->label(__('filament.dashboard.save_layout'))
-                ->icon(TablerIcon::Check)
+                ->icon(Phosphor::CheckLight)
                 ->color('primary')
                 ->visible(static::canEdit())
                 ->alpineClickHandler("window.dispatchEvent(new CustomEvent('dashboard-layout:save'))")

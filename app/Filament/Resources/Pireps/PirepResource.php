@@ -11,7 +11,7 @@ use App\Filament\Resources\Pireps\Schemas\PirepForm;
 use App\Filament\Resources\Pireps\Tables\PirepsTable;
 use App\Models\Pirep;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -30,13 +30,20 @@ class PirepResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::ClipboardList;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::ClipboardTextLight;
 
+    /**
+     * Reports waiting on a decision. Soft-deleted rows are excluded by the
+     * model's own scope, which is what the list shows too: getEloquentQuery()
+     * drops SoftDeletingScope, but the table's TrashedFilter re-applies
+     * `withoutTrashed()` while it sits blank. So the number matches the rows
+     * an admin lands on.
+     */
     public static function getNavigationBadge(): ?string
     {
-        return Pirep::where('state', PirepState::PENDING)->count() > 0
-            ? (string) Pirep::where('state', PirepState::PENDING)->count()
-            : null;
+        $pending = Pirep::where('state', PirepState::PENDING)->count();
+
+        return $pending > 0 ? (string) $pending : null;
     }
 
     #[Override]

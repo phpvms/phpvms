@@ -140,7 +140,7 @@
             x-data="pirepPerformanceChart(@js($performance))"
         >
             <div class="panel__head rounded-none">
-                <h2 class="panel__title">@svg('tabler-chart-line') Vertical profile <em>{{ number_format($performance['sample_count']) }} samples</em></h2>
+                <h2 class="panel__title">@svg('phosphor-chart-line-light') Vertical profile <em>{{ number_format($performance['sample_count']) }} samples</em></h2>
                 <div class="panel__tools">
                     <div class="segmented" role="group" aria-label="Profile series">
                         <button type="button" :aria-pressed="active === 'altitude'" @click="select('altitude')">Altitude</button>
@@ -212,7 +212,7 @@
         $arrivalRunway = $landing['arrival']['runway'] ?? null;
     @endphp
     <div class="panel__head border-t border-line rounded-none">
-        <h2 class="panel__title">@svg('tabler-plane-arrival') Touchdown</h2>
+        <h2 class="panel__title">@svg('phosphor-airplane-landing-light') Touchdown</h2>
     </div>
     <div class="readout">
         <div>
@@ -246,7 +246,7 @@
      states when the payload is missing pieces. --}}
 @if ($landing)
     <div class="panel__head border-t border-line rounded-none">
-        <h2 class="panel__title">@svg('tabler-target-arrow') Landing analysis</h2>
+        <h2 class="panel__title">@svg('phosphor-target-light') Landing analysis</h2>
     </div>
     <div class="panel__body"
          x-load
@@ -430,7 +430,7 @@
     $noteCount = ($record->comments?->count() ?? 0) + (filled($record->notes) ? 1 : 0);
 @endphp
 <div class="panel__head border-t border-line rounded-none">
-    <h2 class="panel__title">@svg('tabler-notes') Notes @if ($noteCount > 0)<em>{{ $noteCount }}</em>@endif</h2>
+    <h2 class="panel__title">@svg('phosphor-note-light') Notes @if ($noteCount > 0)<em>{{ $noteCount }}</em>@endif</h2>
 </div>
 @livewire(
     \App\Livewire\Filament\PirepCommentThread::class,

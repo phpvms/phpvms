@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OAuthClients\Pages;
 
 use App\Filament\Resources\OAuthClients\OAuthClientResource;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Override;
@@ -19,7 +19,7 @@ class ListOAuthClients extends ListRecords
     {
         return [
             CreateAction::make()
-                ->icon(TablerIcon::CirclePlus),
+                ->icon(Phosphor::PlusCircleLight),
         ];
     }
 }

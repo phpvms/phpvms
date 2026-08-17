@@ -108,7 +108,7 @@
              the quick bar above the table binds to. --}}
         <section class="panel" aria-label="{{ __('common.filters') }}">
             <div class="panel__head rounded-t-[5px]">
-                <h3 class="panel__title">@svg('tabler-filter') {{ __('common.filters') }}</h3>
+                <h3 class="panel__title">@svg('phosphor-funnel-light') {{ __('common.filters') }}</h3>
             </div>
             <div class="panel__body">
                 {{ $this->getTableFiltersForm() }}

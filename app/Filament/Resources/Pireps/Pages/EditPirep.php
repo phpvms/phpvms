@@ -7,6 +7,7 @@ use App\Filament\Resources\Pireps\Actions\AcceptAction;
 use App\Filament\Resources\Pireps\Actions\RejectAction;
 use App\Filament\Resources\Pireps\PirepResource;
 use Carbon\Carbon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -31,9 +32,9 @@ class EditPirep extends EditRecord
         return [
             AcceptAction::make(),
             RejectAction::make(),
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()->icon(Phosphor::TrashLight),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 

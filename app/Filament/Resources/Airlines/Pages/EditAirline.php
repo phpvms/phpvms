@@ -9,6 +9,7 @@ use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Models\Airline;
 use App\Models\File;
 use App\Services\FileService;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -56,13 +57,13 @@ class EditAirline extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make()->before(function (Airline $record): void {
+            DeleteAction::make()->icon(Phosphor::TrashLight),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Airline $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),
-            RestoreAction::make(),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 }

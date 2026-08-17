@@ -11,7 +11,7 @@ use App\Filament\Resources\Typeratings\Schemas\TyperatingForm;
 use App\Filament\Resources\Typeratings\Tables\TyperatingsTable;
 use App\Models\Typerating;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -24,7 +24,7 @@ class TyperatingResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Rocket;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::RocketLight;
 
     protected static ?string $model = Typerating::class;
 

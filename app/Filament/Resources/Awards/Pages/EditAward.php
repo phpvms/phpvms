@@ -13,7 +13,7 @@ use App\Models\AwardRule;
 use App\Models\User;
 use App\Services\Awards\AwardRunService;
 use App\Services\Awards\CriteriaCompilationFailed;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -178,7 +178,7 @@ class EditAward extends EditRecord
             // next to the tree it reports on.
             Action::make('runNow')
                 ->label(__('filament.award_run_now'))
-                ->icon(TablerIcon::PlayerPlay)
+                ->icon(Phosphor::PlayLight)
                 ->color('gray')
                 ->requiresConfirmation()
                 ->modalDescription(__('filament.award_run_now_confirm'))
@@ -239,7 +239,7 @@ class EditAward extends EditRecord
     }
 
     /**
-     * @return array<int, array{icon: TablerIcon, tint: string|null, label: string, value: string, note: string}>
+     * @return array<int, array{icon: Phosphor, tint: string|null, label: string, value: string, note: string}>
      */
     protected function summaryCards(): array
     {
@@ -250,7 +250,7 @@ class EditAward extends EditRecord
 
         return [
             [
-                'icon'  => TablerIcon::Power,
+                'icon'  => Phosphor::PowerLight,
                 'tint'  => null,
                 'label' => __('common.status'),
                 'value' => $record->active ? __('common.active') : __('common.inactive'),
@@ -259,7 +259,7 @@ class EditAward extends EditRecord
                     : '',
             ],
             [
-                'icon'  => TablerIcon::Trophy,
+                'icon'  => Phosphor::TrophyLight,
                 'tint'  => 'violet',
                 'label' => __('filament.award_type'),
                 'value' => $isRules ? __('filament.award_type_rules') : __('filament.award_type_legacy'),
@@ -268,7 +268,7 @@ class EditAward extends EditRecord
                     : class_basename((string) $record->ref_model_type),
             ],
             [
-                'icon'  => TablerIcon::Target,
+                'icon'  => Phosphor::TargetLight,
                 'tint'  => 'red',
                 'label' => __('filament.award_trigger'),
                 'value' => $record->trigger?->getLabel(),
@@ -277,7 +277,7 @@ class EditAward extends EditRecord
                     : class_basename((string) $record->ref_model_type),
             ],
             [
-                'icon'  => TablerIcon::Users,
+                'icon'  => Phosphor::UsersLight,
                 'tint'  => 'teal',
                 'label' => trans_choice('common.user', 2),
                 'value' => number_format($recipients),

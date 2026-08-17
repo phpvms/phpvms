@@ -27,8 +27,7 @@ class FlightBundlesTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->label(__('filament.bundles.fields.name'))
-                    ->badge(),
+                    ->label(__('filament.bundles.fields.name')),
 
                 TextColumn::make('flights_count_display')
                     ->label(__('filament.bundles.fields.flights_count'))

@@ -6,7 +6,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Filament\Widgets\PilotHoursChart;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Override;
 
 /**
@@ -16,7 +16,7 @@ class PilotsReport extends BaseReportPage
 {
     protected static ?string $slug = 'reports/pilots';
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Users;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::UsersLight;
 
     protected static ?int $navigationSort = 2;
 

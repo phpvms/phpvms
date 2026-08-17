@@ -11,7 +11,7 @@ use App\Services\Installer\SeederService;
 use App\Services\KvpService;
 use App\Services\VersionService;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -41,7 +41,7 @@ class Maintenance extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Tool;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::WrenchLight;
 
     // protected string $view = 'filament.pages.maintenance';
 
@@ -105,7 +105,7 @@ class Maintenance extends Page
     {
         return Action::make('checkForPhpVMSUpdates')
             ->label(__('filament.maintenance_check_update'))
-            ->icon(TablerIcon::Refresh)
+            ->icon(Phosphor::ArrowsClockwiseLight)
             ->action(function (): void {
                 app(VersionService::class)->isNewVersionAvailable();
 
@@ -169,7 +169,7 @@ class Maintenance extends Page
     public function clearCache(): Action
     {
         return Action::make('clearCache')
-            ->icon(TablerIcon::Trash)
+            ->icon(Phosphor::TrashLight)
             ->color('danger')
             ->label(__('filament.maintenance_clear_cache'))
             ->action(function (): void {
@@ -217,7 +217,7 @@ class Maintenance extends Page
     {
         return Action::make('flushFailedJobs')
             ->color('danger')
-            ->icon(TablerIcon::Trash)
+            ->icon(Phosphor::TrashLight)
             ->label(__('filament.maintenance_flush_failed_jobs'))
             ->action(function (): void {
                 if (function_exists('proc_open')) {
@@ -236,7 +236,7 @@ class Maintenance extends Page
     public function resyncAllSeeds(): Action
     {
         return Action::make('resyncAllSeeds')
-            ->icon(TablerIcon::Database)
+            ->icon(Phosphor::DatabaseLight)
             ->color('warning')
             ->label(__('filament.maintenance_resync_all_seeds'))
             ->action(function (): void {
@@ -252,7 +252,7 @@ class Maintenance extends Page
     public function optimizeApp(): Action
     {
         return Action::make('optimizeApp')
-            ->icon(TablerIcon::Tool)
+            ->icon(Phosphor::WrenchLight)
             ->label(__('filament.maintenance_optimize_app'))
             ->action(function (): void {
                 if (function_exists('proc_open')) {
@@ -276,7 +276,7 @@ class Maintenance extends Page
     public function archivePirepFlights(): Action
     {
         return Action::make('archivePirepFlights')
-            ->icon(TablerIcon::Archive)
+            ->icon(Phosphor::ArchiveLight)
             ->label(__('filament.maintenance_archive_pirep_flights'))
             ->requiresConfirmation()
             ->modalDescription(__('filament.maintenance_archive_pirep_flights_confirm'))
@@ -296,7 +296,7 @@ class Maintenance extends Page
             ->isUpgradePending();
 
         return Action::make('updateDatabase')
-            ->icon(TablerIcon::Refresh)
+            ->icon(Phosphor::ArrowsClockwiseLight)
             ->color('success')
             ->extraAttributes(['style' => 'text-align: center;'])
             ->label($upgradePending ? __('filament.maintenance_update_database') : __('filament.maintenance_database_is_up_to_date'))

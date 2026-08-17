@@ -6,7 +6,7 @@ use App\Enums\AircraftStatus;
 use App\Filament\Forms\Components\AirportSelect;
 use App\Models\Aircraft;
 use App\Models\SimBriefAirframe;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -23,7 +23,7 @@ class AircraftForm
             ->components([
                 Section::make(__('filament.aircraft_information'))
                     ->id('aircraft-information')
-                    ->icon(TablerIcon::Plane)
+                    ->icon(Phosphor::AirplaneLight)
                     ->collapsible()
                     ->persistCollapsed()
                     ->schema([
@@ -44,7 +44,7 @@ class AircraftForm
                         // the same card, not as second and third cards.
                         Section::make(__('filament.aircraft_identifiers'))
                             ->id('identifiers')
-                            ->icon(TablerIcon::Hash)
+                            ->icon(Phosphor::HashLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(4)
@@ -69,7 +69,7 @@ class AircraftForm
 
                         Section::make(__('filament.certified_weights'))
                             ->id('certified-weights')
-                            ->icon(TablerIcon::Scale)
+                            ->icon(Phosphor::ScalesLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(4)
