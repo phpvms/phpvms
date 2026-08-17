@@ -6,6 +6,7 @@ return [
     'registration' => 'Registration',
     'last_landing' => 'Last landing',
     'hex_code'     => 'Hex code',
+    'icao'         => 'ICAO',
     'weights'      => [
         'dow'  => 'Dry Weight (DOW/OEW)',
         'mzfw' => 'Max Zero Fuel Weight (MZFW)',

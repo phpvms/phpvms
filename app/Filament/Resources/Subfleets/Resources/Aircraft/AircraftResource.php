@@ -11,7 +11,7 @@ use App\Filament\Resources\Subfleets\Resources\Aircraft\Tables\AircraftTable;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\Aircraft;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -25,7 +25,7 @@ class AircraftResource extends Resource
 {
     protected static ?string $model = Aircraft::class;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Stack;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::StackLight;
 
     protected static ?string $parentResource = SubfleetResource::class;
 

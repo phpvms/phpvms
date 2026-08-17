@@ -11,7 +11,7 @@ use App\Filament\Resources\Awards\Schemas\AwardForm;
 use App\Filament\Resources\Awards\Tables\AwardsTable;
 use App\Models\Award;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -28,7 +28,7 @@ class AwardResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Award;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::MedalLight;
 
     protected static ?string $recordTitleAttribute = 'name';
 

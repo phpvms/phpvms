@@ -9,7 +9,7 @@ use App\Filament\Exports\FlightExporter;
 use App\Filament\Imports\FlightImporter;
 use App\Filament\Resources\FlightBundles\Resources\Flight\FlightResource;
 use App\Filament\Resources\FlightBundles\Resources\Flight\Tables\FlightsTable;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
@@ -50,7 +50,7 @@ class FlightsRelationManager extends RelationManager
                     ->exporter(FlightExporter::class),
 
                 CreateAction::make()
-                    ->icon(TablerIcon::CirclePlus),
+                    ->icon(Phosphor::PlusCircleLight),
             ]);
     }
 

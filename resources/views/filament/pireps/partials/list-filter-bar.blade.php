@@ -20,7 +20,7 @@
 
 <div class="filters">
     <span class="field">
-        @svg('tabler-filter')
+        @svg('phosphor-funnel-light')
         <label class="sr-only" for="pirep-filter-state">{{ __('common.state') }}</label>
         <select id="pirep-filter-state" wire:model.live="tableFilters.state.value">
             <option value="">{{ __('common.state') }}</option>
@@ -31,7 +31,7 @@
     </span>
 
     <span class="field">
-        @svg('tabler-plane')
+        @svg('phosphor-airplane-light')
         <label class="sr-only" for="pirep-filter-airline">{{ __('common.airline') }}</label>
         <select id="pirep-filter-airline" wire:model.live="tableFilters.airline.value">
             <option value="">{{ __('common.airline') }}</option>

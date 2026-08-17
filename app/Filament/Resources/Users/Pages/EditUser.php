@@ -10,6 +10,7 @@ use App\Filament\Resources\Users\Actions\RequestEmailVerificationAction;
 use App\Filament\Resources\Users\Actions\VerifyEmailAction;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -39,9 +40,9 @@ class EditUser extends EditRecord
         return [
             VerifyEmailAction::make(),
             RequestEmailVerificationAction::make(),
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()->icon(Phosphor::TrashLight),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 

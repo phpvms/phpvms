@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Pireps\Actions;
 use App\Enums\PirepState;
 use App\Models\Pirep;
 use App\Services\PirepService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
@@ -15,7 +15,7 @@ class RejectAction
     {
         return Action::make('reject')
             ->color('danger')
-            ->icon(TablerIcon::CircleX)
+            ->icon(Phosphor::XCircleLight)
             ->label(__('common.reject'))
             ->visible(fn (Pirep $record): bool => $record->state === PirepState::PENDING)
             ->action(function (Pirep $record): void {

@@ -6,7 +6,7 @@ use App\Addons\Support\BootCache;
 use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\Backups;
 use App\Support\Branding;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -49,31 +49,31 @@ class AdminPanelProvider extends BasePanelProvider
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
-                    ->icon(TablerIcon::Plane),
+                    ->icon(Phosphor::AirTrafficControlLight),
                 EnumsNavigationGroup::Planning->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Planning->getLabel())
-                    ->icon(TablerIcon::CalendarTime),
+                    ->icon(Phosphor::ChartBarHorizontalLight),
                 EnumsNavigationGroup::Fleet->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Fleet->getLabel())
-                    ->icon(TablerIcon::Box),
+                    ->icon(Phosphor::StackSimpleLight),
                 EnumsNavigationGroup::Pilots->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Pilots->getLabel())
-                    ->icon(TablerIcon::Users),
+                    ->icon(Phosphor::UsersLight),
                 EnumsNavigationGroup::Reports->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Reports->getLabel())
-                    ->icon(TablerIcon::Report),
+                    ->icon(Phosphor::ChartPieSliceLight),
                 EnumsNavigationGroup::Finance->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Finance->getLabel())
-                    ->icon(TablerIcon::Cash),
+                    ->icon(Phosphor::MoneyLight),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
-                    ->icon(TablerIcon::Settings),
+                    ->icon(Phosphor::GearLight),
                 EnumsNavigationGroup::AddOns->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::AddOns->getLabel())
-                    ->icon(TablerIcon::Puzzle),
+                    ->icon(Phosphor::PuzzlePieceLight),
                 EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
-                    ->icon(TablerIcon::Terminal),
+                    ->icon(Phosphor::TerminalLight),
             ])
             ->navigationItems([
                 // Labels should be in a closure to allow for translation
@@ -82,7 +82,7 @@ class AdminPanelProvider extends BasePanelProvider
                     ->visible(fn (): bool => auth()->user()?->can('view-logs') ?? false)
                     ->group(EnumsNavigationGroup::System)
                     ->sort(3)
-                    ->icon(TablerIcon::FileText)
+                    ->icon(Phosphor::FileTextLight)
                     ->label(fn (): string => __('common.view_logs'))
                     ->url(config('log-viewer.route_path')),
             ])

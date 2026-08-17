@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Typeratings\Schemas;
 
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -32,9 +32,9 @@ class TyperatingForm
 
                     Toggle::make('active')
                         ->label(__('common.active'))
-                        ->offIcon(TablerIcon::X)
+                        ->offIcon(Phosphor::XLight)
                         ->offColor('danger')
-                        ->onIcon(TablerIcon::Check)
+                        ->onIcon(Phosphor::CheckLight)
                         ->onColor('success'),
                 ])
                     ->columnSpanFull()

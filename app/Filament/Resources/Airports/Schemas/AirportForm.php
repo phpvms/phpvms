@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Airports\Schemas;
 
 use App\Filament\Resources\Airports\Actions\LookupAction;
 use App\Support\Timezonelist;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -120,9 +120,9 @@ class AirportForm
 
                     Toggle::make('hub')
                         ->label(__('airports.hub'))
-                        ->offIcon(TablerIcon::X)
+                        ->offIcon(Phosphor::XLight)
                         ->offColor('danger')
-                        ->onIcon(TablerIcon::Check)
+                        ->onIcon(Phosphor::CheckLight)
                         ->onColor('success'),
                 ])
                 ->columnSpanFull()

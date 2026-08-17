@@ -10,7 +10,7 @@ use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\File;
 use App\Models\Subfleet;
 use App\Services\FileService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -123,7 +123,7 @@ class EditSubfleet extends EditRecord
     }
 
     /**
-     * @return array<int, array{icon: TablerIcon, tint: string|null, label: string, value: string, note: string}>
+     * @return array<int, array{icon: Phosphor, tint: string|null, label: string, value: string, note: string}>
      */
     protected function summaryCards(): array
     {
@@ -134,28 +134,28 @@ class EditSubfleet extends EditRecord
 
         return [
             [
-                'icon'  => TablerIcon::BuildingArch,
+                'icon'  => Phosphor::BankLight,
                 'tint'  => null,
                 'label' => __('common.airline'),
                 'value' => (string) $record->airline?->name,
                 'note'  => (string) $record->airline?->icao,
             ],
             [
-                'icon'  => TablerIcon::Plane,
+                'icon'  => Phosphor::AirplaneLight,
                 'tint'  => 'blue',
                 'label' => __('common.type'),
                 'value' => (string) $record->type,
                 'note'  => (string) $record->name,
             ],
             [
-                'icon'  => TablerIcon::MapPin,
+                'icon'  => Phosphor::MapPinLight,
                 'tint'  => 'teal',
                 'label' => __('airports.home'),
                 'value' => (string) ($record->home?->icao ?: '—'),
                 'note'  => (string) $record->home?->name,
             ],
             [
-                'icon'  => TablerIcon::Stack2,
+                'icon'  => Phosphor::StackSimpleLight,
                 'tint'  => 'violet',
                 'label' => __('common.aircraft'),
                 'value' => number_format($aircraft),
@@ -171,7 +171,7 @@ class EditSubfleet extends EditRecord
             ->modalHeading(__('filament.subfleet_information'))
             ->modalDescription(__('filament.subfleet_description'))
             ->extraModalFooterActions([
-                DeleteAction::make()->cancelParentActions(),
+                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
             ]);
     }
 
@@ -193,12 +193,12 @@ class EditSubfleet extends EditRecord
     {
         return [
             // Delete lives in the settings drawer's footer (editAction()).
-            ForceDeleteAction::make()->before(function (Subfleet $record): void {
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight)->before(function (Subfleet $record): void {
                 $record->files()->each(function (File $file): void {
                     app(FileService::class)->removeFile($file);
                 });
             }),
-            RestoreAction::make(),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 }

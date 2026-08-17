@@ -8,7 +8,7 @@ use App\Enums\NavigationGroup as EnumsNavigationGroup;
 use App\Filament\Pages\AddonSettings;
 use App\Providers\Filament\BasePanelProvider;
 use App\Support\Branding;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
@@ -60,13 +60,13 @@ abstract class PanelProvider extends BasePanelProvider
             ->navigationGroups([
                 EnumsNavigationGroup::Operations->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Operations->getLabel())
-                    ->icon(TablerIcon::Plane),
+                    ->icon(Phosphor::AirplaneLight),
                 EnumsNavigationGroup::Config->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::Config->getLabel())
-                    ->icon(TablerIcon::Settings),
+                    ->icon(Phosphor::GearLight),
                 EnumsNavigationGroup::System->name => NavigationGroup::make()
                     ->label(fn (): string => EnumsNavigationGroup::System->getLabel())
-                    ->icon(TablerIcon::Terminal),
+                    ->icon(Phosphor::TerminalLight),
             ])
             ->pages([
                 Dashboard::class,

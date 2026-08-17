@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Filament\Resources\FlightBundles\Pages\EditFlightBundle;
 use App\Models\FlightBundle;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use Database\Seeders\RolesPermissionsSeeder;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
 use Livewire\Livewire;
 
@@ -27,6 +27,6 @@ it('gives date pickers a calendar suffix icon panel-wide', function (): void {
         ->assertSchemaComponentExists(
             'start_date',
             null,
-            fn (DatePicker $component): bool => $component->getSuffixIcon() === TablerIcon::Calendar,
+            fn (DatePicker $component): bool => $component->getSuffixIcon() === Phosphor::CalendarLight,
         );
 });

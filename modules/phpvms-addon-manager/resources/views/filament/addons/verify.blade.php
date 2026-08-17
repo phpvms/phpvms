@@ -7,6 +7,6 @@
 @endphp
 
 <p class="verify">
-    <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ShieldCheck" />
+    <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::ShieldCheckLight" />
     <span>{{ __('addon-manager::addons.verify_note', ['host' => $host]) }}</span>
 </p>

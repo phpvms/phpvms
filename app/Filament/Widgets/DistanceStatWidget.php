@@ -30,7 +30,7 @@ class DistanceStatWidget extends DashboardStatWidget
             'value'    => number_format($distance),
             'suffix'   => 'nm',
             'note'     => number_format($legsCount > 0 ? (int) round($distance / $legsCount) : 0).' nm average leg',
-            'icon'     => 'tabler-ruler-measure',
+            'icon'     => 'phosphor-ruler-light',
             'accent'   => 'teal',
             'noteIcon' => null,
         ];

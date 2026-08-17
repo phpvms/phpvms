@@ -11,7 +11,7 @@ use App\Filament\Resources\Ranks\Schemas\RankForm;
 use App\Filament\Resources\Ranks\Tables\RanksTable;
 use App\Models\Rank;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -28,7 +28,7 @@ class RankResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::TrendingUp;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::TrendUpLight;
 
     protected static ?string $recordTitleAttribute = 'name';
 

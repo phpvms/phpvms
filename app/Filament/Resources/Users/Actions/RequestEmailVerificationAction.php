@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Actions;
 
 use App\Models\User;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
@@ -13,6 +14,7 @@ class RequestEmailVerificationAction
         return
             Action::make('request_email_verification')
                 ->label(__('filament.user_request_email_verification'))
+                ->icon(Phosphor::PaperPlaneTiltLight)
                 ->color('warning')
                 ->visible(fn (User $record): bool => $record->hasVerifiedEmail())
                 ->action(function (User $record): void {

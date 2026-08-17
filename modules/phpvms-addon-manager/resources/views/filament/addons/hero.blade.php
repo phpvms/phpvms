@@ -26,7 +26,7 @@
     <span class="fi-min-w-0">
         <h2 class="addon-hero__name">
             @if ($sel['official'])
-                <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::StarFilled"
+                <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::StarFill"
                     class="official" role="img" :aria-label="__('addon-manager::addons.official_hint')" />
             @endif
             {{ $sel['name'] }}
@@ -56,13 +56,13 @@
         @if ($sel['installed'] && ! $sel['bundled'])
             @if ($sel['enabled'])
                 <x-filament::button color="gray" size="sm"
-                    :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Power"
+                    :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::PowerLight"
                     wire:click="disable({!! \Illuminate\Support\Js::from($sel['installed_key'], JSON_UNESCAPED_SLASHES) !!})">
                     {{ __('addon-manager::addons.disable') }}
                 </x-filament::button>
             @else
                 <x-filament::button color="gray" size="sm"
-                    :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Power"
+                    :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::PowerLight"
                     wire:click="enable({!! \Illuminate\Support\Js::from($sel['installed_key'], JSON_UNESCAPED_SLASHES) !!})">
                     {{ __('addon-manager::addons.enable') }}
                 </x-filament::button>

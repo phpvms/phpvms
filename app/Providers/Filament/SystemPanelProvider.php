@@ -66,7 +66,8 @@ class SystemPanelProvider extends PanelProvider
             )
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('phpvms')
-            ->font('Geist')
+            // No ->font(): this panel renders the same theme.css as the admin
+            // one, which owns the typeface via --font-sans.
             ->brandLogo(fn (): Factory|View => view('filament.shared.brand'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('assets/img/favicon.png'))

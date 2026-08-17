@@ -1,3 +1,14 @@
+/* IBM Plex Sans, as a variable font. Its weight axis stops at 700, not 900 —
+ * the URL says so, and every weight the theme asks for (medium 500, semibold
+ * 600) is inside it. Google's css2 endpoint is what serves the variable file;
+ * Bunny (Filament's default provider) ignores a `wght@` axis and returns
+ * static per-weight files instead. Loaded here rather than via the panel's
+ * ->font(), so the typeface lives with the rest of the type scale below.
+ *
+ * MUST stay above the vendor import. That one is inlined at build time and
+ * expands into rules, and an @import after a rule is invalid — Lightning CSS
+ * warns and drops it, leaving --font-sans pointing at a font nothing fetched. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100..700&family=Inconsolata:wght@200..900&display=swap");
 @import "../../../../vendor/filament/filament/resources/css/theme.css";
 
 /* Tailwind content scanning. Without these, utility classes used in Filament
@@ -83,10 +94,11 @@
   --text-3xl: 21px;
   --text-3xl--line-height: 26px;
 
-  /* Monospace for flight numbers, ICAO codes, registrations. The Bunny Fonts
-   * stylesheet already registers Geist Mono; referencing it here makes the
-   * browser actually fetch it. */
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Monospace for flight numbers, ICAO codes, registrations. Inconsolata,
+   * variable on a 200..900 axis, loaded by the same import above. */
+  --font-mono: "Inconsolata", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* ---------------------------------------------------------------------------
@@ -221,7 +233,16 @@
     .fi-ta-text-input,
     .fi-ta-checkbox
   ) {
-  @apply py-1.5 leading-[18px];
+  @apply py-1.5 leading-[18px] px-0;
+}
+
+/* The column wrapper is the <a> when a column (or the row) has a URL, so a
+ * wrapper narrower than the cell leaves the cell's own px-2.5 as a dead strip
+ * either side of the link. Pull the wrapper out over that padding and put the
+ * same amount back inside, so the text lands where it did but the whole cell
+ * is clickable. */
+.fi-ta-cell .fi-ta-col {
+  @apply -mx-2.5 px-2.5 w-auto;
 }
 
 /* Icon columns render at IconSize::Large (24px), which alone makes the row
@@ -257,6 +278,15 @@
  * that just inherits. */
 .fi-body {
   @apply text-[13px] leading-[1.45];
+}
+
+/* Inconsolata sets a smaller x-height than IBM Plex Sans, so mono runs read
+ * a notch small beside sans text at the same px — most visibly in the PIREP
+ * table's ident/route columns, which carry no size of their own and inherit
+ * --text-sm. `em` so it tracks whatever size the context sets, rather than
+ * pinning a second number that has to be kept in step. */
+.fi-font-mono {
+  font-size: 1.06em;
 }
 
 /* Topbar: 64px -> 44px, graphite beside the rail, and the one place the
@@ -505,7 +535,7 @@
  * ------------------------------------------------------------------------- */
 .fi-input-wrp-suffix-has-label,
 .fi-input-wrp-prefix-has-label {
-  @apply border-0 px-2 font-mono text-[11px] text-(--ink-4);
+  @apply border-0 px-2 font-mono text-[12px] text-(--ink-4);
 }
 
 /* Steppers double the visual weight of a unit-bearing field and the console
@@ -521,7 +551,7 @@
 }
 
 .fi-section-header-heading em {
-  @apply not-italic font-mono text-[11px] text-(--ink-4);
+  @apply not-italic font-mono text-[12px] text-(--ink-4);
   letter-spacing: normal;
   text-transform: none;
 }
@@ -744,7 +774,7 @@
 }
 
 .head-metrics b {
-  @apply font-mono text-[15px] font-semibold tabular-nums;
+  @apply font-mono text-[16px] font-semibold tabular-nums;
 }
 
 .head-metrics em {
@@ -775,7 +805,7 @@
 }
 
 .fi-header-subheading .hero-sub__figures b {
-  @apply font-mono text-[15px] font-semibold tabular-nums text-white;
+  @apply font-mono text-[16px] font-semibold tabular-nums text-white;
 }
 
 .fi-header-subheading .hero-sub__figures em {
@@ -925,6 +955,21 @@
 
 .fi-ta-cell {
   @apply px-2.5 text-(--ink-2) border-b border-b-(--line-soft);
+}
+
+/* Row-action icon buttons, same neutralisation .fi-ta-header-toolbar's get
+ * (~line 1029) and for the same vendor quirk: .fi-icon-btn carries `margin:
+ * -8px` so a 36px hit box reads visually as ~20px. In the toolbar there is
+ * padding to absorb that; .fi-ta-cell is `py-0` (the vertical padding lives
+ * on the content wrappers, and an action button is not one of them), so the
+ * button's box overhangs the row instead.
+ *
+ * That overhang is what grows a vertical scrollbar on every table:
+ * .fi-ta-content-ctn is `overflow-x: auto`, and the spec makes `overflow-y`
+ * compute as `auto` alongside it, so a couple of overhanging pixels are
+ * enough for scrollHeight to clear clientHeight permanently. */
+.fi-ta-cell .fi-icon-btn {
+  @apply w-6.75 h-6.75 m-0;
 }
 
 .fi-ta-row:last-child .fi-ta-cell {
@@ -1210,7 +1255,7 @@
 }
 
 .fi-rail-clock time {
-  @apply font-mono text-[12px] leading-none tracking-[-0.01em];
+  @apply font-mono text-[13px] leading-none tracking-[-0.01em];
   font-weight: 550;
   color: #e8edf3;
 }
@@ -1246,8 +1291,10 @@
 .fi-sidebar .fi-sidebar-item-btn .fi-icon,
 .fi-sidebar .fi-sidebar-group-btn .fi-icon {
   color: #8f9daf;
-  /* Rail tier: 18px, 1.75-2 stroke (24-grid units). */
-  stroke-width: 1.875;
+  /* Rail tier: 20px on a 24-grid, drawn light. A bigger glyph carries a
+   * thinner line — holding 1.875 at this size reads as heavy. */
+  @apply w-7 h-7;
+  stroke-width: 1.5;
 }
 
 /* The label carries its own gray-700, which is unreadable on graphite. */
@@ -1354,7 +1401,7 @@
 }
 
 .fi-workspace-nav-tab-badge {
-  @apply font-mono text-[10.5px] px-1 rounded-[2px] bg-[#333b45];
+  @apply font-mono text-[11.5px] px-1 rounded-[2px] bg-[#333b45];
   color: #e8edf3;
 }
 
@@ -1673,7 +1720,11 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown {
-  @apply w-4.5 h-4.5;
+      /* The spacer that reserves the glyph's row. Must track the trigger icon's
+       * size below, or the absolutely-positioned button overhangs a slot cut for
+       * a smaller icon. */
+    @apply w-7 h-7;
+    stroke-width: 1.4;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {
@@ -1682,10 +1733,12 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn .fi-icon {
-  @apply w-4.5 h-4.5;
-  /* Rail tier: 18px, 1.75-2 stroke — the trigger btn isn't covered by the
-   * .fi-sidebar-group-btn stroke rule above. */
-  stroke-width: 1.875;
+  /* Collapsed, THIS is the group glyph you see — .fi-sidebar-group-btn is
+   * display:none for any group that owns a flyout (line ~52), so editing the
+   * .fi-sidebar-group-btn rule alone changes nothing in the rail. Keep this
+   * in step with it; the two are the same glyph in the two rail states. */
+  @apply w-7 h-7;
+  stroke-width: 1.4;
 }
 
 /* Hover paints the row (the li, behind the ::after label) instead of the
@@ -1726,7 +1779,7 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn .fi-icon {
-  @apply w-4.5 h-4.5;
+  @apply w-6 h-6;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-label {
@@ -1930,8 +1983,24 @@ html[data-density="comfortable"] .queue__item {
   @apply py-3;
 }
 
-html[data-density="comfortable"] .overview__cell {
+html[data-density="comfortable"] .overview__cell,
+html[data-density="comfortable"] .dashboard-stat-card {
   @apply pt-3.75 pb-3.5;
+}
+
+/* The stat cards carry the same type as the strip they replaced, and it is
+ * pinned in px — so without these the whole widget reads identically at both
+ * notches even once its padding moves. */
+html[data-density="comfortable"] .dashboard-stat-card .overview__value {
+  @apply text-[25px];
+}
+
+html[data-density="comfortable"] .dashboard-stat-card .overview__note {
+  @apply text-[12px];
+}
+
+html[data-density="comfortable"] .dashboard-stat-card .overview__icon {
+  @apply w-8 h-8;
 }
 
 html[data-density="comfortable"] .fi-sidebar-item-btn {
@@ -2384,7 +2453,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .fare-map__chip {
-  @apply inline-flex items-center gap-1 rounded border border-(--line-strong) bg-(--surface-2) px-1.5 py-0.5 font-mono text-[11px] text-(--ink-2);
+  @apply inline-flex items-center gap-1 rounded border border-(--line-strong) bg-(--surface-2) px-1.5 py-0.5 font-mono text-[12px] text-(--ink-2);
 }
 
 .fare-map__chip b {
@@ -2432,11 +2501,11 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .fare-probe__src {
-  @apply ml-1 inline-flex rounded border px-1 py-px align-middle font-mono text-[9.5px] font-semibold tracking-[0.05em];
+  @apply ml-1 inline-flex rounded border px-1 py-px align-middle font-mono text-[10.5px] font-semibold tracking-[0.05em];
 }
 
 .fare-probe__formula {
-  @apply mt-0.5 font-mono text-[11px] text-(--ink-4);
+  @apply mt-0.5 font-mono text-[12px] text-(--ink-4);
 }
 
 .fare-probe__quiet {
@@ -2672,7 +2741,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .queue__when {
-  @apply whitespace-nowrap font-mono text-[11px] text-(--ink-4);
+  @apply whitespace-nowrap font-mono text-[12px] text-(--ink-4);
 }
 
 /* Identifiers and landing rates — flight numbers, ICAO codes, registrations
@@ -2682,7 +2751,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .rate {
-  @apply font-mono tabular-nums text-[12.5px];
+  @apply font-mono tabular-nums text-[13.5px];
   font-weight: 550;
 }
 
@@ -2743,7 +2812,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .subtab em {
-  @apply not-italic font-mono text-[11px] text-(--ink-4);
+  @apply not-italic font-mono text-[12px] text-(--ink-4);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2790,7 +2859,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .route-bar__icao {
-  @apply font-mono text-[19px] font-semibold tracking-[-0.025em] leading-[1.25] text-(--ink);
+  @apply font-mono text-[20px] font-semibold tracking-[-0.025em] leading-[1.25] text-(--ink);
 }
 
 .route-bar__name {
@@ -2798,7 +2867,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .route-bar__time {
-  @apply font-mono text-[11.5px] text-(--ink-2) mt-0.5;
+  @apply font-mono text-[12.5px] text-(--ink-2) mt-0.5;
 }
 
 .route-bar__mid {
@@ -2821,12 +2890,12 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .route-bar__figures {
-  @apply font-mono text-[11.5px] text-(--ink-2) whitespace-nowrap;
+  @apply font-mono text-[12.5px] text-(--ink-2) whitespace-nowrap;
 }
 
 /* Route string (mockup .route-string, theme.css:1732-1739). */
 .route-string {
-  @apply py-2 px-3 border-b border-b-(--line-soft) font-mono text-[11.5px] text-(--ink-2) bg-(--sunken);
+  @apply py-2 px-3 border-b border-b-(--line-soft) font-mono text-[12.5px] text-(--ink-2) bg-(--sunken);
   overflow-wrap: break-word;
 }
 
@@ -2856,7 +2925,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .phase-legend__value {
-  @apply font-mono text-[13px] tabular-nums text-(--ink);
+  @apply font-mono text-[14px] tabular-nums text-(--ink);
   font-weight: 550;
 }
 
@@ -2903,7 +2972,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .rw-id {
-  @apply font-mono text-[11px] text-(--ink-2);
+  @apply font-mono text-[12px] text-(--ink-2);
 }
 
 .rw-diagram {
@@ -2937,7 +3006,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .fact-inline .v {
-  @apply font-mono text-[11.5px] tabular-nums text-(--ink);
+  @apply font-mono text-[12.5px] tabular-nums text-(--ink);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2951,7 +3020,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .phase-tag {
-  @apply inline-flex items-center h-4.25 py-0 px-1.25 rounded-[2px] border font-mono text-[10px] tracking-[0.03em];
+  @apply inline-flex items-center h-4.25 py-0 px-1.25 rounded-[2px] border font-mono text-[11px] tracking-[0.03em];
   font-weight: 550;
 }
 
@@ -3062,7 +3131,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .context__title {
-  @apply mt-0.5 font-mono text-[16px] font-semibold tracking-[-0.025em] text-(--ink);
+  @apply mt-0.5 font-mono text-[17px] font-semibold tracking-[-0.025em] text-(--ink);
 }
 
 .context__sub {
@@ -3240,7 +3309,7 @@ html[data-density="comfortable"] .fi-sidebar-item-btn {
 }
 
 .panel__title em {
-  @apply not-italic font-mono text-[11px] tracking-normal normal-case text-(--ink-4);
+  @apply not-italic font-mono text-[12px] tracking-normal normal-case text-(--ink-4);
 }
 
 .panel__tools {
@@ -3371,7 +3440,7 @@ html[data-density="comfortable"] .tbl tbody td {
  * mode, narrowed to seven equal two-letter cells.
  * ------------------------------------------------------------------------- */
 .daypick .fi-btn-group-btn {
-  @apply min-w-10 justify-center px-2 font-mono text-[12px];
+  @apply min-w-10 justify-center px-2 font-mono text-[13px];
 }
 
 /* Filament tints every option with the field colour and leans on its own
@@ -3477,7 +3546,7 @@ html[data-density="comfortable"] .tbl tbody td {
  * with no category keeps the neutral plate. */
 .addon-tile {
   @apply grid size-7.5 flex-none place-items-center rounded-lg border;
-  @apply font-mono text-[12px] tracking-tight uppercase;
+  @apply font-mono text-[13px] tracking-tight uppercase;
   font-weight: 550;
 }
 
@@ -3688,4 +3757,57 @@ html[data-density="comfortable"] .tbl tbody td {
     grid-column: 2;
     justify-self: start;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Live Flights page.
+ *
+ * The table is embedded in the page's own Section, so the vendor's
+ * `.fi-ta-ctn` (skinned as a card at ~line 305) would be a card inside a card.
+ * Flatten it and bleed it through the section's padding: the Section becomes
+ * the only card, and the table's pagination bar — which already carries the
+ * footer rule and padding at `.fi-pagination` (~line 1097) — closes it as the
+ * section's footer.
+ * ------------------------------------------------------------------------- */
+.live-flights .fi-ta-ctn {
+  @apply border-0 rounded-none shadow-none;
+  background: transparent;
+  --tw-ring-shadow: 0 0 #0000;
+  /* Derived from --section-pad, never hardcoded, so it stays exact when the
+   * density picker moves it. */
+  margin: calc(var(--section-pad) * -1);
+}
+
+/* Vendor insets the card grid 16px/24px; take the section's own padding
+ * instead so density stays with the density picker. */
+.live-flights .fi-ta-content-grid {
+  gap: var(--section-pad);
+  padding: var(--section-pad);
+}
+
+/* A horizontal card: identity grows, the triage fields sit to its right and
+ * wrap onto their own line before they get squeezed. */
+.live-flights .fi-ta-content-grid .fi-ta-split {
+  @apply flex-wrap justify-between gap-x-4 gap-y-2;
+}
+
+/* ---------------------------------------------------------------------------
+ * "Back to phpvms" rail item.
+ *
+ * Rendered at SIDEBAR_NAV_END, so it is a sibling of .fi-sidebar-nav-groups
+ * rather than a child of a group — it needs the seating the group rules
+ * (~line 1629) would otherwise have given it: pushed to the foot of the nav
+ * and centered when the rail is collapsed. No rule above it — the footer's
+ * own border already closes the rail, and a second one stacks.
+ * ------------------------------------------------------------------------- */
+.fi-sidebar-nav .fi-back-to-site {
+  @apply mt-auto pt-2;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-back-to-site {
+  @apply flex flex-col items-center w-full;
+}
+
+.fi-sidebar:not(.fi-sidebar-open) .fi-back-to-site .fi-sidebar-item-btn {
+  @apply flex-col gap-0.5;
 }

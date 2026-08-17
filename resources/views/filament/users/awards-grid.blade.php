@@ -46,7 +46,7 @@
                     @elseif (filled($award->image))
                         <img src="{{ $award->image }}" alt="" class="w-full h-full object-cover">
                     @else
-                        <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::Award" class="w-5 h-5" />
+                        <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::MedalLight" class="w-5 h-5" />
                     @endif
                 </div>
 

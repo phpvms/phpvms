@@ -11,7 +11,7 @@ use App\Filament\Resources\Airlines\Schemas\AirlineForm;
 use App\Filament\Resources\Airlines\Tables\AirlinesTable;
 use App\Models\Airline;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -28,7 +28,7 @@ class AirlineResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Building;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::BuildingLight;
 
     protected static ?string $recordTitleAttribute = 'name';
 

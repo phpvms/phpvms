@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Expenses\Schemas;
 
 use App\Enums\ExpenseType;
 use App\Enums\FlightType;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -57,16 +57,16 @@ class ExpenseForm
                         ->label(__('common.multiplier'))
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(TablerIcon::Check)
+                        ->onIcon(Phosphor::CheckLight)
                         ->offColor('danger')
-                        ->offIcon(TablerIcon::X),
+                        ->offIcon(Phosphor::XLight),
 
                     Toggle::make('active')
                         ->inline()
                         ->onColor('success')
-                        ->onIcon(TablerIcon::Check)
+                        ->onIcon(Phosphor::CheckLight)
                         ->offColor('danger')
-                        ->offIcon(TablerIcon::X),
+                        ->offIcon(Phosphor::XLight),
                 ])
                     ->columnSpanFull()
                     ->columns(2),

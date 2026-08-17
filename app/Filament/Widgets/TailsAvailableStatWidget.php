@@ -30,9 +30,9 @@ class TailsAvailableStatWidget extends DashboardStatWidget
             'value'    => number_format(Aircraft::query()->where('status', AircraftStatus::ACTIVE)->count()),
             'suffix'   => 'of '.number_format(Aircraft::query()->count()),
             'note'     => $maintenanceCount > 0 ? $maintenanceCount.' in maintenance' : null,
-            'icon'     => 'tabler-box',
+            'icon'     => 'phosphor-package-light',
             'accent'   => 'amber',
-            'noteIcon' => $maintenanceCount > 0 ? 'tabler-tool' : null,
+            'noteIcon' => $maintenanceCount > 0 ? 'phosphor-wrench-light' : null,
         ];
     }
 }

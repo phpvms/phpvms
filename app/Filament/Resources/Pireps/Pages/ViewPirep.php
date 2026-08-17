@@ -10,7 +10,7 @@ use App\Models\PirepEvent;
 use App\Services\Finance\PirepFinanceService;
 use App\Services\GeoService;
 use App\Services\Pirep\PerformanceChartService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -189,22 +189,22 @@ class ViewPirep extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()
-                ->icon(TablerIcon::Trash),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()->icon(Phosphor::TrashLight)
+                ->icon(Phosphor::TrashLight),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
             /* Default EditAction color is primary, which takes the hero's
              * inverted-ink fill — too loud next to Delete/Status. Neutral
              * field, intent in the icon tint, like its neighbours. */
             EditAction::make()
-                ->icon(TablerIcon::Edit)
+                ->icon(Phosphor::PencilSimpleLight)
                 ->color('info'),
             ActionGroup::make([
                 AcceptAction::make(),
                 RejectAction::make(),
             ])
                 ->label(__('common.status'))
-                ->icon(TablerIcon::ChevronDown)
+                ->icon(Phosphor::CaretDownLight)
                 ->iconPosition(IconPosition::After)
                 ->button()
                 ->color('gray'),

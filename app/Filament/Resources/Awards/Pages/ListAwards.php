@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Awards\Pages;
 
 use App\Filament\Resources\Awards\AwardResource;
 use App\Services\Awards\AwardExport;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Textarea;
@@ -25,7 +25,7 @@ class ListAwards extends ListRecords
         return [
             Action::make('import')
                 ->label(__('filament.award_import'))
-                ->icon(TablerIcon::Upload)
+                ->icon(Phosphor::UploadSimpleLight)
                 ->color('gray')
                 ->schema([
                     Textarea::make('document')
@@ -36,7 +36,7 @@ class ListAwards extends ListRecords
                 ->action($this->importAward(...)),
 
             CreateAction::make()
-                ->icon(TablerIcon::CirclePlus),
+                ->icon(Phosphor::PlusCircleLight),
         ];
     }
 

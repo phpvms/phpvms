@@ -12,19 +12,19 @@
 
 <div class="overview [grid-template-columns:repeat(3,minmax(0,1fr))]" aria-label="Finance figures">
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--blue">@svg('tabler-cash')</span>
+        <span class="overview__icon overview__icon--blue">@svg('phosphor-money-light')</span>
         <span class="overview__label">{{ __('common.revenue') }}</span>
         <span class="overview__value">{{ $fmtMoney($totalRevenue) }}</span>
         <span class="overview__note">{{ trans_choice('pireps.fare', 2) }}</span>
     </div>
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--amber">@svg('tabler-gas-station')</span>
+        <span class="overview__icon overview__icon--amber">@svg('phosphor-gas-pump-light')</span>
         <span class="overview__label">{{ __('common.expenses') }}</span>
         <span class="overview__value">{{ $fmtMoney($totalExpenses) }}</span>
         <span class="overview__note">{{ trans_choice('pireps.transaction', 2) }}</span>
     </div>
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--teal">@svg('tabler-gauge')</span>
+        <span class="overview__icon overview__icon--teal">@svg('phosphor-gauge-light')</span>
         <span class="overview__label">{{ __('common.net') }}</span>
         <span class="overview__value {{ $netCents >= 0 ? 'text-ok' : 'text-bad' }}">{{ $fmtMoney($netCents) }}</span>
         <span class="overview__note">{{ $marginPct !== null ? $marginPct.'% margin' : '—' }}</span>
@@ -33,7 +33,7 @@
 
 @if ($record->fares->isNotEmpty())
     <div class="panel__head rounded-none">
-        <h2 class="panel__title">@svg('tabler-ticket') {{ trans_choice('pireps.fare', 2) }}</h2>
+        <h2 class="panel__title">@svg('phosphor-ticket-light') {{ trans_choice('pireps.fare', 2) }}</h2>
     </div>
     <div class="table-wrap">
         <table class="tbl">
@@ -67,10 +67,10 @@
 @endif
 
 <div class="panel__head border-t border-line rounded-none">
-    <h2 class="panel__title">@svg('tabler-receipt') Journal transactions <em>{{ $record->transactions->count() }}</em></h2>
+    <h2 class="panel__title">@svg('phosphor-receipt-light') Journal transactions <em>{{ $record->transactions->count() }}</em></h2>
     <div class="panel__tools">
         <button type="button" class="ghost-btn" wire:click="recalculateFinances">
-            @svg('tabler-refresh') {{ __('filament.recalculate_finances') }}
+            @svg('phosphor-arrows-clockwise-light') {{ __('filament.recalculate_finances') }}
         </button>
     </div>
 </div>

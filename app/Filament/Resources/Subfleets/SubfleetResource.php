@@ -16,7 +16,7 @@ use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\Tables\SubfleetsTable;
 use App\Models\Subfleet;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -35,7 +35,7 @@ class SubfleetResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Plane;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::AirplaneLight;
 
     #[Override]
     public static function form(Schema $schema): Schema

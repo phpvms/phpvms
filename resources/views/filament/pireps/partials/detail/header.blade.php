@@ -50,13 +50,13 @@
 
 <section class="overview" aria-label="Flight figures">
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--blue">@svg('tabler-clock')</span>
+        <span class="overview__icon overview__icon--blue">@svg('phosphor-clock-light')</span>
         <span class="overview__label">{{ __('pireps.flight_time') }}</span>
         <span class="overview__value">{{ sprintf('%d:%02d', ...array_values(Time::minutesToTimeParts((int) ($record->flight_time ?? 0)))) }}</span>
         @if ($timeDelta !== null)
             <span class="overview__note {{ $timeDelta <= 0 ? 'overview__note--ok' : '' }}">
                 @if ($timeDelta <= 0)
-                    @svg('tabler-check') On plan
+                    @svg('phosphor-check-light') On plan
                 @else
                     +{{ $timeDelta }}m vs plan
                 @endif
@@ -67,7 +67,7 @@
     </div>
 
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--teal">@svg('tabler-ruler-measure')</span>
+        <span class="overview__icon overview__icon--teal">@svg('phosphor-ruler-light')</span>
         <span class="overview__label">{{ __('common.distance') }}</span>
         <span class="overview__value">
             @if ($record->distance){{ number_format((float) $record->distance->local()) }}<small>{{ $unitDistance }}</small>@else —@endif
@@ -76,14 +76,14 @@
     </div>
 
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--violet">@svg('tabler-gauge')</span>
+        <span class="overview__icon overview__icon--violet">@svg('phosphor-gauge-light')</span>
         <span class="overview__label">{{ __('pireps.score') }}</span>
         <span class="overview__value">{{ $record->score ?? '—' }}<small>/100</small></span>
         <span class="overview__note">out of 100</span>
     </div>
 
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--rose">@svg('tabler-plane-arrival')</span>
+        <span class="overview__icon overview__icon--rose">@svg('phosphor-airplane-landing-light')</span>
         <span class="overview__label">{{ __('pireps.landing_rate') }}</span>
         <span class="overview__value">
             @if ($landingRate)<span class="rate {{ $rateClass }}">{{ number_format($landingRate) }}</span><small>fpm</small>@else —@endif
@@ -92,7 +92,7 @@
     </div>
 
     <div class="overview__cell">
-        <span class="overview__icon overview__icon--amber">@svg('tabler-gas-station')</span>
+        <span class="overview__icon overview__icon--amber">@svg('phosphor-gas-pump-light')</span>
         <span class="overview__label">{{ __('pireps.fuel_used') }}</span>
         <span class="overview__value">
             @if ($record->fuel_used){{ number_format((float) $record->fuel_used->local()) }}<small>{{ $unitFuel }}</small>@else —@endif

@@ -15,14 +15,84 @@
 import Chart from "chart.js/auto";
 
 /**
- * Read a console theme token as a literal hex string, falling back to the
- * given default. See the identical helper in pirep-performance-chart.js for
- * why no getComputedStyle() color-mix probe is needed here.
+ * Read a console theme token as a colour Chart.js can parse, falling back to
+ * the given default. See the identical helper in pirep-performance-chart.js
+ * for why the canvas normalise step is needed: Filament emits its palette in
+ * oklch, which Chart.js's parser renders as black.
  */
 function cssVar(name, fallback) {
   if (typeof document === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return value || fallback;
+
+  // A probe element, not getPropertyValue(). Filament declares the palette as
+  // an indirection -- `--primary-600: var(--color-600)` with `--color-600`
+  // holding the real oklch -- so getPropertyValue() hands back the literal
+  // text "var(--color-600)", which no colour parser resolves. Assigning to an
+  // element's `color` makes the cascade resolve the chain for us.
+  if (colorProbe === undefined) {
+    colorProbe = document.createElement("span");
+    colorProbe.style.cssText = "position:fixed;top:-9999px;left:-9999px;visibility:hidden";
+    document.body.appendChild(colorProbe);
+  }
+
+  colorProbe.style.color = "";
+  colorProbe.style.color = `var(${name})`;
+  const value = getComputedStyle(colorProbe).color;
+
+  return value ? toRgb(value, fallback) : fallback;
+}
+
+let colorProbe;
+let colorCanvas;
+function toRgb(value, fallback) {
+  if (colorCanvas === undefined) {
+    colorCanvas =
+      document.createElement("canvas").getContext("2d", { willReadFrequently: true }) ?? null;
+  }
+  if (!colorCanvas) return value;
+
+  // Reset first: an unparseable value leaves fillStyle at its previous
+  // setting rather than throwing.
+  colorCanvas.fillStyle = "#000";
+  colorCanvas.fillStyle = value;
+  colorCanvas.fillRect(0, 0, 1, 1);
+
+  const [r, g, b, a] = colorCanvas.getImageData(0, 0, 1, 1).data;
+  if (a === 0 && value !== "transparent") return fallback;
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * Translucent variant of a colour from cssVar()/severityColor().
+ *
+ * Those return `rgb(...)`, so the old `color + "40"` hex-alpha suffix no
+ * longer composes — it would produce `rgb(16, 185, 129)40` and Chart.js
+ * would drop the fill entirely.
+ */
+function withAlpha(color, alpha) {
+  const rgb = /^rgba?\(([^)]+)\)$/.exec(color);
+  if (rgb) {
+    const [r, g, b] = rgb[1].split(",").map((n) => parseFloat(n));
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  // A literal hex fallback never went through the canvas, so keep the
+  // original two-digit-alpha suffix for it.
+  return (
+    color +
+    Math.round(alpha * 255)
+      .toString(16)
+      .padStart(2, "0")
+  );
+}
+
+/** Chart type follows theme.css's own font tokens, not a pinned family. */
+const FONT_SANS = () => cssFont("--font-sans", "ui-sans-serif, system-ui, sans-serif");
+const FONT_MONO = () => cssFont("--font-mono", "ui-monospace, monospace");
+
+function cssFont(name, fallback) {
+  if (typeof document === "undefined") return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
 // Runway schematic dimensions (SVG viewBox units).
@@ -154,7 +224,7 @@ export default function pirepLandingAnalysis(payload) {
           datasets: [
             {
               data: scores,
-              backgroundColor: polyColor + "40", // 25% alpha fill
+              backgroundColor: withAlpha(polyColor, 0.25),
               borderColor: polyColor,
               borderWidth: 2,
               pointBackgroundColor: scores.map((s) => severityColor(s)),
@@ -179,14 +249,14 @@ export default function pirepLandingAnalysis(payload) {
                 stepSize: 25,
                 color: cssVar("--ink-3", "#9ca3af"),
                 backdropColor: "transparent",
-                font: { family: "Geist Mono", size: 9 },
+                font: { family: FONT_MONO(), size: 9 },
                 showLabelBackdrop: false,
               },
               grid: { color: cssVar("--line", "#e5e7eb") },
               angleLines: { color: cssVar("--line", "#e5e7eb") },
               pointLabels: {
                 color: cssVar("--ink-3", "#374151"),
-                font: { family: "Geist", size: 10, weight: "500" },
+                font: { family: FONT_SANS(), size: 10, weight: "500" },
                 padding: 6,
               },
             },

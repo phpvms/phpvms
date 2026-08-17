@@ -12,7 +12,7 @@ use App\Filament\Resources\OAuthClients\Schemas\OAuthClientForm;
 use App\Filament\Resources\OAuthClients\Tables\OAuthClientsTable;
 use App\Models\OauthClient;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -23,7 +23,7 @@ class OAuthClientResource extends Resource
 {
     protected static ?string $model = OauthClient::class;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Key;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::KeyLight;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Config;
 

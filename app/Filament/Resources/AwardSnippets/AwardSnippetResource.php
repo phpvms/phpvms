@@ -10,7 +10,7 @@ use App\Filament\Resources\AwardSnippets\Schemas\AwardSnippetForm;
 use App\Filament\Resources\AwardSnippets\Tables\AwardSnippetsTable;
 use App\Models\AwardSnippet;
 use BackedEnum;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -29,7 +29,7 @@ class AwardSnippetResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static string|BackedEnum|null $navigationIcon = TablerIcon::Puzzle;
+    protected static string|BackedEnum|null $navigationIcon = Phosphor::PuzzlePieceLight;
 
     protected static ?string $recordTitleAttribute = 'label';
 

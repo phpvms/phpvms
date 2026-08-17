@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Fares\Schemas;
 
 use App\Enums\FareType;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -79,9 +79,9 @@ class FareForm
 
                         Toggle::make('active')
                             ->label(__('common.active'))
-                            ->offIcon(TablerIcon::X)
+                            ->offIcon(Phosphor::XLight)
                             ->offColor('danger')
-                            ->onIcon(TablerIcon::Check)
+                            ->onIcon(Phosphor::CheckLight)
                             ->onColor('success'),
                     ])
                     ->columnSpanFull()

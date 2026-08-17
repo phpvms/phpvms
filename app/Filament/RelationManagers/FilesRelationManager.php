@@ -3,7 +3,7 @@
 namespace App\Filament\RelationManagers;
 
 use App\Models\File;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -67,7 +67,7 @@ class FilesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->icon(TablerIcon::CirclePlus)
+                    ->icon(Phosphor::PlusCircleLight)
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];
@@ -81,13 +81,13 @@ class FilesRelationManager extends RelationManager
             ])
             ->recordActions([
                 Action::make('download')
-                    ->icon(TablerIcon::Link)
+                    ->icon(Phosphor::LinkLight)
                     ->label(__('common.link_to_file'))
                     ->action(fn (File $record) => Storage::disk($record->disk)->download($record->path, Str::kebab($record->name)))
                     ->visible(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
 
                 Action::make('view_file')
-                    ->icon(TablerIcon::Link)
+                    ->icon(Phosphor::LinkLight)
                     ->label(__('common.link_to_file'))
                     ->url(fn (File $record): string => $record->path, shouldOpenInNewTab: true)
                     ->hidden(fn (File $record): bool => $record->disk && !str_contains((string) $record->path, 'http') && Storage::disk($record->disk)->exists($record->path)),
@@ -111,7 +111,7 @@ class FilesRelationManager extends RelationManager
                 ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()->icon(TablerIcon::CirclePlus)
+                CreateAction::make()->icon(Phosphor::PlusCircleLight)
                     ->mutateDataUsing(function (array $data): array {
                         if (!empty($data['url'])) {
                             $data['path'] = $data['url'];

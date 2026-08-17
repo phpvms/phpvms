@@ -60,7 +60,7 @@
             <dd>
                 <a class="dl__link" href="{{ $website }}" target="_blank" rel="noopener">
                     {{ \Illuminate\Support\Str::of($website)->after('://')->rtrim('/') }}
-                    <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::ExternalLink" />
+                    <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::ArrowSquareOutLight" />
                 </a>
             </dd>
         </div>
@@ -74,7 +74,7 @@
                      here, and an external-link glyph would promise a trip off
                      the page. --}}
                 <a class="dl__link dl__link--inline" href="{{ $sel['changelog_url'] }}" target="_blank" rel="noopener">
-                    <x-filament::icon :icon="\Daljo25\FilamentTablerIcons\Enums\TablerIcon::FileText" />
+                    <x-filament::icon :icon="\Filafly\Icons\Phosphor\Enums\Phosphor::FileTextLight" />
                     {{ \Illuminate\Support\Str::afterLast($sel['changelog_url'], '/') }}
                 </a>
             </dd>

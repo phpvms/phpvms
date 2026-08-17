@@ -12,7 +12,7 @@ use App\Services\Awards\UserConstraints;
 use App\Services\AwardService;
 use App\Services\ImageUploadService;
 use Closure;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
@@ -37,7 +37,7 @@ use Throwable;
 class AwardForm
 {
     /** Where the icon picker's glyphs come from, linked from the field itself. */
-    private const string ICON_SET_URL = 'https://tabler.io/icons';
+    private const string ICON_SET_URL = 'https://phosphoricons.com/';
 
     /**
      * What the icon dropdown shows before anything is typed.
@@ -48,11 +48,11 @@ class AwardForm
      * glyphs an award actually wants, with search reaching the other ~7200.
      */
     private const array STARTER_ICONS = [
-        'trophy', 'award', 'medal', 'medal-2', 'certificate', 'crown',
-        'star', 'diamond', 'flag', 'shield-check', 'thumb-up', 'heart-filled',
-        'plane', 'plane-departure', 'plane-arrival', 'route', 'world', 'map-pin',
-        'clock', 'clock-hour-4', 'calendar', 'target-arrow', 'rocket', 'bolt',
-        'moon', 'sun', 'flame', 'mountain', 'anchor', 'building-arch',
+        'trophy-light', 'seal-light', 'medal-light', 'medal-military-light', 'certificate-light', 'crown-light',
+        'star-light', 'diamond-light', 'flag-light', 'shield-check-light', 'thumbs-up-light', 'heart-fill',
+        'airplane-light', 'airplane-takeoff-light', 'airplane-landing-light', 'path-light', 'globe-light', 'map-pin-light',
+        'clock-light', 'clock-afternoon-light', 'calendar-light', 'target-light', 'rocket-light', 'lightning-light',
+        'moon-light', 'sun-light', 'flame-light', 'mountains-light', 'anchor-light', 'bank-light',
     ];
 
     public static function configure(Schema $schema): Schema
@@ -95,7 +95,7 @@ class AwardForm
     {
         return Action::make('runTest')
             ->label(__('filament.award_run_test'))
-            ->icon(TablerIcon::Flask)
+            ->icon(Phosphor::FlaskLight)
             ->color('gray')
             ->visible(fn (?Award $record): bool => $record?->rule !== null)
             ->modalHeading(__('filament.award_run_test'))
@@ -323,7 +323,7 @@ class AwardForm
         $options = [];
 
         foreach (self::STARTER_ICONS as $name) {
-            $icon = 'tabler-'.$name;
+            $icon = 'phosphor-'.$name;
             $options[$icon] = self::iconOptionLabel($icon);
         }
 
@@ -331,11 +331,18 @@ class AwardForm
     }
 
     /**
-     * Tabler icon options matching a search term.
+     * Phosphor icon options matching a search term.
      *
-     * The set is ~7200 icons, far too many to hand a Select as a flat option
-     * array, so this backs `getSearchResultsUsing()` and caps what it returns.
-     * Spaces are treated as hyphens so "plane takeoff" finds `plane-takeoff`.
+     * The enum carries ~9000 cases, far too many to hand a Select as a flat
+     * option array, so this backs `getSearchResultsUsing()` and caps what it
+     * returns. Spaces are treated as hyphens so "airplane takeoff" finds
+     * `airplane-takeoff`.
+     *
+     * Only the Light weight is offered. Phosphor ships each glyph six times
+     * (thin/light/regular/bold/fill/duotone) as separate cases, so listing them
+     * all would fill the 50-result cap with six near-identical rows per icon.
+     * Light is the panel's weight; a different one can still be typed in by
+     * hand, since the fallback below accepts any blade-icons name.
      *
      * Public for the same reason as the other members here — the answer it
      * gives is worth testing directly, rather than through a Select.
@@ -348,12 +355,16 @@ class AwardForm
 
         $options = [];
 
-        foreach (TablerIcon::cases() as $case) {
+        foreach (Phosphor::cases() as $case) {
+            if (!str_ends_with($case->value, '-light')) {
+                continue;
+            }
+
             if ($needle !== '' && !str_contains($case->value, $needle)) {
                 continue;
             }
 
-            $icon = 'tabler-'.$case->value;
+            $icon = 'phosphor-'.$case->value;
             $options[$icon] = self::iconOptionLabel($icon);
 
             if (count($options) >= 50) {
@@ -362,9 +373,10 @@ class AwardForm
         }
 
         // Nothing in the set matched, so offer the term itself. That is how a
-        // name from outside Tabler gets in -- a heroicon, or an icon a theme or
-        // add-on registers with blade-icons. It is stored verbatim and rendered
-        // by name, so anything blade-icons can resolve works here.
+        // name from outside Phosphor gets in -- a heroicon, an old Tabler name saved
+        // before the icon set changed, or an icon a theme or add-on registers
+        // with blade-icons. It is stored verbatim and rendered by name, so
+        // anything blade-icons can resolve works here.
         if ($options === [] && $needle !== '') {
             $options[$needle] = self::iconOptionLabel($needle);
         }
@@ -381,7 +393,7 @@ class AwardForm
      */
     private static function iconOptionLabel(string $icon): string
     {
-        $name = str_replace('-', ' ', Str::after($icon, 'tabler-'));
+        $name = str_replace('-', ' ', Str::after($icon, 'phosphor-'));
 
         try {
             $svg = svg($icon, 'w-5 h-5 shrink-0')->toHtml();
@@ -400,9 +412,9 @@ class AwardForm
     {
         return Toggle::make('active')
             ->label(__('common.enabled'))
-            ->offIcon(icon: TablerIcon::X)
+            ->offIcon(icon: Phosphor::XLight)
             ->offColor('danger')
-            ->onIcon(icon: TablerIcon::Check)
+            ->onIcon(icon: Phosphor::CheckLight)
             ->onColor('success')
             ->default(true)
             ->columnSpanFull()

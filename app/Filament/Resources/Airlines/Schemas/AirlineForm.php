@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Airlines\Schemas;
 use App\Filament\Concerns\AutosavesFields;
 use App\Models\Airline;
 use App\Services\ImageUploadService;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -58,18 +58,18 @@ class AirlineForm
                             ->label(label: __('common.active'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon(TablerIcon::Check)
+                            ->onIcon(Phosphor::CheckLight)
                             ->offColor('danger')
-                            ->offIcon(TablerIcon::X),
+                            ->offIcon(Phosphor::XLight),
 
                         Toggle::make('low_cost')
                             ->label(__('filament.airline_low_cost'))
                             ->helperText(__('filament.airline_low_cost_hint'))
                             ->inline()
                             ->onColor('success')
-                            ->onIcon(TablerIcon::Check)
+                            ->onIcon(Phosphor::CheckLight)
                             ->offColor('danger')
-                            ->offIcon(TablerIcon::X),
+                            ->offIcon(Phosphor::XLight),
                     ])
                     ->columnSpanFull()
                     ->columns(3),

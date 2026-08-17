@@ -12,7 +12,7 @@ use App\Models\Flight;
 use App\Support\Days;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -183,7 +183,7 @@ class EditFlight extends EditRecord
      * Airline, number and type are read here and edited in the drawer, so they
      * are dropped from the page form (see FlightForm::configure()).
      *
-     * @return array<int, array{icon: TablerIcon, tint: string|null, label: string, value: string, note: string}>
+     * @return array<int, array{icon: Phosphor, tint: string|null, label: string, value: string, note: string}>
      */
     protected function summaryCards(): array
     {
@@ -192,14 +192,14 @@ class EditFlight extends EditRecord
 
         return [
             [
-                'icon'  => TablerIcon::BuildingArch,
+                'icon'  => Phosphor::BankLight,
                 'tint'  => null,
                 'label' => __('common.airline'),
                 'value' => (string) $record->airline?->name,
                 'note'  => (string) $record->airline?->icao,
             ],
             [
-                'icon'  => TablerIcon::Hash,
+                'icon'  => Phosphor::HashLight,
                 'tint'  => 'blue',
                 'label' => __('flights.flightnumber'),
                 'value' => (string) $record->flight_number,
@@ -209,7 +209,7 @@ class EditFlight extends EditRecord
                 ])),
             ],
             [
-                'icon'  => TablerIcon::Plane,
+                'icon'  => Phosphor::AirplaneLight,
                 'tint'  => 'violet',
                 'label' => __('flights.flighttype'),
                 'value' => (string) $record->flight_type->getLabel(),
@@ -239,7 +239,7 @@ class EditFlight extends EditRecord
             ->modalHeading(__('filament.flight_information'))
             ->mutateRecordDataUsing(fn (array $data): array => Arr::only($data, $keys))
             ->extraModalFooterActions([
-                DeleteAction::make()->cancelParentActions(),
+                DeleteAction::make()->icon(Phosphor::TrashLight)->cancelParentActions(),
             ]);
     }
 
@@ -301,8 +301,8 @@ class EditFlight extends EditRecord
     {
         return [
             // Delete lives in the settings drawer's footer (editAction()).
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            ForceDeleteAction::make()->icon(Phosphor::TrashSimpleLight),
+            RestoreAction::make()->icon(Phosphor::ArrowUUpLeftLight),
         ];
     }
 

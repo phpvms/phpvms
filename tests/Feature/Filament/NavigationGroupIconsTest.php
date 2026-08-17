@@ -50,7 +50,7 @@ it('gives every labelled admin navigation group an icon in every locale', functi
 })->with(['en', 'fr']);
 
 it('renders the same group icons regardless of locale', function (): void {
-    // Mirrors NavigationGroup::getIcon(); icons are TablerIcon enum cases since
+    // Mirrors NavigationGroup::getIcon(); icons are Phosphor enum cases since
     // the heroicons swap, and enum cases compare identically across locales.
     $iconsFor = fn (string $locale): array => array_values(array_map(
         fn (NavigationGroup $group): string|BackedEnum|Htmlable|null => $group->getIcon(),

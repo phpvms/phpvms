@@ -14,8 +14,8 @@ use App\Support\Days;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
 use DateTimeInterface;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
@@ -42,7 +42,7 @@ class FlightForm
             ->components([
                 Section::make(__('filament.flight_information'))
                     ->id('flight-information')
-                    ->icon(TablerIcon::FileText)
+                    ->icon(Phosphor::FileTextLight)
                     ->collapsible()
                     ->persistCollapsed()
                     ->footer([
@@ -50,9 +50,9 @@ class FlightForm
                             ->inline()
                             ->label(__('common.enabled'))
                             ->helperText(__('filament.flight_enabled_hint'))
-                            ->offIcon(TablerIcon::X)
+                            ->offIcon(Phosphor::XLight)
                             ->offColor('danger')
-                            ->onIcon(TablerIcon::Check)
+                            ->onIcon(Phosphor::CheckLight)
                             ->onColor('success')
                             ->default(true),
                     ])
@@ -77,7 +77,7 @@ class FlightForm
                         // .panel__head sections -- not a second card.
                         Section::make(__('flights.route'))
                             ->id('route')
-                            ->icon(TablerIcon::Map)
+                            ->icon(Phosphor::MapTrifoldLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->schema([
@@ -128,7 +128,7 @@ class FlightForm
 
                         Section::make(__('filament.scheduling'))
                             ->id('scheduling')
-                            ->icon(TablerIcon::Calendar)
+                            ->icon(Phosphor::CalendarLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(2)
@@ -193,7 +193,7 @@ class FlightForm
 
                         Section::make(__('filament.flights.sections.loadsheet'))
                             ->id('loadsheet')
-                            ->icon(TablerIcon::Scale)
+                            ->icon(Phosphor::ScalesLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->columns(2)
@@ -217,7 +217,7 @@ class FlightForm
                             ->columnSpanFull(),
 
                         Section::make(__('common.notes'))
-                            ->icon(TablerIcon::Notes)
+                            ->icon(Phosphor::NoteLight)
                             ->collapsible()
                             ->persistCollapsed()
                             ->schema([

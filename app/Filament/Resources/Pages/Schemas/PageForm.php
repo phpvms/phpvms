@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Enums\PageType;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -45,16 +45,16 @@ class PageForm
                             ->schema([
                                 Toggle::make('public')
                                     ->label(__('common.public'))
-                                    ->offIcon(TablerIcon::X)
+                                    ->offIcon(Phosphor::XLight)
                                     ->offColor('danger')
-                                    ->onIcon(TablerIcon::Check)
+                                    ->onIcon(Phosphor::CheckLight)
                                     ->onColor('success'),
 
                                 Toggle::make('enabled')
                                     ->label(__('common.enabled'))
-                                    ->offIcon(TablerIcon::X)
+                                    ->offIcon(Phosphor::XLight)
                                     ->offColor('danger')
-                                    ->onIcon(TablerIcon::Check)
+                                    ->onIcon(Phosphor::CheckLight)
                                     ->onColor('success'),
                             ])
                             ->columnSpanFull()
@@ -81,9 +81,9 @@ class PageForm
 
                         Toggle::make('new_window')
                             ->label(__('filament.should_open_in_new_tab'))
-                            ->offIcon(TablerIcon::X)
+                            ->offIcon(Phosphor::XLight)
                             ->offColor('danger')
-                            ->onIcon(TablerIcon::Check)
+                            ->onIcon(Phosphor::CheckLight)
                             ->onColor('success')
                             ->visibleJs(<<<'JS'
                                     $get('type') == '1'

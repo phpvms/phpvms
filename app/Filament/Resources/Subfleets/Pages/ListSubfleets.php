@@ -11,7 +11,7 @@ use App\Filament\Imports\SubfleetImporter;
 use App\Filament\Resources\Subfleets\Schemas\SubfleetForm;
 use App\Filament\Resources\Subfleets\SubfleetResource;
 use App\Models\Subfleet;
-use Daljo25\FilamentTablerIcons\Enums\TablerIcon;
+use Filafly\Icons\Phosphor\Enums\Phosphor;
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
@@ -44,7 +44,7 @@ class ListSubfleets extends ListRecords
                 CreateAction::make()
                     ->modal()
                     ->createAnother(false)
-                    ->icon(TablerIcon::CirclePlus)
+                    ->icon(Phosphor::PlusCircleLight)
                     ->successRedirectUrl(fn (Subfleet $record): string => SubfleetResource::getUrl('edit', ['record' => $record])),
                 SubfleetForm::createFields(),
             ),
