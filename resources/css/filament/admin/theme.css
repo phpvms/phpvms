@@ -1720,11 +1720,11 @@
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group > .fi-dropdown {
-      /* The spacer that reserves the glyph's row. Must track the trigger icon's
-       * size below, or the absolutely-positioned button overhangs a slot cut for
-       * a smaller icon. */
-    @apply w-7 h-7;
-    stroke-width: 1.4;
+  /* The spacer that reserves the glyph's row. Must track the trigger icon's
+   * size below, or the absolutely-positioned button overhangs a slot cut for
+   * a smaller icon. */
+  @apply w-7 h-7;
+  stroke-width: 1.4;
 }
 
 .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {

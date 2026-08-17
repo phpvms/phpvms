@@ -75,7 +75,9 @@ abstract class BasePanelProvider extends FilamentPanelProvider
                 // arrows and so on — from its bundled Heroicons to Phosphor.
                 // Without this, only the aliases named explicitly below change
                 // and the rest of the panel stays Heroicon.
-                PhosphorIcons::make()->light(),
+                // style('light') rather than the ->light() sugar: that one only
+                // exists through IconSet::__call(), so static analysis can't see it.
+                PhosphorIcons::make()->style('light'),
                 PanelSwitcherPlugin::make(),
                 ClearCachesPlugin::make(),
                 LanguageSwitcherPlugin::make(),
