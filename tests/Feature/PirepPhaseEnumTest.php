@@ -41,7 +41,15 @@ test('phase values stored before the rename read back to the same cases', functi
         ->and($reloaded->status->value)->toBe('ENR');
 });
 
-test('acars rows marshal phase to the enum', function (): void {
+/**
+ * `acars.phase` is the one place the rename does NOT bring an enum cast with
+ * it. The column holds a per-sample reading passed through from the ACARS
+ * client, whose phase vocabulary is open, so an enum cast throws on a code
+ * added upstream and fails the whole telemetry write. It stays a raw string,
+ * matching `pirep_positions.phase`; `pireps.status` keeps its cast because that
+ * is a lifecycle column phpVMS owns and sets itself.
+ */
+test('acars rows keep phase as a raw string, uncast', function (): void {
     $pirep = Pirep::factory()->create();
     $acars = Acars::factory()->create([
         'pirep_id' => $pirep->id,
@@ -51,8 +59,21 @@ test('acars rows marshal phase to the enum', function (): void {
 
     $reloaded = Acars::find($acars->id);
 
-    expect($reloaded->phase)->toBe(PirepPhase::ENROUTE)
-        ->and($reloaded->phase->value)->toBe('ENR');
+    expect($reloaded->phase)->toBe(PirepPhase::ENROUTE->value)
+        ->and($reloaded->phase)->toBeString();
+});
+
+test('an acars phase this release does not define stores rather than throws', function (): void {
+    $pirep = Pirep::factory()->create();
+
+    $acars = Acars::factory()->create([
+        'pirep_id' => $pirep->id,
+        'type'     => AcarsType::FLIGHT_PATH,
+        // Not a PirepPhase case. An enum cast would throw on save.
+        'phase' => 'ZZZ',
+    ]);
+
+    expect(Acars::find($acars->id)->phase)->toBe('ZZZ');
 });
 
 test('the API still publishes the value under phase', function (): void {
